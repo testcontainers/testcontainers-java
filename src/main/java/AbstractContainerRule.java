@@ -25,7 +25,7 @@ public abstract class AbstractContainerRule extends ExternalResource {
     private boolean normalTermination = false;
 
     @Override
-    protected void before() throws Throwable {
+    public void before() throws Throwable {
 
         DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
 
@@ -85,7 +85,7 @@ public abstract class AbstractContainerRule extends ExternalResource {
     }
 
     @Override
-    protected void after() {
+    public void after() {
         try {
             normalTermination = true;
             dockerClient.killContainer(containerId);
