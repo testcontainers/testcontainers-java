@@ -1,7 +1,10 @@
+package org.rnorth.testcontainers.junit;
+
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Rule;
 import org.junit.Test;
+import org.rnorth.testcontainers.junit.MySQLContainerRule;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,14 +16,14 @@ import java.sql.Statement;
 public class SimpleMySQLTest {
 
     @Rule
-    public MySQLContainerRule container = new MySQLContainerRule();
+    public MySQLContainerRule mysql = new MySQLContainerRule();
 
     @Test
     public void testSimple() throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(container.getJdbcUrl());
-        hikariConfig.setUsername(container.getUsername());
-        hikariConfig.setPassword(container.getPassword());
+        hikariConfig.setJdbcUrl(mysql.getJdbcUrl());
+        hikariConfig.setUsername(mysql.getUsername());
+        hikariConfig.setPassword(mysql.getPassword());
 
         HikariDataSource ds = new HikariDataSource(hikariConfig);
         Statement statement = ds.getConnection().createStatement();

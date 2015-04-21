@@ -1,6 +1,9 @@
+package org.rnorth.testcontainers.junit;
+
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.rnorth.testcontainers.junit.NginxContainerRule;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -13,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 public class SimpleNginxTest {
 
     @Rule
-    public NginxContainerRule container = new NginxContainerRule()
+    public NginxContainerRule nginx = new NginxContainerRule()
                                                     .withCustomConfig(System.getProperty("user.home") + "/.tmp-testpackage-container");
 
     @BeforeClass
@@ -29,7 +32,7 @@ public class SimpleNginxTest {
 
     @Test
     public void testSimple() throws Exception {
-        URLConnection urlConnection = container.getBaseUrl("http", 80).openConnection();
+        URLConnection urlConnection = nginx.getBaseUrl("http", 80).openConnection();
         String line = new BufferedReader(new InputStreamReader(urlConnection.getInputStream())).readLine();
         System.out.println(line);
 

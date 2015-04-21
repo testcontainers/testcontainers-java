@@ -1,21 +1,25 @@
+package org.rnorth.testcontainers.containers;
+
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
+import org.rnorth.testcontainers.containers.AbstractContainer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author richardnorth
  */
-public class NginxContainerRule extends AbstractContainerRule {
+public class NginxContainer extends AbstractContainer {
     private String nginxPort;
     private String htmlContentPath;
     private Map<String, List<PortBinding>> ports;
-    private List<String> binds;
+    private List<String> binds = new ArrayList<>();
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
@@ -51,8 +55,7 @@ public class NginxContainerRule extends AbstractContainerRule {
         return new URL(scheme + "://" + dockerHostIpAddress + ":" + ports.get(port + "/tcp").get(0).hostPort());
     }
 
-    public NginxContainerRule withCustomConfig(String htmlContentPath) {
+    public void setCustomConfig(String htmlContentPath) {
         binds.add(htmlContentPath + ":/usr/share/nginx/html:ro");
-        return this;
     }
 }

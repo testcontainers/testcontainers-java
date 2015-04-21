@@ -1,1 +1,1 @@
-ContainerDatabaseDriver
+org.rnorth.testcontainers.jdbc.ContainerDatabaseDriver

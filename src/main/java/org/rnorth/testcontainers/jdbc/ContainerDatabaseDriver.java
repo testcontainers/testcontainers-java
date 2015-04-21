@@ -1,3 +1,6 @@
+package org.rnorth.testcontainers.jdbc;
+
+import org.rnorth.testcontainers.containers.MySQLContainer;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
@@ -27,23 +30,23 @@ public class ContainerDatabaseDriver implements Driver {
 
     @Override
     public boolean acceptsURL(String url) throws SQLException {
-        return url.startsWith("jdbc:tpc:");
+        return url.startsWith("jdbc:tc:");
     }
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
 
-        if (url.startsWith("jdbc:tpc:mysql:")) {
+        if (url.startsWith("jdbc:tc:mysql:")) {
 
-            MySQLContainerRule rule = new MySQLContainerRule();
-            info.put("user", rule.getUsername());
-            info.put("password", rule.getPassword());
+            MySQLContainer container = new MySQLContainer();
+            info.put("user", container.getUsername());
+            info.put("password", container.getPassword());
 
             try {
-                rule.before();
+                container.start();
 
                 delegate = (Driver) ClassLoader.getSystemClassLoader().loadClass("com.mysql.jdbc.Driver").newInstance();
-                return delegate.connect(rule.getJdbcUrl(), info);
+                return delegate.connect(container.getJdbcUrl(), info);
 
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                 e.printStackTrace();

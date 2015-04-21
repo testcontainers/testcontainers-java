@@ -1,9 +1,9 @@
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerCertificates;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerException;
+package org.rnorth.testcontainers.containers;
+
+import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.*;
-import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
 
@@ -17,15 +17,16 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author richardnorth
  */
-public abstract class AbstractContainerRule extends ExternalResource {
+public abstract class AbstractContainer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("TestContainer");
 
     protected String dockerHostIpAddress;
     private String containerId;
     private DockerClient dockerClient;
     private boolean normalTermination = false;
 
-    @Override
-    public void before() throws Throwable {
+    public void start() throws Throwable {
 
         DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
 
@@ -42,16 +43,19 @@ public abstract class AbstractContainerRule extends ExternalResource {
         customizeHostConfigBuilder(hostConfigBuilder);
         HostConfig hostConfig = hostConfigBuilder.build();
 
+        LOGGER.info("Creating container for image: {}", getDockerImageName());
         ContainerCreation containerCreation = dockerClient.createContainer(containerConfig);
 
         containerId = containerCreation.id();
         dockerClient.startContainer(containerId, hostConfig);
+        LOGGER.info("Starting container with ID: {}", containerId);
 
         ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
 
         containerIsStarting(containerInfo);
 
         waitForListeningPort(dockerHostIpAddress, getLivenessCheckPort());
+        LOGGER.info("Container started");
 
         // If the container stops before the after() method, its termination was unexpected
         Executors.newSingleThreadExecutor().submit(() -> {
@@ -66,6 +70,9 @@ public abstract class AbstractContainerRule extends ExternalResource {
                 throw new RuntimeException("Container exited unexpectedly", caughtException);
             }
         });
+
+        // If the JVM stops without the container being stopped, try and stop the container
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
 
     protected void customizeHostConfigBuilder(HostConfig.Builder hostConfigBuilder) {
@@ -81,16 +88,25 @@ public abstract class AbstractContainerRule extends ExternalResource {
             }
         }
 
-        dockerClient.pull(getDockerImageName());
+        LOGGER.info("Pulling docker image: {}", imageName);
+        dockerClient.pull(getDockerImageName(), message -> {
+            if (message.error() != null) {
+                if (message.error().contains("404") || message.error().contains("not found")) {
+                    throw new ImageNotFoundException(imageName, message.toString());
+                } else {
+                    throw new ImagePullFailedException(imageName, message.toString());
+                }
+            }
+        });
     }
 
-    @Override
-    public void after() {
+    public void stop() {
         try {
+            LOGGER.info("Stopping container: {}", containerId);
             normalTermination = true;
             dockerClient.killContainer(containerId);
         } catch (DockerException | InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Error encountered shutting down container (ID: {}) - it may not have been stopped", containerId, e);
         }
     }
 
@@ -136,6 +152,7 @@ public abstract class AbstractContainerRule extends ExternalResource {
                 .readOutput(true).execute();
 
         if (result.getExitValue() != 0) {
+            System.err.println(result.getOutput().getString());
             throw new IllegalStateException();
         }
         return result.outputUTF8().trim();

@@ -1,3 +1,5 @@
+package org.rnorth.testcontainers.jdbc;
+
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Test;
@@ -16,7 +18,7 @@ public class MySQLJDBCDriverTest {
     @Test
     public void testSimple() throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:tpc:mysql://hostname/databasename");
+        hikariConfig.setJdbcUrl("jdbc:tc:mysql://hostname/databasename");
 
         HikariDataSource ds = new HikariDataSource(hikariConfig);
         Statement statement = ds.getConnection().createStatement();
