@@ -88,7 +88,7 @@ public abstract class AbstractContainer {
             }
         }
 
-        LOGGER.info("Pulling docker image: {}", imageName);
+        LOGGER.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
         dockerClient.pull(getDockerImageName(), message -> {
             if (message.error() != null) {
                 if (message.error().contains("404") || message.error().contains("not found")) {

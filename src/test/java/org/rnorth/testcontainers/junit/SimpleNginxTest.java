@@ -3,7 +3,6 @@ package org.rnorth.testcontainers.junit;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.rnorth.testcontainers.junit.NginxContainerRule;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -17,11 +16,11 @@ public class SimpleNginxTest {
 
     @Rule
     public NginxContainerRule nginx = new NginxContainerRule()
-                                                    .withCustomConfig(System.getProperty("user.home") + "/.tmp-testpackage-container");
+                                                    .withCustomConfig(System.getProperty("user.home") + "/.tmp-test-container");
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
-        File contentFolder = new File(System.getProperty("user.home") + "/.tmp-testpackage-container");
+        File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
         contentFolder.mkdir();
         File indexFile = new File(contentFolder, "index.html");
 

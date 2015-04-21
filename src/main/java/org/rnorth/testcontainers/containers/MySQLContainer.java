@@ -2,15 +2,27 @@ package org.rnorth.testcontainers.containers;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
-import org.rnorth.testcontainers.containers.AbstractContainer;
 
 /**
  * @author richardnorth
  */
 public class MySQLContainer extends AbstractContainer {
 
-    private static final String MYSQL_IMAGE = "mysql:5.6.23";
+    private static final String MYSQL_IMAGE = "mysql";
+    private final String tag;
     private String mySqlPort;
+
+    public MySQLContainer() {
+        this(null);
+    }
+
+    public MySQLContainer(String tag) {
+        if (tag == null) {
+            this.tag = "latest";
+        } else {
+            this.tag = tag;
+        }
+    }
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
@@ -34,7 +46,7 @@ public class MySQLContainer extends AbstractContainer {
 
     @Override
     protected String getDockerImageName() {
-        return MYSQL_IMAGE;
+        return MYSQL_IMAGE + ":" + tag;
     }
 
     public String getJdbcUrl() {

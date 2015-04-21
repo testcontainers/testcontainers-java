@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -17,6 +19,8 @@ public class ContainerDatabaseDriver implements Driver {
     static {
         load();
     }
+
+    public static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:(mysql)(:([^:]+))?://.*");
 
     private Driver delegate;
 
@@ -36,9 +40,17 @@ public class ContainerDatabaseDriver implements Driver {
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
 
-        if (url.startsWith("jdbc:tc:mysql:")) {
 
-            MySQLContainer container = new MySQLContainer();
+        Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
+        if (!urlMatcher.matches()) {
+            throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
+        }
+        String database = urlMatcher.group(1);
+        String tag = urlMatcher.group(3);
+
+        if ("mysql".equals(database)) {
+
+            MySQLContainer container = new MySQLContainer(tag);
             info.put("user", container.getUsername());
             info.put("password", container.getPassword());
 
