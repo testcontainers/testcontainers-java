@@ -6,17 +6,17 @@ import com.spotify.docker.client.messages.ContainerInfo;
 /**
  * @author richardnorth
  */
-public class MySQLContainer extends AbstractContainer implements DatabaseContainer  {
+public class PostgreSQLContainer extends AbstractContainer implements DatabaseContainer {
 
-    private static final String IMAGE = "mysql";
+    private static final String IMAGE = "postgres";
     private final String tag;
-    private String mySqlPort;
+    private String postgresPort;
 
-    public MySQLContainer() {
+    public PostgreSQLContainer() {
         this(null);
     }
 
-    public MySQLContainer(String tag) {
+    public PostgreSQLContainer(String tag) {
         if (tag == null) {
             this.tag = "latest";
         } else {
@@ -26,21 +26,21 @@ public class MySQLContainer extends AbstractContainer implements DatabaseContain
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
-        mySqlPort = containerInfo.networkSettings().ports().get("3306/tcp").get(0).hostPort();
+        postgresPort = containerInfo.networkSettings().ports().get("5432/tcp").get(0).hostPort();
     }
 
     @Override
     protected String getLivenessCheckPort() {
-        return mySqlPort;
+        return postgresPort;
     }
 
     @Override
     protected ContainerConfig getContainerConfig() {
         return ContainerConfig.builder()
                     .image(getDockerImageName())
-                    .exposedPorts("3306")
-                    .env("MYSQL_DATABASE=test", "MYSQL_USER=test", "MYSQL_PASSWORD=test", "MYSQL_ROOT_PASSWORD=test")
-                    .cmd("mysqld")
+                    .exposedPorts("5432")
+                    .env("POSTGRES_DATABASE=test", "POSTGRES_USER=test", "POSTGRES_PASSWORD=test")
+                    .cmd("postgres")
                     .build();
     }
 
@@ -51,6 +51,7 @@ public class MySQLContainer extends AbstractContainer implements DatabaseContain
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + dockerHostIpAddress + ":" + mySqlPort + "/test";
+        return "jdbc:postgresql://" + dockerHostIpAddress + ":" + postgresPort + "/test";
     }
+
 }

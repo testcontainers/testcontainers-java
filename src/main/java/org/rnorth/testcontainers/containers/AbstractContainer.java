@@ -26,53 +26,57 @@ public abstract class AbstractContainer {
     private DockerClient dockerClient;
     private boolean normalTermination = false;
 
-    public void start() throws Throwable {
+    public void start() {
 
-        DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
+        try {
+            DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
 
-        customizeBuilderForOs(builder);
+            customizeBuilderForOs(builder);
 
-        dockerClient = builder.build();
+            dockerClient = builder.build();
 
-        pullImageIfNeeded(getDockerImageName());
+            pullImageIfNeeded(getDockerImageName());
 
-        ContainerConfig containerConfig = getContainerConfig();
+            ContainerConfig containerConfig = getContainerConfig();
 
-        HostConfig.Builder hostConfigBuilder = HostConfig.builder()
-                .publishAllPorts(true);
-        customizeHostConfigBuilder(hostConfigBuilder);
-        HostConfig hostConfig = hostConfigBuilder.build();
+            HostConfig.Builder hostConfigBuilder = HostConfig.builder()
+                    .publishAllPorts(true);
+            customizeHostConfigBuilder(hostConfigBuilder);
+            HostConfig hostConfig = hostConfigBuilder.build();
 
-        LOGGER.info("Creating container for image: {}", getDockerImageName());
-        ContainerCreation containerCreation = dockerClient.createContainer(containerConfig);
+            LOGGER.info("Creating container for image: {}", getDockerImageName());
+            ContainerCreation containerCreation = dockerClient.createContainer(containerConfig);
 
-        containerId = containerCreation.id();
-        dockerClient.startContainer(containerId, hostConfig);
-        LOGGER.info("Starting container with ID: {}", containerId);
+            containerId = containerCreation.id();
+            dockerClient.startContainer(containerId, hostConfig);
+            LOGGER.info("Starting container with ID: {}", containerId);
 
-        ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
+            ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
 
-        containerIsStarting(containerInfo);
+            containerIsStarting(containerInfo);
 
-        waitForListeningPort(dockerHostIpAddress, getLivenessCheckPort());
-        LOGGER.info("Container started");
+            waitForListeningPort(dockerHostIpAddress, getLivenessCheckPort());
+            LOGGER.info("Container started");
 
-        // If the container stops before the after() method, its termination was unexpected
-        Executors.newSingleThreadExecutor().submit(() -> {
-            Exception caughtException = null;
-            try {
-                dockerClient.waitContainer(containerId);
-            } catch (DockerException | InterruptedException e) {
-                caughtException = e;
-            }
+            // If the container stops before the after() method, its termination was unexpected
+            Executors.newSingleThreadExecutor().submit(() -> {
+                Exception caughtException = null;
+                try {
+                    dockerClient.waitContainer(containerId);
+                } catch (DockerException | InterruptedException e) {
+                    caughtException = e;
+                }
 
-            if (!normalTermination) {
-                throw new RuntimeException("Container exited unexpectedly", caughtException);
-            }
-        });
+                if (!normalTermination) {
+                    throw new RuntimeException("Container exited unexpectedly", caughtException);
+                }
+            });
 
-        // If the JVM stops without the container being stopped, try and stop the container
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+            // If the JVM stops without the container being stopped, try and stop the container
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+        } catch (Exception e) {
+            LOGGER.error("Could not start container", e);
+        }
     }
 
     protected void customizeHostConfigBuilder(HostConfig.Builder hostConfigBuilder) {

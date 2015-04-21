@@ -1,6 +1,8 @@
 package org.rnorth.testcontainers.jdbc;
 
+import org.rnorth.testcontainers.containers.DatabaseContainer;
 import org.rnorth.testcontainers.containers.MySQLContainer;
+import org.rnorth.testcontainers.containers.PostgreSQLContainer;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
@@ -14,14 +16,11 @@ import java.util.regex.Pattern;
  */
 public class ContainerDatabaseDriver implements Driver {
 
+    public static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:(mysql|postgresql)(:([^:]+))?://.*");
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
-
     static {
         load();
     }
-
-    public static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:(mysql)(:([^:]+))?://.*");
-
     private Driver delegate;
 
     private static void load() {
@@ -48,26 +47,29 @@ public class ContainerDatabaseDriver implements Driver {
         String database = urlMatcher.group(1);
         String tag = urlMatcher.group(3);
 
+        DatabaseContainer container;
         if ("mysql".equals(database)) {
-
-            MySQLContainer container = new MySQLContainer(tag);
-            info.put("user", container.getUsername());
-            info.put("password", container.getPassword());
-
-            try {
-                container.start();
-
-                delegate = (Driver) ClassLoader.getSystemClassLoader().loadClass("com.mysql.jdbc.Driver").newInstance();
-                return delegate.connect(container.getJdbcUrl(), info);
-
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
+            container = new MySQLContainer(tag);
+            delegate = getDriver("com.mysql.jdbc.Driver");
+        } else if ("postgresql".equals(database)) {
+            container = new PostgreSQLContainer(tag);
+            delegate = getDriver("org.postgresql.Driver");
+        } else {
+            throw new UnsupportedOperationException("Database name " + database + " not supported");
         }
+        container.start();
 
-        return null;
+        info.put("user", container.getUsername());
+        info.put("password", container.getPassword());
+        return delegate.connect(container.getJdbcUrl(), info);
+    }
+
+    private Driver getDriver(String driverClassName) {
+        try {
+            return (Driver) ClassLoader.getSystemClassLoader().loadClass(driverClassName).newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException("Could not get Driver", e);
+        }
     }
 
     @Override
