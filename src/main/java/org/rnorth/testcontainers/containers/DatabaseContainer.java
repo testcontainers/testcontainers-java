@@ -15,4 +15,6 @@ public interface DatabaseContainer {
     }
 
     void start();
+
+    void stop();
 }

@@ -32,7 +32,7 @@ public class JDBCDriverTest {
 
     @Test
     public void testMySQLWithClasspathInitScript() throws SQLException {
-        // Separate JDBC connections => new container for each of the below
+        // Separate JDBC connection pools => new container for each of the below
         performSimpleTest("jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql");
 
         performTestForScriptedSchema("jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql");
@@ -40,39 +40,57 @@ public class JDBCDriverTest {
 
     @Test
     public void testMySQLWithClasspathInitFunction() throws SQLException {
-        // Separate JDBC connections => new container for each of the below
+        // Separate JDBC connection pools => new container for each of the below
         performSimpleTest("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
 
         performTestForScriptedSchema("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
     }
 
-    private void performTestForScriptedSchema(String jdbcUrl) throws SQLException {
-        getQueryRunner(jdbcUrl).query("SELECT foo FROM bar", rs -> {
-            rs.next();
-            String resultSetString = rs.getString(1);
-            assertEquals("hello world", resultSetString);
-            return true;
-        });
+    @Test
+    public void testMySQLWithQueryParams() throws SQLException {
+        performSimpleTestWithCharacterSet("jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8");
     }
 
     private void performSimpleTest(String jdbcUrl) throws SQLException {
-        getQueryRunner(jdbcUrl).query("SELECT 1", rs -> {
+        HikariDataSource dataSource = getDataSource(jdbcUrl);
+        new QueryRunner(dataSource).query("SELECT 1", rs -> {
             rs.next();
             int resultSetInt = rs.getInt(1);
             assertEquals(1, resultSetInt);
             return true;
         });
+        dataSource.close();
     }
 
-    private QueryRunner getQueryRunner(String jdbcUrl) {
+    private void performTestForScriptedSchema(String jdbcUrl) throws SQLException {
+        HikariDataSource dataSource = getDataSource(jdbcUrl);
+        new QueryRunner(dataSource).query("SELECT foo FROM bar", rs -> {
+            rs.next();
+            String resultSetString = rs.getString(1);
+            assertEquals("hello world", resultSetString);
+            return true;
+        });
+        dataSource.close();
+    }
+
+    private void performSimpleTestWithCharacterSet(String jdbcUrl) throws SQLException {
+        HikariDataSource dataSource = getDataSource(jdbcUrl);
+        new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
+            rs.next();
+            String resultSetInt = rs.getString(2);
+            assertEquals("utf8", resultSetInt);
+            return true;
+        });
+        dataSource.close();
+    }
+
+    private HikariDataSource getDataSource(String jdbcUrl) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(jdbcUrl);
         hikariConfig.setConnectionTestQuery("SELECT 1");
         hikariConfig.setMaximumPoolSize(1);
 
-        HikariDataSource ds = new HikariDataSource(hikariConfig);
-
-        return new QueryRunner(ds);
+        return new HikariDataSource(hikariConfig);
     }
 
     public static void sampleInitFunction(Connection connection) throws SQLException {

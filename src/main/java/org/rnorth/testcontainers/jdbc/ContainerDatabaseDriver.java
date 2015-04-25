@@ -2,6 +2,7 @@ package org.rnorth.testcontainers.jdbc;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.spotify.docker.client.messages.Container;
 import org.rnorth.testcontainers.containers.DatabaseContainer;
 import org.rnorth.testcontainers.containers.MySQLContainer;
 import org.rnorth.testcontainers.containers.PostgreSQLContainer;
@@ -13,7 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.*;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
  */
 public class ContainerDatabaseDriver implements Driver {
 
-    public static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:(mysql|postgresql)(:([^:]+))?://.*");
+    public static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:(mysql|postgresql)(:([^:]+))?://[^\\?]+(\\?.*)?");
     public static final Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITSCRIPT=([^\\?&]+).*");
     public static final Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITFUNCTION=" +
             "((\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
@@ -31,10 +32,13 @@ public class ContainerDatabaseDriver implements Driver {
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             ".*");
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
+
+    private Driver delegate;
+    private Map<Container, Set<Connection>> containerConnections = new HashMap<>();
+
     static {
         load();
     }
-    private Driver delegate;
 
     private static void load() {
         try {
@@ -51,14 +55,16 @@ public class ContainerDatabaseDriver implements Driver {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-
-
         Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
         if (!urlMatcher.matches()) {
             throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
         }
         String database = urlMatcher.group(1);
         String tag = urlMatcher.group(3);
+        String queryString = urlMatcher.group(4);
+        if (queryString == null) {
+            queryString = "";
+        }
 
         DatabaseContainer container;
         if ("mysql".equals(database)) {
@@ -74,14 +80,42 @@ public class ContainerDatabaseDriver implements Driver {
 
         info.put("user", container.getUsername());
         info.put("password", container.getPassword());
-        Connection connection = delegate.connect(container.getJdbcUrl(), info);
+        Connection connection = delegate.connect(container.getJdbcUrl() + queryString, info);
 
         runInitScriptIfRequired(url, connection);
         runInitFunctionIfRequired(url, connection);
 
-        return connection;
+        return wrapConnection(connection, container);
     }
 
+    /**
+     * Wrap the connection, setting up a callback to be called when the connection is closed.
+     *
+     * When there are no more open connections, the container itself will be stopped.
+     *
+     * @param connection    the new connection to be wrapped
+     * @param container     the container which the connection is associated with
+     * @return              the connection, wrapped
+     */
+    private Connection wrapConnection(Connection connection, DatabaseContainer container) {
+        Set<Connection> connections = containerConnections.getOrDefault(container, new HashSet<>());
+        connections.add(connection);
+
+        return new ConnectionWrapper(connection, () -> {
+            connections.remove(connection);
+            if (connections.isEmpty()) {
+                container.stop();
+            }
+        });
+    }
+
+    /**
+     * Run an init script from the classpath.
+     *
+     * @param url
+     * @param connection
+     * @throws SQLException
+     */
     private void runInitScriptIfRequired(String url, Connection connection) throws SQLException {
         Matcher matcher = INITSCRIPT_MATCHING_PATTERN.matcher(url);
         if (matcher.matches()) {
@@ -98,6 +132,13 @@ public class ContainerDatabaseDriver implements Driver {
         }
     }
 
+    /**
+     * Run an init function (must be a public static method on an accessible class).
+     *
+     * @param url
+     * @param connection
+     * @throws SQLException
+     */
     private void runInitFunctionIfRequired(String url, Connection connection) throws SQLException {
         Matcher matcher = INITFUNCTION_MATCHING_PATTERN.matcher(url);
         if (matcher.matches()) {

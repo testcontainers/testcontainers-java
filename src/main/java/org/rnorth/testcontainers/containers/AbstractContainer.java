@@ -123,7 +123,7 @@ public abstract class AbstractContainer {
     protected abstract String getDockerImageName();
 
     private void waitForListeningPort(String ipAddress, String port) {
-        for (int i = 0; i < 300; i++) {
+        for (int i = 0; i < 6000; i++) {
             try {
                 new Socket(ipAddress, Integer.valueOf(port));
                 return;
