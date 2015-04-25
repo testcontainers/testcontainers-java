@@ -25,6 +25,7 @@ public abstract class AbstractContainer {
     private String containerId;
     private DockerClient dockerClient;
     private boolean normalTermination = false;
+    protected String tag;
 
     public void start() {
 
@@ -160,5 +161,9 @@ public abstract class AbstractContainer {
             throw new IllegalStateException();
         }
         return result.outputUTF8().trim();
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag != null ? tag : "latest";
     }
 }

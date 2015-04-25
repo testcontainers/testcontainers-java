@@ -9,20 +9,7 @@ import com.spotify.docker.client.messages.ContainerInfo;
 public class MySQLContainer extends AbstractContainer implements DatabaseContainer  {
 
     private static final String IMAGE = "mysql";
-    private final String tag;
     private String mySqlPort;
-
-    public MySQLContainer() {
-        this(null);
-    }
-
-    public MySQLContainer(String tag) {
-        if (tag == null) {
-            this.tag = "latest";
-        } else {
-            this.tag = tag;
-        }
-    }
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
@@ -47,6 +34,16 @@ public class MySQLContainer extends AbstractContainer implements DatabaseContain
     @Override
     protected String getDockerImageName() {
         return IMAGE + ":" + tag;
+    }
+
+    @Override
+    public String getName() {
+        return "mysql";
+    }
+
+    @Override
+    public String getDriverClassName() {
+        return "com.mysql.jdbc.Driver";
     }
 
     @Override

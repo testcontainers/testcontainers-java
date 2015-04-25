@@ -9,20 +9,7 @@ import com.spotify.docker.client.messages.ContainerInfo;
 public class PostgreSQLContainer extends AbstractContainer implements DatabaseContainer {
 
     private static final String IMAGE = "postgres";
-    private final String tag;
     private String postgresPort;
-
-    public PostgreSQLContainer() {
-        this(null);
-    }
-
-    public PostgreSQLContainer(String tag) {
-        if (tag == null) {
-            this.tag = "latest";
-        } else {
-            this.tag = tag;
-        }
-    }
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
@@ -47,6 +34,16 @@ public class PostgreSQLContainer extends AbstractContainer implements DatabaseCo
     @Override
     protected String getDockerImageName() {
         return IMAGE + ":" + tag;
+    }
+
+    @Override
+    public String getName() {
+        return "postgresql";
+    }
+
+    @Override
+    public String getDriverClassName() {
+        return "org.postgresql.Driver";
     }
 
     @Override

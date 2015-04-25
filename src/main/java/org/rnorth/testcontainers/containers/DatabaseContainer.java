@@ -4,6 +4,11 @@ package org.rnorth.testcontainers.containers;
  * @author richardnorth
  */
 public interface DatabaseContainer {
+
+    String getName();
+
+    String getDriverClassName();
+
     String getJdbcUrl();
 
     default String getUsername() {
@@ -17,4 +22,6 @@ public interface DatabaseContainer {
     void start();
 
     void stop();
+
+    void setTag(String tag);
 }

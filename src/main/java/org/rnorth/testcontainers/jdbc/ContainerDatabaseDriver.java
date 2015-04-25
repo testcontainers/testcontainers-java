@@ -4,8 +4,6 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.spotify.docker.client.messages.Container;
 import org.rnorth.testcontainers.containers.DatabaseContainer;
-import org.rnorth.testcontainers.containers.MySQLContainer;
-import org.rnorth.testcontainers.containers.PostgreSQLContainer;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
@@ -66,16 +64,19 @@ public class ContainerDatabaseDriver implements Driver {
             queryString = "";
         }
 
-        DatabaseContainer container;
-        if ("mysql".equals(database)) {
-            container = new MySQLContainer(tag);
-            delegate = getDriver("com.mysql.jdbc.Driver");
-        } else if ("postgresql".equals(database)) {
-            container = new PostgreSQLContainer(tag);
-            delegate = getDriver("org.postgresql.Driver");
-        } else {
+        DatabaseContainer container = null;
+        ServiceLoader<DatabaseContainer> databaseContainers = ServiceLoader.load(DatabaseContainer.class);
+        for (DatabaseContainer candidateContainerType : databaseContainers) {
+            if (candidateContainerType.getName().equals(database)) {
+                candidateContainerType.setTag(tag);
+                delegate = getDriver(candidateContainerType.getDriverClassName());
+                container = candidateContainerType;
+            }
+        }
+        if (container == null) {
             throw new UnsupportedOperationException("Database name " + database + " not supported");
         }
+
         container.start();
 
         info.put("user", container.getUsername());
