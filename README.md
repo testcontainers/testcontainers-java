@@ -12,9 +12,19 @@ You can use TC to obtain a containerized database in one of two ways:
 
 This mode starts a container before your tests and tears it down afterwards. This technique is aimed at JUnit tests of isolated components that just need a database temporarily (e.g. DAO tests). Nginx web server containers are also supported currently.
 
+Examples/Tests:
+
+ * [MySQL](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimplePostgreSQLTest.java)
+ * [nginx](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimpleNginxTest.java)
+
 ### Specially modified JDBC URL
  
 After making a very simple modification to your system's JDBC URL string, Test Containers will provide a disposable stand-in database that can be used without requiring modification to your application code. This is intended to be used for development or integrated testing, when you want consistent, repeatable behaviour without the overhead of managing an external database.
+
+Examples/Tests:
+
+ * [See here](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/jdbc/JDBCDriverTest.java)
 
 ## Support
 
