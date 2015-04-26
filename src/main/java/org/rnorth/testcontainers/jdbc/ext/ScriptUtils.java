@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.rnorth.testcontainers.jdbc;
+package org.rnorth.testcontainers.jdbc.ext;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -29,6 +29,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * This is a modified version of the Spring-JDBC ScriptUtils class, adapted to reduce
+ * dependencies and slightly alter the API.
+ *
  * Generic utility methods for working with SQL scripts. Mainly for internal use
  * within the framework.
  *
