@@ -110,6 +110,7 @@ public abstract class AbstractContainer {
             LOGGER.info("Stopping container: {}", containerId);
             normalTermination = true;
             dockerClient.killContainer(containerId);
+            dockerClient.removeContainer(containerId, true);
         } catch (DockerException | InterruptedException e) {
             LOGGER.error("Error encountered shutting down container (ID: {}) - it may not have been stopped", containerId, e);
         }

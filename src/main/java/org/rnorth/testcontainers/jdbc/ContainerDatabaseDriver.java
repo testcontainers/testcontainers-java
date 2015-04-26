@@ -33,6 +33,8 @@ public class ContainerDatabaseDriver implements Driver {
 
     private Driver delegate;
     private Map<Container, Set<Connection>> containerConnections = new HashMap<>();
+    private Map<String, DatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
+    private Set<DatabaseContainer> initializedContainers = new HashSet<>();
 
     static {
         load();
@@ -52,41 +54,77 @@ public class ContainerDatabaseDriver implements Driver {
     }
 
     @Override
-    public Connection connect(String url, Properties info) throws SQLException {
-        Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
-        if (!urlMatcher.matches()) {
-            throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
-        }
-        String database = urlMatcher.group(1);
-        String tag = urlMatcher.group(3);
-        String queryString = urlMatcher.group(4);
-        if (queryString == null) {
-            queryString = "";
-        }
+    public synchronized Connection connect(String url, Properties info) throws SQLException {
 
-        DatabaseContainer container = null;
-        ServiceLoader<DatabaseContainer> databaseContainers = ServiceLoader.load(DatabaseContainer.class);
-        for (DatabaseContainer candidateContainerType : databaseContainers) {
-            if (candidateContainerType.getName().equals(database)) {
-                candidateContainerType.setTag(tag);
-                delegate = getDriver(candidateContainerType.getDriverClassName());
-                container = candidateContainerType;
-            }
-        }
+        String queryString = "";
+        /**
+         * If we already have a running container for this exact connection string, we want to connect
+         * to that rather than create a new container
+         */
+        DatabaseContainer container = jdbcUrlContainerCache.get(url);
         if (container == null) {
-            throw new UnsupportedOperationException("Database name " + database + " not supported");
+            /**
+             * Extract from the JDBC connection URL:
+             *  * The database type (e.g. mysql, postgresql, ...)
+             *  * The docker tag, if provided.
+             *  * The URL query string, if provided
+             */
+            Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
+            if (!urlMatcher.matches()) {
+                throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
+            }
+            String databaseType = urlMatcher.group(1);
+            String tag = urlMatcher.group(3);
+            queryString = urlMatcher.group(4);
+            if (queryString == null) {
+                queryString = "";
+            }
+
+            /**
+             * Find a matching container type using ServiceLoader.
+             */
+            ServiceLoader<DatabaseContainer> databaseContainers = ServiceLoader.load(DatabaseContainer.class);
+            for (DatabaseContainer candidateContainerType : databaseContainers) {
+                if (candidateContainerType.getName().equals(databaseType)) {
+                    candidateContainerType.setTag(tag);
+                    delegate = getDriver(candidateContainerType.getDriverClassName());
+                    container = candidateContainerType;
+                }
+            }
+            if (container == null) {
+                throw new UnsupportedOperationException("Database name " + databaseType + " not supported");
+            }
+
+            /**
+             * Cache the container before starting to prevent race conditions when a connection
+             * pool is started up
+             */
+            jdbcUrlContainerCache.put(url, container);
+
+            /**
+             * Start the container
+             */
+            container.start();
         }
 
-        container.start();
-
+        /**
+         * Create a connection using the delegated driver
+         */
         info.put("user", container.getUsername());
         info.put("password", container.getPassword());
         Connection connection = delegate.connect(container.getJdbcUrl() + queryString, info);
 
-        runInitScriptIfRequired(url, connection);
-        runInitFunctionIfRequired(url, connection);
+        /**
+         * If this container has not been initialized, AND
+         * an init script or function has been specified, use it
+         */
+        if (!initializedContainers.contains(container)) {
+            runInitScriptIfRequired(url, connection);
+            runInitFunctionIfRequired(url, connection);
+            initializedContainers.add(container);
+        }
 
-        return wrapConnection(connection, container);
+        return wrapConnection(connection, container, url);
     }
 
     /**
@@ -96,9 +134,10 @@ public class ContainerDatabaseDriver implements Driver {
      *
      * @param connection    the new connection to be wrapped
      * @param container     the container which the connection is associated with
+     * @param url
      * @return              the connection, wrapped
      */
-    private Connection wrapConnection(Connection connection, DatabaseContainer container) {
+    private Connection wrapConnection(Connection connection, DatabaseContainer container, String url) {
         Set<Connection> connections = containerConnections.getOrDefault(container, new HashSet<>());
         connections.add(connection);
 
@@ -106,6 +145,7 @@ public class ContainerDatabaseDriver implements Driver {
             connections.remove(connection);
             if (connections.isEmpty()) {
                 container.stop();
+                jdbcUrlContainerCache.remove(url);
             }
         });
     }
