@@ -1,5 +1,7 @@
 # Test Containers
 
+*This is alpha-grade and probably not ready for real-world use yet*
+
 Test Containers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. Compared with other approches, Test Containers is intended to achieve a better balance between compatibility, speed, and overhead of external management.
 
 Test Containers uses Docker to provide lightweight, throwaway instances of real databases and web servers for use in your tests. 
