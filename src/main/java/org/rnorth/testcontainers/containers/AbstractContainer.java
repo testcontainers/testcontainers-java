@@ -25,7 +25,7 @@ public abstract class AbstractContainer {
     private String containerId;
     private DockerClient dockerClient;
     private boolean normalTermination = false;
-    protected String tag;
+    protected String tag = "latest";
 
     public void start() {
 
@@ -112,7 +112,7 @@ public abstract class AbstractContainer {
             dockerClient.killContainer(containerId);
             dockerClient.removeContainer(containerId, true);
         } catch (DockerException | InterruptedException e) {
-            LOGGER.error("Error encountered shutting down container (ID: {}) - it may not have been stopped", containerId, e);
+            LOGGER.debug("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped", containerId, e);
         }
     }
 
