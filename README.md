@@ -130,6 +130,10 @@ The init function must be a public static method which takes a `java.sql.Connect
 ## Maven dependency
 
     <dependency>
+        <groupId>org.rnorth</groupId>
+        <artifactId>test-containers</artifactId>
+        <version>0.9</version>
+    </dependency>
     
 This project is hosted in bintray. To use it, add the following repository to your POM:
 
