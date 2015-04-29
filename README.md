@@ -127,6 +127,25 @@ The init function must be a public static method which takes a `java.sql.Connect
         }
         ...
 
+## Maven dependency
+
+    <dependency>
+    
+This project is hosted in bintray. To use it, add the following repository to your POM:
+
+    <repositories>
+      <repository>
+        <id>bintray-test-containers</id>
+        <url>http://dl.bintray.com/richnorth/test-containers</url>
+        <releases>
+          <enabled>true</enabled>
+        </releases>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </repository>
+    </repositories>
+
 ## License
 
 See [LICENSE](LICENSE).
