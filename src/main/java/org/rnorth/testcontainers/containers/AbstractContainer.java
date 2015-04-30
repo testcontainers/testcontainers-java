@@ -22,10 +22,10 @@ public abstract class AbstractContainer {
     private static final Logger LOGGER = LoggerFactory.getLogger("TestContainer");
 
     protected String dockerHostIpAddress;
-    private String containerId;
-    private DockerClient dockerClient;
-    private boolean normalTermination = false;
+    protected String containerId;
+    protected DockerClient dockerClient;
     protected String tag = "latest";
+    private boolean normalTermination = false;
 
     public void start() {
 
@@ -56,7 +56,7 @@ public abstract class AbstractContainer {
 
             containerIsStarting(containerInfo);
 
-            waitForListeningPort(dockerHostIpAddress, getLivenessCheckPort());
+            waitUntilContainerStarted();
             LOGGER.info("Container started");
 
             // If the container stops before the after() method, its termination was unexpected
@@ -124,7 +124,16 @@ public abstract class AbstractContainer {
 
     protected abstract String getDockerImageName();
 
-    private void waitForListeningPort(String ipAddress, String port) {
+    /**
+     * Wait until the container has started. The default implementation simply
+     * waits for a port to start listening; subclasses may override if more
+     * sophisticated behaviour is required.
+     */
+    protected void waitUntilContainerStarted() {
+        waitForListeningPort(dockerHostIpAddress, getLivenessCheckPort());
+    }
+
+    protected void waitForListeningPort(String ipAddress, String port) {
         for (int i = 0; i < 6000; i++) {
             try {
                 new Socket(ipAddress, Integer.valueOf(port));
