@@ -2,7 +2,6 @@ package org.rnorth.testcontainers.jdbc;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import com.spotify.docker.client.messages.Container;
 import org.rnorth.testcontainers.containers.DatabaseContainer;
 import org.rnorth.testcontainers.jdbc.ext.ScriptUtils;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,7 @@ public class ContainerDatabaseDriver implements Driver {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
 
     private Driver delegate;
-    private Map<Container, Set<Connection>> containerConnections = new HashMap<>();
+    private Map<DatabaseContainer, Set<Connection>> containerConnections = new HashMap<>();
     private Map<String, DatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
     private Set<DatabaseContainer> initializedContainers = new HashSet<>();
 
@@ -58,6 +57,8 @@ public class ContainerDatabaseDriver implements Driver {
     public synchronized Connection connect(String url, Properties info) throws SQLException {
 
         String queryString = "";
+        boolean shouldSkipInitialization = false;
+        String retagAfterInitTagName = null;
         /**
          * If we already have a running container for this exact connection string, we want to connect
          * to that rather than create a new container
@@ -82,12 +83,24 @@ public class ContainerDatabaseDriver implements Driver {
             }
 
             /**
+             * Allow the tag function (if there is one) to modify the tag
+             */
+            retagAfterInitTagName = runTagNameFunctionIfRequired(url, tag);
+
+            /**
              * Find a matching container type using ServiceLoader.
              */
             ServiceLoader<DatabaseContainer> databaseContainers = ServiceLoader.load(DatabaseContainer.class);
             for (DatabaseContainer candidateContainerType : databaseContainers) {
                 if (candidateContainerType.getName().equals(databaseType)) {
-                    candidateContainerType.setTag(tag);
+
+                    if (candidateContainerType.hasExistingTag(retagAfterInitTagName)) {
+                        candidateContainerType.setTag(retagAfterInitTagName);
+                        shouldSkipInitialization = true;
+                    } else {
+                        candidateContainerType.setTag(tag);
+                    }
+
                     delegate = getDriver(candidateContainerType.getDriverClassName());
                     container = candidateContainerType;
                 }
@@ -120,12 +133,24 @@ public class ContainerDatabaseDriver implements Driver {
          * an init script or function has been specified, use it
          */
         if (!initializedContainers.contains(container)) {
-            runInitScriptIfRequired(url, connection);
-            runInitFunctionIfRequired(url, connection);
+
+            if (!shouldSkipInitialization) {
+                runInitScriptIfRequired(url, connection);
+                runInitFunctionIfRequired(url, connection);
+
+                if (retagAfterInitTagName != null) {
+                    container.commitAndTag(retagAfterInitTagName);
+                }
+            }
+
             initializedContainers.add(container);
         }
 
         return wrapConnection(connection, container, url);
+    }
+
+    private String runTagNameFunctionIfRequired(String url, String tag) {
+        return "mytag";
     }
 
     /**

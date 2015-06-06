@@ -3,7 +3,7 @@ package org.rnorth.testcontainers.containers;
 /**
  * @author richardnorth
  */
-public interface DatabaseContainer {
+public interface DatabaseContainer extends ManagedContainer {
 
     String getName();
 
@@ -19,9 +19,6 @@ public interface DatabaseContainer {
         return "test";
     }
 
-    void start();
-
-    void stop();
-
     void setTag(String tag);
+
 }

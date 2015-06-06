@@ -17,7 +17,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author richardnorth
  */
-public abstract class AbstractContainer {
+public abstract class AbstractContainer implements ManagedContainer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("TestContainer");
 
@@ -27,16 +27,23 @@ public abstract class AbstractContainer {
     private boolean normalTermination = false;
     protected String tag = "latest";
 
-    public void start() {
-
+    public AbstractContainer() {
         try {
+
             DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
 
             customizeBuilderForOs(builder);
 
             dockerClient = builder.build();
+        } catch (Exception e) {
+            LOGGER.error("Could not start container", e);
+        }
+    }
 
-            pullImageIfNeeded(getDockerImageName());
+    public void start() {
+
+        try {
+            pullImageIfNeeded(tag);
 
             ContainerConfig containerConfig = getContainerConfig();
 
@@ -45,7 +52,7 @@ public abstract class AbstractContainer {
             customizeHostConfigBuilder(hostConfigBuilder);
             HostConfig hostConfig = hostConfigBuilder.build();
 
-            LOGGER.info("Creating container for image: {}", getDockerImageName());
+            LOGGER.info("Creating container for image: {}", getDockerImageName(tag));
             ContainerCreation containerCreation = dockerClient.createContainer(containerConfig);
 
             containerId = containerCreation.id();
@@ -84,17 +91,14 @@ public abstract class AbstractContainer {
 
     }
 
-    private void pullImageIfNeeded(String imageName) throws DockerException, InterruptedException {
-        List<Image> images = dockerClient.listImages(DockerClient.ListImagesParam.create("name", getDockerImageName()));
-        for (Image image : images) {
-            if (image.repoTags().contains(imageName)) {
-                // the image exists
-                return;
-            }
+    private void pullImageIfNeeded(String tag) throws DockerException, InterruptedException {
+        String imageName = getDockerImageName(tag);
+        if (doesLocalImageExist(imageName)) {
+            return;
         }
 
         LOGGER.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
-        dockerClient.pull(getDockerImageName(), message -> {
+        dockerClient.pull(imageName, message -> {
             if (message.error() != null) {
                 if (message.error().contains("404") || message.error().contains("not found")) {
                     throw new ImageNotFoundException(imageName, message.toString());
@@ -103,6 +107,22 @@ public abstract class AbstractContainer {
                 }
             }
         });
+    }
+
+    private boolean doesLocalImageExist(String imageName) {
+        List<Image> images = null;
+        try {
+            images = dockerClient.listImages(DockerClient.ListImagesParam.create("name", imageName));
+        } catch (DockerException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        for (Image image : images) {
+            if (image.repoTags().contains(imageName)) {
+                // the image exists
+                return true;
+            }
+        }
+        return false;
     }
 
     public void stop() {
@@ -122,9 +142,16 @@ public abstract class AbstractContainer {
 
     protected abstract ContainerConfig getContainerConfig();
 
-    protected abstract String getDockerImageName();
+    /**
+     * Wait until the container has started. The default implementation simply
+     * waits for a port to start listening; subclasses may override if more
+     * sophisticated behaviour is required.
+     */
+    protected void waitUntilContainerStarted() {
+        waitForListeningPort(dockerHostIpAddress, getLivenessCheckPort());
+    }
 
-    private void waitForListeningPort(String ipAddress, String port) {
+    protected void waitForListeningPort(String ipAddress, String port) {
         for (int i = 0; i < 6000; i++) {
             try {
                 new Socket(ipAddress, Integer.valueOf(port));
@@ -166,5 +193,24 @@ public abstract class AbstractContainer {
 
     public void setTag(String tag) {
         this.tag = tag != null ? tag : "latest";
+    }
+
+    public boolean hasExistingTag(String tagName) {
+        return doesLocalImageExist(getDockerImageName(tagName));
+    }
+
+    @Override
+    public void commitAndTag(String tagName) {
+        try {
+            dockerClient.commitContainer(containerId, this.getDockerImageName(), tagName, getContainerConfig(), "Tag created by TestContainers", "foo");
+        } catch (DockerException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected abstract String getDockerImageName();
+
+    protected String getDockerImageName(String tagName) {
+        return this.getDockerImageName() + ":" + tagName;
     }
 }

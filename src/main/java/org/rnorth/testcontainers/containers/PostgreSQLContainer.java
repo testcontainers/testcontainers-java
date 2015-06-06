@@ -24,7 +24,7 @@ public class PostgreSQLContainer extends AbstractContainer implements DatabaseCo
     @Override
     protected ContainerConfig getContainerConfig() {
         return ContainerConfig.builder()
-                    .image(getDockerImageName())
+                    .image(getDockerImageName(tag))
                     .exposedPorts("5432")
                     .env("POSTGRES_DATABASE=test", "POSTGRES_USER=test", "POSTGRES_PASSWORD=test")
                     .cmd("postgres")
@@ -33,7 +33,7 @@ public class PostgreSQLContainer extends AbstractContainer implements DatabaseCo
 
     @Override
     protected String getDockerImageName() {
-        return IMAGE + ":" + tag;
+        return IMAGE;
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
-import org.rnorth.testcontainers.containers.AbstractContainer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,10 +34,15 @@ public class NginxContainer extends AbstractContainer {
     @Override
     protected ContainerConfig getContainerConfig() {
         return ContainerConfig.builder()
-                            .image(getDockerImageName())
+                            .image(getDockerImageName(tag))
                             .exposedPorts("80")
                             .cmd("nginx", "-g", "daemon off;")
                             .build();
+    }
+
+    @Override
+    protected String getDockerImageName() {
+        return "nginx";
     }
 
     @Override
@@ -47,7 +51,7 @@ public class NginxContainer extends AbstractContainer {
     }
 
     @Override
-    protected String getDockerImageName() {
+    protected String getDockerImageName(String tag) {
         return "nginx:1.7.11";
     }
 

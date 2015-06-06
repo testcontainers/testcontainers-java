@@ -1,5 +1,6 @@
 package org.rnorth.testcontainers.jdbc;
 
+import com.google.common.hash.HashCode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
@@ -7,6 +8,7 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
@@ -14,6 +16,9 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class JDBCDriverTest {
+
+    private static int initFunctionInvocationCount = 0;
+    private static String sampleSchemaHash = HashCode.fromLong(new Random().nextLong()).toString();
 
     @Test
     public void testMySQLWithVersion() throws SQLException {
@@ -42,6 +47,21 @@ public class JDBCDriverTest {
         performSimpleTest("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
 
         performTestForScriptedSchema("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
+    }
+
+    @Test
+    public void testMySQLWithClasspathInitFunctionAndInitVersioning() throws SQLException {
+        HikariDataSource dataSource;
+
+        int initFunctionInvocationCountBefore = initFunctionInvocationCount;
+        dataSource = getDataSource("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction&TC_TAGFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleTagFunction", 10);
+        dataSource.close();
+
+        int initFunctionInvocationCountAfter = initFunctionInvocationCount;
+        dataSource = getDataSource("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction&TC_TAGFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleTagFunction", 10);
+        dataSource.close();
+
+        assertEquals("The invocation function isn't run the second time if the tag function returns a constant value", initFunctionInvocationCountBefore, initFunctionInvocationCountAfter);
     }
 
     @Test
@@ -122,5 +142,10 @@ public class JDBCDriverTest {
         connection.createStatement().execute("CREATE TABLE my_counter (\n" +
                 "  n INT\n" +
                 ");");
+        initFunctionInvocationCount++;
+    }
+
+    public static String sampleTagFunction(Connection connection) throws SQLException {
+        return "%s-" + sampleSchemaHash;
     }
 }

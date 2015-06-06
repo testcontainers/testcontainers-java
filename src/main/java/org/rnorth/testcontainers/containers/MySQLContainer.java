@@ -24,7 +24,7 @@ public class MySQLContainer extends AbstractContainer implements DatabaseContain
     @Override
     protected ContainerConfig getContainerConfig() {
         return ContainerConfig.builder()
-                    .image(getDockerImageName())
+                    .image(getDockerImageName(tag))
                     .exposedPorts("3306")
                     .env("MYSQL_DATABASE=test", "MYSQL_USER=test", "MYSQL_PASSWORD=test", "MYSQL_ROOT_PASSWORD=test")
                     .cmd("mysqld")
@@ -33,7 +33,7 @@ public class MySQLContainer extends AbstractContainer implements DatabaseContain
 
     @Override
     protected String getDockerImageName() {
-        return IMAGE + ":" + tag;
+        return IMAGE;
     }
 
     @Override
