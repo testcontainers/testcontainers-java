@@ -9,9 +9,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Optional;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -69,12 +68,13 @@ public class SimpleWebDriverContainerTest {
     protected void doSimpleExplore(RemoteWebDriver driver) {
         driver.get("http://en.wikipedia.org/wiki/Randomness");
 
-        for (int i = 0; i < 3; i++) {
-            List<WebElement> links = driver.findElements(By.tagName("a")).stream()
+        for (int i = 0; i < 5; i++) {
+            Random random = new Random();
+            Optional<WebElement> randomLink = driver.findElements(By.tagName("a")).stream()
+                    .filter(element -> random.nextInt(10) == 0)
                     .filter(element -> element.isDisplayed() && element.isEnabled())
-                    .collect(Collectors.toList());
-            WebElement randomLink = links.get(new Random().nextInt(links.size()));
-            randomLink.click();
+                    .findFirst();
+            randomLink.ifPresent(WebElement::click);
         }
     }
 }
