@@ -18,10 +18,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.4.1</version>
+                <version>2.5.1</version>
                 <configuration>
                     <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>release</releaseProfiles>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
@@ -118,7 +117,6 @@
         <connection>scm:git:https://github.com/rnorth/test-containers.git</connection>
         <developerConnection>scm:git:git@github.com:rnorth/test-containers.git</developerConnection>
         <url>https://github.com/rnorth/test-containers</url>
-        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
