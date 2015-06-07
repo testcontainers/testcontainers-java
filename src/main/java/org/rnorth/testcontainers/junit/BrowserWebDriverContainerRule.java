@@ -1,27 +1,37 @@
 package org.rnorth.testcontainers.junit;
 
-import org.junit.rules.ExternalResource;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.rnorth.testcontainers.containers.BrowserWebDriverContainer;
-import org.zeroturnaround.exec.ProcessExecutor;
-import org.zeroturnaround.exec.ProcessResult;
+import org.rnorth.testcontainers.utility.CommandLine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zeroturnaround.exec.StartedProcess;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.rnorth.testcontainers.utility.CommandLine.executableExists;
+import static org.rnorth.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  *
  */
-public class BrowserWebDriverContainerRule extends ExternalResource {
+public class BrowserWebDriverContainerRule extends TestWatcher {
 
     private final Collection<BrowserWebDriverContainer> containers = new ArrayList<>();
     private final Collection<RemoteWebDriver> drivers = new ArrayList<>();
@@ -29,18 +39,20 @@ public class BrowserWebDriverContainerRule extends ExternalResource {
     private final Map<RemoteWebDriver, String> vncUrls = new HashMap<>();
     private final Map<RemoteWebDriver, URL> seleniumUrls = new HashMap<>();
 
+    private final VncRecordingMode recordingMode;
+    private final File vncRecordingDirectory;
+    private Collection<VncRecordingUtilityWrapper> currentVncRecordings = new ArrayList<>();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainerRule.class);
+
     public BrowserWebDriverContainerRule(DesiredCapabilities desiredCapabilities) {
-        this.desiredCapabilities = desiredCapabilities;
+        this(desiredCapabilities, VncRecordingMode.SKIP, null);
     }
 
-    @Override
-    protected void after() {
-        for (RemoteWebDriver driver : drivers) {
-            driver.quit();
-        }
-        for (BrowserWebDriverContainer container : containers) {
-            container.stop();
-        }
+    public BrowserWebDriverContainerRule(DesiredCapabilities desiredCapabilities, VncRecordingMode recordingMode, File vncRecordingDirectory) {
+        this.desiredCapabilities = desiredCapabilities;
+        this.recordingMode = recordingMode;
+        this.vncRecordingDirectory = vncRecordingDirectory;
     }
 
     /**
@@ -62,10 +74,49 @@ public class BrowserWebDriverContainerRule extends ExternalResource {
             drivers.add(driver);
             vncUrls.put(driver, container.getVncAddress());
             seleniumUrls.put(driver, container.getSeleniumAddress());
+
+            if (recordingMode != VncRecordingMode.SKIP) {
+                LOGGER.debug("Starting VNC recording");
+                File recordingFile = File.createTempFile("recording", System.currentTimeMillis() + ".flv", vncRecordingDirectory);
+                VncRecordingUtilityWrapper recording = new VncRecordingUtilityWrapper(container.getVncAddress(), recordingFile);
+                recording.start();
+                currentVncRecordings.add(recording);
+            }
+
             return driver;
         } catch (MalformedURLException e) {
             throw new RuntimeException("Could not determine webdriver URL", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create file for VNC recording in " + vncRecordingDirectory);
         }
+    }
+
+    @Override
+    protected void finished(Description description) {
+        for (RemoteWebDriver driver : drivers) {
+            driver.quit();
+        }
+        for (BrowserWebDriverContainer container : containers) {
+            container.stop();
+        }
+    }
+
+    @Override
+    protected void failed(Throwable e, Description description) {
+        if (recordingMode != VncRecordingMode.SKIP) {
+            LOGGER.info("Screen recordings for failing test {} have been captured at: {}", description.getDisplayName(), currentVncRecordings);
+        }
+        currentVncRecordings.stream().forEach(it -> it.stop(false));
+    }
+
+    @Override
+    protected void succeeded(Description description) {
+        if (recordingMode == VncRecordingMode.RECORD_FAILING) {
+            // make sure all recordings relating to this test are cleaned up when the JVM exits
+            currentVncRecordings.stream().forEach(it -> it.stop(true));
+        }
+
+        currentVncRecordings.clear();
     }
 
     /**
@@ -82,6 +133,7 @@ public class BrowserWebDriverContainerRule extends ExternalResource {
         if (System.getProperty("os.name").toLowerCase().contains("mac")) {
             try {
                 // Running on a Mac therefore use boot2docker
+                checkArgument(executableExists("/usr/local/bin/boot2docker"), "boot2docker must be installed for use on OS X");
                 runShellCommand("/usr/local/bin/boot2docker", "up");
                 String boot2dockerConfig = runShellCommand("/usr/local/bin/boot2docker", "config");
 
@@ -101,24 +153,65 @@ public class BrowserWebDriverContainerRule extends ExternalResource {
         throw new UnsupportedOperationException();
     }
 
-    // TODO: Refactor into utility class
-    private String runShellCommand(String... command) throws IOException, InterruptedException, TimeoutException {
-        ProcessResult result;
-        result = new ProcessExecutor().command(command)
-                .readOutput(true).execute();
-
-        if (result.getExitValue() != 0) {
-            System.err.println(result.getOutput().getString());
-            throw new IllegalStateException();
-        }
-        return result.outputUTF8().trim();
-    }
-
     public String getVncUrl(RemoteWebDriver driver) {
         return vncUrls.get(driver);
     }
 
     public URL getSeleniumURL(RemoteWebDriver driver) {
         return seleniumUrls.get(driver);
+    }
+
+    public static class VncRecordingUtilityWrapper {
+
+        private static final Logger LOGGER = LoggerFactory.getLogger(VncRecordingUtilityWrapper.class);
+        private static final Pattern VNC_URL_PATTERN = Pattern.compile("vnc://[^:]+:(?<password>[^@]+)@(?<host>[^:]+):(?<port>\\d+)");
+        private final String vncURL;
+        private final File outputFilename;
+        private StartedProcess process;
+
+        public VncRecordingUtilityWrapper(String vncURL, File outputFilename) {
+            this.vncURL = vncURL;
+            this.outputFilename = outputFilename;
+        }
+
+        public void start() {
+            Matcher matcher = VNC_URL_PATTERN.matcher(vncURL);
+            if (!matcher.matches()) {
+                throw new IllegalArgumentException("VNC URL could not be parsed! " + vncURL);
+            }
+
+            if (!CommandLine.executableExists("flvrec.py")) {
+                LOGGER.info("flvrec.py is not available; VNC session will not be recorded");
+                return;
+            }
+
+            try {
+                Path passwordFile = Files.createTempFile("vncpassword", "");
+                Files.write(passwordFile, matcher.group("password").getBytes(), StandardOpenOption.APPEND);
+                process = CommandLine.runShellCommandInBackground("flvrec.py",
+                        "-o", outputFilename.getCanonicalPath(),
+                        "-P", passwordFile.toString(),
+                        matcher.group("host"),
+                        matcher.group("port"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void stop(boolean discard) {
+            if (process == null) {
+                return;
+            }
+
+            process.getProcess().destroy();
+
+            if (discard) {
+                outputFilename.delete();
+            }
+        }
+    }
+
+    public enum VncRecordingMode {
+        SKIP, RECORD_ALL, RECORD_FAILING
     }
 }
