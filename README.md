@@ -4,13 +4,16 @@
 
 Test Containers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. Compared with other approches, Test Containers is intended to achieve a better balance between compatibility, speed, and overhead of external management.
 
-Test Containers uses Docker to provide lightweight, throwaway instances of real databases and web servers for use in your tests. 
+Test Containers uses Docker to provide lightweight, throwaway instances of real databases, web browsers and web servers for use in your tests. 
 
-You can use TC to obtain a containerized database in one of two ways:
+You can use TC to obtain a containerized service in one of two ways:
 
 ### JUnit @Rule/@ClassRule 
 
-This mode starts a container before your tests and tears it down afterwards. This technique is aimed at JUnit tests of isolated components that just need a database temporarily (e.g. DAO tests). Nginx web server containers are also supported currently.
+This mode starts a container before your tests and tears it down afterwards. This technique is aimed at JUnit tests that:
+ * just need a database temporarily (e.g. DAO tests). _In this sense TC is presented as a possible alternative option to the awesome H2 embedded database_ 
+ * need a Chrome or Firefox browser of a fixed version, already wired up to a Selenium RemoteWebDriver and VNC. _In this sense, TC is presented as an alternative to using headless browsers like PhantomJS for selenium tests_
+ * need an Nginx web server instance (e.g. for tests that verify app behaviour when run behind a reverse proxy). _This is somewhat experimental and under-developed for now_.
 
 Examples/Tests:
 
@@ -18,9 +21,11 @@ Examples/Tests:
  * [PostgreSQL](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimplePostgreSQLTest.java)
  * [nginx](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimpleNginxTest.java)
 
-### Specially modified JDBC URL
+### Containerized database using a specially modified JDBC URL
  
 After making a very simple modification to your system's JDBC URL string, Test Containers will provide a disposable stand-in database that can be used without requiring modification to your application code. This is intended to be used for development or integrated testing, when you want consistent, repeatable behaviour without the overhead of managing an external database.
+
+_N.B: TC needs to be on your application's classpath at runtime for this to work_
 
 Examples/Tests:
 
@@ -33,10 +38,11 @@ Test Containers currently supports:
  * MySQL
  * PostgreSQL
  * nginx
+ * the standalone-chrome-debug and standalone-firefox-debug containers from [SeleniumHQ](https://github.com/SeleniumHQ/docker-selenium)
 
-Other container types can be added later. Note that at present, only Docker Official containers from the Docker Hub registry can be used - this needs to be fixed.
+Other container types can be added later. Note that at present, only containers from the Docker Hub registry can be used - this needs to be fixed.
 
-## Comparison with other approaches
+## Comparison with other approaches for providing a stand-in database
 
 ### Database running on development/test machine
 

@@ -4,15 +4,14 @@ import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zeroturnaround.exec.ProcessExecutor;
-import org.zeroturnaround.exec.ProcessResult;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeoutException;
+
+import static org.rnorth.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * @author richardnorth
@@ -159,18 +158,6 @@ public abstract class AbstractContainer {
         } else {
             dockerHostIpAddress = "127.0.0.1";
         }
-    }
-
-    private String runShellCommand(String... command) throws IOException, InterruptedException, TimeoutException {
-        ProcessResult result;
-        result = new ProcessExecutor().command(command)
-                .readOutput(true).execute();
-
-        if (result.getExitValue() != 0) {
-            System.err.println(result.getOutput().getString());
-            throw new IllegalStateException();
-        }
-        return result.outputUTF8().trim();
     }
 
     public void setTag(String tag) {

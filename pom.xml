@@ -63,11 +63,20 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>zt-exec</artifactId>
             <version>1.8</version>
+        </dependency>
+
+        <!-- WebDriver dependency as 'provided' scope -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>2.44.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Test dependencies -->
