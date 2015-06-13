@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  *
@@ -47,9 +48,12 @@ public class BrowserWebDriverContainer extends AbstractContainer {
 
     @Override
     protected ContainerConfig getContainerConfig() {
+        String timeZone = Optional.of(System.getProperty("user.timezone")).orElse("Etc/UTC");
+
         return ContainerConfig.builder()
                 .image(getDockerImageName())
                 .exposedPorts("4444", "5900")
+                .env("TZ=" + timeZone)
                 .cmd("/opt/bin/entry_point.sh")
                 .build();
     }
