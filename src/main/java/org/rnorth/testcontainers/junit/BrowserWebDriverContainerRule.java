@@ -4,23 +4,17 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.rnorth.testcontainers.containers.AbstractContainer;
 import org.rnorth.testcontainers.containers.BrowserWebDriverContainer;
-import org.rnorth.testcontainers.utility.CommandLine;
+import org.rnorth.testcontainers.containers.VncRecordingSidekickContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zeroturnaround.exec.StartedProcess;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,7 +27,7 @@ import static org.rnorth.testcontainers.utility.CommandLine.runShellCommand;
  */
 public class BrowserWebDriverContainerRule extends TestWatcher {
 
-    private final Collection<BrowserWebDriverContainer> containers = new ArrayList<>();
+    private final Collection<AbstractContainer> containers = new ArrayList<>();
     private final Collection<RemoteWebDriver> drivers = new ArrayList<>();
     private final DesiredCapabilities desiredCapabilities;
     private final Map<RemoteWebDriver, String> vncUrls = new HashMap<>();
@@ -41,9 +35,11 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
 
     private final VncRecordingMode recordingMode;
     private final File vncRecordingDirectory;
-    private Collection<VncRecordingUtilityWrapper> currentVncRecordings = new ArrayList<>();
+    private Collection<VncRecordingSidekickContainer> currentVncRecordings = new ArrayList<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainerRule.class);
+
+    private static final SimpleDateFormat filenameDateFormat = new SimpleDateFormat("YYYYMMdd-HHmmss");
 
     public BrowserWebDriverContainerRule(DesiredCapabilities desiredCapabilities) {
         this(desiredCapabilities, VncRecordingMode.SKIP, null);
@@ -77,18 +73,38 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
 
             if (recordingMode != VncRecordingMode.SKIP) {
                 LOGGER.debug("Starting VNC recording");
-                File recordingFile = File.createTempFile("recording", System.currentTimeMillis() + ".flv", vncRecordingDirectory);
-                VncRecordingUtilityWrapper recording = new VncRecordingUtilityWrapper(container.getVncAddress(), recordingFile);
-                recording.start();
-                currentVncRecordings.add(recording);
+                VncRecordingSidekickContainer<BrowserWebDriverContainer> recordingSidekickContainer = new VncRecordingSidekickContainer<>(container);
+                recordingSidekickContainer.start();
+                currentVncRecordings.add(recordingSidekickContainer);
             }
 
             return driver;
         } catch (MalformedURLException e) {
             throw new RuntimeException("Could not determine webdriver URL", e);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create file for VNC recording in " + vncRecordingDirectory);
         }
+    }
+
+    @Override
+    protected void failed(Throwable e, Description description) {
+
+        switch (recordingMode) {
+            case RECORD_FAILING:
+            case RECORD_ALL:
+                stopAndRetainRecording(description);
+                break;
+        }
+        currentVncRecordings.clear();
+    }
+
+    @Override
+    protected void succeeded(Description description) {
+
+        switch (recordingMode) {
+            case RECORD_ALL:
+                stopAndRetainRecording(description);
+                break;
+        }
+        currentVncRecordings.clear();
     }
 
     @Override
@@ -96,27 +112,16 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
         for (RemoteWebDriver driver : drivers) {
             driver.quit();
         }
-        for (BrowserWebDriverContainer container : containers) {
+        for (AbstractContainer container : containers) {
             container.stop();
         }
     }
 
-    @Override
-    protected void failed(Throwable e, Description description) {
-        if (recordingMode != VncRecordingMode.SKIP) {
-            LOGGER.info("Screen recordings for failing test {} have been captured at: {}", description.getDisplayName(), currentVncRecordings);
-        }
-        currentVncRecordings.stream().forEach(it -> it.stop(false));
-    }
+    private void stopAndRetainRecording(Description description) {
+        File recordingFile = new File(vncRecordingDirectory, "recording-" + filenameDateFormat.format(new Date()) + ".flv");
 
-    @Override
-    protected void succeeded(Description description) {
-        if (recordingMode == VncRecordingMode.RECORD_FAILING) {
-            // make sure all recordings relating to this test are cleaned up when the JVM exits
-            currentVncRecordings.stream().forEach(it -> it.stop(true));
-        }
-
-        currentVncRecordings.clear();
+        LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
+        currentVncRecordings.stream().forEach(it -> it.stopAndRetainRecording(recordingFile));
     }
 
     /**
@@ -127,7 +132,7 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
      * to be pointed at "http://" + getHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
      * from inside the container is not going to work, since the container has its own IP address.
      *
-     * @return
+     * @return the IP address of the host machine
      */
     public String getHostIpAddress() {
         if (System.getProperty("os.name").toLowerCase().contains("mac")) {
@@ -159,56 +164,6 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
 
     public URL getSeleniumURL(RemoteWebDriver driver) {
         return seleniumUrls.get(driver);
-    }
-
-    public static class VncRecordingUtilityWrapper {
-
-        private static final Logger LOGGER = LoggerFactory.getLogger(VncRecordingUtilityWrapper.class);
-        private static final Pattern VNC_URL_PATTERN = Pattern.compile("vnc://[^:]+:(?<password>[^@]+)@(?<host>[^:]+):(?<port>\\d+)");
-        private final String vncURL;
-        private final File outputFilename;
-        private StartedProcess process;
-
-        public VncRecordingUtilityWrapper(String vncURL, File outputFilename) {
-            this.vncURL = vncURL;
-            this.outputFilename = outputFilename;
-        }
-
-        public void start() {
-            Matcher matcher = VNC_URL_PATTERN.matcher(vncURL);
-            if (!matcher.matches()) {
-                throw new IllegalArgumentException("VNC URL could not be parsed! " + vncURL);
-            }
-
-            if (!CommandLine.executableExists("flvrec.py")) {
-                LOGGER.info("flvrec.py is not available; VNC session will not be recorded");
-                return;
-            }
-
-            try {
-                Path passwordFile = Files.createTempFile("vncpassword", "");
-                Files.write(passwordFile, matcher.group("password").getBytes(), StandardOpenOption.APPEND);
-                process = CommandLine.runShellCommandInBackground("flvrec.py",
-                        "-o", outputFilename.getCanonicalPath(),
-                        "-P", passwordFile.toString(),
-                        matcher.group("host"),
-                        matcher.group("port"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void stop(boolean discard) {
-            if (process == null) {
-                return;
-            }
-
-            process.getProcess().destroy();
-
-            if (discard) {
-                outputFilename.delete();
-            }
-        }
     }
 
     public enum VncRecordingMode {

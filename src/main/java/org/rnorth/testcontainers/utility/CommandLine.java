@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Created by richardnorth on 06/06/15.
+ * Process execution utility methods.
  */
 public class CommandLine {
     public static String runShellCommand(String... command) throws IOException, InterruptedException, TimeoutException {
