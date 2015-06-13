@@ -114,7 +114,7 @@ public abstract class AbstractContainer {
             dockerClient.killContainer(containerId);
             dockerClient.removeContainer(containerId, true);
         } catch (DockerException | InterruptedException e) {
-            LOGGER.debug("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped", containerId, e);
+            LOGGER.debug("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
         }
     }
 
