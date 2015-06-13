@@ -1,9 +1,11 @@
 package org.rnorth.testcontainers.containers;
 
+import org.rnorth.testcontainers.containers.traits.LinkableContainer;
+
 /**
  * @author richardnorth
  */
-public interface DatabaseContainer {
+public interface DatabaseContainer extends LinkableContainer {
 
     String getName();
 

@@ -51,4 +51,8 @@ public class PostgreSQLContainer extends AbstractContainer implements DatabaseCo
         return "jdbc:postgresql://" + dockerHostIpAddress + ":" + postgresPort + "/test";
     }
 
+    @Override
+    public String getContainerId() {
+        return containerId;
+    }
 }

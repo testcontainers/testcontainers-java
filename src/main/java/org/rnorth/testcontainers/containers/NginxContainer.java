@@ -4,7 +4,7 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
-import org.rnorth.testcontainers.containers.AbstractContainer;
+import org.rnorth.testcontainers.containers.traits.LinkableContainer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author richardnorth
  */
-public class NginxContainer extends AbstractContainer {
+public class NginxContainer extends AbstractContainer implements LinkableContainer {
     private String nginxPort;
     private String htmlContentPath;
     private Map<String, List<PortBinding>> ports;
@@ -57,5 +57,10 @@ public class NginxContainer extends AbstractContainer {
 
     public void setCustomConfig(String htmlContentPath) {
         binds.add(htmlContentPath + ":/usr/share/nginx/html:ro");
+    }
+
+    @Override
+    public String getContainerId() {
+        return containerId;
     }
 }
