@@ -18,8 +18,8 @@ package org.rnorth.testcontainers.jdbc.ext;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.sql.Connection;
@@ -47,7 +47,7 @@ import java.util.List;
  */
 public abstract class ScriptUtils {
 
-	private static final Log logger = LogFactory.getLog(ScriptUtils.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ScriptUtils.class);
 
 	/**
 	 * Default statement separator within SQL scripts.
@@ -242,8 +242,8 @@ public abstract class ScriptUtils {
 			String blockCommentEndDelimiter) throws ScriptException {
 
 		try {
-			if (logger.isInfoEnabled()) {
-				logger.info("Executing SQL script from " + script);
+			if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("Executing SQL script from " + script);
 			}
 
 			long startTime = System.currentTimeMillis();
@@ -266,15 +266,15 @@ public abstract class ScriptUtils {
 					try {
 						stmt.execute(statement);
 						int rowsAffected = stmt.getUpdateCount();
-						if (logger.isDebugEnabled()) {
-							logger.debug(rowsAffected + " returned as updateCount for SQL: " + statement);
+						if (LOGGER.isDebugEnabled()) {
+							LOGGER.debug(rowsAffected + " returned as updateCount for SQL: " + statement);
 						}
 					}
 					catch (SQLException ex) {
 						boolean dropStatement = statement.trim().toLowerCase().startsWith("drop");
 						if (continueOnError || (dropStatement && ignoreFailedDrops)) {
-							if (logger.isDebugEnabled()) {
-								logger.debug("Failed to execute SQL script statement at line " + lineNumber
+							if (LOGGER.isDebugEnabled()) {
+								LOGGER.debug("Failed to execute SQL script statement at line " + lineNumber
 										+ " of resource " + scriptPath + ": " + statement, ex);
 							}
 						}
@@ -289,13 +289,13 @@ public abstract class ScriptUtils {
 					stmt.close();
 				}
 				catch (Throwable ex) {
-					logger.debug("Could not close JDBC Statement", ex);
+					LOGGER.debug("Could not close JDBC Statement", ex);
 				}
 			}
 
 			long elapsedTime = System.currentTimeMillis() - startTime;
-			if (logger.isInfoEnabled()) {
-				logger.info("Executed SQL script from " + scriptPath + " in " + elapsedTime + " ms.");
+			if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("Executed SQL script from " + scriptPath + " in " + elapsedTime + " ms.");
 			}
 		}
 		catch (Exception ex) {
