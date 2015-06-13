@@ -138,7 +138,7 @@ The init function must be a public static method which takes a `java.sql.Connect
     <dependency>
         <groupId>org.rnorth</groupId>
         <artifactId>test-containers</artifactId>
-        <version>0.9</version>
+        <version>0.9.2</version>
     </dependency>
     
 This project is hosted in bintray. To use it, add the following repository to your POM:
