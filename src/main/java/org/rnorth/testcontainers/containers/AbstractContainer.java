@@ -2,11 +2,14 @@ package org.rnorth.testcontainers.containers;
 
 import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.*;
+import org.rnorth.testcontainers.utility.PathOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -115,6 +118,20 @@ public abstract class AbstractContainer {
         }
     }
 
+    protected Path createVolumeDirectory(boolean temporary) throws IOException {
+        File file = new File(".tmp-volume");
+        file.mkdirs();
+        Path directory = file.toPath();
+
+        if (temporary) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                PathOperations.recursiveDeleteDir(directory);
+            }));
+        }
+
+        return directory;
+    }
+
     protected abstract void containerIsStarting(ContainerInfo containerInfo);
 
     protected abstract String getLivenessCheckPort();
@@ -133,6 +150,11 @@ public abstract class AbstractContainer {
     }
 
     protected void waitForListeningPort(String ipAddress, String port) {
+
+        if (port == null) {
+            return;
+        }
+
         for (int i = 0; i < 6000; i++) {
             try {
                 new Socket(ipAddress, Integer.valueOf(port));
@@ -162,5 +184,9 @@ public abstract class AbstractContainer {
 
     public void setTag(String tag) {
         this.tag = tag != null ? tag : "latest";
+    }
+
+    public String getId() {
+        return containerId;
     }
 }
