@@ -8,6 +8,29 @@
 
     <packaging>pom</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -55,6 +78,11 @@
 
     <modules>
         <module>core</module>
+        <module>modules/jdbc</module>
+        <module>modules/mysql</module>
+        <module>modules/postgresql</module>
+        <module>modules/selenium</module>
+        <module>modules/nginx</module>
     </modules>
 
     <scm>

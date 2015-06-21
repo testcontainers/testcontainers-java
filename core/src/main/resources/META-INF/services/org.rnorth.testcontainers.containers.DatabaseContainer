@@ -1,2 +1,0 @@
-org.rnorth.testcontainers.containers.MySQLContainer
-org.rnorth.testcontainers.containers.PostgreSQLContainer

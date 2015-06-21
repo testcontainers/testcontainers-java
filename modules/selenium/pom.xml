@@ -6,23 +6,24 @@
         <groupId>org.rnorth</groupId>
         <artifactId>test-containers-parent</artifactId>
         <version>0.9.3-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>test-containers</artifactId>
-    <description>Test Containers Core</description>
+    <artifactId>selenium</artifactId>
+    <description>Test Containers :: Selenium</description>
 
     <dependencies>
         <dependency>
-            <groupId>com.spotify</groupId>
-            <artifactId>docker-client</artifactId>
-            <classifier>shaded</classifier>
-            <version>2.7.7</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>test-containers</artifactId>
+            <version>${project.version}</version>
         </dependency>
+
+        <!-- WebDriver dependency as 'provided' scope -->
         <dependency>
-            <groupId>org.zeroturnaround</groupId>
-            <artifactId>zt-exec</artifactId>
-            <version>1.8</version>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>2.44.0</version>
         </dependency>
     </dependencies>
 </project>

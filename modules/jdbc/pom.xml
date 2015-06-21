@@ -6,23 +6,17 @@
         <groupId>org.rnorth</groupId>
         <artifactId>test-containers-parent</artifactId>
         <version>0.9.3-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>test-containers</artifactId>
-    <description>Test Containers Core</description>
+    <artifactId>jdbc</artifactId>
+    <description>Test Containers :: JDBC</description>
 
     <dependencies>
         <dependency>
-            <groupId>com.spotify</groupId>
-            <artifactId>docker-client</artifactId>
-            <classifier>shaded</classifier>
-            <version>2.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.zeroturnaround</groupId>
-            <artifactId>zt-exec</artifactId>
-            <version>1.8</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>test-containers</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
