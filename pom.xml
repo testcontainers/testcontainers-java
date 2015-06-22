@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.rnorth</groupId>
@@ -7,6 +8,25 @@
     <version>0.9.3-SNAPSHOT</version>
 
     <packaging>pom</packaging>
+
+    <name>Test Containers</name>
+    <description>
+        Isolated container management for Java code testing
+    </description>
+    <url>https://github.com/rnorth/test-containers</url>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>rnorth</id>
+            <name>Richard North</name>
+            <email>rich.north@gmail.com</email>
+        </developer>
+    </developers>
 
     <dependencies>
         <dependency>
@@ -89,8 +109,8 @@
         <connection>scm:git:https://github.com/rnorth/test-containers.git</connection>
         <developerConnection>scm:git:git@github.com:rnorth/test-containers.git</developerConnection>
         <url>https://github.com/rnorth/test-containers</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <distributionManagement>
         <repository>

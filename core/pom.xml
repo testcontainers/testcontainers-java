@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>test-containers</artifactId>
+
     <description>Test Containers Core</description>
 
     <dependencies>
