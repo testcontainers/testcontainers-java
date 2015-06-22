@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.rnorth</groupId>
+        <artifactId>test-containers-parent</artifactId>
+        <version>0.9.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>test-containers</artifactId>
+    <description>Test Containers Core</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <classifier>shaded</classifier>
+            <version>2.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.zeroturnaround</groupId>
+            <artifactId>zt-exec</artifactId>
+            <version>1.8</version>
+        </dependency>
+    </dependencies>
+</project>
