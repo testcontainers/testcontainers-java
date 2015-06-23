@@ -4,7 +4,7 @@
 
     <groupId>org.rnorth.test-containers</groupId>
     <artifactId>test-containers-parent</artifactId>
-    <version>0.9.4-SNAPSHOT</version>
+    <version>0.9.4</version>
 
     <packaging>pom</packaging>
 
@@ -108,7 +108,7 @@
         <connection>scm:git:https://github.com/rnorth/test-containers.git</connection>
         <developerConnection>scm:git:git@github.com:rnorth/test-containers.git</developerConnection>
         <url>https://github.com/rnorth/test-containers</url>
-        <tag>HEAD</tag>
+        <tag>test-containers-0.9.4</tag>
     </scm>
 
     <distributionManagement>
