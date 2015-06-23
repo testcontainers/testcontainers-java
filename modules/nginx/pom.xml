@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.rnorth.testcontainers</groupId>
+        <groupId>org.rnorth.test-containers</groupId>
         <artifactId>test-containers-parent</artifactId>
-        <version>0.9.5-SNAPSHOT</version>
+        <version>0.9.4-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
