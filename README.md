@@ -136,7 +136,7 @@ The init function must be a public static method which takes a `java.sql.Connect
 ## Maven dependency
 
     <dependency>
-        <groupId>org.rnorth</groupId>
+        <groupId>org.rnorth.testcontainers</groupId>
         <artifactId>test-containers</artifactId>
         <version>0.9.2</version>
     </dependency>
