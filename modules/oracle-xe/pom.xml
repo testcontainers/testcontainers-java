@@ -31,13 +31,13 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>2.3.5</version>
-            <scope>main</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-dbutils</groupId>
             <artifactId>commons-dbutils</artifactId>
             <version>1.6</version>
-            <scope>main</scope>
+            <scope>test</scope>
         </dependency>
 
         <!-- Oracle JDBC Driver -->
