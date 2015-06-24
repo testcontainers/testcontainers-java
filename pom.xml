@@ -25,6 +25,11 @@
             <name>Richard North</name>
             <email>rich.north@gmail.com</email>
         </developer>
+        <developer>
+            <id>gusohal</id>
+            <name>Gurpreet Sohal</name>
+            <email>gurpreet@gurpreetsohal.com</email>
+        </developer>
     </developers>
 
     <dependencies>
@@ -103,6 +108,15 @@
         <module>modules/selenium</module>
         <module>modules/nginx</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>proprietary-deps</id>
+            <modules>
+                <module>modules/oracle-xe</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <scm>
         <connection>scm:git:https://github.com/rnorth/test-containers.git</connection>
