@@ -3,8 +3,10 @@ package org.rnorth.testcontainers.containers;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.junit.Test;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
@@ -22,11 +24,14 @@ public class OracleJDBCDriverTest {
 
     private void performSimpleTest(String jdbcUrl) throws SQLException {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
-        new QueryRunner(dataSource).query("SELECT 1 FROM dual", rs -> {
-            rs.next();
-            int resultSetInt = rs.getInt(1);
-            assertEquals(1, resultSetInt);
-            return true;
+        new QueryRunner(dataSource).query("SELECT 1 FROM dual", new ResultSetHandler<Object>() {
+            @Override
+            public Object handle(ResultSet rs) throws SQLException {
+                rs.next();
+                int resultSetInt = rs.getInt(1);
+                assertEquals(1, resultSetInt);
+                return true;
+            }
         });
         dataSource.close();
     }

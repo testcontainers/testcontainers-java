@@ -35,4 +35,5 @@ public class OracleContainerRule extends ExternalResource {
     public String getPassword() {
         return container.getPassword();
     }
+
 }

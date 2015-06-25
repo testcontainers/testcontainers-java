@@ -3,9 +3,11 @@ package org.rnorth.testcontainers.jdbc;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
@@ -43,21 +45,32 @@ public class JDBCDriverTest {
     public void testMySQLWithConnectionPoolUsingSameContainer() throws SQLException {
         HikariDataSource dataSource = getDataSource("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", 10);
         for (int i = 0; i < 100; i++) {
-            new QueryRunner(dataSource).insert("INSERT INTO my_counter (n) VALUES (5)", rs -> true);
+            new QueryRunner(dataSource).insert("INSERT INTO my_counter (n) VALUES (5)", new ResultSetHandler<Object>() {
+                @Override
+                public Object handle(ResultSet rs) throws SQLException {
+                    return true;
+                }
+            });
         }
 
-        new QueryRunner(dataSource).query("SELECT COUNT(1) FROM my_counter", rs -> {
-            rs.next();
-            int resultSetInt = rs.getInt(1);
-            assertEquals(100, resultSetInt);
-            return true;
+        new QueryRunner(dataSource).query("SELECT COUNT(1) FROM my_counter", new ResultSetHandler<Object>() {
+            @Override
+            public Object handle(ResultSet rs) throws SQLException {
+                rs.next();
+                int resultSetInt = rs.getInt(1);
+                assertEquals(100, resultSetInt);
+                return true;
+            }
         });
 
-        new QueryRunner(dataSource).query("SELECT SUM(n) FROM my_counter", rs -> {
-            rs.next();
-            int resultSetInt = rs.getInt(1);
-            assertEquals(500, resultSetInt);
-            return true;
+        new QueryRunner(dataSource).query("SELECT SUM(n) FROM my_counter", new ResultSetHandler<Object>() {
+            @Override
+            public Object handle(ResultSet rs) throws SQLException {
+                rs.next();
+                int resultSetInt = rs.getInt(1);
+                assertEquals(500, resultSetInt);
+                return true;
+            }
         });
     }
 
@@ -68,33 +81,42 @@ public class JDBCDriverTest {
 
     private void performSimpleTest(String jdbcUrl) throws SQLException {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
-        new QueryRunner(dataSource).query("SELECT 1", rs -> {
-            rs.next();
-            int resultSetInt = rs.getInt(1);
-            assertEquals(1, resultSetInt);
-            return true;
+        new QueryRunner(dataSource).query("SELECT 1", new ResultSetHandler<Object>() {
+            @Override
+            public Object handle(ResultSet rs) throws SQLException {
+                rs.next();
+                int resultSetInt = rs.getInt(1);
+                assertEquals(1, resultSetInt);
+                return true;
+            }
         });
         dataSource.close();
     }
 
     private void performTestForScriptedSchema(String jdbcUrl) throws SQLException {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
-        new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%world'", rs -> {
-            rs.next();
-            String resultSetString = rs.getString(1);
-            assertEquals("hello world", resultSetString);
-            return true;
+        new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%world'", new ResultSetHandler<Object>() {
+            @Override
+            public Object handle(ResultSet rs) throws SQLException {
+                rs.next();
+                String resultSetString = rs.getString(1);
+                assertEquals("hello world", resultSetString);
+                return true;
+            }
         });
         dataSource.close();
     }
 
     private void performSimpleTestWithCharacterSet(String jdbcUrl) throws SQLException {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
-        new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
-            rs.next();
-            String resultSetInt = rs.getString(2);
-            assertEquals("utf8", resultSetInt);
-            return true;
+        new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", new ResultSetHandler<Object>() {
+            @Override
+            public Object handle(ResultSet rs) throws SQLException {
+                rs.next();
+                String resultSetInt = rs.getString(2);
+                assertEquals("utf8", resultSetInt);
+                return true;
+            }
         });
         dataSource.close();
     }
