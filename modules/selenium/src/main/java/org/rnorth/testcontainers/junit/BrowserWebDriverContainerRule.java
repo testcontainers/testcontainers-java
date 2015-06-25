@@ -121,7 +121,10 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
         File recordingFile = new File(vncRecordingDirectory, "recording-" + filenameDateFormat.format(new Date()) + ".flv");
 
         LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
-        currentVncRecordings.stream().forEach(it -> it.stopAndRetainRecording(recordingFile));
+
+        for(VncRecordingSidekickContainer container : currentVncRecordings) {
+            container.stopAndRetainRecording(recordingFile);
+        }
     }
 
     /**

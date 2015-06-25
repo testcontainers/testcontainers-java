@@ -62,21 +62,29 @@ public abstract class AbstractContainer {
             LOGGER.info("Container started");
 
             // If the container stops before the after() method, its termination was unexpected
-            Executors.newSingleThreadExecutor().submit(() -> {
-                Exception caughtException = null;
-                try {
-                    dockerClient.waitContainer(containerId);
-                } catch (DockerException | InterruptedException e) {
-                    caughtException = e;
-                }
+            Executors.newSingleThreadExecutor().submit(new Runnable() {
+                @Override
+                public void run() {
+                    Exception caughtException = null;
+                    try {
+                        dockerClient.waitContainer(containerId);
+                    } catch (DockerException | InterruptedException e) {
+                        caughtException = e;
+                    }
 
-                if (!normalTermination) {
-                    throw new RuntimeException("Container exited unexpectedly", caughtException);
+                    if (!normalTermination) {
+                        throw new RuntimeException("Container exited unexpectedly", caughtException);
+                    }
                 }
             });
 
             // If the JVM stops without the container being stopped, try and stop the container
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    AbstractContainer.this.stop();
+                }
+            }));
         } catch (Exception e) {
             LOGGER.error("Could not start container", e);
         }
@@ -86,7 +94,7 @@ public abstract class AbstractContainer {
 
     }
 
-    private void pullImageIfNeeded(String imageName) throws DockerException, InterruptedException {
+    private void pullImageIfNeeded(final String imageName) throws DockerException, InterruptedException {
         List<Image> images = dockerClient.listImages(DockerClient.ListImagesParam.create("name", getDockerImageName()));
         for (Image image : images) {
             if (image.repoTags().contains(imageName)) {
@@ -96,12 +104,15 @@ public abstract class AbstractContainer {
         }
 
         LOGGER.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
-        dockerClient.pull(getDockerImageName(), message -> {
-            if (message.error() != null) {
-                if (message.error().contains("404") || message.error().contains("not found")) {
-                    throw new ImageNotFoundException(imageName, message.toString());
-                } else {
-                    throw new ImagePullFailedException(imageName, message.toString());
+        dockerClient.pull(getDockerImageName(), new ProgressHandler() {
+            @Override
+            public void progress(ProgressMessage message) throws DockerException {
+                if (message.error() != null) {
+                    if (message.error().contains("404") || message.error().contains("not found")) {
+                        throw new ImageNotFoundException(imageName, message.toString());
+                    } else {
+                        throw new ImagePullFailedException(imageName, message.toString());
+                    }
                 }
             }
         });
@@ -121,13 +132,14 @@ public abstract class AbstractContainer {
     protected Path createVolumeDirectory(boolean temporary) throws IOException {
         File file = new File(".tmp-volume");
         file.mkdirs();
-        Path directory = file.toPath();
+        final Path directory = file.toPath();
 
-        if (temporary) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
                 PathOperations.recursiveDeleteDir(directory);
-            }));
-        }
+            }
+        }));
 
         return directory;
     }

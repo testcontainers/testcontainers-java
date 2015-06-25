@@ -5,7 +5,6 @@ import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.PortBinding;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.rnorth.testcontainers.containers.AbstractContainer;
 import org.rnorth.testcontainers.containers.traits.LinkableContainer;
 import org.rnorth.testcontainers.containers.traits.VncService;
 
@@ -13,7 +12,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -62,7 +60,11 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
 
     @Override
     protected ContainerConfig getContainerConfig() {
-        String timeZone = Optional.of(System.getProperty("user.timezone")).orElse("Etc/UTC");
+        String timeZone = System.getProperty("user.timezone");
+
+        if(timeZone == null || timeZone.isEmpty()) {
+            timeZone = "Etc/UTC";
+        }
 
         return ContainerConfig.builder()
                 .image(getDockerImageName())
@@ -102,6 +104,11 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
     @Override
     public String getPassword() {
         return DEFAULT_PASSWORD;
+    }
+
+    @Override
+    public int getPort() {
+        return 5900;
     }
 
     @Override

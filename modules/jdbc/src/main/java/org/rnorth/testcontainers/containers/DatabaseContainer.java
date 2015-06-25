@@ -13,13 +13,9 @@ public interface DatabaseContainer extends LinkableContainer {
 
     String getJdbcUrl();
 
-    default String getUsername() {
-        return "test";
-    }
+    String getUsername();
 
-    default String getPassword() {
-        return "test";
-    }
+    String getPassword();
 
     void start();
 

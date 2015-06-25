@@ -52,6 +52,16 @@ public class MySQLContainer extends AbstractContainer implements DatabaseContain
     }
 
     @Override
+    public String getUsername() {
+        return "test";
+    }
+
+    @Override
+    public String getPassword() {
+        return "test";
+    }
+
+    @Override
     public String getContainerId() {
         return containerId;
     }
