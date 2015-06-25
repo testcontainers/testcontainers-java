@@ -138,15 +138,25 @@ public class ContainerDatabaseDriver implements Driver {
      * @param url
      * @return              the connection, wrapped
      */
-    private Connection wrapConnection(Connection connection, DatabaseContainer container, String url) {
-        Set<Connection> connections = containerConnections.getOrDefault(container, new HashSet<>());
+    private Connection wrapConnection(final Connection connection, final DatabaseContainer container, final String url) {
+        Set<Connection> connections = containerConnections.get(connection);
+
+        if(connections == null) {
+            connections = new HashSet<>();
+        }
+
         connections.add(connection);
 
-        return new ConnectionWrapper(connection, () -> {
-            connections.remove(connection);
-            if (connections.isEmpty()) {
-                container.stop();
-                jdbcUrlContainerCache.remove(url);
+        final Set<Connection> finalConnections = connections;
+
+        return new ConnectionWrapper(connection, new Runnable() {
+            @Override
+            public void run() {
+                finalConnections.remove(connection);
+                if (finalConnections.isEmpty()) {
+                    container.stop();
+                    jdbcUrlContainerCache.remove(url);
+                }
             }
         });
     }

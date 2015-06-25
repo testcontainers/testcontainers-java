@@ -7,10 +7,10 @@ import org.zeroturnaround.exec.StartedProcess;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Process execution utility methods.
@@ -45,10 +45,13 @@ public class CommandLine {
             return true;
         }
 
-        // Otherwise scan the path, trying to find the executable
-        return Stream.of(System.getenv("PATH").split(Pattern.quote(File.pathSeparator)))
-                .map(Paths::get)
-                .filter(path -> Files.exists(path.resolve(executable)))
-                .anyMatch(Files::isExecutable);
+        for(String pathString : System.getenv("PATH").split(Pattern.quote(File.pathSeparator))) {
+            Path path = Paths.get(pathString);
+            if(Files.exists(path.resolve(executable)) && Files.isExecutable(path.resolve(executable))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

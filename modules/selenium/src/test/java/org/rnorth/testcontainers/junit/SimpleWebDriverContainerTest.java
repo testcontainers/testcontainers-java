@@ -9,7 +9,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.List;
 import java.util.Random;
 
 import static java.util.Arrays.asList;
@@ -68,13 +68,17 @@ public class SimpleWebDriverContainerTest {
     protected void doSimpleExplore(RemoteWebDriver driver) {
         driver.get("http://en.wikipedia.org/wiki/Randomness");
 
+        loop:
         for (int i = 0; i < 5; i++) {
             Random random = new Random();
-            Optional<WebElement> randomLink = driver.findElements(By.tagName("a")).stream()
-                    .filter(element -> random.nextInt(10) == 0)
-                    .filter(element -> element.isDisplayed() && element.isEnabled())
-                    .findFirst();
-            randomLink.ifPresent(WebElement::click);
+            List<WebElement> webElements = driver.findElements(By.tagName("a"));
+            for (WebElement webElement : webElements) {
+                if (random.nextInt(10) == 0 && webElement.isDisplayed() && webElement.isEnabled()) {
+                    webElement.click();
+                    break loop;
+                }
+            }
         }
     }
+
 }

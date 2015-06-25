@@ -35,8 +35,8 @@
         <!-- Database connection pool for testing -->
         <dependency>
             <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>2.3.5</version>
+            <artifactId>HikariCP-java6</artifactId>
+            <version>2.3.8</version>
             <scope>test</scope>
         </dependency>
         <dependency>
