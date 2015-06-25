@@ -2,9 +2,9 @@ package org.rnorth.testcontainers.containers;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.pool.PoolInitializationException;
+import oracle.jdbc.pool.OracleDataSource;
+
+import java.sql.SQLException;
 
 /**
  * Created by gusohal on 26/04/15.
@@ -28,7 +28,7 @@ public class OracleContainer extends AbstractContainer implements DatabaseContai
     protected ContainerConfig getContainerConfig() {
         return ContainerConfig.builder()
                 .image(getDockerImageName())
-                .exposedPorts("1521", "22", "8080")
+                .exposedPorts("1521", "8080")
                 .build();
     }
 
@@ -65,23 +65,24 @@ public class OracleContainer extends AbstractContainer implements DatabaseContai
     @Override
     public void waitUntilContainerStarted() {
         super.waitUntilContainerStarted();
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(getJdbcUrl());
-        hikariConfig.setConnectionTestQuery("SELECT 1 FROM dual");
-        hikariConfig.setMinimumIdle(1);
-        hikariConfig.setMaximumPoolSize(1);
 
-        for (int i = 0; i < 30000; i++) {
+        OracleDataSource dataSource;
+
+        for (int i = 0; i < 600; i++) {
             try {
-                new HikariDataSource(hikariConfig);
+                dataSource = new OracleDataSource();
+                dataSource.setURL(getJdbcUrl());
+                dataSource.getConnection();
+
                 return;
-            } catch (PoolInitializationException e) {
+            } catch (SQLException e) {
                 try {
-                    Thread.sleep(5000L);
+                    Thread.sleep(100L);
                 } catch (InterruptedException ignored) {
                 }
             }
         }
+
         throw new IllegalStateException("Timed out waiting for database server to come up");
     }
 
