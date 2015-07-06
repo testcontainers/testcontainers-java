@@ -71,7 +71,7 @@ public class VncRecordingSidekickContainer<T extends VncService & LinkableContai
         hostConfigBuilder.binds(tempDir.toAbsolutePath() + ":/recording:rw");
 
         // link to the VNC-providing container with the hostname alias 'vnchost'
-        hostConfigBuilder.links(vncServiceContainer.getContainerId() + ":vnchost");
+        hostConfigBuilder.links(vncServiceContainer.getContainerName() + ":vnchost");
     }
 
     @Override

@@ -6,7 +6,7 @@ import com.spotify.docker.client.messages.ContainerInfo;
 /**
  * @author richardnorth
  */
-public class MySQLContainer extends AbstractContainer implements DatabaseContainer {
+public class MySQLContainer extends JdbcDatabaseContainer {
 
     private static final String IMAGE = "mysql";
     private String mySqlPort;
@@ -62,7 +62,7 @@ public class MySQLContainer extends AbstractContainer implements DatabaseContain
     }
 
     @Override
-    public String getContainerId() {
-        return containerId;
+    public String getTestQueryString() {
+        return "SELECT 1";
     }
 }

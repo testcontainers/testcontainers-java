@@ -2,15 +2,11 @@ package org.rnorth.testcontainers.containers;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
-import oracle.jdbc.pool.OracleDataSource;
-
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * @author gusohal
  */
-public class OracleContainer extends AbstractContainer implements DatabaseContainer {
+public class OracleContainer extends JdbcDatabaseContainer {
 
     private static final String IMAGE = "wnameless/oracle-xe-11g";
     private String sshPort;
@@ -71,39 +67,6 @@ public class OracleContainer extends AbstractContainer implements DatabaseContai
         return "xe";
     }
 
-    @Override
-    public void waitUntilContainerStarted() {
-        super.waitUntilContainerStarted();
-
-        OracleDataSource dataSource;
-
-        for (int i = 0; i < 600; i++) {
-            try {
-                dataSource = new OracleDataSource();
-                dataSource.setURL(getJdbcUrl());
-                Connection connection = dataSource.getConnection();
-
-                boolean success = connection.createStatement().execute("SELECT 1 FROM DUAL");
-
-                if (success) {
-                    return;
-                }
-            } catch (SQLException e) {
-                try {
-                    Thread.sleep(100L);
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }
-
-        throw new IllegalStateException("Timed out waiting for database server to come up");
-    }
-
-    @Override
-    public String getContainerId() {
-        return containerId;
-    }
-
     public String getSshPort() {
         return sshPort;
     }
@@ -114,5 +77,10 @@ public class OracleContainer extends AbstractContainer implements DatabaseContai
 
     public String getWebPort() {
         return webPort;
+    }
+
+    @Override
+    public String getTestQueryString() {
+        return "SELECT 1 FROM DUAL";
     }
 }

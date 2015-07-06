@@ -3,7 +3,7 @@ package org.rnorth.testcontainers.jdbc;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.spotify.docker.client.messages.Container;
-import org.rnorth.testcontainers.containers.DatabaseContainer;
+import org.rnorth.testcontainers.containers.JdbcDatabaseContainer;
 import org.rnorth.testcontainers.jdbc.ext.ScriptUtils;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +34,8 @@ public class ContainerDatabaseDriver implements Driver {
 
     private Driver delegate;
     private Map<Container, Set<Connection>> containerConnections = new HashMap<>();
-    private Map<String, DatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
-    private Set<DatabaseContainer> initializedContainers = new HashSet<>();
+    private Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
+    private Set<JdbcDatabaseContainer> initializedContainers = new HashSet<>();
 
     static {
         load();
@@ -55,14 +55,14 @@ public class ContainerDatabaseDriver implements Driver {
     }
 
     @Override
-    public synchronized Connection connect(String url, Properties info) throws SQLException {
+    public synchronized Connection connect(String url, final Properties info) throws SQLException {
 
         String queryString = "";
         /**
          * If we already have a running container for this exact connection string, we want to connect
          * to that rather than create a new container
          */
-        DatabaseContainer container = jdbcUrlContainerCache.get(url);
+        JdbcDatabaseContainer container = jdbcUrlContainerCache.get(url);
         if (container == null) {
             /**
              * Extract from the JDBC connection URL:
@@ -84,12 +84,12 @@ public class ContainerDatabaseDriver implements Driver {
             /**
              * Find a matching container type using ServiceLoader.
              */
-            ServiceLoader<DatabaseContainer> databaseContainers = ServiceLoader.load(DatabaseContainer.class);
-            for (DatabaseContainer candidateContainerType : databaseContainers) {
+            ServiceLoader<JdbcDatabaseContainer> databaseContainers = ServiceLoader.load(JdbcDatabaseContainer.class);
+            for (JdbcDatabaseContainer candidateContainerType : databaseContainers) {
                 if (candidateContainerType.getName().equals(databaseType)) {
                     candidateContainerType.setTag(tag);
-                    delegate = getDriver(candidateContainerType.getDriverClassName());
                     container = candidateContainerType;
+                    delegate = container.getJdbcDriverInstance();
                 }
             }
             if (container == null) {
@@ -109,11 +109,9 @@ public class ContainerDatabaseDriver implements Driver {
         }
 
         /**
-         * Create a connection using the delegated driver
+         * Create a connection using the delegated driver. The container must be ready to accept connections.
          */
-        info.put("user", container.getUsername());
-        info.put("password", container.getPassword());
-        Connection connection = delegate.connect(container.getJdbcUrl() + queryString, info);
+        Connection connection = container.createConnection(queryString);
 
         /**
          * If this container has not been initialized, AND
@@ -138,7 +136,7 @@ public class ContainerDatabaseDriver implements Driver {
      * @param url
      * @return              the connection, wrapped
      */
-    private Connection wrapConnection(final Connection connection, final DatabaseContainer container, final String url) {
+    private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
         Set<Connection> connections = containerConnections.get(connection);
 
         if(connections == null) {
@@ -211,14 +209,6 @@ public class ContainerDatabaseDriver implements Driver {
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private Driver getDriver(String driverClassName) {
-        try {
-            return (Driver) ClassLoader.getSystemClassLoader().loadClass(driverClassName).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new RuntimeException("Could not get Driver", e);
         }
     }
 

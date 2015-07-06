@@ -8,7 +8,6 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.*;
-import java.net.URL;
 import java.net.URLConnection;
 
 import static org.junit.Assert.assertEquals;
@@ -20,11 +19,13 @@ import static org.junit.Assert.assertTrue;
 public class SimpleNginxTest {
 
     @Rule
-    public BrowserWebDriverContainerRule chrome = new BrowserWebDriverContainerRule(DesiredCapabilities.chrome());
+    public NginxContainerRule nginx = new NginxContainerRule()
+                                                    .withCustomConfig(System.getProperty("user.home") + "/.tmp-test-container")
+                                                    .withExposedPorts("80");
 
     @Rule
-    public NginxContainerRule nginx = new NginxContainerRule()
-                                                    .withCustomConfig(System.getProperty("user.home") + "/.tmp-test-container");
+    public BrowserWebDriverContainerRule chrome = new BrowserWebDriverContainerRule(DesiredCapabilities.chrome())
+                                                        .withLinkToContainer(nginx, "nginx");
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
@@ -47,12 +48,11 @@ public class SimpleNginxTest {
     }
 
     @Test
-    public void testWebDriverToNginxContainerAccess() throws Exception {
-        URL nginxBaseUrl = nginx.getBaseUrl("http", 80);
+    public void testWebDriverToNginxContainerAccessViaContainerLink() throws Exception {
 
         RemoteWebDriver driver = chrome.newDriver();
 
-        driver.get(nginxBaseUrl.toString());
+        driver.get("http://nginx/");
 
         assertEquals("This worked", driver.findElement(By.tagName("body")).getText());
     }
