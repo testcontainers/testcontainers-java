@@ -13,7 +13,7 @@ public class PostgreSQLContainer extends DatabaseContainer {
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
-        postgresPort = containerInfo.networkSettings().ports().get("5432").get(0).hostPort();
+        postgresPort = containerInfo.networkSettings().ports().get("5432/tcp").get(0).hostPort();
     }
 
     @Override
