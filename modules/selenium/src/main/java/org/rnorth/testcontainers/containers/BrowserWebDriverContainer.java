@@ -111,8 +111,4 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
         return 5900;
     }
 
-    @Override
-    public String getContainerId() {
-        return containerId;
-    }
 }

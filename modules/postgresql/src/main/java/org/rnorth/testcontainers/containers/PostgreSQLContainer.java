@@ -6,14 +6,14 @@ import com.spotify.docker.client.messages.ContainerInfo;
 /**
  * @author richardnorth
  */
-public class PostgreSQLContainer extends AbstractContainer implements DatabaseContainer {
+public class PostgreSQLContainer extends DatabaseContainer {
 
     private static final String IMAGE = "postgres";
     private String postgresPort;
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
-        postgresPort = containerInfo.networkSettings().ports().get("5432/tcp").get(0).hostPort();
+        postgresPort = containerInfo.networkSettings().ports().get("5432").get(0).hostPort();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class PostgreSQLContainer extends AbstractContainer implements DatabaseCo
     }
 
     @Override
-    public String getContainerId() {
-        return containerId;
+    public String getTestQueryString() {
+        return "SELECT 1";
     }
 }

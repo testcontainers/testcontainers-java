@@ -25,18 +25,18 @@ public abstract class AbstractContainer {
 
     protected String dockerHostIpAddress;
     protected String containerId;
+    private String containerName;
     protected DockerClient dockerClient;
     protected String tag = "latest";
     private boolean normalTermination = false;
 
     public void start() {
 
+        LOGGER.debug("Start for container ({}): {}", getDockerImageName(), this);
+
         try {
-            DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
 
-            customizeBuilderForOs(builder);
-
-            dockerClient = builder.build();
+            dockerClient = customizeBuilderForOs().build();
 
             pullImageIfNeeded(getDockerImageName());
 
@@ -55,6 +55,7 @@ public abstract class AbstractContainer {
             LOGGER.info("Starting container with ID: {}", containerId);
 
             ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
+            containerName = containerInfo.name();
 
             containerIsStarting(containerInfo);
 
@@ -82,6 +83,7 @@ public abstract class AbstractContainer {
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    LOGGER.debug("Hit shutdown hook for container {}", AbstractContainer.this.containerId);
                     AbstractContainer.this.stop();
                 }
             }));
@@ -119,6 +121,9 @@ public abstract class AbstractContainer {
     }
 
     public void stop() {
+
+        LOGGER.debug("Stop for container ({}): {}", getDockerImageName(), this);
+
         try {
             LOGGER.info("Stopping container: {}", containerId);
             normalTermination = true;
@@ -181,16 +186,22 @@ public abstract class AbstractContainer {
         throw new IllegalStateException("Timed out waiting for container port to open (" + ipAddress + ":" + port + " should be listening)");
     }
 
-    private void customizeBuilderForOs(DefaultDockerClient.Builder builder) throws Exception {
+    private DefaultDockerClient.Builder customizeBuilderForOs() throws Exception {
         if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+
+            DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
+
             // Running on a Mac therefore use boot2docker
             runShellCommand("/usr/local/bin/boot2docker", "up");
             dockerHostIpAddress = runShellCommand("/usr/local/bin/boot2docker", "ip");
 
             builder.uri("https://" + dockerHostIpAddress + ":2376")
                     .dockerCertificates(new DockerCertificates(Paths.get(System.getProperty("user.home") + "/.boot2docker/certs/boot2docker-vm")));
+
+            return builder;
         } else {
             dockerHostIpAddress = "127.0.0.1";
+            return DefaultDockerClient.fromEnv();
         }
     }
 
@@ -198,7 +209,7 @@ public abstract class AbstractContainer {
         this.tag = tag != null ? tag : "latest";
     }
 
-    public String getId() {
-        return containerId;
+    public String getContainerName() {
+        return containerName;
     }
 }

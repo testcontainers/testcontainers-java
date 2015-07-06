@@ -55,7 +55,7 @@ public class ContainerDatabaseDriver implements Driver {
     }
 
     @Override
-    public synchronized Connection connect(String url, Properties info) throws SQLException {
+    public synchronized Connection connect(String url, final Properties info) throws SQLException {
 
         String queryString = "";
         /**
@@ -88,8 +88,8 @@ public class ContainerDatabaseDriver implements Driver {
             for (DatabaseContainer candidateContainerType : databaseContainers) {
                 if (candidateContainerType.getName().equals(databaseType)) {
                     candidateContainerType.setTag(tag);
-                    delegate = getDriver(candidateContainerType.getDriverClassName());
                     container = candidateContainerType;
+                    delegate = container.getJdbcDriverInstance();
                 }
             }
             if (container == null) {
@@ -109,11 +109,9 @@ public class ContainerDatabaseDriver implements Driver {
         }
 
         /**
-         * Create a connection using the delegated driver
+         * Create a connection using the delegated driver. The container must be ready to accept connections.
          */
-        info.put("user", container.getUsername());
-        info.put("password", container.getPassword());
-        Connection connection = delegate.connect(container.getJdbcUrl() + queryString, info);
+        Connection connection = container.createConnection(queryString);
 
         /**
          * If this container has not been initialized, AND
@@ -211,14 +209,6 @@ public class ContainerDatabaseDriver implements Driver {
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private Driver getDriver(String driverClassName) {
-        try {
-            return (Driver) ClassLoader.getSystemClassLoader().loadClass(driverClassName).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new RuntimeException("Could not get Driver", e);
         }
     }
 

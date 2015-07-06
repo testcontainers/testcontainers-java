@@ -4,7 +4,6 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
-import org.rnorth.testcontainers.containers.AbstractContainer;
 import org.rnorth.testcontainers.containers.traits.LinkableContainer;
 
 import java.net.MalformedURLException;
@@ -60,8 +59,4 @@ public class NginxContainer extends AbstractContainer implements LinkableContain
         binds.add(htmlContentPath + ":/usr/share/nginx/html:ro");
     }
 
-    @Override
-    public String getContainerId() {
-        return containerId;
-    }
 }

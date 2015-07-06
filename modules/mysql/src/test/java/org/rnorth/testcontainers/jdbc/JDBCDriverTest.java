@@ -29,16 +29,16 @@ public class JDBCDriverTest {
 
     @Test
     public void testMySQLWithClasspathInitScript() throws SQLException {
-        performSimpleTest("jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql");
+        performSimpleTest("jdbc:tc:mysql://hostname1/databasename?TC_INITSCRIPT=somepath/init_mysql.sql");
 
-        performTestForScriptedSchema("jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql");
+        performTestForScriptedSchema("jdbc:tc:mysql://hostname2/databasename?TC_INITSCRIPT=somepath/init_mysql.sql");
     }
 
     @Test
     public void testMySQLWithClasspathInitFunction() throws SQLException {
-        performSimpleTest("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
+        performSimpleTest("jdbc:tc:mysql://hostname1/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
 
-        performTestForScriptedSchema("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
+        performTestForScriptedSchema("jdbc:tc:mysql://hostname2/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
     }
 
     @Test

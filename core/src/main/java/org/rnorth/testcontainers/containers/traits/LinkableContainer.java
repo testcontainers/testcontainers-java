@@ -5,5 +5,5 @@ package org.rnorth.testcontainers.containers.traits;
  */
 public interface LinkableContainer {
 
-    String getContainerId();
+    String getContainerName();
 }
