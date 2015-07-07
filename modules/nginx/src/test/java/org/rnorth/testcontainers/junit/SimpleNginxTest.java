@@ -1,6 +1,7 @@
 package org.rnorth.testcontainers.junit;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -46,7 +47,7 @@ public class SimpleNginxTest {
         assertTrue(line.contains("This worked"));
     }
 
-    @Test
+    @Test @Ignore // TODO: link containers
     public void testWebDriverToNginxContainerAccess() throws Exception {
         URL nginxBaseUrl = nginx.getBaseUrl("http", 80);
 
