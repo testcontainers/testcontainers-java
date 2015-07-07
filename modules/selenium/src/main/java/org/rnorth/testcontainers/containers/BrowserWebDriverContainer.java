@@ -2,14 +2,18 @@ package org.rnorth.testcontainers.containers;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.rnorth.testcontainers.containers.traits.LinkableContainer;
+import org.rnorth.testcontainers.containers.traits.LinkableContainerRule;
 import org.rnorth.testcontainers.containers.traits.VncService;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +30,7 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
 
     private Map<String, List<PortBinding>> ports;
     private DesiredCapabilities desiredCapabilities;
+    private Map<String, LinkableContainer> containersToLink = Collections.emptyMap();
     private String imageName = null;
     private String seleniumPort;
     private String vncPort;
@@ -44,6 +49,11 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
      */
     public BrowserWebDriverContainer(DesiredCapabilities desiredCapabilities) {
         this.desiredCapabilities = desiredCapabilities;
+    }
+
+    public BrowserWebDriverContainer(DesiredCapabilities desiredCapabilities, Map<String, LinkableContainer> containersToLink) {
+        this.desiredCapabilities = desiredCapabilities;
+        this.containersToLink = containersToLink;
     }
 
     @Override
@@ -72,6 +82,19 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
                 .env("TZ=" + timeZone)
                 .cmd("/opt/bin/entry_point.sh")
                 .build();
+    }
+
+    @Override
+    protected void customizeHostConfigBuilder(HostConfig.Builder hostConfigBuilder) {
+
+        // For all containers we've been asked to link to, add a containername:alias link to the host config
+        if (!this.containersToLink.isEmpty()) {
+            List<String> links = new ArrayList<>();
+            for (Map.Entry<String, LinkableContainer> entry : this.containersToLink.entrySet()) {
+                links.add(entry.getValue().getContainerName() + ":" + entry.getKey());
+            }
+            hostConfigBuilder.links(links);
+        }
     }
 
     @Override

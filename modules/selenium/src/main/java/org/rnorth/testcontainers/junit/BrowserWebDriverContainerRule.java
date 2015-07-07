@@ -7,6 +7,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.rnorth.testcontainers.containers.AbstractContainer;
 import org.rnorth.testcontainers.containers.BrowserWebDriverContainer;
 import org.rnorth.testcontainers.containers.VncRecordingSidekickContainer;
+import org.rnorth.testcontainers.containers.traits.LinkableContainer;
+import org.rnorth.testcontainers.containers.traits.LinkableContainerRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +42,7 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainerRule.class);
 
     private static final SimpleDateFormat filenameDateFormat = new SimpleDateFormat("YYYYMMdd-HHmmss");
+    private Map<String, LinkableContainerRule> containerRulesToLink = new HashMap<>();
 
     public BrowserWebDriverContainerRule(DesiredCapabilities desiredCapabilities) {
         this(desiredCapabilities, VncRecordingMode.SKIP, null);
@@ -61,7 +64,12 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
      */
     public RemoteWebDriver newDriver() {
 
-        BrowserWebDriverContainer container = new BrowserWebDriverContainer(desiredCapabilities);
+        Map<String, LinkableContainer> containersToLink = new HashMap<>();
+        for (Map.Entry<String, LinkableContainerRule> entry : containerRulesToLink.entrySet()) {
+            containersToLink.put(entry.getKey(), entry.getValue().getContainer());
+        }
+
+        BrowserWebDriverContainer container = new BrowserWebDriverContainer(desiredCapabilities, containersToLink);
         containers.add(container);
         container.start();
 
@@ -167,6 +175,19 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
 
     public URL getSeleniumURL(RemoteWebDriver driver) {
         return seleniumUrls.get(driver);
+    }
+
+    /**
+     * Remember any other containers this needs to link to. We have to pass these down to the container so that
+     * the other containers will be initialized before linking occurs.
+     *
+     * @param containerRule the container rule to link to
+     * @param alias the alias (hostname) that this other container should be referred to by
+     * @return
+     */
+    public BrowserWebDriverContainerRule withLinkToContainer(LinkableContainerRule containerRule, String alias) {
+        this.containerRulesToLink.put(alias, containerRule);
+        return this;
     }
 
     public enum VncRecordingMode {
