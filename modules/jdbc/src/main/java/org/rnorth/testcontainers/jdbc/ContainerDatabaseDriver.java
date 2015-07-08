@@ -3,7 +3,7 @@ package org.rnorth.testcontainers.jdbc;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.spotify.docker.client.messages.Container;
-import org.rnorth.testcontainers.containers.DatabaseContainer;
+import org.rnorth.testcontainers.containers.JdbcDatabaseContainer;
 import org.rnorth.testcontainers.jdbc.ext.ScriptUtils;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +34,8 @@ public class ContainerDatabaseDriver implements Driver {
 
     private Driver delegate;
     private Map<Container, Set<Connection>> containerConnections = new HashMap<>();
-    private Map<String, DatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
-    private Set<DatabaseContainer> initializedContainers = new HashSet<>();
+    private Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
+    private Set<JdbcDatabaseContainer> initializedContainers = new HashSet<>();
 
     static {
         load();
@@ -62,7 +62,7 @@ public class ContainerDatabaseDriver implements Driver {
          * If we already have a running container for this exact connection string, we want to connect
          * to that rather than create a new container
          */
-        DatabaseContainer container = jdbcUrlContainerCache.get(url);
+        JdbcDatabaseContainer container = jdbcUrlContainerCache.get(url);
         if (container == null) {
             /**
              * Extract from the JDBC connection URL:
@@ -84,8 +84,8 @@ public class ContainerDatabaseDriver implements Driver {
             /**
              * Find a matching container type using ServiceLoader.
              */
-            ServiceLoader<DatabaseContainer> databaseContainers = ServiceLoader.load(DatabaseContainer.class);
-            for (DatabaseContainer candidateContainerType : databaseContainers) {
+            ServiceLoader<JdbcDatabaseContainer> databaseContainers = ServiceLoader.load(JdbcDatabaseContainer.class);
+            for (JdbcDatabaseContainer candidateContainerType : databaseContainers) {
                 if (candidateContainerType.getName().equals(databaseType)) {
                     candidateContainerType.setTag(tag);
                     container = candidateContainerType;
@@ -136,7 +136,7 @@ public class ContainerDatabaseDriver implements Driver {
      * @param url
      * @return              the connection, wrapped
      */
-    private Connection wrapConnection(final Connection connection, final DatabaseContainer container, final String url) {
+    private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
         Set<Connection> connections = containerConnections.get(connection);
 
         if(connections == null) {

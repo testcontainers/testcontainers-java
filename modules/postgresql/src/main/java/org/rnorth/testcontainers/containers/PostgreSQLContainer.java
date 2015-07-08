@@ -6,7 +6,7 @@ import com.spotify.docker.client.messages.ContainerInfo;
 /**
  * @author richardnorth
  */
-public class PostgreSQLContainer extends DatabaseContainer {
+public class PostgreSQLContainer extends JdbcDatabaseContainer {
 
     private static final String IMAGE = "postgres";
     private String postgresPort;

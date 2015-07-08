@@ -6,7 +6,7 @@ import com.spotify.docker.client.messages.ContainerInfo;
 /**
  * @author richardnorth
  */
-public class MySQLContainer extends DatabaseContainer {
+public class MySQLContainer extends JdbcDatabaseContainer {
 
     private static final String IMAGE = "mysql";
     private String mySqlPort;

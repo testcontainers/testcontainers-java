@@ -2,15 +2,11 @@ package org.rnorth.testcontainers.containers;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
-import oracle.jdbc.pool.OracleDataSource;
-
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * @author gusohal
  */
-public class OracleContainer extends DatabaseContainer {
+public class OracleContainer extends JdbcDatabaseContainer {
 
     private static final String IMAGE = "wnameless/oracle-xe-11g";
     private String sshPort;
