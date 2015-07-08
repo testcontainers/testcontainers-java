@@ -26,7 +26,7 @@ public abstract class JdbcDatabaseContainer extends AbstractContainer implements
      * Get the name of the database type, to be matched against the DB type part of the JDBC query string (i.e. after jdbc:)
      * @return
      */
-    protected abstract String getName();
+    public abstract String getName();
 
     /**
      * Get the name of the actual JDBC driver to use
