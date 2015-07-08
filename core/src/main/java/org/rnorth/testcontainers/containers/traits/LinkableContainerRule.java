@@ -1,7 +1,11 @@
 package org.rnorth.testcontainers.containers.traits;
 
 /**
- * Created by rnorth on 07/07/2015.
+ * A Container Rule for a container which may be linked to.
+ *
+ * For example, if FooContainer exposes a port that other containers can link to,
+ * and FooContainerRule launches that type of container, then FooContainerRule
+ * should implement LinkableContainerRule.
  */
 public interface LinkableContainerRule {
 
