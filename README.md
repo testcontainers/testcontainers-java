@@ -1,6 +1,6 @@
 # Test Containers
 
-*This is fairly beta-grade still*
+[![Circle CI](https://circleci.com/gh/rnorth/test-containers/tree/master.svg?style=svg)](https://circleci.com/gh/rnorth/test-containers/tree/master)
 
 Test Containers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. Compared with other approaches, Test Containers is intended to achieve a better balance between compatibility, speed, and overhead of external management.
 
