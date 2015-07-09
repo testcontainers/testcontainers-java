@@ -6,16 +6,23 @@ import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.rnorth.testcontainers.containers.traits.LinkableContainer;
 import org.rnorth.testcontainers.containers.traits.LinkableContainerRule;
 import org.rnorth.testcontainers.containers.traits.VncService;
+import org.rnorth.testcontainers.utility.Retryables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -34,6 +41,8 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
     private String imageName = null;
     private String seleniumPort;
     private String vncPort;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
     /**
      * @param imageName custom image name to use for the container
@@ -134,4 +143,19 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
         return 5900;
     }
 
+    @Override
+    protected void waitUntilContainerStarted() {
+        // Repeatedly try and open a webdriver session
+
+        Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<RemoteWebDriver>() {
+            @Override
+            public RemoteWebDriver get() throws Exception {
+                RemoteWebDriver driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
+                driver.getCurrentUrl();
+
+                LOGGER.info("Obtained a connection to container ({})", BrowserWebDriverContainer.this.getSeleniumAddress());
+                return driver;
+            }
+        });
+    }
 }

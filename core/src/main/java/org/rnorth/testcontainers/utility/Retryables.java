@@ -26,6 +26,9 @@ public class Retryables {
                 LOGGER.debug("Retrying lambda call on attempt {}", attempt++);
                 lastException = e;
 
+            } finally {
+                // always sleep 200ms each time through the loop, even if the result was successful
+                // this enables a fractional amount more time for the result to stabilize
                 try {
                     Thread.sleep(200L);
                 } catch (InterruptedException ignored) { }
