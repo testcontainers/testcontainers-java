@@ -1,18 +1,30 @@
 package org.rnorth.testcontainers.utility;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by rnorth on 05/07/2015.
+ * Utilities to support automatic retry of things that may tend to not always produce consistent results.
  */
 public class Retryables {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Retryables.class);
 
-    public static <T> T retryUntilSuccess(int timeout, TimeUnit timeUnit, UnreliableSupplier<T> lambda) {
+    /**
+     * Call a supplier repeatedly until it returns a result. If an exception is thrown, the call
+     * will be retried repeatedly until the timeout is hit.
+     *
+     * @param timeout   how long to wait
+     * @param timeUnit  how long to wait (units)
+     * @param lambda    supplier lambda expression (may throw checked exceptions)
+     * @param <T>       return type of the supplier
+     * @return          the
+     */
+    public static <T> T retryUntilSuccess(final int timeout, final TimeUnit timeUnit, final UnreliableSupplier<T> lambda) {
         long timeLimit = TimeUnit.MILLISECONDS.convert(timeout, timeUnit) + System.currentTimeMillis();
 
         int attempt = 0;
@@ -23,7 +35,7 @@ public class Retryables {
                 return lambda.get();
             } catch (Exception e) {
                 // Failed
-                LOGGER.debug("Retrying lambda call on attempt {}", attempt++);
+                LOGGER.trace("Retrying lambda call on attempt {}", attempt++);
                 lastException = e;
 
             } finally {
@@ -35,10 +47,24 @@ public class Retryables {
             }
         }
 
-        throw new RuntimeException("Timeout waiting for result", lastException);
+        throw new TimeoutException("Timeout waiting for result", lastException);
     }
 
+    /**
+     * A variation on java.util.function.Supplier which allows checked exceptions to be thrown.
+     * @param <T>
+     */
     public interface UnreliableSupplier<T> {
         T get() throws Exception;
+    }
+
+    /**
+     * Indicates timeout of an UnreliableSupplier
+     */
+    public static class TimeoutException extends RuntimeException {
+
+        public TimeoutException(@NotNull String message, @Nullable Exception exception) {
+            super(message, exception);
+        }
     }
 }

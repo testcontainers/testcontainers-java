@@ -1,5 +1,7 @@
 package org.rnorth.testcontainers.utility;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -12,7 +14,11 @@ import java.nio.file.attribute.BasicFileAttributes;
  */
 public class PathOperations {
 
-    public static void recursiveDeleteDir(Path directory) {
+    /**
+     * Recursively delete a directory and all its subdirectories and files.
+     * @param directory path to the directory to delete.
+     */
+    public static void recursiveDeleteDir(final @NotNull Path directory) {
         try {
             Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
                 @Override
