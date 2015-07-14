@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.testpackage.VisibleAssertions.assertEquals;
 import static org.rnorth.testcontainers.junit.BrowserWebDriverContainerRule.VncRecordingMode.RECORD_ALL;
 import static org.rnorth.testcontainers.junit.BrowserWebDriverContainerRule.VncRecordingMode.RECORD_FAILING;
 
@@ -47,7 +47,7 @@ public class SimpleWebDriverContainerTest {
             driver.get("http://www.google.com");
             driver.findElement(By.name("q")).sendKeys("testcontainers");
             driver.findElement(By.name("q")).submit();
-            assertEquals("testcontainers", driver.findElement(By.name("q")).getAttribute("value"));
+            assertEquals("the word 'testcontainers' appears in the search box", "testcontainers", driver.findElement(By.name("q")).getAttribute("value"));
         }
     }
 

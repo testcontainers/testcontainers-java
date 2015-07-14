@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.junit.Assert.assertEquals;
+import static org.testpackage.VisibleAssertions.assertEquals;
 
 /**
  *
@@ -29,7 +29,7 @@ public class JDBCDriverTest {
             public Object handle(ResultSet rs) throws SQLException {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
-                assertEquals(1, resultSetInt);
+                assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
                 return true;
             }
         });

@@ -10,7 +10,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.junit.Assert.assertEquals;
+import static org.testpackage.VisibleAssertions.assertEquals;
 
 /**
  *
@@ -58,7 +58,7 @@ public class JDBCDriverTest {
             public Object handle(ResultSet rs) throws SQLException {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
-                assertEquals(100, resultSetInt);
+                assertEquals("Reuse of a datasource points to the same DB container", 100, resultSetInt);
                 return true;
             }
         });
@@ -68,7 +68,7 @@ public class JDBCDriverTest {
             public Object handle(ResultSet rs) throws SQLException {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
-                assertEquals(500, resultSetInt);
+                assertEquals("Reuse of a datasource points to the same DB container", 500, resultSetInt);
                 return true;
             }
         });
@@ -86,7 +86,7 @@ public class JDBCDriverTest {
             public Object handle(ResultSet rs) throws SQLException {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
-                assertEquals(1, resultSetInt);
+                assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
                 return true;
             }
         });
@@ -100,7 +100,7 @@ public class JDBCDriverTest {
             public Object handle(ResultSet rs) throws SQLException {
                 rs.next();
                 String resultSetString = rs.getString(1);
-                assertEquals("hello world", resultSetString);
+                assertEquals("A basic SELECT query succeeds where the schema has been applied from a script", "hello world", resultSetString);
                 return true;
             }
         });
@@ -114,7 +114,7 @@ public class JDBCDriverTest {
             public Object handle(ResultSet rs) throws SQLException {
                 rs.next();
                 String resultSetInt = rs.getString(2);
-                assertEquals("utf8", resultSetInt);
+                assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
                 return true;
             }
         });

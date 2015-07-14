@@ -53,6 +53,22 @@
             <version>1.1.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testpackage</groupId>
+            <artifactId>testpackage</artifactId>
+            <version>0.3.1</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.zeroturnaround</groupId>
+                    <artifactId>zt-exec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>

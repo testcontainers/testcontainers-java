@@ -29,7 +29,7 @@ public class NginxContainerRule extends ExternalResource implements LinkableCont
         container.stop();
     }
 
-    public NginxContainerRule withCustomConfig(String htmlContentPath) {
+    public NginxContainerRule withCustomContent(String htmlContentPath) {
         container.setCustomConfig(htmlContentPath);
         return this;
     }

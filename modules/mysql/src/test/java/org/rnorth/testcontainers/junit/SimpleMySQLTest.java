@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.junit.Assert.assertEquals;
+import static org.testpackage.VisibleAssertions.assertEquals;
 
 /**
  * @author richardnorth
@@ -33,6 +33,6 @@ public class SimpleMySQLTest {
 
         resultSet.next();
         int resultSetInt = resultSet.getInt(1);
-        assertEquals(1, resultSetInt);
+        assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
     }
 }

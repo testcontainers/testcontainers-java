@@ -10,8 +10,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import java.io.*;
 import java.net.URLConnection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.testpackage.VisibleAssertions.assertEquals;
+import static org.testpackage.VisibleAssertions.assertTrue;
 
 /**
  * @author richardnorth
@@ -20,12 +20,12 @@ public class SimpleNginxTest {
 
     @Rule
     public NginxContainerRule nginx = new NginxContainerRule()
-                                                    .withCustomConfig(System.getProperty("user.home") + "/.tmp-test-container")
-                                                    .withExposedPorts("80");
+            .withCustomContent(System.getProperty("user.home") + "/.tmp-test-container")
+            .withExposedPorts("80");
 
     @Rule
     public BrowserWebDriverContainerRule chrome = new BrowserWebDriverContainerRule(DesiredCapabilities.chrome())
-                                                        .withLinkToContainer(nginx, "nginx");
+            .withLinkToContainer(nginx, "nginx");
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
@@ -44,7 +44,7 @@ public class SimpleNginxTest {
         String line = new BufferedReader(new InputStreamReader(urlConnection.getInputStream())).readLine();
         System.out.println(line);
 
-        assertTrue(line.contains("This worked"));
+        assertTrue("Using URLConnection, an HTTP GET from the nginx server returns the index.html from the custom content directory", line.contains("This worked"));
     }
 
     @Test
@@ -54,6 +54,6 @@ public class SimpleNginxTest {
 
         driver.get("http://nginx/");
 
-        assertEquals("This worked", driver.findElement(By.tagName("body")).getText());
+        assertEquals("Using selenium, an HTTP GET from the nginx server returns the index.html from the custom content directory", "This worked", driver.findElement(By.tagName("body")).getText());
     }
 }
