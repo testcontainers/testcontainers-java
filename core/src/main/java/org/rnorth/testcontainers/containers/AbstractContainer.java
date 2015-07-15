@@ -3,6 +3,7 @@ package org.rnorth.testcontainers.containers;
 import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.*;
 import org.rnorth.testcontainers.utility.PathOperations;
+import org.rnorth.testcontainers.utility.Retryables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,9 @@ import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.testcontainers.utility.CommandLine.runShellCommand;
 
@@ -60,6 +63,16 @@ public abstract class AbstractContainer {
             ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
             containerName = containerInfo.name();
 
+            // Wait until the container is starting
+            Retryables.retryUntilTrue(5, TimeUnit.SECONDS, new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return dockerClient.inspectContainer(containerId).state().running();
+                }
+            });
+
+            // Tell subclasses that we're starting
+            LOGGER.info("Container is starting with port mapping: {}", dockerClient.inspectContainer(containerId).networkSettings().ports());
             containerIsStarting(containerInfo);
 
             waitUntilContainerStarted();
@@ -214,16 +227,28 @@ public abstract class AbstractContainer {
 
         for (int i = 0; i < 6000; i++) {
             try {
-                new Socket(ipAddress, Integer.valueOf(port));
+
+                checkContainerNotAborted();
+
+                new Socket(ipAddress, Integer.valueOf(port)).close();
                 return;
             } catch (IOException e) {
                 try {
                     Thread.sleep(100L);
                 } catch (InterruptedException ignored) {
                 }
+            } catch (InterruptedException | DockerException e) {
+                throw new ContainerLaunchException("Container failed to start", e);
             }
         }
-        throw new IllegalStateException("Timed out waiting for container port to open (" + ipAddress + ":" + port + " should be listening)");
+        throw new ContainerLaunchException("Timed out waiting for container port to open (" + ipAddress + ":" + port + " should be listening)");
+    }
+
+    protected void checkContainerNotAborted() throws DockerException, InterruptedException {
+        ContainerState state = dockerClient.inspectContainer(containerId).state();
+        if (!state.running()) {
+            throw new ContainerLaunchException("Container failed to start, and exited with exit code: " + state.exitCode());
+        }
     }
 
     private DefaultDockerClient.Builder customizeBuilderForOs() throws Exception {

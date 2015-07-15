@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,6 +49,27 @@ public class Retryables {
         }
 
         throw new TimeoutException("Timeout waiting for result", lastException);
+    }
+
+    /**
+     * Call a callable repeatedly until it returns true. If an exception is thrown, the call
+     * will be retried repeatedly until the timeout is hit.
+     *
+     * @param timeout   how long to wait
+     * @param timeUnit  how long to wait (units)
+     * @param lambda    supplier lambda expression
+     */
+    public static void retryUntilTrue(final int timeout, final TimeUnit timeUnit, final Callable<Boolean> lambda) {
+        retryUntilSuccess(timeout, timeUnit, new UnreliableSupplier<Object>() {
+            @Override
+            public Object get() throws Exception {
+                if (!lambda.call()) {
+                    throw new RuntimeException("Not ready yet");
+                } else {
+                    return null;
+                }
+            }
+        });
     }
 
     /**
