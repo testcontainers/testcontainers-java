@@ -62,9 +62,12 @@ public abstract class JdbcDatabaseContainer extends AbstractContainer implements
     protected void waitUntilContainerStarted() {
         // Repeatedly try and open a connection to the DB and execute a test query
 
-        Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Connection>() {
+        Retryables.retryUntilSuccess(120, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Connection>() {
             @Override
             public Connection get() throws Exception {
+
+                checkContainerNotAborted();
+
                 Connection connection = createConnection("");
 
                 boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
