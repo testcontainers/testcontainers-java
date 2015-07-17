@@ -23,7 +23,7 @@ _N.B: TC needs to be on your application's classpath at runtime for this to work
 
 Examples/Tests:
 
- * [See here](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/jdbc/JDBCDriverTest.java)
+ * [See here](https://github.com/rnorth/test-containers/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/jdbc/JDBCDriverTest.java)
 
 ## Support
 
