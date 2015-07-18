@@ -1,6 +1,6 @@
 # Test Containers
 
-[![Circle CI](https://circleci.com/gh/rnorth/test-containers/tree/master.svg?style=svg)](https://circleci.com/gh/rnorth/test-containers/tree/master)
+[![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master)
 
 Test Containers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. Compared with other approaches, Test Containers is intended to achieve a better balance between compatibility, speed, and overhead of external management.
 
@@ -23,7 +23,7 @@ _N.B: TC needs to be on your application's classpath at runtime for this to work
 
 Examples/Tests:
 
- * [See here](https://github.com/rnorth/test-containers/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/jdbc/JDBCDriverTest.java)
+ * [See here](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/jdbc/JDBCDriverTest.java)
 
 ## Support
 
@@ -61,9 +61,9 @@ Note that if you use @Rule, you will be given an isolated container for each tes
 
 Examples/Tests:
 
- * [MySQL](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimpleMySQLTest.java)
- * [PostgreSQL](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimplePostgreSQLTest.java)
- * [nginx](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimpleNginxTest.java)
+ * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/junit/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/rnorth/testcontainers/junit/SimplePostgreSQLTest.java)
+ * [nginx](https://github.com/testcontainers/testcontainers-java/blob/master/modules/nginx/src/test/java/org/rnorth/testcontainers/junit/SimpleNginxTest.java)
 
 
 ### JDBC URL
