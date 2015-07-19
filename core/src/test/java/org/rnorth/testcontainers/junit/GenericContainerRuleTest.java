@@ -57,7 +57,7 @@ public class GenericContainerRuleTest {
     @Test
     public void simpleRedisTest() {
         String ipAddress = redis.getIpAddress();
-        String port = redis.getPort(REDIS_PORT);
+        String port = redis.getMappedPort(REDIS_PORT);
 
         // Use Redisson to obtain a List that is backed by Redis
         Config redisConfig = new Config();
@@ -81,7 +81,7 @@ public class GenericContainerRuleTest {
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(rabbitMq.getIpAddress());
-        factory.setPort(Integer.valueOf(rabbitMq.getPort(RABBITMQ_PORT)));
+        factory.setPort(Integer.valueOf(rabbitMq.getMappedPort(RABBITMQ_PORT)));
         Connection connection = factory.newConnection();
 
         Channel channel = connection.createChannel();
@@ -115,7 +115,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void simpleMongoDbTest() {
-        MongoClient mongoClient = new MongoClient(mongo.getIpAddress(), Integer.valueOf(mongo.getPort(MONGO_PORT)));
+        MongoClient mongoClient = new MongoClient(mongo.getIpAddress(), Integer.valueOf(mongo.getMappedPort(MONGO_PORT)));
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
@@ -129,7 +129,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
-        Socket socket = new Socket(alpine.getIpAddress(), Integer.valueOf(alpine.getPort("80")));
+        Socket socket = new Socket(alpine.getIpAddress(), Integer.valueOf(alpine.getMappedPort("80")));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String line = br.readLine();

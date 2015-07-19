@@ -28,7 +28,7 @@ public abstract class AbstractContainer {
 
     protected String dockerHostIpAddress;
     protected String containerId;
-    private String containerName;
+    protected String containerName;
     protected DockerClient dockerClient;
     protected String tag = "latest";
     private boolean normalTermination = false;

@@ -8,7 +8,6 @@ import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.rnorth.testcontainers.containers.traits.LinkableContainer;
-import org.rnorth.testcontainers.containers.traits.LinkableContainerRule;
 import org.rnorth.testcontainers.containers.traits.VncService;
 import org.rnorth.testcontainers.utility.Retryables;
 import org.slf4j.Logger;
@@ -16,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +32,6 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
     private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:2.45.0";
     private static final String DEFAULT_PASSWORD = "secret";
 
-    private Map<String, List<PortBinding>> ports;
     private DesiredCapabilities desiredCapabilities;
     private Map<String, LinkableContainer> containersToLink = Collections.emptyMap();
     private String imageName = null;
@@ -67,7 +63,7 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
-        ports = containerInfo.networkSettings().ports();
+        Map<String, List<PortBinding>> ports = containerInfo.networkSettings().ports();
         seleniumPort = ports.get("4444/tcp").get(0).hostPort();
         vncPort = ports.get("5900/tcp").get(0).hostPort();
     }

@@ -2,7 +2,6 @@ package org.rnorth.testcontainers.jdbc;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import com.spotify.docker.client.messages.Container;
 import org.rnorth.testcontainers.containers.JdbcDatabaseContainer;
 import org.rnorth.testcontainers.jdbc.ext.ScriptUtils;
 import org.slf4j.LoggerFactory;

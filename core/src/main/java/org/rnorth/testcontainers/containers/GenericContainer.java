@@ -6,19 +6,21 @@ import com.spotify.docker.client.messages.PortBinding;
 import org.rnorth.testcontainers.containers.traits.LinkableContainer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by rnorth on 14/07/2015.
+ * GenericContainer allows any docker image to be used to create a container.
+ *
+ * No specific helpers are provided for using container; instead, raw port, environment and command configuration
+ * may be used.
  */
 public class GenericContainer extends AbstractContainer implements LinkableContainer {
 
     private final String dockerImageName;
     private List<String> exposedPorts;
 
-    private Map<String, List<PortBinding>> ports;
+    protected Map<String, List<PortBinding>> ports;
 
     private List<String> env = new ArrayList<>();
     private String[] commandParts;
@@ -56,7 +58,7 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
     @Override
     protected String getLivenessCheckPort() {
         if (exposedPorts.size() > 0) {
-            return getPort(exposedPorts.get(0));
+            return getMappedPort(exposedPorts.get(0));
         } else {
             return null;
         }
@@ -69,7 +71,7 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
 
     /**
      * Set the ports that this container listens on
-     * @param exposedPorts
+     * @param exposedPorts a list of ports in 'number/protocol' format, e.g. '80/tcp'
      */
     public void setExposedPorts(List<String> exposedPorts) {
         this.exposedPorts = exposedPorts;
@@ -77,7 +79,7 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
 
     /**
      * Set the command that should be run in the container
-     * @param command
+     * @param command a command in single string format (will automatically be split on spaces)
      */
     public void setCommand(String command) {
         this.commandParts = command.split(" ");
@@ -85,28 +87,47 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
 
     /**
      * Set the command that should be run in the container
-     * @param commandParts
+     * @param commandParts a command as an array of string parts
      */
     public void setCommand(String[] commandParts) {
         this.commandParts = commandParts;
     }
 
+    /**
+     * Get the IP address that this container may be reached on (may not be the local machine).
+     * @return an IP address
+     */
     public String getIpAddress() {
         return dockerHostIpAddress;
     }
 
-    public String getPort(String port) {
+    /**
+     * Get the actual mapped port for a given port exposed by the container.
+     *
+     * @param originalPort should be a String either containing just the port number or suffixed '/tcp', e.g. '80/tcp'
+     * @return the port that the exposed port is mapped to, or null if it is not exposed
+     */
+    public String getMappedPort(String originalPort) {
         if (ports != null) {
 
-            List<PortBinding> usingSuffix = ports.get(port + "/tcp");
-            List<PortBinding> withoutSuffix = ports.get(port);
+            List<PortBinding> usingSuffix = ports.get(originalPort + "/tcp");
+            List<PortBinding> withoutSuffix = ports.get(originalPort);
 
-            return usingSuffix != null && usingSuffix.get(0) != null ? usingSuffix.get(0).hostPort() : withoutSuffix.get(0).hostPort();
+            if (usingSuffix != null && usingSuffix.get(0) != null) {
+                return usingSuffix.get(0).hostPort();
+            } else {
+                return withoutSuffix.get(0).hostPort();
+            }
         } else {
             return null;
         }
     }
 
+    /**
+     * Add an environment variable to be passed to the container.
+     * @param key environment variable key
+     * @param value environment variable value
+     */
     public void addEnv(String key, String value) {
         env.add(key + "=" + value);
     }

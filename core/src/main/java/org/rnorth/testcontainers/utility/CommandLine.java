@@ -2,7 +2,6 @@ package org.rnorth.testcontainers.utility;
 
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
-import org.zeroturnaround.exec.StartedProcess;
 
 import java.io.File;
 import java.io.IOException;
