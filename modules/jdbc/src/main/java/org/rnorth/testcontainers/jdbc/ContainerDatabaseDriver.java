@@ -33,7 +33,7 @@ public class ContainerDatabaseDriver implements Driver {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
 
     private Driver delegate;
-    private Map<Container, Set<Connection>> containerConnections = new HashMap<>();
+    private Map<JdbcDatabaseContainer, Set<Connection>> containerConnections = new HashMap<>();
     private Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
     private Set<JdbcDatabaseContainer> initializedContainers = new HashSet<>();
 
@@ -137,10 +137,11 @@ public class ContainerDatabaseDriver implements Driver {
      * @return              the connection, wrapped
      */
     private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
-        Set<Connection> connections = containerConnections.get(connection);
+        Set<Connection> connections = containerConnections.get(container);
 
         if(connections == null) {
             connections = new HashSet<>();
+            containerConnections.put(container, connections);
         }
 
         connections.add(connection);
