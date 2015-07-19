@@ -11,7 +11,7 @@
 
     <artifactId>testcontainers</artifactId>
 
-    <description>TestContainers Core</description>
+    <name>TestContainers Core</name>
 
     <dependencies>
         <dependency>

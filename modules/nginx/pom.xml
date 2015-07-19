@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>nginx</artifactId>
-    <description>TestContainers :: nginx</description>
+    <name>TestContainers :: nginx</name>
 
     <dependencies>
         <dependency>

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>oracle-xe</artifactId>
-    <description>TestContainers :: JDBC :: Oracle</description>
+    <name>TestContainers :: JDBC :: Oracle</name>
 
     <parent>
         <groupId>org.testcontainers</groupId>

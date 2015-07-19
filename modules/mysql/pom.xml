@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>mysql</artifactId>
-    <description>TestContainers :: JDBC :: MySQL</description>
+    <name>TestContainers :: JDBC :: MySQL</name>
 
     <dependencies>
         <dependency>
