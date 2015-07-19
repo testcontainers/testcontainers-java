@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>oracle-xe</artifactId>
-    <description>Test Containers :: JDBC :: Oracle</description>
+    <description>TestContainers :: JDBC :: Oracle</description>
 
     <parent>
-        <groupId>org.rnorth.test-containers</groupId>
-        <artifactId>test-containers-parent</artifactId>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-parent</artifactId>
         <version>0.9.6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>test-containers</artifactId>
+            <artifactId>testcontainers</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
