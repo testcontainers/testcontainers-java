@@ -23,7 +23,7 @@ _N.B: TC needs to be on your application's classpath at runtime for this to work
 
 Examples/Tests:
 
- * [See here](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/jdbc/JDBCDriverTest.java)
+ * [See here](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/jdbc/JDBCDriverTest.java)
 
 ## Support
 
@@ -62,9 +62,9 @@ Note that if you use @Rule, you will be given an isolated container for each tes
 
 Examples/Tests:
 
- * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/junit/SimpleMySQLTest.java)
- * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/rnorth/testcontainers/junit/SimplePostgreSQLTest.java)
- * [nginx](https://github.com/testcontainers/testcontainers-java/blob/master/modules/nginx/src/test/java/org/rnorth/testcontainers/junit/SimpleNginxTest.java)
+ * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/junit/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
+ * [nginx](https://github.com/testcontainers/testcontainers-java/blob/master/modules/nginx/src/test/java/org/testcontainers/junit/SimpleNginxTest.java)
 
 A generic container rule can be used with any public docker image; for example:
 
