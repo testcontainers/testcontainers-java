@@ -2,17 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.rnorth.test-containers</groupId>
-    <artifactId>test-containers-parent</artifactId>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers-parent</artifactId>
     <version>0.9.6-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
-    <name>Test Containers</name>
+    <name>TestContainers Parent POM</name>
     <description>
         Isolated container management for Java code testing
     </description>
-    <url>https://github.com/rnorth/test-containers</url>
+    <url>https://github.com/testcontainers/testcontainers-java</url>
     <licenses>
         <license>
             <name>MIT</name>
@@ -156,9 +156,9 @@
     </profiles>
 
     <scm>
-        <connection>scm:git:https://github.com/rnorth/test-containers.git</connection>
-        <developerConnection>scm:git:git@github.com:rnorth/test-containers.git</developerConnection>
-        <url>https://github.com/rnorth/test-containers</url>
+        <connection>scm:git:https://github.com/testcontainers/testcontainers-java.git</connection>
+        <developerConnection>scm:git:git@github.com:testcontainers/testcontainers-java.git</developerConnection>
+        <url>https://github.com/testcontainers/testcontainers-java</url>
         <tag>HEAD</tag>
     </scm>
 

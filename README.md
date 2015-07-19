@@ -1,10 +1,10 @@
-# Test Containers
+# TestContainers
 
 [![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master)
 
-Test Containers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. Compared with other approaches, Test Containers is intended to achieve a better balance between compatibility, speed, and overhead of external management.
+TestContainers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. Compared with other approaches, TestContainers is intended to achieve a better balance between compatibility, speed, and overhead of external management.
 
-Test Containers uses Docker to provide lightweight, throwaway instances of real databases, web browsers and web servers for use in your tests. 
+TestContainers uses Docker to provide lightweight, throwaway instances of real databases, web browsers and web servers for use in your tests.
 
 You can use TC to obtain a containerized service in one of two ways:
 
@@ -17,17 +17,17 @@ This mode starts a container before your tests and tears it down afterwards. Thi
 
 ### Containerized database using a specially modified JDBC URL
  
-After making a very simple modification to your system's JDBC URL string, Test Containers will provide a disposable stand-in database that can be used without requiring modification to your application code. This is intended to be used for development or integrated testing, when you want consistent, repeatable behaviour without the overhead of managing an external database.
+After making a very simple modification to your system's JDBC URL string, TestContainers will provide a disposable stand-in database that can be used without requiring modification to your application code. This is intended to be used for development or integrated testing, when you want consistent, repeatable behaviour without the overhead of managing an external database.
 
 _N.B: TC needs to be on your application's classpath at runtime for this to work_
 
 Examples/Tests:
 
- * [See here](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/jdbc/JDBCDriverTest.java)
+ * [See here](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/jdbc/JDBCDriverTest.java)
 
 ## Support
 
-Test Containers currently supports:
+TestContainers currently supports:
 
  * MySQL
  * PostgreSQL
@@ -62,9 +62,9 @@ Note that if you use @Rule, you will be given an isolated container for each tes
 
 Examples/Tests:
 
- * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/rnorth/testcontainers/junit/SimpleMySQLTest.java)
- * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/rnorth/testcontainers/junit/SimplePostgreSQLTest.java)
- * [nginx](https://github.com/testcontainers/testcontainers-java/blob/master/modules/nginx/src/test/java/org/rnorth/testcontainers/junit/SimpleNginxTest.java)
+ * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/junit/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
+ * [nginx](https://github.com/testcontainers/testcontainers-java/blob/master/modules/nginx/src/test/java/org/testcontainers/junit/SimpleNginxTest.java)
 
 A generic container rule can be used with any public docker image; for example:
 
@@ -89,13 +89,13 @@ As long as you have TestContainers and the appropriate JDBC driver on your class
 
 Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value.
 
-#### Using Test Containers: 
+#### Using TestContainers:
 
 `jdbc:tc:mysql://somehostname:someport/databasename` 
 
 *(Note: this will use the latest version of MySQL)*
 
-#### Using Test Containers with a fixed version: 
+#### Using TestContainers with a fixed version:
 
 `jdbc:tc:mysql:5.6.23://somehostname:someport/databasename`
 
@@ -105,7 +105,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using an init script 
 
-Test Containers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
+TestContainers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
 `jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 
@@ -115,7 +115,7 @@ This is useful if you have a fixed script for setting up database schema, etc.
 
 Instead of running a fixed script for DB setup, it may be useful to call a Java function that you define. This is intended to allow you to trigger database schema migration tools. To do this, add TC_INITFUNCTION to the URL as follows, passing a full path to the class name and method:
  
- `jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
+ `jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
 
 The init function must be a public static method which takes a `java.sql.Connection` as its only parameter, e.g.
 
@@ -128,8 +128,8 @@ The init function must be a public static method which takes a `java.sql.Connect
 ## Maven dependency
 
     <dependency>
-        <groupId>org.rnorth.test-containers</groupId>
-        <artifactId>test-containers</artifactId>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
         <version>0.9.2</version>
     </dependency>
 
