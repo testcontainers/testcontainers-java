@@ -130,16 +130,22 @@ The init function must be a public static method which takes a `java.sql.Connect
     <dependency>
         <groupId>org.rnorth.test-containers</groupId>
         <artifactId>test-containers</artifactId>
-        <version>0.9.2</version>
+        <version>0.9.5</version>
     </dependency>
 
 ## License
 
 See [LICENSE](LICENSE).
 
+## Roadmap
+
+See [ROADMAP](https://github.com/testcontainers/testcontainers-java/wiki/ROADMAP).
+
 ## Attributions
 
 This project includes a modified class (ScriptUtils) taken from the Spring JDBC project, adapted under the terms of the Apache license. Copyright for that class remains with the original authors.
+
+This project is built on top of the awesome [Spotify docker client library for Java](https://github.com/spotify/docker-client) and was initially inspired by a [gist](https://gist.github.com/mosheeshel/c427b43c36b256731a0b) by Mosche Eschel.
 
 ## Copyright
 
