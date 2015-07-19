@@ -3,19 +3,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.rnorth.test-containers</groupId>
-        <artifactId>test-containers-parent</artifactId>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-parent</artifactId>
         <version>0.9.6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>selenium</artifactId>
-    <description>Test Containers :: Selenium</description>
+    <name>TestContainers :: Selenium</name>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>test-containers</artifactId>
+            <artifactId>testcontainers</artifactId>
             <version>${project.version}</version>
         </dependency>
 
