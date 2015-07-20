@@ -1,40 +1,52 @@
 # TestContainers
 
+> TestContainers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. TestContainers uses Docker to provide lightweight, throwaway instances of your tests' dependencies.
+
+<hr />
+
 [![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master)
 
-TestContainers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. TestContainers uses Docker to provide lightweight, throwaway instances of your tests' dependencies.
+
+# Table of Contents
+<hr />
+<!-- MarkdownTOC autolink=true bracket=round -->
+
+- [Use Cases](#use-cases)
+- [Usage summary](#usage-summary)
+- [Usage](#usage)
+    - [Prerequisites](#prerequisites)
+    - [JUnit rule](#junit-rule)
+    - [JDBC URL](#jdbc-url)
+- [Maven dependency](#maven-dependency)
+- [Supported containers](#supported-containers)
+- [License](#license)
+- [Attributions](#attributions)
+- [Contributing](#contributing)
+- [Copyright](#copyright)
+
+<!-- /MarkdownTOC -->
 
 # Use Cases
+<hr />
 
  * **Data access layer integration tests**: use a containerized instance of a MySQL, PostgreSQL or Oracle database to test your data access layer code for complete compatibility, but without requiring complex setup on developers' machines and safe in the knowledge that your tests will always start with a known DB state. Any other database type that can be containerized can also be used.
  * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
  * **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 
 # Usage summary
+<hr />
 
 You can use TC to obtain a containerized service in one of two ways:
 
  * **JUnit @Rule/@ClassRule**: this mode starts a container before your tests and tears it down afterwards.
  * **Containerized database using a specially modified JDBC URL**: after making a very simple modification to your system's JDBC URL string, TestContainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
 
-# Supported containers
-
-TestContainers currently supports:
-
- * MySQL
- * PostgreSQL
- * Oracle XE
- * nginx
- * the standalone-chrome-debug and standalone-firefox-debug containers from [SeleniumHQ](https://github.com/SeleniumHQ/docker-selenium)
- * any other container images using `GenericContainer` and `GenericContainerRule`
-
-Other container types can be added later. Note that at present, only containers from the Docker Hub registry can be used - this needs to be fixed.
-
 # Usage
+<hr />
 
 ## Prerequisites
 
-Docker or boot2docker (for OS X) must be installed on the machine you are running tests on.
+Docker or boot2docker (for OS X) must be installed on the machine you are running tests on. TestContainers currently requires JDK 1.7 and is compatible with JUnit and Selenium2/WebDriver.
 
 ## JUnit rule
 
@@ -122,6 +134,7 @@ The init function must be a public static method which takes a `java.sql.Connect
         ...
 
 # Maven dependency
+<hr />
 
     <dependency>
         <groupId>org.rnorth.test-containers</groupId>
@@ -129,21 +142,47 @@ The init function must be a public static method which takes a `java.sql.Connect
         <version>0.9.5</version>
     </dependency>
 
+# Supported containers
+<hr />
+
+TestContainers currently supports:
+
+ * MySQL
+ * PostgreSQL
+ * Oracle XE
+ * nginx
+ * the standalone-chrome-debug and standalone-firefox-debug containers from [SeleniumHQ](https://github.com/SeleniumHQ/docker-selenium)
+ * any other container images using `GenericContainer` and `GenericContainerRule`
+
+Other container types can be added later. Note that at present, only containers from the Docker Hub registry can be used - this needs to be fixed.
+
 # License
+<hr />
 
 See [LICENSE](LICENSE).
 
 # Attributions
+<hr />
 
 This project includes a modified class (ScriptUtils) taken from the Spring JDBC project, adapted under the terms of the Apache license. Copyright for that class remains with the original authors.
 
 This project is built on top of the awesome [Spotify docker client library for Java](https://github.com/spotify/docker-client) and was initially inspired by a [gist](https://gist.github.com/mosheeshel/c427b43c36b256731a0b) by Mosche Eschel.
 
-# Roadmap
+# Contributing
+<hr />
 
-See [ROADMAP](https://github.com/testcontainers/testcontainers-java/wiki/ROADMAP).
-
+* Star the project on Github and help spread the word :)
+* See [ROADMAP](https://github.com/testcontainers/testcontainers-java/wiki/ROADMAP) to understand the approach behind the project and what may/may not be in store for the future.
+* [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
+* Contribute improvements or fixes using a [Pull Request](https://github.com/testcontainers/testcontainers-java/pulls). If you're going to contribute, thank you! Please just be sure to:
+	* discuss with the authors on an issue ticket prior to doing anything big
+	* follow the style, naming and structure conventions of the rest of the project
+	* make commits atomic and easy to merge
+	* verify all tests are passing. Build the project with `mvn clean install -Pproprietary-deps` to do this.
 
 # Copyright
+<hr />
 
-Copyright (c) 2015 Richard North
+Copyright (c) 2015 Richard North and other authors.
+
+See [AUTHORS](AUTHORS) for contributors.
