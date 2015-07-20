@@ -2,13 +2,10 @@
 
 > TestContainers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. TestContainers uses Docker to provide lightweight, throwaway instances of your tests' dependencies.
 
-<hr />
-
 [![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master)
 
 
 # Table of Contents
-<hr />
 <!-- MarkdownTOC autolink=true bracket=round -->
 
 - [Use Cases](#use-cases)
@@ -27,14 +24,12 @@
 <!-- /MarkdownTOC -->
 
 # Use Cases
-<hr />
 
  * **Data access layer integration tests**: use a containerized instance of a MySQL, PostgreSQL or Oracle database to test your data access layer code for complete compatibility, but without requiring complex setup on developers' machines and safe in the knowledge that your tests will always start with a known DB state. Any other database type that can be containerized can also be used.
  * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
  * **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 
 # Usage summary
-<hr />
 
 You can use TC to obtain a containerized service in one of two ways:
 
@@ -42,7 +37,6 @@ You can use TC to obtain a containerized service in one of two ways:
  * **Containerized database using a specially modified JDBC URL**: after making a very simple modification to your system's JDBC URL string, TestContainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
 
 # Usage
-<hr />
 
 ## Prerequisites
 
@@ -134,7 +128,6 @@ The init function must be a public static method which takes a `java.sql.Connect
         ...
 
 # Maven dependency
-<hr />
 
     <dependency>
         <groupId>org.rnorth.test-containers</groupId>
@@ -143,7 +136,6 @@ The init function must be a public static method which takes a `java.sql.Connect
     </dependency>
 
 # Supported containers
-<hr />
 
 TestContainers currently supports:
 
@@ -157,19 +149,16 @@ TestContainers currently supports:
 Other container types can be added later. Note that at present, only containers from the Docker Hub registry can be used - this needs to be fixed.
 
 # License
-<hr />
 
 See [LICENSE](LICENSE).
 
 # Attributions
-<hr />
 
 This project includes a modified class (ScriptUtils) taken from the Spring JDBC project, adapted under the terms of the Apache license. Copyright for that class remains with the original authors.
 
 This project is built on top of the awesome [Spotify docker client library for Java](https://github.com/spotify/docker-client) and was initially inspired by a [gist](https://gist.github.com/mosheeshel/c427b43c36b256731a0b) by Mosche Eschel.
 
 # Contributing
-<hr />
 
 * Star the project on Github and help spread the word :)
 * See [ROADMAP](https://github.com/testcontainers/testcontainers-java/wiki/ROADMAP) to understand the approach behind the project and what may/may not be in store for the future.
@@ -181,7 +170,6 @@ This project is built on top of the awesome [Spotify docker client library for J
 	* verify all tests are passing. Build the project with `mvn clean install -Pproprietary-deps` to do this.
 
 # Copyright
-<hr />
 
 Copyright (c) 2015 Richard North and other authors.
 
