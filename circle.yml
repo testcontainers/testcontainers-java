@@ -7,3 +7,6 @@ dependencies:
     - "sudo docker -d -e lxc -s btrfs -H 0.0.0.0:2376":
         background: true
     - mvn install -DskipTests
+notify:
+  webhooks:
+    - url: https://webhooks.gitter.im/e/1bf1c6aa3b2aa8408c5f

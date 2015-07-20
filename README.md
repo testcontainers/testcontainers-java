@@ -2,7 +2,8 @@
 
 > TestContainers is a Java library aimed at making it easier to test components or systems that interact with databases and other containerized things. TestContainers uses Docker to provide lightweight, throwaway instances of your tests' dependencies.
 
-[![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master)
+[![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master) 
+[![Gitter chat](https://img.shields.io/badge/gitter-chat-blue.svg)](https://gitter.im/testcontainers/general)
 
 
 ## Table of Contents
