@@ -10,8 +10,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
 import org.testcontainers.utility.Retryables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,8 +35,6 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
     private String imageName = null;
     private String seleniumPort;
     private String vncPort;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
     /**
      * @param imageName custom image name to use for the container
@@ -149,7 +145,7 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
                 RemoteWebDriver driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
                 driver.getCurrentUrl();
 
-                LOGGER.info("Obtained a connection to container ({})", BrowserWebDriverContainer.this.getSeleniumAddress());
+                logger().info("Obtained a connection to container ({})", BrowserWebDriverContainer.this.getSeleniumAddress());
                 return driver;
             }
         });
