@@ -2,8 +2,6 @@ package org.testcontainers.containers;
 
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Retryables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -18,7 +16,6 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class JdbcDatabaseContainer extends AbstractContainer implements LinkableContainer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDatabaseContainer.class);
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
 
@@ -73,7 +70,7 @@ public abstract class JdbcDatabaseContainer extends AbstractContainer implements
                 boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
 
                 if (success) {
-                    LOGGER.info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
+                    logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
                     return connection;
                 } else {
                     throw new SQLException("Failed to execute test query");

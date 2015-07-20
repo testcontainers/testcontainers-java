@@ -2,10 +2,10 @@ package org.testcontainers.containers;
 
 import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.*;
-import org.testcontainers.utility.PathOperations;
-import org.testcontainers.utility.Retryables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.utility.PathOperations;
+import org.testcontainers.utility.Retryables;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +24,6 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  */
 public abstract class AbstractContainer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("TestContainer");
-
     protected String dockerHostIpAddress;
     protected String containerId;
     protected String containerName;
@@ -38,7 +36,7 @@ public abstract class AbstractContainer {
      */
     public void start() {
 
-        LOGGER.debug("Start for container ({}): {}", getDockerImageName(), this);
+        logger().debug("Start for container ({}): {}", getDockerImageName(), this);
 
         try {
 
@@ -53,12 +51,12 @@ public abstract class AbstractContainer {
             customizeHostConfigBuilder(hostConfigBuilder);
             HostConfig hostConfig = hostConfigBuilder.build();
 
-            LOGGER.info("Creating container for image: {}", getDockerImageName());
+            logger().info("Creating container for image: {}", getDockerImageName());
             ContainerCreation containerCreation = dockerClient.createContainer(containerConfig);
 
             containerId = containerCreation.id();
             dockerClient.startContainer(containerId, hostConfig);
-            LOGGER.info("Starting container with ID: {}", containerId);
+            logger().info("Starting container with ID: {}", containerId);
 
             ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
             containerName = containerInfo.name();
@@ -72,11 +70,11 @@ public abstract class AbstractContainer {
             });
 
             // Tell subclasses that we're starting
-            LOGGER.info("Container is starting with port mapping: {}", dockerClient.inspectContainer(containerId).networkSettings().ports());
+            logger().info("Container is starting with port mapping: {}", dockerClient.inspectContainer(containerId).networkSettings().ports());
             containerIsStarting(containerInfo);
 
             waitUntilContainerStarted();
-            LOGGER.info("Container started");
+            logger().info("Container started");
 
             // If the container stops before the after() method, its termination was unexpected
             Executors.newSingleThreadExecutor().submit(new Runnable() {
@@ -99,15 +97,23 @@ public abstract class AbstractContainer {
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    LOGGER.debug("Hit shutdown hook for container {}", AbstractContainer.this.containerId);
+                    logger().debug("Hit shutdown hook for container {}", AbstractContainer.this.containerId);
                     AbstractContainer.this.stop();
                 }
             }));
         } catch (Exception e) {
-            LOGGER.error("Could not start container", e);
+            logger().error("Could not start container", e);
 
             throw new ContainerLaunchException("Could not create/start container", e);
         }
+    }
+
+    /**
+     * Provide a logger that references the docker image name.
+     * @return
+     */
+    protected Logger logger() {
+        return LoggerFactory.getLogger("testcontainers[" + getDockerImageName() + "]");
     }
 
     /**
@@ -128,7 +134,7 @@ public abstract class AbstractContainer {
             }
         }
 
-        LOGGER.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
+        logger().info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
         dockerClient.pull(getDockerImageName(), new ProgressHandler() {
             @Override
             public void progress(ProgressMessage message) throws DockerException {
@@ -148,15 +154,15 @@ public abstract class AbstractContainer {
      */
     public void stop() {
 
-        LOGGER.debug("Stop for container ({}): {}", getDockerImageName(), this);
+        logger().debug("Stop for container ({}): {}", getDockerImageName(), this);
 
         try {
-            LOGGER.info("Stopping container: {}", containerId);
+            logger().info("Stopping container: {}", containerId);
             normalTermination = true;
             dockerClient.killContainer(containerId);
             dockerClient.removeContainer(containerId, true);
         } catch (DockerException | InterruptedException e) {
-            LOGGER.debug("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            logger().debug("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
         }
     }
 
