@@ -15,7 +15,7 @@
     - [Prerequisites](#prerequisites)
     - [JUnit rule](#junit-rule)
     - [JDBC URL](#jdbc-url)
-- [Maven dependency](#maven-dependency)
+- [Maven dependencies](#maven-dependencies)
 - [Supported containers](#supported-containers)
 - [License](#license)
 - [Attributions](#attributions)
@@ -128,12 +128,19 @@ The init function must be a public static method which takes a `java.sql.Connect
         }
         ...
 
-## Maven dependency
+## Maven dependencies
+
+In the dependency description below, replace `--artifact name--` with one of the following:
+
+* **junit** for just core functionality and generic containers support
+* **mysql**, **postgresql** or **oracle-xe** for database container support
+* **selenium** for selenium support
+
 
     <dependency>
-        <groupId>org.rnorth.test-containers</groupId>
-        <artifactId>test-containers</artifactId>
-        <version>0.9.5</version>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>--artifact name--</artifactId>
+        <version>0.9.6</version>
     </dependency>
 
 ## Supported containers
