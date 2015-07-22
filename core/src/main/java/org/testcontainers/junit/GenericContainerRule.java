@@ -126,13 +126,13 @@ public class GenericContainerRule extends ExternalResource {
         container.stop();
     }
 
-    public GenericContainerRule withDirectoryMapping(String hostPath, String containerPath, GenericContainer.BindMode mode) {
+    public GenericContainerRule withResourceMapping(String hostPath, String containerPath, GenericContainer.BindMode mode) {
         container.addFileSystemBind(hostPath, containerPath, mode);
 
         return this;
     }
 
-    public GenericContainerRule withClasspathDirectoryMapping(String resourcePath, String containerPath, GenericContainer.BindMode mode) {
+    public GenericContainerRule withClasspathResourceMapping(String resourcePath, String containerPath, GenericContainer.BindMode mode) {
         URL resource = GenericContainerRule.class.getClassLoader().getResource(resourcePath);
 
         if (resource == null) {

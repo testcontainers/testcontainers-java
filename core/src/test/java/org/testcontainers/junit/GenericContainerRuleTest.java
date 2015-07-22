@@ -83,17 +83,17 @@ public class GenericContainerRuleTest {
     @ClassRule
     public static GenericContainerRule alpineStaticDirectory = new GenericContainerRule("alpine:3.2")
                                                                 .withExposedPorts(80)
-                                                                .withDirectoryMapping(System.getProperty("user.home") + "/.tmp-test-container", "/content", READ_ONLY)
+                                                                .withResourceMapping(System.getProperty("user.home") + "/.tmp-test-container", "/content", READ_ONLY)
                                                                 .withCommand("/bin/sh", "-c", "while true; do cat /content/file | nc -l -p 80; done");
 
     /**
-     * Map a directory on the classpath to a directory in the container, and then expose the content for testing.
+     * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainerRule alpineClasspathDirectory = new GenericContainerRule("alpine:3.2")
+    public static GenericContainerRule alpineClasspathResource = new GenericContainerRule("alpine:3.2")
                                                                 .withExposedPorts(80)
-                                                                .withClasspathDirectoryMapping("mappable-resource", "/content", READ_ONLY)
-                                                                .withCommand("/bin/sh", "-c", "while true; do cat /content/test-resource.txt | nc -l -p 80; done");
+                                                                .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
+                                                                .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
 
     @Test
@@ -186,17 +186,17 @@ public class GenericContainerRuleTest {
 
         String line = br.readLine();
 
-        assertEquals("Directories can be mapped using calls to withDirectoryMapping", "Hello world!", line);
+        assertEquals("Directories can be mapped using calls to withResourceMapping", "Hello world!", line);
     }
 
     @Test
-    public void customClasspathDirectoryMappingTest() throws IOException {
-        Socket socket = new Socket(alpineClasspathDirectory.getIpAddress(), Integer.valueOf(alpineClasspathDirectory.getMappedPort("80")));
+    public void customClasspathResourceMappingTest() throws IOException {
+        Socket socket = new Socket(alpineClasspathResource.getIpAddress(), Integer.valueOf(alpineClasspathResource.getMappedPort("80")));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String line = br.readLine();
 
-        assertEquals("Directories on the classpath can be mapped using calls to withClasspathDirectoryMapping", "FOOBAR", line);
+        assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMapping", "FOOBAR", line);
     }
 
     protected static void writeStringToFile(File contentFolder, String filename, String string) throws FileNotFoundException {
