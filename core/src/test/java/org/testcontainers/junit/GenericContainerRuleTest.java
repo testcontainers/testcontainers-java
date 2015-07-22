@@ -83,7 +83,7 @@ public class GenericContainerRuleTest {
     @ClassRule
     public static GenericContainerRule alpineStaticDirectory = new GenericContainerRule("alpine:3.2")
                                                                 .withExposedPorts(80)
-                                                                .withResourceMapping(System.getProperty("user.home") + "/.tmp-test-container", "/content", READ_ONLY)
+                                                                .withDirectoryMapping(System.getProperty("user.home") + "/.tmp-test-container", "/content", READ_ONLY)
                                                                 .withCommand("/bin/sh", "-c", "while true; do cat /content/file | nc -l -p 80; done");
 
     /**
@@ -186,7 +186,7 @@ public class GenericContainerRuleTest {
 
         String line = br.readLine();
 
-        assertEquals("Directories can be mapped using calls to withResourceMapping", "Hello world!", line);
+        assertEquals("Directories can be mapped using calls to withDirectoryMapping", "Hello world!", line);
     }
 
     @Test

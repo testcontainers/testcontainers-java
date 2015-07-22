@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.GenericContainer;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,7 +127,14 @@ public class GenericContainerRule extends ExternalResource {
         container.stop();
     }
 
-    public GenericContainerRule withResourceMapping(String hostPath, String containerPath, GenericContainer.BindMode mode) {
+    public GenericContainerRule withDirectoryMapping(String hostPath, String containerPath, GenericContainer.BindMode mode) {
+
+        // Create folders if they don't yet exist to prevent docker creating them with root permissions
+        File hostFile = new File(hostPath);
+        if (!hostFile.exists()) {
+            hostFile.mkdirs();
+        }
+
         container.addFileSystemBind(hostPath, containerPath, mode);
 
         return this;
