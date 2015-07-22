@@ -27,6 +27,7 @@ public class GenericContainerRule extends ExternalResource {
     /**
      * Set the ports that this container listens on
      * @param ports an array of TCP ports
+     * @return this
      */
     public GenericContainerRule withExposedPorts(int... ports) {
         String[] stringValues = new String[ports.length];
@@ -40,6 +41,7 @@ public class GenericContainerRule extends ExternalResource {
     /**
      * Set the ports that this container listens on
      * @param ports an array of ports in either 'port/protocol' format (e.g. '80/tcp') or 'port' format (e.g. '80')
+     * @return this
      */
     public GenericContainerRule withExposedPorts(String... ports) {
         List<String> portsWithSuffix = new ArrayList<>();
@@ -60,6 +62,7 @@ public class GenericContainerRule extends ExternalResource {
      * Add an environment variable to be passed to the container.
      * @param key environment variable key
      * @param value environment variable value
+     * @return this
      */
     public GenericContainerRule withEnv(String key, String value) {
         container.addEnv(key, value);
@@ -69,6 +72,7 @@ public class GenericContainerRule extends ExternalResource {
     /**
      * Set the command that should be run in the container
      * @param cmd a command in single string format (will automatically be split on spaces)
+     * @return this
      */
     public GenericContainerRule withCommand(String cmd) {
         container.setCommand(cmd);
@@ -78,9 +82,30 @@ public class GenericContainerRule extends ExternalResource {
     /**
      * Set the command that should be run in the container
      * @param commandParts a command as an array of string parts
+     * @return this
      */
     public GenericContainerRule withCommand(String... commandParts) {
         container.setCommand(commandParts);
+        return this;
+    }
+
+    /**
+     * Map a resource (file or directory) on the classpath to a path inside the container
+     * @param resourcePath path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
+     * @param containerPath path this should be mapped to inside the container
+     * @param mode access mode for the file
+     * @return this
+     */
+    public GenericContainerRule withClasspathResourceMapping(String resourcePath, String containerPath, GenericContainer.BindMode mode) {
+        URL resource = GenericContainerRule.class.getClassLoader().getResource(resourcePath);
+
+        if (resource == null) {
+            throw new IllegalArgumentException("Could not find classpath resource at provided path: " + resourcePath);
+        }
+        String resourceFilePath = resource.getFile();
+
+        container.addFileSystemBind(resourceFilePath, containerPath, mode);
+
         return this;
     }
 
@@ -124,18 +149,5 @@ public class GenericContainerRule extends ExternalResource {
     @Override
     protected void after() {
         container.stop();
-    }
-
-    public GenericContainerRule withClasspathResourceMapping(String resourcePath, String containerPath, GenericContainer.BindMode mode) {
-        URL resource = GenericContainerRule.class.getClassLoader().getResource(resourcePath);
-
-        if (resource == null) {
-            throw new IllegalArgumentException("Could not find classpath resource at provided path: " + resourcePath);
-        }
-        String resourceFilePath = resource.getFile();
-
-        container.addFileSystemBind(resourceFilePath, containerPath, mode);
-
-        return this;
     }
 }
