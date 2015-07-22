@@ -4,7 +4,7 @@
 
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers-parent</artifactId>
-    <version>0.9.6-SNAPSHOT</version>
+    <version>0.9.6</version>
 
     <packaging>pom</packaging>
 
@@ -159,7 +159,7 @@
         <connection>scm:git:https://github.com/testcontainers/testcontainers-java.git</connection>
         <developerConnection>scm:git:git@github.com:testcontainers/testcontainers-java.git</developerConnection>
         <url>https://github.com/testcontainers/testcontainers-java</url>
-        <tag>HEAD</tag>
+        <tag>0.9.6</tag>
     </scm>
 
     <distributionManagement>
