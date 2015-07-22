@@ -77,16 +77,6 @@ public class GenericContainerRuleTest {
                                                     .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
 
     /**
-     * Map a directory on the host machine's disk to a directory in the container, and then expose the content for
-     * testing.
-     */
-    @ClassRule
-    public static GenericContainerRule alpineStaticDirectory = new GenericContainerRule("alpine:3.2")
-                                                                .withExposedPorts(80)
-                                                                .withDirectoryMapping(System.getProperty("user.home") + "/.tmp-test-container", "/content", READ_ONLY)
-                                                                .withCommand("/bin/sh", "-c", "while true; do cat /content/file | nc -l -p 80; done");
-
-    /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
@@ -177,16 +167,6 @@ public class GenericContainerRuleTest {
         String line = br.readLine();
 
         assertEquals("An environment variable can be passed into a command", "42", line);
-    }
-
-    @Test
-    public void customDirectoryMappingTest() throws IOException {
-        Socket socket = new Socket(alpineStaticDirectory.getIpAddress(), Integer.valueOf(alpineStaticDirectory.getMappedPort("80")));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-        String line = br.readLine();
-
-        assertEquals("Directories can be mapped using calls to withDirectoryMapping", "Hello world!", line);
     }
 
     @Test
