@@ -2,9 +2,10 @@ package org.testcontainers.jdbc;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.jdbc.ext.ScriptUtils;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.JdbcDatabaseContainerProvider;
+import org.testcontainers.jdbc.ext.ScriptUtils;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -75,6 +76,10 @@ public class ContainerDatabaseDriver implements Driver {
             }
             String databaseType = urlMatcher.group(1);
             String tag = urlMatcher.group(3);
+            if (tag == null) {
+                tag = "latest";
+            }
+
             queryString = urlMatcher.group(4);
             if (queryString == null) {
                 queryString = "";
@@ -83,11 +88,10 @@ public class ContainerDatabaseDriver implements Driver {
             /**
              * Find a matching container type using ServiceLoader.
              */
-            ServiceLoader<JdbcDatabaseContainer> databaseContainers = ServiceLoader.load(JdbcDatabaseContainer.class);
-            for (JdbcDatabaseContainer candidateContainerType : databaseContainers) {
-                if (candidateContainerType.getName().equals(databaseType)) {
-                    candidateContainerType.setTag(tag);
-                    container = candidateContainerType;
+            ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
+            for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
+                if (candidateContainerType.supports(databaseType)) {
+                    container = candidateContainerType.newInstance(tag);
                     delegate = container.getJdbcDriverInstance();
                 }
             }

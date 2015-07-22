@@ -8,8 +8,17 @@ import com.spotify.docker.client.messages.ContainerInfo;
  */
 public class MySQLContainer extends JdbcDatabaseContainer {
 
-    private static final String IMAGE = "mysql";
+    public static final String NAME = "mysql";
+    public static final String IMAGE = "mysql";
     private String mySqlPort;
+
+    public MySQLContainer() {
+        super(IMAGE + ":latest");
+    }
+
+    public MySQLContainer(String dockerImageName) {
+        super(dockerImageName);
+    }
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
@@ -29,11 +38,6 @@ public class MySQLContainer extends JdbcDatabaseContainer {
                     .env("MYSQL_DATABASE=test", "MYSQL_USER=test", "MYSQL_PASSWORD=test", "MYSQL_ROOT_PASSWORD=test")
                     .cmd("mysqld")
                     .build();
-    }
-
-    @Override
-    protected String getDockerImageName() {
-        return IMAGE + ":" + tag;
     }
 
     @Override

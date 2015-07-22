@@ -8,8 +8,17 @@ import com.spotify.docker.client.messages.ContainerInfo;
  */
 public class PostgreSQLContainer extends JdbcDatabaseContainer {
 
-    private static final String IMAGE = "postgres";
+    public static final String NAME = "postgresql";
+    public static final String IMAGE = "postgres";
     private String postgresPort;
+
+    public PostgreSQLContainer() {
+        super(IMAGE + ":latest");
+    }
+
+    public PostgreSQLContainer(String dockerImageName) {
+        super(dockerImageName);
+    }
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
@@ -29,11 +38,6 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer {
                     .env("POSTGRES_DATABASE=test", "POSTGRES_USER=test", "POSTGRES_PASSWORD=test")
                     .cmd("postgres")
                     .build();
-    }
-
-    @Override
-    protected String getDockerImageName() {
-        return IMAGE + ":" + tag;
     }
 
     @Override

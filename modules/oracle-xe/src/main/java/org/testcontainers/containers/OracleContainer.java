@@ -8,10 +8,20 @@ import com.spotify.docker.client.messages.ContainerInfo;
  */
 public class OracleContainer extends JdbcDatabaseContainer {
 
-    private static final String IMAGE = "wnameless/oracle-xe-11g";
+    public static final String NAME = "oracle";
+    public static final String IMAGE = "wnameless/oracle-xe-11g";
+
     private String sshPort;
     private String oraclePort;
     private String webPort;
+
+    public OracleContainer() {
+        super(IMAGE + ":latest");
+    }
+
+    public OracleContainer(String dockerImageName) {
+        super(dockerImageName);
+    }
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {

@@ -1,38 +1,18 @@
 package org.testcontainers.junit;
 
-import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.MySQLContainer;
 
 /**
  * @author richardnorth
  */
-public class MySQLContainerRule extends ExternalResource {
-
-    private final MySQLContainer container;
+public class MySQLContainerRule extends JdbcContainerRule {
 
     public MySQLContainerRule() {
-        container = new MySQLContainer();
+        super(new MySQLContainer());
     }
 
-    @Override
-    protected void before() throws Throwable {
-        container.start();
+    public MySQLContainerRule(String dockerImageName) {
+        super(new MySQLContainer(dockerImageName));
     }
 
-    @Override
-    protected void after() {
-        container.stop();
-    }
-
-    public String getJdbcUrl() {
-        return container.getJdbcUrl();
-    }
-
-    public String getUsername() {
-        return container.getUsername();
-    }
-
-    public String getPassword() {
-        return container.getPassword();
-    }
 }
