@@ -130,11 +130,13 @@ The init function must be a public static method which takes a `java.sql.Connect
 
 ## Maven dependencies
 
-In the dependency description below, replace `--artifact name--` with one of the following:
+TestContainers is distributed in a handful of modules:
 
 * **junit** for just core functionality and generic containers support
 * **mysql**, **postgresql** or **oracle-xe** for database container support
 * **selenium** for selenium support
+
+In the dependency description below, replace `--artifact name--` as appropriate:
 
 
     <dependency>
