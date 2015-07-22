@@ -19,6 +19,10 @@ public class GenericContainerRule extends ExternalResource {
         this.container = new GenericContainer(dockerImageName);
     }
 
+    public GenericContainerRule(GenericContainer container) {
+        this.container = container;
+    }
+
     /**
      * Set the ports that this container listens on
      * @param ports an array of TCP ports

@@ -1,37 +1,17 @@
 package org.testcontainers.junit;
 
-import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
  * @author richardnorth
  */
-public class PostgreSQLContainerRule extends ExternalResource {
-    private final PostgreSQLContainer container;
+public class PostgreSQLContainerRule extends JdbcContainerRule {
 
     public PostgreSQLContainerRule() {
-        container = new PostgreSQLContainer();
+        super(new PostgreSQLContainer());
     }
 
-    @Override
-    protected void before() throws Throwable {
-        container.start();
+    public PostgreSQLContainerRule(String dockerImageName) {
+        super(new PostgreSQLContainer(dockerImageName));
     }
-
-    @Override
-    protected void after() {
-        container.stop();
-    }
-
-    public String getJdbcUrl() {
-        return container.getJdbcUrl();
-    }
-
-    public String getUsername() {
-        return container.getUsername();
-    }
-
-    public String getPassword() {
-        return container.getPassword();
-}
 }

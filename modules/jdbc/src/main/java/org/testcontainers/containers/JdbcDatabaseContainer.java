@@ -14,10 +14,14 @@ import java.util.concurrent.TimeUnit;
  *
  * @author richardnorth
  */
-public abstract class JdbcDatabaseContainer extends AbstractContainer implements LinkableContainer {
+public abstract class JdbcDatabaseContainer extends GenericContainer implements LinkableContainer {
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
+
+    public JdbcDatabaseContainer(String dockerImageName) {
+        super(dockerImageName);
+    }
 
     /**
      * Get the name of the database type, to be matched against the DB type part of the JDBC query string (i.e. after jdbc:)
@@ -35,19 +39,19 @@ public abstract class JdbcDatabaseContainer extends AbstractContainer implements
      * Get a JDBC URL that may be used to connect to the dockerized DB
      * @return
      */
-    protected abstract String getJdbcUrl();
+    public abstract String getJdbcUrl();
 
     /**
      * Get the standard database username that should be used for connections
      * @return
      */
-    protected abstract String getUsername();
+    public abstract String getUsername();
 
     /**
      * Get the standard password that should be used for connections
      * @return
      */
-    protected abstract String getPassword();
+    public abstract String getPassword();
 
     /**
      * Get a test query string suitable for testing that this particular database type is alive
@@ -112,4 +116,7 @@ public abstract class JdbcDatabaseContainer extends AbstractContainer implements
         info.put("password", this.getPassword());
         return getJdbcDriverInstance().connect(this.getJdbcUrl() + queryString, info);
     }
+
+    @Override
+    protected abstract String getLivenessCheckPort();
 }
