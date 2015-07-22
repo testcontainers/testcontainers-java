@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.GenericContainer;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,5 +124,24 @@ public class GenericContainerRule extends ExternalResource {
     @Override
     protected void after() {
         container.stop();
+    }
+
+    public GenericContainerRule withDirectoryMapping(String hostPath, String containerPath, GenericContainer.BindMode mode) {
+        container.addFileSystemBind(hostPath, containerPath, mode);
+
+        return this;
+    }
+
+    public GenericContainerRule withClasspathDirectoryMapping(String resourcePath, String containerPath, GenericContainer.BindMode mode) {
+        URL resource = GenericContainerRule.class.getClassLoader().getResource(resourcePath);
+
+        if (resource == null) {
+            throw new IllegalArgumentException("Could not find classpath resource at provided path: " + resourcePath);
+        }
+        String resourceFilePath = resource.getFile();
+
+        container.addFileSystemBind(resourceFilePath, containerPath, mode);
+
+        return this;
     }
 }

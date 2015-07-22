@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import org.testcontainers.containers.traits.LinkableContainer;
 
@@ -24,6 +25,8 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
 
     private List<String> env = new ArrayList<>();
     private String[] commandParts;
+
+    private List<String> binds = new ArrayList<>();
 
     public GenericContainer(final String dockerImageName) {
         this.dockerImageName = dockerImageName;
@@ -53,6 +56,12 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
 
         return builder
                 .build();
+    }
+
+    @Override
+    protected void customizeHostConfigBuilder(HostConfig.Builder hostConfigBuilder) {
+        super.customizeHostConfigBuilder(hostConfigBuilder);
+        hostConfigBuilder.binds(binds);
     }
 
     @Override
@@ -130,5 +139,19 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
      */
     public void addEnv(String key, String value) {
         env.add(key + "=" + value);
+    }
+
+    public void addFileSystemBind(String hostPath, String containerPath, GenericContainer.BindMode mode) {
+        binds.add(hostPath + ":" + containerPath + ":" + mode.shortForm);
+    }
+
+    public enum BindMode {
+        READ_ONLY("ro"), READ_WRITE("rw");
+
+        public final String shortForm;
+
+        BindMode(String shortForm) {
+            this.shortForm = shortForm;
+        }
     }
 }

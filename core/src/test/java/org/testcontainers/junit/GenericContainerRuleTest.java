@@ -5,21 +5,21 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
 import org.bson.Document;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.redisson.Config;
 import org.redisson.Redisson;
 import org.testcontainers.utility.Retryables;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.testcontainers.containers.GenericContainer.BindMode.READ_ONLY;
 import static org.testpackage.VisibleAssertions.assertEquals;
 import static org.testpackage.VisibleAssertions.assertTrue;
 
@@ -28,31 +28,73 @@ import static org.testpackage.VisibleAssertions.assertTrue;
  */
 public class GenericContainerRuleTest {
 
-    public static final String REDIS_PORT = "6379";
-
+    private static final String REDIS_PORT = "6379";
     private static final String RABBIQMQ_TEST_EXCHANGE = "TestExchange";
     private static final String RABBITMQ_TEST_ROUTING_KEY = "TestRoutingKey";
     private static final String RABBITMQ_TEST_MESSAGE = "Hello world";
     private static final String RABBITMQ_PORT = "5672";
     private static final String MONGO_PORT = "27017";
 
+    /*
+     * Test data setup
+     */
+    @BeforeClass
+    public static void setupContent() throws FileNotFoundException {
+        File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
+        contentFolder.mkdir();
+        writeStringToFile(contentFolder, "file", "Hello world!");
+    }
+
+    /**
+     * Redis
+     */
     @ClassRule
     public static GenericContainerRule redis = new GenericContainerRule("redis:3.0.2")
-                                            .withExposedPorts(REDIS_PORT);
+                                                    .withExposedPorts(REDIS_PORT);
 
+    /**
+     * RabbitMQ
+     */
     @ClassRule
     public static GenericContainerRule rabbitMq = new GenericContainerRule("rabbitmq:3.5.3")
-                                            .withExposedPorts(RABBITMQ_PORT);
+                                                    .withExposedPorts(RABBITMQ_PORT);
 
+    /**
+     * MongoDB
+     */
     @ClassRule
     public static GenericContainerRule mongo = new GenericContainerRule("mongo:3.1.5")
-                                            .withExposedPorts(MONGO_PORT);
+                                                    .withExposedPorts(MONGO_PORT);
 
+    /**
+     * Pass an environment variable to the container, then run a shell script that exposes the variable in a quick and
+     * dirty way for testing.
+     */
     @ClassRule
-    public static GenericContainerRule alpine = new GenericContainerRule("alpine:3.2")
+    public static GenericContainerRule alpineEnvVar = new GenericContainerRule("alpine:3.2")
                                                     .withExposedPorts(80)
                                                     .withEnv("MAGIC_NUMBER", "42")
                                                     .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
+
+    /**
+     * Map a directory on the host machine's disk to a directory in the container, and then expose the content for
+     * testing.
+     */
+    @ClassRule
+    public static GenericContainerRule alpineStaticDirectory = new GenericContainerRule("alpine:3.2")
+                                                                .withExposedPorts(80)
+                                                                .withDirectoryMapping(System.getProperty("user.home") + "/.tmp-test-container", "/content", READ_ONLY)
+                                                                .withCommand("/bin/sh", "-c", "while true; do cat /content/file | nc -l -p 80; done");
+
+    /**
+     * Map a directory on the classpath to a directory in the container, and then expose the content for testing.
+     */
+    @ClassRule
+    public static GenericContainerRule alpineClasspathDirectory = new GenericContainerRule("alpine:3.2")
+                                                                .withExposedPorts(80)
+                                                                .withClasspathDirectoryMapping("mappable-resource", "/content", READ_ONLY)
+                                                                .withCommand("/bin/sh", "-c", "while true; do cat /content/test-resource.txt | nc -l -p 80; done");
+
 
     @Test
     public void simpleRedisTest() {
@@ -129,11 +171,39 @@ public class GenericContainerRuleTest {
 
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
-        Socket socket = new Socket(alpine.getIpAddress(), Integer.valueOf(alpine.getMappedPort("80")));
+        Socket socket = new Socket(alpineEnvVar.getIpAddress(), Integer.valueOf(alpineEnvVar.getMappedPort("80")));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String line = br.readLine();
 
         assertEquals("An environment variable can be passed into a command", "42", line);
+    }
+
+    @Test
+    public void customDirectoryMappingTest() throws IOException {
+        Socket socket = new Socket(alpineStaticDirectory.getIpAddress(), Integer.valueOf(alpineStaticDirectory.getMappedPort("80")));
+        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        String line = br.readLine();
+
+        assertEquals("Directories can be mapped using calls to withDirectoryMapping", "Hello world!", line);
+    }
+
+    @Test
+    public void customClasspathDirectoryMappingTest() throws IOException {
+        Socket socket = new Socket(alpineClasspathDirectory.getIpAddress(), Integer.valueOf(alpineClasspathDirectory.getMappedPort("80")));
+        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        String line = br.readLine();
+
+        assertEquals("Directories on the classpath can be mapped using calls to withClasspathDirectoryMapping", "FOOBAR", line);
+    }
+
+    protected static void writeStringToFile(File contentFolder, String filename, String string) throws FileNotFoundException {
+        File file = new File(contentFolder, filename);
+
+        PrintStream printStream = new PrintStream(new FileOutputStream(file));
+        printStream.println(string);
+        printStream.close();
     }
 }
