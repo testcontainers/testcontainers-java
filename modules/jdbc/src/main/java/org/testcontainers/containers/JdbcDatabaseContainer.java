@@ -6,6 +6,7 @@ import org.testcontainers.utility.Retryables;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +20,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
-    protected Map<String, String> parameters;
+    protected Map<String, String> parameters = new HashMap<>();
 
     public JdbcDatabaseContainer(String dockerImageName) {
         super(dockerImageName);
