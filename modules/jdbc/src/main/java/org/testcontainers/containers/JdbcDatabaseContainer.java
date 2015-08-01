@@ -6,6 +6,7 @@ import org.testcontainers.utility.Retryables;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +19,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
+    protected Map<String, String> parameters;
 
     public JdbcDatabaseContainer(String dockerImageName) {
         super(dockerImageName);
@@ -119,4 +121,8 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
 
     @Override
     protected abstract String getLivenessCheckPort();
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
+    }
 }

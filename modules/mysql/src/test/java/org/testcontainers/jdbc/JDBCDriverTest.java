@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import static org.testpackage.VisibleAssertions.assertEquals;
 
@@ -25,6 +26,19 @@ public class JDBCDriverTest {
     @Test
     public void testMySQLWithNoSpecifiedVersion() throws SQLException {
         performSimpleTest("jdbc:tc:mysql://hostname/databasename");
+    }
+
+    @Test
+    public void testMySQLWithCustomIniFile() throws SQLException {
+        HikariDataSource ds = getDataSource("jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/my.cnf", 1);
+        Statement statement = ds.getConnection().createStatement();
+        statement.execute("SELECT @@GLOBAL.innodb_file_format");
+        ResultSet resultSet = statement.getResultSet();
+
+        resultSet.next();
+        String result = resultSet.getString(1);
+
+        assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
     }
 
     @Test
