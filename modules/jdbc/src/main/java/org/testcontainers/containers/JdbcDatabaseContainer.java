@@ -3,9 +3,12 @@ package org.testcontainers.containers;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Retryables;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +21,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
+    protected Map<String, String> parameters = new HashMap<>();
 
     public JdbcDatabaseContainer(String dockerImageName) {
         super(dockerImageName);
@@ -117,6 +121,22 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
         return getJdbcDriverInstance().connect(this.getJdbcUrl() + queryString, info);
     }
 
+    protected void optionallyMapResourceParameterAsVolume(String paramName, String pathNameInContainer) {
+        if (parameters.containsKey(paramName)) {
+            String resourceName = parameters.get(paramName);
+            URL classPathResource = ClassLoader.getSystemClassLoader().getResource(resourceName);
+            if (classPathResource == null) {
+                throw new ContainerLaunchException("Could not locate a classpath resource for " + paramName +" of " + resourceName);
+            }
+
+            addFileSystemBind(classPathResource.getFile(), pathNameInContainer, BindMode.READ_ONLY);
+        }
+    }
+
     @Override
     protected abstract String getLivenessCheckPort();
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
+    }
 }
