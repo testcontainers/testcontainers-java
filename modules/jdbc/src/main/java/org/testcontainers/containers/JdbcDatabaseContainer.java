@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Retryables;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -118,6 +119,18 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
         info.put("user", this.getUsername());
         info.put("password", this.getPassword());
         return getJdbcDriverInstance().connect(this.getJdbcUrl() + queryString, info);
+    }
+
+    protected void optionallyMapResourceParameterAsVolume(String paramName, String pathNameInContainer) {
+        if (parameters.containsKey(paramName)) {
+            String resourceName = parameters.get(paramName);
+            URL classPathResource = ClassLoader.getSystemClassLoader().getResource(resourceName);
+            if (classPathResource == null) {
+                throw new ContainerLaunchException("Could not locate a classpath resource for " + paramName +" of " + resourceName);
+            }
+
+            addFileSystemBind(classPathResource.getFile(), pathNameInContainer, BindMode.READ_ONLY);
+        }
     }
 
     @Override

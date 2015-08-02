@@ -30,7 +30,7 @@ public class JDBCDriverTest {
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
-        HikariDataSource ds = getDataSource("jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/my.cnf", 1);
+        HikariDataSource ds = getDataSource("jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", 1);
         Statement statement = ds.getConnection().createStatement();
         statement.execute("SELECT @@GLOBAL.innodb_file_format");
         ResultSet resultSet = statement.getResultSet();
