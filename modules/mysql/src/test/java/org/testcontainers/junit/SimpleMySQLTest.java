@@ -2,7 +2,8 @@ package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.junit.Rule;
+import org.jetbrains.annotations.NotNull;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.sql.ResultSet;
@@ -17,43 +18,53 @@ import static org.testpackage.VisibleAssertions.assertTrue;
  */
 public class SimpleMySQLTest {
 
-    @Rule
-    public MySQLContainerRule mysql = new MySQLContainerRule();
+    @ClassRule
+    public static MySQLContainerRule mysql = new MySQLContainerRule();
 
-    @Rule
-    public MySQLContainerRule mysqlOldVersion = new MySQLContainerRule("mysql:5.5");
+    @ClassRule
+    public static MySQLContainerRule mysqlOldVersion = new MySQLContainerRule("mysql:5.5");
+
+    @ClassRule
+    public static MySQLContainerRule mysqlCustomConfig = new MySQLContainerRule("mysql:5.6")
+                                                            .withConfigurationOverride("somepath/mysql_conf_override");
 
     @Test
     public void testSimple() throws SQLException {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(mysql.getJdbcUrl());
-        hikariConfig.setUsername(mysql.getUsername());
-        hikariConfig.setPassword(mysql.getPassword());
-
-        HikariDataSource ds = new HikariDataSource(hikariConfig);
-        Statement statement = ds.getConnection().createStatement();
-        statement.execute("SELECT 1");
-        ResultSet resultSet = statement.getResultSet();
-
-        resultSet.next();
+        ResultSet resultSet = performQuery(mysql, "SELECT 1");
         int resultSetInt = resultSet.getInt(1);
+
         assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
     }
 
     @Test
     public void testSpecificVersion() throws SQLException {
+        ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
+        String resultSetString = resultSet.getString(1);
+
+        assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5"));
+    }
+
+    @Test
+    public void testMySQLWithCustomIniFile() throws SQLException {
+        ResultSet resultSet = performQuery(mysqlCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
+        String result = resultSet.getString(1);
+
+        assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+    }
+
+    @NotNull
+    protected ResultSet performQuery(MySQLContainerRule containerRule, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(mysqlOldVersion.getJdbcUrl());
-        hikariConfig.setUsername(mysqlOldVersion.getUsername());
-        hikariConfig.setPassword(mysqlOldVersion.getPassword());
+        hikariConfig.setJdbcUrl(containerRule.getJdbcUrl());
+        hikariConfig.setUsername(containerRule.getUsername());
+        hikariConfig.setPassword(containerRule.getPassword());
 
         HikariDataSource ds = new HikariDataSource(hikariConfig);
         Statement statement = ds.getConnection().createStatement();
-        statement.execute("SELECT VERSION()");
+        statement.execute(sql);
         ResultSet resultSet = statement.getResultSet();
 
         resultSet.next();
-        String resultSetString = resultSet.getString(1);
-        assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5"));
+        return resultSet;
     }
 }

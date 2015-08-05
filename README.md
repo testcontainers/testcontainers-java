@@ -128,6 +128,16 @@ The init function must be a public static method which takes a `java.sql.Connect
         }
         ...
 
+##### Overriding MySQL my.cnf settings
+
+For MySQL databases, it is possible to override configuration settings using resources on the classpath. Assuming `somepath/mysql_conf_override`
+is a directory on the classpath containing .cnf files, the following URL can be used:
+
+  `jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override`
+
+Any .cnf files in this classpath directory will be mapped into the database container's /etc/mysql/conf.d directory,
+and will be able to override server settings when the container starts.
+
 ## Maven dependencies
 
 TestContainers is distributed in a handful of modules:

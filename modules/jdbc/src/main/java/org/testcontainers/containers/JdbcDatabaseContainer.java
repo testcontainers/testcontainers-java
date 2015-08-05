@@ -139,4 +139,8 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
     }
+
+    public void addParameter(String paramName, String value) {
+        this.parameters.put(paramName, value);
+    }
 }

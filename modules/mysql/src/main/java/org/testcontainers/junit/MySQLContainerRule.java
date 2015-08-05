@@ -15,4 +15,8 @@ public class MySQLContainerRule extends JdbcContainerRule {
         super(new MySQLContainer(dockerImageName));
     }
 
+    public MySQLContainerRule withConfigurationOverride(String classpathDirectory) {
+        container().addParameter(MySQLContainer.MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, classpathDirectory);
+        return this;
+    }
 }
