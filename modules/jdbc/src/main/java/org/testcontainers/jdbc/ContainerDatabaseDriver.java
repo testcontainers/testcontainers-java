@@ -30,6 +30,8 @@ public class ContainerDatabaseDriver implements Driver {
             "::" +
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             ".*");
+
+    public static final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("([A-Z_]+)=([^\\?&]+)");
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
 
     private Driver delegate;
@@ -85,6 +87,8 @@ public class ContainerDatabaseDriver implements Driver {
                 queryString = "";
             }
 
+            Map<String, String> parameters = getContainerParameters(url);
+
             /**
              * Find a matching container type using ServiceLoader.
              */
@@ -104,6 +108,11 @@ public class ContainerDatabaseDriver implements Driver {
              * pool is started up
              */
             jdbcUrlContainerCache.put(url, container);
+
+            /**
+             * Pass possible container-specific parameters
+             */
+            container.setParameters(parameters);
 
             /**
              * Start the container
@@ -127,6 +136,20 @@ public class ContainerDatabaseDriver implements Driver {
         }
 
         return wrapConnection(connection, container, url);
+    }
+
+    private Map<String, String> getContainerParameters(String url) {
+
+        Map<String, String> results = new HashMap<>();
+
+        Matcher matcher = TC_PARAM_MATCHING_PATTERN.matcher(url);
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            String value = matcher.group(2);
+            results.put(key, value);
+        }
+
+        return results;
     }
 
     /**
@@ -204,14 +227,8 @@ public class ContainerDatabaseDriver implements Driver {
                 Method method = initFunctionClazz.getMethod(methodName, Connection.class);
 
                 method.invoke(null, connection);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                LOGGER.error("Error while executing init function", e);
             }
         }
     }
