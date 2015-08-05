@@ -227,14 +227,8 @@ public class ContainerDatabaseDriver implements Driver {
                 Method method = initFunctionClazz.getMethod(methodName, Connection.class);
 
                 method.invoke(null, connection);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                LOGGER.error("Error while executing init function", e);
             }
         }
     }
