@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 
 import static java.util.Arrays.asList;
-import static org.testpackage.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.testcontainers.junit.BrowserWebDriverContainerRule.VncRecordingMode.RECORD_ALL;
 import static org.testcontainers.junit.BrowserWebDriverContainerRule.VncRecordingMode.RECORD_FAILING;
 

@@ -10,8 +10,9 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import java.io.*;
 import java.net.URLConnection;
 
-import static org.testpackage.VisibleAssertions.assertEquals;
-import static org.testpackage.VisibleAssertions.assertTrue;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+
 
 /**
  * @author richardnorth

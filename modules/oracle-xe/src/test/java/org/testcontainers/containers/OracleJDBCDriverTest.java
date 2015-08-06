@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.testpackage.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 /**
  * @author gusohal

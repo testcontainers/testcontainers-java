@@ -1,7 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## 0.9.6 (unreleased)
+## [0.9.7]
+### Added
+- Support for overriding MySQL container configuration (my.cnf file overrides)
+
+### Changed
+- Replace dependency on org.testpackage with org.rnorth.visible-assertions
+
+## [0.9.6]
 ### Added
 - Generic container support (allows use of any docker image) using a GenericContainerRule.
 
@@ -35,6 +42,8 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[0.9.7]: https://github.com/testcontainers/testcontainers-java/releases/tag/tes-containers-0.9.7
+[0.9.6]: https://github.com/testcontainers/testcontainers-java/releases/tag/tes-containers-0.9.6
 [0.9.5]: https://github.com/testcontainers/testcontainers-java/releases/tag/tes-containers-0.9.5
 [0.9.4]: https://github.com/testcontainers/testcontainers-java/releases/tag/test-containers-0.9.4
 [0.9.3]: https://github.com/testcontainers/testcontainers-java/releases/tag/test-containers-0.9.3

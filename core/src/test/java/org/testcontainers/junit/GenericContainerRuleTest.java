@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.GenericContainer.BindMode.READ_ONLY;
-import static org.testpackage.VisibleAssertions.assertEquals;
-import static org.testpackage.VisibleAssertions.assertTrue;
 
 /**
  * Tests for GenericContainerRules
