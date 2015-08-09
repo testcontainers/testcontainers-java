@@ -27,8 +27,19 @@ public class DockerComposeContainerRule extends GenericContainerRule {
         super.before();
 
         // Start any ambassador containers we need
-        for (GenericContainer ambassadorContainer : ambassadorContainers.values()) {
-            ambassadorContainer.start();
+        for (final GenericContainer ambassadorContainer : ambassadorContainers.values()) {
+            Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
+                @Override
+                public Object get() throws Exception {
+                    try {
+                        ambassadorContainer.start();
+                    } catch (Exception e) {
+                        Thread.sleep(500L);
+                        throw e;
+                    }
+                    return null;
+                }
+            });
         }
 
         // Make sure all the ambassador containers are started and proxying
