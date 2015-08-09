@@ -31,6 +31,8 @@ public class DockerComposeContainerRule extends GenericContainerRule {
             ambassadorContainer.start();
         }
 
+        Thread.sleep(3600);
+
         // Make sure all the ambassador containers are started and proxying
         for (final Map.Entry<String, GenericContainer> address : ambassadorContainers.entrySet()) {
             Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
