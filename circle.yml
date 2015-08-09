@@ -4,7 +4,7 @@ machine:
     DOCKER_TLS_VERIFY: 0
 dependencies:
   override:
-    - "sudo docker -d -e lxc -s btrfs -H 0.0.0.0:2376":
+    - "sudo docker -d -e lxc -s btrfs -H 0.0.0.0:2376 -H unix:///var/run/docker.sock":
         background: true
     - mvn install -DskipTests
 notify:
