@@ -27,7 +27,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
         super.before();
 
         // Start any ambassador containers we need
-        for (GenericContainer ambassadorContainer : ambassadorContainers.values()) {
+        for (final GenericContainer ambassadorContainer : ambassadorContainers.values()) {
             ambassadorContainer.start();
         }
 
@@ -96,7 +96,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
         String otherContainerName = identifier + "_" + serviceName;
 
         // Link
-        ambassadorContainer.addLink(otherContainerName, otherContainerName);
+        ambassadorContainer.addLink(otherContainerName, ((DockerComposeContainer) container).getIdentifier());
 
         // Expose ambassador's port
         ambassadorContainer.addExposedPort(servicePort);

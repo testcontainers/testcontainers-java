@@ -33,7 +33,7 @@ public abstract class AbstractContainer {
      */
     public void start() {
 
-        logger().debug("Start for container ({}): {}", getDockerImageName(), this);
+        logger().debug("Starting container: {}", getDockerImageName());
 
         try {
 
@@ -71,7 +71,7 @@ public abstract class AbstractContainer {
             containerIsStarting(containerInfo);
 
             waitUntilContainerStarted();
-            logger().info("Container started");
+            logger().info("Container {} started", getDockerImageName());
 
             // If the container stops before the after() method, its termination was unexpected
             Executors.newSingleThreadExecutor().submit(new Runnable() {
@@ -151,15 +151,14 @@ public abstract class AbstractContainer {
      */
     public void stop() {
 
-        logger().debug("Stop for container ({}): {}", getDockerImageName(), this);
-
         try {
-            logger().info("Stopping container: {}", containerId);
+            logger().trace("Stopping container: {}", containerId);
             normalTermination = true;
             dockerClient.killContainer(containerId);
             dockerClient.removeContainer(containerId, true);
+            logger().info("Stopped and removed container: {}", getDockerImageName());
         } catch (DockerException | InterruptedException e) {
-            logger().debug("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
         }
     }
 
