@@ -31,7 +31,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
             ambassadorContainer.start();
         }
 
-        Thread.sleep(3600);
+        Thread.sleep(3600000);
 
         // Make sure all the ambassador containers are started and proxying
         for (final Map.Entry<String, GenericContainer> address : ambassadorContainers.entrySet()) {
