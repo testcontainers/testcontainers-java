@@ -73,8 +73,10 @@ public abstract class AbstractContainer {
             waitUntilContainerStarted();
             logger().info("Container {} started", getDockerImageName());
 
-            int runningContainerCount = dockerClient.listContainers(DockerClient.ListContainersParam.allContainers()).size();
+            List<Container> allContainers = dockerClient.listContainers(DockerClient.ListContainersParam.allContainers());
+            int runningContainerCount = allContainers.size();
             logger().debug("There are now {} running containers", runningContainerCount);
+            logger().debug("Running containers: {}", allContainers);
 
             // If the container stops before the after() method, its termination was unexpected
             Executors.newSingleThreadExecutor().submit(new Runnable() {

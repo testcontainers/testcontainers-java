@@ -28,18 +28,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
 
         // Start any ambassador containers we need
         for (final GenericContainer ambassadorContainer : ambassadorContainers.values()) {
-            Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
-                @Override
-                public Object get() throws Exception {
-                    try {
-                        ambassadorContainer.start();
-                    } catch (Exception e) {
-                        Thread.sleep(500L);
-                        throw e;
-                    }
-                    return null;
-                }
-            });
+            ambassadorContainer.start();
         }
 
         // Make sure all the ambassador containers are started and proxying
@@ -107,7 +96,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
         String otherContainerName = identifier + "_" + serviceName;
 
         // Link
-        ambassadorContainer.addLink(otherContainerName, otherContainerName);
+        ambassadorContainer.addLink(otherContainerName, ((DockerComposeContainer) container).getIdentifier());
 
         // Expose ambassador's port
         ambassadorContainer.addExposedPort(servicePort);

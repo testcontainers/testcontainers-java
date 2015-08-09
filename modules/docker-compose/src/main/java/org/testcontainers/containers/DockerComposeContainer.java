@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
 import com.spotify.docker.client.messages.Container;
+import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Base58;
 
 import java.io.File;
@@ -14,7 +15,7 @@ import static org.testcontainers.containers.GenericContainer.BindMode.READ_WRITE
 /**
  * Created by rnorth on 08/08/2015.
  */
-public class DockerComposeContainer extends GenericContainer {
+public class DockerComposeContainer extends GenericContainer implements LinkableContainer {
 
     /**
      * Random identifier which will become part of spawned containers names, so we can shut them down
