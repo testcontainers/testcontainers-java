@@ -4,6 +4,7 @@ import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.SingletonDockerClient;
 import org.testcontainers.utility.PathOperations;
 import org.testcontainers.utility.Retryables;
 
@@ -11,20 +12,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * Base class for that allows a container to be launched and controlled.
  */
 public abstract class AbstractContainer {
 
-    protected String dockerHostIpAddress;
     protected String containerId;
     protected String containerName;
     protected DockerClient dockerClient;
@@ -40,7 +37,7 @@ public abstract class AbstractContainer {
 
         try {
 
-            dockerClient = customizeBuilderForOs().build();
+            dockerClient = SingletonDockerClient.instance().client();
 
             pullImageIfNeeded(getDockerImageName());
 
@@ -216,7 +213,7 @@ public abstract class AbstractContainer {
      * sophisticated behaviour is required.
      */
     protected void waitUntilContainerStarted() {
-        waitForListeningPort(dockerHostIpAddress, getLivenessCheckPort());
+        waitForListeningPort(SingletonDockerClient.instance().dockerHostIpAddress(), getLivenessCheckPort());
     }
 
     /**
@@ -257,30 +254,19 @@ public abstract class AbstractContainer {
         }
     }
 
-    private DefaultDockerClient.Builder customizeBuilderForOs() throws Exception {
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-
-            DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
-
-            // Running on a Mac therefore use boot2docker
-            runShellCommand("/usr/local/bin/boot2docker", "up");
-            dockerHostIpAddress = runShellCommand("/usr/local/bin/boot2docker", "ip");
-
-            builder.uri("https://" + dockerHostIpAddress + ":2376")
-                    .dockerCertificates(new DockerCertificates(Paths.get(System.getProperty("user.home") + "/.boot2docker/certs/boot2docker-vm")));
-
-            return builder;
-        } else {
-            dockerHostIpAddress = "127.0.0.1";
-            return DefaultDockerClient.fromEnv();
-        }
-    }
-
     public void setTag(String tag) {
         this.tag = tag != null ? tag : "latest";
     }
 
     public String getContainerName() {
         return containerName;
+    }
+
+    /**
+     * Get the IP address that this container may be reached on (may not be the local machine).
+     * @return an IP address
+     */
+    public String getIpAddress() {
+        return SingletonDockerClient.instance().dockerHostIpAddress();
     }
 }

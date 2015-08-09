@@ -105,14 +105,6 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
     }
 
     /**
-     * Get the IP address that this container may be reached on (may not be the local machine).
-     * @return an IP address
-     */
-    public String getIpAddress() {
-        return dockerHostIpAddress;
-    }
-
-    /**
      * Get the actual mapped port for a given port exposed by the container.
      *
      * @param originalPort should be a String either containing just the port number or suffixed '/tcp', e.g. '80/tcp'

@@ -53,7 +53,7 @@ public class NginxContainer extends AbstractContainer implements LinkableContain
     }
 
     public URL getBaseUrl(String scheme, int port) throws MalformedURLException {
-        return new URL(scheme + "://" + dockerHostIpAddress + ":" + ports.get(port + "/tcp").get(0).hostPort());
+        return new URL(scheme + "://" + getIpAddress() + ":" + ports.get(port + "/tcp").get(0).hostPort());
     }
 
     public void setCustomConfig(String htmlContentPath) {
