@@ -1,5 +1,6 @@
 package org.testcontainers.junit;
 
+import org.testcontainers.containers.AmbassadorContainer;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Retryables;
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class DockerComposeContainerRule extends GenericContainerRule {
 
-    private Map<String, GenericContainer> ambassadorContainers = new HashMap<>();
+    private Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
 
     public DockerComposeContainerRule(File composeFile) {
         super(new DockerComposeContainer(composeFile, "up"));
@@ -32,7 +33,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
         }
 
         // Make sure all the ambassador containers are started and proxying
-        for (final Map.Entry<String, GenericContainer> address : ambassadorContainers.entrySet()) {
+        for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
             Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
                 @Override
                 public Object get() throws Exception {
@@ -84,26 +85,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
          * This avoids the need for the docker compose file to explicitly expose ports on all the
          * services.
          */
-
-
-        GenericContainer ambassadorContainer = new GenericContainer("richnorth/ambassador:latest");
-
-        /**
-         * Use the unique 'identifier' (random compose project name) so that the ambassador can see
-         * the container it's supposed to be proxying.
-         */
-        String identifier = ((DockerComposeContainer) container).getIdentifier();
-        String otherContainerName = identifier + "_" + serviceName;
-
-        // Link
-        ambassadorContainer.addLink(otherContainerName, ((DockerComposeContainer) container).getIdentifier());
-
-        // Expose ambassador's port
-        ambassadorContainer.addExposedPort(servicePort);
-
-        // Tell the proxy what to connect to within the docker network
-        ambassadorContainer.addEnv("SERVICE_NAME", otherContainerName);
-        ambassadorContainer.addEnv("SERVICE_PORT", servicePort);
+        AmbassadorContainer ambassadorContainer = new AmbassadorContainer((DockerComposeContainer) container, serviceName, servicePort);
 
         // Ambassador containers will all be started together after docker compose has started
         ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
