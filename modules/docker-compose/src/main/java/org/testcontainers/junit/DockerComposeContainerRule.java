@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,13 +29,23 @@ public class DockerComposeContainerRule extends GenericContainerRule {
         super.before();
 
         // Start any ambassador containers we need
-        for (final GenericContainer ambassadorContainer : ambassadorContainers.values()) {
+        for (final AmbassadorContainer ambassadorContainer : ambassadorContainers.values()) {
+            /**
+             * Because docker compose might not have launched the service yet we have to wait until it is ready
+             */
+            Retryables.retryUntilTrue(60, TimeUnit.SECONDS, new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return ambassadorContainer.isServiceReady();
+                }
+            });
+
             ambassadorContainer.start();
         }
 
         // Make sure all the ambassador containers are started and proxying
         for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
-            Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
+            Retryables.retryUntilSuccess(60, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
                 @Override
                 public Object get() throws Exception {
 

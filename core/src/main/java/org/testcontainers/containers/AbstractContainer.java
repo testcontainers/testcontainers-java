@@ -28,6 +28,10 @@ public abstract class AbstractContainer {
     protected String tag = "latest";
     private boolean normalTermination = false;
 
+    public AbstractContainer() {
+        dockerClient = SingletonDockerClient.instance().client();
+    }
+
     /**
      * Starts the container using docker, pulling an image if necessary.
      */
@@ -36,9 +40,6 @@ public abstract class AbstractContainer {
         logger().debug("Starting container: {}", getDockerImageName());
 
         try {
-
-            dockerClient = SingletonDockerClient.instance().client();
-
             pullImageIfNeeded(getDockerImageName());
 
             ContainerConfig containerConfig = getContainerConfig();
