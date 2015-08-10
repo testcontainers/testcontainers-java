@@ -30,6 +30,7 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
     private List<String> links = new ArrayList<>();
 
     public GenericContainer(final String dockerImageName) {
+        super();
         this.dockerImageName = dockerImageName;
     }
 

@@ -67,7 +67,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
         }
     }
 
-    public String getIdentifier() {
+    public String getIdentifierPrefix() {
         return identifier;
     }
 }
