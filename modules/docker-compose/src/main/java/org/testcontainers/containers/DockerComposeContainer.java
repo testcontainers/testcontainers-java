@@ -35,6 +35,8 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
+        // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
+        //  we map the socket file outside of /var/run, as just /docker.sock
         addFileSystemBind("/var/run/docker.sock","/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
 
