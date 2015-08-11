@@ -117,12 +117,12 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
     }
 
     public URL getSeleniumAddress() throws MalformedURLException {
-        return new URL("http", dockerHostIpAddress, Integer.valueOf(this.seleniumPort), "/wd/hub");
+        return new URL("http", getIpAddress(), Integer.valueOf(this.seleniumPort), "/wd/hub");
     }
 
     @Override
     public String getVncAddress() {
-        return "vnc://vnc:secret@" + dockerHostIpAddress + ":" + this.vncPort;
+        return "vnc://vnc:secret@" + getIpAddress() + ":" + this.vncPort;
     }
 
     @Override

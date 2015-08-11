@@ -115,10 +115,17 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
      * @throws SQLException
      */
     public Connection createConnection(String queryString) throws SQLException {
-        Properties info = new Properties();
+        final Properties info = new Properties();
         info.put("user", this.getUsername());
         info.put("password", this.getPassword());
-        return getJdbcDriverInstance().connect(this.getJdbcUrl() + queryString, info);
+        final String url = this.getJdbcUrl() + queryString;
+
+        return Retryables.retryUntilSuccess(60, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Connection>() {
+            @Override
+            public Connection get() throws Exception {
+                return getJdbcDriverInstance().connect(url, info);
+            }
+        });
     }
 
     protected void optionallyMapResourceParameterAsVolume(String paramName, String pathNameInContainer) {

@@ -1,14 +1,8 @@
 package org.testcontainers.containers;
 
-import com.google.common.io.Files;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.HostConfig;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
 
 /**
  * @author richardnorth
@@ -67,7 +61,7 @@ public class MySQLContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + dockerHostIpAddress + ":" + mySqlPort + "/test";
+        return "jdbc:mysql://" + getIpAddress() + ":" + mySqlPort + "/test";
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.util.Map;
 public class GenericContainer extends AbstractContainer implements LinkableContainer {
 
     private final String dockerImageName;
-    private List<String> exposedPorts;
+    private List<String> exposedPorts = new ArrayList<>();
 
     protected Map<String, List<PortBinding>> ports;
 
@@ -27,8 +27,10 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
     private String[] commandParts;
 
     private List<String> binds = new ArrayList<>();
+    private List<String> links = new ArrayList<>();
 
     public GenericContainer(final String dockerImageName) {
+        super();
         this.dockerImageName = dockerImageName;
     }
 
@@ -62,6 +64,7 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
     protected void customizeHostConfigBuilder(HostConfig.Builder hostConfigBuilder) {
         super.customizeHostConfigBuilder(hostConfigBuilder);
         hostConfigBuilder.binds(binds);
+        hostConfigBuilder.links(links);
     }
 
     @Override
@@ -103,14 +106,6 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
     }
 
     /**
-     * Get the IP address that this container may be reached on (may not be the local machine).
-     * @return an IP address
-     */
-    public String getIpAddress() {
-        return dockerHostIpAddress;
-    }
-
-    /**
      * Get the actual mapped port for a given port exposed by the container.
      *
      * @param originalPort should be a String either containing just the port number or suffixed '/tcp', e.g. '80/tcp'
@@ -143,6 +138,14 @@ public class GenericContainer extends AbstractContainer implements LinkableConta
 
     public void addFileSystemBind(String hostPath, String containerPath, GenericContainer.BindMode mode) {
         binds.add(hostPath + ":" + containerPath + ":" + mode.shortForm);
+    }
+
+    public void addLink(String otherContainerName, String alias) {
+        links.add(otherContainerName + ":" + alias);
+    }
+
+    public void addExposedPort(String port) {
+        exposedPorts.add(port);
     }
 
     public enum BindMode {
