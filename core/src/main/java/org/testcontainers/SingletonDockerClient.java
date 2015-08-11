@@ -22,6 +22,7 @@ public class SingletonDockerClient {
             client = customizeBuilderForOs().build();
 
             String version = client.version().version();
+            checkVersion(version);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to create Docker client", e);
         }
@@ -59,6 +60,13 @@ public class SingletonDockerClient {
         } else {
             dockerHostIpAddress = "127.0.0.1";
             return DefaultDockerClient.fromEnv();
+        }
+    }
+
+    private void checkVersion(String version) {
+        String[] splitVersion = version.split("\\.");
+        if (Integer.valueOf(splitVersion[0]) <= 1 && Integer.valueOf(splitVersion[1]) < 7) {
+            throw new IllegalStateException("Docker version 1.7.0+ is required, but version " + version + " was found");
         }
     }
 }
