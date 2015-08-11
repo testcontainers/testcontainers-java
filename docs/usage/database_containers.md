@@ -2,8 +2,10 @@
 
 You might want to use TestContainers' database support:
 
- * **Instead of H2 database for DAO unit tests that depend on database features that H2 doesn't emulate.** TestContainers is not as performant as H2, but does give you the benefit of 100% database compatibility (since it runs a real DB inside of a container). Of course, it's still important to have as few tests that hit the database as possible, and make good use of mocks for components higher up the stack.
+ * **Instead of H2 database for DAO unit tests that depend on database features that H2 doesn't emulate.** TestContainers is not as performant as H2, but does give you the benefit of 100% database compatibility (since it runs a real DB inside of a container).
  * **Instead of a database running on the local machine or in a VM** for DAO unit tests or end-to-end integration tests that need a database to be present. In this context, the benefit of TestContainers is that the database always starts in a known state, without any contamination between test runs or on developers' local machines.
+
+> Note: Of course, it's still important to have as few tests that hit the database as possible, and make good use of mocks for components higher up the stack.
 
 You can obtain a temporary database in one of two ways:
 
@@ -11,6 +13,8 @@ You can obtain a temporary database in one of two ways:
  * **Using a specially modified JDBC URL**: after making a very simple modification to your system's JDBC URL string, TestContainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
 
 TestContainers currently supports MySQL, PostgreSQL and Oracle XE.
+
+> Note: Oracle XE support does not bundle the proprietary Oracle JDBC drivers - you must provide these yourself.
 
 ## JUnit rule
 
@@ -30,8 +34,9 @@ Note that if you use @Rule, you will be given an isolated container for each tes
 
 Examples/Tests:
 
- * [MySQL](https://github.com/TestContainers/TestContainers-java/blob/master/modules/mysql/src/test/java/org/TestContainers/junit/SimpleMySQLTest.java)
- * [PostgreSQL](https://github.com/TestContainers/TestContainers-java/blob/master/modules/postgresql/src/test/java/org/TestContainers/junit/SimplePostgreSQLTest.java)
+ * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/junit/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
+ * [Oracle-XE](https://github.com/testcontainers/testcontainers-java/blob/master/modules/oracle-xe/src/test/java/org/testcontainers/junit/SimpleOracleTest.java)
 
 ## JDBC URL
 
@@ -71,7 +76,7 @@ This is useful if you have a fixed script for setting up database schema, etc.
 
 Instead of running a fixed script for DB setup, it may be useful to call a Java function that you define. This is intended to allow you to trigger database schema migration tools. To do this, add TC_INITFUNCTION to the URL as follows, passing a full path to the class name and method:
 
- `jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.rnorth.TestContainers.jdbc.JDBCDriverTest::sampleInitFunction`
+ `jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
 
 The init function must be a public static method which takes a `java.sql.Connection` as its only parameter, e.g.
 

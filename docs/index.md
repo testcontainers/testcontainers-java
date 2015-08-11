@@ -11,7 +11,6 @@
     - [Prerequisites](#prerequisites)
     - [Usage modes](usage-modes)
 - [Maven dependencies](#maven-dependencies)
-- [Supported containers](#supported-containers)
 - [License](#license)
 - [Attributions](#attributions)
 - [Contributing](#contributing)
@@ -42,37 +41,25 @@ Docker or boot2docker (for OS X) must be installed on the machine you are runnin
 
 ## Maven dependencies
 
-TestContainers is distributed in a handful of modules:
+TestContainers is distributed in a handful of Maven modules:
 
-* **junit** for just core functionality and generic containers support
+* **testcontainers** for just core functionality and generic containers support
 * **mysql**, **postgresql** or **oracle-xe** for database container support
-* **selenium** for selenium support
+* **selenium** for selenium/webdriver support
+* **docker-compose** for Docker Compose support
+* **nginx** for nginx container support
 
 In the dependency description below, replace `--artifact name--` as appropriate:
-
 
     <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>--artifact name--</artifactId>
-        <version>0.9.6</version>
+        <version>0.9.8</version>
     </dependency>
-
-## Supported containers
-
-TestContainers currently supports:
-
- * MySQL
- * PostgreSQL
- * Oracle XE
- * nginx
- * the standalone-chrome-debug and standalone-firefox-debug containers from [SeleniumHQ](https://github.com/SeleniumHQ/docker-selenium)
- * any other container images using `GenericContainer` and `GenericContainerRule`
-
-Other container types can be added later. Note that at present, only containers from the Docker Hub registry can be used - this needs to be fixed.
 
 ## License
 
-See [LICENSE](LICENSE).
+See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
 
 ## Attributions
 
@@ -95,4 +82,4 @@ This project is built on top of the awesome [Spotify docker client library for J
 
 Copyright (c) 2015 Richard North and other authors.
 
-See [AUTHORS](AUTHORS) for contributors.
+See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.

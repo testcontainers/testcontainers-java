@@ -57,4 +57,4 @@ Note that the third parameter should be a directory where recordings can be save
 
 ## Examples
 
-A few different examples are shown in [SimpleWebDriverContainerTest.java](https://github.com/rnorth/test-containers/blob/master/src/test/java/org/rnorth/testcontainers/junit/SimpleWebDriverContainerTest.java).
+A few different examples are shown in [SimpleWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/SimpleWebDriverContainerTest.java).
