@@ -65,8 +65,8 @@ public class SingletonDockerClient {
 
     private void checkVersion(String version) {
         String[] splitVersion = version.split("\\.");
-        if (Integer.valueOf(splitVersion[0]) <= 1 && Integer.valueOf(splitVersion[1]) < 7) {
-            throw new IllegalStateException("Docker version 1.7.0+ is required, but version " + version + " was found");
+        if (Integer.valueOf(splitVersion[0]) <= 1 && Integer.valueOf(splitVersion[1]) < 6) {
+            throw new IllegalStateException("Docker version 1.6.0+ is required, but version " + version + " was found");
         }
     }
 }
