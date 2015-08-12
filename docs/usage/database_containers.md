@@ -1,5 +1,7 @@
 # Database containers
 
+## Benefits
+
 You might want to use TestContainers' database support:
 
  * **Instead of H2 database for DAO unit tests that depend on database features that H2 doesn't emulate.** TestContainers is not as performant as H2, but does give you the benefit of 100% database compatibility (since it runs a real DB inside of a container).
@@ -16,7 +18,9 @@ TestContainers currently supports MySQL, PostgreSQL and Oracle XE.
 
 > Note: Oracle XE support does not bundle the proprietary Oracle JDBC drivers - you must provide these yourself.
 
-## JUnit rule
+## Examples and options
+
+### JUnit rule
 
 Add a @Rule or @ClassRule to your test class, e.g.:
 
@@ -30,7 +34,7 @@ Now, in your test code (or a suitable setup method), you can obtain details nece
  * `mysql.getUsername()` provides the username your code should pass to the driver
  * `mysql.getPassword()` provides the password your code should pass to the driver
 
-Note that if you use @Rule, you will be given an isolated container for each test method. If you use @ClassRule, you will get on isolated container for all the methods in the test class.
+Note that if you use `@Rule`, you will be given an isolated container for each test method. If you use `@ClassRule`, you will get on isolated container for all the methods in the test class.
 
 Examples/Tests:
 
@@ -38,7 +42,7 @@ Examples/Tests:
  * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
  * [Oracle-XE](https://github.com/testcontainers/testcontainers-java/blob/master/modules/oracle-xe/src/test/java/org/testcontainers/junit/SimpleOracleTest.java)
 
-## JDBC URL
+### JDBC URL
 
 As long as you have TestContainers and the appropriate JDBC driver on your classpath, you can simply modify regular JDBC connection URLs to get a fresh containerized instance of the database each time your application starts up.
 

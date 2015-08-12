@@ -57,6 +57,10 @@ In the dependency description below, replace `--artifact name--` as appropriate:
         <version>0.9.8</version>
     </dependency>
 
+> **Note**: Testcontainers uses the Spotify Docker client library, which in turn depends on JAX-RS and various Jersey
+libraries. If your project also uses these, you may need to set appropriate maven dependency exclusions or use
+`dependencyManagement` to avoid conflicts, on a case-by-case basis.
+
 ## License
 
 See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
