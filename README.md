@@ -4,8 +4,9 @@
 
 [![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master) 
 
-# [Read the documentation here](http://testcontainers.viewdocs.io/testcontainers-java/)
+![Testcontainers logo](docs/logo.png)
 
+# [Read the documentation here](http://testcontainers.viewdocs.io/testcontainers-java/)
 
 ## License
 
