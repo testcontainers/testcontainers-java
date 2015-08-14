@@ -1,5 +1,7 @@
 # Docker Compose
 
+> Note this will be in v0.9.8, which is not yet released
+
 ## Benefits
 
 Similar to [generic containers](generic_containers) support, it's also possible to run a bespoke set of services
