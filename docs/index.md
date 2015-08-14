@@ -32,7 +32,7 @@ TestContainers is distributed in a handful of Maven modules:
 * **testcontainers** for just core functionality and generic containers support
 * **mysql**, **postgresql** or **oracle-xe** for database container support
 * **selenium** for selenium/webdriver support
-* **docker-compose** for Docker Compose support
+* **docker-compose** for Docker Compose support (in v.0.9.8, not yet released)
 * **nginx** for nginx container support
 
 In the dependency description below, replace `--artifact name--` as appropriate:
@@ -40,7 +40,7 @@ In the dependency description below, replace `--artifact name--` as appropriate:
     <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>--artifact name--</artifactId>
-        <version>0.9.8</version>
+        <version>0.9.7</version>
     </dependency>
 
 > **Note**: Testcontainers uses the Spotify Docker client library, which in turn depends on JAX-RS and various Jersey
