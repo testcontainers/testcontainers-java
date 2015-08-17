@@ -1,5 +1,8 @@
 package org.testcontainers.junit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.testcontainers.containers.AmbassadorContainer;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -20,47 +23,68 @@ public class DockerComposeContainerRule extends GenericContainerRule {
 
     private Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(DockerComposeContainerRule.class);
+
     public DockerComposeContainerRule(File composeFile) {
-        super(new DockerComposeContainer(composeFile, "up"));
+        super(new DockerComposeContainer(composeFile, "up -d"));
     }
 
     @Override
     protected void before() throws Throwable {
-        super.before();
 
-        // Start any ambassador containers we need
-        for (final AmbassadorContainer ambassadorContainer : ambassadorContainers.values()) {
-            /**
-             * Because docker compose might not have launched the service yet we have to wait until it is ready
-             */
-            Retryables.retryUntilTrue(60, TimeUnit.SECONDS, new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return ambassadorContainer.isServiceReady();
-                }
-            });
+        Profiler profiler = new Profiler("Docker compose container rule");
+        profiler.setLogger(LOGGER);
+        profiler.start("Docker compose container startup");
+        try {
 
-            ambassadorContainer.start();
-        }
+            super.before();
 
-        // Make sure all the ambassador containers are started and proxying
-        for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
-            Retryables.retryUntilSuccess(60, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
-                @Override
-                public Object get() throws Exception {
+            // Start any ambassador containers we need
+            profiler.start("Ambassador container startup");
+            for (final AmbassadorContainer ambassadorContainer : ambassadorContainers.values()) {
 
-                    GenericContainer ambassadorContainer = address.getValue();
-                    String originalPort = address.getKey().split(":")[1];
+                Profiler localProfiler = profiler.startNested("Ambassador container: " + ambassadorContainer.getContainerName());
 
-                    try {
-                        Socket socket = new Socket(ambassadorContainer.getIpAddress(), Integer.valueOf(ambassadorContainer.getMappedPort(originalPort)));
-                        socket.close();
-                    } catch (IOException e) {
-                        throw new IOException("Test connection to container (via ambassador container) could not be established", e);
+                /**
+                 * Because docker compose might not have launched the service yet we have to wait until it is ready
+                 */
+                localProfiler.start("Wait for service to be ready");
+                Retryables.retryUntilTrue(60, TimeUnit.SECONDS, new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return ambassadorContainer.isServiceReady();
                     }
-                    return null;
-                }
-            });
+                });
+
+                localProfiler.start("Start ambassador container");
+                ambassadorContainer.start();
+            }
+
+            // Make sure all the ambassador containers are started and proxying
+            profiler.start("Wait for all ambassador containers to be started and proxying");
+            for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
+
+                Retryables.retryUntilSuccess(60, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
+                    @Override
+                    public Object get() throws Exception {
+
+                        GenericContainer ambassadorContainer = address.getValue();
+                        String originalPort = address.getKey().split(":")[1];
+
+                        String ipAddress = ambassadorContainer.getIpAddress();
+                        Integer port = Integer.valueOf(ambassadorContainer.getMappedPort(originalPort));
+                        try {
+                            Socket socket = new Socket(ipAddress, port);
+                            socket.close();
+                        } catch (IOException e) {
+                            throw new IOException("Test connection to container (via ambassador container) could not be established (" + ipAddress + ":" + port + ")", e);
+                        }
+                        return null;
+                    }
+                });
+            }
+        } finally {
+            profiler.stop().log();
         }
     }
 

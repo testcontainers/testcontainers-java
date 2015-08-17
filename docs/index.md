@@ -2,6 +2,8 @@
 
 > TestContainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
+[![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master) [View on Github](https://github.com/testcontainers/testcontainers-java)
+
 ![Testcontainers logo](logo.png)
 
 ## Use Cases
@@ -59,7 +61,7 @@ This project is built on top of the awesome [Spotify docker client library for J
 
 ## Contributing
 
-* Star the project on Github and help spread the word :)
+* Star the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
 * See [ROADMAP](ROADMAP) to understand the approach behind the project and what may/may not be in store for the future.
 * [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
 * Contribute improvements or fixes using a [Pull Request](https://github.com/testcontainers/testcontainers-java/pulls). If you're going to contribute, thank you! Please just be sure to:

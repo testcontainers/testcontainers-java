@@ -32,7 +32,7 @@ public class AmbassadorContainer extends GenericContainer {
 
         // Tell the proxy what to connect to within the docker network
         addEnv("SERVICE_NAME", otherContainerName);
-        addEnv("SERVICE_PORT", servicePort);
+        addEnv("SERVICE_PORT", servicePort.replaceAll("/tcp", ""));
     }
 
     public boolean isServiceReady() {

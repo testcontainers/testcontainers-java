@@ -4,6 +4,7 @@ import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.testcontainers.SingletonDockerClient;
 import org.testcontainers.utility.PathOperations;
 import org.testcontainers.utility.Retryables;
@@ -12,7 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +31,8 @@ public abstract class AbstractContainer {
     protected String tag = "latest";
     private boolean normalTermination = false;
 
+    private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
+
     public AbstractContainer() {
         dockerClient = SingletonDockerClient.instance().client();
     }
@@ -37,11 +42,15 @@ public abstract class AbstractContainer {
      */
     public void start() {
 
+        Profiler profiler = new Profiler("Container startup");
+        profiler.setLogger(logger());
+
         logger().debug("Starting container: {}", getDockerImageName());
 
         try {
-            pullImageIfNeeded(getDockerImageName());
+            pullImageIfNeeded(getDockerImageName(), profiler.startNested("Pull image if needed"));
 
+            profiler.start("Prepare container configuration and host configuration");
             ContainerConfig containerConfig = getContainerConfig();
 
             HostConfig.Builder hostConfigBuilder = HostConfig.builder()
@@ -50,16 +59,20 @@ public abstract class AbstractContainer {
             HostConfig hostConfig = hostConfigBuilder.build();
 
             logger().info("Creating container for image: {}", getDockerImageName());
+            profiler.start("Create container");
             ContainerCreation containerCreation = dockerClient.createContainer(containerConfig);
-
             containerId = containerCreation.id();
-            dockerClient.startContainer(containerId, hostConfig);
-            logger().info("Starting container with ID: {}", containerId);
 
+            logger().info("Starting container with ID: {}", containerId);
+            profiler.start("Start container");
+            dockerClient.startContainer(containerId, hostConfig);
+
+            profiler.start("Inspecting container");
             ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
             containerName = containerInfo.name();
 
             // Wait until the container is starting
+            profiler.start("Wait until container state=running");
             Retryables.retryUntilTrue(5, TimeUnit.SECONDS, new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
@@ -69,11 +82,15 @@ public abstract class AbstractContainer {
 
             // Tell subclasses that we're starting
             logger().info("Container is starting with port mapping: {}", dockerClient.inspectContainer(containerId).networkSettings().ports());
+            profiler.start("Call containerIsStarting on subclasses");
             containerIsStarting(containerInfo);
 
+            profiler.start("Wait until container started");
             waitUntilContainerStarted();
+
             logger().info("Container {} started", getDockerImageName());
 
+            profiler.start("Set up shutdown hooks");
             // If the container stops before the after() method, its termination was unexpected
             Executors.newSingleThreadExecutor().submit(new Runnable() {
                 @Override
@@ -99,10 +116,13 @@ public abstract class AbstractContainer {
                     AbstractContainer.this.stop();
                 }
             }));
+
         } catch (Exception e) {
             logger().error("Could not start container", e);
 
             throw new ContainerLaunchException("Could not create/start container", e);
+        } finally {
+            profiler.stop().log();
         }
     }
 
@@ -123,16 +143,24 @@ public abstract class AbstractContainer {
 
     }
 
-    private void pullImageIfNeeded(final String imageName) throws DockerException, InterruptedException {
+    private void pullImageIfNeeded(final String imageName, Profiler profiler) throws DockerException, InterruptedException {
+
+        if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
+            return;
+        }
+
+        profiler.start("Check local images");
         List<Image> images = dockerClient.listImages(DockerClient.ListImagesParam.create("name", getDockerImageName()));
         for (Image image : images) {
             if (image.repoTags().contains(imageName)) {
                 // the image exists
+                AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
                 return;
             }
         }
 
         logger().info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
+        profiler.start("Pull image");
         dockerClient.pull(getDockerImageName(), new ProgressHandler() {
             @Override
             public void progress(ProgressMessage message) throws DockerException {
@@ -145,6 +173,8 @@ public abstract class AbstractContainer {
                 }
             }
         });
+
+        AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
     }
 
     /**
