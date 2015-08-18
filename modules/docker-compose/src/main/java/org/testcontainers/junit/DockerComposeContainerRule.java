@@ -9,11 +9,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Retryables;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,60 +28,40 @@ public class DockerComposeContainerRule extends GenericContainerRule {
 
     @Override
     protected void before() throws Throwable {
+        for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
 
-        Profiler profiler = new Profiler("Docker compose container rule");
-        profiler.setLogger(LOGGER);
-        profiler.start("Docker compose container startup");
-        try {
+            final Profiler profiler = new Profiler("Docker compose container rule");
+            profiler.setLogger(LOGGER);
+            profiler.start("Docker compose container startup");
+            try {
 
-            super.before();
+                super.before();
 
-            // Start any ambassador containers we need
-            profiler.start("Ambassador container startup");
-            for (final AmbassadorContainer ambassadorContainer : ambassadorContainers.values()) {
 
-                Profiler localProfiler = profiler.startNested("Ambassador container: " + ambassadorContainer.getContainerName());
+                // Start any ambassador containers we need
+                profiler.start("Ambassador container startup");
 
-                /**
-                 * Because docker compose might not have launched the service yet we have to wait until it is ready
-                 */
-                localProfiler.start("Wait for service to be ready");
-                Retryables.retryUntilTrue(60, TimeUnit.SECONDS, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return ambassadorContainer.isServiceReady();
-                    }
-                });
-
-                localProfiler.start("Start ambassador container");
-                ambassadorContainer.start();
-            }
-
-            // Make sure all the ambassador containers are started and proxying
-            profiler.start("Wait for all ambassador containers to be started and proxying");
-            for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
-
+                final AmbassadorContainer ambassadorContainer = address.getValue();
                 Retryables.retryUntilSuccess(60, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Object>() {
                     @Override
                     public Object get() throws Exception {
+                        Profiler localProfiler = profiler.startNested("Ambassador container: " + ambassadorContainer.getContainerName());
 
-                        GenericContainer ambassadorContainer = address.getValue();
-                        String originalPort = address.getKey().split(":")[1];
+                        localProfiler.start("Start ambassador container");
+                        ambassadorContainer.start();
 
-                        String ipAddress = ambassadorContainer.getIpAddress();
-                        Integer port = Integer.valueOf(ambassadorContainer.getMappedPort(originalPort));
-                        try {
-                            Socket socket = new Socket(ipAddress, port);
-                            socket.close();
-                        } catch (IOException e) {
-                            throw new IOException("Test connection to container (via ambassador container) could not be established (" + ipAddress + ":" + port + ")", e);
+                        if (!ambassadorContainer.isRunning()) {
+                            throw new IllegalStateException("Container startup aborted");
                         }
+
                         return null;
                     }
                 });
+            } catch (Exception e) {
+                LOGGER.warn("Exception during ambassador container startup!", e);
+            } finally {
+                profiler.stop().log();
             }
-        } finally {
-            profiler.stop().log();
         }
     }
 
@@ -105,7 +82,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
 
     @Override
     public DockerComposeContainerRule withExposedPorts(String... ports) {
-         throw new UnsupportedOperationException("Use withExposedService instead");
+        throw new UnsupportedOperationException("Use withExposedService instead");
     }
 
     public DockerComposeContainerRule withExposedService(String serviceName, String servicePort) {
@@ -131,6 +108,7 @@ public class DockerComposeContainerRule extends GenericContainerRule {
     /**
      * Get the host (e.g. IP address or hostname) that the service can be found at, from the host machine
      * (i.e. should be the machine that's running this Java process)
+     *
      * @param serviceName
      * @param servicePort
      * @return

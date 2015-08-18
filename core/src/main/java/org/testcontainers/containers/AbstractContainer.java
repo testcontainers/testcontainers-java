@@ -299,4 +299,12 @@ public abstract class AbstractContainer {
     public String getIpAddress() {
         return SingletonDockerClient.instance().dockerHostIpAddress();
     }
+
+    public Boolean isRunning() {
+        try {
+            return dockerClient.inspectContainer(containerId).state().running();
+        } catch (DockerException | InterruptedException e) {
+            return false;
+        }
+    }
 }
