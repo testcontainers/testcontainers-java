@@ -35,6 +35,7 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
     private String imageName = null;
     private String seleniumPort;
     private String vncPort;
+    private RemoteWebDriver driver;
 
     /**
      * @param imageName custom image name to use for the container
@@ -116,8 +117,13 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
         }
     }
 
-    public URL getSeleniumAddress() throws MalformedURLException {
-        return new URL("http", getIpAddress(), Integer.valueOf(this.seleniumPort), "/wd/hub");
+    public URL getSeleniumAddress() {
+        try {
+            return new URL("http", getIpAddress(), Integer.valueOf(this.seleniumPort), "/wd/hub");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();// TODO
+            return null;
+        }
     }
 
     @Override
@@ -139,7 +145,7 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
     protected void waitUntilContainerStarted() {
         // Repeatedly try and open a webdriver session
 
-        Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<RemoteWebDriver>() {
+        driver = Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<RemoteWebDriver>() {
             @Override
             public RemoteWebDriver get() throws Exception {
                 RemoteWebDriver driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
@@ -149,5 +155,9 @@ public class BrowserWebDriverContainer extends AbstractContainer implements VncS
                 return driver;
             }
         });
+    }
+
+    public RemoteWebDriver getDriver() {
+        return driver;
     }
 }

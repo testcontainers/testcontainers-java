@@ -4,19 +4,23 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.AbstractContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.VncRecordingSidekickContainer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.LinkableContainerRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.testcontainers.utility.Retryables;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,32 +68,41 @@ public class BrowserWebDriverContainerRule extends TestWatcher {
      */
     public RemoteWebDriver newDriver() {
 
-        Map<String, LinkableContainer> containersToLink = new HashMap<>();
+        final Map<String, LinkableContainer> containersToLink = new HashMap<>();
         for (Map.Entry<String, LinkableContainerRule> entry : containerRulesToLink.entrySet()) {
             containersToLink.put(entry.getKey(), entry.getValue().getContainer());
         }
 
-        BrowserWebDriverContainer container = new BrowserWebDriverContainer(desiredCapabilities, containersToLink);
-        containers.add(container);
-        container.start();
+        BrowserWebDriverContainer container = Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<BrowserWebDriverContainer>() {
+            @Override
+            public BrowserWebDriverContainer get() throws Exception {
+                Future<BrowserWebDriverContainer> future = Executors.newSingleThreadExecutor().submit(new Callable<BrowserWebDriverContainer>() {
+                    @Override
+                    public BrowserWebDriverContainer call() throws Exception {
+                        BrowserWebDriverContainer container = new BrowserWebDriverContainer(desiredCapabilities, containersToLink);
+                        container.start();
 
-        try {
-            RemoteWebDriver driver = new RemoteWebDriver(container.getSeleniumAddress(), desiredCapabilities);
-            drivers.add(driver);
-            vncUrls.put(driver, container.getVncAddress());
-            seleniumUrls.put(driver, container.getSeleniumAddress());
-
-            if (recordingMode != VncRecordingMode.SKIP) {
-                LOGGER.debug("Starting VNC recording");
-                VncRecordingSidekickContainer<BrowserWebDriverContainer> recordingSidekickContainer = new VncRecordingSidekickContainer<>(container);
-                recordingSidekickContainer.start();
-                currentVncRecordings.add(recordingSidekickContainer);
+                        return container;
+                    }
+                });
+                return future.get(10, TimeUnit.SECONDS);
             }
+        });
+        RemoteWebDriver driver = container.getDriver();
 
-            return driver;
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Could not determine webdriver URL", e);
+        containers.add(container);
+        drivers.add(driver);
+        vncUrls.put(driver, container.getVncAddress());
+        seleniumUrls.put(driver, container.getSeleniumAddress());
+
+        if (recordingMode != VncRecordingMode.SKIP) {
+            LOGGER.debug("Starting VNC recording");
+            VncRecordingSidekickContainer<BrowserWebDriverContainer> recordingSidekickContainer = new VncRecordingSidekickContainer<>(container);
+            recordingSidekickContainer.start();
+            currentVncRecordings.add(recordingSidekickContainer);
         }
+
+        return driver;
     }
 
     @Override
