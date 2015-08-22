@@ -32,7 +32,15 @@ public class SimpleNginxTest {
     public static void setupContent() throws FileNotFoundException {
         File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
         contentFolder.mkdir();
+        contentFolder.setReadable(true, false);
+        contentFolder.setWritable(true, false);
+        contentFolder.setExecutable(true, false);
+
+
         File indexFile = new File(contentFolder, "index.html");
+        indexFile.setReadable(true, false);
+        indexFile.setWritable(true, false);
+        indexFile.setExecutable(true, false);
 
         PrintStream printStream = new PrintStream(new FileOutputStream(indexFile));
         printStream.println("<html><body>This worked</body></html>");
