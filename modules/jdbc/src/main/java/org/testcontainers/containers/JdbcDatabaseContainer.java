@@ -67,6 +67,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
     protected void waitUntilContainerStarted() {
         // Repeatedly try and open a connection to the DB and execute a test query
 
+        logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
         Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
             checkContainerNotAborted();
 
@@ -132,7 +133,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
     }
 
     @Override
-    protected abstract String getLivenessCheckPort();
+    protected abstract Integer getLivenessCheckPort();
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;

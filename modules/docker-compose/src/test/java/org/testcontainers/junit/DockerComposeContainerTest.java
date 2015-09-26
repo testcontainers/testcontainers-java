@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.redisson.Config;
 import org.redisson.Redisson;
 import org.redisson.core.RAtomicLong;
+import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
 
@@ -15,10 +16,10 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
  */
 public class DockerComposeContainerTest {
 
-    private static final String REDIS_PORT = "6379/tcp";
+    private static final int REDIS_PORT = 6379;
 
     @ClassRule
-    public static DockerComposeContainerRule environment = new DockerComposeContainerRule(new File("src/test/resources/compose-test.yml"))
+    public static DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("redis_1", REDIS_PORT);
 
     @Test

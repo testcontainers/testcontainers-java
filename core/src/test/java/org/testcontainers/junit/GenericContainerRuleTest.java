@@ -29,12 +29,12 @@ import static org.testcontainers.containers.GenericContainer.BindMode.READ_ONLY;
  */
 public class GenericContainerRuleTest {
 
-    private static final String REDIS_PORT = "6379";
+    private static final int REDIS_PORT = 6379;
     private static final String RABBIQMQ_TEST_EXCHANGE = "TestExchange";
     private static final String RABBITMQ_TEST_ROUTING_KEY = "TestRoutingKey";
     private static final String RABBITMQ_TEST_MESSAGE = "Hello world";
-    private static final String RABBITMQ_PORT = "5672";
-    private static final String MONGO_PORT = "27017";
+    private static final int RABBITMQ_PORT = 5672;
+    private static final int MONGO_PORT = 27017;
 
     /*
      * Test data setup
@@ -90,7 +90,7 @@ public class GenericContainerRuleTest {
     @Test
     public void simpleRedisTest() {
         String ipAddress = redis.getIpAddress();
-        String port = redis.getMappedPort(REDIS_PORT);
+        Integer port = redis.getMappedPort(REDIS_PORT);
 
         // Use Redisson to obtain a List that is backed by Redis
         Config redisConfig = new Config();
@@ -114,7 +114,7 @@ public class GenericContainerRuleTest {
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(rabbitMq.getIpAddress());
-        factory.setPort(Integer.valueOf(rabbitMq.getMappedPort(RABBITMQ_PORT)));
+        factory.setPort(rabbitMq.getMappedPort(RABBITMQ_PORT));
         Connection connection = factory.newConnection();
 
         Channel channel = connection.createChannel();
@@ -145,7 +145,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void simpleMongoDbTest() {
-        MongoClient mongoClient = new MongoClient(mongo.getIpAddress(), Integer.valueOf(mongo.getMappedPort(MONGO_PORT)));
+        MongoClient mongoClient = new MongoClient(mongo.getIpAddress(), mongo.getMappedPort(MONGO_PORT));
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
@@ -159,7 +159,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
-        Socket socket = new Socket(alpineEnvVar.getIpAddress(), Integer.valueOf(alpineEnvVar.getMappedPort("80")));
+        Socket socket = new Socket(alpineEnvVar.getIpAddress(), alpineEnvVar.getMappedPort(80));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String line = br.readLine();
@@ -169,7 +169,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void customClasspathResourceMappingTest() throws IOException {
-        Socket socket = new Socket(alpineClasspathResource.getIpAddress(), Integer.valueOf(alpineClasspathResource.getMappedPort("80")));
+        Socket socket = new Socket(alpineClasspathResource.getIpAddress(), alpineClasspathResource.getMappedPort(80));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String line = br.readLine();

@@ -1,8 +1,5 @@
 package org.testcontainers.containers;
 
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerInfo;
-
 /**
  * @author gusohal
  */
@@ -10,10 +7,8 @@ public class OracleContainer extends JdbcDatabaseContainer {
 
     public static final String NAME = "oracle";
     public static final String IMAGE = "wnameless/oracle-xe-11g";
-
-    private String sshPort;
-    private String oraclePort;
-    private String webPort;
+    private static final int ORACLE_PORT = 1521;
+    private static final int APEX_HTTP_PORT = 8080;
 
     public OracleContainer() {
         super(IMAGE + ":latest");
@@ -24,33 +19,14 @@ public class OracleContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    protected void containerIsStarting(ContainerInfo containerInfo) {
-        sshPort = containerInfo.networkSettings().ports().get("22/tcp").get(0).hostPort();
-        oraclePort = containerInfo.networkSettings().ports().get("1521/tcp").get(0).hostPort();
-        webPort = containerInfo.networkSettings().ports().get("8080/tcp").get(0).hostPort();
+    protected Integer getLivenessCheckPort() {
+        return getMappedPort(ORACLE_PORT);
     }
 
     @Override
-    protected String getLivenessCheckPort() {
-        return oraclePort;
-    }
+    protected void configure() {
 
-    @Override
-    protected ContainerConfig getContainerConfig() {
-
-        withExposedPorts(22, 1521, 8080);
-
-        return super.getContainerConfig();
-
-//        return ContainerConfig.builder()
-//                .image(getDockerImageName())
-//                .exposedPorts("22", "1521", "8080")
-//                .build();
-    }
-
-    @Override
-    protected String getDockerImageName() {
-        return IMAGE + ":" + tag;
+        addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
     }
 
     @Override
@@ -65,7 +41,7 @@ public class OracleContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@//" + getIpAddress() + ":" + oraclePort + "/" + getSid();
+        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@//" + getIpAddress() + ":" + getOraclePort() + "/" + getSid();
     }
 
     @Override
@@ -82,16 +58,12 @@ public class OracleContainer extends JdbcDatabaseContainer {
         return "xe";
     }
 
-    public String getSshPort() {
-        return sshPort;
+    public Integer getOraclePort() {
+        return getMappedPort(ORACLE_PORT);
     }
 
-    public String getOraclePort() {
-        return oraclePort;
-    }
-
-    public String getWebPort() {
-        return webPort;
+    public Integer getWebPort() {
+        return getMappedPort(APEX_HTTP_PORT);
     }
 
     @Override

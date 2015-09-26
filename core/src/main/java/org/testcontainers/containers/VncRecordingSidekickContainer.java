@@ -1,8 +1,6 @@
 package org.testcontainers.containers;
 
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.HostConfig;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
 
@@ -43,39 +41,28 @@ public class VncRecordingSidekickContainer<T extends VncService & LinkableContai
     }
 
     @Override
-    protected void containerIsStarting(ContainerInfo containerInfo) {
+    protected void containerIsStarting(InspectContainerResponse containerInfo) {
         // do nothing
     }
 
     @Override
-    protected String getLivenessCheckPort() {
+    protected Integer getLivenessCheckPort() {
         // no liveness check needed
         return null;
     }
 
     @Override
-    protected ContainerConfig getContainerConfig() {
-        return ContainerConfig.builder()
-                .image(getDockerImageName())
-                .cmd( // the container entrypoint sets the executable name
-                        "-o",
-                        "/recording/screen.flv",
-                        "-P",
-                        "/recording/password",
-                        "vnchost",
-                        String.valueOf(vncServiceContainer.getPort()))
-                .hostConfig(HostConfig.builder()
-                    // map the temporary directory to a volume in the container
-                    .binds(tempDir.toAbsolutePath() + ":/recording:rw")
-                    // link to the VNC-providing container with the hostname alias 'vnchost'
-                    .links(vncServiceContainer.getContainerName() + ":vnchost")
-                    .build())
-                .build();
-    }
+    protected void configure() {
 
-    @Override
-    protected String getDockerImageName() {
-        return "richnorth/vnc-recorder:latest";
+        addFileSystemBind(tempDir.toAbsolutePath().toString(), "/recording", BindMode.READ_WRITE);
+        addLink(vncServiceContainer, "vnchost");
+        setCommand(// the container entrypoint sets the executable name
+                    "-o",
+                    "/recording/screen.flv",
+                    "-P",
+                    "/recording/password",
+                    "vnchost",
+                    String.valueOf(vncServiceContainer.getPort()));
     }
 
     public Path getRecordingPath() {

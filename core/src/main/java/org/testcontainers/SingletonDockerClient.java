@@ -1,8 +1,8 @@
 package org.testcontainers;
 
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerCertificates;
-import com.spotify.docker.client.DockerClient;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import org.slf4j.Logger;
 
 import java.nio.file.Paths;
@@ -17,15 +17,15 @@ public class SingletonDockerClient {
 
     private static SingletonDockerClient instance;
     private final DockerClient client;
-    private String dockerHostIpAddress;
 
     private static final Logger LOGGER = getLogger(SingletonDockerClient.class);
+    private DockerClientConfig config;
 
     private SingletonDockerClient() {
         try {
             client = createClient();
 
-            String version = client.version().version();
+            String version = client.versionCmd().exec().getVersion();
             checkVersion(version);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to create Docker client", e);
@@ -36,16 +36,16 @@ public class SingletonDockerClient {
 
         // Try using environment variables
         try {
-            DockerClient client = DefaultDockerClient.fromEnv().build();
-            client.ping();
+            config = DockerClientConfig.createDefaultConfigBuilder().build();
+            DockerClient client = DockerClientBuilder.getInstance(config).build();
+            client.pingCmd().exec();
 
             LOGGER.debug("Found docker client settings from environment");
-            dockerHostIpAddress = client.getHost();
-            LOGGER.debug("Docker host IP address is {}", dockerHostIpAddress);
+            LOGGER.debug("Docker host IP address is {}", dockerHostIpAddress());
 
             return client;
         } catch (Exception e) {
-            LOGGER.debug("Could not initialize docker settings using environment variables", e);
+            LOGGER.debug("Could not initialize docker settings using environment variables", e.getMessage());
         }
 
         // Try using Docker machine
@@ -57,19 +57,24 @@ public class SingletonDockerClient {
 
                 LOGGER.debug("Found docker-machine, and will use first machine defined ({})", machineName);
 
-                dockerHostIpAddress = runShellCommand("docker-machine", "ip", machineName);
+                String dockerHostIpAddress = runShellCommand("docker-machine", "ip", machineName);
 
                 LOGGER.debug("Docker-machine IP address for {} is {}", machineName, dockerHostIpAddress);
 
-                return DefaultDockerClient.builder().uri("https://" + dockerHostIpAddress + ":2376")
-                        .dockerCertificates(new DockerCertificates(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/")))
+                config = DockerClientConfig
+                        .createDefaultConfigBuilder()
+                        .withUri("https://" + dockerHostIpAddress + ":2376")
+                        .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
                         .build();
+                DockerClient client = DockerClientBuilder.getInstance(config).build();
+                client.pingCmd().exec();
+                return client;
             }
         } catch (Exception e) {
-            LOGGER.debug("Could not initialize docker settings using docker machine", e);
+            LOGGER.debug("Could not initialize docker settings using docker machine", e.getMessage());
         }
 
-        throw new IllegalStateException();
+        throw new IllegalStateException("Could not find a suitable docker instance - is DOCKER_HOST defined and pointing to a running Docker daemon?");
     }
 
     public synchronized static SingletonDockerClient instance() {
@@ -85,7 +90,7 @@ public class SingletonDockerClient {
     }
 
     public String dockerHostIpAddress() {
-        return dockerHostIpAddress;
+        return config.getUri().getHost();
     }
 
     private void checkVersion(String version) {

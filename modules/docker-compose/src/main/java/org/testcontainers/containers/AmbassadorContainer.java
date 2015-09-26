@@ -1,10 +1,12 @@
 package org.testcontainers.containers;
 
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerException;
-import com.spotify.docker.client.messages.Container;
+import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.api.model.Container;
+import org.testcontainers.containers.traits.LinkableContainer;
 
 import java.util.List;
+
+import static java.util.Arrays.asList;
 
 /**
  * Created by rnorth on 10/08/2015.
@@ -12,40 +14,38 @@ import java.util.List;
 public class AmbassadorContainer extends GenericContainer {
 
     private final String otherContainerName;
-    private final String identifierPrefix;
 
-    public AmbassadorContainer(DockerComposeContainer otherContainer, String serviceName, String servicePort) {
+    public AmbassadorContainer(LinkableContainer otherContainer, String serviceName, int servicePort) {
         super("richnorth/ambassador:latest");
 
         /**
          * Use the unique 'identifierPrefix' (random compose project name) so that the ambassador can see
          * the container it's supposed to be proxying.
          */
-        identifierPrefix = otherContainer.getIdentifierPrefix();
-        otherContainerName = identifierPrefix + "_" + serviceName;
+        otherContainerName = otherContainer.getContainerName();
 
         // Link
-        addLink(otherContainerName, otherContainer.getIdentifierPrefix());
+        addLink(otherContainer, serviceName);
 
         // Expose ambassador's port
         addExposedPort(servicePort);
 
         // Tell the proxy what to connect to within the docker network
-        addEnv("SERVICE_NAME", otherContainerName);
-        addEnv("SERVICE_PORT", servicePort.replaceAll("/tcp", ""));
+        addEnv("SERVICE_NAME", serviceName);
+        addEnv("SERVICE_PORT", String.format("%d", servicePort));
     }
 
     public boolean isServiceReady() {
         try {
-            List<Container> allContainers = dockerClient.listContainers(DockerClient.ListContainersParam.allContainers(true));
+            List<Container> allContainers = dockerClient.listContainersCmd().withShowAll(true).exec();
 
             for (Container container : allContainers) {
-                if (container.names().contains("/" + otherContainerName) && !container.status().contains("Exited")) {
+                if (asList(container.getNames()).contains("/" + otherContainerName) && !container.getStatus().contains("Exited")) {
                     return true;
                 }
             }
 
-        } catch (DockerException | InterruptedException e) {
+        } catch (DockerException e) {
             return false;
         }
         return false;

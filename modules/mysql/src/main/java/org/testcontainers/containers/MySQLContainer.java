@@ -1,8 +1,5 @@
 package org.testcontainers.containers;
 
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerInfo;
-
 /**
  * @author richardnorth
  */
@@ -11,7 +8,7 @@ public class MySQLContainer extends JdbcDatabaseContainer {
     public static final String NAME = "mysql";
     public static final String IMAGE = "mysql";
     public static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
-    private String mySqlPort;
+    public static final Integer MYSQL_PORT = 3306;
 
     public MySQLContainer() {
         super(IMAGE + ":latest");
@@ -22,34 +19,20 @@ public class MySQLContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    protected void containerIsStarting(ContainerInfo containerInfo) {
-        mySqlPort = containerInfo.networkSettings().ports().get("3306/tcp").get(0).hostPort();
+    protected Integer getLivenessCheckPort() {
+        return getMappedPort(MYSQL_PORT);
     }
 
     @Override
-    protected String getLivenessCheckPort() {
-        return mySqlPort;
-    }
-
-    @Override
-    protected ContainerConfig getContainerConfig() {
+    protected void configure() {
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d");
 
-        withExposedPorts(3306);
-        withEnv("MYSQL_DATABASE", "test");
-        withEnv("MYSQL_USER", "test");
-        withEnv("MYSQL_PASSWORD", "test");
-        withEnv("MYSQL_ROOT_PASSWORD", "test");
-        withCommand("mysqld");
-
-        return super.getContainerConfig();
-
-//        return ContainerConfig.builder()
-//                    .image(getDockerImageName())
-//                    .exposedPorts("3306")
-//                    .env("MYSQL_DATABASE=test", "MYSQL_USER=test", "MYSQL_PASSWORD=test", "MYSQL_ROOT_PASSWORD=test")
-//                    .cmd("mysqld")
-//                    .build();
+        addExposedPort(3306);
+        addEnv("MYSQL_DATABASE", "test");
+        addEnv("MYSQL_USER", "test");
+        addEnv("MYSQL_PASSWORD", "test");
+        addEnv("MYSQL_ROOT_PASSWORD", "test");
+        setCommand("mysqld");
     }
 
     @Override
@@ -64,7 +47,7 @@ public class MySQLContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getIpAddress() + ":" + mySqlPort + "/test";
+        return "jdbc:mysql://" + getIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/test";
     }
 
     @Override

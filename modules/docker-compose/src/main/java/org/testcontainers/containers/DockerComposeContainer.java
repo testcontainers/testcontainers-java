@@ -1,13 +1,19 @@
 package org.testcontainers.containers;
 
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerException;
-import com.spotify.docker.client.messages.Container;
+import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.api.model.Container;
+import org.rnorth.ducttape.unreliables.Unreliables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Base58;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.testcontainers.containers.GenericContainer.BindMode.READ_ONLY;
 import static org.testcontainers.containers.GenericContainer.BindMode.READ_WRITE;
@@ -22,6 +28,10 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
      */
     private final String identifier;
 
+    public DockerComposeContainer(File composeFile) {
+        this(composeFile, "up -d");
+    }
+
     public DockerComposeContainer(File composeFile, String command) {
         super("dduportal/docker-compose:1.3.1");
 
@@ -31,43 +41,131 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
         // Map the docker compose file into the container
         addEnv("COMPOSE_FILE", "/compose/" + composeFile.getAbsoluteFile().getName());
-        addFileSystemBind(composeFile.getAbsoluteFile().getParentFile().getAbsolutePath(),"/compose", READ_ONLY);
+        addFileSystemBind(composeFile.getAbsoluteFile().getParentFile().getAbsolutePath(), "/compose", READ_ONLY);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
         //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind("/var/run/docker.sock","/docker.sock", READ_WRITE);
+        addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
 
-        setCommand(command);
+        if (command != null) {
+            setCommand(command);
+        }
     }
 
     @Override
     public void stop() {
         super.stop();
 
-        /**
-         * Kill all service containers that were launched by compose
-         */
+        // Kill all the ambassador containers
+        for (GenericContainer ambassadorContainer : ambassadorContainers.values()) {
+            ambassadorContainer.stop();
+        }
+
+        // Kill all service containers that were launched by compose
         try {
-            List<Container> containers = dockerClient.listContainers(DockerClient.ListContainersParam.allContainers());
+            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
 
             for (Container container : containers) {
-                for (String name : container.names()) {
+                for (String name : container.getNames()) {
                     if (name.startsWith("/" + identifier)) {
-                        dockerClient.killContainer(container.id());
-                        dockerClient.removeContainer(container.id());
+                        dockerClient.killContainerCmd(container.getId()).exec();
+                        dockerClient.removeContainerCmd(container.getId()).exec();
                     }
                 }
             }
 
-        } catch (DockerException | InterruptedException e) {
-            e.printStackTrace();
+        } catch (DockerException e) {
+            e.printStackTrace(); // FIXME
         }
     }
 
     public String getIdentifierPrefix() {
         return identifier;
+    }
+
+
+    private Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(DockerComposeContainer.class);
+
+
+    @Override
+    public void start() {
+        for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
+
+            final Profiler profiler = new Profiler("Docker compose container rule");
+            profiler.setLogger(LOGGER);
+            profiler.start("Docker compose container startup");
+            try {
+
+                super.start();
+
+
+                // Start any ambassador containers we need
+                profiler.start("Ambassador container startup");
+
+                final AmbassadorContainer ambassadorContainer = address.getValue();
+                Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
+                    Profiler localProfiler = profiler.startNested("Ambassador container: " + ambassadorContainer.getContainerName());
+
+                    localProfiler.start("Start ambassador container");
+                    ambassadorContainer.start();
+
+                    if (!ambassadorContainer.isRunning()) {
+                        throw new IllegalStateException("Container startup aborted");
+                    }
+
+                    return null;
+                });
+            } catch (Exception e) {
+                LOGGER.warn("Exception during ambassador container startup!", e);
+            } finally {
+                profiler.stop().log();
+            }
+        }
+    }
+
+    @Override @Deprecated
+    public GenericContainer withExposedPorts(Integer... ports) {
+        throw new UnsupportedOperationException("Use withExposedService instead");
+    }
+
+    public DockerComposeContainer withExposedService(String serviceName, int servicePort) {
+
+        /**
+         * For every service/port pair that needs to be exposed, we have to start an 'ambassador container'.
+         *
+         * The ambassador container's role is to link (within the Docker network) to one of the
+         * compose services, and proxy TCP network I/O out to a port that the ambassador container
+         * exposes.
+         *
+         * This avoids the need for the docker compose file to explicitly expose ports on all the
+         * services.
+         */
+        AmbassadorContainer ambassadorContainer = new AmbassadorContainer(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort);
+
+        // Ambassador containers will all be started together after docker compose has started
+        ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
+
+        return this;
+    }
+
+    /**
+     * Get the host (e.g. IP address or hostname) that the service can be found at, from the host machine
+     * (i.e. should be the machine that's running this Java process)
+     *
+     * @param serviceName
+     * @param servicePort
+     * @return
+     */
+    public String getServiceHost(String serviceName, Integer servicePort) {
+        return ambassadorContainers.get(serviceName + ":" + servicePort).getIpAddress();
+    }
+
+    public Integer getServicePort(String serviceName, Integer servicePort) {
+        return ambassadorContainers.get(serviceName + ":" + servicePort).getMappedPort(servicePort);
     }
 }

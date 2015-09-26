@@ -1,8 +1,6 @@
 package org.testcontainers.containers;
 
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.PortBinding;
+import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -37,12 +35,11 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:2.45.0";
     private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:2.45.0";
     private static final String DEFAULT_PASSWORD = "secret";
+    private static final int SELENIUM_PORT = 4444;
+    private static final int VNC_PORT = 5900;
 
-    private DesiredCapabilities desiredCapabilities;
-    private Map<String, LinkableContainer> containersToLink = new HashMap<>();
-    private String seleniumPort;
-    private String vncPort;
-    private RemoteWebDriver driver;
+    private @Nullable DesiredCapabilities desiredCapabilities;
+    private @Nullable RemoteWebDriver driver;
 
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private File vncRecordingDirectory = new File("/tmp");
@@ -59,58 +56,27 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     }
 
     public BrowserWebDriverContainer withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
-        this.dockerImageName = getImageForCapabilities(desiredCapabilities);
+        super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
         this.desiredCapabilities = desiredCapabilities;
         return this;
     }
 
     @Override
-    protected void containerIsStarting(ContainerInfo containerInfo) {
-        Map<String, List<PortBinding>> ports = containerInfo.networkSettings().ports();
-        seleniumPort = ports.get("4444/tcp").get(0).hostPort();
-        vncPort = ports.get("5900/tcp").get(0).hostPort();
+    protected Integer getLivenessCheckPort() {
+        return getMappedPort(SELENIUM_PORT);
     }
 
     @Override
-    protected String getLivenessCheckPort() {
-        return seleniumPort;
-    }
-
-    @Override
-    protected ContainerConfig getContainerConfig() {
+    protected void configure() {
         String timeZone = System.getProperty("user.timezone");
 
         if(timeZone == null || timeZone.isEmpty()) {
             timeZone = "Etc/UTC";
         }
 
-//        HostConfig.Builder hostConfigBuilder = HostConfig.builder();
-//        // For all containers we've been asked to link to, add a containername:alias link to the host config
-//        if (!this.containersToLink.isEmpty()) {
-//            List<String> links = new ArrayList<>();
-//            for (Map.Entry<String, LinkableContainer> entry : this.containersToLink.entrySet()) {
-//                links.add(entry.getValue().getContainerName() + ":" + entry.getKey());
-//            }
-//            hostConfigBuilder.links(links);
-//        }
-
-        withImageName(getDockerImageName());
-        withExposedPorts(4444, 5900);
-        withEnv("TZ", timeZone);
-        withCommand("/opt/bin/entry_point.sh");
-        for (Map.Entry<String, LinkableContainer> other : containersToLink.entrySet()) {
-            withLinkToContainer(other.getValue(), other.getKey());
-        }
-
-        return super.getContainerConfig();
-//
-//        return ContainerConfig.builder()
-//                .image(getDockerImageName())
-//                .exposedPorts("4444", "5900")
-//                .env("TZ=" + timeZone)
-//                .cmd("/opt/bin/entry_point.sh")
-//                .hostConfig(hostConfigBuilder.build())
-//                .build();
+        addExposedPorts(SELENIUM_PORT, VNC_PORT);
+        addEnv("TZ", timeZone);
+        setCommand("/opt/bin/entry_point.sh");
     }
 
     public static String getImageForCapabilities(DesiredCapabilities desiredCapabilities) {
@@ -128,7 +94,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
     public URL getSeleniumAddress() {
         try {
-            return new URL("http", getIpAddress(), Integer.valueOf(this.seleniumPort), "/wd/hub");
+            return new URL("http", getIpAddress(), getMappedPort(SELENIUM_PORT), "/wd/hub");
         } catch (MalformedURLException e) {
             e.printStackTrace();// TODO
             return null;
@@ -137,7 +103,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
     @Override
     public String getVncAddress() {
-        return "vnc://vnc:secret@" + getIpAddress() + ":" + this.vncPort;
+        return "vnc://vnc:secret@" + getIpAddress() + ":" + getMappedPort(VNC_PORT);
     }
 
     @Override
@@ -147,7 +113,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
     @Override
     public int getPort() {
-        return 5900;
+        return VNC_PORT;
     }
 
     @Override
@@ -236,7 +202,9 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
     @Override
     protected void finished(Description description) {
-        driver.quit();
+        if (driver != null) {
+            driver.quit();
+        }
         this.stop();
     }
 
@@ -288,12 +256,12 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
      * Remember any other containers this needs to link to. We have to pass these down to the container so that
      * the other containers will be initialized before linking occurs.
      *
-     * @param containerRule the container rule to link to
+     * @param otherContainer the container rule to link to
      * @param alias the alias (hostname) that this other container should be referred to by
-     * @return
+     * @return this
      */
-    public BrowserWebDriverContainer withLinkToContainer(LinkableContainer containerRule, String alias) {
-        this.containersToLink.put(alias, containerRule);
+    public BrowserWebDriverContainer withLinkToContainer(LinkableContainer otherContainer, String alias) {
+        addLink(otherContainer, alias);
         return this;
     }
 

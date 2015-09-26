@@ -3,7 +3,6 @@ package org.testcontainers.junit;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jetbrains.annotations.NotNull;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -20,6 +19,12 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
  */
 public class SimpleMySQLTest {
 
+    /*
+     * Ordinarily you wouldn't try and run multiple containers simultaneously - this is just used for testing.
+     * To avoid memory issues with the default, low memory, docker machine setup, we instantiate only one container
+     * at a time, inside the test methods themselves.
+     */
+    /*
     @ClassRule
     public static MySQLContainer mysql = new MySQLContainer();
 
@@ -29,29 +34,52 @@ public class SimpleMySQLTest {
     @ClassRule
     public static MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
                                                             .withConfigurationOverride("somepath/mysql_conf_override");
+    */
 
     @Test
     public void testSimple() throws SQLException {
-        ResultSet resultSet = performQuery(mysql, "SELECT 1");
-        int resultSetInt = resultSet.getInt(1);
+        MySQLContainer mysql = new MySQLContainer();
+        mysql.start();
 
-        assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        try {
+            ResultSet resultSet = performQuery(mysql, "SELECT 1");
+            int resultSetInt = resultSet.getInt(1);
+
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        } finally {
+            mysql.stop();
+        }
     }
 
     @Test
     public void testSpecificVersion() throws SQLException {
-        ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
-        String resultSetString = resultSet.getString(1);
+        MySQLContainer mysqlOldVersion = new MySQLContainer("mysql:5.5");
+        mysqlOldVersion.start();
 
-        assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5"));
+        try {
+            ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
+            String resultSetString = resultSet.getString(1);
+
+            assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5"));
+        } finally {
+            mysqlOldVersion.stop();
+        }
     }
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
-        ResultSet resultSet = performQuery(mysqlCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
-        String result = resultSet.getString(1);
+        MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
+                                                .withConfigurationOverride("somepath/mysql_conf_override");
+        mysqlCustomConfig.start();
 
-        assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+        try {
+            ResultSet resultSet = performQuery(mysqlCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
+            String result = resultSet.getString(1);
+
+            assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+        } finally {
+            mysqlCustomConfig.stop();
+        }
     }
 
     @NotNull

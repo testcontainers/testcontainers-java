@@ -1,8 +1,5 @@
 package org.testcontainers.containers;
 
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerInfo;
-
 /**
  * @author richardnorth
  */
@@ -10,7 +7,7 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer {
 
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
-    private String postgresPort;
+    public static final Integer POSTGRESQL_PORT = 5432;
 
     public PostgreSQLContainer() {
         super(IMAGE + ":latest");
@@ -21,32 +18,18 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    protected void containerIsStarting(ContainerInfo containerInfo) {
-        postgresPort = containerInfo.networkSettings().ports().get("5432/tcp").get(0).hostPort();
+    protected Integer getLivenessCheckPort() {
+        return getMappedPort(POSTGRESQL_PORT);
     }
 
     @Override
-    protected String getLivenessCheckPort() {
-        return postgresPort;
-    }
+    protected void configure() {
 
-    @Override
-    protected ContainerConfig getContainerConfig() {
-
-        withExposedPorts(5432);
-        withEnv("POSTGRES_DATABASE", "test");
-        withEnv("POSTGRES_USER", "test");
-        withEnv("POSTGRES_PASSWORD", "test");
-        withCommand("postgres");
-
-        return super.getContainerConfig();
-
-//        return ContainerConfig.builder()
-//                    .image(getDockerImageName())
-//                    .exposedPorts("5432")
-//                    .env("POSTGRES_DATABASE=test", "POSTGRES_USER=test", "POSTGRES_PASSWORD=test")
-//                    .cmd("postgres")
-//                    .build();
+        addExposedPort(POSTGRESQL_PORT);
+        addEnv("POSTGRES_DATABASE", "test");
+        addEnv("POSTGRES_USER", "test");
+        addEnv("POSTGRES_PASSWORD", "test");
+        setCommand("postgres");
     }
 
     @Override
@@ -61,7 +44,7 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getIpAddress() + ":" + postgresPort + "/test";
+        return "jdbc:postgresql://" + getIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/test";
     }
 
     @Override

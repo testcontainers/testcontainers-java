@@ -24,8 +24,7 @@ public class SimpleNginxTest {
 
     @Rule
     public NginxContainer nginx = new NginxContainer()
-            .withCustomContent(System.getProperty("user.home") + "/.tmp-test-container")
-            .withExposedPorts("80");
+            .withCustomContent(System.getProperty("user.home") + "/.tmp-test-container");
 
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
