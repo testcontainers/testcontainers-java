@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import org.testcontainers.containers.traits.LinkableContainer;
 
@@ -15,12 +14,15 @@ import java.util.Map;
 /**
  * @author richardnorth
  */
-public class NginxContainer extends AbstractContainer implements LinkableContainer {
+public class NginxContainer extends GenericContainer implements LinkableContainer {
     private String nginxPort;
-    private String htmlContentPath;
     private Map<String, List<PortBinding>> ports;
     private List<String> binds = new ArrayList<>();
     private String[] exposedPorts;
+
+    public NginxContainer() {
+        super("nginx:1.9.4");
+    }
 
     @Override
     protected void containerIsStarting(ContainerInfo containerInfo) {
@@ -35,16 +37,11 @@ public class NginxContainer extends AbstractContainer implements LinkableContain
 
     @Override
     protected ContainerConfig getContainerConfig() {
-        return ContainerConfig.builder()
-                            .image(getDockerImageName())
-                            .exposedPorts(exposedPorts)
-                            .cmd("nginx", "-g", "daemon off;")
-                            .build();
-    }
+        withImageName(getDockerImageName());
+        withExposedPorts(80);
+        withCommand("nginx", "-g", "daemon off;");
 
-    @Override
-    protected void customizeHostConfigBuilder(HostConfig.Builder hostConfigBuilder) {
-        hostConfigBuilder.binds(binds);
+        return super.getContainerConfig();
     }
 
     @Override
@@ -62,5 +59,15 @@ public class NginxContainer extends AbstractContainer implements LinkableContain
 
     public void setExposedPorts(String[] ports) {
         this.exposedPorts = ports;
+    }
+
+    public NginxContainer withCustomContent(String htmlContentPath) {
+        this.setCustomConfig(htmlContentPath);
+        return this;
+    }
+
+    public NginxContainer withExposedPorts(String... ports) {
+        this.setExposedPorts(ports);
+        return this;
     }
 }

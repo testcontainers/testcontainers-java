@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class SimplePostgreSQLTest {
 
     @Rule
-    public PostgreSQLContainerRule postgres = new PostgreSQLContainerRule();
+    public PostgreSQLContainer postgres = new PostgreSQLContainer();
 
     @Test
     public void testSimple() throws SQLException {

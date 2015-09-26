@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.containers.OracleContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class SimpleOracleTest {
 
     @Rule
-    public OracleContainerRule oracle = new OracleContainerRule();
+    public OracleContainer oracle = new OracleContainer();
 
     @Test
     public void testSimple() throws SQLException {

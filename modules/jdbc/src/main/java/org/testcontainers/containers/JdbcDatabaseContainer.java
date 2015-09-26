@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.utility.Retryables;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -67,22 +67,18 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
     protected void waitUntilContainerStarted() {
         // Repeatedly try and open a connection to the DB and execute a test query
 
-        Retryables.retryUntilSuccess(120, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Connection>() {
-            @Override
-            public Connection get() throws Exception {
+        Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
+            checkContainerNotAborted();
 
-                checkContainerNotAborted();
+            Connection connection = createConnection("");
 
-                Connection connection = createConnection("");
+            boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
 
-                boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
-
-                if (success) {
-                    logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
-                    return connection;
-                } else {
-                    throw new SQLException("Failed to execute test query");
-                }
+            if (success) {
+                logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
+                return connection;
+            } else {
+                throw new SQLException("Failed to execute test query");
             }
         });
     }
@@ -120,12 +116,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
         info.put("password", this.getPassword());
         final String url = this.getJdbcUrl() + queryString;
 
-        return Retryables.retryUntilSuccess(60, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Connection>() {
-            @Override
-            public Connection get() throws Exception {
-                return getJdbcDriverInstance().connect(url, info);
-            }
-        });
+        return Unreliables.retryUntilSuccess(60, TimeUnit.SECONDS, () -> getJdbcDriverInstance().connect(url, info));
     }
 
     protected void optionallyMapResourceParameterAsVolume(String paramName, String pathNameInContainer) {

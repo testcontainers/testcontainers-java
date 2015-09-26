@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.testcontainers.containers.MySQLContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,13 +21,13 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 public class SimpleMySQLTest {
 
     @ClassRule
-    public static MySQLContainerRule mysql = new MySQLContainerRule();
+    public static MySQLContainer mysql = new MySQLContainer();
 
     @ClassRule
-    public static MySQLContainerRule mysqlOldVersion = new MySQLContainerRule("mysql:5.5");
+    public static MySQLContainer mysqlOldVersion = new MySQLContainer("mysql:5.5");
 
     @ClassRule
-    public static MySQLContainerRule mysqlCustomConfig = new MySQLContainerRule("mysql:5.6")
+    public static MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
                                                             .withConfigurationOverride("somepath/mysql_conf_override");
 
     @Test
@@ -54,7 +55,7 @@ public class SimpleMySQLTest {
     }
 
     @NotNull
-    protected ResultSet performQuery(MySQLContainerRule containerRule, String sql) throws SQLException {
+    protected ResultSet performQuery(MySQLContainer containerRule, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(containerRule.getJdbcUrl());
         hikariConfig.setUsername(containerRule.getUsername());

@@ -15,7 +15,7 @@ import java.nio.file.StandardCopyOption;
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
  */
-public class VncRecordingSidekickContainer<T extends VncService & LinkableContainer> extends AbstractContainer {
+public class VncRecordingSidekickContainer<T extends VncService & LinkableContainer> extends GenericContainer {
     private final T vncServiceContainer;
     private final Path tempDir;
 
@@ -25,6 +25,8 @@ public class VncRecordingSidekickContainer<T extends VncService & LinkableContai
      * @param vncServiceContainer the container whose screen should be recorded. This container must implement VncService and LinkableContainer.
      */
     public VncRecordingSidekickContainer(T vncServiceContainer) {
+        super("richnorth/vnc-recorder:latest");
+
         this.vncServiceContainer = vncServiceContainer;
 
         try {
@@ -62,16 +64,13 @@ public class VncRecordingSidekickContainer<T extends VncService & LinkableContai
                         "/recording/password",
                         "vnchost",
                         String.valueOf(vncServiceContainer.getPort()))
+                .hostConfig(HostConfig.builder()
+                    // map the temporary directory to a volume in the container
+                    .binds(tempDir.toAbsolutePath() + ":/recording:rw")
+                    // link to the VNC-providing container with the hostname alias 'vnchost'
+                    .links(vncServiceContainer.getContainerName() + ":vnchost")
+                    .build())
                 .build();
-    }
-
-    @Override
-    protected void customizeHostConfigBuilder(HostConfig.Builder hostConfigBuilder) {
-        // map the temporary directory to a volume in the container
-        hostConfigBuilder.binds(tempDir.toAbsolutePath() + ":/recording:rw");
-
-        // link to the VNC-providing container with the hostname alias 'vnchost'
-        hostConfigBuilder.links(vncServiceContainer.getContainerName() + ":vnchost");
     }
 
     @Override

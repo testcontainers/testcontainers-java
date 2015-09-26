@@ -32,12 +32,21 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer {
 
     @Override
     protected ContainerConfig getContainerConfig() {
-        return ContainerConfig.builder()
-                    .image(getDockerImageName())
-                    .exposedPorts("5432")
-                    .env("POSTGRES_DATABASE=test", "POSTGRES_USER=test", "POSTGRES_PASSWORD=test")
-                    .cmd("postgres")
-                    .build();
+
+        withExposedPorts(5432);
+        withEnv("POSTGRES_DATABASE", "test");
+        withEnv("POSTGRES_USER", "test");
+        withEnv("POSTGRES_PASSWORD", "test");
+        withCommand("postgres");
+
+        return super.getContainerConfig();
+
+//        return ContainerConfig.builder()
+//                    .image(getDockerImageName())
+//                    .exposedPorts("5432")
+//                    .env("POSTGRES_DATABASE=test", "POSTGRES_USER=test", "POSTGRES_PASSWORD=test")
+//                    .cmd("postgres")
+//                    .build();
     }
 
     @Override

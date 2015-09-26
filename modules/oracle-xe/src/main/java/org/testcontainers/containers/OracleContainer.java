@@ -37,10 +37,15 @@ public class OracleContainer extends JdbcDatabaseContainer {
 
     @Override
     protected ContainerConfig getContainerConfig() {
-        return ContainerConfig.builder()
-                .image(getDockerImageName())
-                .exposedPorts("22", "1521", "8080")
-                .build();
+
+        withExposedPorts(22, 1521, 8080);
+
+        return super.getContainerConfig();
+
+//        return ContainerConfig.builder()
+//                .image(getDockerImageName())
+//                .exposedPorts("22", "1521", "8080")
+//                .build();
     }
 
     @Override

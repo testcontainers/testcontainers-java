@@ -6,7 +6,6 @@ import org.slf4j.profiler.Profiler;
 import org.testcontainers.containers.AmbassadorContainer;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.Retryables;
 
 import java.io.File;
 import java.util.HashMap;

@@ -6,12 +6,15 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.containers.NginxContainer;
 
 import java.io.*;
 import java.net.URLConnection;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.rnorth.visibleassertions.VisibleAssertions.info;
 
 
 /**
@@ -20,12 +23,13 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 public class SimpleNginxTest {
 
     @Rule
-    public NginxContainerRule nginx = new NginxContainerRule()
+    public NginxContainer nginx = new NginxContainer()
             .withCustomContent(System.getProperty("user.home") + "/.tmp-test-container")
             .withExposedPorts("80");
 
     @Rule
-    public BrowserWebDriverContainerRule chrome = new BrowserWebDriverContainerRule(DesiredCapabilities.chrome())
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+            .withDesiredCapabilities(DesiredCapabilities.chrome())
             .withLinkToContainer(nginx, "nginx");
 
     @BeforeClass
@@ -49,6 +53,9 @@ public class SimpleNginxTest {
 
     @Test
     public void testSimple() throws Exception {
+
+        info("Base URL is " + nginx.getBaseUrl("http", 80));
+
         URLConnection urlConnection = nginx.getBaseUrl("http", 80).openConnection();
         String line = new BufferedReader(new InputStreamReader(urlConnection.getInputStream())).readLine();
         System.out.println(line);
@@ -58,6 +65,8 @@ public class SimpleNginxTest {
 
     @Test
     public void testWebDriverToNginxContainerAccessViaContainerLink() throws Exception {
+
+        info("Base URL is " + nginx.getBaseUrl("http", 80));
 
         RemoteWebDriver driver = chrome.newDriver();
 

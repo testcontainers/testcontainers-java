@@ -10,7 +10,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.redisson.Config;
 import org.redisson.Redisson;
-import org.testcontainers.utility.Retryables;
+import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.GenericContainer;
 
 import java.io.*;
 import java.net.Socket;
@@ -49,21 +50,21 @@ public class GenericContainerRuleTest {
      * Redis
      */
     @ClassRule
-    public static GenericContainerRule redis = new GenericContainerRule("redis:3.0.2")
+    public static GenericContainer redis = new GenericContainer("redis:3.0.2")
                                                     .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
     @ClassRule
-    public static GenericContainerRule rabbitMq = new GenericContainerRule("rabbitmq:3.5.3")
+    public static GenericContainer rabbitMq = new GenericContainer("rabbitmq:3.5.3")
                                                     .withExposedPorts(RABBITMQ_PORT);
 
     /**
      * MongoDB
      */
     @ClassRule
-    public static GenericContainerRule mongo = new GenericContainerRule("mongo:3.1.5")
+    public static GenericContainer mongo = new GenericContainer("mongo:3.1.5")
                                                     .withExposedPorts(MONGO_PORT);
 
     /**
@@ -71,7 +72,7 @@ public class GenericContainerRuleTest {
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainerRule alpineEnvVar = new GenericContainerRule("alpine:3.2")
+    public static GenericContainer alpineEnvVar = new GenericContainer("alpine:3.2")
                                                     .withExposedPorts(80)
                                                     .withEnv("MAGIC_NUMBER", "42")
                                                     .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
@@ -80,7 +81,7 @@ public class GenericContainerRuleTest {
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainerRule alpineClasspathResource = new GenericContainerRule("alpine:3.2")
+    public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
                                                                 .withExposedPorts(80)
                                                                 .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
                                                                 .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
@@ -134,14 +135,11 @@ public class GenericContainerRuleTest {
         channel.basicPublish(RABBIQMQ_TEST_EXCHANGE, RABBITMQ_TEST_ROUTING_KEY, null, RABBITMQ_TEST_MESSAGE.getBytes());
 
         // check the message was received
-        assertTrue("The message was received", Retryables.retryUntilSuccess(5, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<Boolean>() {
-            @Override
-            public Boolean get() throws Exception {
-                if (!messageWasReceived[0]) {
-                    throw new IllegalStateException("Message not received yet");
-                }
-                return true;
+        assertTrue("The message was received", Unreliables.retryUntilSuccess(5, TimeUnit.SECONDS, () -> {
+            if (!messageWasReceived[0]) {
+                throw new IllegalStateException("Message not received yet");
             }
+            return true;
         }));
     }
 

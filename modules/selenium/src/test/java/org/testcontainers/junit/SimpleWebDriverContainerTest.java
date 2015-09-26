@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,8 +15,8 @@ import java.util.Random;
 
 import static java.util.Arrays.asList;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.testcontainers.junit.BrowserWebDriverContainerRule.VncRecordingMode.RECORD_ALL;
-import static org.testcontainers.junit.BrowserWebDriverContainerRule.VncRecordingMode.RECORD_FAILING;
+import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
+import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_FAILING;
 
 /**
  *
@@ -23,24 +24,29 @@ import static org.testcontainers.junit.BrowserWebDriverContainerRule.VncRecordin
 public class SimpleWebDriverContainerTest {
 
     @Rule
-    public BrowserWebDriverContainerRule chrome = new BrowserWebDriverContainerRule(DesiredCapabilities.chrome());
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+                                                    .withDesiredCapabilities(DesiredCapabilities.chrome());
 
     @Rule
-    public BrowserWebDriverContainerRule chromeThatRecordsAllTests = new BrowserWebDriverContainerRule(DesiredCapabilities.chrome(), RECORD_ALL, new File("./target/"));
+    public BrowserWebDriverContainer chromeThatRecordsAllTests = new BrowserWebDriverContainer()
+                                                                        .withDesiredCapabilities(DesiredCapabilities.chrome())
+                                                                        .withRecordingMode(RECORD_ALL, new File("./target/"));
 
     @Rule
-    public BrowserWebDriverContainerRule chromeThatRecordsFailingTests = new BrowserWebDriverContainerRule(DesiredCapabilities.chrome(), RECORD_FAILING, new File("./target"));
-
+    public BrowserWebDriverContainer chromeThatRecordsFailingTests = new BrowserWebDriverContainer()
+                                                                            .withDesiredCapabilities(DesiredCapabilities.chrome())
+                                                                            .withRecordingMode(RECORD_FAILING, new File("./target/"));
     @Rule
-    public BrowserWebDriverContainerRule firefox = new BrowserWebDriverContainerRule(DesiredCapabilities.firefox());
+    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer()
+                                                        .withDesiredCapabilities(DesiredCapabilities.firefox());
 
     @Test
     public void simpleTest() throws IOException {
-        for (BrowserWebDriverContainerRule rule : asList(chrome, firefox)) {
+        for (BrowserWebDriverContainer rule : asList(chrome, firefox)) {
 
             RemoteWebDriver driver = rule.newDriver();
-            System.out.println("Selenium remote URL is: " + rule.getSeleniumURL(driver));
-            System.out.println("VNC URL is: " + rule.getVncUrl(driver));
+            System.out.println("Selenium remote URL is: " + rule.getSeleniumAddress());
+            System.out.println("VNC URL is: " + rule.getVncAddress());
 
             //Runtime.getRuntime().exec("open " + rule.getVncUrl(driver)); // For debugging, on a Mac
 
