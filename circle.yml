@@ -1,4 +1,6 @@
 machine:
+  java:
+    version: oraclejdk8
   environment:
     DOCKER_HOST: tcp://127.0.0.1:2376
     DOCKER_TLS_VERIFY: 0
