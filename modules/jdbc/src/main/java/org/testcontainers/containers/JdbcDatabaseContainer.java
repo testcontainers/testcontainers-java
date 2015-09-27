@@ -28,38 +28,27 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
     }
 
     /**
-     * Get the name of the database type, to be matched against the DB type part of the JDBC query string (i.e. after jdbc:)
-     * @return
-     */
-    public abstract String getName();
-
-    /**
-     * Get the name of the actual JDBC driver to use
-     * @return
+     * @return the name of the actual JDBC driver to use
      */
     protected abstract String getDriverClassName();
 
     /**
-     * Get a JDBC URL that may be used to connect to the dockerized DB
-     * @return
+     * @return a JDBC URL that may be used to connect to the dockerized DB
      */
     public abstract String getJdbcUrl();
 
     /**
-     * Get the standard database username that should be used for connections
-     * @return
+     * @return the standard database username that should be used for connections
      */
     public abstract String getUsername();
 
     /**
-     * Get the standard password that should be used for connections
-     * @return
+     * @return the standard password that should be used for connections
      */
     public abstract String getPassword();
 
     /**
-     * Get a test query string suitable for testing that this particular database type is alive
-     * @return
+     * @return a test query string suitable for testing that this particular database type is alive
      */
     protected abstract String getTestQueryString();
 
@@ -69,7 +58,9 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
 
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
         Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
-            checkContainerNotAborted();
+            if (!isRunning()) {
+                throw new ContainerLaunchException("Container failed to start");
+            }
 
             Connection connection = createConnection("");
 
@@ -117,7 +108,11 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
         info.put("password", this.getPassword());
         final String url = this.getJdbcUrl() + queryString;
 
-        return Unreliables.retryUntilSuccess(60, TimeUnit.SECONDS, () -> getJdbcDriverInstance().connect(url, info));
+        try {
+            return Unreliables.retryUntilSuccess(60, TimeUnit.SECONDS, () -> getJdbcDriverInstance().connect(url, info));
+        } catch (Exception e) {
+            throw new SQLException("Could not create new connection", e);
+        }
     }
 
     protected void optionallyMapResourceParameterAsVolume(String paramName, String pathNameInContainer) {
@@ -139,6 +134,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
         this.parameters = parameters;
     }
 
+    @SuppressWarnings("unused")
     public void addParameter(String paramName, String value) {
         this.parameters.put(paramName, value);
     }

@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 /**
- * Created by rnorth on 21/07/2015.
+ * Base class for classes that can provide a JDBC container.
  */
 public abstract class JdbcDatabaseContainerProvider {
 

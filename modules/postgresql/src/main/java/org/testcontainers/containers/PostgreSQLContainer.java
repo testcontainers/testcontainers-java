@@ -33,11 +33,6 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    public String getName() {
-        return "postgresql";
-    }
-
-    @Override
     public String getDriverClassName() {
         return "org.postgresql.Driver";
     }

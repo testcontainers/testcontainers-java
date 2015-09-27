@@ -44,7 +44,7 @@ public class SimpleWebDriverContainerTest {
     public void simpleTest() throws IOException {
         for (BrowserWebDriverContainer rule : asList(chrome, firefox)) {
 
-            RemoteWebDriver driver = rule.newDriver();
+            RemoteWebDriver driver = rule.getWebDriver();
             System.out.println("Selenium remote URL is: " + rule.getSeleniumAddress());
             System.out.println("VNC URL is: " + rule.getVncAddress());
 
@@ -59,14 +59,14 @@ public class SimpleWebDriverContainerTest {
 
     @Test
     public void recordingTestThatShouldBeRecordedButDeleted() {
-        RemoteWebDriver driver = chromeThatRecordsFailingTests.newDriver();
+        RemoteWebDriver driver = chromeThatRecordsFailingTests.getWebDriver();
 
         doSimpleExplore(driver);
     }
 
     @Test
     public void recordingTestThatShouldBeRecordedAndRetained() {
-        RemoteWebDriver driver = chromeThatRecordsAllTests.newDriver();
+        RemoteWebDriver driver = chromeThatRecordsAllTests.getWebDriver();
 
         doSimpleExplore(driver);
     }

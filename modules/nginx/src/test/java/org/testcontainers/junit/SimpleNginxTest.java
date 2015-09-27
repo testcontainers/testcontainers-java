@@ -67,7 +67,7 @@ public class SimpleNginxTest {
 
         info("Base URL is " + nginx.getBaseUrl("http", 80));
 
-        RemoteWebDriver driver = chrome.newDriver();
+        RemoteWebDriver driver = chrome.getWebDriver();
 
         driver.get("http://nginx/");
 

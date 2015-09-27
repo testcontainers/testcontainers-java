@@ -22,7 +22,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.containers.GenericContainer.BindMode.READ_ONLY;
+import static org.testcontainers.containers.BindMode.READ_ONLY;
 
 /**
  * Tests for GenericContainerRules

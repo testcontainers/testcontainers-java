@@ -3,8 +3,6 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.model.Container;
 import org.rnorth.ducttape.unreliables.Unreliables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Base58;
@@ -15,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.testcontainers.containers.GenericContainer.BindMode.READ_ONLY;
-import static org.testcontainers.containers.GenericContainer.BindMode.READ_WRITE;
+import static org.testcontainers.containers.BindMode.READ_ONLY;
+import static org.testcontainers.containers.BindMode.READ_WRITE;
 
 /**
- * Created by rnorth on 08/08/2015.
+ * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
 public class DockerComposeContainer extends GenericContainer implements LinkableContainer {
 
@@ -27,11 +25,13 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
      * Random identifier which will become part of spawned containers names, so we can shut them down
      */
     private final String identifier;
+    private final Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
 
     public DockerComposeContainer(File composeFile) {
         this(composeFile, "up -d");
     }
 
+    @SuppressWarnings("WeakerAccess")
     public DockerComposeContainer(File composeFile, String command) {
         super("dduportal/docker-compose:1.3.1");
 
@@ -56,53 +56,15 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
     }
 
     @Override
-    public void stop() {
-        super.stop();
-
-        // Kill all the ambassador containers
-        for (GenericContainer ambassadorContainer : ambassadorContainers.values()) {
-            ambassadorContainer.stop();
-        }
-
-        // Kill all service containers that were launched by compose
-        try {
-            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
-
-            for (Container container : containers) {
-                for (String name : container.getNames()) {
-                    if (name.startsWith("/" + identifier)) {
-                        dockerClient.killContainerCmd(container.getId()).exec();
-                        dockerClient.removeContainerCmd(container.getId()).exec();
-                    }
-                }
-            }
-
-        } catch (DockerException e) {
-            e.printStackTrace(); // FIXME
-        }
-    }
-
-    public String getIdentifierPrefix() {
-        return identifier;
-    }
-
-
-    private Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(DockerComposeContainer.class);
-
-
-    @Override
     public void start() {
         for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
 
             final Profiler profiler = new Profiler("Docker compose container rule");
-            profiler.setLogger(LOGGER);
+            profiler.setLogger(logger());
             profiler.start("Docker compose container startup");
             try {
-
+                // Start the docker-compose container, which starts up the services
                 super.start();
-
 
                 // Start any ambassador containers we need
                 profiler.start("Ambassador container startup");
@@ -121,14 +83,41 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
                     return null;
                 });
             } catch (Exception e) {
-                LOGGER.warn("Exception during ambassador container startup!", e);
+                logger().warn("Exception during ambassador container startup!", e);
             } finally {
                 profiler.stop().log();
             }
         }
     }
 
-    @Override @Deprecated
+
+    @Override
+    public void stop() {
+        super.stop();
+
+        // Kill all the ambassador containers
+        ambassadorContainers.values().forEach(GenericContainer::stop);
+
+        // Kill all service containers that were launched by compose
+        try {
+            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+
+            for (Container container : containers) {
+                for (String name : container.getNames()) {
+                    if (name.startsWith("/" + identifier)) {
+                        dockerClient.killContainerCmd(container.getId()).exec();
+                        dockerClient.removeContainerCmd(container.getId()).exec();
+                    }
+                }
+            }
+
+        } catch (DockerException e) {
+            logger().debug("Failed to stop a service container with exception", e);
+        }
+    }
+
+    @Override
+    @Deprecated
     public GenericContainer withExposedPorts(Integer... ports) {
         throw new UnsupportedOperationException("Use withExposedService instead");
     }
@@ -154,17 +143,29 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
     }
 
     /**
-     * Get the host (e.g. IP address or hostname) that the service can be found at, from the host machine
-     * (i.e. should be the machine that's running this Java process)
+     * Get the host (e.g. IP address or hostname) that an exposed service can be found at, from the host machine
+     * (i.e. should be the machine that's running this Java process).
+     * <p>
+     * The service must have been declared using DockerComposeContainer#withExposedService.
      *
-     * @param serviceName
-     * @param servicePort
-     * @return
+     * @param serviceName the name of the service as set in the docker-compose.yml file.
+     * @param servicePort the port exposed by the service container.
+     * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
         return ambassadorContainers.get(serviceName + ":" + servicePort).getIpAddress();
     }
 
+    /**
+     * Get the port that an exposed service can be found at, from the host machine
+     * (i.e. should be the machine that's running this Java process).
+     * <p>
+     * The service must have been declared using DockerComposeContainer#withExposedService.
+     *
+     * @param serviceName the name of the service as set in the docker-compose.yml file.
+     * @param servicePort the port exposed by the service container.
+     * @return a port that can be used for accessing the service container.
+     */
     public Integer getServicePort(String serviceName, Integer servicePort) {
         return ambassadorContainers.get(serviceName + ":" + servicePort).getMappedPort(servicePort);
     }

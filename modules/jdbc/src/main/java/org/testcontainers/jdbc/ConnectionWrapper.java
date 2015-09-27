@@ -8,7 +8,7 @@ import java.util.concurrent.Executor;
 /**
  * @author richardnorth
  */
-public class ConnectionWrapper implements Connection {
+class ConnectionWrapper implements Connection {
     private final Connection delegate;
     private final Runnable closeCallback;
 

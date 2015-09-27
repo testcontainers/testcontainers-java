@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -18,7 +18,7 @@ public class PathOperations {
      * Recursively delete a directory and all its subdirectories and files.
      * @param directory path to the directory to delete.
      */
-    public static void recursiveDeleteDir(final @NotNull Path directory) {
+    public static void recursiveDeleteDir(final @NonNull Path directory) {
         try {
             Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
                 @Override
@@ -34,6 +34,18 @@ public class PathOperations {
                 }
             });
         } catch (IOException ignored) {
+        }
+    }
+
+    /**
+     * Make a directory, plus any required parent directories.
+     *
+     * @param directory the directory path to make
+     */
+    public static void mkdirp(Path directory) {
+        boolean result = directory.toFile().mkdirs();
+        if (!result) {
+            throw new IllegalStateException("Failed to create directory at: " + directory);
         }
     }
 }

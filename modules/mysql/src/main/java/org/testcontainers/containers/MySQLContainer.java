@@ -7,8 +7,8 @@ public class MySQLContainer extends JdbcDatabaseContainer {
 
     public static final String NAME = "mysql";
     public static final String IMAGE = "mysql";
-    public static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
-    public static final Integer MYSQL_PORT = 3306;
+    private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
+    private static final Integer MYSQL_PORT = 3306;
 
     public MySQLContainer() {
         super(IMAGE + ":latest");
@@ -33,11 +33,6 @@ public class MySQLContainer extends JdbcDatabaseContainer {
         addEnv("MYSQL_PASSWORD", "test");
         addEnv("MYSQL_ROOT_PASSWORD", "test");
         setCommand("mysqld");
-    }
-
-    @Override
-    public String getName() {
-        return "mysql";
     }
 
     @Override

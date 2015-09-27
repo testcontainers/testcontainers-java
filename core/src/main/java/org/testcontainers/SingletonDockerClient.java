@@ -11,7 +11,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
- * Created by rnorth on 09/08/2015.
+ * Singleton class that provides an instance of a docker client.
  */
 public class SingletonDockerClient {
 
@@ -21,6 +21,9 @@ public class SingletonDockerClient {
     private static final Logger LOGGER = getLogger(SingletonDockerClient.class);
     private DockerClientConfig config;
 
+    /**
+     * Private constructor
+     */
     private SingletonDockerClient() {
         try {
             client = createClient();
@@ -77,6 +80,10 @@ public class SingletonDockerClient {
         throw new IllegalStateException("Could not find a suitable docker instance - is DOCKER_HOST defined and pointing to a running Docker daemon?");
     }
 
+    /**
+     * Obtain an instance of the SingletonDockerClient wrapper.
+     * @return the singleton instance of SingletonDockerClient
+     */
     public synchronized static SingletonDockerClient instance() {
         if (instance == null) {
             instance = new SingletonDockerClient();
@@ -85,10 +92,16 @@ public class SingletonDockerClient {
         return instance;
     }
 
+    /**
+     * @return an initialized Docker client
+     */
     public DockerClient client() {
         return client;
     }
 
+    /**
+     * @return the IP address of the host running Docker
+     */
     public String dockerHostIpAddress() {
         return config.getUri().getHost();
     }

@@ -6,7 +6,9 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import org.jetbrains.annotations.NotNull;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -35,28 +37,43 @@ import static java.util.Arrays.asList;
 /**
  * Base class for that allows a container to be launched and controlled.
  */
+@Data
+@EqualsAndHashCode(callSuper = false)
 public class GenericContainer extends TestWatcher implements LinkableContainer {
-
 
     /*
      * Default settings
      */
-    private @NotNull List<Integer> exposedPorts = new ArrayList<>();
-    private @NotNull String dockerImageName = "alpine:3.2";
-    private @NotNull List<String> env = new ArrayList<>();
-    private @Nullable String[] commandParts = null;
-    private @NotNull List<Bind> binds = new ArrayList<>();
-    private @NotNull Map<String, LinkableContainer> linkedContainers = new HashMap<>();
+    @NonNull
+    private List<Integer> exposedPorts = new ArrayList<>();
+
+    @NonNull
+    private String dockerImageName = "alpine:3.2";
+
+    @NonNull
+    private List<String> env = new ArrayList<>();
+
+    @Nullable
+    private String[] commandParts = null;
+
+    @NonNull
+    private List<Bind> binds = new ArrayList<>();
+
+    @NonNull
+    private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     /*
      * Set during container startup
      */
     protected String containerId;
     protected String containerName;
-    private @Nullable InspectContainerResponse containerInfo;
+
+    @Nullable private InspectContainerResponse containerInfo;
+
     private boolean initialized = false;
 
-    protected @NotNull DockerClient dockerClient = SingletonDockerClient.instance().client();
+    protected final DockerClient dockerClient = SingletonDockerClient.instance().client();
+
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
             .newBuilder()
@@ -68,7 +85,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
 
     }
 
-    public GenericContainer(@NotNull final String dockerImageName) {
+    public GenericContainer(@NonNull final String dockerImageName) {
         this.dockerImageName = dockerImageName;
     }
 
@@ -102,21 +119,22 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
 
             logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
-            // Wait until the container is starting
-            profiler.start("Wait until container state=running");
-            Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
-                return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
-                    InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
-                    return inspectionResponse.getState().isRunning();
-                });
-            });
-
             // Tell subclasses that we're starting
             profiler.start("Inspecting container");
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
             profiler.start("Call containerIsStarting on subclasses");
             containerIsStarting(containerInfo);
+
+            // Wait until the container is running (may not be fully started)
+            profiler.start("Wait until container state=running");
+            Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
+                //noinspection CodeBlock2Expr
+                return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
+                    InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
+                    return inspectionResponse.getState().isRunning();
+                });
+            });
 
             profiler.start("Wait until container started");
             waitUntilContainerStarted();
@@ -142,9 +160,28 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
     }
 
     /**
+     * Stops the container.
+     */
+    public void stop() {
+
+        if (!initialized) {
+            return;
+        }
+
+        try {
+            logger().trace("Stopping container: {}", containerId);
+            dockerClient.killContainerCmd(containerId).exec();
+            dockerClient.removeContainerCmd(containerId).withForce(true).exec();
+            logger().info("Stopped and removed container: {}", dockerImageName);
+        } catch (DockerException e) {
+            logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+        }
+    }
+
+    /**
      * Provide a logger that references the docker image name.
      *
-     * @return
+     * @return a logger that references the docker image name
      */
     protected Logger logger() {
         if ("UTF-8".equals(System.getProperty("file.encoding"))) {
@@ -165,9 +202,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         // Update the cache
         List<Image> images = dockerClient.listImagesCmd().exec();
         for (Image image : images) {
-            for (String existingImageName : image.getRepoTags()) {
-                AVAILABLE_IMAGE_NAME_CACHE.add(existingImageName);
-            }
+            Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
         }
 
         // Check cache again following update
@@ -187,25 +222,6 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
     }
 
     /**
-     * Stops the container.
-     */
-    public void stop() {
-
-        if (!initialized) {
-            return;
-        }
-
-        try {
-            logger().trace("Stopping container: {}", containerId);
-            dockerClient.killContainerCmd(containerId).exec();
-            dockerClient.removeContainerCmd(containerId).withForce(true).exec();
-            logger().info("Stopped and removed container: {}", dockerImageName);
-        } catch (DockerException e) {
-            logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
-        }
-    }
-
-    /**
      * Creates a directory on the local filesystem which will be mounted as a volume for the container.
      *
      * @param temporary is the volume directory temporary? If true, the directory will be deleted on JVM shutdown.
@@ -213,23 +229,25 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
      * @throws IOException
      */
     protected Path createVolumeDirectory(boolean temporary) throws IOException {
-        File file = new File(".tmp-volume-" + System.currentTimeMillis());
-        file.mkdirs();
-        final Path directory = file.toPath();
+        Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
+        PathOperations.mkdirp(directory);
 
-        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                PathOperations.recursiveDeleteDir(directory);
-            }
+        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            PathOperations.recursiveDeleteDir(directory);
         }));
 
         return directory;
     }
 
+    protected void configure() {
+
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
     }
 
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
     }
 
@@ -241,14 +259,10 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         }
     }
 
-    protected void configure() {
-
-    }
-
     private void applyConfiguration(CreateContainerCmd createCommand) {
 
         ExposedPort[] portArray = exposedPorts.stream()
-                .map(it -> new ExposedPort(Integer.valueOf(it)))
+                .map(ExposedPort::new)
                 .toArray(ExposedPort[]::new);
 
         createCommand.withExposedPorts(portArray);
@@ -266,9 +280,9 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         createCommand.withBinds(bindsArray);
 
         Link[] linksArray = linkedContainers.entrySet().stream()
-                                .map(entry -> new Link(entry.getValue().getContainerName(), entry.getKey()))
-                                .collect(Collectors.toList())
-                                .toArray(new Link[linkedContainers.size()]);
+                .map(entry -> new Link(entry.getValue().getContainerName(), entry.getKey()))
+                .collect(Collectors.toList())
+                .toArray(new Link[linkedContainers.size()]);
         createCommand.withLinks(linksArray);
 
         createCommand.withPublishAllPorts(true);
@@ -285,7 +299,8 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
 
     /**
      * Waits for a port to start listening for incoming connections.
-     *  @param ipAddress the IP address to attempt to connect to
+     *
+     * @param ipAddress the IP address to attempt to connect to
      * @param port      the port which will start accepting connections
      */
     protected void waitForListeningPort(String ipAddress, Integer port) {
@@ -310,48 +325,13 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         }
     }
 
-    protected void checkContainerNotAborted() throws DockerException, InterruptedException {
-        if (!isRunning()) {
-            throw new ContainerLaunchException("Container failed to start");
-        }
-    }
-
-    public String getContainerName() {
-        return containerName;
-    }
-
-    /**
-     * Get the IP address that this container may be reached on (may not be the local machine).
-     *
-     * @return an IP address
-     */
-    public String getIpAddress() {
-        return SingletonDockerClient.instance().dockerHostIpAddress();
-    }
-
-    public Boolean isRunning() {
-        try {
-            return dockerClient.inspectContainerCmd(containerId).exec().getState().isRunning();
-        } catch (DockerException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Set the ports that this container listens on
-     *
-     * @param exposedPorts a list of port numbers
-     */
-    public void setExposedPorts(@NotNull List<Integer> exposedPorts) {
-        this.exposedPorts = exposedPorts;
-    }
 
     /**
      * Set the command that should be run in the container
      *
      * @param command a command in single string format (will automatically be split on spaces)
      */
-    public void setCommand(@NotNull String command) {
+    public void setCommand(@NonNull String command) {
         this.commandParts = command.split(" ");
     }
 
@@ -360,7 +340,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
      *
      * @param commandParts a command as an array of string parts
      */
-    public void setCommand(@NotNull String... commandParts) {
+    public void setCommand(@NonNull String... commandParts) {
         this.commandParts = commandParts;
     }
 
@@ -374,7 +354,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         env.add(key + "=" + value);
     }
 
-    public void addFileSystemBind(String hostPath, String containerPath, GenericContainer.BindMode mode) {
+    public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
 
         binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
     }
@@ -393,22 +373,6 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         }
     }
 
-    public void setDockerImageName(@NotNull String dockerImageName) {
-        this.dockerImageName = dockerImageName;
-    }
-
-    public enum BindMode {
-        READ_ONLY("ro", AccessMode.ro), READ_WRITE("rw", AccessMode.rw);
-
-        public final String shortForm;
-        public final AccessMode accessMode;
-
-        BindMode(String shortForm, AccessMode accessMode) {
-            this.shortForm = shortForm;
-            this.accessMode = accessMode;
-        }
-    }
-
     @Override
     protected void starting(Description description) {
         this.start();
@@ -419,11 +383,6 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         this.stop();
     }
 
-
-    public GenericContainer withImageName(String imageName) {
-        this.dockerImageName = imageName;
-        return this;
-    }
 
     /**
      * Set the ports that this container listens on
@@ -479,7 +438,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
      * @param mode          access mode for the file
      * @return this
      */
-    public GenericContainer withClasspathResourceMapping(String resourcePath, String containerPath, GenericContainer.BindMode mode) {
+    public GenericContainer withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
         URL resource = GenericContainer.class.getClassLoader().getResource(resourcePath);
 
         if (resource == null) {
@@ -490,6 +449,27 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         this.addFileSystemBind(resourceFilePath, containerPath, mode);
 
         return this;
+    }
+
+
+    /**
+     * Get the IP address that this container may be reached on (may not be the local machine).
+     *
+     * @return an IP address
+     */
+    public String getIpAddress() {
+        return SingletonDockerClient.instance().dockerHostIpAddress();
+    }
+
+    /**
+     * @return is the container currently running?
+     */
+    public Boolean isRunning() {
+        try {
+            return dockerClient.inspectContainerCmd(containerId).exec().getState().isRunning();
+        } catch (DockerException e) {
+            return false;
+        }
     }
 
     /**

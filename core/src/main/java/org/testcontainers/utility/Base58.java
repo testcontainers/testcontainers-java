@@ -3,7 +3,7 @@ package org.testcontainers.utility;
 import java.security.SecureRandom;
 
 /**
- * Created by rnorth on 08/08/2015.
+ * Utility class for creation of random strings of 58 easy-to-distinguish characters.
  */
 public class Base58 {
 

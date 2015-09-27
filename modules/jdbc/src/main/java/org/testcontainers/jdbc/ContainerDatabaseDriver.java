@@ -19,25 +19,38 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Test Containers JDBC proxy driver. This driver will handle JDBC URLs of the form:
  *
+ * <code>jdbc:tc:<i>type</i>://<i>host</i>:<i>port</i>/<i>database</i>?<i>querystring</i></code>
+ *
+ * where <i>type</i> is a supported database type (e.g. mysql, postgresql, oracle). Behind the scenes a new
+ * docker container will be launched running the required database engine. New JDBC connections will be created
+ * using the database's standard driver implementation, connected to the container.
+ *
+ * If <code>TC_INITSCRIPT</code> is set in <i>querystring</i>, it will be used as the path for an init script that
+ * should be run to initialize the database after the container is created. This should be a classpath resource.
+ *
+ * Similarly <code>TC_INITFUNCTION</code> may be a method reference for a function that can initialize the database.
+ * Such a function must accept a javax.sql.Connection as its only parameter.
+ * An example of a valid method reference would be <code>com.myapp.SomeClass::initFunction</code>
  */
 public class ContainerDatabaseDriver implements Driver {
 
-    public static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:(mysql|postgresql|oracle)(:([^:]+))?://[^\\?]+(\\?.*)?");
-    public static final Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITSCRIPT=([^\\?&]+).*");
-    public static final Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITFUNCTION=" +
+    private static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:(mysql|postgresql|oracle)(:([^:]+))?://[^\\?]+(\\?.*)?");
+    private static final Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITSCRIPT=([^\\?&]+).*");
+    private static final Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITFUNCTION=" +
             "((\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             "::" +
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             ".*");
 
-    public static final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("([A-Z_]+)=([^\\?&]+)");
+    private static final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("([A-Z_]+)=([^\\?&]+)");
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
 
     private Driver delegate;
-    private Map<JdbcDatabaseContainer, Set<Connection>> containerConnections = new HashMap<>();
-    private Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
-    private Set<JdbcDatabaseContainer> initializedContainers = new HashSet<>();
+    private final Map<JdbcDatabaseContainer, Set<Connection>> containerConnections = new HashMap<>();
+    private final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
+    private final Set<JdbcDatabaseContainer> initializedContainers = new HashSet<>();
 
     static {
         load();
@@ -159,7 +172,7 @@ public class ContainerDatabaseDriver implements Driver {
      *
      * @param connection    the new connection to be wrapped
      * @param container     the container which the connection is associated with
-     * @param url
+     * @param url           the testcontainers JDBC URL for this connection
      * @return              the connection, wrapped
      */
     private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
@@ -174,14 +187,11 @@ public class ContainerDatabaseDriver implements Driver {
 
         final Set<Connection> finalConnections = connections;
 
-        return new ConnectionWrapper(connection, new Runnable() {
-            @Override
-            public void run() {
-                finalConnections.remove(connection);
-                if (finalConnections.isEmpty()) {
-                    container.stop();
-                    jdbcUrlContainerCache.remove(url);
-                }
+        return new ConnectionWrapper(connection, () -> {
+            finalConnections.remove(connection);
+            if (finalConnections.isEmpty()) {
+                container.stop();
+                jdbcUrlContainerCache.remove(url);
             }
         });
     }
@@ -189,8 +199,8 @@ public class ContainerDatabaseDriver implements Driver {
     /**
      * Run an init script from the classpath.
      *
-     * @param url
-     * @param connection
+     * @param url the JDBC URL to check for init script declarations.
+     * @param connection JDBC connection to apply init scripts to.
      * @throws SQLException
      */
     private void runInitScriptIfRequired(String url, Connection connection) throws SQLException {
@@ -202,9 +212,11 @@ public class ContainerDatabaseDriver implements Driver {
                 String sql = Resources.toString(resource, Charsets.UTF_8);
                 ScriptUtils.executeSqlScript(connection, initScriptPath, sql);
             } catch (IOException | IllegalArgumentException e) {
-                LOGGER.warn("Could not load classpath init script", initScriptPath);
+                LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+                throw new SQLException("Could not load classpath init script: " + initScriptPath, e);
             } catch (ScriptException e) {
-                LOGGER.error("Error while executing init script", e);
+                LOGGER.error("Error while executing init script: {}", initScriptPath, e);
+                throw new SQLException("Error while executing init script: " + initScriptPath, e);
             }
         }
     }
@@ -212,8 +224,8 @@ public class ContainerDatabaseDriver implements Driver {
     /**
      * Run an init function (must be a public static method on an accessible class).
      *
-     * @param url
-     * @param connection
+     * @param url the JDBC URL to check for init function declarations.
+     * @param connection JDBC connection to apply init functions to.
      * @throws SQLException
      */
     private void runInitFunctionIfRequired(String url, Connection connection) throws SQLException {
@@ -228,7 +240,8 @@ public class ContainerDatabaseDriver implements Driver {
 
                 method.invoke(null, connection);
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                LOGGER.error("Error while executing init function", e);
+                LOGGER.error("Error while executing init function: {}::{}", className, methodName, e);
+                throw new SQLException("Error while executing init function: " + className + "::" + methodName, e);
             }
         }
     }

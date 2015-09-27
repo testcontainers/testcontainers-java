@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.model.Container;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.testcontainers.containers.traits.LinkableContainer;
 
 import java.util.List;
@@ -9,11 +11,17 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 /**
- * Created by rnorth on 10/08/2015.
+ * An ambassador container is used as a TCP proxy, enabling any TCP port of another linked container to be exposed
+ * publicly, even if that container does not make the port public itself. The <code>richnorth/ambassador:latest</code>
+ * container is used (based on HAProxy).
  */
+@EqualsAndHashCode(callSuper = false)
+@Data
 public class AmbassadorContainer extends GenericContainer {
 
     private final String otherContainerName;
+    private final String serviceName;
+    private final int servicePort;
 
     public AmbassadorContainer(LinkableContainer otherContainer, String serviceName, int servicePort) {
         super("richnorth/ambassador:latest");
@@ -22,7 +30,9 @@ public class AmbassadorContainer extends GenericContainer {
          * Use the unique 'identifierPrefix' (random compose project name) so that the ambassador can see
          * the container it's supposed to be proxying.
          */
-        otherContainerName = otherContainer.getContainerName();
+        this.otherContainerName = otherContainer.getContainerName();
+        this.serviceName = serviceName;
+        this.servicePort = servicePort;
 
         // Link
         addLink(otherContainer, serviceName);

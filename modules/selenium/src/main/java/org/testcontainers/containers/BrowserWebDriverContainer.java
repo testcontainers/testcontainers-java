@@ -27,7 +27,7 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
- *
+ * <p>
  * The container should expose Selenium remote control protocol and VNC.
  */
 public class BrowserWebDriverContainer extends GenericContainer implements VncService, LinkableContainer {
@@ -38,12 +38,16 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
 
-    private @Nullable DesiredCapabilities desiredCapabilities;
-    private @Nullable RemoteWebDriver driver;
+    private
+    @Nullable
+    DesiredCapabilities desiredCapabilities;
+    private
+    @Nullable
+    RemoteWebDriver driver;
 
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private File vncRecordingDirectory = new File("/tmp");
-    private Collection<VncRecordingSidekickContainer> currentVncRecordings = new ArrayList<>();
+    private final Collection<VncRecordingSidekickContainer> currentVncRecordings = new ArrayList<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainerRule.class);
 
@@ -70,7 +74,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     protected void configure() {
         String timeZone = System.getProperty("user.timezone");
 
-        if(timeZone == null || timeZone.isEmpty()) {
+        if (timeZone == null || timeZone.isEmpty()) {
             timeZone = "Etc/UTC";
         }
 
@@ -127,45 +131,6 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
             logger().info("Obtained a connection to container ({})", BrowserWebDriverContainer.this.getSeleniumAddress());
             return driver;
         });
-    }
-
-    public RemoteWebDriver getDriver() {
-        return driver;
-    }
-
-    /**
-     * Obtain a new RemoteWebDriver instance that is bound to an instance of the browser running inside a new container.
-     *
-     * All containers and drivers will be automatically shut down after the test method finishes (if used as a @Rule) or the test
-     * class (if used as a @ClassRule)
-     *
-     * @return a new Remote Web Driver instance
-     */
-    public RemoteWebDriver newDriver() {
-
-//        final Map<String, LinkableContainer> containersToLink = new HashMap<>();
-//        for (Map.Entry<String, LinkableContainerRule> entry : containerRulesToLink.entrySet()) {
-//            containersToLink.put(entry.getKey(), entry.getValue().getContainer());
-//        }
-
-//        BrowserWebDriverContainer container = Retryables.retryUntilSuccess(30, TimeUnit.SECONDS, new Retryables.UnreliableSupplier<BrowserWebDriverContainer>() {
-//            @Override
-//            public BrowserWebDriverContainer get() throws Exception {
-//                Future<BrowserWebDriverContainer> future = Executors.newSingleThreadExecutor().submit(new Callable<BrowserWebDriverContainer>() {
-//                    @Override
-//                    public BrowserWebDriverContainer call() throws Exception {
-//                        BrowserWebDriverContainer container = new BrowserWebDriverContainer(getImageForCapabilities(desiredCapabilities), desiredCapabilities, containersToLink);
-//                        container.start();
-//
-//                        return container;
-//                    }
-//                });
-//                return future.get(10, TimeUnit.SECONDS);
-//            }
-//        });
-//        RemoteWebDriver driver = container.getDriver();
-
-        RemoteWebDriver driver = this.getDriver();
 
         if (recordingMode != VncRecordingMode.SKIP) {
             LOGGER.debug("Starting VNC recording");
@@ -173,7 +138,17 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
             recordingSidekickContainer.start();
             currentVncRecordings.add(recordingSidekickContainer);
         }
+    }
 
+    /**
+     * Obtain a RemoteWebDriver instance that is bound to an instance of the browser running inside a new container.
+     * <p>
+     * All containers and drivers will be automatically shut down after the test method finishes (if used as a @Rule) or the test
+     * class (if used as a @ClassRule)
+     *
+     * @return a new Remote Web Driver instance
+     */
+    public RemoteWebDriver getWebDriver() {
         return driver;
     }
 
@@ -213,7 +188,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
         LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
 
-        for(VncRecordingSidekickContainer container : currentVncRecordings) {
+        for (VncRecordingSidekickContainer container : currentVncRecordings) {
             container.stopAndRetainRecording(recordingFile);
         }
     }
@@ -221,13 +196,14 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     /**
      * Get the IP address that containers (browsers) can use to reference a service running on the local machine,
      * i.e. the machine on which this test is running.
-     *
+     * <p>
      * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
      * to be pointed at "http://" + getHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
      * from inside the container is not going to work, since the container has its own IP address.
      *
      * @return the IP address of the host machine
      */
+    @SuppressWarnings("unused")
     public String getHostIpAddress() {
         if (System.getProperty("os.name").toLowerCase().contains("mac")) {
             try {
@@ -257,7 +233,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
      * the other containers will be initialized before linking occurs.
      *
      * @param otherContainer the container rule to link to
-     * @param alias the alias (hostname) that this other container should be referred to by
+     * @param alias          the alias (hostname) that this other container should be referred to by
      * @return this
      */
     public BrowserWebDriverContainer withLinkToContainer(LinkableContainer otherContainer, String alias) {

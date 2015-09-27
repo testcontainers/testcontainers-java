@@ -1,20 +1,12 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.Data;
 import org.testcontainers.containers.traits.LinkableContainer;
 
 /**
- * Created by rnorth on 26/09/2015.
+ * A container that may not have been launched yet.
  */
+@Data
 public class FutureContainer implements LinkableContainer {
     private final String containerName;
-
-    public FutureContainer(@NotNull String containerName) {
-        this.containerName = containerName;
-    }
-
-    @Override
-    public String getContainerName() {
-        return containerName;
-    }
 }

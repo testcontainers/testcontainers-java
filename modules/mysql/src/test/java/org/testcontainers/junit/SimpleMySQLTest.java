@@ -2,7 +2,7 @@ package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.Test;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -82,7 +82,7 @@ public class SimpleMySQLTest {
         }
     }
 
-    @NotNull
+    @NonNull
     protected ResultSet performQuery(MySQLContainer containerRule, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(containerRule.getJdbcUrl());

@@ -30,11 +30,6 @@ public class OracleContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    public String getName() {
-        return "oracle";
-    }
-
-    @Override
     public String getDriverClassName() {
         return "oracle.jdbc.OracleDriver";
     }
@@ -54,6 +49,7 @@ public class OracleContainer extends JdbcDatabaseContainer {
         return "oracle";
     }
 
+    @SuppressWarnings("SameReturnValue")
     public String getSid() {
         return "xe";
     }
@@ -62,6 +58,7 @@ public class OracleContainer extends JdbcDatabaseContainer {
         return getMappedPort(ORACLE_PORT);
     }
 
+    @SuppressWarnings("unused")
     public Integer getWebPort() {
         return getMappedPort(APEX_HTTP_PORT);
     }

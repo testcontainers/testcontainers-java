@@ -106,11 +106,9 @@ public abstract class ScriptUtils {
 	 * @param blockCommentEndDelimiter the <em>end</em> block comment delimiter;
 	 * never {@code null} or empty
 	 * @param statements the list that will contain the individual statements
-	 * @throws ScriptException if an error occurred while splitting the SQL script
 	 */
 	public static void splitSqlScript(String resource, String script, String separator, String commentPrefix,
-                                      String blockCommentStartDelimiter, String blockCommentEndDelimiter, List<String> statements)
-			throws ScriptException {
+                                      String blockCommentStartDelimiter, String blockCommentEndDelimiter, List<String> statements) {
 
 		Preconditions.checkArgument(!Strings.isNullOrEmpty(script), "script must not be null or empty");
 		Preconditions.checkArgument(separator != null, "separator must not be null");
@@ -247,7 +245,7 @@ public abstract class ScriptUtils {
 			}
 
 			long startTime = System.currentTimeMillis();
-			List<String> statements = new LinkedList<String>();
+			List<String> statements = new LinkedList<>();
 
 			if (separator == null) {
 				separator = DEFAULT_STATEMENT_SEPARATOR;

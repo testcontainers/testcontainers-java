@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 /**
- * Created by rnorth on 21/07/2015.
+ * Factory for MySQL containers.
  */
 public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
