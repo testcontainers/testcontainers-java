@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.model.Container;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.containers.traits.LinkableContainer;
@@ -77,6 +78,10 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
                     ambassadorContainer.start();
 
                     if (!ambassadorContainer.isRunning()) {
+                        // Before failing, wait 500ms so the next attempt is delayed.
+                        // This is to avoid a deluge of ambassador containers while the
+                        //  exposed service is still starting.
+                        Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
                         throw new IllegalStateException("Container startup aborted");
                     }
 
