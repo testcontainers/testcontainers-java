@@ -75,14 +75,20 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
                     Profiler localProfiler = profiler.startNested("Ambassador container: " + ambassadorContainer.getContainerName());
 
                     localProfiler.start("Start ambassador container");
-                    ambassadorContainer.start();
 
-                    if (!ambassadorContainer.isRunning()) {
+                    try {
+                        ambassadorContainer.start();
+
+                        if (!ambassadorContainer.isRunning()) {
+                            throw new IllegalStateException("Container startup aborted");
+                        }
+                    } catch (Exception e) {
                         // Before failing, wait 500ms so the next attempt is delayed.
                         // This is to avoid a deluge of ambassador containers while the
                         //  exposed service is still starting.
                         Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-                        throw new IllegalStateException("Container startup aborted");
+
+                        throw e;
                     }
 
                     return null;

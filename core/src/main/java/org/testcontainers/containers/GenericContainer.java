@@ -222,7 +222,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
 
         PullImageResultCallback resultCallback = dockerClient.pullImageCmd(imageName).exec(new PullImageResultCallback());
 
-        resultCallback.awaitCompletion(5, TimeUnit.MINUTES);
+        resultCallback.awaitCompletion();
 
         AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
     }
