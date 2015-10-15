@@ -68,9 +68,8 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
     protected String containerId;
     protected String containerName;
 
-    @Nullable private InspectContainerResponse containerInfo;
-
-    private boolean initialized = false;
+    @Nullable
+    private InspectContainerResponse containerInfo;
 
     protected final DockerClient dockerClient = SingletonDockerClient.instance().client();
 
@@ -86,7 +85,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {
-        this.dockerImageName = dockerImageName;
+        this.setDockerImageName(dockerImageName);
     }
 
 
@@ -142,6 +141,12 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
             logger().info("Container {} started", dockerImageName);
             containerIsStarted(containerInfo);
 
+        } catch (Exception e) {
+            logger().error("Could not start container", e);
+
+            throw new ContainerLaunchException("Could not create/start container", e);
+        } finally {
+
             profiler.start("Set up shutdown hooks");
             // If the JVM stops without the container being stopped, try and stop the container
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -149,12 +154,6 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
                 GenericContainer.this.stop();
             }));
 
-            initialized = true;
-        } catch (Exception e) {
-            logger().error("Could not start container", e);
-
-            throw new ContainerLaunchException("Could not create/start container", e);
-        } finally {
             profiler.stop().log();
         }
     }
@@ -164,15 +163,22 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
      */
     public void stop() {
 
-        if (!initialized) {
+        if (containerId == null) {
             return;
         }
 
         try {
             logger().trace("Stopping container: {}", containerId);
             dockerClient.killContainerCmd(containerId).exec();
+            logger().info("Stopped container: {}", dockerImageName);
+        } catch (DockerException e) {
+            logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+        }
+
+        try {
+            logger().trace("Stopping container: {}", containerId);
             dockerClient.removeContainerCmd(containerId).withForce(true).exec();
-            logger().info("Stopped and removed container: {}", dockerImageName);
+            logger().info("Removed container: {}", dockerImageName);
         } catch (DockerException e) {
             logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
         }
@@ -216,7 +222,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
 
         PullImageResultCallback resultCallback = dockerClient.pullImageCmd(imageName).exec(new PullImageResultCallback());
 
-        resultCallback.awaitCompletion(10, TimeUnit.MINUTES);
+        resultCallback.awaitCompletion(5, TimeUnit.MINUTES);
 
         AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
     }
@@ -373,6 +379,7 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
         }
     }
 
+
     @Override
     protected void starting(Description description) {
         this.start();
@@ -485,10 +492,25 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
         }
 
-        if (binding != null && binding[0] != null) {
+        if (binding != null && binding.length > 0 && binding[0] != null) {
             return binding[0].getHostPort();
         } else {
             return null;
+        }
+    }
+
+    public void setDockerImageName(@NonNull String dockerImageName) {
+
+        this.dockerImageName = dockerImageName;
+
+        Profiler profiler = new Profiler("Rule creation - prefetch image");
+        profiler.setLogger(logger());
+        try {
+            pullImageIfNeeded(dockerImageName, profiler);
+        } catch (InterruptedException e) {
+            throw new ContainerFetchException("Failed to fetch container image for " + dockerImageName, e);
+        } finally {
+            profiler.stop().log();
         }
     }
 }

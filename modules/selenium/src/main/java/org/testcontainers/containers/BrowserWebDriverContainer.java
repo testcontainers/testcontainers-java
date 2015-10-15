@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.BrowserType;
@@ -125,6 +126,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
         // Repeatedly try and open a webdriver session
 
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
             RemoteWebDriver driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
             driver.getCurrentUrl();
 
