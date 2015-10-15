@@ -216,15 +216,22 @@ public class GenericContainer extends TestWatcher implements LinkableContainer {
             return;
         }
 
-        // The image is not available locally - pull it
         logger().info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
         profiler.start("Pull image");
+        while (!AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
+            // The image is not available locally - pull it
 
-        PullImageResultCallback resultCallback = dockerClient.pullImageCmd(imageName).exec(new PullImageResultCallback());
+            PullImageResultCallback resultCallback = dockerClient.pullImageCmd(imageName).exec(new PullImageResultCallback());
 
-        resultCallback.awaitCompletion();
+            resultCallback.awaitCompletion();
 
-        AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
+            // Confirm successful pull, otherwise may need to retry...
+            // see https://github.com/docker/docker/issues/10708
+            List<Image> updatedImages = dockerClient.listImagesCmd().exec();
+            for (Image image : updatedImages) {
+                Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
+            }
+        }
     }
 
     /**
