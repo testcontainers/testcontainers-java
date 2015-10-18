@@ -27,13 +27,12 @@ public class CommandLine {
      */
     public static String runShellCommand(String... command) throws IOException, InterruptedException, TimeoutException {
         ProcessResult result;
-        result = new ProcessExecutor().command(command)
-                .readOutput(true).execute();
+        result = new ProcessExecutor()
+                .command(command)
+                .readOutput(true)
+                .exitValueNormal()
+                .execute();
 
-        if (result.getExitValue() != 0) {
-            System.err.println(result.getOutput().getString());
-            throw new IllegalStateException();
-        }
         return result.outputUTF8().trim();
     }
 

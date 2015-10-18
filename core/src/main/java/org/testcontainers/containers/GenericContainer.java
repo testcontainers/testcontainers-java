@@ -176,7 +176,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         try {
             logger().trace("Stopping container: {}", containerId);
-            dockerClient.removeContainerCmd(containerId).withForce(true).exec();
+            dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
             logger().info("Removed container: {}", dockerImageName);
         } catch (DockerException e) {
             logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
