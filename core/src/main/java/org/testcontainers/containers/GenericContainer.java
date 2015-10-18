@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -39,7 +38,7 @@ import static java.util.Arrays.asList;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class GenericContainer extends TestWatcher implements LinkableContainer {
+public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
 
     /*
      * Default settings
