@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.*;
@@ -180,8 +181,12 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         try {
             logger().trace("Stopping container: {}", containerId);
-            dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
-            logger().info("Removed container: {}", dockerImageName);
+            try {
+                dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
+                logger().info("Removed container and associated volume(s): {}", dockerImageName);
+            } catch (InternalServerErrorException e) {
+                logger().warn("Exception when removing container with associated volume(s): {} (due to {})", dockerImageName, e.getMessage());
+            }
         } catch (DockerException e) {
             logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
         }

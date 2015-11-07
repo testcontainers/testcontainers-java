@@ -1,6 +1,7 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
@@ -183,7 +184,11 @@ public class SingletonDockerClient {
             LOGGER.info("Encountered error while checking disk space", e);
             throw new IllegalStateException(e);
         } finally {
-            client.removeContainerCmd(id).withForce(true).exec();
+            try {
+                client.removeContainerCmd(id).withRemoveVolumes(true).withForce(true).exec();
+            } catch (InternalServerErrorException ignored) {
+
+            }
         }
 
 
