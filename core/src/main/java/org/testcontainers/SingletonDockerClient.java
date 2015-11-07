@@ -8,14 +8,18 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
+import org.testcontainers.utility.DockerMachineClient;
 
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * Singleton class that provides an instance of a docker client.
@@ -66,30 +70,35 @@ public class SingletonDockerClient {
         try {
             LOGGER.info("Checking for presence of docker-machine");
 
-            String ls = runShellCommand("docker-machine", "ls", "-q");
-            String[] machineNames = ls.split("\n");
-            if (machineNames.length > 0) {
-                String machineName = machineNames[0];
+            boolean installed = DockerMachineClient.instance().isInstalled();
+
+            checkArgument(installed, "docker-machine must be installed for use on OS X");
+
+            Optional<String> machineNameOptional = DockerMachineClient.instance().getDefaultMachine();
+
+            if (machineNameOptional.isPresent()) {
+                String machineName = machineNameOptional.get();
 
                 LOGGER.info("Found docker-machine, and will use first machine defined ({})", machineName);
 
-                String status = runShellCommand("docker-machine", "status", machineName);
-                if (status.trim().equalsIgnoreCase("stopped")) {
-                    LOGGER.info("Docker-machine '{}' is not running - will start it now", machineName);
-                    runShellCommand("docker-machine", "start", machineName);
-                }
+                DockerMachineClient.instance().ensureMachineRunning(machineName);
 
-                String dockerHostIpAddress = runShellCommand("docker-machine", "ip", machineName);
+                String dockerDaemonIpAddress = DockerMachineClient.instance().getDockerDaemonIpAddress(machineName);
 
-                LOGGER.info("Docker-machine IP address for {} is {}", machineName, dockerHostIpAddress);
+                LOGGER.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
 
                 config = DockerClientConfig
                         .createDefaultConfigBuilder()
-                        .withUri("https://" + dockerHostIpAddress + ":2376")
+                        .withUri("https://" + dockerDaemonIpAddress + ":2376")
                         .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
                         .build();
                 DockerClient client = DockerClientBuilder.getInstance(config).build();
-                client.pingCmd().exec();
+
+                // If the docker-machine VM has started, the docker daemon may still not be ready. Retry pinging until it works.
+                Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
+                    client.pingCmd().exec();
+                    return true;
+                });
                 return client;
             }
         } catch (Exception e) {

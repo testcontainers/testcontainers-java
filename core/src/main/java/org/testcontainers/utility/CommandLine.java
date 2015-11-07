@@ -1,5 +1,7 @@
 package org.testcontainers.utility;
 
+import org.slf4j.Logger;
+import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
 
@@ -11,29 +13,38 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 /**
  * Process execution utility methods.
  */
 public class CommandLine {
+
+    private static final Logger LOGGER = getLogger(CommandLine.class);
 
     /**
      * Run a shell command synchronously.
      *
      * @param command command to run and arguments
      * @return the stdout output of the command
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws TimeoutException
      */
-    public static String runShellCommand(String... command) throws IOException, InterruptedException, TimeoutException {
-        ProcessResult result;
-        result = new ProcessExecutor()
-                .command(command)
-                .readOutput(true)
-                .exitValueNormal()
-                .execute();
+    public static String runShellCommand(String... command) {
 
-        return result.outputUTF8().trim();
+        String joinedCommand = String.join(" ", command);
+        LOGGER.info("Executing shell command: `{}`", joinedCommand);
+
+        try {
+            ProcessResult result;
+            result = new ProcessExecutor()
+                    .command(command)
+                    .readOutput(true)
+                    .exitValueNormal()
+                    .execute();
+
+            return result.outputUTF8().trim();
+        } catch (IOException | InterruptedException | TimeoutException | InvalidExitValueException e) {
+            throw new ShellCommandException("Exception when executing " + joinedCommand, e);
+        }
     }
 
     /**
@@ -59,5 +70,11 @@ public class CommandLine {
         }
 
         return false;
+    }
+
+    private static class ShellCommandException extends RuntimeException {
+        public ShellCommandException(String message, Exception e) {
+            super(message, e);
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.SingletonDockerClient;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.PathOperations;
 
 import java.io.File;
@@ -31,7 +33,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Arrays.asList;
+import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -517,6 +521,47 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             throw new ContainerFetchException("Failed to fetch container image for " + dockerImageName, e);
         } finally {
             profiler.stop().log();
+        }
+    }
+
+    /**
+     * Get the IP address that containers (e.g. browsers) can use to reference a service running on the local machine,
+     * i.e. the machine on which this test is running.
+     * <p>
+     * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
+     * to be pointed at "http://" + getHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
+     * from inside the container is not going to work, since the container has its own IP address.
+     *
+     * @return the IP address of the host machine
+     */
+    public String getHostIpAddress() {
+        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+            try {
+                // Running on a Mac therefore use boot2docker
+                checkArgument(DockerMachineClient.instance().isInstalled(), "docker-machine must be installed for use on OS X");
+
+                Optional<String> defaultMachine = DockerMachineClient.instance().getDefaultMachine();
+                if (!defaultMachine.isPresent()) {
+                    throw new IllegalStateException("Could not find a default docker-machine instance");
+                }
+
+                String sshConnectionString = runShellCommand("docker-machine", "ssh", defaultMachine.get(), "echo $SSH_CONNECTION").trim();
+                if (Strings.isNullOrEmpty(sshConnectionString)) {
+                    throw new IllegalStateException("Could not obtain SSH_CONNECTION environment variable for docker machine " + defaultMachine.get());
+                }
+
+                String[] sshConnectionParts = sshConnectionString.split("\\s");
+                if (sshConnectionParts.length != 4) {
+                    throw new IllegalStateException("Unexpected pattern for SSH_CONNECTION for docker machine - expected 'IP PORT IP PORT' pattern but found '" + sshConnectionString + "'");
+                }
+
+                return sshConnectionParts[0];
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            throw new UnsupportedOperationException("getHostIpAddress() is only implemented for docker-machine right now");
         }
     }
 }

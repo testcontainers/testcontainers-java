@@ -11,20 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
-import org.testcontainers.junit.BrowserWebDriverContainerRule;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.testcontainers.utility.CommandLine.executableExists;
-import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -39,18 +34,14 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
 
-    private
-    @Nullable
-    DesiredCapabilities desiredCapabilities;
-    private
-    @Nullable
-    RemoteWebDriver driver;
+    @Nullable private DesiredCapabilities desiredCapabilities;
+    @Nullable private RemoteWebDriver driver;
 
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private File vncRecordingDirectory = new File("/tmp");
     private final Collection<VncRecordingSidekickContainer> currentVncRecordings = new ArrayList<>();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainerRule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
     private static final SimpleDateFormat filenameDateFormat = new SimpleDateFormat("YYYYMMdd-HHmmss");
 
@@ -193,41 +184,6 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
         for (VncRecordingSidekickContainer container : currentVncRecordings) {
             container.stopAndRetainRecording(recordingFile);
         }
-    }
-
-    /**
-     * Get the IP address that containers (browsers) can use to reference a service running on the local machine,
-     * i.e. the machine on which this test is running.
-     * <p>
-     * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
-     * to be pointed at "http://" + getHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
-     * from inside the container is not going to work, since the container has its own IP address.
-     *
-     * @return the IP address of the host machine
-     */
-    @SuppressWarnings("unused")
-    public String getHostIpAddress() {
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-            try {
-                // Running on a Mac therefore use boot2docker
-                checkArgument(executableExists("/usr/local/bin/boot2docker"), "boot2docker must be installed for use on OS X");
-                runShellCommand("/usr/local/bin/boot2docker", "up");
-                String boot2dockerConfig = runShellCommand("/usr/local/bin/boot2docker", "config");
-
-                for (String line : boot2dockerConfig.split("\n")) {
-                    Matcher matcher = Pattern.compile("HostIP = \"(.+)\"").matcher(line);
-                    if (matcher.matches()) {
-                        return matcher.group(1);
-                    }
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-        } else {
-            throw new UnsupportedOperationException("This is only implemented for boot2docker right now");
-        }
-        throw new UnsupportedOperationException();
     }
 
     /**
