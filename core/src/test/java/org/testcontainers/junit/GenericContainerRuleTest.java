@@ -51,21 +51,21 @@ public class GenericContainerRuleTest {
      */
     @ClassRule
     public static GenericContainer redis = new GenericContainer("redis:3.0.2")
-                                                    .withExposedPorts(REDIS_PORT);
+            .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
     @ClassRule
     public static GenericContainer rabbitMq = new GenericContainer("rabbitmq:3.5.3")
-                                                    .withExposedPorts(RABBITMQ_PORT);
+            .withExposedPorts(RABBITMQ_PORT);
 
     /**
      * MongoDB
      */
     @ClassRule
     public static GenericContainer mongo = new GenericContainer("mongo:3.1.5")
-                                                    .withExposedPorts(MONGO_PORT);
+            .withExposedPorts(MONGO_PORT);
 
     /**
      * Pass an environment variable to the container, then run a shell script that exposes the variable in a quick and
@@ -73,18 +73,18 @@ public class GenericContainerRuleTest {
      */
     @ClassRule
     public static GenericContainer alpineEnvVar = new GenericContainer("alpine:3.2")
-                                                    .withExposedPorts(80)
-                                                    .withEnv("MAGIC_NUMBER", "42")
-                                                    .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
+            .withExposedPorts(80)
+            .withEnv("MAGIC_NUMBER", "42")
+            .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
 
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
     public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
-                                                                .withExposedPorts(80)
-                                                                .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
-                                                                .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+            .withExposedPorts(80)
+            .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
+            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
 
     @Test
@@ -150,7 +150,7 @@ public class GenericContainerRuleTest {
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
         Document doc = new Document("name", "foo")
-                                .append("value", 1);
+                .append("value", 1);
         collection.insertOne(doc);
 
         Document doc2 = collection.find(new Document("name", "foo")).first();
@@ -159,8 +159,10 @@ public class GenericContainerRuleTest {
 
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
-        Socket socket = new Socket(alpineEnvVar.getIpAddress(), alpineEnvVar.getMappedPort(80));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Socket socket = new Socket(alpineEnvVar.getIpAddress(), alpineEnvVar.getMappedPort(80));
+            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        });
 
         String line = br.readLine();
 
@@ -169,8 +171,10 @@ public class GenericContainerRuleTest {
 
     @Test
     public void customClasspathResourceMappingTest() throws IOException {
-        Socket socket = new Socket(alpineClasspathResource.getIpAddress(), alpineClasspathResource.getMappedPort(80));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Socket socket = new Socket(alpineClasspathResource.getIpAddress(), alpineClasspathResource.getMappedPort(80));
+            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        });
 
         String line = br.readLine();
 
