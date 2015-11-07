@@ -16,8 +16,8 @@ A generic container rule can be used with any public docker image; for example:
 
     // Set up a redis container
     @ClassRule
-    public static GenericContainerRule redis = 
-    	new GenericContainerRule("redis:3.0.2")
+    public static GenericContainer redis =
+    	new GenericContainer("redis:3.0.2")
                    .withExposedPorts(6379);
 
 
@@ -25,8 +25,8 @@ A generic container rule can be used with any public docker image; for example:
     //   command and exposed ports. This just listens on port 80 
     //   and always returns '42'
     @ClassRule
-    public static GenericContainerRule alpine = 
-    	new GenericContainerRule("alpine:3.2")
+    public static GenericContainer alpine =
+    	new GenericContainer("alpine:3.2")
         		.withExposedPorts(80)
                    .withEnv("MAGIC_NUMBER", "42")
                    .withCommand("/bin/sh", "-c", 
@@ -52,39 +52,39 @@ For example, with the Redis example above, the following will allow your tests t
 
 With a generic container, you set the container image using a parameter to the rule constructor, e.g.:
 
-	new GenericContainerRule("jboss/wildfly:9.0.1.Final")
+	new GenericContainer("jboss/wildfly:9.0.1.Final")
 
 ### Exposing ports
 
 If you need to expose ports on the container, use the `withExposedPorts` method on the rule passing integer port numbers:
 
-	new GenericContainerRule(...)
+	new GenericContainer(...)
 			.withExposedPorts(22, 80, 8080)
 
 or strings (optionally specifying tcp):
 
-	new GenericContainerRule(...)
+	new GenericContainer(...)
 			.withExposedPorts("22", "80/tcp", "8080/tcp")
 
 ### Environment variables
 
 To add environment variables to the container, use `withEnv`:
 
-	new GenericContainerRule(...)
+	new GenericContainer(...)
 			.withEnv("API_TOKEN", "foo")
 
 ### Command
 
 By default the container will execute whatever command is specified in the image's Dockerfile. To override this, and specify a different command, use `withCommand`:
 
-	new GenericContainerRule(...)
+	new GenericContainer(...)
 	        .withCommand("/app/start.sh")
 
 ### Volume mapping
 
 It is possible to map a file or directory **on the classpath** into the container as a volume using `withClasspathResourceMapping`:
 
-	new GenericContainerRule(...)
+	new GenericContainer(...)
             .withClasspathResourceMapping("redis.conf",
                                           "/etc/redis.conf",
-                                          GenericContainer.BindMode.READ_ONLY)
+                                          BindMode.READ_ONLY)

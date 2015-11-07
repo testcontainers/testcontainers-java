@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.8]
+### Changed
+- Change from Spotify docker client library to docker-java, for improved compatibility with latest versions of Docker
+- Change from JDK 1.7 minimum requirement to JDK 1.8
+- Replace boot2docker support with docker-machine support
+- Docker images are now prefetched when a @Rule is instantiated
+- Combined Rule and Container classes throughout, for a reduced set of public classes and removal of some duplication
+- Improvements to container cleanup, especially removal of data volumes
+- General improvements to error handling, logging etc throughout
+
+### Added
+- Docker Compose support
+- Automatic docker environment disk space check
+
 ## [0.9.7]
 ### Added
 - Support for overriding MySQL container configuration (my.cnf file overrides)

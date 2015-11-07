@@ -12,9 +12,7 @@ import org.testcontainers.containers.NginxContainer;
 import java.io.*;
 import java.net.URLConnection;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.rnorth.visibleassertions.VisibleAssertions.info;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 
 /**

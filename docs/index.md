@@ -18,7 +18,7 @@ TestContainers makes it easy to launch useful Docker containers for the duration
 
 ### Prerequisites
 
-Docker or boot2docker (for OS X) must be installed on the machine you are running tests on. TestContainers currently requires JDK 1.7 and is compatible with JUnit and Selenium2/WebDriver.
+Docker or docker-machine (for OS X) must be installed on the machine you are running tests on. TestContainers currently requires JDK 1.8 and is compatible with JUnit.
 
 ### Usage modes
 
@@ -45,7 +45,7 @@ In the dependency description below, replace `--artifact name--` as appropriate:
         <version>0.9.7</version>
     </dependency>
 
-> **Note**: Testcontainers uses the Spotify Docker client library, which in turn depends on JAX-RS and various Jersey
+> **Note**: Testcontainers uses the docker-java client library, which in turn depends on JAX-RS and various Jersey
 libraries. If your project also uses these, you may need to set appropriate maven dependency exclusions or use
 `dependencyManagement` to avoid conflicts, on a case-by-case basis.
 
@@ -57,7 +57,7 @@ See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-ja
 
 This project includes a modified class (ScriptUtils) taken from the Spring JDBC project, adapted under the terms of the Apache license. Copyright for that class remains with the original authors.
 
-This project is built on top of the awesome [Spotify docker client library for Java](https://github.com/spotify/docker-client) and was initially inspired by a [gist](https://gist.github.com/mosheeshel/c427b43c36b256731a0b) by Mosche Eschel.
+This project was initially inspired by a [gist](https://gist.github.com/mosheeshel/c427b43c36b256731a0b) by Mosche Eschel.
 
 ## Contributing
 

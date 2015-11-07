@@ -23,12 +23,13 @@ The following field in your JUnit UI test class will prepare a container running
 	
         @Rule
         public BrowserWebDriverContainerRule chrome = 
-            new BrowserWebDriverContainerRule(DesiredCapabilities.chrome());
+            new BrowserWebDriverContainerRule()
+                    .withDesiredCapabilities(DesiredCapabilities.chrome());
         
 Now, instead of instantiating an instance of WebDriver directly, use the following to obtain an instance inside your
 test methods:
 
-        RemoteWebDriver driver = chrome.newDriver();
+        RemoteWebDriver driver = chrome.getWebDriver();
 
 You can then use this driver instance like a regular WebDriver.
 
@@ -44,11 +45,13 @@ Docker container can reach. Use the `getHostIpAddress()` method, e.g.:
 
 At the moment, Chrome and Firefox are supported. To switch, simply change the first parameter to the rule constructor:
 
-    new BrowserWebDriverContainerRule(DesiredCapabilities.chrome())
+    new BrowserWebDriverContainerRule(
+                    .withDesiredCapabilities(DesiredCapabilities.chrome());
         
 or
 
-    new BrowserWebDriverContainerRule(DesiredCapabilities.firefox())
+    new BrowserWebDriverContainerRule(
+                    .withDesiredCapabilities(DesiredCapabilities.firefox());
 
 ### Recording videos
 
@@ -58,18 +61,16 @@ just for failing tests.
 To do this, simply add extra parameters to the rule constructor:
 
     new BrowserWebDriverContainerRule(
-            DesiredCapabilities.chrome(),
-            RECORD_ALL,
-            new File("./target/"))
-    
-or if you don't want to keep videos of tests that passed:
+                    .withDesiredCapabilities(DesiredCapabilities.chrome())
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("./target/"))
+
+or if you only want videos for test failures:
 
     new BrowserWebDriverContainerRule(
-            DesiredCapabilities.chrome(),
-            RECORD_FAILING,
-            new File("./target/"))
-    
-Note that the third parameter should be a directory where recordings can be saved.
+                    .withDesiredCapabilities(DesiredCapabilities.chrome())
+                    .withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
+
+Note that the seconds parameter to `withRecordingMode` should be a directory where recordings can be saved.
 
 ## More examples
 

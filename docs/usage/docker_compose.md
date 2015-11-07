@@ -19,8 +19,8 @@ A single class rule, pointing to a `docker-compose.yml` file, should be sufficie
 required by your tests:
 
     @ClassRule
-    public static DockerComposeContainerRule environment =
-        new DockerComposeContainerRule(new File("src/test/resources/compose-test.yml"))
+    public static DockerComposeContainer environment =
+        new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
                 .withExposedService("redis_1", REDIS_PORT)
                 .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT);
 
@@ -35,7 +35,8 @@ Note that it is not necessary to define ports to be exposed in the YAML file; th
 file in other contexts.
 
 Instead, Testcontainers will spin up a small 'ambassador' container for every exposed service port, which will proxy
-between the Compose-managed container and a port that's accessible to your tests.
+between the Compose-managed container and a port that's accessible to your tests. This is done using a separate, minimal
+container that runs HAProxy in TCP proxying mode.
 
 ## Accessing a container from tests
 

@@ -26,7 +26,7 @@ Add a @Rule or @ClassRule to your test class, e.g.:
 
     public class SimpleMySQLTest {
         @Rule
-        public MySQLContainerRule mysql = new MySQLContainerRule();
+        public MySQLContainer mysql = new MySQLContainer();
 
 Now, in your test code (or a suitable setup method), you can obtain details necessary to connect to this database:
 
