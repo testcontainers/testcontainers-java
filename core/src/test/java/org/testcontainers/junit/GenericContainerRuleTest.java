@@ -1,5 +1,6 @@
 package org.testcontainers.junit;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -160,6 +161,8 @@ public class GenericContainerRuleTest {
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
         BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+
             Socket socket = new Socket(alpineEnvVar.getIpAddress(), alpineEnvVar.getMappedPort(80));
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
@@ -172,6 +175,8 @@ public class GenericContainerRuleTest {
     @Test
     public void customClasspathResourceMappingTest() throws IOException {
         BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+
             Socket socket = new Socket(alpineClasspathResource.getIpAddress(), alpineClasspathResource.getMappedPort(80));
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
