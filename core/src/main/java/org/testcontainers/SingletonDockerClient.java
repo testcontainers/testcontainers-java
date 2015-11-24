@@ -58,7 +58,10 @@ public class SingletonDockerClient {
 
             return builder;
         } else {
-            dockerHostIpAddress = "127.0.0.1";
+            dockerHostIpAddress = System.getenv("DOCKER_HOST");
+            if (dockerHostIpAddress == null) {
+            	dockerHostIpAddress = "127.0.0.1";
+            }
             return DefaultDockerClient.fromEnv();
         }
     }
