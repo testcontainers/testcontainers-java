@@ -53,8 +53,8 @@ public class DockerMachineClient {
 
     public void ensureMachineRunning(@NonNull String machineName) {
         String status = runShellCommand("docker-machine", "status", machineName);
-        if (status.trim().equalsIgnoreCase("stopped")) {
-            LOGGER.info("Docker-machine '{}' is not running - will start it now", machineName);
+        if (!status.trim().equalsIgnoreCase("running")) {
+            LOGGER.info("Docker-machine '{}' is not running. Current status is '{}'. Will start it now", machineName, status);
             runShellCommand("docker-machine", "start", machineName);
         }
     }
