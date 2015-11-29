@@ -22,8 +22,8 @@ every test.
 The following field in your JUnit UI test class will prepare a container running Chrome:
 	
         @Rule
-        public BrowserWebDriverContainerRule chrome = 
-            new BrowserWebDriverContainerRule()
+        public BrowserWebDriverContainer chrome =
+            new BrowserWebDriverContainer()
                     .withDesiredCapabilities(DesiredCapabilities.chrome());
         
 Now, instead of instantiating an instance of WebDriver directly, use the following to obtain an instance inside your
@@ -45,12 +45,12 @@ Docker container can reach. Use the `getHostIpAddress()` method, e.g.:
 
 At the moment, Chrome and Firefox are supported. To switch, simply change the first parameter to the rule constructor:
 
-    new BrowserWebDriverContainerRule(
+    new BrowserWebDriverContainer()
                     .withDesiredCapabilities(DesiredCapabilities.chrome());
         
 or
 
-    new BrowserWebDriverContainerRule(
+    new BrowserWebDriverContainer()
                     .withDesiredCapabilities(DesiredCapabilities.firefox());
 
 ### Recording videos
@@ -60,13 +60,13 @@ just for failing tests.
 
 To do this, simply add extra parameters to the rule constructor:
 
-    new BrowserWebDriverContainerRule(
+    new BrowserWebDriverContainer()
                     .withDesiredCapabilities(DesiredCapabilities.chrome())
                     .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("./target/"))
 
 or if you only want videos for test failures:
 
-    new BrowserWebDriverContainerRule(
+    new BrowserWebDriverContainer()
                     .withDesiredCapabilities(DesiredCapabilities.chrome())
                     .withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
 
@@ -74,4 +74,4 @@ Note that the seconds parameter to `withRecordingMode` should be a directory whe
 
 ## More examples
 
-A few different examples are shown in [SimpleWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/SimpleWebDriverContainerTest.java).
+A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).

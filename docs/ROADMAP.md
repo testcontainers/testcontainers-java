@@ -17,7 +17,6 @@ Exact future features aren't set in stone, but here are the principles we should
 This list may cross over with the [issues list](https://github.com/testcontainers/testcontainers-java/issues) some times.
 
 * **Better documentation and log messages**. We need this.
-* **Support docker machine**. Docker machine will replace boot2docker and thus we should support it for users on OS X.
 * **Database state snapshotting**. Some projects have complex test data that is time consuming to reload. This means that either testing takes a very long time (test data has to be reloaded often), or tests aren't sufficiently independent (test data is not reloaded and therefore tests aren't independent). Testcontainers should provide a way to snapshot DB state and quickly reload that state. Docker [native Checkpoint/Restore In Userspace](http://blog.kubernetes.io/2015/07/how-did-quake-demo-from-dockercon-work.html) looks like the best way to accomplish this.
 * **Support docker images pulled from private registries**
 * **Support integration testing in other languages/environments**. .NET and NodeJS seem like sensible options here.
