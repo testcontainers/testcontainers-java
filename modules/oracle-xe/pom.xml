@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-parent</artifactId>
-        <version>0.9.8</version>
+        <version>0.9.9-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
