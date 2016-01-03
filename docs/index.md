@@ -22,10 +22,10 @@ Docker or docker-machine (for OS X) must be installed on the machine you are run
 
 ### Usage modes
 
-* [Temporary database containers](usage/database_containers) - specialized MySQL, PostgreSQL and Oracle XE container support
-* [Webdriver containers](usage/webdriver_containers) - run a Dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
-* [Generic containers](usage/generic_containers) - run any Docker container as a test dependency
-* [Docker compose](usage/docker_compose) - reuse services defined in a Docker Compose YAML file
+* [Temporary database containers](usage/database_containers.md) - specialized MySQL, PostgreSQL and Oracle XE container support
+* [Webdriver containers](usage/webdriver_containers.md) - run a Dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
+* [Generic containers](usage/generic_containers.md) - run any Docker container as a test dependency
+* [Docker compose](usage/docker_compose.md) - reuse services defined in a Docker Compose YAML file
 
 ## Maven dependencies
 
@@ -62,7 +62,7 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 ## Contributing
 
 * Star the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
-* See [ROADMAP](ROADMAP) to understand the approach behind the project and what may/may not be in store for the future.
+* See [ROADMAP](ROADMAP.md) to understand the approach behind the project and what may/may not be in store for the future.
 * [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
 * Contribute improvements or fixes using a [Pull Request](https://github.com/testcontainers/testcontainers-java/pulls). If you're going to contribute, thank you! Please just be sure to:
 	* discuss with the authors on an issue ticket prior to doing anything big
