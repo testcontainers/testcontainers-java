@@ -7,6 +7,7 @@
     <version>NOVERSION</version>
     <modules>
         <module>redis-backed-cache</module>
+        <module>disque-job-queue</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -52,7 +53,12 @@
             <version>1.0.2</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.5</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
