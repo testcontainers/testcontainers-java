@@ -2,7 +2,7 @@
 
 ## Benefits
 
-Similar to [generic containers](generic_containers) support, it's also possible to run a bespoke set of services
+Similar to [generic containers](generic_containers.md) support, it's also possible to run a bespoke set of services
 specified in a `docker-compose.yml` file.
 
 This is intended to be useful on projects where Docker Compose is already used in dev or other environments to define

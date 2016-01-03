@@ -22,10 +22,10 @@ Docker or docker-machine (for OS X) must be installed on the machine you are run
 
 ### Usage modes
 
-* [Temporary database containers](usage/database_containers) - specialized MySQL, PostgreSQL and Oracle XE container support
-* [Webdriver containers](usage/webdriver_containers) - run a Dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
-* [Generic containers](usage/generic_containers) - run any Docker container as a test dependency
-* [Docker compose](usage/docker_compose) - reuse services defined in a Docker Compose YAML file
+* [Temporary database containers](usage/database_containers.md) - specialized MySQL, PostgreSQL and Oracle XE container support
+* [Webdriver containers](usage/webdriver_containers.md) - run a Dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
+* [Generic containers](usage/generic_containers.md) - run any Docker container as a test dependency
+* [Docker compose](usage/docker_compose.md) - reuse services defined in a Docker Compose YAML file
 
 ## Maven dependencies
 
