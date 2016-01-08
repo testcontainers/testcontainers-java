@@ -1,0 +1,12 @@
+machine:
+  java:
+    version: oraclejdk8
+  environment:
+    DOCKER_HOST: tcp://127.0.0.1:2376
+    DOCKER_TLS_VERIFY: 0
+    MAVEN_OPTS: -Xmx512m
+dependencies:
+  override:
+    - "sudo docker -d -e lxc -s btrfs -H 0.0.0.0:2376 -H unix:///var/run/docker.sock --log-level=debug --debug=true":
+        background: true
+    - mvn install -DskipTests
