@@ -29,6 +29,11 @@
             <artifactId>duct-tape</artifactId>
             <version>1.0.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-ext</artifactId>
+            <version>1.7.2</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
@@ -47,11 +52,6 @@
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
             <version>3.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-ext</artifactId>
-            <version>1.7.2</version>
         </dependency>
 
     </dependencies>
