@@ -20,7 +20,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
-import org.testcontainers.SingletonDockerClient;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.PathOperations;
@@ -67,6 +67,11 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     /*
+     * Unique instance of DockerClient for use by this container object.
+     */
+    protected DockerClient dockerClient = DockerClientFactory.instance().client();
+
+    /*
      * Set during container startup
      */
     protected String containerId;
@@ -74,8 +79,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     @Nullable
     private InspectContainerResponse containerInfo;
-
-    protected final DockerClient dockerClient = SingletonDockerClient.instance().client();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -91,7 +94,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);
     }
-
 
     /**
      * Starts the container using docker, pulling an image if necessary.
@@ -315,7 +317,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * sophisticated behaviour is required.
      */
     protected void waitUntilContainerStarted() {
-        waitForListeningPort(SingletonDockerClient.instance().dockerHostIpAddress(), getLivenessCheckPort());
+        waitForListeningPort(DockerClientFactory.instance().dockerHostIpAddress(), getLivenessCheckPort());
     }
 
     /**
@@ -480,7 +482,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @return an IP address
      */
     public String getIpAddress() {
-        return SingletonDockerClient.instance().dockerHostIpAddress();
+        return DockerClientFactory.instance().dockerHostIpAddress();
     }
 
     /**
