@@ -11,6 +11,10 @@ dependencies:
     - "sudo docker -d -e lxc -s btrfs -H 0.0.0.0:2376 -H unix:///var/run/docker.sock --log-level=debug --debug=true":
         background: true
     - mvn install -DskipTests
+test:
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
 notify:
   webhooks:
     - url: https://webhooks.gitter.im/e/1bf1c6aa3b2aa8408c5f
