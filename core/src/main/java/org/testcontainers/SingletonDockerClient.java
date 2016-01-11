@@ -43,7 +43,7 @@ public class SingletonDockerClient {
             String version = client.versionCmd().exec().getVersion();
             checkVersion(version);
 
-            checkDiskSpace();
+            checkDiskSpaceAndHandleExceptions();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to create Docker client", e);
         }
@@ -143,6 +143,16 @@ public class SingletonDockerClient {
         }
     }
 
+    private void checkDiskSpaceAndHandleExceptions() {
+        try {
+            checkDiskSpace();
+        } catch (NotEnoughDiskSpaceException e) {
+            throw e;
+        } catch (Exception e) {
+            LOGGER.warn("Encountered and ignored error while checking disk space", e);
+        }
+    }
+
     /**
      * Check whether this docker installation is likely to have disk space problems
      */
@@ -153,7 +163,7 @@ public class SingletonDockerClient {
             callback.awaitSuccess();
         }
 
-        CreateContainerResponse createContainerResponse = client.createContainerCmd("alpine:3.2").withCmd("df").exec();
+        CreateContainerResponse createContainerResponse = client.createContainerCmd("alpine:3.2").withCmd("df", "-P").exec();
         String id = createContainerResponse.getId();
 
         client.startContainerCmd(id).exec();
@@ -178,11 +188,10 @@ public class SingletonDockerClient {
 
             if (use > 90) {
                 LOGGER.warn("Disk utilization Docker environment is over 90% - execution is unlikely to succeed so will be aborted.");
-                throw new IllegalStateException("Not enough disk space in Docker environment");
+                throw new NotEnoughDiskSpaceException("Not enough disk space in Docker environment");
             }
         } catch (InterruptedException e) {
-            LOGGER.info("Encountered error while checking disk space", e);
-            throw new IllegalStateException(e);
+            throw new RuntimeException(e);
         } finally {
             try {
                 client.removeContainerCmd(id).withRemoveVolumes(true).withForce(true).exec();
@@ -190,8 +199,12 @@ public class SingletonDockerClient {
 
             }
         }
+    }
 
-
+    public static class NotEnoughDiskSpaceException extends RuntimeException {
+        public NotEnoughDiskSpaceException(String message) {
+            super(message);
+        }
     }
 }
 
