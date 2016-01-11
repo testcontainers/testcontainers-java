@@ -9,6 +9,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+import lombok.Synchronized;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.utility.DockerMachineClient;
@@ -23,46 +24,81 @@ import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Singleton class that provides an instance of a docker client.
+ * Singleton class that provides initialized Docker clients.
+ *
+ * The correct client configuration to use will be determined on first use, and cached thereafter.
  */
-public class SingletonDockerClient {
+public class DockerClientFactory {
 
-    private static SingletonDockerClient instance;
-    private final DockerClient client;
+    private static DockerClientFactory instance;
+    private static final Logger LOGGER = getLogger(DockerClientFactory.class);
 
-    private static final Logger LOGGER = getLogger(SingletonDockerClient.class);
+    // Cached client configuration
     private DockerClientConfig config;
 
     /**
      * Private constructor
      */
-    private SingletonDockerClient() {
+    private DockerClientFactory() {
         try {
-            client = createClient();
-
-            String version = client.versionCmd().exec().getVersion();
+            String version = client().versionCmd().exec().getVersion();
             checkVersion(version);
 
             checkDiskSpaceAndHandleExceptions();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to create Docker client", e);
+            throw new IllegalStateException("Failed to prepare Docker client", e);
         }
     }
 
-    private DockerClient createClient() {
+    /**
+     * Obtain an instance of the DockerClientFactory.
+     *
+     * @return the singleton instance of DockerClientFactory
+     */
+    public synchronized static DockerClientFactory instance() {
+        if (instance == null) {
+            instance = new DockerClientFactory();
+        }
+
+        return instance;
+    }
+
+    /**
+     * @return a new initialized Docker client
+     */
+    @Synchronized
+    public DockerClient client() {
+        if (config == null) {
+            config = determineConfiguration();
+        }
+
+        DockerClient client = DockerClientBuilder.getInstance(config).build();
+
+        // Ping, to fail fast if our docker environment has gone away
+        client.pingCmd().exec();
+
+        return client;
+    }
+
+    /**
+     * Determine the right DockerClientConfig to use for building clients by trial-and-error.
+     *
+     * @return  a working DockerClientConfig, as determined by successful execution of a ping command
+     */
+    private DockerClientConfig determineConfiguration() {
 
         // Try using environment variables
         try {
             LOGGER.info("Checking environment for docker settings");
 
-            config = DockerClientConfig.createDefaultConfigBuilder().build();
-            DockerClient client = DockerClientBuilder.getInstance(config).build();
+            DockerClientConfig candidateConfig = DockerClientConfig.createDefaultConfigBuilder().build();
+            DockerClient client = DockerClientBuilder.getInstance(candidateConfig).build();
             client.pingCmd().exec();
 
             LOGGER.info("Found docker client settings from environment");
-            LOGGER.info("Docker host IP address is {}", dockerHostIpAddress());
+            LOGGER.info("Docker host IP address is {}", dockerHostIpAddress(candidateConfig));
 
-            return client;
+            return candidateConfig;
         } catch (Exception e) {
             LOGGER.info("Could not initialize docker settings using environment variables", e.getMessage());
         }
@@ -88,19 +124,19 @@ public class SingletonDockerClient {
 
                 LOGGER.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
 
-                config = DockerClientConfig
+                DockerClientConfig candidateConfig = DockerClientConfig
                         .createDefaultConfigBuilder()
                         .withUri("https://" + dockerDaemonIpAddress + ":2376")
                         .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
                         .build();
-                DockerClient client = DockerClientBuilder.getInstance(config).build();
+                DockerClient client = DockerClientBuilder.getInstance(candidateConfig).build();
 
                 // If the docker-machine VM has started, the docker daemon may still not be ready. Retry pinging until it works.
                 Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
                     client.pingCmd().exec();
                     return true;
                 });
-                return client;
+                return candidateConfig;
             }
         } catch (Exception e) {
             LOGGER.debug("Could not initialize docker settings using docker machine", e.getMessage());
@@ -110,30 +146,19 @@ public class SingletonDockerClient {
     }
 
     /**
-     * Obtain an instance of the SingletonDockerClient wrapper.
      *
-     * @return the singleton instance of SingletonDockerClient
+     * @param config docker client configuration to extract the host IP address from
+     * @return the IP address of the host running Docker
      */
-    public synchronized static SingletonDockerClient instance() {
-        if (instance == null) {
-            instance = new SingletonDockerClient();
-        }
-
-        return instance;
-    }
-
-    /**
-     * @return an initialized Docker client
-     */
-    public DockerClient client() {
-        return client;
+    private String dockerHostIpAddress(DockerClientConfig config) {
+        return config.getUri().getHost();
     }
 
     /**
      * @return the IP address of the host running Docker
      */
     public String dockerHostIpAddress() {
-        return config.getUri().getHost();
+        return dockerHostIpAddress(config);
     }
 
     private void checkVersion(String version) {
@@ -157,6 +182,8 @@ public class SingletonDockerClient {
      * Check whether this docker installation is likely to have disk space problems
      */
     private void checkDiskSpace() {
+        DockerClient client = client();
+
         List<Image> images = client.listImagesCmd().exec();
         if (!images.stream().anyMatch(it -> asList(it.getRepoTags()).contains("alpine:3.2"))) {
             PullImageResultCallback callback = client.pullImageCmd("alpine:3.2").exec(new PullImageResultCallback());
