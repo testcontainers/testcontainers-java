@@ -8,6 +8,7 @@
     <modules>
         <module>redis-backed-cache</module>
         <module>disque-job-queue</module>
+        <module>selenium-container</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -16,7 +17,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>0.9.9-SNAPSHOT</version>
+            <version>${testcontainers.version}</version>
         </dependency>
 
         <dependency>
@@ -76,5 +77,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <testcontainers.version>0.9.9</testcontainers.version>
     </properties>
 </project>
