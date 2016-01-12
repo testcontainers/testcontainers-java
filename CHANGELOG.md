@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.9]
+### Fixed
+- Resolve thread safety issues associated with use of a singleton docker client
+- Resolve disk space check problems when running on a Debian-based docker host
+- Fix CircleCI problems where the build could hit memory limits
+### Changed
+- Remove bundled logback.xml to allow users more control over logging
+- Add Travis CI support for improved breadth of testing
+
 ## [0.9.8]
 ### Changed
 - Change from Spotify docker client library to docker-java, for improved compatibility with latest versions of Docker

@@ -14,6 +14,6 @@ See [LICENSE](LICENSE).
 
 ## Copyright
 
-Copyright (c) 2015 Richard North and other authors.
+Copyright (c) 2015, 2016 Richard North and other authors.
 
 See [AUTHORS](AUTHORS) for contributors.

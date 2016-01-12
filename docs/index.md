@@ -42,7 +42,7 @@ In the dependency description below, replace `--artifact name--` as appropriate:
     <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>--artifact name--</artifactId>
-        <version>0.9.8</version>
+        <version>0.9.9</version>
     </dependency>
 
 > **Note**: Testcontainers uses the docker-java client library, which in turn depends on JAX-RS and various Jersey
@@ -96,6 +96,6 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Copyright
 
-Copyright (c) 2015 Richard North and other authors.
+Copyright (c) 2015, 2016 Richard North and other authors.
 
 See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.
