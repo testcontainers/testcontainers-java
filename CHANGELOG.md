@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Resolve thread safety issues associated with use of a singleton docker client
 - Resolve disk space check problems when running on a Debian-based docker host
 - Fix CircleCI problems where the build could hit memory limits
+
 ### Changed
 - Remove bundled logback.xml to allow users more control over logging
 - Add Travis CI support for improved breadth of testing
