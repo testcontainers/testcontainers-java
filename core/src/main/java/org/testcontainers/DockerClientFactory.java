@@ -100,7 +100,7 @@ public class DockerClientFactory {
 
             return candidateConfig;
         } catch (Exception e) {
-            LOGGER.info("Could not initialize docker settings using environment variables", e.getMessage());
+            LOGGER.info("Could not initialize docker settings using environment variables: {}", e.getMessage());
         }
 
         // Try using Docker machine
@@ -139,7 +139,7 @@ public class DockerClientFactory {
                 return candidateConfig;
             }
         } catch (Exception e) {
-            LOGGER.debug("Could not initialize docker settings using docker machine", e.getMessage());
+            LOGGER.info("Could not initialize docker settings using docker machine: {}", e.getMessage());
         }
 
         throw new IllegalStateException("Could not find a suitable docker instance - is DOCKER_HOST defined and pointing to a running Docker daemon?");
