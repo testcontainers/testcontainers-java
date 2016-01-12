@@ -65,6 +65,8 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[0.9.9]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-0.9.9
+[0.9.8]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-0.9.8
 [0.9.7]: https://github.com/testcontainers/testcontainers-java/releases/tag/test-containers-0.9.7
 [0.9.6]: https://github.com/testcontainers/testcontainers-java/releases/tag/test-containers-0.9.6
 [0.9.5]: https://github.com/testcontainers/testcontainers-java/releases/tag/test-containers-0.9.5
