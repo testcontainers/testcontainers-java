@@ -7,7 +7,7 @@ services:
 
 before_install:
   - env
-# Pre-fetch docker images
+# Pre-fetch docker images - seems to need to be done before docker env vars are set
   - docker pull redis:3.0.2
   - docker pull rabbitmq:3.5.3
   - docker pull mongo:3.1.5
@@ -23,6 +23,7 @@ before_install:
   - docker pull nginx:1.9.4
   - docker pull dduportal/docker-compose:1.3.1
   - docker pull richnorth/ambassador:latest
+# Update env vars required by testcontainers
   - export DOCKER_HOST=tcp://127.0.0.1:2375
   - export DOCKER_TLS_VERIFY=0
   - env
