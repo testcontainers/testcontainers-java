@@ -1,5 +1,6 @@
 package org.testcontainers.utility;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -31,7 +32,7 @@ public class CommandLine {
     public static String runShellCommand(String... command) {
 
         String joinedCommand = String.join(" ", command);
-        LOGGER.info("Executing shell command: `{}`", joinedCommand);
+        LOGGER.debug("Executing shell command: `{}`", joinedCommand);
 
         try {
             ProcessResult result;
@@ -62,7 +63,7 @@ public class CommandLine {
             return true;
         }
 
-        for (String pathString : System.getenv("PATH").split(Pattern.quote(File.pathSeparator))) {
+        for (String pathString : getSystemPath()) {
             Path path = Paths.get(pathString);
             if (Files.exists(path.resolve(executable)) && Files.isExecutable(path.resolve(executable))) {
                 return true;
@@ -70,6 +71,11 @@ public class CommandLine {
         }
 
         return false;
+    }
+
+    @NotNull
+    public static String[] getSystemPath() {
+        return System.getenv("PATH").split(Pattern.quote(File.pathSeparator));
     }
 
     private static class ShellCommandException extends RuntimeException {

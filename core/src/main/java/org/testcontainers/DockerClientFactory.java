@@ -10,22 +10,20 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.Synchronized;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
-import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.dockerclient.DockerClientConfigUtils;
+import org.testcontainers.dockerclient.DockerConfigurationStrategy;
+import org.testcontainers.dockerclient.DockerMachineConfigurationStrategy;
+import org.testcontainers.dockerclient.EnvironmentVariableConfigurationStrategy;
 
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Singleton class that provides initialized Docker clients.
- *
+ * <p>
  * The correct client configuration to use will be determined on first use, and cached thereafter.
  */
 public class DockerClientFactory {
@@ -35,19 +33,17 @@ public class DockerClientFactory {
 
     // Cached client configuration
     private DockerClientConfig config;
+    private boolean preconditionsChecked = false;
+
+    private static final List<DockerConfigurationStrategy> CONFIGURATION_STRATEGIES =
+            asList(new EnvironmentVariableConfigurationStrategy(),
+                    new DockerMachineConfigurationStrategy());
 
     /**
      * Private constructor
      */
     private DockerClientFactory() {
-        try {
-            String version = client().versionCmd().exec().getVersion();
-            checkVersion(version);
 
-            checkDiskSpaceAndHandleExceptions();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to prepare Docker client", e);
-        }
     }
 
     /**
@@ -69,10 +65,17 @@ public class DockerClientFactory {
     @Synchronized
     public DockerClient client() {
         if (config == null) {
-            config = determineConfiguration();
+            config = DockerConfigurationStrategy.getFirstValidConfig(CONFIGURATION_STRATEGIES);
         }
 
         DockerClient client = DockerClientBuilder.getInstance(config).build();
+
+        if (!preconditionsChecked) {
+            String version = client.versionCmd().exec().getVersion();
+            checkVersion(version);
+            checkDiskSpaceAndHandleExceptions(client);
+            preconditionsChecked = true;
+        }
 
         // Ping, to fail fast if our docker environment has gone away
         client.pingCmd().exec();
@@ -81,77 +84,11 @@ public class DockerClientFactory {
     }
 
     /**
-     * Determine the right DockerClientConfig to use for building clients by trial-and-error.
-     *
-     * @return  a working DockerClientConfig, as determined by successful execution of a ping command
-     */
-    private DockerClientConfig determineConfiguration() {
-
-        // Try using environment variables
-        try {
-            LOGGER.info("Checking environment for docker settings");
-
-            DockerClientConfig candidateConfig = DockerClientConfig.createDefaultConfigBuilder().build();
-            DockerClient client = DockerClientBuilder.getInstance(candidateConfig).build();
-            client.pingCmd().exec();
-
-            LOGGER.info("Found docker client settings from environment");
-            LOGGER.info("Docker host IP address is {}", dockerHostIpAddress(candidateConfig));
-
-            return candidateConfig;
-        } catch (Exception e) {
-            LOGGER.info("Could not initialize docker settings using environment variables: {}", e.getMessage());
-        }
-
-        // Try using Docker machine
-        try {
-            LOGGER.info("Checking for presence of docker-machine");
-
-            boolean installed = DockerMachineClient.instance().isInstalled();
-
-            checkArgument(installed, "docker-machine must be installed for use on OS X");
-
-            Optional<String> machineNameOptional = DockerMachineClient.instance().getDefaultMachine();
-
-            if (machineNameOptional.isPresent()) {
-                String machineName = machineNameOptional.get();
-
-                LOGGER.info("Found docker-machine, and will use first machine defined ({})", machineName);
-
-                DockerMachineClient.instance().ensureMachineRunning(machineName);
-
-                String dockerDaemonIpAddress = DockerMachineClient.instance().getDockerDaemonIpAddress(machineName);
-
-                LOGGER.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
-
-                DockerClientConfig candidateConfig = DockerClientConfig
-                        .createDefaultConfigBuilder()
-                        .withUri("https://" + dockerDaemonIpAddress + ":2376")
-                        .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
-                        .build();
-                DockerClient client = DockerClientBuilder.getInstance(candidateConfig).build();
-
-                // If the docker-machine VM has started, the docker daemon may still not be ready. Retry pinging until it works.
-                Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
-                    client.pingCmd().exec();
-                    return true;
-                });
-                return candidateConfig;
-            }
-        } catch (Exception e) {
-            LOGGER.info("Could not initialize docker settings using docker machine: {}", e.getMessage());
-        }
-
-        throw new IllegalStateException("Could not find a suitable docker instance - is DOCKER_HOST defined and pointing to a running Docker daemon?");
-    }
-
-    /**
-     *
      * @param config docker client configuration to extract the host IP address from
      * @return the IP address of the host running Docker
      */
     private String dockerHostIpAddress(DockerClientConfig config) {
-        return config.getUri().getHost();
+        return DockerClientConfigUtils.getDockerHostIpAddress(config);
     }
 
     /**
@@ -168,9 +105,9 @@ public class DockerClientFactory {
         }
     }
 
-    private void checkDiskSpaceAndHandleExceptions() {
+    private void checkDiskSpaceAndHandleExceptions(DockerClient client) {
         try {
-            checkDiskSpace();
+            checkDiskSpace(client);
         } catch (NotEnoughDiskSpaceException e) {
             throw e;
         } catch (Exception e) {
@@ -180,9 +117,9 @@ public class DockerClientFactory {
 
     /**
      * Check whether this docker installation is likely to have disk space problems
+     * @param client
      */
-    private void checkDiskSpace() {
-        DockerClient client = client();
+    private void checkDiskSpace(DockerClient client) {
 
         List<Image> images = client.listImagesCmd().exec();
         if (!images.stream().anyMatch(it -> asList(it.getRepoTags()).contains("alpine:3.2"))) {
