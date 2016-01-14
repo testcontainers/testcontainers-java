@@ -84,10 +84,6 @@
                             <shadedPattern>org.testcontainers.shaded.org.apache.http</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com.google</pattern>
-                            <shadedPattern>org.testcontainers.shaded.com.google</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>org.glassfish</pattern>
                             <shadedPattern>org.testcontainers.shaded.org.glassfish</shadedPattern>
                         </relocation>
@@ -116,7 +112,6 @@
                     <artifactSet>
                         <includes>
                             <include>org.apache.httpcomponents:*</include>
-                            <include>com.google.*:*</include>
                             <include>org.glassfish.*:*</include>
                             <include>javax.annotation:*</include>
                             <include>javax.inject:*</include>
