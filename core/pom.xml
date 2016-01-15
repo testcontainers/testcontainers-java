@@ -105,8 +105,11 @@
                         </relocation>
                         <relocation>
                             <pattern>com.fasterxml.jackson</pattern>
-                            <shadedPattern>org.testcontainers.shaded.com.fasterxml.jackson
-                            </shadedPattern>
+                            <shadedPattern>org.testcontainers.shaded.com.fasterxml.jackson</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.github.dockerjava</pattern>
+                            <shadedPattern>org.testcontainers.shaded.com.github.dockerjava</shadedPattern>
                         </relocation>
                     </relocations>
                     <artifactSet>
