@@ -28,6 +28,10 @@ before_install:
   - export DOCKER_TLS_VERIFY=0
   - env
 
+script:
+  - mvn test
+  - mvn test -f shade-test/pom.xml
+
 cache:
   directories:
     - '$HOME/.m2/repository'
