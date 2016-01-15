@@ -123,7 +123,6 @@
         <module>modules/postgresql</module>
         <module>modules/selenium</module>
         <module>modules/nginx</module>
-        <module>modules/docker-compose</module>
     </modules>
 
     <profiles>

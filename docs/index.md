@@ -31,10 +31,9 @@ Docker or docker-machine (for OS X) must be installed on the machine you are run
 
 TestContainers is distributed in a handful of Maven modules:
 
-* **testcontainers** for just core functionality and generic containers support
+* **testcontainers** for just core functionality, generic containers and docker-compose support
 * **mysql**, **postgresql** or **oracle-xe** for database container support
 * **selenium** for selenium/webdriver support
-* **docker-compose** for Docker Compose support
 * **nginx** for nginx container support
 
 In the dependency description below, replace `--artifact name--` as appropriate:
@@ -45,9 +44,12 @@ In the dependency description below, replace `--artifact name--` as appropriate:
         <version>0.9.9</version>
     </dependency>
 
-> **Note**: Testcontainers uses the docker-java client library, which in turn depends on JAX-RS and various Jersey
-libraries. If your project also uses these, you may need to set appropriate maven dependency exclusions or use
-`dependencyManagement` to avoid conflicts, on a case-by-case basis.
+### Shaded dependencies
+
+**Note**: Testcontainers uses the docker-java client library, which in turn depends on JAX-RS, Jersey and Jackson
+libraries. These libraries in particular seem to be especially prone to conflicts with test code/applciation under test
+ code. As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated
+ under `org.testcontainers.shaded` to prevent class conflicts.
 
 ## Logging
 
