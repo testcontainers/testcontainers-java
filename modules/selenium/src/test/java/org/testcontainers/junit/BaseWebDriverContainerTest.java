@@ -2,12 +2,9 @@ package org.testcontainers.junit;
 
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -40,18 +37,6 @@ public class BaseWebDriverContainerTest {
     protected void doSimpleExplore(BrowserWebDriverContainer rule) {
         RemoteWebDriver driver = setupDriverFromRule(rule);
         driver.get("http://en.wikipedia.org/wiki/Randomness");
-
-        loop:
-        for (int i = 0; i < 5; i++) {
-            Random random = new Random();
-            List<WebElement> webElements = driver.findElements(By.tagName("a"));
-            for (WebElement webElement : webElements) {
-                if (random.nextInt(10) == 0 && webElement.isDisplayed() && webElement.isEnabled()) {
-                    webElement.click();
-                    break loop;
-                }
-            }
-        }
     }
 
 }
