@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -52,7 +53,90 @@
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
             <version>3.0.2</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                    </transformers>
+                    <relocations>
+                        <relocation>
+                            <pattern>org.apache.http</pattern>
+                            <shadedPattern>org.testcontainers.shaded.org.apache.http</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.glassfish</pattern>
+                            <shadedPattern>org.testcontainers.shaded.org.glassfish</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.jvnet</pattern>
+                            <shadedPattern>org.testcontainers.shaded.org.jvnet</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>javax.annotation</pattern>
+                            <shadedPattern>org.testcontainers.shaded.javax.annotation</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>javax.inject</pattern>
+                            <shadedPattern>org.testcontainers.shaded.javax.inject</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>javax.ws.rs</pattern>
+                            <shadedPattern>org.testcontainers.shaded.javax.ws.rs</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.fasterxml.jackson</pattern>
+                            <shadedPattern>org.testcontainers.shaded.com.fasterxml.jackson</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.github.dockerjava</pattern>
+                            <shadedPattern>org.testcontainers.shaded.com.github.dockerjava</shadedPattern>
+                        </relocation>
+                    </relocations>
+                    <artifactSet>
+                        <includes>
+                            <include>org.apache.httpcomponents:*</include>
+                            <include>org.glassfish.*:*</include>
+                            <include>javax.annotation:*</include>
+                            <include>javax.inject:*</include>
+                            <include>javax.ws.rs:*</include>
+                            <include>com.fasterxml.*:*</include>
+                            <include>com.github.docker-java:*</include>
+                        </includes>
+                    </artifactSet>
+                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                    <shadedArtifactAttached>false</shadedArtifactAttached>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -1,0 +1,1 @@
+The contents of this folder is a workaround for issues described here: https://github.com/KostyaSha/docker-java-shade/issues/1

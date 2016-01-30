@@ -37,7 +37,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Project lombok for additional safety/convenience support -->
@@ -53,7 +52,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.7</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -125,7 +123,6 @@
         <module>modules/postgresql</module>
         <module>modules/selenium</module>
         <module>modules/nginx</module>
-        <module>modules/docker-compose</module>
     </modules>
 
     <profiles>
@@ -134,6 +131,9 @@
             <modules>
                 <module>modules/oracle-xe</module>
             </modules>
+        </profile>
+        <profile>
+            <id>shade</id>
         </profile>
     </profiles>
 
