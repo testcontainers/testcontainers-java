@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
- * Created by rnorth on 13/01/2016.
+ * Use Docker machine (if available on the PATH) to locate a Docker environment.
  */
 public class DockerMachineConfigurationStrategy implements DockerConfigurationStrategy {
     @Override

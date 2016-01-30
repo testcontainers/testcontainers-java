@@ -9,12 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by rnorth on 13/01/2016.
+ * Mechanism to find a viable Docker client configuration according to the host system environment.
  */
 public interface DockerConfigurationStrategy {
 
+    /**
+     * @return a usable, tested, Docker client configuration for the host system environment
+     * @throws InvalidConfigurationException if this strategy fails
+     */
     DockerClientConfig provideConfiguration() throws InvalidConfigurationException;
 
+    /**
+     * @return a short textual description of the strategy
+     */
     String getDescription();
 
     Logger LOGGER = LoggerFactory.getLogger(DockerConfigurationStrategy.class);

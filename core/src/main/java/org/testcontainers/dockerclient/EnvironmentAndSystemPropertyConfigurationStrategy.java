@@ -5,9 +5,10 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
 /**
- * Created by rnorth on 13/01/2016.
+ * Use environment variables and system properties (as supported by the underlying DockerClient DefaultConfigBuilder)
+ * to try and locate a docker environment.
  */
-public class EnvironmentVariableConfigurationStrategy implements DockerConfigurationStrategy {
+public class EnvironmentAndSystemPropertyConfigurationStrategy implements DockerConfigurationStrategy {
 
     private DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder().build();
 

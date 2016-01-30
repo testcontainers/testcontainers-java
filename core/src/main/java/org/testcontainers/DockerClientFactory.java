@@ -2,6 +2,7 @@ package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
@@ -14,7 +15,7 @@ import org.slf4j.Logger;
 import org.testcontainers.dockerclient.DockerClientConfigUtils;
 import org.testcontainers.dockerclient.DockerConfigurationStrategy;
 import org.testcontainers.dockerclient.DockerMachineConfigurationStrategy;
-import org.testcontainers.dockerclient.EnvironmentVariableConfigurationStrategy;
+import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyConfigurationStrategy;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class DockerClientFactory {
     private boolean preconditionsChecked = false;
 
     private static final List<DockerConfigurationStrategy> CONFIGURATION_STRATEGIES =
-            asList(new EnvironmentVariableConfigurationStrategy(),
+            asList(new EnvironmentAndSystemPropertyConfigurationStrategy(),
                     new DockerMachineConfigurationStrategy());
 
     /**
@@ -117,7 +118,7 @@ public class DockerClientFactory {
 
     /**
      * Check whether this docker installation is likely to have disk space problems
-     * @param client
+     * @param client an active Docker client
      */
     private void checkDiskSpace(DockerClient client) {
 
@@ -159,21 +160,21 @@ public class DockerClientFactory {
         } finally {
             try {
                 client.removeContainerCmd(id).withRemoveVolumes(true).withForce(true).exec();
-            } catch (InternalServerErrorException ignored) {
+            } catch (NotFoundException | InternalServerErrorException ignored) {
 
             }
         }
     }
 
-    public static class NotEnoughDiskSpaceException extends RuntimeException {
-        public NotEnoughDiskSpaceException(String message) {
+    private static class NotEnoughDiskSpaceException extends RuntimeException {
+        NotEnoughDiskSpaceException(String message) {
             super(message);
         }
     }
 }
 
 class LogContainerCallback extends LogContainerResultCallback {
-    protected final StringBuffer log = new StringBuffer();
+    private final StringBuffer log = new StringBuffer();
 
     @Override
     public void onNext(Frame frame) {
