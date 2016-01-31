@@ -33,3 +33,8 @@ target/
 ## Plugin-specific files:
 
 # IntelliJ
+
+# Eclipse
+.project
+.classpath
+.settings/
