@@ -552,17 +552,13 @@ public class GenericContainer extends FailureDetectingExternalResource implement
                     throw new IllegalStateException("Could not find a default docker-machine instance");
                 }
 
-                String sshConnectionString = runShellCommand("docker-machine", "ssh", defaultMachine.get(), "echo $SSH_CONNECTION").trim();
-                if (Strings.isNullOrEmpty(sshConnectionString)) {
-                    throw new IllegalStateException("Could not obtain SSH_CONNECTION environment variable for docker machine " + defaultMachine.get());
+                String ipAddress = runShellCommand("docker-machine", "ip", defaultMachine.get()).trim();
+                if (Strings.isNullOrEmpty(ipAddress)) {
+                    throw new IllegalStateException("Could not obtain IP address for docker machine " + defaultMachine.get());
                 }
-
-                String[] sshConnectionParts = sshConnectionString.split("\\s");
-                if (sshConnectionParts.length != 4) {
-                    throw new IllegalStateException("Unexpected pattern for SSH_CONNECTION for docker machine - expected 'IP PORT IP PORT' pattern but found '" + sshConnectionString + "'");
-                }
-
-                return sshConnectionParts[0];
+                return ipAddress;
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
