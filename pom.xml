@@ -30,6 +30,11 @@
             <name>Gurpreet Sohal</name>
             <email>gurpreet@gurpreetsohal.com</email>
         </developer>
+        <developer>
+            <id>alexboldt</id>
+            <name>Alex Boldt</name>
+            <email>boldtalex@gmail.com</email>
+        </developer>
     </developers>
 
     <dependencies>
