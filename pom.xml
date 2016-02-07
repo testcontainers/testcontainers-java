@@ -35,6 +35,11 @@
             <name>Alex Boldt</name>
             <email>boldtalex@gmail.com</email>
         </developer>
+        <developer>
+            <id>rpozarickij</id>
+            <name>Robert Požarickij</name>
+            <email>robert.pozarickij@gmail.com></email>
+        </developer>
     </developers>
 
     <dependencies>
