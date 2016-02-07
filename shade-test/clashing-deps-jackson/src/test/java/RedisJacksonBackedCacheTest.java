@@ -22,7 +22,7 @@ public class RedisJacksonBackedCacheTest {
 
     @Before
     public void setUp() throws Exception {
-        Jedis jedis = new Jedis(redis.getIpAddress(), redis.getMappedPort(6379));
+        Jedis jedis = new Jedis(redis.getContainerIpAddress(), redis.getMappedPort(6379));
 
         cache = new RedisJacksonBackedCache(jedis, "test");
     }

@@ -90,7 +90,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void simpleRedisTest() {
-        String ipAddress = redis.getIpAddress();
+        String ipAddress = redis.getContainerIpAddress();
         Integer port = redis.getMappedPort(REDIS_PORT);
 
         // Use Redisson to obtain a List that is backed by Redis
@@ -114,7 +114,7 @@ public class GenericContainerRuleTest {
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(rabbitMq.getIpAddress());
+        factory.setHost(rabbitMq.getContainerIpAddress());
         factory.setPort(rabbitMq.getMappedPort(RABBITMQ_PORT));
         Connection connection = factory.newConnection();
 
@@ -146,7 +146,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void simpleMongoDbTest() {
-        MongoClient mongoClient = new MongoClient(mongo.getIpAddress(), mongo.getMappedPort(MONGO_PORT));
+        MongoClient mongoClient = new MongoClient(mongo.getContainerIpAddress(), mongo.getMappedPort(MONGO_PORT));
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
@@ -163,7 +163,7 @@ public class GenericContainerRuleTest {
         BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-            Socket socket = new Socket(alpineEnvVar.getIpAddress(), alpineEnvVar.getMappedPort(80));
+            Socket socket = new Socket(alpineEnvVar.getContainerIpAddress(), alpineEnvVar.getMappedPort(80));
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
 
@@ -177,7 +177,7 @@ public class GenericContainerRuleTest {
         BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-            Socket socket = new Socket(alpineClasspathResource.getIpAddress(), alpineClasspathResource.getMappedPort(80));
+            Socket socket = new Socket(alpineClasspathResource.getContainerIpAddress(), alpineClasspathResource.getMappedPort(80));
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
 

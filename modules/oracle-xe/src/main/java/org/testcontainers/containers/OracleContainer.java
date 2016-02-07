@@ -36,7 +36,7 @@ public class OracleContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@//" + getIpAddress() + ":" + getOraclePort() + "/" + getSid();
+        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@//" + getContainerIpAddress() + ":" + getOraclePort() + "/" + getSid();
     }
 
     @Override

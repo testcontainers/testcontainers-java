@@ -39,7 +39,7 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/test";
+        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/test";
     }
 
     @Override
