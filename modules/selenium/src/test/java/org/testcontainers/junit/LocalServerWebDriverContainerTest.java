@@ -22,7 +22,7 @@ public class LocalServerWebDriverContainerTest {
     private int localPort;
 
     /**
-     * The getHostIpAddress() method is only implemented for OS X running docker-machine. Skip JUnit execution elsewhere.
+     * The getTestHostIpAddress() method is only implemented for OS X running docker-machine. Skip JUnit execution elsewhere.
      */
     @BeforeClass
     public static void checkOS() {
@@ -49,7 +49,7 @@ public class LocalServerWebDriverContainerTest {
         RemoteWebDriver driver = chrome.getWebDriver();
 
         // Construct a URL that the browser container can access
-        String hostIpAddress = chrome.getHostIpAddress();
+        String hostIpAddress = chrome.getTestHostIpAddress();
         driver.get("http://" + hostIpAddress + ":" + localPort);
 
         String headingText = driver.findElement(By.cssSelector("h1")).getText().trim();

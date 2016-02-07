@@ -164,7 +164,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
      * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
-        return ambassadorContainers.get(serviceName + ":" + servicePort).getIpAddress();
+        return ambassadorContainers.get(serviceName + ":" + servicePort).getContainerIpAddress();
     }
 
     /**

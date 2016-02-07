@@ -28,7 +28,7 @@ public class NginxContainer extends GenericContainer implements LinkableContaine
     }
 
     public URL getBaseUrl(String scheme, int port) throws MalformedURLException {
-        return new URL(scheme + "://" + getIpAddress() + ":" + getMappedPort(port));
+        return new URL(scheme + "://" + getContainerIpAddress() + ":" + getMappedPort(port));
     }
 
     public void setCustomContent(String htmlContentPath) {

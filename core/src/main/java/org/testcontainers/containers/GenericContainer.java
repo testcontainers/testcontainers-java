@@ -481,8 +481,20 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @return an IP address
      */
-    public String getIpAddress() {
+    public String getContainerIpAddress() {
         return DockerClientFactory.instance().dockerHostIpAddress();
+    }
+
+    /**
+     * Get the IP address that this container may be reached on (may not be the local machine).
+     *
+     * @return an IP address
+     *
+     * @deprecated please use getContainerIpAddress() instead
+     */
+    @Deprecated
+    public String getIpAddress() {
+        return getContainerIpAddress();
     }
 
     /**
@@ -536,12 +548,12 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * i.e. the machine on which this test is running.
      * <p>
      * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
-     * to be pointed at "http://" + getHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
+     * to be pointed at "http://" + getTestHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
      * from inside the container is not going to work, since the container has its own IP address.
      *
      * @return the IP address of the host machine
      */
-    public String getHostIpAddress() {
+    public String getTestHostIpAddress() {
         if (System.getProperty("os.name").toLowerCase().contains("mac")) {
             try {
                 // Running on a Mac therefore use boot2docker
@@ -568,7 +580,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             }
 
         } else {
-            throw new UnsupportedOperationException("getHostIpAddress() is only implemented for docker-machine right now");
+            throw new UnsupportedOperationException("getTestHostIpAddress() is only implemented for docker-machine right now");
         }
     }
 }

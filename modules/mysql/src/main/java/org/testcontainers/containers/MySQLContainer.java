@@ -42,7 +42,7 @@ public class MySQLContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/test";
+        return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/test";
     }
 
     @Override

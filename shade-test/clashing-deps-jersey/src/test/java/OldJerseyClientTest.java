@@ -16,7 +16,7 @@ public class OldJerseyClientTest {
     @Test
     public void clientRequestTest() {
         Client client = Client.create();
-        String s = client.resource("http://" + httpd.getIpAddress() + ":" + httpd.getMappedPort(80)).get(String.class);
+        String s = client.resource("http://" + httpd.getContainerIpAddress() + ":" + httpd.getMappedPort(80)).get(String.class);
 
         assertTrue("httpd is displaying its default placeholder page", s.contains("It works"));
     }
