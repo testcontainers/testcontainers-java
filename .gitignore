@@ -1,3 +1,4 @@
+/.mvn/timing.properties
 # Created by .ignore support plugin (hsz.mobi)
 ### Maven template
 target/
@@ -33,3 +34,4 @@ target/
 ## Plugin-specific files:
 
 # IntelliJ
+*.lastchange
