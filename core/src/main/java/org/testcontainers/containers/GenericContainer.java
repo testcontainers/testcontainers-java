@@ -34,7 +34,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Arrays.asList;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
@@ -554,11 +553,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @return the IP address of the host machine
      */
     public String getTestHostIpAddress() {
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        if (DockerMachineClient.instance().isInstalled()) {
             try {
-                // Running on a Mac therefore use boot2docker
-                checkArgument(DockerMachineClient.instance().isInstalled(), "docker-machine must be installed for use on OS X");
-
                 Optional<String> defaultMachine = DockerMachineClient.instance().getDefaultMachine();
                 if (!defaultMachine.isPresent()) {
                     throw new IllegalStateException("Could not find a default docker-machine instance");
