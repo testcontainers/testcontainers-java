@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0.0]
+### Fixed
+- Resolve Jersey/Jackson dependency clashes by shading (relocating) a version of these libraries into the core Testcontainers JAR
+- Improve documentation and logging concerning discovery of Docker daemon
+
+### Changed
+- Rename container `getIpAddress()` method to `getContainerIpAddress()` and deprecate original method name.
+- Rename container `getHostIpAddress()` method to `getTestHostIpAddress()`
+
 ## [0.9.9]
 ### Fixed
 - Resolve thread safety issues associated with use of a singleton docker client
@@ -66,6 +75,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.0.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.0
 [0.9.9]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-0.9.9
 [0.9.8]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-0.9.8
 [0.9.7]: https://github.com/testcontainers/testcontainers-java/releases/tag/test-containers-0.9.7

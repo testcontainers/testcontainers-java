@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+# Maven wrapper script to accelerate the build of multi-module projects
+# This script detects which modules have been modified since the last build, and executes maven in `-amd -pl ...` mode.
+# See this page for details of how these flags accelerate the build:
+#   http://blog.sonatype.com/2009/10/maven-tips-and-tricks-advanced-reactor-options/
+#
+# USAGE:
+#  ./qmvn <goal>, e.g. ./qmvn install
+#
+
+set -euo pipefail
+#set -x
+
+# All modules in the project. This could be detected automatically...
+MODULES=(. core modules/jdbc modules/mysql modules/postgresql modules/selenium modules/nginx)
+# Array to collect which modules have changed
+CHANGED_MODULES=()
+# We need to known when the maven command (args to this script) were last run
+COMMAND_HASH=$(echo $@ | md5)
+# JVM options to make maven run more quickly
+export MAVEN_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+# Iterate over all the modules to detect changes
+for MODULE in ${MODULES[@]}; do
+
+    GUARDFILE="${MODULE}/target/.lastchange.${COMMAND_HASH}"
+
+    if [[ ! -f ${GUARDFILE} ]]; then
+        mkdir -p ${GUARDFILE} && rm -rf ${GUARDFILE}
+        touch -t "$(date -r 0 +%Y%m%d%H%M.%S)" ${GUARDFILE}
+    fi
+
+    # Specifically ignore changes the to target and src/generated directories
+    CHANGES=$(find ${MODULE} -newer ${GUARDFILE} -not -path "${MODULE}/target/*" -not -path "${MODULE}/src/generated/*" | wc -l | xargs)
+
+    if [[ $CHANGES > 0 ]]; then
+        echo "$MODULE has changes since the last invocation of mvn $@"
+        CHANGED_MODULES+=($MODULE)
+    fi
+done
+
+# Exit right away if nothing has changed
+if [[ ${#CHANGED_MODULES[@]} == 0 ]]; then
+    echo "No changes"
+    exit 0
+fi
+
+function join { local IFS="$1"; shift; echo "$*"; }
+
+PL_LIST=$(join "," ${CHANGED_MODULES[@]})
+
+# Execute maven such that just the changed modules, and modules that depend on them, get built
+mvn $@ -pl ${PL_LIST} -amd
+
+# Finally, assuming successful invocation of maven, update our guardfiles so that future changes are detected from now onwards
+for MODULE in ${MODULES[@]}; do
+    GUARDFILE="${MODULE}/target/.lastchange.${COMMAND_HASH}"
+    touch ${GUARDFILE}
+done
