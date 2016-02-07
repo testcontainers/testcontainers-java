@@ -32,6 +32,17 @@ public class EnvironmentAndSystemPropertyConfigurationStrategy implements Docker
 
     @Override
     public String getDescription() {
-        return "Environment variables, system properties and defaults: " + config.toString();
+        return "Environment variables, system properties and defaults. Resolved: \n" + stringRepresentation(config);
+    }
+
+    private String stringRepresentation(DockerClientConfig config) {
+        return  "    uri=" + config.getUri() + "\n" +
+                "    sslConfig='" + config.getSslConfig() + "'\n" +
+                "    version='" + config.getVersion() + "'\n" +
+                "    username='" + config.getUsername() + "'\n" +
+                "    password='" + config.getPassword() + "'\n" +
+                "    email='" + config.getEmail() + "'\n" +
+                "    serverAddress='" + config.getServerAddress() + "'\n" +
+                "    dockerCfgPath='" + config.getDockerCfgPath() + "'\n";
     }
 }
