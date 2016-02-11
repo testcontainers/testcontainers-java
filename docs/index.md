@@ -20,12 +20,14 @@ TestContainers makes it easy to launch useful Docker containers for the duration
 
 Docker or docker-machine (for OS X) must be installed on the machine you are running tests on. TestContainers currently requires JDK 1.8 and is compatible with JUnit.
 
+Note that only Linux host environments, or OS X with Docker Machine, are currently supported.
+
 ### Docker environment discovery
 
 Testcontainers will try to connect to a Docker daemon using the following strategies in order:
 
 * Environment variables:
-	* `DOCKER_HOST`
+	* `DOCKER_HOST` (this should be set to an HTTP/HTTPS connection rather than a unix socket at present)
 	* `DOCKER_TLS_VERIFY`
 	* `DOCKER_CERT_PATH`
 * Defaults:
