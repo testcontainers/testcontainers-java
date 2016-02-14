@@ -3,8 +3,10 @@ package org.testcontainers.utility;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.testcontainers.utility.CommandLine.executableExists;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
@@ -42,10 +44,19 @@ public class DockerMachineClient {
 
     public Optional<String> getDefaultMachine() {
         String ls = runShellCommand("docker-machine", "ls", "-q");
-        String[] machineNames = ls.split("\n");
+        List<String> machineNames = asList(ls.split("\n"));
 
-        if (machineNames.length > 0) {
-            return Optional.of(machineNames[0]);
+        String envMachineName = System.getenv("DOCKER_MACHINE_NAME");
+
+        if (machineNames.contains(envMachineName)) {
+            LOGGER.debug("Using docker-machine set in DOCKER_MACHINE_NAME: {}", envMachineName);
+            return Optional.of(envMachineName);
+        } else if (machineNames.contains("default")) {
+            LOGGER.debug("DOCKER_MACHINE_NAME is not set; Using 'default' docker-machine", envMachineName);
+            return Optional.of("default");
+        } else if (machineNames.size() > 0) {
+            LOGGER.debug("DOCKER_MACHINE_NAME is not set and no machine named 'default' found; Using first machine found with `docker-machine ls`: {}", machineNames.get(0));
+            return Optional.of(machineNames.get(0));
         } else {
             return Optional.empty();
         }
