@@ -49,10 +49,13 @@ public class DockerMachineClient {
         String envMachineName = System.getenv("DOCKER_MACHINE_NAME");
 
         if (machineNames.contains(envMachineName)) {
+            LOGGER.debug("Using docker-machine set in DOCKER_MACHINE_NAME: {}", envMachineName);
             return Optional.of(envMachineName);
         } else if (machineNames.contains("default")) {
+            LOGGER.debug("DOCKER_MACHINE_NAME is not set; Using 'default' docker-machine", envMachineName);
             return Optional.of("default");
         } else if (machineNames.size() > 0) {
+            LOGGER.debug("DOCKER_MACHINE_NAME is not set and no machine named 'default' found; Using first machine found with `docker-machine ls`: {}", machineNames.get(0));
             return Optional.of(machineNames.get(0));
         } else {
             return Optional.empty();
