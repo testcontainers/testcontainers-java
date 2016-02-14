@@ -51,6 +51,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     private List<Integer> exposedPorts = new ArrayList<>();
 
     @NonNull
+    private List<String> portBindings = new ArrayList<>();
+
+    @NonNull
     private String dockerImageName = "alpine:3.2";
 
     @NonNull
@@ -283,11 +286,19 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
 
+        // Set up exposed ports (where there are no host port bindings defined)
         ExposedPort[] portArray = exposedPorts.stream()
                 .map(ExposedPort::new)
                 .toArray(ExposedPort[]::new);
 
         createCommand.withExposedPorts(portArray);
+
+        // Set up exposed ports that need host port bindings
+        PortBinding[] portBindingArray = portBindings.stream()
+                .map(PortBinding::parse)
+                .toArray(PortBinding[]::new);
+
+        createCommand.withPortBindings(portBindingArray);
 
         if (commandParts != null) {
             createCommand.withCmd(commandParts);
@@ -420,6 +431,20 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
+     * Add a container port that should be bound to a fixed port on the docker host.
+     *
+     * Note that this method is protected scope to discourage use, as clashes or instability are more likely when
+     * using fixed port mappings. If you need to use this method from a test, please use {@link FixedHostPortGenericContainer}
+     * instead of GenericContainer.
+     *
+     * @param hostPort
+     * @param containerPort
+     */
+    protected void addFixedExposedPort(int hostPort, int containerPort) {
+        portBindings.add(String.format("%d:%d", hostPort, containerPort));
+    }
+
+    /**
      * Add an environment variable to be passed to the container.
      *
      * @param key   environment variable key
@@ -453,6 +478,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         return this;
     }
 
+
     /**
      * Map a resource (file or directory) on the classpath to a path inside the container
      *
@@ -473,7 +499,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         return this;
     }
-
 
     /**
      * Get the IP address that this container may be reached on (may not be the local machine).
