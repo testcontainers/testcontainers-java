@@ -3,8 +3,10 @@ package org.testcontainers.utility;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.testcontainers.utility.CommandLine.executableExists;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
@@ -42,10 +44,16 @@ public class DockerMachineClient {
 
     public Optional<String> getDefaultMachine() {
         String ls = runShellCommand("docker-machine", "ls", "-q");
-        String[] machineNames = ls.split("\n");
+        List<String> machineNames = asList(ls.split("\n"));
 
-        if (machineNames.length > 0) {
-            return Optional.of(machineNames[0]);
+        String envMachineName = System.getenv("DOCKER_MACHINE_NAME");
+
+        if (machineNames.contains(envMachineName)) {
+            return Optional.of(envMachineName);
+        } else if (machineNames.contains("default")) {
+            return Optional.of("default");
+        } else if (machineNames.size() > 0) {
+            return Optional.of(machineNames.get(0));
         } else {
             return Optional.empty();
         }

@@ -9,6 +9,7 @@ import org.testcontainers.utility.DockerMachineClient;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -27,8 +28,9 @@ public class DockerMachineConfigurationStrategy implements DockerConfigurationSt
             boolean installed = DockerMachineClient.instance().isInstalled();
             checkArgument(installed, "docker-machine executable was not found on PATH (" + Arrays.toString(CommandLine.getSystemPath()) + ")");
 
-            String machineName = DockerMachineClient.instance().getDefaultMachine().orElse(System.getenv("DOCKER_MACHINE"));
-            checkArgument(machineName != null, "docker-machine is installed but no default machine could be found");
+            Optional<String> machineNameOptional = DockerMachineClient.instance().getDefaultMachine();
+            checkArgument(machineNameOptional.isPresent(), "docker-machine is installed but no default machine could be found");
+            String machineName = machineNameOptional.get();
 
             LOGGER.info("Found docker-machine, and will use machine named {}", machineName);
 
