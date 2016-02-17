@@ -72,6 +72,13 @@ public class ContainerDatabaseDriver implements Driver {
     @Override
     public synchronized Connection connect(String url, final Properties info) throws SQLException {
 
+    	/**
+    	 * The driver should return "null" if it realizes it is the wrong kind of driver to connect to the given URL.
+    	 */
+    	if(!acceptsURL(url)) {
+    		return null;
+    	}
+    	
         String queryString = "";
         /**
          * If we already have a running container for this exact connection string, we want to connect

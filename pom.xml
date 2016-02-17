@@ -38,7 +38,12 @@
         <developer>
             <id>rpozarickij</id>
             <name>Robert Požarickij</name>
-            <email>robert.pozarickij@gmail.com&gt;</email>
+            <email>robert.pozarickij@gmail.com</email>
+        </developer>
+        <developer>
+            <id>krystiannowak</id>
+            <name>Krystian Nowak</name>
+            <email>krystian.nowak@gmail.com</email>
         </developer>
     </developers>
 
