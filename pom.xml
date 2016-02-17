@@ -45,6 +45,11 @@
             <name>Krystian Nowak</name>
             <email>krystian.nowak@gmail.com</email>
         </developer>
+        <developer>
+            <id>mbaechler</id>
+            <name>Matthieu Baechler</name>
+            <email>matthieu.baechler@gmail.com</email>
+        </developer>
     </developers>
 
     <dependencies>
