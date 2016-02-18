@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0.1]
+### Fixed
+- Remove extraneous service loader entries in the shaded JAR
+- Upgrade to v2.2.0 of docker-java client library to take advantage of unix socket fixes (see https://github.com/docker-java/docker-java/issues/456)
+- Validate that docker image names include a tag on creation
+
+### Changed
+- By default, use docker machine name from `DOCKER_MACHINE_NAME` environment, or `default` if it exists
+- Allow container ports to map to a fixed port on the host through use of the `FixedHostPortGenericContainer` subclass of `GenericContainer`
+
 ## [1.0.0]
 ### Fixed
 - Resolve Jersey/Jackson dependency clashes by shading (relocating) a version of these libraries into the core Testcontainers JAR
@@ -75,6 +85,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.0.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.1
 [1.0.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.0
 [0.9.9]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-0.9.9
 [0.9.8]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-0.9.8
