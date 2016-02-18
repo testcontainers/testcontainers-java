@@ -14,7 +14,7 @@ You can obtain a temporary database in one of two ways:
  * **JUnit @Rule/@ClassRule**: this mode starts a database inside a container before your tests and tears it down afterwards.
  * **Using a specially modified JDBC URL**: after making a very simple modification to your system's JDBC URL string, TestContainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
 
-TestContainers currently supports MySQL, PostgreSQL and Oracle XE.
+TestContainers currently supports MySQL, PostgreSQL, Oracle XE and Virtuoso.
 
 > Note: Oracle XE support does not bundle the proprietary Oracle JDBC drivers - you must provide these yourself.
 
@@ -41,6 +41,7 @@ Examples/Tests:
  * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/junit/SimpleMySQLTest.java)
  * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
  * [Oracle-XE](https://github.com/testcontainers/testcontainers-java/blob/master/modules/oracle-xe/src/test/java/org/testcontainers/junit/SimpleOracleTest.java)
+ * [Virtuoso](https://github.com/testcontainers/testcontainers-java/blob/master/modules/virtuoso/src/test/java/org/testcontainers/junit/SimpleVirtuosoTest.java)
 
 ### JDBC URL
 
@@ -67,6 +68,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 #### Using PostgreSQL
 
 `jdbc:tc:postgresql://hostname/databasename`
+
 
 ## Using an init script
 
@@ -99,3 +101,11 @@ is a directory on the classpath containing .cnf files, the following URL can be 
 
 Any .cnf files in this classpath directory will be mapped into the database container's /etc/mysql/conf.d directory,
 and will be able to override server settings when the container starts.
+
+### Additional Non-standard Methods
+
+#### Virtuoso SPARQL Service URL
+
+VirtuosoContainer provides access to the SPARQL service URL
+
+    String sparqlServiceUrl = ((VirtuosoContainer)container).getSparqlUrl();
