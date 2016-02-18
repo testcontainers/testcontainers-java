@@ -7,6 +7,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -555,6 +556,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     public void setDockerImageName(@NonNull String dockerImageName) {
 
         this.dockerImageName = dockerImageName;
+
+        boolean isTagNamePresent = dockerImageName.split(":").length == 2;
+        Preconditions.checkArgument(isTagNamePresent, "No image tag was specified in docker image name (" + dockerImageName + "). Please provide a tag; this may be 'latest' or a specific version");
 
         Profiler profiler = new Profiler("Rule creation - prefetch image");
         profiler.setLogger(logger());
