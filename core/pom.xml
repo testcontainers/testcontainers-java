@@ -129,6 +129,11 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                                <exclude>META-INF/services/com.fasterxml.jackson.core.*</exclude>                                
+                                <exclude>META-INF/services/com.github.dockerjava.api.command.*</exclude>
+                                <exclude>META-INF/services/javax.ws.rs.ext.*</exclude>
+                                <exclude>META-INF/services/org.glassfish.hk2.extension.*</exclude>
+                                <exclude>META-INF/services/org.jvnet.hk2.external.generator.*</exclude>
                             </excludes>
                         </filter>
                     </filters>
