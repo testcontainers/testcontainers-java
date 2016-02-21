@@ -45,9 +45,10 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 @EqualsAndHashCode(callSuper = false)
 public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
 
+    public static final int STARTUP_RETRY_COUNT = 3;
     /*
-     * Default settings
-     */
+                 * Default settings
+                 */
     @NonNull
     private List<Integer> exposedPorts = new ArrayList<>();
 
@@ -102,7 +103,16 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * Starts the container using docker, pulling an image if necessary.
      */
     public void start() {
+        int[] attempt = {0};
+        Unreliables.retryUntilSuccess(STARTUP_RETRY_COUNT, () -> {
+            attempt[0]++;
+            logger().debug("Trying to start container: {} (attempt {}/{})", dockerImageName, attempt[0], STARTUP_RETRY_COUNT);
+            this.tryStart();
+            return true;
+        });
+    }
 
+    private void tryStart() {
         Profiler profiler = new Profiler("Container startup");
         profiler.setLogger(logger());
 
