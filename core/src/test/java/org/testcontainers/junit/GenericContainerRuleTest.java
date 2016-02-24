@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 
@@ -184,6 +185,15 @@ public class GenericContainerRuleTest {
         String line = br.readLine();
 
         assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMapping", "FOOBAR", line);
+    }
+
+    @Test
+    public void exceptionThrownWhenMappedPortNotFound() throws IOException {
+        assertThrows("When the requested port is not mapped, getMappedPort() throws an exception",
+                IllegalArgumentException.class,
+                () -> {
+                    return redis.getMappedPort(666);
+                });
     }
 
     protected static void writeStringToFile(File contentFolder, String filename, String string) throws FileNotFoundException {
