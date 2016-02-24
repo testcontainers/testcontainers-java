@@ -50,6 +50,11 @@
             <name>Matthieu Baechler</name>
             <email>matthieu.baechler@gmail.com</email>
         </developer>
+        <developer>
+            <id>v-schulz</id>
+            <name>Viktor Schulz</name>
+            <email>vschulz@mail.uni-mannheim.de</email>
+        </developer>
     </developers>
 
     <dependencies>
@@ -143,6 +148,7 @@
         <module>modules/postgresql</module>
         <module>modules/selenium</module>
         <module>modules/nginx</module>
+		<module>modules/virtuoso</module>
     </modules>
 
     <profiles>
