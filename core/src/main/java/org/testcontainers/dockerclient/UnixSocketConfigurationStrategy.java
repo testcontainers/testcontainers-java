@@ -6,10 +6,12 @@ import com.github.dockerjava.core.DockerClientConfig;
 
 public class UnixSocketConfigurationStrategy implements DockerConfigurationStrategy {
 
+    public static final String SOCKET_LOCATION = "unix:///var/run/docker.sock";
+
     @Override
     public DockerClientConfig provideConfiguration()
             throws InvalidConfigurationException {
-        DockerClientConfig config = new DockerClientConfig.DockerClientConfigBuilder().withUri("unix:///var/run/docker.sock").build();
+        DockerClientConfig config = new DockerClientConfig.DockerClientConfigBuilder().withUri(SOCKET_LOCATION).build();
         DockerClient client = DockerClientBuilder.getInstance(config).build();
 
         try {
@@ -18,13 +20,13 @@ public class UnixSocketConfigurationStrategy implements DockerConfigurationStrat
             throw new InvalidConfigurationException("ping failed");
         }
 
-        LOGGER.info("Access docker with unix local socker");
+        LOGGER.info("Accessing docker with local Unix socket");
         return config;
     }
 
     @Override
     public String getDescription() {
-        return "unix socket docker access";
+        return "local Unix socket (" + SOCKET_LOCATION + ")";
     }
 
 }
