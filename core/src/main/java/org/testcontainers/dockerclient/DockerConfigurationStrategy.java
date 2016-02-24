@@ -40,6 +40,7 @@ public interface DockerConfigurationStrategy {
                 return strategy.provideConfiguration();
             } catch (Exception e) {
                 configurationFailures.put(strategy, e);
+                LOGGER.debug("Docker strategy " + strategy.getClass().getName() + " failed with exception", e);
             }
         }
 
