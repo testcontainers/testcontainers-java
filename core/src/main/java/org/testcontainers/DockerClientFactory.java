@@ -16,6 +16,7 @@ import org.testcontainers.dockerclient.DockerClientConfigUtils;
 import org.testcontainers.dockerclient.DockerConfigurationStrategy;
 import org.testcontainers.dockerclient.DockerMachineConfigurationStrategy;
 import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyConfigurationStrategy;
+import org.testcontainers.dockerclient.UnixSocketConfigurationStrategy;
 
 import java.util.List;
 
@@ -38,7 +39,8 @@ public class DockerClientFactory {
 
     private static final List<DockerConfigurationStrategy> CONFIGURATION_STRATEGIES =
             asList(new EnvironmentAndSystemPropertyConfigurationStrategy(),
-                    new DockerMachineConfigurationStrategy());
+                    new DockerMachineConfigurationStrategy(),
+                    new UnixSocketConfigurationStrategy());
 
     /**
      * Private constructor
