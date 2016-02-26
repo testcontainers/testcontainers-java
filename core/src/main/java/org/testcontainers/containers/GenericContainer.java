@@ -551,6 +551,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      */
     public Integer getMappedPort(final int originalPort) {
 
+        Preconditions.checkState(containerId != null, "Mapped port can only be obtained after the container is started");
+
         Ports.Binding[] binding = new Ports.Binding[0];
         if (containerInfo != null) {
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
@@ -559,7 +561,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         if (binding != null && binding.length > 0 && binding[0] != null) {
             return binding[0].getHostPort();
         } else {
-            return null;
+            throw new IllegalArgumentException("Requested port (" + originalPort +") is not mapped");
         }
     }
 
