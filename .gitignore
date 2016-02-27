@@ -2,6 +2,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Maven template
 target/
+dependency-reduced-pom.xml
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 
@@ -35,3 +36,6 @@ target/
 
 # IntelliJ
 *.lastchange
+
+# Vagrant
+.vagrant/
