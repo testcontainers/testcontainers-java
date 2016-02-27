@@ -1,7 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.0.1]
+## [1.0.2] - 2016-02-27
+### Fixed
+- If a container fail to start up correctly, startup will now be retried up to a limit of 3 times
+- Add resilience around `getMappedPort` method to fail fast when a port is not yet mapped, rather than generate misleading errors
+
+### Changed
+- Add JDBC container module for OpenLink Virtuoso
+- Add additional debug level logging to aid with diagnosis of docker daemon discovery problems
+- Add support for using a local Unix socket to connect to the Docker daemon
+
+## [1.0.1] - 2016-02-18
 ### Fixed
 - Remove extraneous service loader entries in the shaded JAR
 - Upgrade to v2.2.0 of docker-java client library to take advantage of unix socket fixes (see https://github.com/docker-java/docker-java/issues/456)
@@ -11,7 +21,7 @@ All notable changes to this project will be documented in this file.
 - By default, use docker machine name from `DOCKER_MACHINE_NAME` environment, or `default` if it exists
 - Allow container ports to map to a fixed port on the host through use of the `FixedHostPortGenericContainer` subclass of `GenericContainer`
 
-## [1.0.0]
+## [1.0.0] - 2016-02-07
 ### Fixed
 - Resolve Jersey/Jackson dependency clashes by shading (relocating) a version of these libraries into the core Testcontainers JAR
 - Improve documentation and logging concerning discovery of Docker daemon
@@ -20,7 +30,7 @@ All notable changes to this project will be documented in this file.
 - Rename container `getIpAddress()` method to `getContainerIpAddress()` and deprecate original method name.
 - Rename container `getHostIpAddress()` method to `getTestHostIpAddress()`
 
-## [0.9.9]
+## [0.9.9] - 2016-01-12
 ### Fixed
 - Resolve thread safety issues associated with use of a singleton docker client
 - Resolve disk space check problems when running on a Debian-based docker host
@@ -30,7 +40,7 @@ All notable changes to this project will be documented in this file.
 - Remove bundled logback.xml to allow users more control over logging
 - Add Travis CI support for improved breadth of testing
 
-## [0.9.8]
+## [0.9.8] - 2015-08-12
 ### Changed
 - Change from Spotify docker client library to docker-java, for improved compatibility with latest versions of Docker
 - Change from JDK 1.7 minimum requirement to JDK 1.8
@@ -44,14 +54,14 @@ All notable changes to this project will be documented in this file.
 - Docker Compose support
 - Automatic docker environment disk space check
 
-## [0.9.7]
+## [0.9.7] - 2015-08-07
 ### Added
 - Support for overriding MySQL container configuration (my.cnf file overrides)
 
 ### Changed
 - Replace dependency on org.testpackage with org.rnorth.visible-assertions
 
-## [0.9.6]
+## [0.9.6] - 2015-07-22
 ### Added
 - Generic container support (allows use of any docker image) using a GenericContainerRule.
 
@@ -85,6 +95,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.0.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.2
 [1.0.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.1
 [1.0.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.0
 [0.9.9]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-0.9.9
