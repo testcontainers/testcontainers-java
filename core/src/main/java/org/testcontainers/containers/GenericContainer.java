@@ -12,6 +12,8 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.TimeoutException;
@@ -164,6 +166,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
+            
             containerId = createCommand.exec().getId();
             ContainerReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
 
@@ -270,10 +273,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      */
     protected Path createVolumeDirectory(boolean temporary) throws IOException {
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
-        PathOperations.mkdirp(directory);
+        PathUtils.mkdirp(directory);
 
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            PathOperations.recursiveDeleteDir(directory);
+            PathUtils.recursiveDeleteDir(directory);
         }));
 
         return directory;
@@ -404,8 +407,14 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         env.add(key + "=" + value);
     }
 
+    public void addHostSystemAwareFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+    	if(SystemUtils.IS_OS_WINDOWS) {
+    		hostPath = PathUtils.createMinGWPath(hostPath);
+    	}
+        addFileSystemBind(hostPath, containerPath, mode);
+    }
+    
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
-
         binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
     }
 
@@ -512,7 +521,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         }
         String resourceFilePath = resource.getFile();
 
-        this.addFileSystemBind(resourceFilePath, containerPath, mode);
+        this.addHostSystemAwareFileSystemBind(resourceFilePath, containerPath, mode);
 
         return this;
     }

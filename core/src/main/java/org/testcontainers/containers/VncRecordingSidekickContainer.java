@@ -54,7 +54,7 @@ public class VncRecordingSidekickContainer<T extends VncService & LinkableContai
     @Override
     protected void configure() {
 
-        addFileSystemBind(tempDir.toAbsolutePath().toString(), "/recording", BindMode.READ_WRITE);
+        addHostSystemAwareFileSystemBind(tempDir.toAbsolutePath().toString(), "/recording", BindMode.READ_WRITE);
         addLink(vncServiceContainer, "vnchost");
         setCommand(// the container entrypoint sets the executable name
                     "-o",
