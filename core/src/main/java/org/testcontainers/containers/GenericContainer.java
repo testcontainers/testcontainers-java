@@ -241,8 +241,14 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         logger().info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
         profiler.start("Pull image");
+        int attempts = 0;
         while (!AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
             // The image is not available locally - pull it
+
+            if (attempts++ >= 3) {
+                logger().error("Retry limit reached while trying to pull image: " + imageName + ". Please check output of `docker pull " + imageName + "`");
+                throw new ContainerFetchException("Retry limit reached while trying to pull image: " + imageName);
+            }
 
             PullImageResultCallback resultCallback = dockerClient.pullImageCmd(imageName).exec(new PullImageResultCallback());
 

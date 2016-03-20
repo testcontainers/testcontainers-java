@@ -7,4 +7,8 @@ public class ContainerFetchException extends RuntimeException {
     public ContainerFetchException(String s, Exception e) {
         super(s, e);
     }
+
+    public ContainerFetchException(String s) {
+        super(s);
+    }
 }
