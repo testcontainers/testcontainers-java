@@ -520,6 +520,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     /**
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
+     * If the system property 'testcontainers.container.host' or environment variable 'TESTCONTAINERS_CONTAINER_HOST'
+     * are set, that value will be returned instead.
+     *
      * @return an IP address
      */
     public String getContainerIpAddress() {
