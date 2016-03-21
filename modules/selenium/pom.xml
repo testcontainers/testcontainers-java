@@ -33,5 +33,26 @@
             <artifactId>jetty</artifactId>
             <version>6.1.25</version>
         </dependency>
+
+        <!-- Concise and flexible API for polling hub container, until it's up and running -->
+        <dependency>
+            <groupId>com.jayway.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+
+        <!-- Java 8 functional-style extension -->
+        <dependency>
+            <groupId>com.javaslang</groupId>
+            <artifactId>javaslang</artifactId>
+            <version>2.0.0-RC4</version>
+        </dependency>
+
+        <!-- Required for checking if hub / node is ready for further interaction -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+        </dependency>
     </dependencies>
 </project>
