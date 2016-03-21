@@ -34,7 +34,7 @@
             <version>6.1.25</version>
         </dependency>
 
-        <!-- Concise and flexible API for polling hub container, until it's up and running -->
+        <!-- Concise and flexible API for polling hub / node containers, until they're up and running -->
         <dependency>
             <groupId>com.jayway.awaitility</groupId>
             <artifactId>awaitility</artifactId>
