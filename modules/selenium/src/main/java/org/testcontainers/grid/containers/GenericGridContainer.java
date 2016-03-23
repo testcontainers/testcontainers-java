@@ -27,7 +27,7 @@ public abstract class GenericGridContainer extends GenericContainer implements V
 	public static final String DEFAULT_PROXY_URL = "http://localhost:4444/grid/api/proxy?id=http://localhost:4444";
 	public static final String DEFAULT_VNC_PASSWORD = "secret";
 
-	public static final long POLLING_TIMEOUT = 20;
+	public static final long POLLING_TIMEOUT = 60;
 	public static final long POLLING_INTERVAL = 1;
 
 	private VncRecordingMode recordingMode;
