@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Test runner for separate HUB_CONTAINER / nodes containers with pooling feature. Extend it by test classes to automatically
+ * Test runner for separate hubContainer / nodes containers with pooling feature. Extend it by test classes to automatically
  * create standalone instance with corresponding driver. Note that it uses 'browser' parameter, picked from testng xml,
  * for setting up required browser types. Use -DscaleChrome / -DscaleFirefox properties to allocate required amount
  * of node containers.
@@ -32,7 +32,7 @@ public class BaseTest {
 	private static final int FIREFOX_POOL_SIZE = Integer.valueOf(System.getProperty("scaleFirefox", "1"));
 	private static final int CHROME_POOL_SIZE = Integer.valueOf(System.getProperty("scaleChrome", "1"));
 
-	private static final SeleniumHubContainer HUB_CONTAINER = new SeleniumHubContainer().startHub();
+	private static SeleniumHubContainer hubContainer;
 	private static PoolService<SeleniumNodeContainer> firefoxPool;
 	private static PoolService<SeleniumNodeContainer> chromePool;
 
@@ -41,8 +41,9 @@ public class BaseTest {
 	@BeforeSuite
 	public void startGrid() {
 		Try.run(() -> {
-			firefoxPool = PoolFactory.getNodePool(HUB_CONTAINER, Browser.FIREFOX, FIREFOX_POOL_SIZE);
-			chromePool = PoolFactory.getNodePool(HUB_CONTAINER, Browser.CHROME, CHROME_POOL_SIZE);
+			hubContainer = new SeleniumHubContainer().startHub();
+			firefoxPool = PoolFactory.getNodePool(hubContainer, Browser.FIREFOX, FIREFOX_POOL_SIZE);
+			chromePool = PoolFactory.getNodePool(hubContainer, Browser.CHROME, CHROME_POOL_SIZE);
 		}).getOrElseThrow((Function<Throwable, AssertionError>) AssertionError::new);
 	}
 
@@ -83,7 +84,7 @@ public class BaseTest {
 	}
 
 	private void terminateHub() {
-		HUB_CONTAINER.stop();
+		hubContainer.stop();
 	}
 
 	private Map.Entry<Browser, SeleniumNodeContainer> takeNode(final Browser browser) {
@@ -120,7 +121,6 @@ public class BaseTest {
 			}
 			gridContainer.stopNode();
 		});
-		seleniumNode = null;
 	}
 
 	private Optional<PoolService<SeleniumNodeContainer>> getFirefoxPool() {

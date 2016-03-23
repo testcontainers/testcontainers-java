@@ -8,10 +8,10 @@ import java.util.stream.Stream;
 public enum SeleniumImage {
 
 	HUB("selenium/hub:latest", Browser.NONE),
-	FIREFOX_NODE_DEBUG("selenium/node-firefox-debug:latest", Browser.FIREFOX),
-	CHROME_NODE_DEBUG("selenium/node-chrome-debug:latest", Browser.CHROME),
-	CHROME_STANDALONE_DEBUG("selenium/standalone-chrome-debug:latest", Browser.CHROME_STANDALONE),
-	FIREFOX_STANDALONE_DEBUG("selenium/standalone-firefox-debug:latest", Browser.FIREFOX_STANDALONE);
+	FIREFOX_NODE_DEBUG("selenium/node-firefox-debug:2.52.0", Browser.FIREFOX),
+	CHROME_NODE_DEBUG("selenium/node-chrome-debug:2.52.0", Browser.CHROME),
+	CHROME_STANDALONE_DEBUG("selenium/standalone-chrome-debug:2.52.0", Browser.CHROME_STANDALONE),
+	FIREFOX_STANDALONE_DEBUG("selenium/standalone-firefox-debug:2.52.0", Browser.FIREFOX_STANDALONE);
 
 	private String name;
 	private Browser browser;

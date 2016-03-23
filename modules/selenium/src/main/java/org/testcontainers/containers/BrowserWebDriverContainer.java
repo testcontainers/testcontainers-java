@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class BrowserWebDriverContainer extends GenericContainer implements VncService, LinkableContainer {
 
-    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:latest";
-    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:latest";
+    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:2.52.0";
+    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:2.52.0";
     private static final String DEFAULT_PASSWORD = "secret";
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
