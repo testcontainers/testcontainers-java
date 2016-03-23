@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Selenium Grid sample standalone suite">
+    <test name="Common junit tests" junit="true">
+        <packages>
+            <package name="org.testcontainers.junit.*"/>
+        </packages>
+    </test>
+    <test name="Standalone chrome tests">
+        <classes>
+            <class name="org.testcontainers.testng.tests.SeleniumGridStandAloneTests"/>
+        </classes>
+    </test>
+</suite>

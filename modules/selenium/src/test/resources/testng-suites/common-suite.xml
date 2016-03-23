@@ -1,0 +1,27 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Selenium Grid sample parallel suite" parallel="tests" thread-count="2">
+    <test name="First Chrome test">
+        <parameter name="browser" value="chrome"/>
+        <classes>
+            <class name="org.testcontainers.testng.tests.SeleniumGridParallelTests">
+                <methods>
+                    <include name="simplePlainSeleniumTest"/>
+                    <include name="googleSearchTest"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="First Firefox test">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="org.testcontainers.testng.tests.SeleniumGridParallelTests">
+                <methods>
+                    <include name="googleSearchTest"/>
+                    <include name="simplePlainSeleniumTest"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

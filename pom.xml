@@ -69,6 +69,12 @@
             <version>4.12</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.9.10</version>
+        </dependency>
+
         <!-- Project lombok for additional safety/convenience support -->
         <dependency>
             <groupId>org.projectlombok</groupId>
