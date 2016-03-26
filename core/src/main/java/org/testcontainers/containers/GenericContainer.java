@@ -3,9 +3,12 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -22,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.PathOperations;
@@ -33,9 +37,12 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
+import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -449,7 +456,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     /**
      * Add a container port that should be bound to a fixed port on the docker host.
-     *
+     * <p>
      * Note that this method is protected scope to discourage use, as clashes or instability are more likely when
      * using fixed port mappings. If you need to use this method from a test, please use {@link FixedHostPortGenericContainer}
      * instead of GenericContainer.
@@ -530,7 +537,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address
-     *
      * @deprecated please use getContainerIpAddress() instead
      */
     @Deprecated
@@ -625,5 +631,57 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         } else {
             throw new UnsupportedOperationException("getTestHostIpAddress() is only implemented for docker-machine right now");
         }
+    }
+
+    /**
+     * Follow container output, sending each frame (usually, line) to a consumer. Stdout and stderr will be followed.
+     *
+     * @param consumer consumer that the frames should be sent to
+     */
+    public void followOutput(Consumer<OutputFrame> consumer) {
+        this.followOutput(consumer, OutputFrame.OutputType.STDOUT, OutputFrame.OutputType.STDERR);
+    }
+
+    /**
+     * Follow container output, sending each frame (usually, line) to a consumer. This method allows Stdout and/or stderr
+     * to be selected.
+     *
+     * @param consumer consumer that the frames should be sent to
+     * @param types    types that should be followed (one or both of STDOUT, STDERR)
+     */
+    public void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
+        LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
+                .withFollowStream(true);
+
+        for (OutputFrame.OutputType type : types) {
+            if (type == STDOUT) cmd.withStdOut(true);
+            if (type == STDERR) cmd.withStdErr(true);
+        }
+
+        cmd.exec(new ResultCallbackTemplate<ResultCallback<Frame>, Frame>() {
+            @Override
+            public void onNext(Frame dockerFrame) {
+                OutputFrame.OutputType type;
+                switch (dockerFrame.getStreamType()) {
+                    case STDOUT:
+                        type = STDOUT;
+                        break;
+                    case STDERR:
+                        type = STDERR;
+                        break;
+                    default:
+                        return;
+                }
+
+                OutputFrame frame = new OutputFrame(type, dockerFrame.getPayload());
+
+                consumer.accept(frame);
+            }
+
+            @Override
+            public void close() throws IOException {
+                consumer.accept(OutputFrame.END);
+            }
+        });
     }
 }
