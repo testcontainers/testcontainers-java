@@ -10,6 +10,8 @@ from SeleniumHQ's [docker-selenium](https://github.com/SeleniumHQ/docker-seleniu
   is a working Docker installation and your Java JUnit test suite.
 * Browsers are always launched from a fixed, clean image. This means no configuration drift from user changes or
   automatic browser upgrades.
+* Compatibility between browser version and the Selenium API is assured: a compatible version of the browser docker
+  images will be automatically selected to match the version of `selenium-api-*.jar` on the classpath
 * Additionally the use of a clean browser prevents leakage of cookies, cached data or other state between tests.
 * **VNC screen recording**: Test Containers can automatically record video of test runs (optionally capturing just
   failing tests)

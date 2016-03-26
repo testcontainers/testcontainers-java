@@ -13,13 +13,14 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -28,14 +29,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class BrowserWebDriverContainer extends GenericContainer implements VncService, LinkableContainer {
 
-    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:2.45.0";
-    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:2.45.0";
+    private static final String DEFAULT_SELENIUM_VERSION = "2.45.0";
+    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
+    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
+
     private static final String DEFAULT_PASSWORD = "secret";
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
 
-    @Nullable private DesiredCapabilities desiredCapabilities;
-    @Nullable private RemoteWebDriver driver;
+    @Nullable
+    private DesiredCapabilities desiredCapabilities;
+    @Nullable
+    private RemoteWebDriver driver;
 
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private File vncRecordingDirectory = new File("/tmp");
@@ -77,12 +82,14 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
     public static String getImageForCapabilities(DesiredCapabilities desiredCapabilities) {
 
+        String seleniumVersion = determineClasspathSeleniumVersion();
+
         String browserName = desiredCapabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
-                return CHROME_IMAGE;
+                return String.format(CHROME_IMAGE, seleniumVersion);
             case BrowserType.FIREFOX:
-                return FIREFOX_IMAGE;
+                return String.format(FIREFOX_IMAGE, seleniumVersion);
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }
@@ -205,7 +212,51 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
         return this;
     }
 
+
     public enum VncRecordingMode {
-        SKIP, RECORD_ALL, RECORD_FAILING
+        SKIP, RECORD_ALL, RECORD_FAILING;
+    }
+
+
+    private static String determineClasspathSeleniumVersion() {
+        Set<String> seleniumVersions = new HashSet<>();
+        try {
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            Enumeration<URL> manifests = classLoader.getResources("META-INF/MANIFEST.MF");
+
+            while (manifests.hasMoreElements()) {
+                URL manifestURL = manifests.nextElement();
+                try (InputStream is = manifestURL.openStream()) {
+                    Manifest manifest = new Manifest();
+                    manifest.read(is);
+
+                    Attributes buildInfo = manifest.getAttributes("Build-Info");
+                    if (buildInfo != null) {
+                        String seleniumVersion = buildInfo.getValue("Selenium-Version");
+
+                        if (seleniumVersion != null) {
+                            seleniumVersions.add(seleniumVersion);
+                            LOGGER.info("Selenium API version {} detected on classpath", seleniumVersion);
+                        }
+                    }
+                }
+
+            }
+
+        } catch (Exception e) {
+            LOGGER.debug("Failed to determine Selenium-Version from selenium-api JAR Manifest", e);
+        }
+
+        if (seleniumVersions.size() == 0) {
+            LOGGER.warn("Failed to determine Selenium version from classpath - will use default version of {}", DEFAULT_SELENIUM_VERSION);
+            return DEFAULT_SELENIUM_VERSION;
+        }
+
+        String foundVersion = seleniumVersions.iterator().next();
+        if (seleniumVersions.size() > 1) {
+            LOGGER.warn("Multiple versions of Selenium API found on classpath - will select {}, but this may not be reliable", foundVersion);
+        }
+
+        return foundVersion;
     }
 }
