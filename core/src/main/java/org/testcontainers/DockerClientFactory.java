@@ -142,19 +142,22 @@ public class DockerClientFactory {
             callback.awaitCompletion();
             String logResults = callback.toString();
 
+            int availableKB = 0;
             int use = 0;
             String[] lines = logResults.split("\n");
             for (String line : lines) {
                 String[] fields = line.split("\\s+");
                 if (fields[5].equals("/")) {
+                    availableKB = Integer.valueOf(fields[3]);
                     use = Integer.valueOf(fields[4].replace("%", ""));
                 }
             }
+            int availableMB = availableKB / 1024;
 
-            LOGGER.info("Disk utilization in Docker environment is {}%", use);
+            LOGGER.info("Disk utilization in Docker environment is {}% ({} MB available)", use, availableMB);
 
-            if (use > 90) {
-                LOGGER.warn("Disk utilization Docker environment is over 90% - execution is unlikely to succeed so will be aborted.");
+            if (availableMB < 2048) {
+                LOGGER.error("Docker environment has less than 2GB free - execution is unlikely to succeed so will be aborted.");
                 throw new NotEnoughDiskSpaceException("Not enough disk space in Docker environment");
             }
         } catch (InterruptedException e) {
