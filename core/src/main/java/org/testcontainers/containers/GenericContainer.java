@@ -27,6 +27,7 @@ import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.PathOperations;
 
@@ -578,11 +579,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     public void setDockerImageName(@NonNull String dockerImageName) {
-
+        DockerImageName.validate(dockerImageName);
         this.dockerImageName = dockerImageName;
-
-        boolean isTagNamePresent = dockerImageName.split(":").length == 2;
-        Preconditions.checkArgument(isTagNamePresent, "No image tag was specified in docker image name (" + dockerImageName + "). Please provide a tag; this may be 'latest' or a specific version");
 
         Profiler profiler = new Profiler("Rule creation - prefetch image");
         profiler.setLogger(logger());
