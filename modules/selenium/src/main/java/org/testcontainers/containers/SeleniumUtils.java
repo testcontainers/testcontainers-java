@@ -14,7 +14,7 @@ import java.util.jar.Manifest;
 /**
  * Utility methods for Selenium.
  */
-public class SeleniumUtils {
+public final class SeleniumUtils {
 
     public static final String DEFAULT_SELENIUM_VERSION = "2.45.0";
 
