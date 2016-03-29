@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -69,6 +70,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     @NonNull
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
+
+    @NonNull
+    private Duration startupTimeout = Duration.ofSeconds(60);
 
     /*
      * Unique instance of DockerClient for use by this container object.
@@ -360,7 +364,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         }
 
         try {
-            Unreliables.retryUntilSuccess(60, TimeUnit.SECONDS, () -> {
+            Unreliables.retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
                 DOCKER_CLIENT_RATE_LIMITER.doWhenReady(() -> {
                     try {
                         new Socket(ipAddress, port).close();
@@ -514,6 +518,18 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         this.addFileSystemBind(resourceFilePath, containerPath, mode);
 
+        return this;
+    }
+
+    /**
+     * Set the duration of waiting time until container treated as started.
+     * @see GenericContainer#waitForListeningPort(String, Integer)
+     *
+     * @param startupTimeout timeout
+     * @return this
+     */
+    public GenericContainer withStartupTimeout(Duration startupTimeout) {
+        this.setStartupTimeout(startupTimeout);
         return this;
     }
 
