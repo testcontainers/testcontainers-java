@@ -203,4 +203,12 @@ public class GenericContainerRuleTest {
         printStream.println(string);
         printStream.close();
     }
+
+    @Test
+    public void testExecInContainer() throws Exception {
+
+        final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
+        assertTrue("Output for \"redis-cli role\" command should start with \"master\"", result.getStdout().startsWith("master"));
+        assertTrue("Stderr for \"redis-cli role\" command should be empty", result.getStderr().length() == 0);
+    }
 }
