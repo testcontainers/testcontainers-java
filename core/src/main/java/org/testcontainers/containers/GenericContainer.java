@@ -5,16 +5,19 @@ import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.async.ResultCallbackTemplate;
+import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.TimeoutException;
@@ -32,8 +35,10 @@ import org.testcontainers.utility.PathOperations;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
@@ -54,6 +59,9 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
 
     public static final int STARTUP_RETRY_COUNT = 3;
+
+    private static final Charset UTF8 = Charset.forName("UTF-8");
+
     /*
                  * Default settings
                  */
@@ -85,6 +93,11 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * Unique instance of DockerClient for use by this container object.
      */
     protected DockerClient dockerClient = DockerClientFactory.instance().client();
+
+    /*
+     * Info about the Docker server; lazily fetched.
+     */
+    protected Info dockerDaemonInfo = null;
 
     /*
      * Set during container startup
@@ -699,5 +712,89 @@ public class GenericContainer extends FailureDetectingExternalResource implement
                 consumer.accept(OutputFrame.END);
             }
         });
+    }
+
+    public synchronized Info getDockerDaemonInfo() throws IOException {
+
+        if (this.dockerDaemonInfo != null) {
+            this.dockerDaemonInfo = this.dockerClient.infoCmd().exec();
+        }
+        return this.dockerDaemonInfo;
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec", and interpreting
+     * the output as UTF8.
+     * <p>
+     * @see #execInContainer(Charset, String...)
+     */
+    public ExecResult execInContainer(String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        return execInContainer(UTF8, command);
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     * <p>
+     * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
+     * the time of writing, CircleCI was using this driver.
+     * @param outputCharset the character set used to interpret the output.
+     * @param command the parts of the command to run
+     * @return the result of execution
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     */
+    public ExecResult execInContainer(Charset outputCharset, String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        if (getDockerDaemonInfo().getExecutionDriver().startsWith("lxc")) {
+            // at time of writing, this is the expected result in CircleCI.
+            throw new UnsupportedOperationException(
+                "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
+        }
+
+        this.dockerClient
+            .execCreateCmd(this.containerId)
+            .withCmd(command);
+
+        logger().info("Running \"exec\" command: " + String.join(" ", command));
+        final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId)
+            .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
+
+        final StringWriter stdoutWriter = new StringWriter();
+        final StringWriter stderrWriter = new StringWriter();
+
+        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(
+            new ExecStartResultCallback(new WriterOutputStream(stdoutWriter, outputCharset),
+                 new WriterOutputStream(stderrWriter, outputCharset))).awaitCompletion();
+
+        final ExecResult result = new ExecResult(stdoutWriter.toString(), stderrWriter.toString());
+        logger().trace("stdout: " + result.getStdout());
+        logger().trace("stderr: " + result.getStderr());
+        return result;
+    }
+
+    /**
+     * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
+     * docker API, there's no easy way to get the result code from the process we ran.
+     */
+    public static class ExecResult {
+        private final String stdout;
+        private final String stderr;
+
+        public ExecResult(String stdout, String stderr) {
+            this.stdout = stdout;
+            this.stderr = stderr;
+        }
+
+        public String getStdout() {
+            return stdout;
+        }
+
+        public String getStderr() {
+            return stderr;
+        }
     }
 }
