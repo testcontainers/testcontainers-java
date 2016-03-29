@@ -681,6 +681,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             @Override
             public void close() throws IOException {
                 consumer.accept(OutputFrame.END);
+                super.close();
             }
         });
     }
