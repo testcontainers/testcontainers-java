@@ -91,6 +91,11 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     protected DockerClient dockerClient = DockerClientFactory.instance().client();
 
     /*
+     * Info about the Docker server; lazily fetched.
+     */
+    protected Info dockerDaemonInfo = null;
+
+    /*
      * Set during container startup
      */
     protected String containerId;
@@ -693,14 +698,47 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         });
     }
 
+    public synchronized Info getDockerDaemonInfo() throws IOException {
+
+        if (this.dockerDaemonInfo != null) {
+            this.dockerDaemonInfo = this.dockerClient.infoCmd().exec();
+        }
+        return this.dockerDaemonInfo;
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec", and interpreting
+     * the output as UTF8.
+     * <p>
+     * @see #execInContainer(Charset, String...)
+     */
+    public ExecResult execInContainer(String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        return execInContainer(UTF8, command);
+    }
+
     /**
      * Run a command inside a running container, as though using "docker exec".
+     * <p>
+     * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
+     * the time of writing, CircleCI was using this driver.
+     * @param outputCharset the character set used to interpret the output.
      * @param command the parts of the command to run
      * @return the result of execution
      * @throws IOException if there's an issue communicating with Docker
      * @throws InterruptedException if the thread waiting for the response is interrupted
+     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
      */
-    public ExecResult execInContainer(String... command) throws IOException, InterruptedException {
+    public ExecResult execInContainer(Charset outputCharset, String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        if (getDockerDaemonInfo().getExecutionDriver().startsWith("lxc")) {
+            // at time of writing, this is the expected result in CircleCI.
+            throw new UnsupportedOperationException(
+                "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
+        }
+
         this.dockerClient
             .execCreateCmd(this.containerId)
             .withCmd(command);
@@ -713,8 +751,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         final StringWriter stderrWriter = new StringWriter();
 
         dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(
-            new ExecStartResultCallback(new WriterOutputStream(stdoutWriter, UTF8),
-                 new WriterOutputStream(stderrWriter, UTF8))).awaitCompletion();
+            new ExecStartResultCallback(new WriterOutputStream(stdoutWriter, outputCharset),
+                 new WriterOutputStream(stderrWriter, outputCharset))).awaitCompletion();
 
         final ExecResult result = new ExecResult(stdoutWriter.toString(), stderrWriter.toString());
         logger().trace("stdout: " + result.getStdout());
