@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-public class DockerImageName {
+public final class DockerImageName {
 
     public static void validate(String dockerImageName) throws IllegalArgumentException {
         int repoSeparatorIndex = dockerImageName.indexOf('/');
@@ -15,4 +15,6 @@ public class DockerImageName {
                     "(" + dockerImageName + "). Please provide a tag; this may be 'latest' or a specific version");
         }
     }
+
+    private DockerImageName() {}
 }
