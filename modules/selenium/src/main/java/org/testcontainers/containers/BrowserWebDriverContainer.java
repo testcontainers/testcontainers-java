@@ -16,9 +16,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,14 +26,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class BrowserWebDriverContainer extends GenericContainer implements VncService, LinkableContainer {
 
-    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:2.45.0";
-    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:2.45.0";
+    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
+    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
+
     private static final String DEFAULT_PASSWORD = "secret";
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
 
-    @Nullable private DesiredCapabilities desiredCapabilities;
-    @Nullable private RemoteWebDriver driver;
+    @Nullable
+    private DesiredCapabilities desiredCapabilities;
+    @Nullable
+    private RemoteWebDriver driver;
 
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private File vncRecordingDirectory = new File("/tmp");
@@ -50,6 +51,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     public BrowserWebDriverContainer() {
 
     }
+
 
     public BrowserWebDriverContainer withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
         super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
@@ -77,12 +79,14 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
     public static String getImageForCapabilities(DesiredCapabilities desiredCapabilities) {
 
+        String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
+
         String browserName = desiredCapabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
-                return CHROME_IMAGE;
+                return String.format(CHROME_IMAGE, seleniumVersion);
             case BrowserType.FIREFOX:
-                return FIREFOX_IMAGE;
+                return String.format(FIREFOX_IMAGE, seleniumVersion);
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }
@@ -205,7 +209,10 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
         return this;
     }
 
+
     public enum VncRecordingMode {
-        SKIP, RECORD_ALL, RECORD_FAILING
+        SKIP, RECORD_ALL, RECORD_FAILING;
     }
+
+
 }
