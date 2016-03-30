@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Parent suite">
+    <suite-files>
+        <suite-file path="standalone-suite.xml" />
+        <suite-file path="common-suite.xml" />
+    </suite-files>
+</suite>

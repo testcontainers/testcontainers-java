@@ -75,3 +75,23 @@ Note that the seconds parameter to `withRecordingMode` should be a directory whe
 ## More examples
 
 A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
+
+# Extended Selenium Grid containers
+
+To be able to run tests within dedicated hub / nodes containers (for further scaling), you can use the following items:
+
+ * `GenericGridContainer` - base class for all Selenium Grid containers. Provides common API for starting child containers with video recording feature support. Only for internal usage.
+ * `SeleniumHubContainer` - dedicated Selenium Grid Hub container without VNC and video recording support. Could be used with dedicated nodes.
+ * `SeleniumNodeContainer` - dedicated Selenium Grid Node container with VNC and video recording support. Could be linked with dedicated hub by provided address. Supports ports exposing and volumes mounting. Could be safely used with object pool for further scaling.
+ * `SeleniumStandaloneContainer` - `WebDriver` independent `BrowseWebDroverContainer`'s alternative.
+
+Note that `WebDriver` dependency was completely removed to let end-user fully control testing flow by his own.
+
+All listed containers use the following enums to provide better flexibility while configuration phase:
+ 
+ * `Browser` - contains a list of supported browsers. Note that standalone chrome / firefox items are splitted due to the differences in containers' creation logic.
+ * `SeleniumImage` - contains a list of official [SeleniumHQ](https://github.com/SeleniumHQ/docker-selenium) images, mapped with corresponding browsers. Note that versions are set to `latest` by default.
+ 
+Containers' connection obtaining was revised due to the fact the containers themselves were splitted, and `WebDriver` dependency was removed. There was added a special utility class `SeleniumHttpUtils` for detecting if hub / node is ready for interaction before actual test execution is started.
+
+As soon as the following PR is merged, there will be added extensive `TestNG` usage examples with scaling feature.

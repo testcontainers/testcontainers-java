@@ -55,6 +55,11 @@
             <name>Viktor Schulz</name>
             <email>vschulz@mail.uni-mannheim.de</email>
         </developer>
+        <developer>
+            <id>sskorol</id>
+            <name>Sergey Korol</name>
+            <email>serhii.s.korol@gmail.com</email>
+        </developer>
     </developers>
 
     <dependencies>
@@ -62,6 +67,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.9.10</version>
         </dependency>
 
         <!-- Project lombok for additional safety/convenience support -->
