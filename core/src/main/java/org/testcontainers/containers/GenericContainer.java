@@ -137,6 +137,15 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             profiler.start("Prepare container configuration and host configuration");
             configure();
 
+            profiler.start("Set up shutdown hooks");
+            // If the JVM stops without the container being stopped, try and stop the container.
+            // We have to add it here, even before we create a container, to make sure that it
+            // will be destroyed even if there was an issue during container creation.
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger().trace("Hit shutdown hook for container {}", GenericContainer.this.containerId);
+                GenericContainer.this.stop();
+            }));
+
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
@@ -177,14 +186,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
             throw new ContainerLaunchException("Could not create/start container", e);
         } finally {
-
-            profiler.start("Set up shutdown hooks");
-            // If the JVM stops without the container being stopped, try and stop the container
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                logger().trace("Hit shutdown hook for container {}", GenericContainer.this.containerId);
-                GenericContainer.this.stop();
-            }));
-
             profiler.stop().log();
         }
     }
