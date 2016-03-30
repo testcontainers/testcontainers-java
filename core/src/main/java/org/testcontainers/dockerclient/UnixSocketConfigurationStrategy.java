@@ -17,7 +17,7 @@ public class UnixSocketConfigurationStrategy implements DockerConfigurationStrat
         try {
             client.pingCmd().exec();
         } catch (Exception e) {
-            throw new InvalidConfigurationException("ping failed");
+            throw new InvalidConfigurationException("ping failed", e);
         }
 
         LOGGER.info("Accessing docker with local Unix socket");
