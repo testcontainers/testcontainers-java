@@ -88,3 +88,15 @@ It is possible to map a file or directory **on the classpath** into the containe
             .withClasspathResourceMapping("redis.conf",
                                           "/etc/redis.conf",
                                           BindMode.READ_ONLY)
+
+### Startup timeout
+
+Ordinarily Testcontainers will wait for up to 60 seconds for the container's first mapped network port to start listening.
+
+This simple measure provides a basic check whether a container is ready for use.
+
+If the default 60s timeout is not sufficient, it can be altered with the `withStartupTimeout()` method.
+
+If waiting for a listening TCP port is not sufficient to establish whether the container is ready, `GenericContainer` should be subclassed
+and an appropriate overriding mechanism set in `waitUntilContainerStarted()`.
+
