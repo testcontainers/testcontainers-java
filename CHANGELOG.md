@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] -
+### Fixed
+- Resolve issues where containers would not be cleaned up on JVM shutdown if they failed to start correctly
+- Fix validation problem where docker image names that contained private registry URLs with port number would be rejected
+- Resolve bug where `docker pull` would try infinitely for a non-existent image name
+
+### Changed
+- Set startup free disk space check to ensure that the Docker environment has a minimum of 2GB available rather than 10%
+- Add streaming of container logs to SLF4J loggers, capture as Strings, and also the ability to wait for container log content to satisfy an expected predicate
+- Allow configuration of docker container startup timeout
+- Add detection of classpath Selenium version, and automatic selection of correct Selenium docker containers for compatibility
+
 ## [1.0.2] - 2016-02-27
 ### Fixed
 - If a container fail to start up correctly, startup will now be retried up to a limit of 3 times
@@ -95,6 +107,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.0.3]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.3
 [1.0.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.2
 [1.0.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.1
 [1.0.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.0
