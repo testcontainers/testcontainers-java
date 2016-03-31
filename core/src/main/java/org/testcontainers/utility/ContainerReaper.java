@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,9 +25,7 @@ public final class ContainerReaper {
 
         // If the JVM stops without containers being stopped, try and stop the container.
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            for (Map.Entry<String, String> entry : new HashSet<>(registeredContainers.entrySet())) {
-                stopAndRemoveContainer(entry.getKey(), entry.getValue());
-            }
+            registeredContainers.forEach(this::stopContainer);
         }));
     }
 
@@ -55,6 +52,12 @@ public final class ContainerReaper {
      * @param imageName the image name of the container (used for logging)
      */
     public void stopAndRemoveContainer(String containerId, String imageName) {
+        stopContainer(containerId, imageName);
+
+        registeredContainers.remove(containerId);
+    }
+
+    private void stopContainer(String containerId, String imageName) {
         try {
             LOGGER.trace("Stopping container: {}", containerId);
             dockerClient.killContainerCmd(containerId).exec();
@@ -74,7 +77,5 @@ public final class ContainerReaper {
         } catch (DockerException e) {
             LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
         }
-
-        registeredContainers.remove(containerId);
     }
 }
