@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
-import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -27,6 +26,7 @@ import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.utility.ContainerReaper;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.PathOperations;
@@ -137,20 +137,12 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             profiler.start("Prepare container configuration and host configuration");
             configure();
 
-            profiler.start("Set up shutdown hooks");
-            // If the JVM stops without the container being stopped, try and stop the container.
-            // We have to add it here, even before we create a container, to make sure that it
-            // will be destroyed even if there was an issue during container creation.
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                logger().trace("Hit shutdown hook for container {}", GenericContainer.this.containerId);
-                GenericContainer.this.stop();
-            }));
-
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
             containerId = createCommand.exec().getId();
+            ContainerReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
 
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
@@ -199,25 +191,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             return;
         }
 
-        try {
-            logger().trace("Stopping container: {}", containerId);
-            dockerClient.killContainerCmd(containerId).exec();
-            logger().info("Stopped container: {}", dockerImageName);
-        } catch (DockerException e) {
-            logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
-        }
-
-        try {
-            logger().trace("Stopping container: {}", containerId);
-            try {
-                dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
-                logger().info("Removed container and associated volume(s): {}", dockerImageName);
-            } catch (InternalServerErrorException e) {
-                logger().warn("Exception when removing container with associated volume(s): {} (due to {})", dockerImageName, e.getMessage());
-            }
-        } catch (DockerException e) {
-            logger().trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
-        }
+        ContainerReaper.instance().stopAndRemoveContainer(containerId, dockerImageName);
     }
 
     /**
