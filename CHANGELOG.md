@@ -3,9 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [1.0.3] -
 ### Fixed
-- Issues where containers would not be cleaned up on JVM shutdown if they failed to start correctly
-- Validation problem where docker image names that contained private registry URLs with port number would be rejected
-- Bug where `docker pull` would try infinitely for a non-existent image name
+- Resolve issues where containers would not be cleaned up on JVM shutdown if they failed to start correctly
+- Fix validation problem where docker image names that contained private registry URLs with port number would be rejected
+- Resolve bug where `docker pull` would try infinitely for a non-existent image name
 
 ### Changed
 - Set startup free disk space check to ensure that the Docker environment has a minimum of 2GB available rather than 10%
