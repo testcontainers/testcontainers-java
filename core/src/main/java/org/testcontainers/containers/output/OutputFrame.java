@@ -1,5 +1,7 @@
 package org.testcontainers.containers.output;
 
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.StreamType;
 import com.google.common.base.Charsets;
 
 /**
@@ -35,6 +37,24 @@ public class OutputFrame {
     }
 
     public enum OutputType {
-        STDOUT, STDERR, END
+        STDOUT, STDERR, END;
+
+        public static OutputType forStreamType(StreamType streamType) {
+            switch (streamType) {
+                case RAW:    return STDOUT;
+                case STDOUT: return STDOUT;
+                case STDERR: return STDERR;
+                default: return null;
+            }
+        }
     }
+
+    public static OutputFrame forFrame(Frame frame) {
+        OutputType outputType = OutputType.forStreamType(frame.getStreamType());
+        if (outputType == null) {
+            return null;
+        }
+        return new OutputFrame(outputType, frame.getPayload());
+    }
+
 }

@@ -175,6 +175,9 @@ public class GenericContainerRuleTest {
 
     @Test
     public void customClasspathResourceMappingTest() throws IOException {
+        // Note: This functionality doesn't work if you are running your build inside a Docker container;
+        // in that case this test will fail.
+
         BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
@@ -210,7 +213,7 @@ public class GenericContainerRuleTest {
         try {
             final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
             assertTrue("Output for \"redis-cli role\" command should start with \"master\"", result.getStdout().startsWith("master"));
-            assertTrue("Stderr for \"redis-cli role\" command should be empty", result.getStderr().length() == 0);
+            assertEquals("Stderr for \"redis-cli role\" command should be empty", "", result.getStderr());
             // We expect to reach this point for modern Docker versions.
         } catch (UnsupportedOperationException u) {
             // This is the expected result for docker daemons that are running the older "lxc" execution driver,

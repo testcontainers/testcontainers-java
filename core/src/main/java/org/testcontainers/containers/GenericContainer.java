@@ -32,7 +32,9 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.ContainerReaper;
@@ -71,8 +73,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     /*
-                 * Default settings
-                 */
+     * Default settings
+     */
     @NonNull
     private List<Integer> exposedPorts = new ArrayList<>();
 
@@ -399,7 +401,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         }
     }
 
-
     @Override
     protected void starting(Description description) {
         this.start();
@@ -473,7 +474,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
 
     /**
-     * Map a resource (file or directory) on the classpath to a path inside the container
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
      *
      * @param resourcePath  path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
      * @param containerPath path this should be mapped to inside the container
@@ -642,37 +644,14 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
                 .withFollowStream(true);
 
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         for (OutputFrame.OutputType type : types) {
+            callback.addConsumer(type, consumer);
             if (type == STDOUT) cmd.withStdOut(true);
             if (type == STDERR) cmd.withStdErr(true);
         }
 
-        cmd.exec(new ResultCallbackTemplate<ResultCallback<Frame>, Frame>() {
-            @Override
-            public void onNext(Frame dockerFrame) {
-                OutputFrame.OutputType type;
-                switch (dockerFrame.getStreamType()) {
-                    case STDOUT:
-                        type = STDOUT;
-                        break;
-                    case STDERR:
-                        type = STDERR;
-                        break;
-                    default:
-                        return;
-                }
-
-                OutputFrame frame = new OutputFrame(type, dockerFrame.getPayload());
-
-                consumer.accept(frame);
-            }
-
-            @Override
-            public void close() throws IOException {
-                consumer.accept(OutputFrame.END);
-                super.close();
-            }
-        });
+        cmd.exec(callback);
     }
 
     public synchronized Info fetchDockerDaemonInfo() throws IOException {
@@ -724,14 +703,19 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId)
             .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
 
-        final StringWriter stdoutWriter = new StringWriter();
-        final StringWriter stderrWriter = new StringWriter();
+        final ToStringConsumer stdoutConsumer = new ToStringConsumer();
+        final ToStringConsumer stderrConsumer = new ToStringConsumer();
 
-        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(
-            new ExecStartResultCallback(new WriterOutputStream(stdoutWriter, outputCharset),
-                 new WriterOutputStream(stderrWriter, outputCharset))).awaitCompletion();
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
+        callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
 
-        final ExecResult result = new ExecResult(stdoutWriter.toString(), stderrWriter.toString());
+        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
+
+        final ExecResult result = new ExecResult(
+              stdoutConsumer.toString(outputCharset),
+              stderrConsumer.toString(outputCharset));
+
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());
         return result;
