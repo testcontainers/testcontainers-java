@@ -7,9 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -19,7 +19,7 @@ public final class ContainerReaper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerReaper.class);
     private static ContainerReaper instance;
     private final DockerClient dockerClient;
-    private Map<String, String> registeredContainers = new HashMap<>();
+    private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
 
     private ContainerReaper() {
         dockerClient = DockerClientFactory.instance().client();
