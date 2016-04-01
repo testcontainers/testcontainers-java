@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.0.3] -
+## [1.0.3] - 2016-03-31
 ### Fixed
 - Resolve issues where containers would not be cleaned up on JVM shutdown if they failed to start correctly
 - Fix validation problem where docker image names that contained private registry URLs with port number would be rejected
