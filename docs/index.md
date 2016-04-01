@@ -57,7 +57,7 @@ In the dependency description below, replace `--artifact name--` as appropriate:
     <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>--artifact name--</artifactId>
-        <version>1.0.2</version>
+        <version>1.0.3</version>
     </dependency>
 
 ### Shaded dependencies
