@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -52,6 +53,8 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
 
     public static final int STARTUP_RETRY_COUNT = 3;
+    public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
+
     /*
                  * Default settings
                  */
@@ -163,21 +166,36 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             containerIsStarting(containerInfo);
 
             // Wait until the container is running (may not be fully started)
-            profiler.start("Wait until container state=running");
-            Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
+            profiler.start("Wait until container state=running, or there's evidence it failed to start.");
+            final Boolean[] startedOK = {null};
+            Unreliables.retryUntilTrue(CONTAINER_RUNNING_TIMEOUT_SEC, TimeUnit.SECONDS, () -> {
                 //noinspection CodeBlock2Expr
                 return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
                     InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
-                    return inspectionResponse.getState().isRunning();
+                    if (inspectionResponse.getState().isRunning()) {
+                        startedOK[0] = true;
+                        return true;
+                    } else if (inspectionResponse.getState().getFinishedAt() != null) {
+                        // container started, but is now not running. That means it started but has since stopped;
+                        // likely due to misconfiguration.
+                        startedOK[0] = false;
+                        return true;
+                    }
+                    return false;
                 });
             });
+
+            if (!startedOK[0]) {
+                // Bail out, don't wait for the port to start listening.
+                // (Exception thrown here will be caught below and wrapped)
+                throw new NotFoundException("Container has already stopped.");
+            }
 
             profiler.start("Wait until container started");
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
             containerIsStarted(containerInfo);
-
         } catch (Exception e) {
             logger().error("Could not start container", e);
 
