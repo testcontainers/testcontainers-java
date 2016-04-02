@@ -26,7 +26,11 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.ContainerReaper;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.DockerStatus;
+import org.testcontainers.utility.PathOperations;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +38,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +59,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     public static final int STARTUP_RETRY_COUNT = 3;
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
+
 
     /*
                  * Default settings
@@ -81,6 +87,13 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     @NonNull
     private Duration startupTimeout = Duration.ofSeconds(60);
+
+    /**
+     * If a container has been running for less than this time, don't consider it
+     * successful yet - try again.
+     */
+    @NonNull
+    private Duration minimumDurationToConsiderRunning = Duration.ofMillis(100);
 
     /*
      * Unique instance of DockerClient for use by this container object.
@@ -140,7 +153,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         }
     }
 
-   private void tryStart(Profiler profiler) {
+    private void tryStart(Profiler profiler) {
         try {
             String dockerImageName = image.get();
             logger().debug("Starting container: {}", dockerImageName);
@@ -171,13 +184,17 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             Unreliables.retryUntilTrue(CONTAINER_RUNNING_TIMEOUT_SEC, TimeUnit.SECONDS, () -> {
                 //noinspection CodeBlock2Expr
                 return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
+                    // record "now" before fetching status; otherwise the time to fetch the status
+                    // will contribute to how long the container has been running.
+                    Instant now = Instant.now();
                     InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
-                    if (inspectionResponse.getState().isRunning()) {
+
+                    if (DockerStatus.isContainerRunning(inspectionResponse.getState(),
+                                                        minimumDurationToConsiderRunning,
+                                                        now)) {
                         startedOK[0] = true;
                         return true;
-                    } else if (inspectionResponse.getState().getFinishedAt() != null) {
-                        // container started, but is now not running. That means it started but has since stopped;
-                        // likely due to misconfiguration.
+                    } else if (DockerStatus.isContainerStopped(inspectionResponse.getState())) {
                         startedOK[0] = false;
                         return true;
                     }
