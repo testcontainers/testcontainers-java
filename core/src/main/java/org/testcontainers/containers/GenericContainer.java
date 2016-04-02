@@ -116,26 +116,32 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      */
     public void start() {
         int[] attempt = {0};
-        Unreliables.retryUntilSuccess(STARTUP_RETRY_COUNT, () -> {
-            attempt[0]++;
-            logger().debug("Trying to start container: {} (attempt {}/{})", dockerImageName, attempt[0], STARTUP_RETRY_COUNT);
-            this.tryStart();
-            return true;
-        });
-    }
-
-    private void tryStart() {
         Profiler profiler = new Profiler("Container startup");
         profiler.setLogger(logger());
 
+        try {
+            profiler.start("Prepare container configuration and host configuration");
+            configure();
+
+            logger().debug("Starting container: {}", dockerImageName);
+
+            Unreliables.retryUntilSuccess(STARTUP_RETRY_COUNT, () -> {
+                attempt[0]++;
+                logger().debug("Trying to start container: {} (attempt {}/{})", dockerImageName, attempt[0], STARTUP_RETRY_COUNT);
+                this.tryStart(profiler.startNested("Container startup attempt #" + attempt[0]));
+                return true;
+            });
+        } finally {
+            profiler.stop().log();
+        }
+    }
+
+   private void tryStart(Profiler profiler) {
         logger().debug("Starting container: {}", dockerImageName);
 
         try {
 
             pullImageIfNeeded(dockerImageName, profiler.startNested("Pull image if needed"));
-
-            profiler.start("Prepare container configuration and host configuration");
-            configure();
 
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
@@ -178,7 +184,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
             throw new ContainerLaunchException("Could not create/start container", e);
         } finally {
-            profiler.stop().log();
+            profiler.stop();
         }
     }
 
