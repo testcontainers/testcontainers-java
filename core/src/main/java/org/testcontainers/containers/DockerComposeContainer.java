@@ -5,6 +5,8 @@ import com.github.dockerjava.api.model.Container;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.profiler.Profiler;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Base58;
 
@@ -58,15 +60,27 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
     @Override
     public void start() {
+
+        final Profiler profiler = new Profiler("Docker compose container rule");
+        profiler.setLogger(logger());
+        profiler.start("Docker compose container startup");
+
+        // Start the docker-compose container, which starts up the services
+        super.start();
+        followOutput(new Slf4jLogConsumer(logger()), OutputFrame.OutputType.STDERR);
+
+        // wait for the compose container to stop, which should only happen after it has spawned all the service containers
+        logger().info("Docker compose container is running - service creation will start now");
+        while (isRunning()) {
+            logger().trace("Compose container is still running");
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+        }
+        logger().info("Docker compose has finished running");
+
+
         for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
 
-            final Profiler profiler = new Profiler("Docker compose container rule");
-            profiler.setLogger(logger());
-            profiler.start("Docker compose container startup");
             try {
-                // Start the docker-compose container, which starts up the services
-                super.start();
-
                 // Start any ambassador containers we need
                 profiler.start("Ambassador container startup");
 
@@ -76,20 +90,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
                     localProfiler.start("Start ambassador container");
 
-                    try {
-                        ambassadorContainer.start();
-
-                        if (!ambassadorContainer.isRunning()) {
-                            throw new IllegalStateException("Container startup aborted");
-                        }
-                    } catch (Exception e) {
-                        // Before failing, wait 500ms so the next attempt is delayed.
-                        // This is to avoid a deluge of ambassador containers while the
-                        //  exposed service is still starting.
-                        Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-
-                        throw e;
-                    }
+                    ambassadorContainer.start();
 
                     return null;
                 });
