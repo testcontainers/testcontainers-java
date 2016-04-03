@@ -8,12 +8,12 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.async.ResultCallbackTemplate;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.TimeoutException;
@@ -21,15 +21,12 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.utility.ContainerReaper;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.DockerMachineClient;
-import org.testcontainers.utility.PathOperations;
+import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.utility.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +35,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -65,7 +64,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     private List<String> portBindings = new ArrayList<>();
 
     @NonNull
-    private String dockerImageName = "alpine:3.2";
+    private Future<String> image;
 
     @NonNull
     private List<String> env = new ArrayList<>();
@@ -104,11 +103,15 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             .build();
 
     public GenericContainer() {
-
+        this("alpine:3.2");
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);
+    }
+
+    public GenericContainer(@NonNull final Future<String> image) {
+        this.image = image;
     }
 
     /**
@@ -123,11 +126,11 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             profiler.start("Prepare container configuration and host configuration");
             configure();
 
-            logger().debug("Starting container: {}", dockerImageName);
+            logger().debug("Starting container: {}", getDockerImageName());
 
             Unreliables.retryUntilSuccess(STARTUP_RETRY_COUNT, () -> {
                 attempt[0]++;
-                logger().debug("Trying to start container: {} (attempt {}/{})", dockerImageName, attempt[0], STARTUP_RETRY_COUNT);
+                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt[0], STARTUP_RETRY_COUNT);
                 this.tryStart(profiler.startNested("Container startup attempt #" + attempt[0]));
                 return true;
             });
@@ -137,11 +140,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
    private void tryStart(Profiler profiler) {
-        logger().debug("Starting container: {}", dockerImageName);
-
         try {
-
-            pullImageIfNeeded(dockerImageName, profiler.startNested("Pull image if needed"));
+            String dockerImageName = image.get();
+            logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
@@ -197,7 +198,15 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             return;
         }
 
-        ContainerReaper.instance().stopAndRemoveContainer(containerId, dockerImageName);
+        String imageName;
+
+        try {
+            imageName = image.get();
+        } catch (Exception e) {
+            imageName = "<unknown>";
+        }
+
+        ContainerReaper.instance().stopAndRemoveContainer(containerId, imageName);
     }
 
     /**
@@ -206,54 +215,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @return a logger that references the docker image name
      */
     protected Logger logger() {
-        if ("UTF-8".equals(System.getProperty("file.encoding"))) {
-            return LoggerFactory.getLogger("\uD83D\uDC33 [" + dockerImageName + "]");
-        } else {
-            return LoggerFactory.getLogger("docker[" + dockerImageName + "]");
-        }
-    }
-
-    private void pullImageIfNeeded(final String imageName, Profiler profiler) throws DockerException, InterruptedException {
-
-        // Does our cache already know the image?
-        if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
-            return;
-        }
-
-        profiler.start("Check local images");
-        // Update the cache
-        List<Image> images = dockerClient.listImagesCmd().exec();
-        for (Image image : images) {
-            Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
-        }
-
-        // Check cache again following update
-        if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
-            return;
-        }
-
-        logger().info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
-        profiler.start("Pull image");
-        int attempts = 0;
-        while (!AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
-            // The image is not available locally - pull it
-
-            if (attempts++ >= 3) {
-                logger().error("Retry limit reached while trying to pull image: " + imageName + ". Please check output of `docker pull " + imageName + "`");
-                throw new ContainerFetchException("Retry limit reached while trying to pull image: " + imageName);
-            }
-
-            PullImageResultCallback resultCallback = dockerClient.pullImageCmd(imageName).exec(new PullImageResultCallback());
-
-            resultCallback.awaitCompletion();
-
-            // Confirm successful pull, otherwise may need to retry...
-            // see https://github.com/docker/docker/issues/10708
-            List<Image> updatedImages = dockerClient.listImagesCmd().exec();
-            for (Image image : updatedImages) {
-                Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
-            }
-        }
+        return DockerLoggerFactory.getLogger(this.getDockerImageName());
     }
 
     /**
@@ -575,18 +537,39 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         }
     }
 
+    /**
+     * <b>Resolve</b> Docker image and set it.
+     *
+     * @param dockerImageName image name
+     */
+    @SneakyThrows
     public void setDockerImageName(@NonNull String dockerImageName) {
         DockerImageName.validate(dockerImageName);
-        this.dockerImageName = dockerImageName;
 
-        Profiler profiler = new Profiler("Rule creation - prefetch image");
-        profiler.setLogger(logger());
+        String[] parts = dockerImageName.split(":");
+        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(parts[0], parts[1]);
         try {
-            pullImageIfNeeded(dockerImageName, profiler);
-        } catch (InterruptedException e) {
-            throw new ContainerFetchException("Failed to fetch container image for " + dockerImageName, e);
-        } finally {
-            profiler.stop().log();
+            // Mimic old behavior where we resolve image once it's set
+            remoteDockerImage.get();
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
+
+        this.image = remoteDockerImage;
+    }
+
+    /**
+     * Get image name.
+     *
+     * @return image name
+     */
+    @NonNull
+    @SneakyThrows
+    public String getDockerImageName() {
+        try {
+            return image.get();
+        } catch (ExecutionException e) {
+            throw e.getCause();
         }
     }
 
