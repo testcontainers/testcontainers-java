@@ -6,6 +6,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.util.concurrent.Futures;
 import lombok.NonNull;
 import lombok.experimental.Delegate;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -30,13 +31,25 @@ public class RemoteDockerImage implements Future<String> {
 
             Profiler profiler = new Profiler("Rule creation - prefetch image");
 
+            Logger logger;
             if ("UTF-8".equals(System.getProperty("file.encoding"))) {
-                profiler.setLogger(LoggerFactory.getLogger("\uD83D\uDC33 [" + dockerImageName + "]"));
+                logger = LoggerFactory.getLogger("\uD83D\uDC33 [" + dockerImageName + "]");
             } else {
-                profiler.setLogger(LoggerFactory.getLogger("docker[" + dockerImageName + "]"));
+                logger = LoggerFactory.getLogger("docker[" + dockerImageName + "]");
+            }
+            profiler.setLogger(logger);
+
+            // Does our cache already know the image? If so, we can return quickly without incurring the cost of
+            //  starting a docker client
+            if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
+                logger.trace("{} is already in image name cache", dockerImageName);
+                profiler.stop().log();
+                return dockerImageName;
             }
 
+            Profiler nested = profiler.startNested("Obtaining client");
             try (DockerClient dockerClient = DockerClientFactory.instance().client()) {
+                nested.stop();
 
                 profiler.start("Check local images");
 
@@ -44,6 +57,7 @@ public class RemoteDockerImage implements Future<String> {
                 while (true) {
                     // Does our cache already know the image?
                     if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
+                        logger.trace("{} is already in image name cache", dockerImageName);
                         break;
                     }
 
@@ -55,17 +69,18 @@ public class RemoteDockerImage implements Future<String> {
 
                     // And now?
                     if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
+                        logger.trace("{} is in image name cache following listing of images", dockerImageName);
                         break;
                     }
 
                     // Log only on first attempt
                     if (attempts == 0) {
-                        profiler.getLogger().info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", dockerImageName);
+                        logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", dockerImageName);
                         profiler.start("Pull image");
                     }
 
                     if (attempts++ >= 3) {
-                        profiler.getLogger().error("Retry limit reached while trying to pull image: " + dockerImageName + ". Please check output of `docker pull " + dockerImageName + "`");
+                        logger.error("Retry limit reached while trying to pull image: " + dockerImageName + ". Please check output of `docker pull " + dockerImageName + "`");
                         throw new ContainerFetchException("Retry limit reached while trying to pull image: " + dockerImageName);
                     }
 
