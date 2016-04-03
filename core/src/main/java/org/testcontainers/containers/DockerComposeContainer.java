@@ -9,6 +9,7 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.ContainerReaper;
 
 import java.io.File;
 import java.util.HashMap;
@@ -77,6 +78,22 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
         }
         logger().info("Docker compose has finished running");
 
+        // Ensure that all service containers that were launched by compose will be killed at shutdown
+        try {
+            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+
+            for (Container container : containers) {
+                for (String name : container.getNames()) {
+                    if (name.startsWith("/" + identifier)) {
+                        ContainerReaper.instance().registerContainerForCleanup(container.getId(), name);
+                        break;
+                    }
+                }
+            }
+
+        } catch (DockerException e) {
+            logger().debug("Failed to stop a service container with exception", e);
+        }
 
         for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
 
@@ -99,32 +116,6 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
             } finally {
                 profiler.stop().log();
             }
-        }
-    }
-
-
-    @Override
-    public void stop() {
-        super.stop();
-
-        // Kill all the ambassador containers
-        ambassadorContainers.values().forEach(GenericContainer::stop);
-
-        // Kill all service containers that were launched by compose
-        try {
-            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
-
-            for (Container container : containers) {
-                for (String name : container.getNames()) {
-                    if (name.startsWith("/" + identifier)) {
-                        dockerClient.killContainerCmd(container.getId()).exec();
-                        dockerClient.removeContainerCmd(container.getId()).exec();
-                    }
-                }
-            }
-
-        } catch (DockerException e) {
-            logger().debug("Failed to stop a service container with exception", e);
         }
     }
 
