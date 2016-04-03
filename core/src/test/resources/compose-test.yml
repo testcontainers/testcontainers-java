@@ -1,2 +1,6 @@
 redis:
   image: redis
+db:
+  image: orchardup/mysql
+  environment:
+    MYSQL_DATABASE: wordpress

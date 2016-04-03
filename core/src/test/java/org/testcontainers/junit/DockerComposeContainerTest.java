@@ -20,7 +20,9 @@ public class DockerComposeContainerTest {
 
     @ClassRule
     public static DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("redis_1", REDIS_PORT);
+            .withExposedService("redis_1", REDIS_PORT)
+            .withExposedService("db_1", 3306)
+            ;
 
     @Test
     public void simpleTest() {
