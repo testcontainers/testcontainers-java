@@ -19,7 +19,10 @@ public class DockerfileBuilder implements DockerfileBuilderTrait<DockerfileBuild
         WorkdirStatementTrait<DockerfileBuilder>,
         EnvStatementTrait<DockerfileBuilder>,
         LabelStatementTrait<DockerfileBuilder>,
-        ExposeStatementTrait<DockerfileBuilder> {
+        ExposeStatementTrait<DockerfileBuilder>,
+        EntryPointStatementTrait<DockerfileBuilder>,
+        VolumeStatementTrait<DockerfileBuilder>,
+        UserStatementTrait<DockerfileBuilder> {
 
     private final List<Statement> statements = new ArrayList<>();
 
