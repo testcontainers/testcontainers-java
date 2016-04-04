@@ -2,17 +2,23 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Filters;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.profiler.Profiler;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.ContainerReaper;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
@@ -27,6 +33,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
      */
     private final String identifier;
     private final Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
+    private Set<String> spawnedContainerIds;
 
     public DockerComposeContainer(File composeFile) {
         this(composeFile, "up -d");
@@ -58,15 +65,48 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
     @Override
     public void start() {
+
+        final Profiler profiler = new Profiler("Docker compose container rule");
+        profiler.setLogger(logger());
+        profiler.start("Docker compose container startup");
+
+        // Start the docker-compose container, which starts up the services
+        super.start();
+        followOutput(new Slf4jLogConsumer(logger()), OutputFrame.OutputType.STDERR);
+
+        // wait for the compose container to stop, which should only happen after it has spawned all the service containers
+        logger().info("Docker compose container is running - service creation will start now");
+        while (isRunning()) {
+            logger().trace("Compose container is still running");
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+        }
+        logger().info("Docker compose has finished running");
+
+        // Ensure that all service containers that were launched by compose will be killed at shutdown
+        Filters namesContainingComposeIdentifier = new Filters().withFilter("name", "/" + identifier);
+        try {
+            List<Container> containers = dockerClient.listContainersCmd()
+                    .withFilters(namesContainingComposeIdentifier)
+                    .withShowAll(true)
+                    .exec();
+
+            // register with ContainerReaper to ensure final shutdown with JVM
+            containers.stream()
+                    .forEach(container ->
+                            ContainerReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
+
+            // remember the IDs to allow containers to be killed as soon as we reach stop()
+            spawnedContainerIds = containers.stream()
+                    .map(Container::getId)
+                    .collect(Collectors.toSet());
+
+        } catch (DockerException e) {
+            logger().debug("Failed to stop a service container with exception", e);
+        }
+
         for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
 
-            final Profiler profiler = new Profiler("Docker compose container rule");
-            profiler.setLogger(logger());
-            profiler.start("Docker compose container startup");
             try {
-                // Start the docker-compose container, which starts up the services
-                super.start();
-
                 // Start any ambassador containers we need
                 profiler.start("Ambassador container startup");
 
@@ -76,20 +116,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
                     localProfiler.start("Start ambassador container");
 
-                    try {
-                        ambassadorContainer.start();
-
-                        if (!ambassadorContainer.isRunning()) {
-                            throw new IllegalStateException("Container startup aborted");
-                        }
-                    } catch (Exception e) {
-                        // Before failing, wait 500ms so the next attempt is delayed.
-                        // This is to avoid a deluge of ambassador containers while the
-                        //  exposed service is still starting.
-                        Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-
-                        throw e;
-                    }
+                    ambassadorContainer.start();
 
                     return null;
                 });
@@ -101,30 +128,17 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
         }
     }
 
-
     @Override
     public void stop() {
+        // this, the compose container, should not be running, but just in case something has gone wrong
         super.stop();
 
-        // Kill all the ambassador containers
-        ambassadorContainers.values().forEach(GenericContainer::stop);
+        // shut down all the ambassador containers
+        ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
 
-        // Kill all service containers that were launched by compose
-        try {
-            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
-
-            for (Container container : containers) {
-                for (String name : container.getNames()) {
-                    if (name.startsWith("/" + identifier)) {
-                        dockerClient.killContainerCmd(container.getId()).exec();
-                        dockerClient.removeContainerCmd(container.getId()).exec();
-                    }
-                }
-            }
-
-        } catch (DockerException e) {
-            logger().debug("Failed to stop a service container with exception", e);
-        }
+        // kill the spawned service containers
+        spawnedContainerIds.forEach(id -> ContainerReaper.instance().stopAndRemoveContainer(id));
+        spawnedContainerIds.clear();
     }
 
     @Override
