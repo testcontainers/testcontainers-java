@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Filters;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.profiler.Profiler;
@@ -15,7 +16,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
@@ -30,6 +33,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
      */
     private final String identifier;
     private final Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
+    private Set<String> spawnedContainerIds;
 
     public DockerComposeContainer(File composeFile) {
         this(composeFile, "up -d");
@@ -79,17 +83,22 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
         logger().info("Docker compose has finished running");
 
         // Ensure that all service containers that were launched by compose will be killed at shutdown
+        Filters namesContainingComposeIdentifier = new Filters().withFilter("name", "/" + identifier);
         try {
-            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+            List<Container> containers = dockerClient.listContainersCmd()
+                    .withFilters(namesContainingComposeIdentifier)
+                    .withShowAll(true)
+                    .exec();
 
-            for (Container container : containers) {
-                for (String name : container.getNames()) {
-                    if (name.startsWith("/" + identifier)) {
-                        ContainerReaper.instance().registerContainerForCleanup(container.getId(), name);
-                        break;
-                    }
-                }
-            }
+            // register with ContainerReaper to ensure final shutdown with JVM
+            containers.stream()
+                    .forEach(container ->
+                            ContainerReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
+
+            // remember the IDs to allow containers to be killed as soon as we reach stop()
+            spawnedContainerIds = containers.stream()
+                    .map(Container::getId)
+                    .collect(Collectors.toSet());
 
         } catch (DockerException e) {
             logger().debug("Failed to stop a service container with exception", e);
@@ -117,6 +126,19 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
                 profiler.stop().log();
             }
         }
+    }
+
+    @Override
+    public void stop() {
+        // this, the compose container, should not be running, but just in case something has gone wrong
+        super.stop();
+
+        // shut down all the ambassador containers
+        ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
+
+        // kill the spawned service containers
+        spawnedContainerIds.forEach(id -> ContainerReaper.instance().stopAndRemoveContainer(id));
+        spawnedContainerIds.clear();
     }
 
     @Override

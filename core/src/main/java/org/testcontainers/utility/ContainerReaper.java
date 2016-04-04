@@ -49,6 +49,14 @@ public final class ContainerReaper {
     /**
      * Stop a potentially running container and remove it, including associated volumes.
      * @param containerId the ID of the container
+     */
+    public void stopAndRemoveContainer(String containerId) {
+        stopContainer(containerId, registeredContainers.get(containerId));
+    }
+
+    /**
+     * Stop a potentially running container and remove it, including associated volumes.
+     * @param containerId the ID of the container
      * @param imageName the image name of the container (used for logging)
      */
     public void stopAndRemoveContainer(String containerId, String imageName) {
