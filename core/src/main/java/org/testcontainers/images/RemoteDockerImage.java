@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
+import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -29,9 +30,12 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @Override
     protected final String resolve() {
         Profiler profiler = new Profiler("Rule creation - prefetch image");
-        profiler.setLogger(DockerLoggerFactory.getLogger(dockerImageName));
+        Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
+        profiler.setLogger(logger);
 
-        try (DockerClient dockerClient = DockerClientFactory.instance().client()) {
+        Profiler nested = profiler.startNested("Obtaining client");
+        try (DockerClient dockerClient = DockerClientFactory.instance().client(false)) {
+            nested.stop();
 
             profiler.start("Check local images");
 
@@ -39,6 +43,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
             while (true) {
                 // Does our cache already know the image?
                 if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
+                    logger.trace("{} is already in image name cache", dockerImageName);
                     break;
                 }
 
@@ -50,17 +55,18 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
                 // And now?
                 if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
+                    logger.trace("{} is in image name cache following listing of images", dockerImageName);
                     break;
                 }
 
                 // Log only on first attempt
                 if (attempts == 0) {
-                    profiler.getLogger().info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", dockerImageName);
+                    logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", dockerImageName);
                     profiler.start("Pull image");
                 }
 
                 if (attempts++ >= 3) {
-                    profiler.getLogger().error("Retry limit reached while trying to pull image: " + dockerImageName + ". Please check output of `docker pull " + dockerImageName + "`");
+                    logger.error("Retry limit reached while trying to pull image: " + dockerImageName + ". Please check output of `docker pull " + dockerImageName + "`");
                     throw new ContainerFetchException("Retry limit reached while trying to pull image: " + dockerImageName);
                 }
 

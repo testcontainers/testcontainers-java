@@ -40,7 +40,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try (DockerClient dockerClientForCleaning = DockerClientFactory.instance().client()) {
+            try (DockerClient dockerClientForCleaning = DockerClientFactory.instance().client(false)) {
                 for (String dockerImageName : imagesToDelete) {
                     log.info("Removing image tagged {}", dockerImageName);
                     try {
@@ -93,7 +93,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         Profiler profiler = new Profiler("Rule creation - build image");
         profiler.setLogger(logger);
 
-        try (DockerClient dockerClient = DockerClientFactory.instance().client()) {
+        try (DockerClient dockerClient = DockerClientFactory.instance().client(false)) {
             if (deleteOnExit) {
                 imagesToDelete.add(dockerImageName);
             }
