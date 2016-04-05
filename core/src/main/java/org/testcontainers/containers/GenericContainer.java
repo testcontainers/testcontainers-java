@@ -561,7 +561,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         try {
             return image.get();
         } catch (Exception e) {
-            throw new RuntimeException("Can't get Docker image name from " + image, e);
+            throw new ContainerFetchException("Can't get Docker image name from " + image, e);
         }
     }
 
