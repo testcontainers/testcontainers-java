@@ -15,13 +15,13 @@ public class Slf4jLogConsumer implements Consumer<OutputFrame> {
         this.logger = logger;
     }
 
-    public Slf4jLogConsumer setPrefix(String prefix) {
-        this.prefix = "["+prefix+"]";
+    public Slf4jLogConsumer withPrefix(String prefix) {
+        this.prefix = "["+prefix+"] ";
         return this;
     }
 
     @Override
     public void accept(OutputFrame outputFrame) {
-        logger.info("{} {}: {}", prefix, outputFrame.getType(), outputFrame.getUtf8String());
+        logger.info("{}{}: {}", prefix, outputFrame.getType(), outputFrame.getUtf8String());
     }
 }
