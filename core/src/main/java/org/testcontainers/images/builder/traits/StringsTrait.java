@@ -1,7 +1,7 @@
 package org.testcontainers.images.builder.traits;
 
-import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.testcontainers.images.builder.Transferable;
 
 import java.io.IOException;
@@ -24,9 +24,12 @@ public interface StringsTrait<SELF extends StringsTrait<SELF> & BuildContextBuil
             }
 
             @Override
-            @SneakyThrows(IOException.class)
             public void transferTo(OutputStream outputStream) {
-                IOUtils.write(bytes, outputStream);
+                try {
+                    IOUtils.write(bytes, outputStream);
+                } catch (IOException e) {
+                    throw new RuntimeException("Can't transfer string " + StringUtils.abbreviate(content, 100), e);
+                }
             }
 
         });

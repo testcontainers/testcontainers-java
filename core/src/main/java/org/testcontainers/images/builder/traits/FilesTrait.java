@@ -1,6 +1,5 @@
 package org.testcontainers.images.builder.traits;
 
-import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
 
 import java.io.File;
@@ -23,9 +22,12 @@ public interface FilesTrait<SELF extends FilesTrait<SELF> & BuildContextBuilderT
         return ((SELF) this).withFileFromTransferable(path, new Transferable() {
 
             @Override
-            @SneakyThrows(IOException.class)
             public long getSize() {
-                return Files.size(filePath);
+                try {
+                    return Files.size(filePath);
+                } catch (IOException e) {
+                    throw new RuntimeException("Can't get size from " + filePath, e);
+                }
             }
 
             @Override
@@ -34,9 +36,12 @@ public interface FilesTrait<SELF extends FilesTrait<SELF> & BuildContextBuilderT
             }
 
             @Override
-            @SneakyThrows(IOException.class)
             public void transferTo(OutputStream outputStream) {
-                Files.copy(filePath, outputStream);
+                try {
+                    Files.copy(filePath, outputStream);
+                } catch (IOException e) {
+                    throw new RuntimeException("Can't transfer file " + filePath, e);
+                }
             }
 
         });

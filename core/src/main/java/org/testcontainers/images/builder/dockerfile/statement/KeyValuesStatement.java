@@ -2,7 +2,6 @@ package org.testcontainers.images.builder.dockerfile.statement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -20,7 +19,6 @@ public class KeyValuesStatement extends Statement {
     }
 
     @Override
-    @SneakyThrows(JsonProcessingException.class)
     public void appendArguments(StringBuilder dockerfileStringBuilder) {
         Set<Map.Entry<String, String>> entries = this.entries.entrySet();
 
@@ -29,9 +27,13 @@ public class KeyValuesStatement extends Statement {
         while (iterator.hasNext()) {
             Map.Entry<String, String> entry = iterator.next();
 
-            dockerfileStringBuilder.append(objectMapper.writeValueAsString(entry.getKey()));
-            dockerfileStringBuilder.append("=");
-            dockerfileStringBuilder.append(objectMapper.writeValueAsString(entry.getValue()));
+            try {
+                dockerfileStringBuilder.append(objectMapper.writeValueAsString(entry.getKey()));
+                dockerfileStringBuilder.append("=");
+                dockerfileStringBuilder.append(objectMapper.writeValueAsString(entry.getValue()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Can't serialize entry: " + entry, e);
+            }
 
             if (iterator.hasNext()) {
                 dockerfileStringBuilder.append(" \\\n\t");

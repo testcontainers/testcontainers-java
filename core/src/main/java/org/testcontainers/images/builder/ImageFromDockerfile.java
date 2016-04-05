@@ -6,7 +6,6 @@ import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
 import com.google.common.collect.Sets;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -86,7 +85,6 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     }
 
     @Override
-    @SneakyThrows(IOException.class)
     protected final String resolve() {
         Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
 
@@ -143,6 +141,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             exec.awaitImageId();
 
             return dockerImageName;
+        } catch(IOException e) {
+            throw new RuntimeException("Can't close DockerClient", e);
         } finally {
             profiler.stop().log();
         }

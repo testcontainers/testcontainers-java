@@ -1,7 +1,6 @@
 package org.testcontainers.images.builder.traits;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.images.builder.dockerfile.DockerfileBuilder;
@@ -34,9 +33,12 @@ public interface DockerfileTrait<SELF extends DockerfileTrait<SELF> & BuildConte
             }
 
             @Override
-            @SneakyThrows(IOException.class)
             public void transferTo(OutputStream outputStream) {
-                IOUtils.write(getBytes(), outputStream);
+                try {
+                    IOUtils.write(getBytes(), outputStream);
+                } catch (IOException e) {
+                    throw new RuntimeException("Can't transfer Dockerfile", e);
+                }
             }
         });
     }

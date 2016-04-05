@@ -2,7 +2,8 @@ package org.testcontainers.images.builder.dockerfile.statement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
+
+import java.util.Arrays;
 
 public class MultiArgsStatement extends Statement {
 
@@ -16,8 +17,11 @@ public class MultiArgsStatement extends Statement {
     }
 
     @Override
-    @SneakyThrows(JsonProcessingException.class)
     public void appendArguments(StringBuilder dockerfileStringBuilder) {
-        dockerfileStringBuilder.append(objectMapper.writeValueAsString(args));
+        try {
+            dockerfileStringBuilder.append(objectMapper.writeValueAsString(args));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Can't serialize arguments: " + Arrays.toString(args), e);
+        }
     }
 }

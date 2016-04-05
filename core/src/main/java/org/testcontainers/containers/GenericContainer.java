@@ -13,7 +13,6 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.TimeoutException;
@@ -35,7 +34,6 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -542,20 +540,15 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @param dockerImageName image name
      */
-    @SneakyThrows
     public void setDockerImageName(@NonNull String dockerImageName) {
         DockerImageName.validate(dockerImageName);
 
         String[] parts = dockerImageName.split(":");
-        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(parts[0], parts[1]);
-        try {
-            // Mimic old behavior where we resolve image once it's set
-            remoteDockerImage.get();
-        } catch (ExecutionException e) {
-            throw e.getCause();
-        }
 
-        this.image = remoteDockerImage;
+        this.image = new RemoteDockerImage(parts[0], parts[1]);
+
+        // Mimic old behavior where we resolve image once it's set
+        getDockerImageName();
     }
 
     /**
@@ -564,12 +557,11 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @return image name
      */
     @NonNull
-    @SneakyThrows
     public String getDockerImageName() {
         try {
             return image.get();
-        } catch (ExecutionException e) {
-            throw e.getCause();
+        } catch (Exception e) {
+            throw new RuntimeException("Can't get Docker image name from " + image, e);
         }
     }
 
