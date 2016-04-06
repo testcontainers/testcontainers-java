@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
 
@@ -23,7 +24,12 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     private final String dockerImageName;
 
-    public RemoteDockerImage(@NonNull String repository, String tag) {
+    public RemoteDockerImage(String dockerImageName) {
+        DockerImageName.validate(dockerImageName);
+        this.dockerImageName = dockerImageName;
+    }
+
+    public RemoteDockerImage(@NonNull String repository, @NonNull String tag) {
         this.dockerImageName = repository + ":" + tag;
     }
 

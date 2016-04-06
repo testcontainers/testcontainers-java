@@ -541,11 +541,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param dockerImageName image name
      */
     public void setDockerImageName(@NonNull String dockerImageName) {
-        DockerImageName.validate(dockerImageName);
-
-        String[] parts = dockerImageName.split(":");
-
-        this.image = new RemoteDockerImage(parts[0], parts[1]);
+        this.image = new RemoteDockerImage(dockerImageName);
 
         // Mimic old behavior where we resolve image once it's set
         getDockerImageName();
