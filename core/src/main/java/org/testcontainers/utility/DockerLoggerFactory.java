@@ -1,9 +1,12 @@
 package org.testcontainers.utility;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DockerLoggerFactory {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class DockerLoggerFactory {
 
     public static Logger getLogger(String dockerImageName) {
         if ("UTF-8".equals(System.getProperty("file.encoding"))) {
