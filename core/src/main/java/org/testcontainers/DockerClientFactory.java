@@ -63,10 +63,20 @@ public class DockerClientFactory {
     }
 
     /**
+     *
+     * @return a new initialized Docker client
+     */
+    public DockerClient client() {
+        return client(true);
+    }
+
+    /**
+     *
+     * @param failFast fail if client fails to ping Docker daemon
      * @return a new initialized Docker client
      */
     @Synchronized
-    public DockerClient client() {
+    public DockerClient client(boolean failFast) {
         if (config == null) {
             config = DockerConfigurationStrategy.getFirstValidConfig(CONFIGURATION_STRATEGIES);
         }
@@ -80,8 +90,10 @@ public class DockerClientFactory {
             preconditionsChecked = true;
         }
 
-        // Ping, to fail fast if our docker environment has gone away
-        client.pingCmd().exec();
+        if (failFast) {
+            // Ping, to fail fast if our docker environment has gone away
+            client.pingCmd().exec();
+        }
 
         return client;
     }
