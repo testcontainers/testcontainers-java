@@ -32,7 +32,7 @@ public class DockerfileTest {
                 List<String> dockerfile = Arrays.asList(
                         "FROM alpine:3.2",
                         "RUN echo 'hello from Docker build process'",
-                        "CMD ps"
+                        "CMD yes"
                 );
                 withFileFromString("Dockerfile", String.join("\n", dockerfile));
 
