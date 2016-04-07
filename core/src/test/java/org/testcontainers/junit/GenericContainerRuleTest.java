@@ -17,6 +17,7 @@ import org.testcontainers.containers.GenericContainer;
 
 import java.io.*;
 import java.net.Socket;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -210,7 +211,8 @@ public class GenericContainerRuleTest {
 
         long startingTimeMs = System.currentTimeMillis();
         final GenericContainer failsImmediately = new GenericContainer("alpine:3.2")
-              .withCommand("/bin/sh", "-c", "return false");
+              .withCommand("/bin/sh", "-c", "return false")
+              .withMinimumRunningDuration(Duration.ofMillis(100));
 
         try {
             assertThrows(
@@ -233,8 +235,6 @@ public class GenericContainerRuleTest {
         } finally {
             failsImmediately.stop();
         }
-
-
     }
 
 }

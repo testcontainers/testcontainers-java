@@ -88,12 +88,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     @NonNull
     private Duration startupTimeout = Duration.ofSeconds(60);
 
-    /**
-     * If a container has been running for less than this time, don't consider it
-     * successful yet - try again.
-     */
     @NonNull
-    private Duration minimumDurationToConsiderRunning = Duration.ofMillis(100);
+    private Duration minimumRunningDuration = null;
 
     /*
      * Unique instance of DockerClient for use by this container object.
@@ -190,7 +186,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
                     InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
 
                     if (DockerStatus.isContainerRunning(inspectionResponse.getState(),
-                                                        minimumDurationToConsiderRunning,
+                        minimumRunningDuration,
                                                         now)) {
                         startedOK[0] = true;
                         return true;
@@ -524,6 +520,16 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      */
     public String getContainerIpAddress() {
         return DockerClientFactory.instance().dockerHostIpAddress();
+    }
+
+    /**
+     * Only consider a container to have successfully started if it has been running for this duration. The default
+     * value is null; if that's the value, ignore this check.
+     */
+
+    public GenericContainer withMinimumRunningDuration(Duration minimumRunningDuration) {
+        this.setMinimumRunningDuration(minimumRunningDuration);
+        return this;
     }
 
     /**

@@ -28,18 +28,22 @@ public class DockerStatus {
     /**
      * Based on this status, is this container running, and has it been doing so for the specified amount of time?
      *
-     * @param state           the state provided by InspectContainer
-     * @param minimumDuration minimum duration to consider this as "solidly" running.
-     * @param now             the time to consider as the current time
+     * @param state                  the state provided by InspectContainer
+     * @param minimumRunningDuration minimum duration to consider this as "solidly" running, or null
+     * @param now                    the time to consider as the current time
      * @return true if we can conclude that the container is running, false otherwise
      */
-    public static boolean isContainerRunning(InspectContainerResponse.ContainerState state, Duration minimumDuration,
+    public static boolean isContainerRunning(InspectContainerResponse.ContainerState state,
+                                             Duration minimumRunningDuration,
                                              Instant now) {
         if (state.isRunning()) {
+            if (minimumRunningDuration == null) {
+                return true;
+            }
             Instant startedAt = DateTimeFormatter.ISO_INSTANT.parse(
                 state.getStartedAt(), Instant::from);
 
-            if (startedAt.isBefore(now.minus(minimumDuration))) {
+            if (startedAt.isBefore(now.minus(minimumRunningDuration))) {
                 return true;
             }
         }
