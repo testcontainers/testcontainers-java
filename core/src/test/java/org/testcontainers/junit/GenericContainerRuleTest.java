@@ -177,6 +177,9 @@ public class GenericContainerRuleTest {
 
     @Test
     public void customClasspathResourceMappingTest() throws IOException {
+        // Note: This functionality doesn't work if you are running your build inside a Docker container;
+        // in that case this test will fail.
+
         BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
@@ -237,4 +240,19 @@ public class GenericContainerRuleTest {
         }
     }
 
+
+    @Test
+    public void testExecInContainer() throws Exception {
+
+        try {
+            final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
+            assertTrue("Output for \"redis-cli role\" command should start with \"master\"", result.getStdout().startsWith("master"));
+            assertEquals("Stderr for \"redis-cli role\" command should be empty", "", result.getStderr());
+            // We expect to reach this point for modern Docker versions.
+        } catch (UnsupportedOperationException u) {
+            // This is the expected result for docker daemons that are running the older "lxc" execution driver,
+            // which doesn't support "exec". At the time of writing (2016/03/29), that's the case for CircleCI.
+            // Once they resolve the issue, this clause can be removed.
+        }
+    }
 }

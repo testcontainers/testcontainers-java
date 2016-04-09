@@ -2,12 +2,11 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
-import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.*;
-import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.Data;
@@ -22,7 +21,9 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.*;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -53,12 +55,15 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
 
     public static final int STARTUP_RETRY_COUNT = 3;
+
+    private static final Charset UTF8 = Charset.forName("UTF-8");
+
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
 
     /*
-                 * Default settings
-                 */
+     * Default settings
+     */
     @NonNull
     private List<Integer> exposedPorts = new ArrayList<>();
 
@@ -90,6 +95,11 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * Unique instance of DockerClient for use by this container object.
      */
     protected DockerClient dockerClient = DockerClientFactory.instance().client();
+
+    /*
+     * Info about the Docker server; lazily fetched.
+     */
+    protected Info dockerDaemonInfo = null;
 
     /*
      * Set during container startup
@@ -403,7 +413,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         }
     }
 
-
     @Override
     protected void starting(Description description) {
         this.start();
@@ -477,7 +486,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
 
     /**
-     * Map a resource (file or directory) on the classpath to a path inside the container
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
      *
      * @param resourcePath  path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
      * @param containerPath path this should be mapped to inside the container
@@ -656,36 +666,102 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
                 .withFollowStream(true);
 
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         for (OutputFrame.OutputType type : types) {
+            callback.addConsumer(type, consumer);
             if (type == STDOUT) cmd.withStdOut(true);
             if (type == STDERR) cmd.withStdErr(true);
         }
 
-        cmd.exec(new ResultCallbackTemplate<ResultCallback<Frame>, Frame>() {
-            @Override
-            public void onNext(Frame dockerFrame) {
-                OutputFrame.OutputType type;
-                switch (dockerFrame.getStreamType()) {
-                    case STDOUT:
-                        type = STDOUT;
-                        break;
-                    case STDERR:
-                        type = STDERR;
-                        break;
-                    default:
-                        return;
-                }
+        cmd.exec(callback);
+    }
 
-                OutputFrame frame = new OutputFrame(type, dockerFrame.getPayload());
+    public synchronized Info fetchDockerDaemonInfo() throws IOException {
 
-                consumer.accept(frame);
-            }
+        if (this.dockerDaemonInfo == null) {
+            this.dockerDaemonInfo = this.dockerClient.infoCmd().exec();
+        }
+        return this.dockerDaemonInfo;
+    }
 
-            @Override
-            public void close() throws IOException {
-                consumer.accept(OutputFrame.END);
-                super.close();
-            }
-        });
+    /**
+     * Run a command inside a running container, as though using "docker exec", and interpreting
+     * the output as UTF8.
+     * <p>
+     * @see #execInContainer(Charset, String...)
+     */
+    public ExecResult execInContainer(String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        return execInContainer(UTF8, command);
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     * <p>
+     * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
+     * the time of writing, CircleCI was using this driver.
+     * @param outputCharset the character set used to interpret the output.
+     * @param command the parts of the command to run
+     * @return the result of execution
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     */
+    public ExecResult execInContainer(Charset outputCharset, String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        if (fetchDockerDaemonInfo().getExecutionDriver().startsWith("lxc")) {
+            // at time of writing, this is the expected result in CircleCI.
+            throw new UnsupportedOperationException(
+                "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
+        }
+
+        this.dockerClient
+            .execCreateCmd(this.containerId)
+            .withCmd(command);
+
+        logger().info("Running \"exec\" command: " + String.join(" ", command));
+        final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId)
+            .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
+
+        final ToStringConsumer stdoutConsumer = new ToStringConsumer();
+        final ToStringConsumer stderrConsumer = new ToStringConsumer();
+
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
+        callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
+
+        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
+
+        final ExecResult result = new ExecResult(
+              stdoutConsumer.toString(outputCharset),
+              stderrConsumer.toString(outputCharset));
+
+        logger().trace("stdout: " + result.getStdout());
+        logger().trace("stderr: " + result.getStderr());
+        return result;
+    }
+
+    /**
+     * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
+     * docker API, there's no easy way to get the result code from the process we ran.
+     */
+    public static class ExecResult {
+        private final String stdout;
+        private final String stderr;
+
+        public ExecResult(String stdout, String stderr) {
+            this.stdout = stdout;
+            this.stderr = stderr;
+        }
+
+        public String getStdout() {
+            return stdout;
+        }
+
+        public String getStderr() {
+            return stderr;
+        }
     }
 }
