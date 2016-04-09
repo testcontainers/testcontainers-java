@@ -60,6 +60,10 @@ In the dependency description below, replace `--artifact name--` as appropriate:
         <version>1.0.3</version>
     </dependency>
 
+Alternatively, if you like to live on the bleeding edge, jitpack.io can be used to obtain SNAPSHOT versions.
+See [here](https://jitpack.io/#testcontainers/testcontainers-java/master-SNAPSHOT) for instructions on obtaining
+the master branch as a SNAPSHOT dependency.
+
 ### Shaded dependencies
 
 **Note**: Testcontainers uses the docker-java client library, which in turn depends on JAX-RS, Jersey and Jackson
