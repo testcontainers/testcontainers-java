@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
-import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -26,11 +25,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.ContainerReaper;
-import org.testcontainers.utility.DockerLoggerFactory;
-import org.testcontainers.utility.DockerMachineClient;
-import org.testcontainers.utility.DockerStatus;
-import org.testcontainers.utility.PathOperations;
+import org.testcontainers.utility.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -185,9 +180,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
                     Instant now = Instant.now();
                     InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
 
-                    if (DockerStatus.isContainerRunning(inspectionResponse.getState(),
-                        minimumRunningDuration,
-                                                        now)) {
+                    if (DockerStatus.isContainerRunning(
+                            inspectionResponse.getState(),
+                            minimumRunningDuration,
+                            now)) {
                         startedOK[0] = true;
                         return true;
                     } else if (DockerStatus.isContainerStopped(inspectionResponse.getState())) {
@@ -201,7 +197,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             if (!startedOK[0]) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
-                throw new NotFoundException("Container has already stopped.");
+                throw new IllegalStateException("Container has already stopped.");
             }
 
             profiler.start("Wait until container started");
