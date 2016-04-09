@@ -150,3 +150,18 @@ useful, for example, to capture all the container output but only when a matchin
     waitingConsumer.waitUntil(frame -> frame.getUtf8String().contains("STARTED"), 30, TimeUnit.SECONDS);
 
     String utf8String = toStringConsumer.toUtf8String();
+
+### Executing a command
+
+Your test can execute a command inside a running container, similar to a `docker exec` call:
+
+   myContainer.execInContainer("touch", "/tmp/foo");
+
+This can be useful for software that has a command line administration tool. You can also get the output from the command:
+
+   ExecResult result = myContainer.execInContainer("tail", "-1", "/var/logs/foo");
+   assertThat(result.getStdout().contains("message"));
+
+There are two limitations:
+* There's no way to get the return code of the executed command
+* This isn't supported if your docker daemon uses the older "lxc" execution engine.

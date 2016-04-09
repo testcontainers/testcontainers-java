@@ -1,5 +1,6 @@
 package org.testcontainers.containers.output;
 
+import com.github.dockerjava.api.model.Frame;
 import com.google.common.base.Charsets;
 
 import java.io.ByteArrayOutputStream;
