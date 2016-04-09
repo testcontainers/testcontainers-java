@@ -33,6 +33,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +53,9 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
 
     public static final int STARTUP_RETRY_COUNT = 3;
+    public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
+
+
     /*
                  * Default settings
                  */
@@ -78,6 +82,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     @NonNull
     private Duration startupTimeout = Duration.ofSeconds(60);
+
+    @NonNull
+    private Duration minimumRunningDuration = null;
 
     /*
      * Unique instance of DockerClient for use by this container object.
@@ -137,7 +144,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         }
     }
 
-   private void tryStart(Profiler profiler) {
+    private void tryStart(Profiler profiler) {
         try {
             String dockerImageName = image.get();
             logger().debug("Starting container: {}", dockerImageName);
@@ -163,21 +170,41 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             containerIsStarting(containerInfo);
 
             // Wait until the container is running (may not be fully started)
-            profiler.start("Wait until container state=running");
-            Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
+            profiler.start("Wait until container state=running, or there's evidence it failed to start.");
+            final Boolean[] startedOK = {null};
+            Unreliables.retryUntilTrue(CONTAINER_RUNNING_TIMEOUT_SEC, TimeUnit.SECONDS, () -> {
                 //noinspection CodeBlock2Expr
                 return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
+                    // record "now" before fetching status; otherwise the time to fetch the status
+                    // will contribute to how long the container has been running.
+                    Instant now = Instant.now();
                     InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
-                    return inspectionResponse.getState().isRunning();
+
+                    if (DockerStatus.isContainerRunning(
+                            inspectionResponse.getState(),
+                            minimumRunningDuration,
+                            now)) {
+                        startedOK[0] = true;
+                        return true;
+                    } else if (DockerStatus.isContainerStopped(inspectionResponse.getState())) {
+                        startedOK[0] = false;
+                        return true;
+                    }
+                    return false;
                 });
             });
+
+            if (!startedOK[0]) {
+                // Bail out, don't wait for the port to start listening.
+                // (Exception thrown here will be caught below and wrapped)
+                throw new IllegalStateException("Container has already stopped.");
+            }
 
             profiler.start("Wait until container started");
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
             containerIsStarted(containerInfo);
-
         } catch (Exception e) {
             logger().error("Could not start container", e);
 
@@ -489,6 +516,16 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      */
     public String getContainerIpAddress() {
         return DockerClientFactory.instance().dockerHostIpAddress();
+    }
+
+    /**
+     * Only consider a container to have successfully started if it has been running for this duration. The default
+     * value is null; if that's the value, ignore this check.
+     */
+
+    public GenericContainer withMinimumRunningDuration(Duration minimumRunningDuration) {
+        this.setMinimumRunningDuration(minimumRunningDuration);
+        return this;
     }
 
     /**
