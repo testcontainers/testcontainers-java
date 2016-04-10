@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.testcontainers</groupId>
+            <groupId>${testcontainers.group}</groupId>
             <artifactId>testcontainers</artifactId>
             <version>${testcontainers.version}</version>
         </dependency>
@@ -77,6 +77,14 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <testcontainers.version>0.9.9</testcontainers.version>
+        <testcontainers.group>com.github.testcontainers.testcontainers-java</testcontainers.group>
+        <testcontainers.version>-SNAPSHOT</testcontainers.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 </project>
