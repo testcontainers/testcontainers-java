@@ -52,17 +52,35 @@ TestContainers is distributed in a handful of Maven modules:
 * **selenium** for selenium/webdriver support
 * **nginx** for nginx container support
 
-In the dependency description below, replace `--artifact name--` as appropriate:
+In the dependency description below, replace `--artifact name--` as appropriate and `--latest version--` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22):
 
     <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>--artifact name--</artifactId>
-        <version>1.0.3</version>
+        <version>--latest version--</version>
     </dependency>
 
+### JitPack (unreleased versions)
+
 Alternatively, if you like to live on the bleeding edge, jitpack.io can be used to obtain SNAPSHOT versions.
-See [here](https://jitpack.io/#testcontainers/testcontainers-java/master-SNAPSHOT) for instructions on obtaining
-the master branch as a SNAPSHOT dependency.
+Use the following dependency description instead:
+
+	<dependency>
+	    <groupId>com.github.testcontainers.testcontainers-java</groupId>
+	    <artifactId>--artifact name--</artifactId>
+	    <version>-SNAPSHOT</version>
+	</dependency>
+
+A specific git revision (such as `093a3a4628`) can be used as a fixed version instead. The JitPack maven repository must also be declared, e.g.:
+
+	<repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+	
+The [testcontainers examples project](https://github.com/testcontainers/testcontainers-java-examples) uses JitPack to fetch the latest, master version.
 
 ### Shaded dependencies
 
