@@ -286,6 +286,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     protected Integer getLivenessCheckPort() {
         if (exposedPorts.size() > 0) {
             return getMappedPort(exposedPorts.get(0));
+        } else if (portBindings.size() > 0) {
+            return PortBinding.parse(portBindings.get(0)).getBinding().getHostPort();
         } else {
             return null;
         }
