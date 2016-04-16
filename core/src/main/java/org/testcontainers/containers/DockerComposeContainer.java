@@ -41,7 +41,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
     @SuppressWarnings("WeakerAccess")
     public DockerComposeContainer(File composeFile, String command) {
-        super("dduportal/docker-compose:1.3.1");
+        super("dduportal/docker-compose:1.6.0");
 
         // Create a unique identifier and tell compose
         identifier = Base58.randomString(6).toLowerCase();
