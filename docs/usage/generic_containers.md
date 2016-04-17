@@ -155,12 +155,12 @@ useful, for example, to capture all the container output but only when a matchin
 
 Your test can execute a command inside a running container, similar to a `docker exec` call:
 
-   myContainer.execInContainer("touch", "/tmp/foo");
+    myContainer.execInContainer("touch", "/tmp/foo");
 
 This can be useful for software that has a command line administration tool. You can also get the output from the command:
 
-   ExecResult result = myContainer.execInContainer("tail", "-1", "/var/logs/foo");
-   assertThat(result.getStdout().contains("message"));
+    ExecResult result = myContainer.execInContainer("tail", "-1", "/var/logs/foo");
+    assertThat(result.getStdout().contains("message"));
 
 There are two limitations:
 * There's no way to get the return code of the executed command
