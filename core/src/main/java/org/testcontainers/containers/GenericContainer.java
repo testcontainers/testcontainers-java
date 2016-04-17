@@ -23,6 +23,7 @@ import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.images.RemoteDockerImage;
@@ -205,6 +206,13 @@ public class GenericContainer extends FailureDetectingExternalResource implement
             });
 
             if (!startedOK[0]) {
+
+                logger().error("Container did not start correctly; container log output (if any) will be fetched and logged shortly");
+                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
+                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
+                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
+                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
+
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container has already stopped.");
