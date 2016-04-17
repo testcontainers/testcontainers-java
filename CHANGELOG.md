@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Prevent unnecessary and erroneous reconfiguration of container if startup needs to be retried
 - Consolidate container cleanup to ensure that ambassador containers used for Docker Compose are cleaned up appropriately
 - Fix container liveness check port lookup for FixedHostPortGenericContainer.
+- Upgrade docker-compose container to dduportal/docker-compose:1.6.0 for compatibility with docker compose file format v2.
 
 ### Changed
 - Add `docker exec` support for running commands against running containers
