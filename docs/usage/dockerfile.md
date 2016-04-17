@@ -12,7 +12,7 @@ Testcontainers will `docker build` a temporary container image, and will use it 
 
 ## Examples
 
-### Dockerfile from file or classpath resource
+### Dockerfile from String, file or classpath resource
 
 `ImageFromDockerfile` accepts arbitrary files, strings or classpath resources to be used as files in the build context.
 At least one of these needs to be a `Dockerfile`.
@@ -48,3 +48,16 @@ programmatically), there is a DSL available to allow Dockerfiles to be defined i
 See `ParameterizedDockerfileContainerTest` for a very basic example of using this in conjunction with JUnit
 parameterized testing.
 
+## Automatic deletion
+
+Temporary container images will be automatically removed when the test JVM shuts down. If this is not desired and
+the image should be retained between tests, pass a stable image name and `false` flag to the `ImageFromDockerfile`
+constructor.
+
+Retaining the image between tests will use Docker's image cache to accelerate subsequent test runs.
+
+By default the no-args constructor will use an image name of the form `testcontainers/` + random string:
+
+* `public ImageFromDockerfile()`
+* `public ImageFromDockerfile(String dockerImageName)`
+* `public ImageFromDockerfile(String dockerImageName, boolean deleteOnExit)`

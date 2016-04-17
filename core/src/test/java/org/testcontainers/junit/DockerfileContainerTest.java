@@ -21,7 +21,7 @@ public class DockerfileContainerTest {
 
     @Rule
     public GenericContainer dslContainer = new GenericContainer(
-            new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
+            new ImageFromDockerfile("tcdockerfile/nginx", false).withDockerfileFromBuilder(builder -> {
                     builder
                             .from("alpine:3.2")
                             .run("apk add --update nginx")
