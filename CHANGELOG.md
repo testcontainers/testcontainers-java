@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0.4] - 2016-04-17
+### Fixed
+- Prevent unnecessary and erroneous reconfiguration of container if startup needs to be retried
+- Consolidate container cleanup to ensure that ambassador containers used for Docker Compose are cleaned up appropriately
+
+### Changed
+- Add support for building container images on the fly from Dockerfiles, including optional Dockerfile builder DSL
+- Add container name as prefix for container logs that are streamed to SLF4J
+- Improve container startup failure detection, including adding the option to specify a minimum up time that the container should achieve before being considered started successfully
+
 ## [1.0.3] - 2016-03-31
 ### Fixed
 - Resolve issues where containers would not be cleaned up on JVM shutdown if they failed to start correctly
