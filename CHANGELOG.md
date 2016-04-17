@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Prevent unnecessary and erroneous reconfiguration of container if startup needs to be retried
 - Consolidate container cleanup to ensure that ambassador containers used for Docker Compose are cleaned up appropriately
+- Fix container liveness check port lookup for FixedHostPortGenericContainer.
 
 ### Changed
+- Add `docker exec` support for running commands against running containers
 - Add support for building container images on the fly from Dockerfiles, including optional Dockerfile builder DSL
 - Add container name as prefix for container logs that are streamed to SLF4J
 - Improve container startup failure detection, including adding the option to specify a minimum up time that the container should achieve before being considered started successfully
