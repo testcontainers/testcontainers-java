@@ -5,6 +5,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
+
 import org.bson.Document;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -22,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
@@ -90,6 +93,14 @@ public class GenericContainerRuleTest {
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
+    /**
+     * Create a container with an extra host entry and expose the content of /etc/hosts for testing.
+     */
+    @ClassRule
+    public static GenericContainer alpineExtrahost = new GenericContainer("alpine:3.2")
+            .withExposedPorts(80)
+            .withExtraHost("somehost:192.168.1.10")
+            .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
 
     @Test
     public void simpleRedisTest() {
@@ -254,5 +265,27 @@ public class GenericContainerRuleTest {
             // which doesn't support "exec". At the time of writing (2016/03/29), that's the case for CircleCI.
             // Once they resolve the issue, this clause can be removed.
         }
+    }
+
+    @Test
+    public void extraHostTest() throws IOException {
+        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+
+            Socket socket = new Socket(alpineExtrahost.getContainerIpAddress(), alpineExtrahost.getMappedPort(80));
+            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        });
+
+        // read hosts file from container
+        StringBuffer hosts = new StringBuffer();
+        String line = br.readLine();
+        while (line != null) {
+        	hosts.append(line);
+        	hosts.append("\n");
+        	line = br.readLine();
+        }
+
+        Matcher matcher = Pattern.compile("^192.168.1.10\\s.*somehost", Pattern.MULTILINE).matcher(hosts.toString());
+        assertTrue("The hosts file of container contains extra host", matcher.find());
     }
 }
