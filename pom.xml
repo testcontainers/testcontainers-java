@@ -148,7 +148,6 @@
         <module>modules/postgresql</module>
         <module>modules/selenium</module>
         <module>modules/nginx</module>
-		<module>modules/virtuoso</module>
     </modules>
 
     <profiles>
