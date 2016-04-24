@@ -99,7 +99,7 @@ public class GenericContainerRuleTest {
     @ClassRule
     public static GenericContainer alpineExtrahost = new GenericContainer("alpine:3.2")
             .withExposedPorts(80)
-            .withExtraHost("somehost:192.168.1.10")
+            .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
 
     @Test
@@ -280,9 +280,9 @@ public class GenericContainerRuleTest {
         StringBuffer hosts = new StringBuffer();
         String line = br.readLine();
         while (line != null) {
-        	hosts.append(line);
-        	hosts.append("\n");
-        	line = br.readLine();
+            hosts.append(line);
+            hosts.append("\n");
+            line = br.readLine();
         }
 
         Matcher matcher = Pattern.compile("^192.168.1.10\\s.*somehost", Pattern.MULTILINE).matcher(hosts.toString());

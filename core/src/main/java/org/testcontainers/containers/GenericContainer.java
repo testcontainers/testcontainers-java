@@ -74,7 +74,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     private List<String> portBindings = new ArrayList<>();
 
     @NonNull
-	private List<String> extraHosts = new ArrayList<>();
+    private List<String> extraHosts = new ArrayList<>();
 
     @NonNull
     private Future<String> image;
@@ -506,13 +506,13 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     /**
      * Add an extra host entry to be passed to the container
-     *
-     * @param hostEntry for e.g. "somehost:192.168.47.11"
+     * @param hostname
+     * @param ipAddress
      * @return this
      */
-    public GenericContainer withExtraHost(String hostEntry) {
-    	this.extraHosts.add(hostEntry);
-    	return this;
+    public GenericContainer withExtraHost(String hostname, String ipAddress) {
+        this.extraHosts.add(String.format("%s:%s", hostname, ipAddress));
+        return this;
     }
 
     /**
