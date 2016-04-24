@@ -9,9 +9,11 @@ import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.TimeoutException;
@@ -72,6 +74,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     private List<String> portBindings = new ArrayList<>();
 
     @NonNull
+    private List<String> extraHosts = new ArrayList<>();
+
+    @NonNull
     private Future<String> image;
 
     @NonNull
@@ -110,6 +115,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     @Nullable
     private InspectContainerResponse containerInfo;
+
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -336,6 +342,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         createCommand.withLinks(linksArray);
 
         createCommand.withPublishAllPorts(true);
+
+        String[] extraHostsArray = extraHosts.stream()
+        		 .toArray(String[]::new);
+        createCommand.withExtraHosts(extraHostsArray);
     }
 
     /**
@@ -494,6 +504,16 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         return this;
     }
 
+    /**
+     * Add an extra host entry to be passed to the container
+     * @param hostname
+     * @param ipAddress
+     * @return this
+     */
+    public GenericContainer withExtraHost(String hostname, String ipAddress) {
+        this.extraHosts.add(String.format("%s:%s", hostname, ipAddress));
+        return this;
+    }
 
     /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
