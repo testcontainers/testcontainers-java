@@ -32,7 +32,7 @@ public class NginxContainer extends GenericContainer implements LinkableContaine
     }
 
     public void setCustomContent(String htmlContentPath) {
-        addFileSystemBind(htmlContentPath, "/usr/share/nginx/html", BindMode.READ_ONLY);
+        addHostSystemAwareFileSystemBind(htmlContentPath, "/usr/share/nginx/html", BindMode.READ_ONLY);
     }
 
     public NginxContainer withCustomContent(String htmlContentPath) {

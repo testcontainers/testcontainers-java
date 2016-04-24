@@ -49,7 +49,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
         // Map the docker compose file into the container
         addEnv("COMPOSE_FILE", "/compose/" + composeFile.getAbsoluteFile().getName());
-        addFileSystemBind(composeFile.getAbsoluteFile().getParentFile().getAbsolutePath(), "/compose", READ_ONLY);
+        addHostSystemAwareFileSystemBind(composeFile.getAbsoluteFile().getParentFile().getAbsolutePath(), "/compose", READ_ONLY);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.

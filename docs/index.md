@@ -22,6 +22,8 @@ Docker or docker-machine (for OS X) must be installed on the machine you are run
 
 Note that only Linux host environments, or OS X with Docker Machine, are currently supported.
 
+If you want to use TestContainers on Windows you can try the [alpha release](usage/windows_support.md).
+
 ### Docker environment discovery
 
 Testcontainers will try to connect to a Docker daemon using the following strategies in order:

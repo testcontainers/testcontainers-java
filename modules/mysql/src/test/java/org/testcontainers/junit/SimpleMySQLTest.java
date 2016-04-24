@@ -3,6 +3,8 @@ package org.testcontainers.junit;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.NonNull;
+
+import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -12,6 +14,7 @@ import java.sql.Statement;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 
 /**
@@ -68,6 +71,7 @@ public class SimpleMySQLTest {
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
+    	assumeFalse(SystemUtils.IS_OS_WINDOWS);
         MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
                                                 .withConfigurationOverride("somepath/mysql_conf_override");
         mysqlCustomConfig.start();

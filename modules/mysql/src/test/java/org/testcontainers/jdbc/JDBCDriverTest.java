@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -12,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 /**
  *
@@ -30,6 +32,7 @@ public class JDBCDriverTest {
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
+    	assumeFalse(SystemUtils.IS_OS_WINDOWS);
         HikariDataSource ds = getDataSource("jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", 1);
         Statement statement = ds.getConnection().createStatement();
         statement.execute("SELECT @@GLOBAL.innodb_file_format");

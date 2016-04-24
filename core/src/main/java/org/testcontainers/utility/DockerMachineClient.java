@@ -1,6 +1,8 @@
 package org.testcontainers.utility;
 
 import lombok.NonNull;
+
+import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -18,6 +20,15 @@ public class DockerMachineClient {
 
     private static DockerMachineClient instance;
     private static final Logger LOGGER = getLogger(DockerMachineClient.class);
+    
+    private static final String executableName;
+    static {
+    	if(SystemUtils.IS_OS_WINDOWS) {
+    		executableName = "docker-machine.exe";
+    	} else {
+    		executableName = "docker-machine";
+    	}
+    }
 
     /**
      * Private constructor
@@ -39,11 +50,11 @@ public class DockerMachineClient {
     }
 
     public boolean isInstalled() {
-        return executableExists("docker-machine");
+        return executableExists(executableName);
     }
 
     public Optional<String> getDefaultMachine() {
-        String ls = runShellCommand("docker-machine", "ls", "-q");
+        String ls = runShellCommand(executableName, "ls", "-q");
         List<String> machineNames = asList(ls.split("\n"));
 
         String envMachineName = System.getenv("DOCKER_MACHINE_NAME");
@@ -63,14 +74,14 @@ public class DockerMachineClient {
     }
 
     public void ensureMachineRunning(@NonNull String machineName) {
-        String status = runShellCommand("docker-machine", "status", machineName);
+        String status = runShellCommand(executableName, "status", machineName);
         if (!status.trim().equalsIgnoreCase("running")) {
             LOGGER.info("Docker-machine '{}' is not running. Current status is '{}'. Will start it now", machineName, status);
-            runShellCommand("docker-machine", "start", machineName);
+            runShellCommand(executableName, "start", machineName);
         }
     }
 
     public String getDockerDaemonIpAddress(@NonNull String machineName) {
-        return runShellCommand("docker-machine", "ip", machineName);
+        return runShellCommand(executableName, "ip", machineName);
     }
 }

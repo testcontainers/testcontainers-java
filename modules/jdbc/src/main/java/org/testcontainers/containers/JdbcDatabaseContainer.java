@@ -123,7 +123,7 @@ public abstract class JdbcDatabaseContainer extends GenericContainer implements 
                 throw new ContainerLaunchException("Could not locate a classpath resource for " + paramName +" of " + resourceName);
             }
 
-            addFileSystemBind(classPathResource.getFile(), pathNameInContainer, BindMode.READ_ONLY);
+            addHostSystemAwareFileSystemBind(classPathResource.getFile(), pathNameInContainer, BindMode.READ_ONLY);
         }
     }
 
