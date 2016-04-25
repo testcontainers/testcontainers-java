@@ -21,3 +21,8 @@ caution. The list may not be complete.
 
 ### MySQL TestContainer
 * MySQL server prevents custom configuration file (ini-script) from being loaded due to security measures ([link to feature description](database_containers.md#using-an-init-script))
+
+## Reporting issues
+
+Please report any issues with the Windows build of Testcontainers [here](https://github.com/testcontainers/testcontainers-java/issues)
+and be sure to note that you are using this on Windows.
