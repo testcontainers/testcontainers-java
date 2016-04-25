@@ -4,7 +4,7 @@
 
 [![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master) [View on Github](https://github.com/testcontainers/testcontainers-java)
 
-![Testcontainers logo](logo.png)
+![Testcontainers logo](https://rnorth.org/public/testcontainers/logo.png)
 
 ## Use Cases
 
