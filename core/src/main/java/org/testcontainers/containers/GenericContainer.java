@@ -16,7 +16,6 @@ import lombok.NonNull;
 
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
-import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -28,12 +27,13 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.containers.wait.Wait;
+import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -63,7 +63,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
-
     /*
      * Default settings
      */
@@ -92,9 +91,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     @NonNull
-    private Duration startupTimeout = Duration.ofSeconds(60);
-
-    @NonNull
     private Duration minimumRunningDuration = null;
 
     /*
@@ -112,6 +108,12 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      */
     protected String containerId;
     protected String containerName;
+
+    /**
+     * The approach to determine if the container is ready.
+     */
+    @NonNull
+    protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
 
     @Nullable
     private InspectContainerResponse containerInfo;
@@ -297,6 +299,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
     }
 
+    /**
+     * @return the port on which to check if the container is ready
+     */
     protected Integer getLivenessCheckPort() {
         if (exposedPorts.size() > 0) {
             return getMappedPort(exposedPorts.get(0));
@@ -349,42 +354,37 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Wait until the container has started. The default implementation simply
-     * waits for a port to start listening; subclasses may override if more
-     * sophisticated behaviour is required.
+     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
+     *
+     * @see Wait#defaultWaitStrategy()
+     * @param waitStrategy the WaitStrategy to use
+     * @return this
      */
-    protected void waitUntilContainerStarted() {
-        waitForListeningPort(DockerClientFactory.instance().dockerHostIpAddress(), getLivenessCheckPort());
+    public GenericContainer waitingFor(@NonNull WaitStrategy waitStrategy) {
+        this.waitStrategy = waitStrategy;
+        return this;
     }
 
     /**
-     * Waits for a port to start listening for incoming connections.
+     * The {@link WaitStrategy} to use to determine if the container is ready.
+     * Defaults to {@link Wait#defaultWaitStrategy()}.
      *
-     * @param ipAddress the IP address to attempt to connect to
-     * @param port      the port which will start accepting connections
+     * @return the {@link WaitStrategy} to use
      */
-    protected void waitForListeningPort(String ipAddress, Integer port) {
-
-        if (port == null) {
-            return;
-        }
-
-        try {
-            Unreliables.retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                DOCKER_CLIENT_RATE_LIMITER.doWhenReady(() -> {
-                    try {
-                        new Socket(ipAddress, port).close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                return true;
-            });
-        } catch (TimeoutException e) {
-            throw new ContainerLaunchException("Timed out waiting for container port to open (" + ipAddress + ":" + port + " should be listening)");
-        }
+    protected WaitStrategy getWaitStrategy() {
+        return waitStrategy;
     }
 
+    /**
+     * Wait until the container has started. The default implementation simply
+     * waits for a port to start listening; other implementations are available
+     * as implementations of {@link WaitStrategy}
+     *
+     * @see #waitingFor(WaitStrategy)
+     */
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
+    }
 
     /**
      * Set the command that should be run in the container
@@ -539,13 +539,13 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
     /**
      * Set the duration of waiting time until container treated as started.
-     * @see GenericContainer#waitForListeningPort(String, Integer)
+     * @see WaitStrategy#waitUntilReady(GenericContainer)
      *
      * @param startupTimeout timeout
      * @return this
      */
     public GenericContainer withStartupTimeout(Duration startupTimeout) {
-        this.setStartupTimeout(startupTimeout);
+        getWaitStrategy().withStartupTimeout(startupTimeout);
         return this;
     }
 
@@ -562,7 +562,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * Only consider a container to have successfully started if it has been running for this duration. The default
      * value is null; if that's the value, ignore this check.
      */
-
     public GenericContainer withMinimumRunningDuration(Duration minimumRunningDuration) {
         this.setMinimumRunningDuration(minimumRunningDuration);
         return this;
@@ -792,6 +791,65 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         public String getStderr() {
             return stderr;
+        }
+    }
+
+    /**
+     * Convenience class with access to non-public members of GenericContainer.
+     */
+    public static abstract class AbstractWaitStrategy implements WaitStrategy {
+        protected GenericContainer container;
+
+        @NonNull
+        protected Duration startupTimeout = Duration.ofSeconds(60);
+
+        /**
+         * Wait until the container has started.
+         *
+         * @param container the container for which to wait
+         */
+        @Override
+        public void waitUntilReady(GenericContainer container) {
+            this.container = container;
+            waitUntilReady();
+        }
+
+        /**
+         * Wait until {@link #container} has started.
+         */
+        protected abstract void waitUntilReady();
+
+        /**
+         * Set the duration of waiting time until container treated as started.
+         *
+         * @param startupTimeout timeout
+         * @return this
+         * @see WaitStrategy#waitUntilReady(GenericContainer)
+         */
+        public WaitStrategy withStartupTimeout(Duration startupTimeout) {
+            this.startupTimeout = startupTimeout;
+            return this;
+        }
+
+        /**
+         * @return the container's logger
+         */
+        protected Logger logger() {
+            return container.logger();
+        }
+
+        /**
+         * @return the port on which to check if the container is ready
+         */
+        protected Integer getLivenessCheckPort() {
+            return container.getLivenessCheckPort();
+        }
+
+        /**
+         * @return the rate limiter to use
+         */
+        protected RateLimiter getRateLimiter() {
+            return DOCKER_CLIENT_RATE_LIMITER;
         }
     }
 }
