@@ -6,7 +6,7 @@ package org.testcontainers.dockerclient;
  * @author pcornish
  */
 public class DockerLocalConfigurationStrategy extends AbstractSocketConfigurationStrategy {
-    public static final String SOCKET_LOCATION = "tcp://docker.local:2375";
+    public static final String SOCKET_LOCATION = "http://docker.local:2375";
     private static final String SOCKET_DESCRIPTION = "docker.local";
 
     @Override
