@@ -1,32 +1,21 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
-
-public class UnixSocketConfigurationStrategy implements DockerConfigurationStrategy {
-
+/**
+ * Attempt to configure docker using a local Unix socket.
+ *
+ * @author richardnorth
+ */
+public class UnixSocketConfigurationStrategy extends AbstractSocketConfigurationStrategy {
     public static final String SOCKET_LOCATION = "unix:///var/run/docker.sock";
+    private static final String SOCKET_DESCRIPTION = "local Unix";
 
     @Override
-    public DockerClientConfig provideConfiguration()
-            throws InvalidConfigurationException {
-        DockerClientConfig config = new DockerClientConfig.DockerClientConfigBuilder().withUri(SOCKET_LOCATION).build();
-        DockerClient client = DockerClientBuilder.getInstance(config).build();
-
-        try {
-            client.pingCmd().exec();
-        } catch (Exception e) {
-            throw new InvalidConfigurationException("ping failed", e);
-        }
-
-        LOGGER.info("Accessing docker with local Unix socket");
-        return config;
+    protected String getSocketLocation() {
+        return SOCKET_LOCATION;
     }
 
     @Override
-    public String getDescription() {
-        return "local Unix socket (" + SOCKET_LOCATION + ")";
+    protected String getSocketDescription() {
+        return SOCKET_DESCRIPTION;
     }
-
 }
