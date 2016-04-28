@@ -55,6 +55,11 @@
             <name>Viktor Schulz</name>
             <email>vschulz@mail.uni-mannheim.de</email>
         </developer>
+        <developer>
+            <id>pcornish</id>
+            <name>Pete Cornish</name>
+            <email>outofcoffee@gmail.com</email>
+        </developer>
     </developers>
 
     <repositories>
