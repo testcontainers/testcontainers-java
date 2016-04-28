@@ -414,9 +414,28 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         env.add(key + "=" + value);
     }
 
+    /**
+     * Adds a file system binding.
+     *
+     * @param hostPath the file system path on the host
+     * @param containerPath the file system path inside the container
+     * @param mode the bind mode
+     */
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
-
         binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
+    }
+
+    /**
+     * Adds a file system binding.
+     *
+     * @param hostPath the file system path on the host
+     * @param containerPath the file system path inside the container
+     * @param mode the bind mode
+     * @return this
+     */
+    public GenericContainer withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+        addFileSystemBind(hostPath, containerPath, mode);
+        return this;
     }
 
     public void addLink(LinkableContainer otherContainer, String alias) {
