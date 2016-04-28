@@ -57,6 +57,13 @@
         </developer>
     </developers>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -85,9 +92,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.rnorth.visible-assertions</groupId>
+            <groupId>com.github.rnorth</groupId>
             <artifactId>visible-assertions</artifactId>
-            <version>1.0.2</version>
+            <version>040134e667</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -26,9 +26,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.rnorth.visible-assertions</groupId>
+            <groupId>com.github.rnorth</groupId>
             <artifactId>visible-assertions</artifactId>
-            <version>1.0.4</version>
+            <version>040134e667</version>
         </dependency>
     </dependencies>
 </project>
