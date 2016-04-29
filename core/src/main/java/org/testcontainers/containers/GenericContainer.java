@@ -354,11 +354,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
-     *
-     * @see Wait#defaultWaitStrategy()
-     * @param waitStrategy the WaitStrategy to use
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF waitingFor(@NonNull WaitStrategy waitStrategy) {
@@ -388,9 +384,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param command a command in single string format (will automatically be split on spaces)
+     * {@inheritDoc}
      */
     @Override
     public void setCommand(@NonNull String command) {
@@ -398,9 +392,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param commandParts a command as an array of string parts
+     * {@inheritDoc}
      */
     @Override
     public void setCommand(@NonNull String... commandParts) {
@@ -408,10 +400,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Add an environment variable to be passed to the container.
-     *
-     * @param key   environment variable key
-     * @param value environment variable value
+     * {@inheritDoc}
      */
     @Override
     public void addEnv(String key, String value) {
@@ -419,11 +408,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Adds a file system binding.
-     *
-     * @param hostPath the file system path on the host
-     * @param containerPath the file system path inside the container
-     * @param mode the bind mode
+     * {@inheritDoc}
      */
     @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
@@ -431,12 +416,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Adds a file system binding.
-     *
-     * @param hostPath the file system path on the host
-     * @param containerPath the file system path inside the container
-     * @param mode the bind mode
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
@@ -471,12 +451,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
         this.stop();
     }
 
-
     /**
-     * Set the ports that this container listens on
-     *
-     * @param ports an array of TCP ports
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withExposedPorts(Integer... ports) {
@@ -500,11 +476,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Add an environment variable to be passed to the container.
-     *
-     * @param key   environment variable key
-     * @param value environment variable value
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withEnv(String key, String value) {
@@ -513,10 +485,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param cmd a command in single string format (will automatically be split on spaces)
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withCommand(String cmd) {
@@ -525,10 +494,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param commandParts a command as an array of string parts
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withCommand(String... commandParts) {
@@ -537,10 +503,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Add an extra host entry to be passed to the container
-     * @param hostname
-     * @param ipAddress
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withExtraHost(String hostname, String ipAddress) {
@@ -549,13 +512,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Map a resource (file or directory) on the classpath to a path inside the container.
-     * This will only work if you are running your tests outside a Docker container.
-     *
-     * @param resourcePath  path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
-     * @param containerPath path this should be mapped to inside the container
-     * @param mode          access mode for the file
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
@@ -572,11 +529,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Set the duration of waiting time until container treated as started.
-     * @see WaitStrategy#waitUntilReady(GenericContainer)
-     *
-     * @param startupTimeout timeout
-     * @return this
+     * {@inheritDoc}
      */
     @Override
     public SELF withStartupTimeout(Duration startupTimeout) {
@@ -585,9 +538,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Get the IP address that this container may be reached on (may not be the local machine).
-     *
-     * @return an IP address
+     * {@inheritDoc}
      */
     @Override
     public String getContainerIpAddress() {
@@ -595,8 +546,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Only consider a container to have successfully started if it has been running for this duration. The default
-     * value is null; if that's the value, ignore this check.
+     * {@inheritDoc}
      */
     @Override
     public SELF withMinimumRunningDuration(Duration minimumRunningDuration) {
@@ -610,14 +560,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
      * @return an IP address
      * @deprecated please use getContainerIpAddress() instead
      */
-    @Override
     @Deprecated
     public String getIpAddress() {
         return getContainerIpAddress();
     }
 
     /**
-     * @return is the container currently running?
+     * {@inheritDoc}
      */
     @Override
     public Boolean isRunning() {
@@ -629,10 +578,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Get the actual mapped port for a given port exposed by the container.
-     *
-     * @param originalPort the original TCP port that is exposed
-     * @return the port that the exposed port is mapped to, or null if it is not exposed
+     * {@inheritDoc}
      */
     @Override
     public Integer getMappedPort(final int originalPort) {
@@ -652,9 +598,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * <b>Resolve</b> Docker image and set it.
-     *
-     * @param dockerImageName image name
+     * {@inheritDoc}
      */
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
@@ -665,9 +609,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Get image name.
-     *
-     * @return image name
+     * {@inheritDoc}
      */
     @Override
     @NonNull
@@ -680,14 +622,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Get the IP address that containers (e.g. browsers) can use to reference a service running on the local machine,
-     * i.e. the machine on which this test is running.
-     * <p>
-     * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
-     * to be pointed at "http://" + getTestHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
-     * from inside the container is not going to work, since the container has its own IP address.
-     *
-     * @return the IP address of the host machine
+     * {@inheritDoc}
      */
     @Override
     public String getTestHostIpAddress() {
@@ -719,9 +654,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Follow container output, sending each frame (usually, line) to a consumer. Stdout and stderr will be followed.
-     *
-     * @param consumer consumer that the frames should be sent to
+     * {@inheritDoc}
      */
     @Override
     public void followOutput(Consumer<OutputFrame> consumer) {
@@ -729,11 +662,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Follow container output, sending each frame (usually, line) to a consumer. This method allows Stdout and/or stderr
-     * to be selected.
-     *
-     * @param consumer consumer that the frames should be sent to
-     * @param types    types that should be followed (one or both of STDOUT, STDERR)
+     * {@inheritDoc}
      */
     @Override
     public void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
@@ -760,10 +689,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Run a command inside a running container, as though using "docker exec", and interpreting
-     * the output as UTF8.
-     * <p>
-     * @see #execInContainer(Charset, String...)
+     * {@inheritDoc}
      */
     @Override
     public ExecResult execInContainer(String... command)
@@ -773,16 +699,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>> extends Failu
     }
 
     /**
-     * Run a command inside a running container, as though using "docker exec".
-     * <p>
-     * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
-     * the time of writing, CircleCI was using this driver.
-     * @param outputCharset the character set used to interpret the output.
-     * @param command the parts of the command to run
-     * @return the result of execution
-     * @throws IOException if there's an issue communicating with Docker
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     * {@inheritDoc}
      */
     @Override
     public ExecResult execInContainer(Charset outputCharset, String... command)
