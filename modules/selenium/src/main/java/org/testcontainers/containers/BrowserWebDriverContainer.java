@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * The container should expose Selenium remote control protocol and VNC.
  */
-public class BrowserWebDriverContainer extends GenericContainer implements VncService, LinkableContainer {
+public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer {
 
     private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
     private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
@@ -53,10 +53,10 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
     }
 
 
-    public BrowserWebDriverContainer withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
+    public SELF withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
         super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
         this.desiredCapabilities = desiredCapabilities;
-        return this;
+        return self();
     }
 
     @Override
@@ -131,7 +131,7 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
 
         if (recordingMode != VncRecordingMode.SKIP) {
             LOGGER.debug("Starting VNC recording");
-            VncRecordingSidekickContainer<BrowserWebDriverContainer> recordingSidekickContainer = new VncRecordingSidekickContainer<>(this);
+            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this);
             recordingSidekickContainer.start();
             currentVncRecordings.add(recordingSidekickContainer);
         }
@@ -198,15 +198,15 @@ public class BrowserWebDriverContainer extends GenericContainer implements VncSe
      * @param alias          the alias (hostname) that this other container should be referred to by
      * @return this
      */
-    public BrowserWebDriverContainer withLinkToContainer(LinkableContainer otherContainer, String alias) {
+    public SELF withLinkToContainer(LinkableContainer otherContainer, String alias) {
         addLink(otherContainer, alias);
-        return this;
+        return self();
     }
 
-    public BrowserWebDriverContainer withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory) {
+    public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory) {
         this.recordingMode = recordingMode;
         this.vncRecordingDirectory = vncRecordingDirectory;
-        return this;
+        return self();
     }
 
 

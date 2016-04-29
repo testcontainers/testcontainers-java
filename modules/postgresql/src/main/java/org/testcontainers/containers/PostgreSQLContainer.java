@@ -3,7 +3,7 @@ package org.testcontainers.containers;
 /**
  * @author richardnorth
  */
-public class PostgreSQLContainer extends JdbcDatabaseContainer {
+public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";

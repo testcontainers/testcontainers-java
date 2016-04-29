@@ -13,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
  */
-public class VncRecordingSidekickContainer<T extends VncService & LinkableContainer> extends GenericContainer {
+public class VncRecordingSidekickContainer<SELF extends VncRecordingSidekickContainer<SELF, T>, T extends VncService & LinkableContainer> extends GenericContainer<SELF> {
     private final T vncServiceContainer;
     private final Path tempDir;
 

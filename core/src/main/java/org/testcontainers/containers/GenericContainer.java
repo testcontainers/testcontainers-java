@@ -55,7 +55,7 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
+public class GenericContainer<SELF extends GenericContainer<SELF>> extends FailureDetectingExternalResource implements TestContainer<SELF> {
 
     public static final int STARTUP_RETRY_COUNT = 3;
 
@@ -360,9 +360,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param waitStrategy the WaitStrategy to use
      * @return this
      */
-    public GenericContainer waitingFor(@NonNull WaitStrategy waitStrategy) {
+    @Override
+    public SELF waitingFor(@NonNull WaitStrategy waitStrategy) {
         this.waitStrategy = waitStrategy;
-        return this;
+        return self();
     }
 
     /**
@@ -391,6 +392,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @param command a command in single string format (will automatically be split on spaces)
      */
+    @Override
     public void setCommand(@NonNull String command) {
         this.commandParts = command.split(" ");
     }
@@ -400,6 +402,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @param commandParts a command as an array of string parts
      */
+    @Override
     public void setCommand(@NonNull String... commandParts) {
         this.commandParts = commandParts;
     }
@@ -410,6 +413,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param key   environment variable key
      * @param value environment variable value
      */
+    @Override
     public void addEnv(String key, String value) {
         env.add(key + "=" + value);
     }
@@ -421,6 +425,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param containerPath the file system path inside the container
      * @param mode the bind mode
      */
+    @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
     }
@@ -433,19 +438,23 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param mode the bind mode
      * @return this
      */
-    public GenericContainer withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+    @Override
+    public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode);
-        return this;
+        return self();
     }
 
+    @Override
     public void addLink(LinkableContainer otherContainer, String alias) {
         this.linkedContainers.put(alias, otherContainer);
     }
 
+    @Override
     public void addExposedPort(Integer port) {
         exposedPorts.add(port);
     }
 
+    @Override
     public void addExposedPorts(int... ports) {
         for (int port : ports) {
             exposedPorts.add(port);
@@ -469,9 +478,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param ports an array of TCP ports
      * @return this
      */
-    public GenericContainer withExposedPorts(Integer... ports) {
+    @Override
+    public SELF withExposedPorts(Integer... ports) {
         this.setExposedPorts(asList(ports));
-        return this;
+        return self();
 
     }
 
@@ -496,9 +506,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param value environment variable value
      * @return this
      */
-    public GenericContainer withEnv(String key, String value) {
+    @Override
+    public SELF withEnv(String key, String value) {
         this.addEnv(key, value);
-        return this;
+        return self();
     }
 
     /**
@@ -507,9 +518,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param cmd a command in single string format (will automatically be split on spaces)
      * @return this
      */
-    public GenericContainer withCommand(String cmd) {
+    @Override
+    public SELF withCommand(String cmd) {
         this.setCommand(cmd);
-        return this;
+        return self();
     }
 
     /**
@@ -518,9 +530,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param commandParts a command as an array of string parts
      * @return this
      */
-    public GenericContainer withCommand(String... commandParts) {
+    @Override
+    public SELF withCommand(String... commandParts) {
         this.setCommand(commandParts);
-        return this;
+        return self();
     }
 
     /**
@@ -529,9 +542,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param ipAddress
      * @return this
      */
-    public GenericContainer withExtraHost(String hostname, String ipAddress) {
+    @Override
+    public SELF withExtraHost(String hostname, String ipAddress) {
         this.extraHosts.add(String.format("%s:%s", hostname, ipAddress));
-        return this;
+        return self();
     }
 
     /**
@@ -543,7 +557,8 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param mode          access mode for the file
      * @return this
      */
-    public GenericContainer withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
+    @Override
+    public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
         URL resource = GenericContainer.class.getClassLoader().getResource(resourcePath);
 
         if (resource == null) {
@@ -553,7 +568,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         this.addFileSystemBind(resourceFilePath, containerPath, mode);
 
-        return this;
+        return self();
     }
 
     /**
@@ -563,9 +578,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param startupTimeout timeout
      * @return this
      */
-    public GenericContainer withStartupTimeout(Duration startupTimeout) {
+    @Override
+    public SELF withStartupTimeout(Duration startupTimeout) {
         getWaitStrategy().withStartupTimeout(startupTimeout);
-        return this;
+        return self();
     }
 
     /**
@@ -573,6 +589,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @return an IP address
      */
+    @Override
     public String getContainerIpAddress() {
         return DockerClientFactory.instance().dockerHostIpAddress();
     }
@@ -581,9 +598,10 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * Only consider a container to have successfully started if it has been running for this duration. The default
      * value is null; if that's the value, ignore this check.
      */
-    public GenericContainer withMinimumRunningDuration(Duration minimumRunningDuration) {
+    @Override
+    public SELF withMinimumRunningDuration(Duration minimumRunningDuration) {
         this.setMinimumRunningDuration(minimumRunningDuration);
-        return this;
+        return self();
     }
 
     /**
@@ -592,6 +610,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @return an IP address
      * @deprecated please use getContainerIpAddress() instead
      */
+    @Override
     @Deprecated
     public String getIpAddress() {
         return getContainerIpAddress();
@@ -600,6 +619,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     /**
      * @return is the container currently running?
      */
+    @Override
     public Boolean isRunning() {
         try {
             return dockerClient.inspectContainerCmd(containerId).exec().getState().isRunning();
@@ -614,6 +634,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
      */
+    @Override
     public Integer getMappedPort(final int originalPort) {
 
         Preconditions.checkState(containerId != null, "Mapped port can only be obtained after the container is started");
@@ -635,6 +656,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @param dockerImageName image name
      */
+    @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
 
@@ -647,6 +669,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @return image name
      */
+    @Override
     @NonNull
     public String getDockerImageName() {
         try {
@@ -666,6 +689,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @return the IP address of the host machine
      */
+    @Override
     public String getTestHostIpAddress() {
         if (DockerMachineClient.instance().isInstalled()) {
             try {
@@ -699,6 +723,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      *
      * @param consumer consumer that the frames should be sent to
      */
+    @Override
     public void followOutput(Consumer<OutputFrame> consumer) {
         this.followOutput(consumer, OutputFrame.OutputType.STDOUT, OutputFrame.OutputType.STDERR);
     }
@@ -710,6 +735,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @param consumer consumer that the frames should be sent to
      * @param types    types that should be followed (one or both of STDOUT, STDERR)
      */
+    @Override
     public void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
         LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
                 .withFollowStream(true);
@@ -724,6 +750,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         cmd.exec(callback);
     }
 
+    @Override
     public synchronized Info fetchDockerDaemonInfo() throws IOException {
 
         if (this.dockerDaemonInfo == null) {
@@ -738,6 +765,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * <p>
      * @see #execInContainer(Charset, String...)
      */
+    @Override
     public ExecResult execInContainer(String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
 
@@ -756,6 +784,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
      * @throws InterruptedException if the thread waiting for the response is interrupted
      * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
      */
+    @Override
     public ExecResult execInContainer(Charset outputCharset, String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
 
@@ -789,28 +818,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());
         return result;
-    }
-
-    /**
-     * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
-     * docker API, there's no easy way to get the result code from the process we ran.
-     */
-    public static class ExecResult {
-        private final String stdout;
-        private final String stderr;
-
-        public ExecResult(String stdout, String stderr) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-        }
-
-        public String getStdout() {
-            return stdout;
-        }
-
-        public String getStderr() {
-            return stderr;
-        }
     }
 
     /**
