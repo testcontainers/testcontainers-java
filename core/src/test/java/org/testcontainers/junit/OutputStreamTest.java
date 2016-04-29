@@ -23,7 +23,7 @@ import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT
 public class OutputStreamTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer("alpine:3.2")
+    public GenericContainer container = new GenericContainer<>("alpine:3.2")
             .withCommand("ping -c 5 www.google.com");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);

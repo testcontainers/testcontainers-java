@@ -20,7 +20,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 public class DockerfileContainerTest {
 
     @Rule
-    public GenericContainer dslContainer = new GenericContainer(
+    public GenericContainer dslContainer = new GenericContainer<>(
             new ImageFromDockerfile("tcdockerfile/nginx", false).withDockerfileFromBuilder(builder -> {
                     builder
                             .from("alpine:3.2")

@@ -29,7 +29,7 @@ public class ParameterizedDockerfileContainerTest {
     }
 
     public ParameterizedDockerfileContainerTest(String baseImage) {
-        container = new GenericContainer(new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
+        container = new GenericContainer<>(new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
                 builder
                         .from(baseImage)
                         .run("apk add --update nginx")
