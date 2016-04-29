@@ -12,19 +12,16 @@ import java.util.stream.Stream;
 public interface TraitsSupport<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
 
     Comparator<Trait> TRAIT_COMPARATOR = (obj1, obj2) -> {
-        if (obj1 instanceof Comparable && obj2 instanceof Comparable)
-        {
+        if (obj1 instanceof Comparable && obj2 instanceof Comparable) {
             Comparable cmp1 = (Comparable)obj1;
             return cmp1.compareTo(obj2);
         }
 
-        if (!(obj1 instanceof Comparable) && !(obj2 instanceof Comparable))
-        {
+        if (!(obj1 instanceof Comparable) && !(obj2 instanceof Comparable)) {
             return 0;
         }
 
-        if (!(obj1 instanceof Comparable))
-        {
+        if (!(obj1 instanceof Comparable)) {
             return -1;
         }
 
