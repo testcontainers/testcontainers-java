@@ -1,5 +1,8 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Info;
 import lombok.NonNull;
 import org.testcontainers.containers.output.OutputFrame;
@@ -11,6 +14,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 public interface TestContainer<SELF extends TestContainer<SELF>> extends LinkableContainer {
@@ -259,19 +264,19 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
 
     List<String> getExtraHosts();
 
-    java.util.concurrent.Future<String> getImage();
+    Future<String> getImage();
 
     List<String> getEnv();
 
     String[] getCommandParts();
 
-    List<com.github.dockerjava.api.model.Bind> getBinds();
+    List<Bind> getBinds();
 
-    java.util.Map<String, LinkableContainer> getLinkedContainers();
+    Map<String, LinkableContainer> getLinkedContainers();
 
     Duration getMinimumRunningDuration();
 
-    com.github.dockerjava.api.DockerClient getDockerClient();
+    DockerClient getDockerClient();
 
     Info getDockerDaemonInfo();
 
@@ -279,7 +284,7 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
 
     String getContainerName();
 
-    com.github.dockerjava.api.command.InspectContainerResponse getContainerInfo();
+    InspectContainerResponse getContainerInfo();
 
     void setExposedPorts(List<Integer> exposedPorts);
 
@@ -287,19 +292,19 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
 
     void setExtraHosts(List<String> extraHosts);
 
-    void setImage(java.util.concurrent.Future<String> image);
+    void setImage(Future<String> image);
 
     void setEnv(List<String> env);
 
     void setCommandParts(String[] commandParts);
 
-    void setBinds(List<com.github.dockerjava.api.model.Bind> binds);
+    void setBinds(List<Bind> binds);
 
-    void setLinkedContainers(java.util.Map<String, LinkableContainer> linkedContainers);
+    void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setMinimumRunningDuration(Duration minimumRunningDuration);
 
-    void setDockerClient(com.github.dockerjava.api.DockerClient dockerClient);
+    void setDockerClient(DockerClient dockerClient);
 
     void setDockerDaemonInfo(Info dockerDaemonInfo);
 
@@ -309,5 +314,5 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
 
     void setWaitStrategy(WaitStrategy waitStrategy);
 
-    void setContainerInfo(com.github.dockerjava.api.command.InspectContainerResponse containerInfo);
+    void setContainerInfo(InspectContainerResponse containerInfo);
 }
