@@ -153,7 +153,6 @@
         <module>modules/postgresql</module>
         <module>modules/selenium</module>
         <module>modules/nginx</module>
-        <module>modules/virtuoso</module>
     </modules>
 
     <profiles>
@@ -161,6 +160,7 @@
             <id>proprietary-deps</id>
             <modules>
                 <module>modules/oracle-xe</module>
+                <module>modules/virtuoso</module>
             </modules>
         </profile>
         <profile>
