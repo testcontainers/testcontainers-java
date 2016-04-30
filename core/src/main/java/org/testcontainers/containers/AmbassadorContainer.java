@@ -17,7 +17,7 @@ import static java.util.Arrays.asList;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class AmbassadorContainer extends GenericContainer {
+public class AmbassadorContainer<SELF extends AmbassadorContainer<SELF>> extends GenericContainer<SELF> {
 
     private final String otherContainerName;
     private final String serviceName;

@@ -55,7 +55,7 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class GenericContainer extends FailureDetectingExternalResource implements LinkableContainer {
+public class GenericContainer<SELF extends GenericContainer<SELF>> extends FailureDetectingExternalResource implements TestContainer<SELF> {
 
     public static final int STARTUP_RETRY_COUNT = 3;
 
@@ -354,15 +354,12 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
-     *
-     * @see Wait#defaultWaitStrategy()
-     * @param waitStrategy the WaitStrategy to use
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer waitingFor(@NonNull WaitStrategy waitStrategy) {
+    @Override
+    public SELF waitingFor(@NonNull WaitStrategy waitStrategy) {
         this.waitStrategy = waitStrategy;
-        return this;
+        return self();
     }
 
     /**
@@ -387,65 +384,57 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param command a command in single string format (will automatically be split on spaces)
+     * {@inheritDoc}
      */
+    @Override
     public void setCommand(@NonNull String command) {
         this.commandParts = command.split(" ");
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param commandParts a command as an array of string parts
+     * {@inheritDoc}
      */
+    @Override
     public void setCommand(@NonNull String... commandParts) {
         this.commandParts = commandParts;
     }
 
     /**
-     * Add an environment variable to be passed to the container.
-     *
-     * @param key   environment variable key
-     * @param value environment variable value
+     * {@inheritDoc}
      */
+    @Override
     public void addEnv(String key, String value) {
         env.add(key + "=" + value);
     }
 
     /**
-     * Adds a file system binding.
-     *
-     * @param hostPath the file system path on the host
-     * @param containerPath the file system path inside the container
-     * @param mode the bind mode
+     * {@inheritDoc}
      */
+    @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
     }
 
     /**
-     * Adds a file system binding.
-     *
-     * @param hostPath the file system path on the host
-     * @param containerPath the file system path inside the container
-     * @param mode the bind mode
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+    @Override
+    public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode);
-        return this;
+        return self();
     }
 
+    @Override
     public void addLink(LinkableContainer otherContainer, String alias) {
         this.linkedContainers.put(alias, otherContainer);
     }
 
+    @Override
     public void addExposedPort(Integer port) {
         exposedPorts.add(port);
     }
 
+    @Override
     public void addExposedPorts(int... ports) {
         for (int port : ports) {
             exposedPorts.add(port);
@@ -462,16 +451,13 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         this.stop();
     }
 
-
     /**
-     * Set the ports that this container listens on
-     *
-     * @param ports an array of TCP ports
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withExposedPorts(Integer... ports) {
+    @Override
+    public SELF withExposedPorts(Integer... ports) {
         this.setExposedPorts(asList(ports));
-        return this;
+        return self();
 
     }
 
@@ -490,60 +476,46 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Add an environment variable to be passed to the container.
-     *
-     * @param key   environment variable key
-     * @param value environment variable value
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withEnv(String key, String value) {
+    @Override
+    public SELF withEnv(String key, String value) {
         this.addEnv(key, value);
-        return this;
+        return self();
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param cmd a command in single string format (will automatically be split on spaces)
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withCommand(String cmd) {
+    @Override
+    public SELF withCommand(String cmd) {
         this.setCommand(cmd);
-        return this;
+        return self();
     }
 
     /**
-     * Set the command that should be run in the container
-     *
-     * @param commandParts a command as an array of string parts
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withCommand(String... commandParts) {
+    @Override
+    public SELF withCommand(String... commandParts) {
         this.setCommand(commandParts);
-        return this;
+        return self();
     }
 
     /**
-     * Add an extra host entry to be passed to the container
-     * @param hostname
-     * @param ipAddress
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withExtraHost(String hostname, String ipAddress) {
+    @Override
+    public SELF withExtraHost(String hostname, String ipAddress) {
         this.extraHosts.add(String.format("%s:%s", hostname, ipAddress));
-        return this;
+        return self();
     }
 
     /**
-     * Map a resource (file or directory) on the classpath to a path inside the container.
-     * This will only work if you are running your tests outside a Docker container.
-     *
-     * @param resourcePath  path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
-     * @param containerPath path this should be mapped to inside the container
-     * @param mode          access mode for the file
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
+    @Override
+    public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
         URL resource = GenericContainer.class.getClassLoader().getResource(resourcePath);
 
         if (resource == null) {
@@ -553,37 +525,33 @@ public class GenericContainer extends FailureDetectingExternalResource implement
 
         this.addFileSystemBind(resourceFilePath, containerPath, mode);
 
-        return this;
+        return self();
     }
 
     /**
-     * Set the duration of waiting time until container treated as started.
-     * @see WaitStrategy#waitUntilReady(GenericContainer)
-     *
-     * @param startupTimeout timeout
-     * @return this
+     * {@inheritDoc}
      */
-    public GenericContainer withStartupTimeout(Duration startupTimeout) {
+    @Override
+    public SELF withStartupTimeout(Duration startupTimeout) {
         getWaitStrategy().withStartupTimeout(startupTimeout);
-        return this;
+        return self();
     }
 
     /**
-     * Get the IP address that this container may be reached on (may not be the local machine).
-     *
-     * @return an IP address
+     * {@inheritDoc}
      */
+    @Override
     public String getContainerIpAddress() {
         return DockerClientFactory.instance().dockerHostIpAddress();
     }
 
     /**
-     * Only consider a container to have successfully started if it has been running for this duration. The default
-     * value is null; if that's the value, ignore this check.
+     * {@inheritDoc}
      */
-    public GenericContainer withMinimumRunningDuration(Duration minimumRunningDuration) {
+    @Override
+    public SELF withMinimumRunningDuration(Duration minimumRunningDuration) {
         this.setMinimumRunningDuration(minimumRunningDuration);
-        return this;
+        return self();
     }
 
     /**
@@ -598,8 +566,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * @return is the container currently running?
+     * {@inheritDoc}
      */
+    @Override
     public Boolean isRunning() {
         try {
             return dockerClient.inspectContainerCmd(containerId).exec().getState().isRunning();
@@ -609,11 +578,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Get the actual mapped port for a given port exposed by the container.
-     *
-     * @param originalPort the original TCP port that is exposed
-     * @return the port that the exposed port is mapped to, or null if it is not exposed
+     * {@inheritDoc}
      */
+    @Override
     public Integer getMappedPort(final int originalPort) {
 
         Preconditions.checkState(containerId != null, "Mapped port can only be obtained after the container is started");
@@ -631,10 +598,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * <b>Resolve</b> Docker image and set it.
-     *
-     * @param dockerImageName image name
+     * {@inheritDoc}
      */
+    @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
 
@@ -643,10 +609,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Get image name.
-     *
-     * @return image name
+     * {@inheritDoc}
      */
+    @Override
     @NonNull
     public String getDockerImageName() {
         try {
@@ -657,15 +622,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Get the IP address that containers (e.g. browsers) can use to reference a service running on the local machine,
-     * i.e. the machine on which this test is running.
-     * <p>
-     * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
-     * to be pointed at "http://" + getTestHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
-     * from inside the container is not going to work, since the container has its own IP address.
-     *
-     * @return the IP address of the host machine
+     * {@inheritDoc}
      */
+    @Override
     public String getTestHostIpAddress() {
         if (DockerMachineClient.instance().isInstalled()) {
             try {
@@ -695,21 +654,17 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Follow container output, sending each frame (usually, line) to a consumer. Stdout and stderr will be followed.
-     *
-     * @param consumer consumer that the frames should be sent to
+     * {@inheritDoc}
      */
+    @Override
     public void followOutput(Consumer<OutputFrame> consumer) {
         this.followOutput(consumer, OutputFrame.OutputType.STDOUT, OutputFrame.OutputType.STDERR);
     }
 
     /**
-     * Follow container output, sending each frame (usually, line) to a consumer. This method allows Stdout and/or stderr
-     * to be selected.
-     *
-     * @param consumer consumer that the frames should be sent to
-     * @param types    types that should be followed (one or both of STDOUT, STDERR)
+     * {@inheritDoc}
      */
+    @Override
     public void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
         LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
                 .withFollowStream(true);
@@ -724,6 +679,7 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         cmd.exec(callback);
     }
 
+    @Override
     public synchronized Info fetchDockerDaemonInfo() throws IOException {
 
         if (this.dockerDaemonInfo == null) {
@@ -733,11 +689,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Run a command inside a running container, as though using "docker exec", and interpreting
-     * the output as UTF8.
-     * <p>
-     * @see #execInContainer(Charset, String...)
+     * {@inheritDoc}
      */
+    @Override
     public ExecResult execInContainer(String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
 
@@ -745,17 +699,9 @@ public class GenericContainer extends FailureDetectingExternalResource implement
     }
 
     /**
-     * Run a command inside a running container, as though using "docker exec".
-     * <p>
-     * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
-     * the time of writing, CircleCI was using this driver.
-     * @param outputCharset the character set used to interpret the output.
-     * @param command the parts of the command to run
-     * @return the result of execution
-     * @throws IOException if there's an issue communicating with Docker
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     * {@inheritDoc}
      */
+    @Override
     public ExecResult execInContainer(Charset outputCharset, String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
 
@@ -789,28 +735,6 @@ public class GenericContainer extends FailureDetectingExternalResource implement
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());
         return result;
-    }
-
-    /**
-     * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
-     * docker API, there's no easy way to get the result code from the process we ran.
-     */
-    public static class ExecResult {
-        private final String stdout;
-        private final String stderr;
-
-        public ExecResult(String stdout, String stderr) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-        }
-
-        public String getStdout() {
-            return stdout;
-        }
-
-        public String getStderr() {
-            return stderr;
-        }
     }
 
     /**

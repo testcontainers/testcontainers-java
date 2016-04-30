@@ -8,7 +8,7 @@ import java.net.URL;
 /**
  * @author richardnorth
  */
-public class NginxContainer extends GenericContainer implements LinkableContainer {
+public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
 
     private static final int NGINX_DEFAULT_PORT = 80;
 
@@ -35,8 +35,8 @@ public class NginxContainer extends GenericContainer implements LinkableContaine
         addFileSystemBind(htmlContentPath, "/usr/share/nginx/html", BindMode.READ_ONLY);
     }
 
-    public NginxContainer withCustomContent(String htmlContentPath) {
+    public SELF withCustomContent(String htmlContentPath) {
         this.setCustomContent(htmlContentPath);
-        return this;
+        return self();
     }
 }

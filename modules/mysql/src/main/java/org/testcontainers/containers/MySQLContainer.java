@@ -3,7 +3,7 @@ package org.testcontainers.containers;
 /**
  * @author richardnorth
  */
-public class MySQLContainer extends JdbcDatabaseContainer {
+public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
     public static final String IMAGE = "mysql";
@@ -60,8 +60,8 @@ public class MySQLContainer extends JdbcDatabaseContainer {
         return "SELECT 1";
     }
 
-    public MySQLContainer withConfigurationOverride(String s) {
+    public SELF withConfigurationOverride(String s) {
         parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
-        return this;
+        return self();
     }
 }
