@@ -2,7 +2,7 @@ package org.testcontainers.containers;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
-public class VirtuosoContainer  extends JdbcDatabaseContainer {
+public class VirtuosoContainer<SELF extends VirtuosoContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
 	public static final String NAME = "virtuoso";
 	public static final String IMAGE = "tenforce/virtuoso";

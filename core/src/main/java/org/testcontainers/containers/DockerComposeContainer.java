@@ -26,7 +26,7 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
-public class DockerComposeContainer extends GenericContainer implements LinkableContainer {
+public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
 
     /**
      * Random identifier which will become part of spawned containers names, so we can shut them down
@@ -143,11 +143,11 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
 
     @Override
     @Deprecated
-    public GenericContainer withExposedPorts(Integer... ports) {
+    public SELF withExposedPorts(Integer... ports) {
         throw new UnsupportedOperationException("Use withExposedService instead");
     }
 
-    public DockerComposeContainer withExposedService(String serviceName, int servicePort) {
+    public SELF withExposedService(String serviceName, int servicePort) {
 
         /**
          * For every service/port pair that needs to be exposed, we have to start an 'ambassador container'.
@@ -164,7 +164,7 @@ public class DockerComposeContainer extends GenericContainer implements Linkable
         // Ambassador containers will all be started together after docker compose has started
         ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
 
-        return this;
+        return self();
     }
 
     /**
