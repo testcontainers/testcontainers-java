@@ -18,8 +18,12 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-public interface TestContainer<SELF extends TestContainer<SELF>> extends LinkableContainer {
+public interface Container<SELF extends Container<SELF>> extends LinkableContainer {
 
+    /**
+     * @return a reference to this container instance, cast to the expected generic type.
+     */
+    @SuppressWarnings("unchecked")
     default SELF self() {
         return (SELF) this;
     }
@@ -47,30 +51,24 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
     }
 
     /**
-     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
-     *
-     * @see Wait#defaultWaitStrategy()
-     * @param waitStrategy the WaitStrategy to use
-     * @return this
-     */
-    SELF waitingFor(@NonNull WaitStrategy waitStrategy);
-
-    /**
-     * Set the command that should be run in the container
+     * Set the command that should be run in the container. Consider using {@link #withCommand(String)}
+     * for building a container in a fluent style.
      *
      * @param command a command in single string format (will automatically be split on spaces)
      */
     void setCommand(@NonNull String command);
 
     /**
-     * Set the command that should be run in the container
+     * Set the command that should be run in the container. Consider using {@link #withCommand(String...)}
+     * for building a container in a fluent style.
      *
      * @param commandParts a command as an array of string parts
      */
     void setCommand(@NonNull String... commandParts);
 
     /**
-     * Add an environment variable to be passed to the container.
+     * Add an environment variable to be passed to the container. Consider using {@link #withEnv(String, String)}
+     * for building a container in a fluent style.
      *
      * @param key   environment variable key
      * @param value environment variable value
@@ -78,13 +76,47 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
     void addEnv(String key, String value);
 
     /**
-     * Adds a file system binding.
+     * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
+     * for building a container in a fluent style.
      *
      * @param hostPath the file system path on the host
      * @param containerPath the file system path inside the container
      * @param mode the bind mode
      */
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode);
+
+    /**
+     * Add a link to another container.
+     *
+     * @param otherContainer
+     * @param alias
+     */
+    void addLink(LinkableContainer otherContainer, String alias);
+
+    /**
+     * Add an exposed port. Consider using {@link #withExposedPorts(Integer...)}
+     * for building a container in a fluent style.
+     *
+     * @param port a TCP port
+     */
+    void addExposedPort(Integer port);
+
+    /**
+     * Add exposed ports. Consider using {@link #withExposedPorts(Integer...)}
+     * for building a container in a fluent style.
+     *
+     * @param ports an array of TCP ports
+     */
+    void addExposedPorts(int... ports);
+
+    /**
+     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
+     *
+     * @see Wait#defaultWaitStrategy()
+     * @param waitStrategy the WaitStrategy to use
+     * @return this
+     */
+    SELF waitingFor(@NonNull WaitStrategy waitStrategy);
 
     /**
      * Adds a file system binding.
@@ -95,12 +127,6 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
      * @return this
      */
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
-
-    void addLink(LinkableContainer otherContainer, String alias);
-
-    void addExposedPort(Integer port);
-
-    void addExposedPorts(int... ports);
 
     /**
      * Set the ports that this container listens on
@@ -173,6 +199,9 @@ public interface TestContainer<SELF extends TestContainer<SELF>> extends Linkabl
     /**
      * Only consider a container to have successfully started if it has been running for this duration. The default
      * value is null; if that's the value, ignore this check.
+     *
+     * @param minimumRunningDuration duration this container should run for if started successfully
+     * @return this
      */
     SELF withMinimumRunningDuration(Duration minimumRunningDuration);
 

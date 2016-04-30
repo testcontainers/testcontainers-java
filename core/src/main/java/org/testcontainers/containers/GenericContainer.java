@@ -55,7 +55,9 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class GenericContainer<SELF extends GenericContainer<SELF>> extends FailureDetectingExternalResource implements TestContainer<SELF> {
+public class GenericContainer<SELF extends GenericContainer<SELF>>
+        extends FailureDetectingExternalResource
+        implements Container<SELF> {
 
     public static final int STARTUP_RETRY_COUNT = 3;
 
