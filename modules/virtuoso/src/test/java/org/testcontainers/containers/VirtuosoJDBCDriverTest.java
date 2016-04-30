@@ -14,8 +14,8 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class VirtuosoJDBCDriverTest {
 
     @Test
-    public void testVirtuosoWithNoSpecifiedVersion() throws SQLException {
-        performSimpleTest("jdbc:tc:virtuoso://hostname/databasename");
+    public void testVirtuosoWithSpecifiedVersion() throws SQLException {
+        performSimpleTest("jdbc:tc:virtuoso:1.0.0-virtuoso7.2.2://hostname/databasename");
     }
 
 
