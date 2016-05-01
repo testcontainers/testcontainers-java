@@ -1,19 +1,17 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
+import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -582,7 +580,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public Boolean isRunning() {
         try {
-            return dockerClient.inspectContainerCmd(containerId).exec().getState().isRunning();
+            return dockerClient.inspectContainerCmd(containerId).exec().getState().getRunning();
         } catch (DockerException e) {
             return false;
         }

@@ -42,7 +42,7 @@ public class DockerMachineConfigurationStrategy implements DockerConfigurationSt
 
             candidateConfig = DockerClientConfig
                     .createDefaultConfigBuilder()
-                    .withUri("https://" + dockerDaemonIpAddress + ":2376")
+                    .withDockerHost("https://" + dockerDaemonIpAddress + ":2376")
                     .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
                     .build();
             client = DockerClientBuilder.getInstance(candidateConfig).build();

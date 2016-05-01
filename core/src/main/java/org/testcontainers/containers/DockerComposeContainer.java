@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Filters;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.profiler.Profiler;
@@ -83,10 +82,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         logger().info("Docker compose has finished running");
 
         // Ensure that all service containers that were launched by compose will be killed at shutdown
-        Filters namesContainingComposeIdentifier = new Filters().withFilter("name", "/" + identifier);
         try {
             List<Container> containers = dockerClient.listContainersCmd()
-                    .withFilters(namesContainingComposeIdentifier)
+                    .withLabelFilter("name=/" + identifier)
                     .withShowAll(true)
                     .exec();
 
