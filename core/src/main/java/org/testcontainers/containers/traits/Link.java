@@ -4,7 +4,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.google.common.collect.ObjectArrays;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.containers.TestContainer;
+import org.testcontainers.containers.Container;
 import org.testcontainers.utility.SelfReference;
 
 import java.util.Map;
@@ -13,10 +13,16 @@ import java.util.stream.Stream;
 
 @Data
 @RequiredArgsConstructor
-public class Link<SELF extends TestContainer<SELF>> implements Trait<SELF> {
+public class Link<SELF extends Container<SELF>> implements Trait<SELF> {
 
-    public interface Support<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
+    public interface Support<SELF extends Container<SELF>> extends SelfReference<SELF> {
 
+        /**
+         * Add a link to another container.
+         *
+         * @param otherContainer
+         * @param alias
+         */
         default void addLink(LinkableContainer otherContainer, String alias) {
             self().getTraits().removeIf(trait -> trait instanceof Link && alias.equals(((Link) trait).getAlias()));
 

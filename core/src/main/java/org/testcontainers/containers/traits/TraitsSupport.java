@@ -1,7 +1,7 @@
 package org.testcontainers.containers.traits;
 
 import lombok.NonNull;
-import org.testcontainers.containers.TestContainer;
+import org.testcontainers.containers.Container;
 import org.testcontainers.utility.SelfReference;
 
 import java.util.*;
@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public interface TraitsSupport<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
+public interface TraitsSupport<SELF extends Container<SELF>> extends SelfReference<SELF> {
 
     Comparator<Trait> TRAIT_COMPARATOR = (obj1, obj2) -> {
         if (obj1 instanceof Comparable && obj2 instanceof Comparable) {

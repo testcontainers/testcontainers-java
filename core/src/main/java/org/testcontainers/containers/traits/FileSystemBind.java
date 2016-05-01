@@ -7,7 +7,7 @@ import com.google.common.collect.ObjectArrays;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.TestContainer;
+import org.testcontainers.containers.Container;
 import org.testcontainers.utility.SelfReference;
 
 import java.util.List;
@@ -16,16 +16,17 @@ import java.util.stream.Stream;
 
 @Data
 @RequiredArgsConstructor
-public class FileSystemBind<SELF extends TestContainer<SELF>> implements Trait<SELF> {
+public class FileSystemBind<SELF extends Container<SELF>> implements Trait<SELF> {
 
-    public interface Support<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
+    public interface Support<SELF extends Container<SELF>> extends SelfReference<SELF> {
 
         /**
-         * Adds a file system binding.
+         * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
+         * for building a container in a fluent style.
          *
-         * @param hostPath      the file system path on the host
+         * @param hostPath the file system path on the host
          * @param containerPath the file system path inside the container
-         * @param mode          the bind mode
+         * @param mode the bind mode
          */
         default void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
             self().with(new FileSystemBind<>(hostPath, containerPath, mode));
@@ -34,9 +35,9 @@ public class FileSystemBind<SELF extends TestContainer<SELF>> implements Trait<S
         /**
          * Adds a file system binding.
          *
-         * @param hostPath      the file system path on the host
+         * @param hostPath the file system path on the host
          * @param containerPath the file system path inside the container
-         * @param mode          the bind mode
+         * @param mode the bind mode
          * @return this
          */
         default SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {

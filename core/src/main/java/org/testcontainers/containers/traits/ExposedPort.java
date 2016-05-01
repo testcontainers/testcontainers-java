@@ -4,7 +4,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.google.common.collect.ObjectArrays;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.containers.TestContainer;
+import org.testcontainers.containers.Container;
 import org.testcontainers.utility.SelfReference;
 
 import java.util.List;
@@ -13,13 +13,26 @@ import java.util.stream.Stream;
 
 @Data
 @RequiredArgsConstructor
-public class ExposedPort<SELF extends TestContainer<SELF>> implements Trait<SELF> {
+public class ExposedPort<SELF extends Container<SELF>> implements Trait<SELF> {
 
-    public interface Support<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
+    public interface Support<SELF extends Container<SELF>> extends SelfReference<SELF> {
+
+        /**
+         * Add an exposed port. Consider using {@link #withExposedPorts(Integer...)}
+         * for building a container in a fluent style.
+         *
+         * @param port a TCP port
+         */
         default void addExposedPort(Integer port) {
             self().with(new ExposedPort<>(port));
         }
 
+        /**
+         * Add exposed ports. Consider using {@link #withExposedPorts(Integer...)}
+         * for building a container in a fluent style.
+         *
+         * @param ports an array of TCP ports
+         */
         default void addExposedPorts(Integer... ports) {
             for (int port : ports) {
                 addExposedPort(port);

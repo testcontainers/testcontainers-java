@@ -2,22 +2,23 @@ package org.testcontainers.containers.traits;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import lombok.*;
-import org.testcontainers.containers.TestContainer;
+import org.testcontainers.containers.Container;
 import org.testcontainers.utility.SelfReference;
 
 @Data
 @AllArgsConstructor
-public class Command<SELF extends TestContainer<SELF>> implements Trait<SELF> {
+public class Command<SELF extends Container<SELF>> implements Trait<SELF> {
 
     /**
      * This trait extension is required for backward compatibility
      *
      * @param <SELF>
      */
-    public interface Support<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
+    public interface Support<SELF extends Container<SELF>> extends SelfReference<SELF> {
 
         /**
-         * Set the command that should be run in the container
+         * Set the command that should be run in the container. Consider using {@link #withCommand(String)}
+         * for building a container in a fluent style.
          *
          * @param command a command in single string format (will automatically be split on spaces)
          */
@@ -26,7 +27,8 @@ public class Command<SELF extends TestContainer<SELF>> implements Trait<SELF> {
         }
 
         /**
-         * Set the command that should be run in the container
+         * Set the command that should be run in the container. Consider using {@link #withCommand(String...)}
+         * for building a container in a fluent style.
          *
          * @param commandParts a command as an array of string parts
          */

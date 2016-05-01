@@ -4,7 +4,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.google.common.collect.ObjectArrays;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.containers.TestContainer;
+import org.testcontainers.containers.Container;
 import org.testcontainers.utility.SelfReference;
 
 import java.util.List;
@@ -13,12 +13,13 @@ import java.util.stream.Stream;
 
 @Data
 @RequiredArgsConstructor
-public class Env<SELF extends TestContainer<SELF>> implements Trait<SELF>  {
+public class Env<SELF extends Container<SELF>> implements Trait<SELF>  {
 
-    public interface Support<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
+    public interface Support<SELF extends Container<SELF>> extends SelfReference<SELF> {
 
         /**
-         * Add an environment variable to be passed to the container.
+         * Add an environment variable to be passed to the container. Consider using {@link #withEnv(String, String)}
+         * for building a container in a fluent style.
          *
          * @param key   environment variable key
          * @param value environment variable value

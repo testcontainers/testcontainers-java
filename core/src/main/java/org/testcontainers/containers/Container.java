@@ -2,31 +2,30 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Info;
 import lombok.NonNull;
 import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.containers.traits.*;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.utility.SelfReference;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-public interface Container<SELF extends Container<SELF>> extends LinkableContainer {
-
-    /**
-     * @return a reference to this container instance, cast to the expected generic type.
-     */
-    @SuppressWarnings("unchecked")
-    default SELF self() {
-        return (SELF) this;
-    }
+public interface Container<SELF extends Container<SELF>> extends LinkableContainer, SelfReference<SELF>, TraitsSupport<SELF>,
+        // old commands like `withExposedPorts` are supported with Support interfaces
+        Command.Support<SELF>,
+        FileSystemBind.Support<SELF>,
+        ClasspathBind.Support<SELF>,
+        ExposedPort.Support<SELF>,
+        PortBinding.Support<SELF>,
+        Env.Support<SELF>,
+        ExtraHost.Support<SELF>,
+        Link.Support<SELF> {
 
     /**
      * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
@@ -51,65 +50,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     }
 
     /**
-     * Set the command that should be run in the container. Consider using {@link #withCommand(String)}
-     * for building a container in a fluent style.
-     *
-     * @param command a command in single string format (will automatically be split on spaces)
-     */
-    void setCommand(@NonNull String command);
-
-    /**
-     * Set the command that should be run in the container. Consider using {@link #withCommand(String...)}
-     * for building a container in a fluent style.
-     *
-     * @param commandParts a command as an array of string parts
-     */
-    void setCommand(@NonNull String... commandParts);
-
-    /**
-     * Add an environment variable to be passed to the container. Consider using {@link #withEnv(String, String)}
-     * for building a container in a fluent style.
-     *
-     * @param key   environment variable key
-     * @param value environment variable value
-     */
-    void addEnv(String key, String value);
-
-    /**
-     * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
-     * for building a container in a fluent style.
-     *
-     * @param hostPath the file system path on the host
-     * @param containerPath the file system path inside the container
-     * @param mode the bind mode
-     */
-    void addFileSystemBind(String hostPath, String containerPath, BindMode mode);
-
-    /**
-     * Add a link to another container.
-     *
-     * @param otherContainer
-     * @param alias
-     */
-    void addLink(LinkableContainer otherContainer, String alias);
-
-    /**
-     * Add an exposed port. Consider using {@link #withExposedPorts(Integer...)}
-     * for building a container in a fluent style.
-     *
-     * @param port a TCP port
-     */
-    void addExposedPort(Integer port);
-
-    /**
-     * Add exposed ports. Consider using {@link #withExposedPorts(Integer...)}
-     * for building a container in a fluent style.
-     *
-     * @param ports an array of TCP ports
-     */
-    void addExposedPorts(int... ports);
-
-    /**
      * Specify the {@link WaitStrategy} to use to determine if the container is ready.
      *
      * @see Wait#defaultWaitStrategy()
@@ -117,68 +57,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF waitingFor(@NonNull WaitStrategy waitStrategy);
-
-    /**
-     * Adds a file system binding.
-     *
-     * @param hostPath the file system path on the host
-     * @param containerPath the file system path inside the container
-     * @param mode the bind mode
-     * @return this
-     */
-    SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
-
-    /**
-     * Set the ports that this container listens on
-     *
-     * @param ports an array of TCP ports
-     * @return this
-     */
-    SELF withExposedPorts(Integer... ports);
-
-    /**
-     * Add an environment variable to be passed to the container.
-     *
-     * @param key   environment variable key
-     * @param value environment variable value
-     * @return this
-     */
-    SELF withEnv(String key, String value);
-
-    /**
-     * Set the command that should be run in the container
-     *
-     * @param cmd a command in single string format (will automatically be split on spaces)
-     * @return this
-     */
-    SELF withCommand(String cmd);
-
-    /**
-     * Set the command that should be run in the container
-     *
-     * @param commandParts a command as an array of string parts
-     * @return this
-     */
-    SELF withCommand(String... commandParts);
-
-    /**
-     * Add an extra host entry to be passed to the container
-     * @param hostname
-     * @param ipAddress
-     * @return this
-     */
-    SELF withExtraHost(String hostname, String ipAddress);
-
-    /**
-     * Map a resource (file or directory) on the classpath to a path inside the container.
-     * This will only work if you are running your tests outside a Docker container.
-     *
-     * @param resourcePath  path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
-     * @param containerPath path this should be mapped to inside the container
-     * @param mode          access mode for the file
-     * @return this
-     */
-    SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode);
 
     /**
      * Set the duration of waiting time until container treated as started.
@@ -287,21 +165,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     ExecResult execInContainer(Charset outputCharset, String... command)
                     throws UnsupportedOperationException, IOException, InterruptedException;
 
-    List<Integer> getExposedPorts();
-
-    List<String> getPortBindings();
-
-    List<String> getExtraHosts();
-
     Future<String> getImage();
-
-    List<String> getEnv();
-
-    String[] getCommandParts();
-
-    List<Bind> getBinds();
-
-    Map<String, LinkableContainer> getLinkedContainers();
 
     Duration getMinimumRunningDuration();
 
@@ -315,21 +179,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     InspectContainerResponse getContainerInfo();
 
-    void setExposedPorts(List<Integer> exposedPorts);
-
-    void setPortBindings(List<String> portBindings);
-
-    void setExtraHosts(List<String> extraHosts);
-
     void setImage(Future<String> image);
-
-    void setEnv(List<String> env);
-
-    void setCommandParts(String[] commandParts);
-
-    void setBinds(List<Bind> binds);
-
-    void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setMinimumRunningDuration(Duration minimumRunningDuration);
 

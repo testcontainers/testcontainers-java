@@ -1,16 +1,16 @@
 package org.testcontainers.containers.traits;
 
 import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.TestContainer;
 import org.testcontainers.utility.SelfReference;
 
 import java.net.URL;
 import java.util.Optional;
 
-public class ClasspathBind<SELF extends TestContainer<SELF>> extends FileSystemBind<SELF> {
+public class ClasspathBind<SELF extends Container<SELF>> extends FileSystemBind<SELF> {
 
-    public interface Support<SELF extends TestContainer<SELF>> extends SelfReference<SELF> {
+    public interface Support<SELF extends Container<SELF>> extends SelfReference<SELF> {
 
         /**
          * Map a resource (file or directory) on the classpath to a path inside the container.
