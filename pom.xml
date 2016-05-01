@@ -160,6 +160,7 @@
             <id>proprietary-deps</id>
             <modules>
                 <module>modules/oracle-xe</module>
+                <module>modules/virtuoso</module>
             </modules>
         </profile>
         <profile>
