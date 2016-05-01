@@ -11,7 +11,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 public class OldJerseyClientTest {
 
     @Rule
-    public GenericContainer httpd = new GenericContainer("httpd:2.4").withExposedPorts(80);
+    public GenericContainer httpd = new GenericContainer<>("httpd:2.4").withExposedPorts(80);
 
     @Test
     public void clientRequestTest() {
