@@ -36,7 +36,7 @@ public class DockerStatus {
     public static boolean isContainerRunning(InspectContainerResponse.ContainerState state,
                                              Duration minimumRunningDuration,
                                              Instant now) {
-        if (state.isRunning()) {
+        if (state.getRunning()) {
             if (minimumRunningDuration == null) {
                 return true;
             }
@@ -59,7 +59,7 @@ public class DockerStatus {
     public static boolean isContainerStopped(InspectContainerResponse.ContainerState state) {
 
         // get some preconditions out of the way
-        if (state.isRunning() || state.isPaused()) {
+        if (state.getRunning() || state.getPaused()) {
             return false;
         }
 
