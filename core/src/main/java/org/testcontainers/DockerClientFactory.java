@@ -1,22 +1,20 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.InternalServerErrorException;
-import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.github.dockerjava.core.command.WaitContainerResultCallback;
+import com.github.dockerjava.netty.DockerCmdExecFactoryImpl;
 import lombok.Synchronized;
 import org.slf4j.Logger;
-import org.testcontainers.dockerclient.DockerClientConfigUtils;
-import org.testcontainers.dockerclient.DockerConfigurationStrategy;
-import org.testcontainers.dockerclient.DockerMachineConfigurationStrategy;
-import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyConfigurationStrategy;
-import org.testcontainers.dockerclient.UnixSocketConfigurationStrategy;
+import org.testcontainers.dockerclient.*;
 
 import java.util.List;
 
@@ -39,8 +37,8 @@ public class DockerClientFactory {
 
     private static final List<DockerConfigurationStrategy> CONFIGURATION_STRATEGIES =
             asList(new EnvironmentAndSystemPropertyConfigurationStrategy(),
-                    new DockerMachineConfigurationStrategy(),
-                    new UnixSocketConfigurationStrategy());
+                    new UnixSocketConfigurationStrategy(),
+                    new DockerMachineConfigurationStrategy());
 
     /**
      * Private constructor
@@ -81,7 +79,8 @@ public class DockerClientFactory {
             config = DockerConfigurationStrategy.getFirstValidConfig(CONFIGURATION_STRATEGIES);
         }
 
-        DockerClient client = DockerClientBuilder.getInstance(config).build();
+        DockerCmdExecFactoryImpl nettyExecFactory = new DockerCmdExecFactoryImpl();
+        DockerClient client = DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(nettyExecFactory).build();
 
         if (!preconditionsChecked) {
             String version = client.versionCmd().exec().getVersion();
@@ -147,10 +146,13 @@ public class DockerClientFactory {
 
         client.startContainerCmd(id).exec();
 
-        client.waitContainerCmd(id).exec();
-
-        LogContainerResultCallback callback = client.logContainerCmd(id).withStdOut().exec(new LogContainerCallback());
+        LogContainerResultCallback callback = client.logContainerCmd(id).withStdOut(true).exec(new LogContainerCallback());
         try {
+
+            WaitContainerResultCallback waitCallback = new WaitContainerResultCallback();
+            client.waitContainerCmd(id).exec(waitCallback);
+            waitCallback.awaitStarted();
+
             callback.awaitCompletion();
             String logResults = callback.toString();
 
