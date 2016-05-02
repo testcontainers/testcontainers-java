@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.traits.LinkableContainer;
 
@@ -58,6 +59,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
         Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
+
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO replace with a rate limiter
+
             if (!isRunning()) {
                 throw new ContainerLaunchException("Container failed to start");
             }
