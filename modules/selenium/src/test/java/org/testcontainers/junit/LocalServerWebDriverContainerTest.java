@@ -44,7 +44,7 @@ public class LocalServerWebDriverContainerTest {
         localPort = server.getConnectors()[0].getLocalPort();
     }
 
-    @Test
+    @Test @Ignore
     public void testConnection() throws InterruptedException {
         RemoteWebDriver driver = chrome.getWebDriver();
 
