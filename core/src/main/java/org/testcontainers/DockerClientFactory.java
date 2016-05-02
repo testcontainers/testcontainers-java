@@ -37,6 +37,7 @@ public class DockerClientFactory {
 
     private static final List<DockerConfigurationStrategy> CONFIGURATION_STRATEGIES =
             asList(new EnvironmentAndSystemPropertyConfigurationStrategy(),
+                    new ProxiedUnixSocketConfigurationStrategy(),
                     new UnixSocketConfigurationStrategy(),
                     new DockerMachineConfigurationStrategy());
 

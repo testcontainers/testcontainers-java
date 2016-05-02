@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.utility.DockerMachineClient;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
@@ -27,6 +28,7 @@ public class LocalServerWebDriverContainerTest {
     @BeforeClass
     public static void checkOS() {
         Assume.assumeTrue("These tests are currently only applicable to OS X", System.getProperty("os.name").toLowerCase().contains("mac"));
+        Assume.assumeTrue("These tests are only applicable to docker machine", DockerMachineClient.instance().isDefaultMachineRunning());
     }
 
     @Before
@@ -44,7 +46,7 @@ public class LocalServerWebDriverContainerTest {
         localPort = server.getConnectors()[0].getLocalPort();
     }
 
-    @Test @Ignore
+    @Test
     public void testConnection() throws InterruptedException {
         RemoteWebDriver driver = chrome.getWebDriver();
 

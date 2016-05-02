@@ -63,14 +63,22 @@ public class DockerMachineClient {
     }
 
     public void ensureMachineRunning(@NonNull String machineName) {
-        String status = runShellCommand("docker-machine", "status", machineName);
-        if (!status.trim().equalsIgnoreCase("running")) {
-            LOGGER.info("Docker-machine '{}' is not running. Current status is '{}'. Will start it now", machineName, status);
+        if (!isMachineRunning(machineName)) {
+            LOGGER.info("Docker-machine '{}' is not running. Will start it now", machineName);
             runShellCommand("docker-machine", "start", machineName);
         }
     }
 
     public String getDockerDaemonIpAddress(@NonNull String machineName) {
         return runShellCommand("docker-machine", "ip", machineName);
+    }
+
+    public boolean isMachineRunning(String machineName) {
+        String status = runShellCommand("docker-machine", "status", machineName);
+        return status.trim().equalsIgnoreCase("running");
+    }
+
+    public boolean isDefaultMachineRunning() {
+        return isMachineRunning(getDefaultMachine().orElse("default"));
     }
 }
