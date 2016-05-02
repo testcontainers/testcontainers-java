@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0.5] - 2016-05-02
+### Fixed
+- Fix problems associated with changes to `tenforce/virtuoso:latest` container, and replace with a pinned version.
+- Fix build-time dependency on visible-assertions library, which had downstream dependencies that started to break the Testcontainers build.
+
+### Changed
+- Add support for pluggable wait strategies, i.e. overriding the default TCP connect wait strategy with HTTP ping or any user-defined approach.
+- Add 'self-typing' to allow easy use of fluent-style options even when `GenericContainer` is subclassed.
+- Add support for defining extra entries for containers' `/etc/hosts` files.
+- Add fluent setter for setting file-system file/directory binding
+
 ## [1.0.4] - 2016-04-17
 ### Fixed
 - Prevent unnecessary and erroneous reconfiguration of container if startup needs to be retried
