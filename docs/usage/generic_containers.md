@@ -118,9 +118,10 @@ Wait for arbitrary status code on an HTTPS endpoint:
     public static GenericContainer elasticsearch =
         new GenericContainer("elasticsearch:2.3")
                    .withExposedPorts(9200)
-                   .waitingFor(Wait.forHttp("/all")
-                   .forStatusCode(301)
-                   .usingTls());
+                   .waitingFor(
+                   		Wait.forHttp("/all")
+                   			 .forStatusCode(301)
+                   			 .usingTls());
 
 For futher options, check out the `Wait` convenience class, or the various subclasses of `WaitStrategy`. If none of these options
 meet your requirements, you can create your own subclass of `AbstractWaitStrategy` with an appropriate wait
