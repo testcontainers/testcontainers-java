@@ -97,8 +97,34 @@ This simple measure provides a basic check whether a container is ready for use.
 
 If the default 60s timeout is not sufficient, it can be altered with the `withStartupTimeout()` method.
 
-If waiting for a listening TCP port is not sufficient to establish whether the container is ready, `GenericContainer` should be subclassed
-and an appropriate overriding mechanism set in `waitUntilContainerStarted()`.
+If waiting for a listening TCP port is not sufficient to establish whether the container is ready, you can use the
+`waitingFor()` method with other `WaitStrategy` implementations as shown below.
+
+#### Waiting for startup examples
+
+You can choose to wait for an HTTP(S) endpoint to return a particular status code.
+
+Waiting for 200 OK:
+
+    @ClassRule
+    public static GenericContainer elasticsearch =
+        new GenericContainer("elasticsearch:2.3")
+                   .withExposedPorts(9200)
+                   .waitingFor(Wait.forHttp("/all"));
+
+Wait for arbitrary status code on an HTTPS endpoint:
+
+    @ClassRule
+    public static GenericContainer elasticsearch =
+        new GenericContainer("elasticsearch:2.3")
+                   .withExposedPorts(9200)
+                   .waitingFor(Wait.forHttp("/all")
+                   .forStatusCode(301)
+                   .usingTls());
+
+For futher options, check out the `Wait` convenience class, or the various subclasses of `WaitStrategy`. If none of these options
+meet your requirements, you can create your own subclass of `AbstractWaitStrategy` with an appropriate wait
+mechanism in `waitUntilReady()`. The `GenericContainer.waitingFor()` method accepts any valid `WaitStrategy`.
 
 ### Following container output
 
