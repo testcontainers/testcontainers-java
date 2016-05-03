@@ -22,10 +22,10 @@ public class SocketConfigurationStrategy implements DockerConfigurationStrategy 
     private final String socketDescription;
 
     /**
-     * @param socketLocation    the location of the socket, such as {@literal http://path/to/socket}
      * @param socketDescription the human readable description of the socket
+     * @param socketLocation    the location of the socket, such as {@literal http://path/to/socket}
      */
-    public SocketConfigurationStrategy(String socketLocation, String socketDescription) {
+    public SocketConfigurationStrategy(String socketDescription, String socketLocation) {
         this.socketLocation = socketLocation;
         this.socketDescription = socketDescription;
     }

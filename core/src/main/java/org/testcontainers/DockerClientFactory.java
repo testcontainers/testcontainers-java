@@ -40,16 +40,16 @@ public class DockerClientFactory {
                     new EnvironmentAndSystemPropertyConfigurationStrategy(),
 
                     // 'native' docker support, such as Docker for Mac and Docker for Windows
-                    new SocketConfigurationStrategy("http://localhost:2375", "docker native"),
+                    new SocketConfigurationStrategy("docker native", "http://localhost:2375"),
 
                     // TODO remove this strategy - docker.local removed as of docker version 1.11.0-beta9
-                    new SocketConfigurationStrategy("http://docker.local:2375", "docker.local"),
+                    new SocketConfigurationStrategy("docker.local", "http://docker.local:2375"),
 
                     // docker-machine support
                     new DockerMachineConfigurationStrategy(),
 
                     // UNIX socket support
-                    new SocketConfigurationStrategy("unix:///var/run/docker.sock", "local Unix")
+                    new SocketConfigurationStrategy("local Unix", "unix:///var/run/docker.sock")
             );
 
     /**
