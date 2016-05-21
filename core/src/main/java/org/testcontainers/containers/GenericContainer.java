@@ -97,6 +97,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
+    @Nullable
+    private String networkMode = null;
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -334,6 +337,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         String[] extraHostsArray = extraHosts.stream()
         		 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
+
+        if (networkMode != null) {
+            createCommand.withNetworkMode(networkMode);
+        }
     }
 
     /**
@@ -723,6 +730,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());
         return result;
+    }
+
+    public SELF withNetwork(String network) {
+        this.networkMode = network;
+        return self();
     }
 
     /**
