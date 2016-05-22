@@ -16,7 +16,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
 public class RedisJacksonBackedCacheTest {
 
     @Rule
-    public GenericContainer redis = new GenericContainer("redis:3.0.6")
+    public GenericContainer redis = new GenericContainer<>("redis:3.0.6")
                                             .withExposedPorts(6379);
     private Cache cache;
 

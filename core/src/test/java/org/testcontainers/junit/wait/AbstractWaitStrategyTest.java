@@ -52,7 +52,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
                 .withStartupTimeout(Duration.ofMillis(WAIT_TIMEOUT_MILLIS));
 
         // apply WaitStrategy to container
-        return new GenericContainer(IMAGE_NAME)
+        return new GenericContainer<>(IMAGE_NAME)
                 .withExposedPorts(8080)
                 .withCommand("sh", "-c", shellCommand)
                 .waitingFor(waitStrategy);

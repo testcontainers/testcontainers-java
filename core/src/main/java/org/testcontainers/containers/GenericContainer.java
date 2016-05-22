@@ -7,6 +7,8 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -26,7 +28,7 @@ import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
-import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.containers.traits.*;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
@@ -65,32 +67,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
-    /*
-     * Default settings
-     */
-    @NonNull
-    private List<Integer> exposedPorts = new ArrayList<>();
-
-    @NonNull
-    private List<String> portBindings = new ArrayList<>();
-
-    @NonNull
-    private List<String> extraHosts = new ArrayList<>();
-
     @NonNull
     private Future<String> image;
-
-    @NonNull
-    private List<String> env = new ArrayList<>();
-
-    @Nullable
-    private String[] commandParts = null;
-
-    @NonNull
-    private List<Bind> binds = new ArrayList<>();
-
-    @NonNull
-    private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     @NonNull
     private Duration minimumRunningDuration = null;
@@ -120,6 +98,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private InspectContainerResponse containerInfo;
 
+    private final List<Trait<SELF>> traits = new ArrayList<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -305,54 +284,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return the port on which to check if the container is ready
      */
     protected Integer getLivenessCheckPort() {
-        if (exposedPorts.size() > 0) {
-            return getMappedPort(exposedPorts.get(0));
-        } else if (portBindings.size() > 0) {
-            return PortBinding.parse(portBindings.get(0)).getBinding().getHostPort();
-        } else {
-            return null;
-        }
+        return getExposedPorts().stream()
+                .findFirst()
+                .map(this::getMappedPort)
+                .orElseGet(
+                        () -> getPortBindings().stream()
+                                .findFirst()
+                                .map(binding -> PortBinding.parse(binding).getBinding().getHostPort())
+                                .orElse(null)
+                );
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
-
-        // Set up exposed ports (where there are no host port bindings defined)
-        ExposedPort[] portArray = exposedPorts.stream()
-                .map(ExposedPort::new)
-                .toArray(ExposedPort[]::new);
-
-        createCommand.withExposedPorts(portArray);
-
-        // Set up exposed ports that need host port bindings
-        PortBinding[] portBindingArray = portBindings.stream()
-                .map(PortBinding::parse)
-                .toArray(PortBinding[]::new);
-
-        createCommand.withPortBindings(portBindingArray);
-
-        if (commandParts != null) {
-            createCommand.withCmd(commandParts);
-        }
-
-        String[] envArray = env.stream()
-                .toArray(String[]::new);
-        createCommand.withEnv(envArray);
-
-        Bind[] bindsArray = binds.stream()
-                .toArray(Bind[]::new);
-        createCommand.withBinds(bindsArray);
-
-        Link[] linksArray = linkedContainers.entrySet().stream()
-                .map(entry -> new Link(entry.getValue().getContainerName(), entry.getKey()))
-                .collect(Collectors.toList())
-                .toArray(new Link[linkedContainers.size()]);
-        createCommand.withLinks(linksArray);
-
         createCommand.withPublishAllPorts(true);
 
-        String[] extraHostsArray = extraHosts.stream()
-        		 .toArray(String[]::new);
-        createCommand.withExtraHosts(extraHostsArray);
+        getTraits().stream().sorted(TRAIT_COMPARATOR).forEach(trait -> trait.configure(self(), createCommand));
     }
 
     /**
@@ -385,64 +331,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         getWaitStrategy().waitUntilReady(this);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setCommand(@NonNull String command) {
-        this.commandParts = command.split(" ");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setCommand(@NonNull String... commandParts) {
-        this.commandParts = commandParts;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void addEnv(String key, String value) {
-        env.add(key + "=" + value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
-        binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
-        addFileSystemBind(hostPath, containerPath, mode);
-        return self();
-    }
-
-    @Override
-    public void addLink(LinkableContainer otherContainer, String alias) {
-        this.linkedContainers.put(alias, otherContainer);
-    }
-
-    @Override
-    public void addExposedPort(Integer port) {
-        exposedPorts.add(port);
-    }
-
-    @Override
-    public void addExposedPorts(int... ports) {
-        for (int port : ports) {
-            exposedPorts.add(port);
-        }
-    }
-
     @Override
     protected void starting(Description description) {
         this.start();
@@ -451,16 +339,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     protected void finished(Description description) {
         this.stop();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withExposedPorts(Integer... ports) {
-        this.setExposedPorts(asList(ports));
-        return self();
-
     }
 
     /**
@@ -474,60 +352,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param containerPort
      */
     protected void addFixedExposedPort(int hostPort, int containerPort) {
-        portBindings.add(String.format("%d:%d", hostPort, containerPort));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withEnv(String key, String value) {
-        this.addEnv(key, value);
-        return self();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withCommand(String cmd) {
-        this.setCommand(cmd);
-        return self();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withCommand(String... commandParts) {
-        this.setCommand(commandParts);
-        return self();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withExtraHost(String hostname, String ipAddress) {
-        this.extraHosts.add(String.format("%s:%s", hostname, ipAddress));
-        return self();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
-        URL resource = GenericContainer.class.getClassLoader().getResource(resourcePath);
-
-        if (resource == null) {
-            throw new IllegalArgumentException("Could not find classpath resource at provided path: " + resourcePath);
-        }
-        String resourceFilePath = resource.getFile();
-
-        this.addFileSystemBind(resourceFilePath, containerPath, mode);
-
-        return self();
+        with(new org.testcontainers.containers.traits.PortBinding<>(hostPort, containerPort));
     }
 
     /**

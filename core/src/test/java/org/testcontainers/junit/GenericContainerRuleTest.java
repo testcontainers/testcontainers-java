@@ -57,21 +57,21 @@ public class GenericContainerRuleTest {
      * Redis
      */
     @ClassRule
-    public static GenericContainer redis = new GenericContainer("redis:3.0.2")
+    public static GenericContainer redis = new GenericContainer<>("redis:3.0.2")
             .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
     @ClassRule
-    public static GenericContainer rabbitMq = new GenericContainer("rabbitmq:3.5.3")
+    public static GenericContainer rabbitMq = new GenericContainer<>("rabbitmq:3.5.3")
             .withExposedPorts(RABBITMQ_PORT);
 
     /**
      * MongoDB
      */
     @ClassRule
-    public static GenericContainer mongo = new GenericContainer("mongo:3.1.5")
+    public static GenericContainer mongo = new GenericContainer<>("mongo:3.1.5")
             .withExposedPorts(MONGO_PORT);
 
     /**
@@ -79,7 +79,7 @@ public class GenericContainerRuleTest {
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainer alpineEnvVar = new GenericContainer("alpine:3.2")
+    public static GenericContainer alpineEnvVar = new GenericContainer<>("alpine:3.2")
             .withExposedPorts(80)
             .withEnv("MAGIC_NUMBER", "42")
             .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
@@ -88,7 +88,7 @@ public class GenericContainerRuleTest {
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
+    public static GenericContainer alpineClasspathResource = new GenericContainer<>("alpine:3.2")
             .withExposedPorts(80)
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
@@ -97,7 +97,7 @@ public class GenericContainerRuleTest {
      * Create a container with an extra host entry and expose the content of /etc/hosts for testing.
      */
     @ClassRule
-    public static GenericContainer alpineExtrahost = new GenericContainer("alpine:3.2")
+    public static GenericContainer alpineExtrahost = new GenericContainer<>("alpine:3.2")
             .withExposedPorts(80)
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
@@ -224,7 +224,7 @@ public class GenericContainerRuleTest {
     public void failFastWhenContainerHaltsImmediately() throws Exception {
 
         long startingTimeMs = System.currentTimeMillis();
-        final GenericContainer failsImmediately = new GenericContainer("alpine:3.2")
+        final GenericContainer failsImmediately = new GenericContainer<>("alpine:3.2")
               .withCommand("/bin/sh", "-c", "return false")
               .withMinimumRunningDuration(Duration.ofMillis(100));
 
