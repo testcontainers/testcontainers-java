@@ -5,6 +5,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.rnorth.tcpunixsocketproxy.TcpToUnixSocketProxy;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,16 +38,15 @@ public class ProxiedUnixSocketConfigurationStrategy implements DockerConfigurati
 
         DockerClientConfig config;
         TcpToUnixSocketProxy proxy;
-        try {
-            proxy = new TcpToUnixSocketProxy("localhost", 0, SOCKET_LOCATION);
-        } catch (IOException e) {
-            throw new InvalidConfigurationException("TCP-UNIX socket proxy creation failed", e);
-        }
+        proxy = new TcpToUnixSocketProxy(new File(SOCKET_LOCATION));
 
         try {
-            proxyPort = proxy.start();
+            proxyPort = proxy.start().getPort();
 
-            config = new DockerClientConfig.DockerClientConfigBuilder().withDockerHost("tcp://localhost:" + proxyPort).build();
+            config = new DockerClientConfig.DockerClientConfigBuilder()
+                    .withDockerHost("tcp://localhost:" + proxyPort)
+                    .withDockerTlsVerify(false)
+                    .build();
             DockerClient client = DockerClientBuilder.getInstance(config).build();
 
             client.pingCmd().exec();

@@ -11,7 +11,10 @@ public class DockerClientConfigUtilsTest {
 
     @Test
     public void getDockerHostIpAddressShouldReturnLocalhostWhenUnixSocket() {
-        DockerClientConfig configuration = DockerClientConfig.createDefaultConfigBuilder().withDockerHost("unix:///var/run/docker.sock").build();
+        DockerClientConfig configuration = DockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost("unix:///var/run/docker.sock")
+                .withDockerTlsVerify(false) // TODO - check wrt. https://github.com/docker-java/docker-java/issues/588
+                .build();
         String actual = DockerClientConfigUtils.getDockerHostIpAddress(configuration);
         assertEquals("localhost", actual);
     }
@@ -32,7 +35,10 @@ public class DockerClientConfigUtilsTest {
     
     @Test
     public void getDockerHostIpAddressShouldReturnDockerHostIpWhenTcpUri() {
-        DockerClientConfig configuration = DockerClientConfig.createDefaultConfigBuilder().withDockerHost("tcp://12.23.34.45").build();
+        DockerClientConfig configuration = DockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost("tcp://12.23.34.45")
+                .withDockerTlsVerify(false) // TODO - check wrt. https://github.com/docker-java/docker-java/issues/588
+                .build();
         String actual = DockerClientConfigUtils.getDockerHostIpAddress(configuration);
         assertEquals("12.23.34.45", actual);
     }

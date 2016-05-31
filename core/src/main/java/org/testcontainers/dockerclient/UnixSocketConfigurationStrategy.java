@@ -11,7 +11,10 @@ public class UnixSocketConfigurationStrategy implements DockerConfigurationStrat
     @Override
     public DockerClientConfig provideConfiguration()
             throws InvalidConfigurationException {
-        DockerClientConfig config = new DockerClientConfig.DockerClientConfigBuilder().withDockerHost(SOCKET_LOCATION).build();
+        DockerClientConfig config = new DockerClientConfig.DockerClientConfigBuilder()
+                .withDockerHost(SOCKET_LOCATION)
+                .withDockerTlsVerify(false)
+                .build();
         DockerClient client = DockerClientBuilder.getInstance(config).build();
 
         try {

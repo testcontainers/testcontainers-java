@@ -29,9 +29,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.rnorth</groupId>
+            <groupId>org.rnorth</groupId>
             <artifactId>tcp-unix-socket-proxy</artifactId>
-            <version>eb0423e24c</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
@@ -221,11 +221,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
 </project>
