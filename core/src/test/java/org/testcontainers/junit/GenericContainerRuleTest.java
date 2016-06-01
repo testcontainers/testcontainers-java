@@ -1,5 +1,6 @@
 package org.testcontainers.junit;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -83,6 +84,19 @@ public class GenericContainerRuleTest {
             .withExposedPorts(80)
             .withEnv("MAGIC_NUMBER", "42")
             .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
+
+    /**
+     * Pass environment variables to the container, then run a shell script that exposes the variables in a quick and
+     * dirty way for testing.
+     */
+    @ClassRule
+    public static GenericContainer alpineEnvVarFromMap = new GenericContainer("alpine:3.2")
+            .withExposedPorts(80)
+            .withEnv(ImmutableMap.of(
+                    "FIRST", "42",
+                    "SECOND", "50"
+            ))
+            .withCommand("/bin/sh", "-c", "while true; do echo \"$FIRST and $SECOND\" | nc -l -p 80; done");
 
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
@@ -184,6 +198,20 @@ public class GenericContainerRuleTest {
         String line = br.readLine();
 
         assertEquals("An environment variable can be passed into a command", "42", line);
+    }
+
+    @Test
+    public void environmentFromMapTest() throws IOException {
+        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+
+            Socket socket = new Socket(alpineEnvVarFromMap.getContainerIpAddress(), alpineEnvVarFromMap.getMappedPort(80));
+            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        });
+
+        String line = br.readLine();
+
+        assertEquals("Environment variables can be passed into a command from a map", "42 and 50", line);
     }
 
     @Test
