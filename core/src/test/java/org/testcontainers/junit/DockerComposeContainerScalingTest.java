@@ -3,10 +3,8 @@ package org.testcontainers.junit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.redisson.Config;
-import org.redisson.Redisson;
-import org.redisson.core.RAtomicLong;
 import org.testcontainers.containers.DockerComposeContainer;
+import redis.clients.jedis.Jedis;
 
 import java.io.File;
 
@@ -19,7 +17,7 @@ public class DockerComposeContainerScalingTest {
 
     private static final int REDIS_PORT = 6379;
 
-    private Redisson[] clients = new Redisson[3];
+    private Jedis[] clients = new Jedis[3];
 
     @Rule
     public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/scaled-compose-test.yml"))
@@ -34,32 +32,17 @@ public class DockerComposeContainerScalingTest {
 
             String name = String.format("redis_%d", i + 1);
 
-            Config config = new Config();
-            config.useSingleServer().setAddress(environment.getServiceHost(name, REDIS_PORT) + ":" + environment.getServicePort(name, REDIS_PORT));
-
-            Redisson redisson = Redisson.create(config);
-
-            clients[i] = redisson;
+            clients[i] = new Jedis(environment.getServiceHost(name, REDIS_PORT), environment.getServicePort(name, REDIS_PORT));
         }
-//        Config config = new Config();
-//        for (int i = 0; i < 3; i++) {
-//            String name = String.format("redis_%d", i + 1);
-//            config.useClusterServers().addNodeAddress(environment.getServiceHost(name, REDIS_PORT) + ":" + environment.getServicePort(name, REDIS_PORT));
-//        }
-//        Redisson redisson = Redisson.create(config);
-//
-//        System.out.println();
     }
 
     @Test
     public void simpleTest() {
 
         for (int i = 0; i < 3; i++) {
-            RAtomicLong test = clients[i].getAtomicLong("test");
+            clients[i].incr("somekey");
 
-            test.incrementAndGet();
-
-            assertEquals("Each redis instance is separate", 1, (int) test.get());
+            assertEquals("Each redis instance is separate", 1, clients[i].get("somekey"));
         }
     }
 }

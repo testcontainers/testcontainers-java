@@ -1,10 +1,8 @@
 package org.testcontainers.junit;
 
 import org.junit.Test;
-import org.redisson.Config;
-import org.redisson.Redisson;
-import org.redisson.core.RAtomicLong;
 import org.testcontainers.containers.DockerComposeContainer;
+import redis.clients.jedis.Jedis;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
@@ -19,31 +17,25 @@ public abstract class BaseDockerComposeTest {
 
     @Test
     public void simpleTest() {
-        Config config = new Config();
-        config.useSingleServer().setAddress(getEnvironment().getServiceHost("redis_1", REDIS_PORT) + ":" + getEnvironment().getServicePort("redis_1", REDIS_PORT));
-        Redisson redisson = Redisson.create(config);
+        Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
 
-        RAtomicLong test = redisson.getAtomicLong("test");
-        test.incrementAndGet();
-        test.incrementAndGet();
-        test.incrementAndGet();
+        jedis.incr("test");
+        jedis.incr("test");
+        jedis.incr("test");
 
-        assertEquals("A redis instance defined in compose can be used in isolation", 3, (int) test.get());
+        assertEquals("A redis instance defined in compose can be used in isolation", 3, jedis.get("test"));
     }
 
     @Test
     public void secondTest() {
         // used in manual checking for cleanup in between tests
-        Config config = new Config();
-        config.useSingleServer().setAddress(getEnvironment().getServiceHost("redis_1", REDIS_PORT) + ":" + getEnvironment().getServicePort("redis_1", REDIS_PORT));
-        Redisson redisson = Redisson.create(config);
+        Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
 
-        RAtomicLong test = redisson.getAtomicLong("test");
-        test.incrementAndGet();
-        test.incrementAndGet();
-        test.incrementAndGet();
+        jedis.incr("test");
+        jedis.incr("test");
+        jedis.incr("test");
 
-        assertEquals("Tests use fresh container instances", 3, (int) test.get());
+        assertEquals("Tests use fresh container instances", 3, jedis.get("test"));
         // if these end up using the same container one of the test methods will fail.
         // However, @Rule creates a separate DockerComposeContainer instance per test, so this just shouldn't happen
     }
