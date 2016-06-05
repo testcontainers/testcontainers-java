@@ -306,7 +306,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (exposedPorts.size() > 0) {
             return getMappedPort(exposedPorts.get(0));
         } else if (portBindings.size() > 0) {
-            return PortBinding.parse(portBindings.get(0)).getBinding().getHostPort();
+            return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
         } else {
             return null;
         }
@@ -591,7 +591,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         if (binding != null && binding.length > 0 && binding[0] != null) {
-            return binding[0].getHostPort();
+            return Integer.valueOf(binding[0].getHostPortSpec());
         } else {
             throw new IllegalArgumentException("Requested port (" + originalPort +") is not mapped");
         }

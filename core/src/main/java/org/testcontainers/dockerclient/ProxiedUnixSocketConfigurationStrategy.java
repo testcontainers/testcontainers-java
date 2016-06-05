@@ -1,6 +1,7 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.rnorth.tcpunixsocketproxy.TcpToUnixSocketProxy;
@@ -17,7 +18,7 @@ public class ProxiedUnixSocketConfigurationStrategy implements DockerConfigurati
     private int proxyPort;
 
     @Override
-    public DockerClientConfig provideConfiguration()
+    public DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory)
             throws InvalidConfigurationException {
 
         if (!System.getProperty("os.name").toLowerCase().contains("mac")) {
@@ -47,7 +48,10 @@ public class ProxiedUnixSocketConfigurationStrategy implements DockerConfigurati
                     .withDockerHost("tcp://localhost:" + proxyPort)
                     .withDockerTlsVerify(false)
                     .build();
-            DockerClient client = DockerClientBuilder.getInstance(config).build();
+            DockerClient client = DockerClientBuilder
+                    .getInstance(config)
+                    .withDockerCmdExecFactory(cmdExecFactory)
+                    .build();
 
             client.pingCmd().exec();
 
