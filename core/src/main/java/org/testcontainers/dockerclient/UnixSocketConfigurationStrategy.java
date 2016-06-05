@@ -1,6 +1,7 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
@@ -9,13 +10,16 @@ public class UnixSocketConfigurationStrategy implements DockerConfigurationStrat
     public static final String SOCKET_LOCATION = "unix:///var/run/docker.sock";
 
     @Override
-    public DockerClientConfig provideConfiguration()
+    public DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory)
             throws InvalidConfigurationException {
         DockerClientConfig config = new DockerClientConfig.DockerClientConfigBuilder()
                 .withDockerHost(SOCKET_LOCATION)
                 .withDockerTlsVerify(false)
                 .build();
-        DockerClient client = DockerClientBuilder.getInstance(config).build();
+        DockerClient client = DockerClientBuilder
+                .getInstance(config)
+                .withDockerCmdExecFactory(cmdExecFactory)
+                .build();
 
         try {
             client.pingCmd().exec();

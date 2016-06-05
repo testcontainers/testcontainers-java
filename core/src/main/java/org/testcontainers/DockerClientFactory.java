@@ -76,11 +76,12 @@ public class DockerClientFactory {
      */
     @Synchronized
     public DockerClient client(boolean failFast) {
+        DockerCmdExecFactoryImpl nettyExecFactory = new DockerCmdExecFactoryImpl();
+
         if (config == null) {
-            config = DockerConfigurationStrategy.getFirstValidConfig(CONFIGURATION_STRATEGIES);
+            config = DockerConfigurationStrategy.getFirstValidConfig(CONFIGURATION_STRATEGIES, nettyExecFactory);
         }
 
-        DockerCmdExecFactoryImpl nettyExecFactory = new DockerCmdExecFactoryImpl();
         DockerClient client = DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(nettyExecFactory).build();
 
         if (!preconditionsChecked) {
