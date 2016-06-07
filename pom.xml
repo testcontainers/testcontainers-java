@@ -81,6 +81,19 @@
         <testcontainers.version>-SNAPSHOT</testcontainers.version>
     </properties>
 
+    <profiles>
+        <profile>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <testcontainers.version>windows-support-SNAPSHOT</testcontainers.version>
+            </properties>
+        </profile>
+    </profiles>
+
     <repositories>
         <repository>
             <id>jitpack.io</id>
