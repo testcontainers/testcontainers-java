@@ -188,28 +188,14 @@ public class GenericContainerRuleTest {
 
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
-        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-
-            Socket socket = new Socket(alpineEnvVar.getContainerIpAddress(), alpineEnvVar.getMappedPort(80));
-            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        });
-
-        String line = br.readLine();
+        String line = getReaderForContainerPort80(alpineEnvVar).readLine();
 
         assertEquals("An environment variable can be passed into a command", "42", line);
     }
 
     @Test
     public void environmentFromMapTest() throws IOException {
-        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-
-            Socket socket = new Socket(alpineEnvVarFromMap.getContainerIpAddress(), alpineEnvVarFromMap.getMappedPort(80));
-            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        });
-
-        String line = br.readLine();
+        String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
 
         assertEquals("Environment variables can be passed into a command from a map", "42 and 50", line);
     }
@@ -218,15 +204,7 @@ public class GenericContainerRuleTest {
     public void customClasspathResourceMappingTest() throws IOException {
         // Note: This functionality doesn't work if you are running your build inside a Docker container;
         // in that case this test will fail.
-
-        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-
-            Socket socket = new Socket(alpineClasspathResource.getContainerIpAddress(), alpineClasspathResource.getMappedPort(80));
-            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        });
-
-        String line = br.readLine();
+        String line = getReaderForContainerPort80(alpineClasspathResource).readLine();
 
         assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMapping", "FOOBAR", line);
     }
@@ -279,7 +257,6 @@ public class GenericContainerRuleTest {
         }
     }
 
-
     @Test
     public void testExecInContainer() throws Exception {
 
@@ -295,14 +272,10 @@ public class GenericContainerRuleTest {
         }
     }
 
+
     @Test
     public void extraHostTest() throws IOException {
-        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-
-            Socket socket = new Socket(alpineExtrahost.getContainerIpAddress(), alpineExtrahost.getMappedPort(80));
-            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        });
+        BufferedReader br = getReaderForContainerPort80(alpineExtrahost);
 
         // read hosts file from container
         StringBuffer hosts = new StringBuffer();
@@ -315,5 +288,16 @@ public class GenericContainerRuleTest {
 
         Matcher matcher = Pattern.compile("^192.168.1.10\\s.*somehost", Pattern.MULTILINE).matcher(hosts.toString());
         assertTrue("The hosts file of container contains extra host", matcher.find());
+    }
+
+    private BufferedReader getReaderForContainerPort80(GenericContainer container) throws IOException {
+        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+
+            Socket socket = new Socket(container.getContainerIpAddress(), container.getMappedPort(80));
+            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        });
+
+        return br;
     }
 }
