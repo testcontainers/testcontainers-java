@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
-import com.google.common.util.concurrent.Uninterruptibles;
+import org.rnorth.ducttape.ratelimits.RateLimiter;
+import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.traits.LinkableContainer;
 
@@ -23,6 +24,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
     protected Map<String, String> parameters = new HashMap<>();
+
+    private static final RateLimiter DB_CONNECT_RATE_LIMIT = RateLimiterBuilder.newBuilder()
+            .withRate(10, TimeUnit.SECONDS)
+            .withConstantThroughput()
+            .build();
 
     public JdbcDatabaseContainer(String dockerImageName) {
         super(dockerImageName);
@@ -60,13 +66,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
         Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
 
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO replace with a rate limiter
-
             if (!isRunning()) {
                 throw new ContainerLaunchException("Container failed to start");
             }
 
-            Connection connection = createConnection("");
+            Connection connection = DB_CONNECT_RATE_LIMIT.getWhenReady(() -> createConnection(""));
 
             boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
 
