@@ -6,6 +6,7 @@ import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
@@ -85,6 +86,15 @@ public class DockerClientFactory {
         DockerClient client = DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(nettyExecFactory).build();
 
         if (!preconditionsChecked) {
+            Info dockerInfo = client.infoCmd().exec();
+            LOGGER.info("Connected to docker: \n" +
+                    "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
+                    "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
+                    "  Total Memory: " + dockerInfo.getMemTotal() + "\n" +
+                    "  HTTP Proxy: " + dockerInfo.getHttpProxy() + "\n" +
+                    "  HTTPS Proxy: " + dockerInfo.getHttpsProxy()
+            );
+
             String version = client.versionCmd().exec().getVersion();
             checkVersion(version);
             checkDiskSpaceAndHandleExceptions(client);
