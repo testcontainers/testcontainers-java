@@ -146,6 +146,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withEnv(String key, String value);
 
     /**
+     * Add environment variables to be passed to the container.
+     *
+     * @param env map of environment variables
+     * @return this
+     */
+    SELF withEnv(Map<String, String> env);
+
+    /**
      * Set the command that should be run in the container
      *
      * @param cmd a command in single string format (will automatically be split on spaces)
