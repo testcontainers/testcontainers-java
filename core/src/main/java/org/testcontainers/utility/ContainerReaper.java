@@ -95,7 +95,7 @@ public final class ContainerReaper {
             LOGGER.trace("Removing container: {}", containerId);
             try {
                 dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
-                LOGGER.info("Removed container and associated volume(s): {}", imageName);
+                LOGGER.debug("Removed container and associated volume(s): {}", imageName);
             } catch (InternalServerErrorException e) {
                 LOGGER.trace("Exception when removing container with associated volume(s): {} (due to {})", imageName, e.getMessage());
             }
