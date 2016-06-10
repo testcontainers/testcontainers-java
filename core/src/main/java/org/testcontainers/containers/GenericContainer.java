@@ -97,9 +97,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
-    @Nullable
-    private String networkMode = null;
-
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -332,15 +329,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(new Link[linkedContainers.size()]);
         createCommand.withLinks(linksArray);
 
+        for (LinkableContainer linkableContainer : linkedContainers.values()) {
+            Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
+                            .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
+                            .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
+                            .distinct()
+                            .collect(Collectors.toSet());
+
+            // TODO attach this container to the relevant networks
+        }
+
         createCommand.withPublishAllPorts(true);
 
         String[] extraHostsArray = extraHosts.stream()
         		 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
-
-        if (networkMode != null) {
-            createCommand.withNetworkMode(networkMode);
-        }
     }
 
     /**
@@ -730,11 +733,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());
         return result;
-    }
-
-    public SELF withNetwork(String network) {
-        this.networkMode = network;
-        return self();
     }
 
     /**

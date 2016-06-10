@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
+import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -46,7 +47,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private static final RateLimiter AMBASSADOR_CREATION_RATE_LIMITER = RateLimiterBuilder
             .newBuilder()
-            .withRate(1, TimeUnit.SECONDS)
+            .withRate(6, TimeUnit.MINUTES)
             .withConstantThroughput()
             .build();
 
@@ -81,38 +82,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     }
 
-    private GenericContainer createComposeInstance() {
-        return new GenericContainer("dduportal/docker-compose:1.6.0")
-                .withEnv("COMPOSE_PROJECT_NAME", identifier)
-                // Map the docker compose file into the container
-                .withEnv("COMPOSE_FILE", "/compose/" + composeFile.getAbsoluteFile().getName())
-                .withFileSystemBind(composeFile.getAbsoluteFile().getParentFile().getAbsolutePath(), "/compose", READ_ONLY)
-                // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
-                //  as the docker daemon, just mapping the docker control socket is OK.
-                // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
-                //  we map the socket file outside of /var/run, as just /docker.sock
-                .withFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE)
-                .withEnv("DOCKER_HOST", "unix:///docker.sock")
-                .withStartupCheckStrategy(new OneShotStartupCheckStrategy());
-    }
 
     private void createServices() {
         // Start the docker-compose container, which starts up the services
-        GenericContainer composeInstance = createComposeInstance().withCommand("up -d");
-        runCompose(composeInstance);
-    }
-
-    private void runCompose(GenericContainer composeInstance) {
-        composeInstance.start();
-        composeInstance.followOutput(new Slf4jLogConsumer(logger()), OutputFrame.OutputType.STDERR);
-
-        // wait for the compose container to stop, which should only happen after it has spawned all the service containers
-        logger().info("Docker compose container is running - service creation will start now");
-        while (composeInstance.isRunning()) {
-            logger().trace("Compose container is still running");
-            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-        }
-        logger().info("Docker compose has finished running");
+        new DockerCompose(composeFile, identifier)
+                .withCommand("up -d")
+                .start();
     }
 
     private void applyScaling() {
@@ -123,8 +98,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 sb.append(" ").append(scale.getKey()).append("=").append(scale.getValue());
             }
 
-            GenericContainer composeInstance = createComposeInstance().withCommand(sb.toString());
-            runCompose(composeInstance);
+            new DockerCompose(composeFile, identifier)
+                    .withCommand(sb.toString())
+                    .start();
         }
     }
 
@@ -185,8 +161,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     @Override
     protected void finished(Description description) {
-        // this, the compose container, should not be running, but just in case something has gone wrong
-        createComposeInstance().stop();
+
+
+        // Kill the services using docker-compose
+        new DockerCompose(composeFile, identifier)
+                .withCommand("kill")
+                .start();
+        new DockerCompose(composeFile, identifier)
+                .withCommand("rm -f -v")
+                .start();
 
         // shut down all the ambassador containers
         ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
@@ -208,8 +191,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
          * This avoids the need for the docker compose file to explicitly expose ports on all the
          * services.
          */
-        AmbassadorContainer ambassadorContainer = new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort)
-                .withNetwork(identifier + "_default");
+        AmbassadorContainer ambassadorContainer = new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort);
 
         // Ambassador containers will all be started together after docker compose has started
         ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
@@ -245,8 +227,42 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return ambassadorContainers.get(serviceName + ":" + servicePort).getMappedPort(servicePort);
     }
 
-    public DockerComposeContainer withScaledService(String serviceBaseName, int numInstances) {
+    public SELF withScaledService(String serviceBaseName, int numInstances) {
         scalingPreferences.put(serviceBaseName, numInstances);
-        return this;
+
+        return (SELF) this;
+    }
+}
+
+class DockerCompose extends GenericContainer<DockerCompose> {
+    public DockerCompose(File composeFile, String identifier) {
+
+        super("dduportal/docker-compose:1.6.0");
+        addEnv("COMPOSE_PROJECT_NAME", identifier);
+        // Map the docker compose file into the container
+        addEnv("COMPOSE_FILE", "/compose/" + composeFile.getAbsoluteFile().getName());
+        addFileSystemBind(composeFile.getAbsoluteFile().getParentFile().getAbsolutePath(), "/compose", READ_ONLY);
+        // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
+        //  as the docker daemon, just mapping the docker control socket is OK.
+        // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
+        //  we map the socket file outside of /var/run, as just /docker.sock
+        addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
+        addEnv("DOCKER_HOST", "unix:///docker.sock");
+        setStartupCheckStrategy(new OneShotStartupCheckStrategy());
+    }
+
+    @Override
+    public void start() {
+        super.start();
+
+        this.followOutput(new Slf4jLogConsumer(logger()), OutputFrame.OutputType.STDERR);
+
+        // wait for the compose container to stop, which should only happen after it has spawned all the service containers
+        logger().info("Docker compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
+        while (this.isRunning()) {
+            logger().trace("Compose container is still running");
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+        }
+        logger().info("Docker compose has finished running");
     }
 }
