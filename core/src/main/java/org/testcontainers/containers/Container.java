@@ -311,8 +311,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     Map<String, LinkableContainer> getLinkedContainers();
 
-    Duration getMinimumRunningDuration();
-
     DockerClient getDockerClient();
 
     Info getDockerDaemonInfo();
@@ -338,8 +336,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void setBinds(List<Bind> binds);
 
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
-
-    void setMinimumRunningDuration(Duration minimumRunningDuration);
 
     void setDockerClient(DockerClient dockerClient);
 
