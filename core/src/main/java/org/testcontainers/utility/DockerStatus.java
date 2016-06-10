@@ -79,4 +79,9 @@ public class DockerStatus {
             || DateTimeFormatter.ISO_INSTANT.parse(dockerTimestamp, Instant::from).getEpochSecond() < 0L;
     }
 
+    public static boolean isContainerExitCodeSuccess(InspectContainerResponse.ContainerState state) {
+        int exitCode = state.getExitCode();
+        // 0 is the only exit code we can consider as success
+        return exitCode == 0;
+    }
 }

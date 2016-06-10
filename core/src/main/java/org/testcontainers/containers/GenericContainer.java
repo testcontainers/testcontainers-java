@@ -24,11 +24,17 @@ import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
+import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.ContainerReaper;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.PathOperations;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +42,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -90,8 +95,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
-    @NonNull
-    private Duration minimumRunningDuration = null;
+    private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
     /*
      * Unique instance of DockerClient for use by this container object.
@@ -189,31 +193,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerIsStarting(containerInfo);
 
             // Wait until the container is running (may not be fully started)
-            profiler.start("Wait until container state=running, or there's evidence it failed to start.");
-            final Boolean[] startedOK = {null};
-            Unreliables.retryUntilTrue(CONTAINER_RUNNING_TIMEOUT_SEC, TimeUnit.SECONDS, () -> {
-                //noinspection CodeBlock2Expr
-                return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
-                    // record "now" before fetching status; otherwise the time to fetch the status
-                    // will contribute to how long the container has been running.
-                    Instant now = Instant.now();
-                    InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
+            profiler.start("Wait until container has started properly, or there's evidence it failed to start.");
+            boolean startedOK = this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId);
 
-                    if (DockerStatus.isContainerRunning(
-                            inspectionResponse.getState(),
-                            minimumRunningDuration,
-                            now)) {
-                        startedOK[0] = true;
-                        return true;
-                    } else if (DockerStatus.isContainerStopped(inspectionResponse.getState())) {
-                        startedOK[0] = false;
-                        return true;
-                    }
-                    return false;
-                });
-            });
-
-            if (!startedOK[0]) {
+            if (!startedOK) {
 
                 logger().error("Container did not start correctly; container log output (if any) will be fetched and logged shortly");
                 FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
@@ -223,10 +206,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
-                throw new IllegalStateException("Container has already stopped.");
+                throw new IllegalStateException("Container did not start correctly.");
             }
 
-            profiler.start("Wait until container started");
+            profiler.start("Wait until container started properly");
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
@@ -345,6 +328,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .collect(Collectors.toList())
                 .toArray(new Link[linkedContainers.size()]);
         createCommand.withLinks(linksArray);
+
+        for (LinkableContainer linkableContainer : linkedContainers.values()) {
+            Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
+                            .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
+                            .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
+                            .distinct()
+                            .collect(Collectors.toSet());
+
+            // TODO attach this container to the relevant networks
+        }
 
         createCommand.withPublishAllPorts(true);
 
@@ -550,7 +543,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withMinimumRunningDuration(Duration minimumRunningDuration) {
-        this.setMinimumRunningDuration(minimumRunningDuration);
+        this.startupCheckStrategy = new MinimumDurationRunningStartupCheckStrategy(minimumRunningDuration);
+        return self();
+    }
+
+    public SELF withStartupCheckStrategy(StartupCheckStrategy strategy) {
+        this.startupCheckStrategy = strategy;
         return self();
     }
 
