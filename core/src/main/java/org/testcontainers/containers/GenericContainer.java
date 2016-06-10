@@ -501,6 +501,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    public SELF withEnv(Map<String, String> env) {
+        env.forEach(this::addEnv);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public SELF withCommand(String cmd) {
         this.setCommand(cmd);
         return self();
