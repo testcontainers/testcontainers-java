@@ -22,6 +22,6 @@ public class Slf4jLogConsumer implements Consumer<OutputFrame> {
 
     @Override
     public void accept(OutputFrame outputFrame) {
-        logger.info("{}{}: {}", prefix, outputFrame.getType(), outputFrame.getUtf8String());
+        logger.info("{}{}: {}", prefix, outputFrame.getType(), outputFrame.getUtf8String().trim());
     }
 }
