@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.rnorth.visible-assertions</groupId>
             <artifactId>visible-assertions</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -80,6 +80,19 @@
         <testcontainers.group>com.github.testcontainers.testcontainers-java</testcontainers.group>
         <testcontainers.version>-SNAPSHOT</testcontainers.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <testcontainers.version>windows-support-SNAPSHOT</testcontainers.version>
+            </properties>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
