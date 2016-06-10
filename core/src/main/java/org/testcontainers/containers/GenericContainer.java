@@ -81,6 +81,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<String> extraHosts = new ArrayList<>();
 
     @NonNull
+    private String networkMode;
+
+    @NonNull
     private Future<String> image;
 
     @NonNull
@@ -329,14 +332,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(new Link[linkedContainers.size()]);
         createCommand.withLinks(linksArray);
 
+        Set<String> allLinkedContainerNetworks = new HashSet<>();
         for (LinkableContainer linkableContainer : linkedContainers.values()) {
             Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
                             .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
                             .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
                             .distinct()
                             .collect(Collectors.toSet());
+            allLinkedContainerNetworks.addAll(linkedContainerNetworks);
+        }
 
-            // TODO attach this container to the relevant networks
+
+        if (allLinkedContainerNetworks.size() > 1) {
+            logger().warn("Container needs to be on more than one custom network to link to other " +
+                    "containers - this is not currently supported. Required networks are: {}",
+                    allLinkedContainerNetworks);
+        }
+
+        Optional<String> networkForLinks = allLinkedContainerNetworks.stream().findFirst();
+        if (networkForLinks.isPresent()) {
+            logger().debug("Associating container with network: {}", networkForLinks.get());
+            createCommand.withNetworkMode(networkForLinks.get());
         }
 
         createCommand.withPublishAllPorts(true);
@@ -344,6 +360,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         String[] extraHostsArray = extraHosts.stream()
         		 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
+
+        if (networkMode != null) {
+            createCommand.withNetworkMode(networkMode);
+        }
     }
 
     /**
@@ -510,6 +530,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withExtraHost(String hostname, String ipAddress) {
         this.extraHosts.add(String.format("%s:%s", hostname, ipAddress));
+        return self();
+    }
+
+    @Override
+    public SELF withNetworkMode(String networkMode) {
+        this.networkMode = networkMode;
         return self();
     }
 

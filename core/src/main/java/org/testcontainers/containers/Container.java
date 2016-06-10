@@ -177,6 +177,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withExtraHost(String hostname, String ipAddress);
 
+    SELF withNetworkMode(String networkMode);
+
     /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
      * This will only work if you are running your tests outside a Docker container.

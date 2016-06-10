@@ -190,8 +190,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
          *
          * This avoids the need for the docker compose file to explicitly expose ports on all the
          * services.
+         *
+         * {@link GenericContainer} should ensure that the ambassador container is on the same network
+         * as the rest of the compose environment.
          */
-        AmbassadorContainer ambassadorContainer = new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort);
+        AmbassadorContainer ambassadorContainer =
+                new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort);
 
         // Ambassador containers will all be started together after docker compose has started
         ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
