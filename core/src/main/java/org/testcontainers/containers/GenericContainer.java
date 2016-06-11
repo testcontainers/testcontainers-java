@@ -31,7 +31,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.ContainerReaper;
+import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.PathOperations;
@@ -180,7 +180,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
             containerId = createCommand.exec().getId();
-            ContainerReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
+            ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
 
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
@@ -243,7 +243,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             imageName = "<unknown>";
         }
 
-        ContainerReaper.instance().stopAndRemoveContainer(containerId, imageName);
+        ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
     }
 
     /**
