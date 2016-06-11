@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
+import static org.rnorth.visibleassertions.VisibleAssertions.info;
 import static org.rnorth.visibleassertions.VisibleAssertions.pass;
 
 /**
@@ -27,7 +27,7 @@ public class DockerComposePassthroughTest {
                     .withEnv("foo", "bar")
                     .withExposedService("alpine_1", 3000);
 
-    @Test
+    @Test(timeout = 30_000)
     public void testEnvVar() throws IOException {
         BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
@@ -36,16 +36,18 @@ public class DockerComposePassthroughTest {
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
 
-
-        while (br.ready()) {
-            String line = br.readLine();
-            System.out.println(line);
-            if (line.contains("bar=bar")) {
-                pass("Mapped environment variable was found");
-                return;
+        Unreliables.retryUntilTrue(10, TimeUnit.SECONDS, () -> {
+            while (br.ready()) {
+                String line = br.readLine();
+                if (line.contains("bar=bar")) {
+                    pass("Mapped environment variable was found");
+                    return true;
+                }
             }
-        }
+            info("Mapped environment variable was not found yet - process probably not ready");
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+            return false;
+        });
 
-        fail("Mapped environment variable was not found");
     }
 }

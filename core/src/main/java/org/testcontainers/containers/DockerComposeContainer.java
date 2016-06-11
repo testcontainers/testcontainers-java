@@ -17,7 +17,7 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.ContainerReaper;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
 import java.util.HashMap;
@@ -58,15 +58,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .build();
 
     public DockerComposeContainer(File composeFile) {
-        this(composeFile, "up -d --build");
-    }
-
-    public DockerComposeContainer(File composeFile, String command) {
-        this(composeFile, command, Base58.randomString(6).toLowerCase());
+        this(composeFile, Base58.randomString(6).toLowerCase());
     }
 
     @SuppressWarnings("WeakerAccess")
-    public DockerComposeContainer(File composeFile, String command, String identifier) {
+    public DockerComposeContainer(File composeFile, String identifier) {
         this.composeFile = composeFile;
 
         // Use a unique identifier so that containers created for this compose environment can be identified
@@ -96,19 +92,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private DockerCompose getDockerCompose(String cmd) {
-        DockerCompose dockerCompose = new DockerCompose(composeFile, identifier)
+        return new DockerCompose(composeFile, identifier)
                 .withCommand(cmd)
                 .withEnv(env);
-
-        //binds.forEach(bind -> dockerCompose.addFileSystemBind(new File(bind.hostPath).getAbsolutePath(), bind.containerPath, bind.mode));
-
-        return dockerCompose;
     }
 
     private void applyScaling() {
         // Apply scaling
         if (!scalingPreferences.isEmpty()) {
-            StringBuffer sb = new StringBuffer("scale");
+            StringBuilder sb = new StringBuilder("scale");
             for (Map.Entry<String, Integer> scale : scalingPreferences.entrySet()) {
                 sb.append(" ").append(scale.getKey()).append("=").append(scale.getValue());
             }
@@ -126,9 +118,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                     .withShowAll(true)
                     .exec();
 
-            // register with ContainerReaper to ensure final shutdown with JVM
+            // register with ResourceReaper to ensure final shutdown with JVM
             containers.forEach(container ->
-                    ContainerReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
+                    ResourceReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
+
+            // Ensure that the default network for this compose environment, if any, is also cleaned up
+            ResourceReaper.instance().registerNetworkForCleanup(identifier + "_default");
 
             // remember the IDs to allow containers to be killed as soon as we reach stop()
             spawnedContainerIds = containers.stream()
@@ -186,7 +181,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
 
         // kill the spawned service containers
-        spawnedContainerIds.forEach(id -> ContainerReaper.instance().stopAndRemoveContainer(id));
+        spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
         spawnedContainerIds.clear();
     }
 
