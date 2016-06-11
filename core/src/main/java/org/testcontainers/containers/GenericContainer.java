@@ -334,6 +334,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         Set<String> allLinkedContainerNetworks = new HashSet<>();
         for (LinkableContainer linkableContainer : linkedContainers.values()) {
+
+            boolean linkableContainerIsRunning = dockerClient.listContainersCmd().exec().stream()
+                    .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
+                    .map(com.github.dockerjava.api.model.Container::getId)
+                    .map(id -> dockerClient.inspectContainerCmd(id).exec())
+                    .anyMatch(linkableContainerInspectResponse -> linkableContainerInspectResponse.getState().getRunning());
+
+            if (!linkableContainerIsRunning) {
+                throw new ContainerLaunchException("Aborting attempt to link to container " +
+                        linkableContainer.getContainerName() +
+                        " as it is not running");
+            }
+
             Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
                             .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
                             .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())

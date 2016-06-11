@@ -45,6 +45,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
 
+    /**
+     * Properties that should be passed through to all Compose and ambassador containers (not
+     * necessarily to containers that are spawned by Compose itself)
+     */
+    private Map<String, String> env = new HashMap<>();
+
     private static final RateLimiter AMBASSADOR_CREATION_RATE_LIMITER = RateLimiterBuilder
             .newBuilder()
             .withRate(6, TimeUnit.MINUTES)
@@ -52,7 +58,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .build();
 
     public DockerComposeContainer(File composeFile) {
-        this(composeFile, "up -d");
+        this(composeFile, "up -d --build");
     }
 
     public DockerComposeContainer(File composeFile, String command) {
@@ -85,9 +91,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServices() {
         // Start the docker-compose container, which starts up the services
-        new DockerCompose(composeFile, identifier)
-                .withCommand("up -d")
+        getDockerCompose("up -d")
                 .start();
+    }
+
+    private DockerCompose getDockerCompose(String cmd) {
+        DockerCompose dockerCompose = new DockerCompose(composeFile, identifier)
+                .withCommand(cmd)
+                .withEnv(env);
+
+        //binds.forEach(bind -> dockerCompose.addFileSystemBind(new File(bind.hostPath).getAbsolutePath(), bind.containerPath, bind.mode));
+
+        return dockerCompose;
     }
 
     private void applyScaling() {
@@ -98,8 +113,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 sb.append(" ").append(scale.getKey()).append("=").append(scale.getValue());
             }
 
-            new DockerCompose(composeFile, identifier)
-                    .withCommand(sb.toString())
+            getDockerCompose(sb.toString())
                     .start();
         }
     }
@@ -113,9 +127,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                     .exec();
 
             // register with ContainerReaper to ensure final shutdown with JVM
-            containers.stream()
-                    .forEach(container ->
-                            ContainerReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
+            containers.forEach(container ->
+                    ContainerReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
 
             // remember the IDs to allow containers to be killed as soon as we reach stop()
             spawnedContainerIds = containers.stream()
@@ -164,11 +177,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
 
         // Kill the services using docker-compose
-        new DockerCompose(composeFile, identifier)
-                .withCommand("kill")
+        getDockerCompose("kill")
                 .start();
-        new DockerCompose(composeFile, identifier)
-                .withCommand("rm -f -v")
+        getDockerCompose("rm -f -v")
                 .start();
 
         // shut down all the ambassador containers
@@ -195,12 +206,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
          * as the rest of the compose environment.
          */
         AmbassadorContainer ambassadorContainer =
-                new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort);
+                new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort)
+                        .withEnv(env);
 
         // Ambassador containers will all be started together after docker compose has started
         ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
 
-        return (SELF) this;
+        return self();
     }
 
     /**
@@ -234,6 +246,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public SELF withScaledService(String serviceBaseName, int numInstances) {
         scalingPreferences.put(serviceBaseName, numInstances);
 
+        return self();
+    }
+
+    public SELF withEnv(String key, String value) {
+        env.put(key, value);
+        return self();
+    }
+
+    public SELF withEnv(Map<String, String> env) {
+        env.forEach(env::put);
+        return self();
+    }
+
+    private SELF self() {
         return (SELF) this;
     }
 }
