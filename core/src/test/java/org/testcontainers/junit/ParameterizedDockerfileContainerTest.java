@@ -8,10 +8,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -48,12 +50,15 @@ public class ParameterizedDockerfileContainerTest {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(address);
 
-        try (CloseableHttpResponse response = httpClient.execute(get)) {
-            assertEquals("A container built from a dockerfile can run nginx as expected, and returns a good status code",
-                            200,
-                            response.getStatusLine().getStatusCode());
-            assertTrue("A container built from a dockerfile can run nginx as expected, and returns an expected Server header",
-                            response.getHeaders("Server")[0].getValue().contains("nginx"));
-        }
+        Unreliables.retryUntilSuccess(5, TimeUnit.SECONDS, () -> {
+            try (CloseableHttpResponse response = httpClient.execute(get)) {
+                assertEquals("A container built from a dockerfile can run nginx as expected, and returns a good status code",
+                                200,
+                                response.getStatusLine().getStatusCode());
+                assertTrue("A container built from a dockerfile can run nginx as expected, and returns an expected Server header",
+                                response.getHeaders("Server")[0].getValue().contains("nginx"));
+            }
+            return true;
+        });
     }
 }
