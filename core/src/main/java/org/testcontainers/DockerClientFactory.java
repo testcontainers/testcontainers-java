@@ -7,12 +7,9 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.WaitContainerResultCallback;
-import com.github.dockerjava.netty.DockerCmdExecFactoryImpl;
 import lombok.Synchronized;
 import org.slf4j.Logger;
 import org.testcontainers.dockerclient.*;
@@ -33,14 +30,14 @@ public class DockerClientFactory {
     private static final Logger LOGGER = getLogger(DockerClientFactory.class);
 
     // Cached client configuration
-    private DockerClientConfig config;
+    private DockerClientProviderStrategy strategy;
     private boolean preconditionsChecked = false;
 
-    private static final List<DockerConfigurationStrategy> CONFIGURATION_STRATEGIES =
-            asList(new EnvironmentAndSystemPropertyConfigurationStrategy(),
-                    new ProxiedUnixSocketConfigurationStrategy(),
-                    new UnixSocketConfigurationStrategy(),
-                    new DockerMachineConfigurationStrategy());
+    private static final List<DockerClientProviderStrategy> CONFIGURATION_STRATEGIES =
+            asList(new EnvironmentAndSystemPropertyClientProviderStrategy(),
+                    new ProxiedUnixSocketClientProviderStrategy(),
+                    new UnixSocketClientProviderStrategy(),
+                    new DockerMachineClientProviderStrategy());
 
     /**
      * Private constructor
@@ -77,23 +74,19 @@ public class DockerClientFactory {
      */
     @Synchronized
     public DockerClient client(boolean failFast) {
-        DockerCmdExecFactoryImpl nettyExecFactory = new DockerCmdExecFactoryImpl();
 
-        if (config == null) {
-            config = DockerConfigurationStrategy.getFirstValidConfig(CONFIGURATION_STRATEGIES, nettyExecFactory);
+        if (strategy == null) {
+            strategy = DockerClientProviderStrategy.getFirstValidStrategy(CONFIGURATION_STRATEGIES);
         }
 
-        DockerClient client = DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(nettyExecFactory).build();
+        DockerClient client = strategy.getClient();
 
         if (!preconditionsChecked) {
             Info dockerInfo = client.infoCmd().exec();
             LOGGER.info("Connected to docker: \n" +
                     "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
-                    "  Total Memory: " + dockerInfo.getMemTotal() + "\n" +
-                    "  HTTP Proxy: " + dockerInfo.getHttpProxy() + "\n" +
-                    "  HTTPS Proxy: " + dockerInfo.getHttpsProxy()
-            );
+                    "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
             String version = client.versionCmd().exec().getVersion();
             checkVersion(version);
@@ -110,18 +103,10 @@ public class DockerClientFactory {
     }
 
     /**
-     * @param config docker client configuration to extract the host IP address from
-     * @return the IP address of the host running Docker
-     */
-    private String dockerHostIpAddress(DockerClientConfig config) {
-        return DockerClientConfigUtils.getDockerHostIpAddress(config);
-    }
-
-    /**
      * @return the IP address of the host running Docker
      */
     public String dockerHostIpAddress() {
-        return dockerHostIpAddress(config);
+        return strategy.getDockerHostIpAddress();
     }
 
     private void checkVersion(String version) {
