@@ -336,7 +336,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         for (LinkableContainer linkableContainer : linkedContainers.values()) {
 
             boolean linkableContainerIsRunning = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
+                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
                     .map(com.github.dockerjava.api.model.Container::getId)
                     .map(id -> dockerClient.inspectContainerCmd(id).exec())
                     .anyMatch(linkableContainerInspectResponse -> linkableContainerInspectResponse.getState().getRunning());
@@ -348,7 +348,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
-                            .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
+                            .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
                             .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
                             .distinct()
                             .collect(Collectors.toSet());
