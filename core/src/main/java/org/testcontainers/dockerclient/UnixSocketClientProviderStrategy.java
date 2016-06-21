@@ -1,8 +1,6 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.DockerCmdExecFactory;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,27 +9,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class UnixSocketConfigurationStrategy implements DockerConfigurationStrategy {
+public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
 
-    public static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
-    public static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
+    protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
+    private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
+    private static final int EXPECTED_UNIX_SOCKET_MODE = 0140755;
 
     @Override
-    public DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory)
+    public void test()
             throws InvalidConfigurationException {
 
-        DockerClientConfig config;
+        if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
+            throw new InvalidConfigurationException("this strategy is only applicable to Linux");
+        }
+
         try {
-            config = tryConfiguration(cmdExecFactory, SOCKET_LOCATION);
+            config = tryConfiguration(SOCKET_LOCATION);
             LOGGER.info("Accessing docker with local Unix socket");
-            return config;
         } catch (Exception e) {
             throw new InvalidConfigurationException("ping failed", e);
         }
     }
 
     @NotNull
-    protected DockerClientConfig tryConfiguration(DockerCmdExecFactory cmdExecFactory, String dockerHost) {
+    protected DockerClientConfig tryConfiguration(String dockerHost) {
 
         Path dockerSocketFile = Paths.get(DOCKER_SOCK_PATH);
         Integer mode;
@@ -41,7 +42,7 @@ public class UnixSocketConfigurationStrategy implements DockerConfigurationStrat
             throw new InvalidConfigurationException("Could not find unix domain socket", e);
         }
 
-        if (mode != 0140755) { // simple comparison; could be improved with bitmasking
+        if (mode != EXPECTED_UNIX_SOCKET_MODE) { // simple comparison; could be improved with bitmasking
             throw new InvalidConfigurationException("Found docker unix domain socket but file mode was not as expected (expected: srwxr-xr-x). This problem is possibly due to occurrence of this issue in the past: https://github.com/docker/docker/issues/13121");
         }
 
@@ -50,12 +51,10 @@ public class UnixSocketConfigurationStrategy implements DockerConfigurationStrat
                 .withDockerHost(dockerHost)
                 .withDockerTlsVerify(false)
                 .build();
-        DockerClient client = DockerClientBuilder
-                .getInstance(config)
-                .withDockerCmdExecFactory(cmdExecFactory)
-                .build();
+        DockerClient client = getClientForConfig(config);
 
-        client.pingCmd().exec();
+        ping(client, 3);
+
         return config;
     }
 
