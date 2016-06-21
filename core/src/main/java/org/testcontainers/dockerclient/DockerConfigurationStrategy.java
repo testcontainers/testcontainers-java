@@ -18,9 +18,8 @@ public interface DockerConfigurationStrategy {
     /**
      * @return a usable, tested, Docker client configuration for the host system environment
      * @throws InvalidConfigurationException if this strategy fails
-     * @param cmdExecFactory
      */
-    DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory) throws InvalidConfigurationException;
+    DockerClientConfig provideConfiguration() throws InvalidConfigurationException;
 
     /**
      * @return a short textual description of the strategy
@@ -40,7 +39,7 @@ public interface DockerConfigurationStrategy {
         for (DockerConfigurationStrategy strategy : strategies) {
             try {
                 LOGGER.info("Looking for Docker environment. Trying {}", strategy.getDescription());
-                return strategy.provideConfiguration(cmdExecFactory);
+                return strategy.provideConfiguration();
             } catch (Exception | ExceptionInInitializerError e) {
                 @Nullable String throwableMessage = e.getMessage();
                 Throwable rootCause = Throwables.getRootCause(e);

@@ -1,9 +1,9 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.netty.DockerCmdExecFactoryImpl;
 
 /**
  * Use environment variables and system properties (as supported by the underlying DockerClient DefaultConfigBuilder)
@@ -14,14 +14,14 @@ public class EnvironmentAndSystemPropertyConfigurationStrategy implements Docker
     private DockerClientConfig config = null;
 
     @Override
-    public DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory) throws InvalidConfigurationException {
+    public DockerClientConfig provideConfiguration() throws InvalidConfigurationException {
 
         try {
             // Try using environment variables
             config = DockerClientConfig.createDefaultConfigBuilder().build();
             DockerClient client = DockerClientBuilder
                     .getInstance(config)
-                    .withDockerCmdExecFactory(cmdExecFactory)
+                    .withDockerCmdExecFactory(new DockerCmdExecFactoryImpl())
                     .build();
 
             client.pingCmd().exec();

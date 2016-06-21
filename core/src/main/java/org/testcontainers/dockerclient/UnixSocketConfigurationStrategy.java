@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.netty.DockerCmdExecFactoryImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -17,12 +18,16 @@ public class UnixSocketConfigurationStrategy implements DockerConfigurationStrat
     public static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
 
     @Override
-    public DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory)
+    public DockerClientConfig provideConfiguration()
             throws InvalidConfigurationException {
+
+        if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
+            throw new InvalidConfigurationException("this strategy is only applicable to Linux");
+        }
 
         DockerClientConfig config;
         try {
-            config = tryConfiguration(cmdExecFactory, SOCKET_LOCATION);
+            config = tryConfiguration(new DockerCmdExecFactoryImpl(), SOCKET_LOCATION);
             LOGGER.info("Accessing docker with local Unix socket");
             return config;
         } catch (Exception e) {
