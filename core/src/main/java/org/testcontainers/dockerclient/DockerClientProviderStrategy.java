@@ -1,47 +1,54 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.api.command.DockerCmdExecFactory;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.netty.DockerCmdExecFactoryImpl;
 import com.google.common.base.Throwables;
 import org.jetbrains.annotations.Nullable;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Mechanism to find a viable Docker client configuration according to the host system environment.
  */
-public interface DockerConfigurationStrategy {
+public abstract class DockerClientProviderStrategy {
+
+    protected DockerClientConfig config;
 
     /**
-     * @return a usable, tested, Docker client configuration for the host system environment
      * @throws InvalidConfigurationException if this strategy fails
      */
-    DockerClientConfig provideConfiguration() throws InvalidConfigurationException;
+    public abstract void test() throws InvalidConfigurationException;
 
     /**
      * @return a short textual description of the strategy
      */
-    String getDescription();
+    public abstract String getDescription();
 
-    Logger LOGGER = LoggerFactory.getLogger(DockerConfigurationStrategy.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DockerClientProviderStrategy.class);
 
     /**
      * Determine the right DockerClientConfig to use for building clients by trial-and-error.
      *
      * @return a working DockerClientConfig, as determined by successful execution of a ping command
      */
-    static DockerClientConfig getFirstValidConfig(List<DockerConfigurationStrategy> strategies, DockerCmdExecFactory cmdExecFactory) {
+    public static DockerClientProviderStrategy getFirstValidStrategy(List<DockerClientProviderStrategy> strategies) {
         List<String> configurationFailures = new ArrayList<>();
 
-        for (DockerConfigurationStrategy strategy : strategies) {
+        for (DockerClientProviderStrategy strategy : strategies) {
             try {
                 LOGGER.info("Looking for Docker environment. Trying {}", strategy.getDescription());
-                return strategy.provideConfiguration();
+                strategy.test();
+                return strategy;
             } catch (Exception | ExceptionInInitializerError e) {
                 @Nullable String throwableMessage = e.getMessage();
+                @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
                 Throwable rootCause = Throwables.getRootCause(e);
                 @Nullable String rootCauseMessage = rootCause.getMessage();
 
@@ -58,7 +65,7 @@ public interface DockerConfigurationStrategy {
                             throwableMessage,
                             rootCause.getClass().getSimpleName(),
                             rootCauseMessage
-                            );
+                    );
                 }
                 configurationFailures.add(failureDescription);
 
@@ -73,6 +80,31 @@ public interface DockerConfigurationStrategy {
         LOGGER.error("As no valid configuration was found, execution cannot continue");
 
         throw new IllegalStateException("Could not find a valid Docker environment. Please see logs and check configuration");
+    }
+
+    /**
+     * @return a usable, tested, Docker client configuration for the host system environment
+     */
+    public DockerClient getClient() {
+        return getClientForConfig(config);
+    }
+
+    protected DockerClient getClientForConfig(DockerClientConfig config) {
+        return DockerClientBuilder
+                    .getInstance(config)
+                    .withDockerCmdExecFactory(new DockerCmdExecFactoryImpl())
+                    .build();
+    }
+
+    protected void ping(DockerClient client, int timeoutInSeconds) {
+        Unreliables.retryUntilSuccess(timeoutInSeconds, TimeUnit.SECONDS, () -> {
+            client.pingCmd().exec();
+            return true;
+        });
+    }
+
+    public String getDockerHostIpAddress() {
+        return DockerClientConfigUtils.getDockerHostIpAddress(config);
     }
 
 
