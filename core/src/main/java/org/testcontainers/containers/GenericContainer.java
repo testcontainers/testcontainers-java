@@ -31,10 +31,10 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.PathOperations;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
 import java.io.IOException;
@@ -326,17 +326,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
-        Link[] linksArray = linkedContainers.entrySet().stream()
-                .map(entry -> new Link(entry.getValue().getContainerName(), entry.getKey()))
-                .collect(Collectors.toList())
-                .toArray(new Link[linkedContainers.size()]);
-        createCommand.withLinks(linksArray);
-
+        Set<Link> allLinks = new HashSet<>();
         Set<String> allLinkedContainerNetworks = new HashSet<>();
-        for (LinkableContainer linkableContainer : linkedContainers.values()) {
+        for (Map.Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
+
+            String alias = linkEntries.getKey();
+            LinkableContainer linkableContainer = linkEntries.getValue();
+
+            Set<Link> links = dockerClient.listContainersCmd().exec().stream()
+                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                    .map(container -> new Link(container.getNames()[0], alias))
+                    .collect(Collectors.toSet());
+            allLinks.addAll(links);
 
             boolean linkableContainerIsRunning = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
+                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
                     .map(com.github.dockerjava.api.model.Container::getId)
                     .map(id -> dockerClient.inspectContainerCmd(id).exec())
                     .anyMatch(linkableContainerInspectResponse -> linkableContainerInspectResponse.getState().getRunning());
@@ -348,14 +352,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
-                            .filter(container -> container.getNames()[0].equals("/" + linkableContainer.getContainerName()))
+                            .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
                             .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
                             .distinct()
                             .collect(Collectors.toSet());
             allLinkedContainerNetworks.addAll(linkedContainerNetworks);
         }
 
+        createCommand.withLinks(allLinks.toArray(new Link[allLinks.size()]));
 
+        allLinkedContainerNetworks.remove("bridge");
         if (allLinkedContainerNetworks.size() > 1) {
             logger().warn("Container needs to be on more than one custom network to link to other " +
                     "containers - this is not currently supported. Required networks are: {}",
