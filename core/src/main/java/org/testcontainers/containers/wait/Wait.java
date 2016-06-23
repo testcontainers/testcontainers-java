@@ -1,6 +1,9 @@
 package org.testcontainers.containers.wait;
 
+import org.testcontainers.containers.output.OutputFrame;
+
 import java.net.HttpURLConnection;
+import java.util.function.Predicate;
 
 /**
  * Convenience class with logic for building common {@link WaitStrategy} instances.
@@ -50,5 +53,53 @@ public class Wait {
     public static HttpWaitStrategy forHttps(String path) {
         return forHttp(path)
                 .usingTls();
+    }
+
+    /**
+     * Convenience method to return a WaitStrategy for a generic {@link SimpleWaitStrategy.ContainerReadyCheckFunction}.
+     * <p>
+     * <b>Example</b>
+     * <pre>{@code
+     * Wait.forCheck( "send smtp 'HELO' command", container -> {
+     *
+     *   Container container = new GenericContainer();
+     *   Properties props = new Properties();
+     *   props.put("mail.smtp.host", container.getContainerIpAddress());
+     *   props.put("mail.smtp.port", container.getMappedPort(25));
+     *   Session session = Session.getInstance(props);
+     *   Transport transport = session.getTransport("smtp");
+     *   transport.connect();
+     *   transport.close();
+     *
+     *   return true;
+     * })
+     * }</pre>
+     *
+     * @param description        description of for what you are waiting for
+     * @param readyCheckFunction {@link SimpleWaitStrategy} will wait for this function to return true,
+     *                           {@link Exception}s will be treated as false
+     * @return the WaitStrategy
+     * @see SimpleWaitStrategy
+     */
+    public static SimpleWaitStrategy until(String description, SimpleWaitStrategy.ContainerReadyCheckFunction readyCheckFunction) {
+        return new SimpleWaitStrategy(description, readyCheckFunction);
+    }
+
+    /**
+     * Convenience method to return a WaitStrategy for a generic {@link SimpleWaitStrategy.ContainerReadyCheckFunction}.
+     * <p>
+     * <b>Example</b>
+     * <pre>{@code
+     * Wait.forOutput( "startup done", frame -> frame.getUtf8String().equals("STARTUP DONE"))
+     * }</pre>
+     *
+     * @param description description of for what you are waiting for
+     * @param predicate   will wait for this predicate to return true,
+     *                    {@link Exception}s will be treated as false
+     * @return the WaitStrategy
+     * @see SimpleWaitStrategy
+     */
+    public static OutputWaitStrategy forOutput(String description, Predicate<OutputFrame> predicate) {
+        return new OutputWaitStrategy(description, predicate);
     }
 }
