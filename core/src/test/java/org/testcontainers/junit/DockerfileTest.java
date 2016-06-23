@@ -36,7 +36,7 @@ public class DockerfileTest {
                 );
                 withFileFromString("Dockerfile", String.join("\n", dockerfile));
 
-                buildImageCmd.withNoCache();
+                buildImageCmd.withNoCache(true);
             }
         };
 

@@ -1,0 +1,7 @@
+<root>
+    <item name='com.google.common.base.Preconditions void checkArgument(boolean, java.lang.Object)'>
+        <annotation name='org.jetbrains.annotations.Contract'>
+            <val val="&quot;false, _ -&gt; fail; true, _ -&gt; _&quot;"/>
+        </annotation>
+    </item>
+</root>

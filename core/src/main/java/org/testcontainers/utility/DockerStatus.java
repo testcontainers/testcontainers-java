@@ -36,7 +36,7 @@ public class DockerStatus {
     public static boolean isContainerRunning(InspectContainerResponse.ContainerState state,
                                              Duration minimumRunningDuration,
                                              Instant now) {
-        if (state.isRunning()) {
+        if (state.getRunning()) {
             if (minimumRunningDuration == null) {
                 return true;
             }
@@ -59,7 +59,7 @@ public class DockerStatus {
     public static boolean isContainerStopped(InspectContainerResponse.ContainerState state) {
 
         // get some preconditions out of the way
-        if (state.isRunning() || state.isPaused()) {
+        if (state.getRunning() || state.getPaused()) {
             return false;
         }
 
@@ -79,4 +79,9 @@ public class DockerStatus {
             || DateTimeFormatter.ISO_INSTANT.parse(dockerTimestamp, Instant::from).getEpochSecond() < 0L;
     }
 
+    public static boolean isContainerExitCodeSuccess(InspectContainerResponse.ContainerState state) {
+        int exitCode = state.getExitCode();
+        // 0 is the only exit code we can consider as success
+        return exitCode == 0;
+    }
 }

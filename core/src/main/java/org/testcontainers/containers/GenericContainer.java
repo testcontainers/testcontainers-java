@@ -1,19 +1,17 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
+import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -26,11 +24,17 @@ import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
+import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.PathOperations;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +42,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -78,6 +81,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<String> extraHosts = new ArrayList<>();
 
     @NonNull
+    private String networkMode;
+
+    @NonNull
     private Future<String> image;
 
     @NonNull
@@ -92,8 +98,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
-    @NonNull
-    private Duration minimumRunningDuration = null;
+    private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
     /*
      * Unique instance of DockerClient for use by this container object.
@@ -175,7 +180,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
             containerId = createCommand.exec().getId();
-            ContainerReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
+            ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
 
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
@@ -191,31 +196,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerIsStarting(containerInfo);
 
             // Wait until the container is running (may not be fully started)
-            profiler.start("Wait until container state=running, or there's evidence it failed to start.");
-            final Boolean[] startedOK = {null};
-            Unreliables.retryUntilTrue(CONTAINER_RUNNING_TIMEOUT_SEC, TimeUnit.SECONDS, () -> {
-                //noinspection CodeBlock2Expr
-                return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
-                    // record "now" before fetching status; otherwise the time to fetch the status
-                    // will contribute to how long the container has been running.
-                    Instant now = Instant.now();
-                    InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
+            profiler.start("Wait until container has started properly, or there's evidence it failed to start.");
+            boolean startedOK = this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId);
 
-                    if (DockerStatus.isContainerRunning(
-                            inspectionResponse.getState(),
-                            minimumRunningDuration,
-                            now)) {
-                        startedOK[0] = true;
-                        return true;
-                    } else if (DockerStatus.isContainerStopped(inspectionResponse.getState())) {
-                        startedOK[0] = false;
-                        return true;
-                    }
-                    return false;
-                });
-            });
-
-            if (!startedOK[0]) {
+            if (!startedOK) {
 
                 logger().error("Container did not start correctly; container log output (if any) will be fetched and logged shortly");
                 FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
@@ -225,10 +209,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
-                throw new IllegalStateException("Container has already stopped.");
+                throw new IllegalStateException("Container did not start correctly.");
             }
 
-            profiler.start("Wait until container started");
+            profiler.start("Wait until container started properly");
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
@@ -259,7 +243,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             imageName = "<unknown>";
         }
 
-        ContainerReaper.instance().stopAndRemoveContainer(containerId, imageName);
+        ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
     }
 
     /**
@@ -308,7 +292,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (exposedPorts.size() > 0) {
             return getMappedPort(exposedPorts.get(0));
         } else if (portBindings.size() > 0) {
-            return PortBinding.parse(portBindings.get(0)).getBinding().getHostPort();
+            return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
         } else {
             return null;
         }
@@ -342,17 +326,63 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
-        Link[] linksArray = linkedContainers.entrySet().stream()
-                .map(entry -> new Link(entry.getValue().getContainerName(), entry.getKey()))
-                .collect(Collectors.toList())
-                .toArray(new Link[linkedContainers.size()]);
-        createCommand.withLinks(linksArray);
+        Set<Link> allLinks = new HashSet<>();
+        Set<String> allLinkedContainerNetworks = new HashSet<>();
+        for (Map.Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
+
+            String alias = linkEntries.getKey();
+            LinkableContainer linkableContainer = linkEntries.getValue();
+
+            Set<Link> links = dockerClient.listContainersCmd().exec().stream()
+                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                    .map(container -> new Link(container.getNames()[0], alias))
+                    .collect(Collectors.toSet());
+            allLinks.addAll(links);
+
+            boolean linkableContainerIsRunning = dockerClient.listContainersCmd().exec().stream()
+                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                    .map(com.github.dockerjava.api.model.Container::getId)
+                    .map(id -> dockerClient.inspectContainerCmd(id).exec())
+                    .anyMatch(linkableContainerInspectResponse -> linkableContainerInspectResponse.getState().getRunning());
+
+            if (!linkableContainerIsRunning) {
+                throw new ContainerLaunchException("Aborting attempt to link to container " +
+                        linkableContainer.getContainerName() +
+                        " as it is not running");
+            }
+
+            Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
+                            .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                            .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
+                            .distinct()
+                            .collect(Collectors.toSet());
+            allLinkedContainerNetworks.addAll(linkedContainerNetworks);
+        }
+
+        createCommand.withLinks(allLinks.toArray(new Link[allLinks.size()]));
+
+        allLinkedContainerNetworks.remove("bridge");
+        if (allLinkedContainerNetworks.size() > 1) {
+            logger().warn("Container needs to be on more than one custom network to link to other " +
+                    "containers - this is not currently supported. Required networks are: {}",
+                    allLinkedContainerNetworks);
+        }
+
+        Optional<String> networkForLinks = allLinkedContainerNetworks.stream().findFirst();
+        if (networkForLinks.isPresent()) {
+            logger().debug("Associating container with network: {}", networkForLinks.get());
+            createCommand.withNetworkMode(networkForLinks.get());
+        }
 
         createCommand.withPublishAllPorts(true);
 
         String[] extraHostsArray = extraHosts.stream()
         		 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
+
+        if (networkMode != null) {
+            createCommand.withNetworkMode(networkMode);
+        }
     }
 
     /**
@@ -522,6 +552,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
+    public SELF withNetworkMode(String networkMode) {
+        this.networkMode = networkMode;
+        return self();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -561,7 +597,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withMinimumRunningDuration(Duration minimumRunningDuration) {
-        this.setMinimumRunningDuration(minimumRunningDuration);
+        this.startupCheckStrategy = new MinimumDurationRunningStartupCheckStrategy(minimumRunningDuration);
+        return self();
+    }
+
+    public SELF withStartupCheckStrategy(StartupCheckStrategy strategy) {
+        this.startupCheckStrategy = strategy;
         return self();
     }
 
@@ -582,7 +623,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public Boolean isRunning() {
         try {
-            return dockerClient.inspectContainerCmd(containerId).exec().getState().isRunning();
+            return dockerClient.inspectContainerCmd(containerId).exec().getState().getRunning();
         } catch (DockerException e) {
             return false;
         }
@@ -602,7 +643,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         if (binding != null && binding.length > 0 && binding[0] != null) {
-            return binding[0].getHostPort();
+            return Integer.valueOf(binding[0].getHostPortSpec());
         } else {
             throw new IllegalArgumentException("Requested port (" + originalPort +") is not mapped");
         }

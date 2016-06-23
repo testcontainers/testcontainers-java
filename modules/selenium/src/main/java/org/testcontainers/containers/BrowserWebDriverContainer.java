@@ -74,6 +74,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         addExposedPorts(SELENIUM_PORT, VNC_PORT);
         addEnv("TZ", timeZone);
+        addEnv("no_proxy", "localhost");
         setCommand("/opt/bin/entry_point.sh");
     }
 
