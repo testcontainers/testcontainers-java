@@ -21,9 +21,9 @@ import java.util.function.Predicate;
 public class OutputWaitStrategyTest extends AbstractWaitStrategyTest<OutputWaitStrategy> {
 
     /**
-     * Dummy implementation of {@link SimpleWaitStrategy.ContainerReadyCheckFunction} checks for container output frame to be 'READY'.
+     * Dummy implementation of {@link OutputWaitStrategy.ContainerReadyCheckFunction} checks for container output frame to be 'READY'.
      */
-    private Predicate<OutputFrame> containerOutputFramePredicate = frame -> frame.getUtf8String().trim().equals("READY");
+    private OutputWaitStrategy.ContainerReadyCheckFunction containerOutputFramePredicate = (container, containerLogger, outputFrame) -> outputFrame.trim().equals("READY");
 
     /**
      * Expects that the WaitStrategy returns successfully after {@link #containerOutputFramePredicate} did return true.

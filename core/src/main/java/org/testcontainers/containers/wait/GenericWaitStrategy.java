@@ -1,5 +1,6 @@
 package org.testcontainers.containers.wait;
 
+import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.PortBinding;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -74,13 +75,12 @@ public abstract class GenericWaitStrategy<SELF extends GenericWaitStrategy<SELF>
                 try {
                     return isReady(container);
                 } catch (Exception e) {
-                    throw new WaitStrategyException(description + " failed!", e);
+                    throw new RuntimeException(description + " failed!", e);
                 }
             }));
         } catch (Exception e) {
-            logger(container).error("Timed out waiting for container to be ready. Waited for " + description + ". Stop container " + container.getContainerId() + ".");
             container.stop();
-            throw e;
+            throw new WaitStrategyException("Timed out waiting for container to be ready. Waited for " + description + ".", e);
         }
 
     }

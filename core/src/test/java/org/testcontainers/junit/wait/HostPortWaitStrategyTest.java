@@ -3,6 +3,7 @@ package org.testcontainers.junit.wait;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.HostPortWaitStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,9 +43,9 @@ public class HostPortWaitStrategyTest extends AbstractWaitStrategyTest<HostPortW
     protected HostPortWaitStrategy buildWaitStrategy(final AtomicBoolean ready) {
         return new HostPortWaitStrategy() {
             @Override
-            protected void waitUntilReady() {
+            public void waitUntilReady(GenericContainer container) {
                 // blocks until ready or timeout occurs
-                super.waitUntilReady();
+                super.waitUntilReady(container);
                 ready.set(true);
             }
         };
