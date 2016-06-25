@@ -53,11 +53,11 @@ public class OutputWaitStrategyTest extends AbstractWaitStrategyTest<OutputWaitS
     @NotNull
     protected OutputWaitStrategy buildWaitStrategy(final AtomicBoolean ready) {
 
-        return new OutputWaitStrategy("output frame to be 'READY'",containerOutputFramePredicate) {
+        return new OutputWaitStrategy(containerOutputFramePredicate) {
             @Override
-            protected void waitUntilReady() {
+            public void waitUntilReady(GenericContainer container) {
                 // blocks until ready or timeout occurs
-                super.waitUntilReady();
+                super.waitUntilReady(container);
                 ready.set(true);
             }
         };

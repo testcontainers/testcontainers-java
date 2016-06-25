@@ -93,13 +93,12 @@ public class Wait {
      * Wait.forOutput( "startup done", frame -> frame.getUtf8String().equals("STARTUP DONE"))
      * }</pre>
      *
-     * @param description description of for what you are waiting for
      * @param predicate   will wait for this predicate to return true,
      *                    {@link Exception}s will be treated as false
      * @return the WaitStrategy
      * @see SimpleWaitStrategy
      */
-    public static OutputWaitStrategy forOutput(String description, Predicate<OutputFrame> predicate) {
-        return new OutputWaitStrategy(description, predicate);
+    public static OutputWaitStrategy forOutput(Predicate<OutputFrame> predicate) {
+        return new OutputWaitStrategy(predicate);
     }
 }
