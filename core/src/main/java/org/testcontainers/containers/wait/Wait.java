@@ -60,7 +60,7 @@ public class Wait {
      * <p>
      * <b>Example</b>
      * <pre>{@code
-     * Wait.forCheck( "send smtp 'HELO' command", container -> {
+     * Wait.until( "send smtp 'HELO' command", container -> {
      *
      *   Container container = new GenericContainer();
      *   Properties props = new Properties();
