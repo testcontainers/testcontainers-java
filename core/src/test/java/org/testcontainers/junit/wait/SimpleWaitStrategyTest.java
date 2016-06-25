@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.Container;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 import org.testcontainers.containers.wait.SimpleWaitStrategy;
 
@@ -20,8 +21,8 @@ public class SimpleWaitStrategyTest extends AbstractWaitStrategyTest<SimpleWaitS
     /**
      * Dummy implementation of {@link SimpleWaitStrategy.ContainerReadyCheckFunction} checks for socket connection to container .
      */
-    private SimpleWaitStrategy.ContainerReadyCheckFunction containerReadyCheckFunction = container -> {
-
+    private SimpleWaitStrategy.ContainerReadyCheckFunction containerReadyCheckFunction = (container, containerLogger) -> {
+        containerLogger.info("wait for socket connection to " + container.getContainerIpAddress() + ":" + 8080);
         new Socket(container.getContainerIpAddress(), container.getMappedPort(8080)).close();
         return true;
     };
@@ -56,9 +57,9 @@ public class SimpleWaitStrategyTest extends AbstractWaitStrategyTest<SimpleWaitS
 
         return new SimpleWaitStrategy("socket connection", containerReadyCheckFunction) {
             @Override
-            protected void waitUntilReady() {
+            public void waitUntilReady(GenericContainer container) {
                 // blocks until ready or timeout occurs
-                super.waitUntilReady();
+                super.waitUntilReady(container);
                 ready.set(true);
             }
         };
