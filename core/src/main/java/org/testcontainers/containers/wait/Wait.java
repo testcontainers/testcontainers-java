@@ -60,7 +60,7 @@ public class Wait {
      * <p>
      * <b>Example</b>
      * <pre>{@code
-     * Wait.until( "send smtp 'HELO' command", container -> {
+     * Wait.until( "send smtp 'HELO' command", (container, containerLogger) -> {
      *
      *   Container container = new GenericContainer();
      *   Properties props = new Properties();
@@ -90,15 +90,15 @@ public class Wait {
      * <p>
      * <b>Example</b>
      * <pre>{@code
-     * Wait.forOutput( "startup done", frame -> frame.getUtf8String().equals("STARTUP DONE"))
+     * Wait.forOutput( "startup done", (container, containerLogger, outputFrame) -> outputFrame.equals("STARTUP DONE"))
      * }</pre>
      *
-     * @param predicate   will wait for this predicate to return true,
-     *                    {@link Exception}s will be treated as false
+     * @param readyCheckFunction {@link SimpleWaitStrategy} will wait for this function to return true,
+     *                           {@link Exception}s will be treated as false
      * @return the WaitStrategy
      * @see SimpleWaitStrategy
      */
-    public static OutputWaitStrategy forOutput(Predicate<OutputFrame> predicate) {
-        return new OutputWaitStrategy(predicate);
+    public static OutputWaitStrategy forOutput(OutputWaitStrategy.ContainerReadyCheckFunction readyCheckFunction) {
+        return new OutputWaitStrategy(readyCheckFunction);
     }
 }
