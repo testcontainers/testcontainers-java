@@ -7,6 +7,7 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.WaitContainerResultCallback;
@@ -83,13 +84,14 @@ public class DockerClientFactory {
 
         if (!preconditionsChecked) {
             Info dockerInfo = client.infoCmd().exec();
+            Version version = client.versionCmd().exec();
             LOGGER.info("Connected to docker: \n" +
                     "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
+                    "  API Version: " + version.getApiVersion() + "\n" +
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            String version = client.versionCmd().exec().getVersion();
-            checkVersion(version);
+            checkVersion(version.getVersion());
             checkDiskSpaceAndHandleExceptions(client);
             preconditionsChecked = true;
         }
