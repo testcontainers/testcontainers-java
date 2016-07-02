@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
+import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -165,6 +166,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 this.tryStart(profiler.startNested("Container startup attempt #" + attempt[0]));
                 return true;
             });
+        } catch(RetryCountExceededException e) {
+            throw new ContainerLaunchException("Container startup failed", e);
         } finally {
             profiler.stop().log();
         }

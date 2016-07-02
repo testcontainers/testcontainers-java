@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.runner.Description;
@@ -71,8 +72,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.dockerClient = DockerClientFactory.instance().client();
     }
 
-    @Override
-    protected void starting(Description description) {
+    @Override @VisibleForTesting
+    public void starting(Description description) {
         final Profiler profiler = new Profiler("Docker compose container rule");
         profiler.setLogger(logger());
         profiler.start("Docker compose container startup");
@@ -167,9 +168,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return LoggerFactory.getLogger(DockerComposeContainer.class);
     }
 
-    @Override
-    protected void finished(Description description) {
-
+    @Override @VisibleForTesting
+    public void finished(Description description) {
 
         // Kill the services using docker-compose
         getDockerCompose("kill")
