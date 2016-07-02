@@ -14,10 +14,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
-import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -150,7 +148,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Starts the container using docker, pulling an image if necessary.
      */
     public void start() {
-        int[] attempt = {0};
         Profiler profiler = new Profiler("Container startup");
         profiler.setLogger(logger());
 
@@ -159,14 +156,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             configure();
 
             logger().debug("Starting container: {}", getDockerImageName());
+            logger().debug("Trying to start container: {}", image.get());
 
-            Unreliables.retryUntilSuccess(STARTUP_RETRY_COUNT, () -> {
-                attempt[0]++;
-                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt[0], STARTUP_RETRY_COUNT);
-                this.tryStart(profiler.startNested("Container startup attempt #" + attempt[0]));
-                return true;
-            });
-        } catch(RetryCountExceededException e) {
+            tryStart(profiler.startNested("Container startup attempt"));
+
+        } catch(Exception e) {
             throw new ContainerLaunchException("Container startup failed", e);
         } finally {
             profiler.stop().log();
