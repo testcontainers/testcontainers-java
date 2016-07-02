@@ -18,7 +18,6 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
     @Override
     public void test() throws InvalidConfigurationException {
 
-        DockerClientConfig candidateConfig;
         DockerClient client;
 
         try {
@@ -37,13 +36,13 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
 
             LOGGER.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
 
-            candidateConfig = DockerClientConfig
+            config = DockerClientConfig
                     .createDefaultConfigBuilder()
                     .withDockerHost("tcp://" + dockerDaemonIpAddress + ":2376")
                     .withDockerTlsVerify(true)
                     .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
                     .build();
-            client = getClientForConfig(candidateConfig);
+            client = getClientForConfig(config);
         } catch (Exception e) {
             throw new InvalidConfigurationException(e.getMessage());
         }

@@ -31,7 +31,7 @@ public class HostPortWaitStrategyTest extends AbstractWaitStrategyTest<HostPortW
      */
     @Test
     public void testWaitUntilReady_Timeout() throws Exception {
-        waitUntilReadyAndTimeout("");
+        waitUntilReadyAndTimeout("sleep 5; exit 1");
     }
 
     /**
