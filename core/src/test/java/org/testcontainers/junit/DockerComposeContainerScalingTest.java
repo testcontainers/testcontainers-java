@@ -22,9 +22,9 @@ public class DockerComposeContainerScalingTest {
     @Rule
     public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/scaled-compose-test.yml"))
             .withScaledService("redis", 3)
-            .withExposedService("redis_1", REDIS_PORT)
-            .withExposedService("redis_2", REDIS_PORT)
-            .withExposedService("redis_3", REDIS_PORT);
+            .withExposedService("redis", REDIS_PORT) // implicit '_1'
+            .withExposedService("redis_2", REDIS_PORT) // explicit service index
+            .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
 
     @Before
     public void setupClients() {

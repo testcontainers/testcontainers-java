@@ -187,7 +187,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     public SELF withExposedService(String serviceName, int servicePort) {
 
-        /**
+        if (! serviceName.matches(".*_[0-9]+")) {
+            serviceName += "_1"; // implicit first instance of this service
+        }
+
+        /*
          * For every service/port pair that needs to be exposed, we have to start an 'ambassador container'.
          *
          * The ambassador container's role is to link (within the Docker network) to one of the
@@ -208,6 +212,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
 
         return self();
+    }
+
+    public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
+        return withExposedService(serviceName + "_" + instance, servicePort);
     }
 
     /**
