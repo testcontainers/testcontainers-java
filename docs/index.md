@@ -110,6 +110,7 @@ should be included in your classpath to show a reasonable level of log output:
         <appender-ref ref="STDOUT"/>
     </root>
 
+    <logger name="org.testcontainers" level="INFO"/>
     <logger name="org.apache.http" level="WARN"/>
     <logger name="com.github.dockerjava" level="WARN"/>
     <logger name="org.zeroturnaround.exec" level="WARN"/>
