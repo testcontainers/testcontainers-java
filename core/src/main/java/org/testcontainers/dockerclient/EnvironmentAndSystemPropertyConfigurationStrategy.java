@@ -1,6 +1,7 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
@@ -10,24 +11,28 @@ import com.github.dockerjava.core.DockerClientConfig;
  */
 public class EnvironmentAndSystemPropertyConfigurationStrategy implements DockerConfigurationStrategy {
 
-    private DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder().build();
+    private DockerClientConfig config = null;
 
     @Override
-    public DockerClientConfig provideConfiguration() throws InvalidConfigurationException {
-        // Try using environment variables
-        DockerClientConfig candidateConfig = config;
-        DockerClient client = DockerClientBuilder.getInstance(candidateConfig).build();
+    public DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory) throws InvalidConfigurationException {
 
         try {
+            // Try using environment variables
+            config = DockerClientConfig.createDefaultConfigBuilder().build();
+            DockerClient client = DockerClientBuilder
+                    .getInstance(config)
+                    .withDockerCmdExecFactory(cmdExecFactory)
+                    .build();
+
             client.pingCmd().exec();
         } catch (Exception e) {
             throw new InvalidConfigurationException("ping failed");
         }
 
         LOGGER.info("Found docker client settings from environment");
-        LOGGER.info("Docker host IP address is {}", DockerClientConfigUtils.getDockerHostIpAddress(candidateConfig));
+        LOGGER.info("Docker host IP address is {}", DockerClientConfigUtils.getDockerHostIpAddress(config));
 
-        return candidateConfig;
+        return config;
     }
 
     @Override
@@ -36,13 +41,19 @@ public class EnvironmentAndSystemPropertyConfigurationStrategy implements Docker
     }
 
     private String stringRepresentation(DockerClientConfig config) {
-        return  "    uri=" + config.getUri() + "\n" +
-                "    sslConfig='" + config.getSslConfig() + "'\n" +
-                "    version='" + config.getVersion() + "'\n" +
-                "    username='" + config.getUsername() + "'\n" +
-                "    password='" + config.getPassword() + "'\n" +
-                "    email='" + config.getEmail() + "'\n" +
-                "    serverAddress='" + config.getServerAddress() + "'\n" +
-                "    dockerCfgPath='" + config.getDockerCfgPath() + "'\n";
+
+        if (config == null) {
+            return "";
+        }
+
+        return  "    dockerHost=" + config.getDockerHost() + "\n" +
+                "    dockerCertPath='" + config.getDockerCertPath() + "'\n" +
+                "    dockerTlsVerify='" + config.getDockerTlsVerify() + "'\n" +
+                "    apiVersion='" + config.getApiVersion() + "'\n" +
+                "    registryUrl='" + config.getRegistryUrl() + "'\n" +
+                "    registryUsername='" + config.getRegistryUsername() + "'\n" +
+                "    registryPassword='" + config.getRegistryPassword() + "'\n" +
+                "    registryEmail='" + config.getRegistryEmail() + "'\n" +
+                "    dockerConfig='" + config.getDockerConfig() + "'\n";
     }
 }

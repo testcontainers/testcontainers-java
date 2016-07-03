@@ -1,6 +1,7 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -19,7 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 public class DockerMachineConfigurationStrategy implements DockerConfigurationStrategy {
     @Override
-    public DockerClientConfig provideConfiguration() throws InvalidConfigurationException {
+    public DockerClientConfig provideConfiguration(DockerCmdExecFactory cmdExecFactory) throws InvalidConfigurationException {
 
         DockerClientConfig candidateConfig;
         DockerClient client;
@@ -42,10 +43,13 @@ public class DockerMachineConfigurationStrategy implements DockerConfigurationSt
 
             candidateConfig = DockerClientConfig
                     .createDefaultConfigBuilder()
-                    .withUri("https://" + dockerDaemonIpAddress + ":2376")
+                    .withDockerHost("https://" + dockerDaemonIpAddress + ":2376")
                     .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
                     .build();
-            client = DockerClientBuilder.getInstance(candidateConfig).build();
+            client = DockerClientBuilder
+                    .getInstance(candidateConfig)
+                    .withDockerCmdExecFactory(cmdExecFactory)
+                    .build();
         } catch (Exception e) {
             throw new InvalidConfigurationException(e.getMessage());
         }

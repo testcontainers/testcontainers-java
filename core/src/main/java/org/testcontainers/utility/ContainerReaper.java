@@ -1,8 +1,10 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.DockerException;
-import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -66,19 +68,34 @@ public final class ContainerReaper {
     }
 
     private void stopContainer(String containerId, String imageName) {
+
+        boolean running;
         try {
-            LOGGER.trace("Stopping container: {}", containerId);
-            dockerClient.killContainerCmd(containerId).exec();
-            LOGGER.trace("Stopped container: {}", imageName);
+            InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+            running = containerInfo.getState().getRunning();
+        } catch (NotFoundException e) {
+            LOGGER.trace("Was going to stop container but it apparently no longer exists: {}");
+            return;
         } catch (DockerException e) {
-            LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            return;
+        }
+
+        if (running) {
+            try {
+                LOGGER.trace("Stopping container: {}", containerId);
+                dockerClient.killContainerCmd(containerId).exec();
+                LOGGER.trace("Stopped container: {}", imageName);
+            } catch (DockerException e) {
+                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            }
         }
 
         try {
-            LOGGER.trace("Stopping container: {}", containerId);
+            LOGGER.trace("Removing container: {}", containerId);
             try {
                 dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
-                LOGGER.info("Removed container and associated volume(s): {}", imageName);
+                LOGGER.debug("Removed container and associated volume(s): {}", imageName);
             } catch (InternalServerErrorException e) {
                 LOGGER.trace("Exception when removing container with associated volume(s): {} (due to {})", imageName, e.getMessage());
             }

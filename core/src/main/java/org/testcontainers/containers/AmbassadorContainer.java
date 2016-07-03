@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
