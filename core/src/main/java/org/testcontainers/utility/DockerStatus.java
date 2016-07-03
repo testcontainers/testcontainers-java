@@ -64,19 +64,18 @@ public class DockerStatus {
         }
 
         // if the finished timestamp is non-empty, that means the container started and finished.
-        if (!isDockerTimestampEmpty(state.getStartedAt()) && !isDockerTimestampEmpty(state.getFinishedAt())) {
-            return true;
-        }
-        return false;
+        boolean hasStarted = isDockerTimestampNonEmpty(state.getStartedAt());
+        boolean hasFinished = isDockerTimestampNonEmpty(state.getFinishedAt());
+        return hasStarted && hasFinished;
     }
 
-    public static boolean isDockerTimestampEmpty(String dockerTimestamp) {
+    public static boolean isDockerTimestampNonEmpty(String dockerTimestamp) {
         // This is a defensive approach. Current versions of Docker use the DOCKER_TIMESTAMP_ZERO value, but
         // that could change.
-        return dockerTimestamp == null
-            || dockerTimestamp.isEmpty()
-            || dockerTimestamp.equals(DOCKER_TIMESTAMP_ZERO)
-            || DateTimeFormatter.ISO_INSTANT.parse(dockerTimestamp, Instant::from).getEpochSecond() < 0L;
+        return dockerTimestamp != null
+                && !dockerTimestamp.isEmpty()
+                && !dockerTimestamp.equals(DOCKER_TIMESTAMP_ZERO)
+                && DateTimeFormatter.ISO_INSTANT.parse(dockerTimestamp, Instant::from).getEpochSecond() >= 0L;
     }
 
     public static boolean isContainerExitCodeSuccess(InspectContainerResponse.ContainerState state) {

@@ -28,7 +28,7 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
      * Get access to the underlying frame buffer. Modifying the buffer contents is likely to cause problems if the
      * waitUntil() methods are also being used, as they feed on the same data.
      *
-     * @return
+     * @return the collection of frames
      */
     public LinkedBlockingDeque<OutputFrame> getFrames() {
         return frames;
@@ -108,7 +108,7 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
         waitUntilEnd(expiry);
     }
 
-    private void waitUntilEnd(Long expiry) {
+    private void waitUntilEnd(Long expiry) throws TimeoutException {
         while (System.currentTimeMillis() < expiry) {
             try {
                 OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
@@ -125,5 +125,6 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
                 throw new RuntimeException(e);
             }
         }
+        throw new TimeoutException("Expiry time reached before end of output");
     }
 }

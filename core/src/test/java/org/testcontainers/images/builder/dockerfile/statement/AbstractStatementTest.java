@@ -18,9 +18,9 @@ public abstract class AbstractStatementTest {
     @Rule
     public TestName testName = new TestName();
 
-    protected void assertStatement(Statement statement) throws Exception {
+    protected void assertStatement(Statement statement) {
 
-        String[] expectedLines = null;
+        String[] expectedLines = new String[0];
         try {
             String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName.getMethodName();
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);

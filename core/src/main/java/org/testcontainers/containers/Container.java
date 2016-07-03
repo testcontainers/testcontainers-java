@@ -88,8 +88,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Add a link to another container.
      *
-     * @param otherContainer
-     * @param alias
+     * @param otherContainer the other container object to link to
+     * @param alias the alias (for the other container) that this container should be able to use
      */
     void addLink(LinkableContainer otherContainer, String alias);
 
@@ -171,8 +171,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Add an extra host entry to be passed to the container
-     * @param hostname
-     * @param ipAddress
+     * @param hostname hostname to use for this hosts file entry
+     * @param ipAddress IP address to use for this hosts file entry
      * @return this
      */
     SELF withExtraHost(String hostname, String ipAddress);

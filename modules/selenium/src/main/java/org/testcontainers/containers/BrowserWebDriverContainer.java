@@ -212,7 +212,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
 
     public enum VncRecordingMode {
-        SKIP, RECORD_ALL, RECORD_FAILING;
+        SKIP, RECORD_ALL, RECORD_FAILING
     }
 
 
