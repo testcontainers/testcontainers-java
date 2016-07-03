@@ -26,9 +26,9 @@ public class AmbassadorContainer<SELF extends AmbassadorContainer<SELF>> extends
     public AmbassadorContainer(LinkableContainer otherContainer, String serviceName, int servicePort) {
         super("richnorth/ambassador:latest");
 
-        /**
-         * Use the unique 'identifierPrefix' (random compose project name) so that the ambassador can see
-         * the container it's supposed to be proxying.
+        /*
+          Use the unique 'identifierPrefix' (random compose project name) so that the ambassador can see
+          the container it's supposed to be proxying.
          */
         this.otherContainerName = otherContainer.getContainerName();
         this.serviceName = serviceName;

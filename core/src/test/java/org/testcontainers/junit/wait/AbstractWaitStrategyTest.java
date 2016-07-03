@@ -64,9 +64,8 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * Expects that the WaitStrategy returns successfully after connection to a container with a listening port.
      *
      * @param shellCommand the shell command to execute
-     * @throws Exception
      */
-    protected void waitUntilReadyAndSucceed(String shellCommand) throws Exception {
+    protected void waitUntilReadyAndSucceed(String shellCommand) {
         final GenericContainer container = startContainerWithCommand(shellCommand);
 
         // start() blocks until successful or timeout
@@ -81,9 +80,8 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * to a container with a listening port.
      *
      * @param shellCommand the shell command to execute
-     * @throws Exception
      */
-    protected void waitUntilReadyAndTimeout(String shellCommand) throws Exception {
+    protected void waitUntilReadyAndTimeout(String shellCommand) {
         final GenericContainer container = startContainerWithCommand(shellCommand);
 
         // start() blocks until successful or timeout

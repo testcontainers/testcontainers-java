@@ -285,14 +285,13 @@ public class GenericContainerRuleTest {
         assertTrue("The hosts file of container contains extra host", matcher.find());
     }
 
-    private BufferedReader getReaderForContainerPort80(GenericContainer container) throws IOException {
-        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+    private BufferedReader getReaderForContainerPort80(GenericContainer container) {
+
+        return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
             Socket socket = new Socket(container.getContainerIpAddress(), container.getMappedPort(80));
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
-
-        return br;
     }
 }

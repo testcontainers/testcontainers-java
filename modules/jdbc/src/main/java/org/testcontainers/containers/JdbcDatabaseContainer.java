@@ -108,7 +108,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @param queryString   any special query string parameters that should be appended to the JDBC connection URL. The
      *                      '?' character must be included
      * @return              a Connection
-     * @throws SQLException
+     * @throws SQLException if there is a repeated failure to create the connection
      */
     public Connection createConnection(String queryString) throws SQLException {
         final Properties info = new Properties();

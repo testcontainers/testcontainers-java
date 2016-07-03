@@ -20,22 +20,18 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
 
     /**
      * Expects that the WaitStrategy returns successfully after receiving an HTTP 200 response from the container.
-     *
-     * @throws Exception
      */
     @Test
-    public void testWaitUntilReady_Success() throws Exception {
+    public void testWaitUntilReady_Success() {
         waitUntilReadyAndSucceed("echo -e \"HTTP/1.1 200 OK" + DOUBLE_NEWLINE + "\" | nc -lp 8080");
     }
 
     /**
      * Expects that the WaitStrategy throws a {@link RetryCountExceededException} after not receiving an HTTP 200
      * response from the container within the timeout period.
-     *
-     * @throws Exception
      */
     @Test
-    public void testWaitUntilReady_Timeout() throws Exception {
+    public void testWaitUntilReady_Timeout() {
         waitUntilReadyAndTimeout("echo -e \"HTTP/1.1 400 Bad Request" + DOUBLE_NEWLINE + "\" | nc -lp 8080");
     }
 

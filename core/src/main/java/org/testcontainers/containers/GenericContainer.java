@@ -88,8 +88,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private List<String> env = new ArrayList<>();
 
-    @Nullable
-    private String[] commandParts = null;
+    @NonNull
+    private String[] commandParts = new String[0];
 
     @NonNull
     private List<Bind> binds = new ArrayList<>();
@@ -257,9 +257,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @param temporary is the volume directory temporary? If true, the directory will be deleted on JVM shutdown.
      * @return path to the volume directory
-     * @throws IOException
      */
-    protected Path createVolumeDirectory(boolean temporary) throws IOException {
+    protected Path createVolumeDirectory(boolean temporary) {
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
         PathOperations.mkdirp(directory);
 

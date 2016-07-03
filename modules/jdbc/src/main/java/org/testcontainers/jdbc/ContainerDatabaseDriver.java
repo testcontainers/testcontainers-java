@@ -72,25 +72,25 @@ public class ContainerDatabaseDriver implements Driver {
     @Override
     public synchronized Connection connect(String url, final Properties info) throws SQLException {
 
-    	/**
-    	 * The driver should return "null" if it realizes it is the wrong kind of driver to connect to the given URL.
+    	/*
+    	  The driver should return "null" if it realizes it is the wrong kind of driver to connect to the given URL.
     	 */
     	if(!acceptsURL(url)) {
     		return null;
     	}
     	
         String queryString = "";
-        /**
-         * If we already have a running container for this exact connection string, we want to connect
-         * to that rather than create a new container
+        /*
+          If we already have a running container for this exact connection string, we want to connect
+          to that rather than create a new container
          */
         JdbcDatabaseContainer container = jdbcUrlContainerCache.get(url);
         if (container == null) {
-            /**
-             * Extract from the JDBC connection URL:
-             *  * The database type (e.g. mysql, postgresql, ...)
-             *  * The docker tag, if provided.
-             *  * The URL query string, if provided
+            /*
+              Extract from the JDBC connection URL:
+               * The database type (e.g. mysql, postgresql, ...)
+               * The docker tag, if provided.
+               * The URL query string, if provided
              */
             Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
             if (!urlMatcher.matches()) {
@@ -109,8 +109,8 @@ public class ContainerDatabaseDriver implements Driver {
 
             Map<String, String> parameters = getContainerParameters(url);
 
-            /**
-             * Find a matching container type using ServiceLoader.
+            /*
+              Find a matching container type using ServiceLoader.
              */
             ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
             for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
@@ -123,31 +123,31 @@ public class ContainerDatabaseDriver implements Driver {
                 throw new UnsupportedOperationException("Database name " + databaseType + " not supported");
             }
 
-            /**
-             * Cache the container before starting to prevent race conditions when a connection
-             * pool is started up
+            /*
+              Cache the container before starting to prevent race conditions when a connection
+              pool is started up
              */
             jdbcUrlContainerCache.put(url, container);
 
-            /**
-             * Pass possible container-specific parameters
+            /*
+              Pass possible container-specific parameters
              */
             container.setParameters(parameters);
 
-            /**
-             * Start the container
+            /*
+              Start the container
              */
             container.start();
         }
 
-        /**
-         * Create a connection using the delegated driver. The container must be ready to accept connections.
+        /*
+          Create a connection using the delegated driver. The container must be ready to accept connections.
          */
         Connection connection = container.createConnection(queryString);
 
-        /**
-         * If this container has not been initialized, AND
-         * an init script or function has been specified, use it
+        /*
+          If this container has not been initialized, AND
+          an init script or function has been specified, use it
          */
         if (!initializedContainers.contains(container)) {
             runInitScriptIfRequired(url, connection);
@@ -208,7 +208,7 @@ public class ContainerDatabaseDriver implements Driver {
      *
      * @param url the JDBC URL to check for init script declarations.
      * @param connection JDBC connection to apply init scripts to.
-     * @throws SQLException
+     * @throws SQLException on script or DB error
      */
     private void runInitScriptIfRequired(String url, Connection connection) throws SQLException {
         Matcher matcher = INITSCRIPT_MATCHING_PATTERN.matcher(url);
@@ -233,7 +233,7 @@ public class ContainerDatabaseDriver implements Driver {
      *
      * @param url the JDBC URL to check for init function declarations.
      * @param connection JDBC connection to apply init functions to.
-     * @throws SQLException
+     * @throws SQLException on script or DB error
      */
     private void runInitFunctionIfRequired(String url, Connection connection) throws SQLException {
         Matcher matcher = INITFUNCTION_MATCHING_PATTERN.matcher(url);
