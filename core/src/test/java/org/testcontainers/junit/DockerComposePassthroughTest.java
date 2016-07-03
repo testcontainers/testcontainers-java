@@ -1,10 +1,13 @@
 package org.testcontainers.junit;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.TestEnvironment;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,6 +23,11 @@ import static org.rnorth.visibleassertions.VisibleAssertions.pass;
  * Created by rnorth on 11/06/2016.
  */
 public class DockerComposePassthroughTest {
+
+    @BeforeClass
+    public static void checkVersion() {
+        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+    }
 
     @Rule
     public DockerComposeContainer compose =

@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
 import org.junit.Assume;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
@@ -18,8 +18,8 @@ public abstract class BaseDockerComposeTest {
 
     protected abstract DockerComposeContainer getEnvironment();
 
-    @Before
-    public void checkVersion() {
+    @BeforeClass
+    public static void checkVersion() {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
 

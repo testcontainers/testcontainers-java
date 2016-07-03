@@ -1,9 +1,8 @@
 package org.testcontainers.junit;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
 import java.io.File;
@@ -18,6 +17,11 @@ public class DockerComposeContainerScalingTest {
     private static final int REDIS_PORT = 6379;
 
     private Jedis[] clients = new Jedis[3];
+
+    @BeforeClass
+    public static void checkVersion() {
+        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+    }
 
     @Rule
     public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/scaled-compose-test.yml"))
