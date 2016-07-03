@@ -349,6 +349,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
                     .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                    .filter(container -> container.getNetworkSettings() != null &&
+                            container.getNetworkSettings().getNetworks() != null)
                     .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
                     .distinct()
                     .collect(Collectors.toSet());
