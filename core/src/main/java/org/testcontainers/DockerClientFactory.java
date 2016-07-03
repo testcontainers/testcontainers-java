@@ -208,6 +208,14 @@ public class DockerClientFactory {
         return activeExecutionDriver;
     }
 
+    /**
+     * @param providerStrategyClass a class that extends {@link DockerMachineClientProviderStrategy}
+     * @return whether or not the currently active strategy is of the provided type
+     */
+    public boolean isUsing(Class<? extends DockerClientProviderStrategy> providerStrategyClass) {
+        return providerStrategyClass.isAssignableFrom(this.strategy.getClass());
+    }
+
     private static class NotEnoughDiskSpaceException extends RuntimeException {
         NotEnoughDiskSpaceException(String message) {
             super(message);

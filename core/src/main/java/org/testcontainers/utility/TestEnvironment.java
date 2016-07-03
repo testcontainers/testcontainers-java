@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 
 /**
  * Provides utility methods for determining facts about the test environment.
@@ -21,6 +22,10 @@ public class TestEnvironment {
         String executionDriver = DockerClientFactory.instance().getActiveExecutionDriver();
 
         return !executionDriver.startsWith("lxc");
+    }
+
+    public static boolean dockerIsDockerMachine() {
+        return DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class);
     }
 }
 
