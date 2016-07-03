@@ -23,7 +23,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
             return;
         }
 
-        final String ipAddress = DockerClientFactory.instance().dockerHostIpAddress();
+        final String ipAddress = container.getContainerIpAddress();
         try {
             Unreliables.retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
                 getRateLimiter().doWhenReady(() -> {
