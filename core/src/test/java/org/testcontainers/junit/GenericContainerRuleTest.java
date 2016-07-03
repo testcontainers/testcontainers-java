@@ -7,13 +7,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
 import org.bson.Document;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.TestEnvironment;
 
 import java.io.*;
 import java.net.Socket;
@@ -255,16 +253,15 @@ public class GenericContainerRuleTest {
     @Test
     public void testExecInContainer() throws Exception {
 
-        try {
-            final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
-            assertTrue("Output for \"redis-cli role\" command should start with \"master\"", result.getStdout().startsWith("master"));
-            assertEquals("Stderr for \"redis-cli role\" command should be empty", "", result.getStderr());
-            // We expect to reach this point for modern Docker versions.
-        } catch (UnsupportedOperationException u) {
-            // This is the expected result for docker daemons that are running the older "lxc" execution driver,
-            // which doesn't support "exec". At the time of writing (2016/03/29), that's the case for CircleCI.
-            // Once they resolve the issue, this clause can be removed.
-        }
+        // The older "lxc" execution driver doesn't support "exec". At the time of writing (2016/03/29),
+        // that's the case for CircleCI.
+        // Once they resolve the issue, this clause can be removed.
+        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
+
+        final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
+        assertTrue("Output for \"redis-cli role\" command should start with \"master\"", result.getStdout().startsWith("master"));
+        assertEquals("Stderr for \"redis-cli role\" command should be empty", "", result.getStderr());
+        // We expect to reach this point for modern Docker versions.
     }
 
 

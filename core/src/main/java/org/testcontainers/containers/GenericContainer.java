@@ -30,10 +30,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.DockerLoggerFactory;
-import org.testcontainers.utility.DockerMachineClient;
-import org.testcontainers.utility.PathOperations;
-import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -160,7 +157,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             tryStart(profiler.startNested("Container startup attempt"));
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new ContainerLaunchException("Container startup failed", e);
         } finally {
             profiler.stop().log();
@@ -348,10 +345,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
-                            .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-                            .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
-                            .distinct()
-                            .collect(Collectors.toSet());
+                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                    .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
+                    .distinct()
+                    .collect(Collectors.toSet());
             allLinkedContainerNetworks.addAll(linkedContainerNetworks);
         }
 
@@ -360,7 +357,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         allLinkedContainerNetworks.remove("bridge");
         if (allLinkedContainerNetworks.size() > 1) {
             logger().warn("Container needs to be on more than one custom network to link to other " +
-                    "containers - this is not currently supported. Required networks are: {}",
+                            "containers - this is not currently supported. Required networks are: {}",
                     allLinkedContainerNetworks);
         }
 
@@ -373,7 +370,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         createCommand.withPublishAllPorts(true);
 
         String[] extraHostsArray = extraHosts.stream()
-        		 .toArray(String[]::new);
+                .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (networkMode != null) {
@@ -641,7 +638,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (binding != null && binding.length > 0 && binding[0] != null) {
             return Integer.valueOf(binding[0].getHostPortSpec());
         } else {
-            throw new IllegalArgumentException("Requested port (" + originalPort +") is not mapped");
+            throw new IllegalArgumentException("Requested port (" + originalPort + ") is not mapped");
         }
     }
 
@@ -753,19 +750,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public ExecResult execInContainer(Charset outputCharset, String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
 
-        if (fetchDockerDaemonInfo().getExecutionDriver().startsWith("lxc")) {
+        if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
             // at time of writing, this is the expected result in CircleCI.
             throw new UnsupportedOperationException(
-                "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
+                    "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
+
         }
 
         this.dockerClient
-            .execCreateCmd(this.containerId)
-            .withCmd(command);
+                .execCreateCmd(this.containerId)
+                .withCmd(command);
 
         logger().info("Running \"exec\" command: " + String.join(" ", command));
         final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId)
-            .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
+                .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
 
         final ToStringConsumer stdoutConsumer = new ToStringConsumer();
         final ToStringConsumer stderrConsumer = new ToStringConsumer();
@@ -777,8 +775,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
 
         final ExecResult result = new ExecResult(
-              stdoutConsumer.toString(outputCharset),
-              stderrConsumer.toString(outputCharset));
+                stdoutConsumer.toString(outputCharset),
+                stderrConsumer.toString(outputCharset));
 
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());

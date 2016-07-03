@@ -1,7 +1,10 @@
 package org.testcontainers.junit;
 
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -14,6 +17,11 @@ public abstract class BaseDockerComposeTest {
     protected static final int REDIS_PORT = 6379;
 
     protected abstract DockerComposeContainer getEnvironment();
+
+    @Before
+    public void checkVersion() {
+        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+    }
 
     @Test
     public void simpleTest() {

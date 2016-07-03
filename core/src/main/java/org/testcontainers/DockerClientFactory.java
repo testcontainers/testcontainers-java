@@ -39,6 +39,8 @@ public class DockerClientFactory {
                     new ProxiedUnixSocketClientProviderStrategy(),
                     new UnixSocketClientProviderStrategy(),
                     new DockerMachineClientProviderStrategy());
+    private String activeApiVersion;
+    private String activeExecutionDriver;
 
     /**
      * Private constructor
@@ -85,9 +87,11 @@ public class DockerClientFactory {
         if (!preconditionsChecked) {
             Info dockerInfo = client.infoCmd().exec();
             Version version = client.versionCmd().exec();
+            activeApiVersion = version.getApiVersion();
+            activeExecutionDriver = dockerInfo.getExecutionDriver();
             LOGGER.info("Connected to docker: \n" +
                     "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
-                    "  API Version: " + version.getApiVersion() + "\n" +
+                    "  API Version: " + activeApiVersion + "\n" +
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
@@ -182,6 +186,26 @@ public class DockerClientFactory {
 
             }
         }
+    }
+
+    /**
+     * @return the docker API version of the daemon that we have connected to
+     */
+    public String getActiveApiVersion() {
+        if (!preconditionsChecked) {
+            client(true);
+        }
+        return activeApiVersion;
+    }
+
+    /**
+     * @return the docker execution driver of the daemon that we have connected to
+     */
+    public String getActiveExecutionDriver() {
+        if (!preconditionsChecked) {
+            client(true);
+        }
+        return activeExecutionDriver;
     }
 
     private static class NotEnoughDiskSpaceException extends RuntimeException {
