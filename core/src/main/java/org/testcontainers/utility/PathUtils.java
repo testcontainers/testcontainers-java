@@ -12,7 +12,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 /**
  * Filesystem operation utility methods.
  */
-public class PathOperations {
+public class PathUtils {
 
     /**
      * Recursively delete a directory and all its subdirectories and files.
@@ -47,5 +47,24 @@ public class PathOperations {
         if (!result) {
             throw new IllegalStateException("Failed to create directory at: " + directory);
         }
+    }
+    
+    /**
+     * Create a MinGW compatible path based on usual Windows path
+     * @param path a usual windows path 
+     * @return a MinGW compatible path
+     */
+    public static String createMinGWPath(String path) {
+    	String mingwPath = path.replace('\\', '/');
+    	int driveLetterIndex = 1;
+        if(mingwPath.matches("^[a-zA-Z]:\\/.*")) {
+        	driveLetterIndex = 0;
+        }
+        
+        // drive-letter must be lower case
+        mingwPath = "//" + Character.toLowerCase(mingwPath.charAt(driveLetterIndex)) +
+        		mingwPath.substring(driveLetterIndex+1);
+        mingwPath = mingwPath.replace(":","");
+        return mingwPath;
     }
 }

@@ -29,7 +29,7 @@ public abstract class AbstractStatementTest {
 
             String content = IOUtils.toString(inputStream);
             IOUtils.closeQuietly(inputStream);
-            expectedLines = StringUtils.chomp(content.trim()).split("\n");
+            expectedLines = StringUtils.chomp(content.replaceAll("\r\n", "\n").trim()).split("\n");
         } catch (Exception e) {
             fail("can't load fixture '" + testName.getMethodName() + "'\n" + ExceptionUtils.getFullStackTrace(e));
         }

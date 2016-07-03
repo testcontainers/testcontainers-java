@@ -12,6 +12,8 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -173,6 +175,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
+
             containerId = createCommand.exec().getId();
             ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
 
@@ -257,10 +260,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     protected Path createVolumeDirectory(boolean temporary) {
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
-        PathOperations.mkdirp(directory);
+        PathUtils.mkdirp(directory);
 
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            PathOperations.recursiveDeleteDir(directory);
+            PathUtils.recursiveDeleteDir(directory);
         }));
 
         return directory;
@@ -437,6 +440,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            hostPath = PathUtils.createMinGWPath(hostPath);
+        }
+
         binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
     }
 
