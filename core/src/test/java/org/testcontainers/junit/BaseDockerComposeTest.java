@@ -3,9 +3,12 @@ package org.testcontainers.junit;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
@@ -27,6 +30,9 @@ public abstract class BaseDockerComposeTest {
     public void simpleTest() {
         Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
 
+        // TODO: remove following resolution of #160
+        Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> { jedis.connect(); return true; });
+
         jedis.incr("test");
         jedis.incr("test");
         jedis.incr("test");
@@ -38,6 +44,9 @@ public abstract class BaseDockerComposeTest {
     public void secondTest() {
         // used in manual checking for cleanup in between tests
         Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
+
+        // TODO: remove following resolution of #160
+        Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> { jedis.connect(); return true; });
 
         jedis.incr("test");
         jedis.incr("test");
