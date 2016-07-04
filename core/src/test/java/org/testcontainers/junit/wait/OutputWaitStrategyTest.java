@@ -23,7 +23,7 @@ public class OutputWaitStrategyTest extends AbstractWaitStrategyTest<OutputWaitS
     /**
      * Dummy implementation of {@link OutputWaitStrategy.ContainerReadyCheckFunction} checks for container output frame to be 'READY'.
      */
-    private OutputWaitStrategy.ContainerReadyCheckFunction containerOutputFramePredicate = (container, containerLogger, outputFrame) -> outputFrame.trim().equals("READY");
+    private OutputWaitStrategy.ContainerReadyCheckFunction containerOutputFramePredicate = (container, outputFrame) -> outputFrame.trim().equals("READY");
 
     /**
      * Expects that the WaitStrategy returns successfully after {@link #containerOutputFramePredicate} did return true.

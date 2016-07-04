@@ -267,7 +267,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @return a logger that references the docker image name
      */
-    protected Logger logger() {
+    public Logger logger() {
         return DockerLoggerFactory.getLogger(this.getDockerImageName());
     }
 

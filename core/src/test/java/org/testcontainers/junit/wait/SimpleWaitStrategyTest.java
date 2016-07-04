@@ -3,6 +3,8 @@ package org.testcontainers.junit.wait;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
@@ -18,11 +20,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class SimpleWaitStrategyTest extends AbstractWaitStrategyTest<SimpleWaitStrategy> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleWaitStrategyTest.class);
+
     /**
      * Dummy implementation of {@link SimpleWaitStrategy.ContainerReadyCheckFunction} checks for socket connection to container .
      */
-    private SimpleWaitStrategy.ContainerReadyCheckFunction containerReadyCheckFunction = (container, containerLogger) -> {
-        containerLogger.info("wait for socket connection to " + container.getContainerIpAddress() + ":" + 8080);
+    private SimpleWaitStrategy.ContainerReadyCheckFunction containerReadyCheckFunction = container -> {
+        LOG.info("wait for socket connection to " + container.getContainerName() + " " + container.getContainerIpAddress() + ":" + 8080);
         new Socket(container.getContainerIpAddress(), container.getMappedPort(8080)).close();
         return true;
     };

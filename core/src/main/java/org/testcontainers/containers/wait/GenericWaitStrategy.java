@@ -3,9 +3,7 @@ package org.testcontainers.containers.wait;
 import com.github.dockerjava.api.model.PortBinding;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerLoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
@@ -42,9 +40,6 @@ public abstract class GenericWaitStrategy<SELF extends GenericWaitStrategy<SELF>
         return this.self();
     }
 
-    protected Logger logger(GenericContainer container) {
-        return DockerLoggerFactory.getLogger(container.getDockerImageName());
-    }
 
     /**
      * Try to find primary container port.
@@ -71,14 +66,20 @@ public abstract class GenericWaitStrategy<SELF extends GenericWaitStrategy<SELF>
         return Optional.empty();
     }
 
+
     @Override
     public void waitUntilReady(GenericContainer container) {
-        logger(container).info("Use wait strategy :" + getClass().getName());
-        logger(container).info("Waiting up to {} seconds for {}", startupTimeout.getSeconds(), description);
+
+        String strategySimpleName = getClass().getSimpleName();
+        if(strategySimpleName.isEmpty()){
+            strategySimpleName = "<Anonymous>";
+        }
+        container.logger().info("Use wait strategy " + getClass().getSimpleName() + " [" +  getClass().getName() + "]");
+        container.logger().info("Waiting up to {} seconds for {}", startupTimeout.getSeconds(), description);
 
         try {
             retryUntilReady(startupTimeout, readyCheckDelay,() -> {
-                logger(container).debug("check container ready state");
+                container.logger().debug("Check container ready state");
                 return isReady(container);
             });
         } catch (TimeoutException e) {

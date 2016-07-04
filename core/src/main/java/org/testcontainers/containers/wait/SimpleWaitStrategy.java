@@ -1,6 +1,5 @@
 package org.testcontainers.containers.wait;
 
-import org.slf4j.Logger;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 
@@ -20,12 +19,12 @@ public class SimpleWaitStrategy extends GenericWaitStrategy<SimpleWaitStrategy> 
 
     @Override
     protected boolean isReady(GenericContainer container) throws Exception {
-        return readyFunction.apply(container, logger(container));
+        return readyFunction.apply(container);
     }
 
 
     @FunctionalInterface
     public interface ContainerReadyCheckFunction {
-        Boolean apply(Container container, Logger containerLogger) throws Exception;
+        Boolean apply(Container container) throws Exception;
     }
 }
