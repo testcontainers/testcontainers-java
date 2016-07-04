@@ -95,7 +95,7 @@ public class HttpWaitStrategy extends GenericWaitStrategy<HttpWaitStrategy> {
     @Override
     protected boolean isReady(GenericContainer container) throws Exception {
 
-        final int readyPort = this.port != 0 ? container.getMappedPort(this.port) : getDefaultPort(container);
+        final int readyPort = this.port != 0 ? container.getMappedPort(this.port) : getPrimaryMappedContainerPort(container).orElse(8080);
 
         final String uri = buildLivenessUri(readyPort).toString();
         logger(container).info("Try to request " + uri);
@@ -133,7 +133,7 @@ public class HttpWaitStrategy extends GenericWaitStrategy<HttpWaitStrategy> {
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {
             portSuffix = "";
         } else {
-            portSuffix = ":" + String.valueOf(livenessCheckPort);
+            portSuffix = ":" + livenessCheckPort;
         }
 
         return URI.create(scheme + host + portSuffix + path);
