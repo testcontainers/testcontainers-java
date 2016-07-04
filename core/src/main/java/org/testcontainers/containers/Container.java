@@ -177,6 +177,13 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withExtraHost(String hostname, String ipAddress);
 
+    /**
+     * Set the network mode for this container, similar to the <code>--net &lt;name&gt;</code>
+     * option on the docker CLI.
+     *
+     * @param networkMode network mode, e.g. including 'host', 'bridge', 'none' or the name of an existing named network.
+     * @return this
+     */
     SELF withNetworkMode(String networkMode);
 
     /**
