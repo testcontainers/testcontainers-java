@@ -2,7 +2,8 @@ package org.testcontainers.containers.wait;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import org.testcontainers.DockerClientFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
 import java.net.HttpURLConnection;
@@ -15,6 +16,9 @@ import java.net.URL;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class HttpWaitStrategy extends GenericWaitStrategy<HttpWaitStrategy> {
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpWaitStrategy.class);
+
     /**
      * Authorization HTTP header.
      */
@@ -97,8 +101,8 @@ public class HttpWaitStrategy extends GenericWaitStrategy<HttpWaitStrategy> {
 
         final int readyPort = this.port != 0 ? container.getMappedPort(this.port) : getPrimaryMappedContainerPort(container).orElse(8080);
 
-        final String uri = buildLivenessUri(readyPort).toString();
-        logger(container).info("Try to request " + uri);
+        final String uri = buildLivenessUri(container.getContainerIpAddress(), readyPort).toString();
+        container.logger().info("Try to request " + uri);
 
         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
 
@@ -112,7 +116,7 @@ public class HttpWaitStrategy extends GenericWaitStrategy<HttpWaitStrategy> {
         connection.connect();
 
         if (statusCode != connection.getResponseCode()) {
-            logger(container).info("HTTP response code was " + connection.getResponseCode());
+            container.logger().info("HTTP response code was " + connection.getResponseCode());
             return false;
         }
 
@@ -125,9 +129,8 @@ public class HttpWaitStrategy extends GenericWaitStrategy<HttpWaitStrategy> {
      * @param livenessCheckPort the liveness port
      * @return the liveness URI
      */
-    private URI buildLivenessUri(int livenessCheckPort) {
+    private URI buildLivenessUri(String host, int livenessCheckPort) {
         final String scheme = (tlsEnabled ? "https" : "http") + "://";
-        final String host = container.getContainerIpAddress();
 
         final String portSuffix;
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {

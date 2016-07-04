@@ -1,9 +1,6 @@
 package org.testcontainers.containers.wait;
 
-import org.testcontainers.containers.output.OutputFrame;
-
 import java.net.HttpURLConnection;
-import java.util.function.Predicate;
 
 /**
  * Convenience class with logic for building common {@link WaitStrategy} instances.
@@ -60,7 +57,7 @@ public class Wait {
      * <p>
      * <b>Example</b>
      * <pre>{@code
-     * Wait.until( "send smtp 'HELO' command", (container, containerLogger) -> {
+     * Wait.until( "send smtp 'HELO' command", container -> {
      *
      *   Container container = new GenericContainer();
      *   Properties props = new Properties();
@@ -90,7 +87,7 @@ public class Wait {
      * <p>
      * <b>Example</b>
      * <pre>{@code
-     * Wait.forOutput( "startup done", (container, containerLogger, outputFrame) -> outputFrame.equals("STARTUP DONE"))
+     * Wait.forOutput( "startup done", (container, outputFrame) -> outputFrame.equals("STARTUP DONE"))
      * }</pre>
      *
      * @param readyCheckFunction {@link SimpleWaitStrategy} will wait for this function to return true,
