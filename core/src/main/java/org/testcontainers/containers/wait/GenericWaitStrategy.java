@@ -1,19 +1,17 @@
 package org.testcontainers.containers.wait;
 
-import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.PortBinding;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerLoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by qoomon on 25.06.16.
@@ -22,14 +20,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class GenericWaitStrategy<SELF extends GenericWaitStrategy<SELF>> implements WaitStrategy {
 
 
-    private static final RateLimiter RATE_LIMITER = RateLimiterBuilder.newBuilder()
-            .withRate(1, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
-
     private final String description;
 
     protected Duration startupTimeout = Duration.ofSeconds(60);
+
+    protected Duration readyCheckDelay = Duration.ofSeconds(1);
 
     public GenericWaitStrategy(String description) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(description), "description must be not null nor empty.");
@@ -51,38 +46,74 @@ public abstract class GenericWaitStrategy<SELF extends GenericWaitStrategy<SELF>
         return DockerLoggerFactory.getLogger(container.getDockerImageName());
     }
 
-    protected int getDefaultPort(GenericContainer<?> container) {
+    /**
+     * Try to find primary container port.
+     * <br>
+     * <pre>
+     * 1st priority: mapped port of first exposed port {@link GenericContainer#getExposedPorts()}
+     * 2nd priority: host port of first port binding {@link GenericContainer#getPortBindings()}
+     * </pre>
+     *
+     * @param container the container
+     * @return primary mapped container port if any specified
+     */
+    protected Optional<Integer> getPrimaryMappedContainerPort(GenericContainer<?> container) {
         List<Integer> exposedPorts = container.getExposedPorts();
         if (!exposedPorts.isEmpty()) {
-            return container.getMappedPort(exposedPorts.get(0));
-        } else {
-            List<String> portBindings = container.getPortBindings();
-            if (!portBindings.isEmpty()) {
-                return PortBinding.parse(portBindings.get(0)).getBinding().getHostPort();
-            } else {
-                throw new WaitStrategyException("Could not find any reachable port");
-            }
+            return Optional.of(container.getMappedPort(exposedPorts.get(0)));
         }
+
+        List<String> portBindings = container.getPortBindings();
+        if (!portBindings.isEmpty()) {
+            return Optional.of(PortBinding.parse(portBindings.get(0)).getBinding().getHostPort());
+        }
+
+        return Optional.empty();
     }
 
     @Override
     public void waitUntilReady(GenericContainer container) {
-
+        logger(container).info("Use wait strategy :" + getClass().getName());
         logger(container).info("Waiting up to {} seconds for {}", startupTimeout.getSeconds(), description);
 
         try {
-            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> RATE_LIMITER.getWhenReady(() -> {
-                try {
-                    return isReady(container);
-                } catch (Exception e) {
-                    throw new RuntimeException(description + " failed!", e);
-                }
-            }));
-        } catch (Exception e) {
-            container.stop();
-            throw new WaitStrategyException("Timed out waiting for container to be ready. Waited for " + description + ".", e);
+            retryUntilReady(startupTimeout, readyCheckDelay,() -> {
+                logger(container).debug("check container ready state");
+                return isReady(container);
+            });
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
         }
+    }
 
+    protected void retryUntilReady(Duration retryTimeout, Duration retryDelay, Callable<Boolean> isReadyCheck) throws TimeoutException {
+        long waitStartTime = System.currentTimeMillis();
+        long waitEndTime = waitStartTime + retryTimeout.toMillis();
+        long nextExecution = waitStartTime;
+        boolean isReady = false;
+
+        while (!isReady) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime > waitEndTime || nextExecution > waitEndTime) {
+                throw new TimeoutException("Retry timeout!");
+            }
+            if (currentTime < nextExecution) {
+                try {
+                    Thread.sleep(nextExecution - currentTime);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            try {
+                isReady = isReadyCheck.call();
+            } catch (Exception e) {
+                // ignore
+            }
+
+            // prepare for next iteration
+            nextExecution += retryDelay.toMillis();
+        }
     }
 
 
