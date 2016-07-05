@@ -4,7 +4,7 @@
 
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers-parent</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -143,7 +143,7 @@
                 <artifactId>maven-scm-plugin</artifactId>
                 <version>1.9.4</version>
                 <configuration>
-                    <tag>${project.artifactId}-${project.version}</tag>
+                    <tag>testcontainers-${project.version}</tag>
                 </configuration>
             </plugin>
         </plugins>
