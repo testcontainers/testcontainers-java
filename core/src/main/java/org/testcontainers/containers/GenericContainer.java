@@ -248,7 +248,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @return a logger that references the docker image name
      */
-    protected Logger logger() {
+    public Logger logger() {
         return DockerLoggerFactory.getLogger(this.getDockerImageName());
     }
 
@@ -790,64 +790,5 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());
         return result;
-    }
-
-    /**
-     * Convenience class with access to non-public members of GenericContainer.
-     */
-    public static abstract class AbstractWaitStrategy implements WaitStrategy {
-        protected GenericContainer container;
-
-        @NonNull
-        protected Duration startupTimeout = Duration.ofSeconds(60);
-
-        /**
-         * Wait until the container has started.
-         *
-         * @param container the container for which to wait
-         */
-        @Override
-        public void waitUntilReady(GenericContainer container) {
-            this.container = container;
-            waitUntilReady();
-        }
-
-        /**
-         * Wait until {@link #container} has started.
-         */
-        protected abstract void waitUntilReady();
-
-        /**
-         * Set the duration of waiting time until container treated as started.
-         *
-         * @param startupTimeout timeout
-         * @return this
-         * @see WaitStrategy#waitUntilReady(GenericContainer)
-         */
-        public WaitStrategy withStartupTimeout(Duration startupTimeout) {
-            this.startupTimeout = startupTimeout;
-            return this;
-        }
-
-        /**
-         * @return the container's logger
-         */
-        protected Logger logger() {
-            return container.logger();
-        }
-
-        /**
-         * @return the port on which to check if the container is ready
-         */
-        protected Integer getLivenessCheckPort() {
-            return container.getLivenessCheckPort();
-        }
-
-        /**
-         * @return the rate limiter to use
-         */
-        protected RateLimiter getRateLimiter() {
-            return DOCKER_CLIENT_RATE_LIMITER;
-        }
     }
 }

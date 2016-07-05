@@ -1,44 +1,53 @@
 package org.testcontainers.containers.wait;
 
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.unreliables.Unreliables;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 
-import java.io.IOException;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 /**
  * Waits until a socket connection can be established on a port exposed or mapped by the container.
  *
  * @author richardnorth
  */
-public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy {
+public class HostPortWaitStrategy extends GenericWaitStrategy<HostPortWaitStrategy> {
+
+    private int port = 0;
+
+    public HostPortWaitStrategy() {
+        super("create socket");
+    }
+
+    /**
+     * Set request port.
+     *
+     * @param port the port to check on
+     * @return this
+     */
+    public HostPortWaitStrategy withPort(int port) {
+        this.port = port;
+        return this;
+    }
+
     @Override
-    protected void waitUntilReady() {
-        final Integer port = getLivenessCheckPort();
-        if (null == port) {
-            return;
-        }
-
+    protected boolean isReady(GenericContainer container) throws Exception {
         final String ipAddress = container.getContainerIpAddress();
-        try {
-            Unreliables.retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                getRateLimiter().doWhenReady(() -> {
-                    try {
-                        new Socket(ipAddress, port).close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                return true;
-            });
 
-        } catch (TimeoutException e) {
-            throw new ContainerLaunchException("Timed out waiting for container port to open (" +
-                    ipAddress + ":" + port + " should be listening)");
+        int readyPort;
+
+        if (this.port != 0) {
+            readyPort = container.getMappedPort(this.port);
+        } else {
+            Optional<Integer> primaryMappedContainerPort = getPrimaryMappedContainerPort(container);
+            if (primaryMappedContainerPort.isPresent()) {
+                readyPort = primaryMappedContainerPort.get();
+            } else {
+                return true;
+            }
         }
+
+        container.logger().info("create socket " + ipAddress + ":" + readyPort);
+        new Socket(ipAddress, readyPort).close();
+        return true;
     }
 }

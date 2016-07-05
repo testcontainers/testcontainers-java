@@ -51,4 +51,51 @@ public class Wait {
         return forHttp(path)
                 .usingTls();
     }
+
+    /**
+     * Convenience method to return a WaitStrategy for a generic {@link SimpleWaitStrategy.ContainerReadyCheckFunction}.
+     * <p>
+     * <b>Example</b>
+     * <pre>{@code
+     * Wait.until( "send smtp 'HELO' command", container -> {
+     *
+     *   Container container = new GenericContainer();
+     *   Properties props = new Properties();
+     *   props.put("mail.smtp.host", container.getContainerIpAddress());
+     *   props.put("mail.smtp.port", container.getMappedPort(25));
+     *   Session session = Session.getInstance(props);
+     *   Transport transport = session.getTransport("smtp");
+     *   transport.connect();
+     *   transport.close();
+     *
+     *   return true;
+     * })
+     * }</pre>
+     *
+     * @param description        description of for what you are waiting for
+     * @param readyCheckFunction {@link SimpleWaitStrategy} will wait for this function to return true,
+     *                           {@link Exception}s will be treated as false
+     * @return the WaitStrategy
+     * @see SimpleWaitStrategy
+     */
+    public static SimpleWaitStrategy until(String description, SimpleWaitStrategy.ContainerReadyCheckFunction readyCheckFunction) {
+        return new SimpleWaitStrategy(description, readyCheckFunction);
+    }
+
+    /**
+     * Convenience method to return a WaitStrategy for a generic {@link SimpleWaitStrategy.ContainerReadyCheckFunction}.
+     * <p>
+     * <b>Example</b>
+     * <pre>{@code
+     * Wait.forOutput( "startup done", (container, outputFrame) -> outputFrame.equals("STARTUP DONE"))
+     * }</pre>
+     *
+     * @param readyCheckFunction {@link SimpleWaitStrategy} will wait for this function to return true,
+     *                           {@link Exception}s will be treated as false
+     * @return the WaitStrategy
+     * @see SimpleWaitStrategy
+     */
+    public static OutputWaitStrategy forOutput(OutputWaitStrategy.ContainerReadyCheckFunction readyCheckFunction) {
+        return new OutputWaitStrategy(readyCheckFunction);
+    }
 }
