@@ -1,27 +1,23 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerMachineClient;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Use Docker machine (if available on the PATH) to locate a Docker environment.
  */
-public class DockerMachineConfigurationStrategy implements DockerConfigurationStrategy {
+public class DockerMachineClientProviderStrategy extends DockerClientProviderStrategy {
     @Override
-    public DockerClientConfig provideConfiguration() throws InvalidConfigurationException {
+    public void test() throws InvalidConfigurationException {
 
-        DockerClientConfig candidateConfig;
         DockerClient client;
 
         try {
@@ -40,23 +36,19 @@ public class DockerMachineConfigurationStrategy implements DockerConfigurationSt
 
             LOGGER.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
 
-            candidateConfig = DockerClientConfig
+            config = DockerClientConfig
                     .createDefaultConfigBuilder()
-                    .withUri("https://" + dockerDaemonIpAddress + ":2376")
+                    .withDockerHost("tcp://" + dockerDaemonIpAddress + ":2376")
+                    .withDockerTlsVerify(true)
                     .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())
                     .build();
-            client = DockerClientBuilder.getInstance(candidateConfig).build();
+            client = getClientForConfig(config);
         } catch (Exception e) {
             throw new InvalidConfigurationException(e.getMessage());
         }
 
         // If the docker-machine VM has started, the docker daemon may still not be ready. Retry pinging until it works.
-        Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
-            client.pingCmd().exec();
-            return true;
-        });
-
-        return candidateConfig;
+        ping(client, 30);
     }
 
     @Override

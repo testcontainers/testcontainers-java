@@ -8,7 +8,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.utility.TestEnvironment;
 
+import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 /**
@@ -26,7 +28,8 @@ public class LocalServerWebDriverContainerTest {
      */
     @BeforeClass
     public static void checkOS() {
-        Assume.assumeTrue("These tests are currently only applicable to OS X", System.getProperty("os.name").toLowerCase().contains("mac"));
+        Assume.assumeTrue("These tests are currently only applicable to OS X", IS_OS_MAC_OSX);
+        Assume.assumeTrue("These tests are only applicable to docker machine", TestEnvironment.dockerIsDockerMachine());
     }
 
     @Before

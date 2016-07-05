@@ -18,9 +18,9 @@ public abstract class AbstractStatementTest {
     @Rule
     public TestName testName = new TestName();
 
-    protected void assertStatement(Statement statement) throws Exception {
+    protected void assertStatement(Statement statement) {
 
-        String[] expectedLines = null;
+        String[] expectedLines = new String[0];
         try {
             String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName.getMethodName();
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
@@ -29,7 +29,7 @@ public abstract class AbstractStatementTest {
 
             String content = IOUtils.toString(inputStream);
             IOUtils.closeQuietly(inputStream);
-            expectedLines = StringUtils.chomp(content.trim()).split("\n");
+            expectedLines = StringUtils.chomp(content.replaceAll("\r\n", "\n").trim()).split("\n");
         } catch (Exception e) {
             fail("can't load fixture '" + testName.getMethodName() + "'\n" + ExceptionUtils.getFullStackTrace(e));
         }

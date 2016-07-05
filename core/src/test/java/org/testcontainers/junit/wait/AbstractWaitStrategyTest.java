@@ -3,6 +3,8 @@ package org.testcontainers.junit.wait;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.rnorth.ducttape.RetryCountExceededException;
+import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.WaitStrategy;
 
@@ -62,9 +64,8 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * Expects that the WaitStrategy returns successfully after connection to a container with a listening port.
      *
      * @param shellCommand the shell command to execute
-     * @throws Exception
      */
-    protected void waitUntilReadyAndSucceed(String shellCommand) throws Exception {
+    protected void waitUntilReadyAndSucceed(String shellCommand) {
         final GenericContainer container = startContainerWithCommand(shellCommand);
 
         // start() blocks until successful or timeout
@@ -79,18 +80,14 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * to a container with a listening port.
      *
      * @param shellCommand the shell command to execute
-     * @throws Exception
      */
-    protected void waitUntilReadyAndTimeout(String shellCommand) throws Exception {
+    protected void waitUntilReadyAndTimeout(String shellCommand) {
         final GenericContainer container = startContainerWithCommand(shellCommand);
-        try {
-            // start() blocks until successful or timeout
-            container.start();
-            fail(RetryCountExceededException.class + " expected");
 
-        } catch (RetryCountExceededException e) {
-            assertFalse(String.format("Wait should have timed-out after %sms",
-                    WAIT_TIMEOUT_MILLIS), ready.get());
-        }
+        // start() blocks until successful or timeout
+        VisibleAssertions.assertThrows("an exception is thrown when timeout occurs (" + WAIT_TIMEOUT_MILLIS + "ms)",
+                ContainerLaunchException.class,
+                container::start);
+
     }
 }

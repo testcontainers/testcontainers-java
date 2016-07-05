@@ -15,23 +15,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class HostPortWaitStrategyTest extends AbstractWaitStrategyTest<HostPortWaitStrategy> {
     /**
      * Expects that the WaitStrategy returns successfully after connection to a container with a listening port.
-     *
-     * @throws Exception
      */
     @Test
-    public void testWaitUntilReady_Success() throws Exception {
+    public void testWaitUntilReady_Success() {
         waitUntilReadyAndSucceed("nc -lp 8080");
     }
 
     /**
      * Expects that the WaitStrategy throws a {@link RetryCountExceededException} after unsuccessful connection
      * to a container with a listening port within the timeout period.
-     *
-     * @throws Exception
      */
     @Test
-    public void testWaitUntilReady_Timeout() throws Exception {
-        waitUntilReadyAndTimeout("");
+    public void testWaitUntilReady_Timeout() {
+        waitUntilReadyAndTimeout("exit 1");
     }
 
     /**

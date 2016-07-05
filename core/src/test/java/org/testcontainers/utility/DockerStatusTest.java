@@ -1,9 +1,5 @@
 package org.testcontainers.utility;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -11,6 +7,10 @@ import org.mockito.Mockito;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -75,8 +75,8 @@ public class DockerStatusTest {
                                                                       String startedAt, String finishedAt) {
 
         InspectContainerResponse.ContainerState state = Mockito.mock(InspectContainerResponse.ContainerState.class);
-        when(state.isRunning()).thenReturn(running);
-        when(state.isPaused()).thenReturn(paused);
+        when(state.getRunning()).thenReturn(running);
+        when(state.getPaused()).thenReturn(paused);
         when(state.getStartedAt()).thenReturn(startedAt);
         when(state.getFinishedAt()).thenReturn(finishedAt);
         return state;

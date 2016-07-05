@@ -3,7 +3,6 @@ package org.testcontainers.junit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import java.io.IOException;

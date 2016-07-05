@@ -74,6 +74,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         addExposedPorts(SELENIUM_PORT, VNC_PORT);
         addEnv("TZ", timeZone);
+        addEnv("no_proxy", "localhost");
         setCommand("/opt/bin/entry_point.sh");
     }
 
@@ -211,7 +212,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
 
     public enum VncRecordingMode {
-        SKIP, RECORD_ALL, RECORD_FAILING;
+        SKIP, RECORD_ALL, RECORD_FAILING
     }
 
 

@@ -1,0 +1,7 @@
+<root>
+    <item name='org.rnorth.ducttape.Preconditions void check(java.lang.String, boolean)'>
+        <annotation name='org.jetbrains.annotations.Contract'>
+            <val val="&quot;_,true-&gt;_;_,false-&gt;fail&quot;"/>
+        </annotation>
+    </item>
+</root>

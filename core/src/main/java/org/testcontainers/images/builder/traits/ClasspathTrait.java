@@ -1,5 +1,6 @@
 package org.testcontainers.images.builder.traits;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
 
@@ -16,7 +17,7 @@ public interface ClasspathTrait<SELF extends ClasspathTrait<SELF> & BuildContext
             throw new IllegalArgumentException("Could not find classpath resource at provided path: " + resourcePath);
         }
 
-        String resourceFilePath = resource.getFile();
+        String resourceFilePath = new File(resource.getFile()).getAbsolutePath();
 
         return ((SELF) this).withFileFromPath(path, Paths.get(resourceFilePath));
     }

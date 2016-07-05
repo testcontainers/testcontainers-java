@@ -14,13 +14,23 @@ TestContainers makes it easy to launch useful Docker containers for the duration
  * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
  * **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 
+## Compatibility
+
+| Host Operating System / Environment | Recommended docker versions | Known issues / tips                                                                                                                                                                                                                                                                                                                                                |
+|-------------------------------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Linux - general                     | Docker v1.10 +              |                                                                                                                                                                                                                                                                                                                                                                    |
+| Linux - Travis CI                   | Docker v1.10 +              | See [example .travis.yml](../.travis.yml) for baseline Travis CI configuration                                                                                                                                                                                                                                                                                     |
+| Linux - Circle CI (LXC driver)      | Docker v1.9.1               | The `exec` feature is not compatible with Circle CI. See [example circle.yml](../circle.yml) for baseline CircleCI configuration                                                                                                                                                                                                                                   |
+| Mac OS X - Docker Toolbox           | Docker Machine v0.8.0-rc1   |                                                                                                                                                                                                                                                                                                                                                                    |
+| Mac OS X - Docker for Mac Beta      | 1.12.0-rc2-beta17           | *Support is best-efforts at present*. TCP-based container liveness checks [do not currently work as expected](https://github.com/testcontainers/testcontainers-java/issues/160) due to a Docker bug. `getTestHostIpAddress()` is [not currently supported](https://github.com/testcontainers/testcontainers-java/issues/166) due to limitations in Docker for Mac. |
+| Windows - Docker Toolbox            |                             | *Support is limited at present and this is not currently tested on a regular basis*.                                                                                                                                                                                                                                                                               |
+| Windows - Docker for Windows Beta   |                             | *Not currently supported*.                                                                                                                                                                                                                                                                                                                                         |
+
 ## Usage
 
 ### Prerequisites
 
 Docker or docker-machine (for OS X) must be installed on the machine you are running tests on. TestContainers currently requires JDK 1.8 and is compatible with JUnit.
-
-Note that only Linux host environments, or OS X with Docker Machine, are currently supported.
 
 If you want to use TestContainers on Windows you can try the [alpha release](usage/windows_support.md).
 
@@ -110,6 +120,7 @@ should be included in your classpath to show a reasonable level of log output:
         <appender-ref ref="STDOUT"/>
     </root>
 
+    <logger name="org.testcontainers" level="INFO"/>
     <logger name="org.apache.http" level="WARN"/>
     <logger name="com.github.dockerjava" level="WARN"/>
     <logger name="org.zeroturnaround.exec" level="WARN"/>

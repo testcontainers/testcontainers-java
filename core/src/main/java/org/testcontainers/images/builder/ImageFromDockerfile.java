@@ -43,7 +43,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                 for (String dockerImageName : imagesToDelete) {
                     log.info("Removing image tagged {}", dockerImageName);
                     try {
-                        dockerClientForCleaning.removeImageCmd(dockerImageName).withForce().exec();
+                        dockerClientForCleaning.removeImageCmd(dockerImageName).withForce(true).exec();
                     } catch (Throwable e) {
                         log.warn("Unable to delete image " + dockerImageName, e);
                     }
