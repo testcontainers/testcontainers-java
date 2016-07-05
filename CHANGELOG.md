@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2016-07-05
+### Fixed
+- Apply shade relocation to Jersey repackaged Guava libs
+- General logging and stability improvements to Docker Compose support
+- Fix liveness checks to use specific IP address obtained using `getContainerIpAddress()`
+
+### Changed
+- Integrate interim support for Docker for Mac beta and Docker Machine for Windows. See [docs](docs/index.md) for known limitations.
+- Add support for Docker Compose v2 and scaling of compose containers
+- Add support for attaching containers to specific networks.
+- Allow container environment variables to be set using a Map
+
 ## [1.0.5] - 2016-05-02
 ### Fixed
 - Fix problems associated with changes to `tenforce/virtuoso:latest` container, and replace with a pinned version.
