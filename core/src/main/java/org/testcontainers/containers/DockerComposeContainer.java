@@ -174,7 +174,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // Kill the services using docker-compose
         getDockerCompose("kill")
                 .start();
-        getDockerCompose("rm -f -v")
+        getDockerCompose("rm --all -f -v")
                 .start();
 
         // shut down all the ambassador containers
@@ -270,7 +270,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 class DockerCompose extends GenericContainer<DockerCompose> {
     public DockerCompose(File composeFile, String identifier) {
 
-        super("dduportal/docker-compose:1.6.0");
+        super("dduportal/docker-compose:1.7.1");
         addEnv("COMPOSE_PROJECT_NAME", identifier);
         // Map the docker compose file into the container
         addEnv("COMPOSE_FILE", "/compose/" + composeFile.getAbsoluteFile().getName());
