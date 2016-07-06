@@ -1,5 +1,6 @@
 package org.testcontainers.junit;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -8,6 +9,7 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -31,7 +33,7 @@ public abstract class BaseDockerComposeTest {
         Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
 
         // TODO: remove following resolution of #160
-        Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> { jedis.connect(); return true; });
+        Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, getLivenessCheck(jedis));
 
         jedis.incr("test");
         jedis.incr("test");
@@ -46,7 +48,7 @@ public abstract class BaseDockerComposeTest {
         Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
 
         // TODO: remove following resolution of #160
-        Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> { jedis.connect(); return true; });
+        Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, getLivenessCheck(jedis));
 
         jedis.incr("test");
         jedis.incr("test");
@@ -55,5 +57,14 @@ public abstract class BaseDockerComposeTest {
         assertEquals("Tests use fresh container instances", "3", jedis.get("test"));
         // if these end up using the same container one of the test methods will fail.
         // However, @Rule creates a separate DockerComposeContainer instance per test, so this just shouldn't happen
+    }
+
+    @NotNull
+    private Callable<Boolean> getLivenessCheck(Jedis jedis) {
+        return () -> {
+            jedis.connect();
+            jedis.ping();
+            return true;
+        };
     }
 }
