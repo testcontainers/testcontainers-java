@@ -16,7 +16,7 @@ import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ResourceReaper;
 
@@ -281,7 +281,7 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         //  we map the socket file outside of /var/run, as just /docker.sock
         addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
-        setStartupCheckStrategy(new OneShotStartupCheckStrategy());
+        setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
     }
 
     @Override

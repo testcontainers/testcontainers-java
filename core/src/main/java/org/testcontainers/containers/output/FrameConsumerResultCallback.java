@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 /**
@@ -20,6 +21,8 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
     private final static Logger LOGGER = LoggerFactory.getLogger(FrameConsumerResultCallback.class);
 
     private Map<OutputFrame.OutputType, Consumer<OutputFrame>> consumers;
+
+    private CountDownLatch completionLatch = new CountDownLatch(1);
 
     public FrameConsumerResultCallback() {
         consumers = new HashMap<>();
@@ -57,5 +60,14 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
             consumer.accept(OutputFrame.END);
         }
         super.close();
+
+        completionLatch.countDown();
+    }
+
+    /**
+     * @return a {@link CountDownLatch} that may be used to wait until {@link #close()} has been called.
+     */
+    public CountDownLatch getCompletionLatch() {
+        return completionLatch;
     }
 }

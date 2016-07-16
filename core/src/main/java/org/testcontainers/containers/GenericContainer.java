@@ -204,6 +204,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
                 dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
 
+                // Ensure that container log output is shown before proceeding
+                resultCallback.getCompletionLatch().await();
+
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
