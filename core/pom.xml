@@ -148,6 +148,10 @@
                             <pattern>jersey.repackaged</pattern>
                             <shadedPattern>org.testcontainers.shaded.jersey.repackaged</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>io.netty</pattern>
+                            <shadedPattern>org.testcontainers.shaded.io.netty</shadedPattern>
+                        </relocation>
                     </relocations>
                     <artifactSet>
                         <includes>
@@ -158,6 +162,7 @@
                             <include>javax.ws.rs:*</include>
                             <include>com.fasterxml.*:*</include>
                             <include>com.github.docker-java:*</include>
+                            <include>io.netty:*</include>
                         </includes>
                     </artifactSet>
                     <promoteTransitiveDependencies>true</promoteTransitiveDependencies>

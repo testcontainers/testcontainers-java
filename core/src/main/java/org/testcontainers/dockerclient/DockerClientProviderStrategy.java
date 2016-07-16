@@ -6,6 +6,8 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.netty.DockerCmdExecFactoryImpl;
 import com.google.common.base.Throwables;
 import org.jetbrains.annotations.Nullable;
+import org.rnorth.ducttape.ratelimits.RateLimiter;
+import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class DockerClientProviderStrategy {
 
     protected DockerClientConfig config;
+
+    private static final RateLimiter PING_RATE_LIMITER = RateLimiterBuilder.newBuilder()
+            .withRate(2, TimeUnit.SECONDS)
+            .withConstantThroughput()
+            .build();
 
     /**
      * @throws InvalidConfigurationException if this strategy fails
@@ -98,8 +105,11 @@ public abstract class DockerClientProviderStrategy {
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
         Unreliables.retryUntilSuccess(timeoutInSeconds, TimeUnit.SECONDS, () -> {
-            client.pingCmd().exec();
-            return true;
+            return PING_RATE_LIMITER.getWhenReady(() -> {
+                LOGGER.debug("Pinging docker daemon...");
+                client.pingCmd().exec();
+                return true;
+            });
         });
     }
 
