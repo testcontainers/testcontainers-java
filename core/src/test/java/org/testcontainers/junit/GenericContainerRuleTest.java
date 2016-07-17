@@ -241,7 +241,7 @@ public class GenericContainerRuleTest {
             // on slow systems and/or due to GC variation, too long and we won't properly test
             // what we're intending to test.
             int allowedSecondsToFailure =
-                GenericContainer.STARTUP_RETRY_COUNT * GenericContainer.CONTAINER_RUNNING_TIMEOUT_SEC / 2;
+                GenericContainer.CONTAINER_RUNNING_TIMEOUT_SEC / 2;
             long completedTimeMs = System.currentTimeMillis();
             assertTrue("container should not take long to start up",
                   completedTimeMs - startingTimeMs < 1000L * allowedSecondsToFailure);
