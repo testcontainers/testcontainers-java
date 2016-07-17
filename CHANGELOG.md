@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2016-07-17
+### Fixed
+- Improve shutdown of unnecessary docker clients (#170)
+- Shade `io.netty` dependencies into the testcontainers core JAR to reduce conflicts (#170 and #157)
+- Remove timeouts for docker compose execution, particularly useful when image pulls are involved
+- Improve output logging from docker-compose, pausing to log output in case of failure rather than letting logs intermingle.
+
+### Changed
+- Reinstate container startup retry (removed in v1.1.0) as an optional setting, only used by default for Selenium webdriver containers
+
 ## [1.1.0] - 2016-07-05
 ### Fixed
 - Apply shade relocation to Jersey repackaged Guava libs
