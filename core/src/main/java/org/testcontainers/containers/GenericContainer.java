@@ -12,12 +12,12 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -43,6 +43,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -59,8 +60,6 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF> {
-
-    public static final int STARTUP_RETRY_COUNT = 3;
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -97,6 +96,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
+
+    private int startupAttempts = 1;
 
     /*
      * Unique instance of DockerClient for use by this container object.
@@ -157,7 +158,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().debug("Starting container: {}", getDockerImageName());
             logger().debug("Trying to start container: {}", image.get());
 
-            tryStart(profiler.startNested("Container startup attempt"));
+            AtomicInteger attempt = new AtomicInteger(0);
+            Unreliables.retryUntilSuccess(startupAttempts, () -> {
+                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
+                tryStart(profiler.startNested("Container startup attempt"));
+                return true;
+            });
 
         } catch (Exception e) {
             throw new ContainerLaunchException("Container startup failed", e);
@@ -793,6 +799,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         logger().trace("stdout: " + result.getStdout());
         logger().trace("stderr: " + result.getStderr());
         return result;
+    }
+
+    /**
+     * Allow container startup to be attempted more than once if an error occurs. To be if containers are
+     * 'flaky' but this flakiness is not something that should affect test outcomes.
+     *
+     * @param attempts number of attempts
+     */
+    public void withStartupAttempts(int attempts) {
+        this.startupAttempts = attempts;
     }
 
     /**

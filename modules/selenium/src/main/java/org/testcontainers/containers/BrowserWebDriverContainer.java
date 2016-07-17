@@ -76,6 +76,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         addEnv("TZ", timeZone);
         addEnv("no_proxy", "localhost");
         setCommand("/opt/bin/entry_point.sh");
+
+        /*
+         * Some unreliability of the selenium browser containers has been observed, so allow multiple attempts to start.
+         */
+        setStartupAttempts(3);
     }
 
     public static String getImageForCapabilities(DesiredCapabilities desiredCapabilities) {
