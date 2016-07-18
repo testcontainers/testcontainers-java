@@ -19,6 +19,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- WebDriver dependency as 'provided' scope -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -34,4 +41,36 @@
             <version>6.1.25</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.google.common</pattern>
+                            <shadedPattern>org.testcontainers.shaded.com.google.common</shadedPattern>
+                        </relocation>
+                    </relocations>
+                    <artifactSet>
+                        <excludes>
+                            <exclude>com.google.guava:*</exclude>
+                        </excludes>
+                    </artifactSet>
+                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                    <shadedArtifactAttached>false</shadedArtifactAttached>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
