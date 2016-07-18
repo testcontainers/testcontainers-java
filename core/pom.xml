@@ -149,8 +149,16 @@
                             <shadedPattern>org.testcontainers.shaded.jersey.repackaged</shadedPattern>
                         </relocation>
                         <relocation>
+                            <pattern>com.google.common</pattern>
+                            <shadedPattern>org.testcontainers.shaded.com.google.common</shadedPattern>
+                        </relocation>
+                        <relocation>
                             <pattern>io.netty</pattern>
                             <shadedPattern>org.testcontainers.shaded.io.netty</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.bouncycastle</pattern>
+                            <shadedPattern>org.testcontainers.shaded.org.bouncycastle</shadedPattern>
                         </relocation>
                     </relocations>
                     <artifactSet>
@@ -162,7 +170,9 @@
                             <include>javax.ws.rs:*</include>
                             <include>com.fasterxml.*:*</include>
                             <include>com.github.docker-java:*</include>
+                            <include>com.google.guava:*</include>
                             <include>io.netty:*</include>
+                            <include>org.bouncycastle:*</include>
                         </includes>
                     </artifactSet>
                     <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
@@ -183,6 +193,29 @@
                         </filter>
                     </filters>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <echo message="unjar" />
+                                <unzip src="${project.build.directory}/${project.artifactId}-${project.version}.jar" dest="${project.build.directory}/exploded/" />
+                                <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-epoll.so"
+                                      tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-epoll.so" />
+                                <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar" basedir="${project.build.directory}/exploded" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

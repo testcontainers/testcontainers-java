@@ -65,6 +65,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
+    static {
+        System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
+    }
+
     /*
      * Default settings
      */
