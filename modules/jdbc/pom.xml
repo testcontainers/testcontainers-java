@@ -46,6 +46,16 @@
                             <shadedPattern>org.testcontainers.shaded.com.google.common</shadedPattern>
                         </relocation>
                     </relocations>
+                    <filters>
+                        <filter>
+                            <artifact>org.bouncycastle:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
                     <artifactSet>
                         <excludes>
                             <exclude>com.google.guava:*</exclude>
