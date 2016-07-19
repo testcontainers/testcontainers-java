@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2016-07-19
+### Fixed
+- Fix shading of netty Linux native libs
+
+### Changed
+- Shade guava artifacts to prevent classloader conflicts
+
 ## [1.1.1] - 2016-07-17
 ### Fixed
 - Improve shutdown of unnecessary docker clients (#170)
@@ -153,6 +160,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.1.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.2
 [1.1.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.1
 [1.1.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.0
 [1.0.5]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.0.5
