@@ -128,6 +128,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                     TarArchiveEntry tarEntry = new TarArchiveEntry(entry.getKey());
                     Transferable transferable = entry.getValue();
                     tarEntry.setSize(transferable.getSize());
+                    tarEntry.setMode(transferable.getFileMode());
 
                     tarArchive.putArchiveEntry(tarEntry);
                     transferable.transferTo(tarArchive);
