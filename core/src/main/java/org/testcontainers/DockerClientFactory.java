@@ -42,6 +42,10 @@ public class DockerClientFactory {
     private String activeApiVersion;
     private String activeExecutionDriver;
 
+    static {
+        System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
+    }
+
     /**
      * Private constructor
      */
