@@ -6,6 +6,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Info;
 import lombok.NonNull;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
@@ -221,6 +222,20 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withMinimumRunningDuration(Duration minimumRunningDuration);
+
+    /**
+     * Set the startup check strategy used for checking whether the container has started.
+     *
+     * @param strategy startup check strategy
+     */
+    SELF withStartupCheckStrategy(StartupCheckStrategy strategy);
+
+    /**
+     * Set the working directory that the container should use on startup.
+     *
+     * @param workDir path to the working directory inside the container
+     */
+    SELF withWorkingDirectory(String workDir);
 
     /**
      * @return is the container currently running?
