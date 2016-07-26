@@ -278,6 +278,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types);
 
+
+    /**
+     * Attach an output consumer at container startup, enabling stdout and stderr to be followed, waited on, etc.
+     * <p>
+     * More than one consumer may be registered.
+     *
+     * @param consumer consumer that output frames should be sent to
+     * @return this
+     */
+    SELF withLogConsumer(Consumer<OutputFrame> consumer);
+
     Info fetchDockerDaemonInfo() throws IOException;
 
     /**
