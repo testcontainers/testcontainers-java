@@ -103,6 +103,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private int startupAttempts = 1;
 
+    @Nullable
+    private String workingDirectory = null;
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -408,6 +411,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (networkMode != null) {
             createCommand.withNetworkMode(networkMode);
         }
+
+        if (workingDirectory != null) {
+            createCommand.withWorkingDir(workingDirectory);
+        }
     }
 
     /**
@@ -630,8 +637,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public SELF withStartupCheckStrategy(StartupCheckStrategy strategy) {
         this.startupCheckStrategy = strategy;
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withWorkingDirectory(String workDir) {
+        this.setWorkingDirectory(workDir);
         return self();
     }
 

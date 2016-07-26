@@ -282,6 +282,7 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
+        setWorkingDirectory("/compose");
     }
 
     @Override
