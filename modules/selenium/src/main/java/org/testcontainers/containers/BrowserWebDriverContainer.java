@@ -18,6 +18,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -126,8 +127,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     protected void waitUntilContainerStarted() {
         // Repeatedly try and open a webdriver session
 
-        driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+        AtomicInteger backoff = new AtomicInteger(1000);
+
+        driver = Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(backoff.getAndUpdate(current -> (int)(current * 1.5)), TimeUnit.MILLISECONDS);
             RemoteWebDriver driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
             driver.getCurrentUrl();
 
