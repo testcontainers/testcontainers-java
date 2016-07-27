@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.3] - 2016-07-27
+### Fixed
+- Further fix for shading of netty Linux native libs, specifically when run using Docker Compose support
+- Ensure that file mode permissions are retained for Dockerfile builder
+
+### Changed
+- Add support for specifying container working directory, and set this to match the `/compose` directory for Docker Compose
+- Improve resilience of Selenium container startup
+- Add `withLogConsumer(...)` to allow a log consumer to be attached to a container from the moment of startup
+
 ## [1.1.2] - 2016-07-19
 ### Fixed
 - Fix shading of netty Linux native libs
@@ -160,6 +170,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.1.3]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.3
 [1.1.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.2
 [1.1.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.1
 [1.1.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.0
