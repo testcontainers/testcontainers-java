@@ -1,6 +1,7 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
@@ -12,7 +13,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +40,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
         profiler.setLogger(logger);
 
         Profiler nested = profiler.startNested("Obtaining client");
-        try (DockerClient dockerClient = DockerClientFactory.instance().client(false)) {
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        try {
             nested.stop();
 
             profiler.start("Check local images");
@@ -88,7 +89,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
             }
 
             return dockerImageName;
-        } catch (IOException e) {
+        } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + dockerImageName, e);
         } finally {
             profiler.stop().log();
