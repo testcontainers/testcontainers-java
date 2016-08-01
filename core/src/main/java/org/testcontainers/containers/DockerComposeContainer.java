@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
@@ -78,11 +77,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         profiler.setLogger(logger());
         profiler.start("Docker compose container startup");
 
+        pullImages();
         applyScaling(); // scale before up, so that all scaled instances are available first for linking
         createServices();
         registerContainersForShutdown();
         startAmbassadorContainers(profiler);
 
+    }
+
+    private void pullImages() {
+        getDockerCompose("pull")
+                        .start();
     }
 
 
