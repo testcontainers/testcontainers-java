@@ -270,7 +270,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 class DockerCompose extends GenericContainer<DockerCompose> {
     public DockerCompose(File composeFile, String identifier) {
 
-        super("dduportal/docker-compose:1.7.1");
+        super("docker/compose:1.8.0");
         addEnv("COMPOSE_PROJECT_NAME", identifier);
         // Map the docker compose file into the container
         addEnv("COMPOSE_FILE", "/compose/" + composeFile.getAbsoluteFile().getName());
