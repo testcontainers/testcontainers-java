@@ -290,7 +290,7 @@ class DockerCompose extends GenericContainer<DockerCompose> {
     public void start() {
         super.start();
 
-        this.followOutput(new Slf4jLogConsumer(logger()), OutputFrame.OutputType.STDERR);
+        this.followOutput(new Slf4jLogConsumer(logger()));
 
         // wait for the compose container to stop, which should only happen after it has spawned all the service containers
         logger().info("Docker compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));

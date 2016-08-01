@@ -16,7 +16,7 @@ public class Slf4jLogConsumer implements Consumer<OutputFrame> {
     }
 
     public Slf4jLogConsumer withPrefix(String prefix) {
-        this.prefix = "["+prefix+"] ";
+        this.prefix = "[" + prefix + "] ";
         return this;
     }
 
@@ -26,7 +26,19 @@ public class Slf4jLogConsumer implements Consumer<OutputFrame> {
             String utf8String = outputFrame.getUtf8String();
 
             if (utf8String != null) {
-                logger.info("{}{}: {}", prefix, outputFrame.getType(), utf8String.trim());
+                OutputFrame.OutputType outputType = outputFrame.getType();
+                String message = utf8String.trim();
+                switch (outputType) {
+                    case END:
+                    case STDOUT:
+                        logger.info("{}{}: {}", prefix, outputType, message);
+                        break;
+                    case STDERR:
+                        logger.error("{}{}: {}", prefix, outputType, message);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unexpected outputType " + outputType);
+                }
             }
         }
     }
