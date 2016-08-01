@@ -53,7 +53,7 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
                 .build();
         DockerClient client = getClientForConfig(config);
 
-        ping(client, 3);
+        ping(client, 10);
 
         return config;
     }
