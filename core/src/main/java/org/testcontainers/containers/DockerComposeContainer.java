@@ -273,8 +273,9 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         super("docker/compose:1.8.0");
         addEnv("COMPOSE_PROJECT_NAME", identifier);
         // Map the docker compose file into the container
-        addEnv("COMPOSE_FILE", "/compose/" + composeFile.getAbsoluteFile().getName());
-        addFileSystemBind(composeFile.getAbsoluteFile().getParentFile().getAbsolutePath(), "/compose", READ_ONLY);
+        String pwd = composeFile.getAbsoluteFile().getParentFile().getAbsolutePath();
+        addEnv("COMPOSE_FILE", pwd + "/" + composeFile.getAbsoluteFile().getName());
+        addFileSystemBind(pwd, pwd, READ_ONLY);
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
@@ -282,7 +283,7 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
-        setWorkingDirectory("/compose");
+        setWorkingDirectory(pwd);
     }
 
     @Override
