@@ -56,7 +56,9 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 // Update the cache
                 List<Image> updatedImages = dockerClient.listImagesCmd().exec();
                 for (Image image : updatedImages) {
-                    Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
+                    if (image.getRepoTags() != null) {
+                        Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
+                    }
                 }
 
                 // And now?
