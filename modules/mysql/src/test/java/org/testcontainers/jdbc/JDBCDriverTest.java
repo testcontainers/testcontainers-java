@@ -59,39 +59,6 @@ public class JDBCDriverTest {
     }
 
     @Test
-    public void testMySQLWithConnectionPoolUsingSameContainer() throws SQLException {
-        HikariDataSource dataSource = getDataSource("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", 10);
-        for (int i = 0; i < 100; i++) {
-            new QueryRunner(dataSource).insert("INSERT INTO my_counter (n) VALUES (5)", new ResultSetHandler<Object>() {
-                @Override
-                public Object handle(ResultSet rs) throws SQLException {
-                    return true;
-                }
-            });
-        }
-
-        new QueryRunner(dataSource).query("SELECT COUNT(1) FROM my_counter", new ResultSetHandler<Object>() {
-            @Override
-            public Object handle(ResultSet rs) throws SQLException {
-                rs.next();
-                int resultSetInt = rs.getInt(1);
-                assertEquals("Reuse of a datasource points to the same DB container", 100, resultSetInt);
-                return true;
-            }
-        });
-
-        new QueryRunner(dataSource).query("SELECT SUM(n) FROM my_counter", new ResultSetHandler<Object>() {
-            @Override
-            public Object handle(ResultSet rs) throws SQLException {
-                rs.next();
-                int resultSetInt = rs.getInt(1);
-                assertEquals("Reuse of a datasource points to the same DB container", 500, resultSetInt);
-                return true;
-            }
-        });
-    }
-
-    @Test
     public void testMySQLWithQueryParams() throws SQLException {
         performSimpleTestWithCharacterSet("jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8");
     }
