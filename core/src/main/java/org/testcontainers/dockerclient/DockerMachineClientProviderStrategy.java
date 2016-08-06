@@ -1,6 +1,5 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerMachineClient;
@@ -17,8 +16,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class DockerMachineClientProviderStrategy extends DockerClientProviderStrategy {
     @Override
     public void test() throws InvalidConfigurationException {
-
-        DockerClient client;
 
         try {
             boolean installed = DockerMachineClient.instance().isInstalled();

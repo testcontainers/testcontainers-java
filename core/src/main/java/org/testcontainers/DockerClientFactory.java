@@ -70,22 +70,14 @@ public class DockerClientFactory {
      *
      * @return a new initialized Docker client
      */
-    public DockerClient client() {
-        return client(true);
-    }
-
-    /**
-     *
-     * @param failFast fail if client fails to ping Docker daemon
-     * @return a new initialized Docker client
-     */
     @Synchronized
-    public DockerClient client(boolean failFast) {
+    public DockerClient client() {
 
-        if (strategy == null) {
-            strategy = DockerClientProviderStrategy.getFirstValidStrategy(CONFIGURATION_STRATEGIES);
+        if (strategy != null) {
+            return strategy.getClient();
         }
 
+        strategy = DockerClientProviderStrategy.getFirstValidStrategy(CONFIGURATION_STRATEGIES);
         DockerClient client = strategy.getClient();
 
         if (!preconditionsChecked) {
@@ -102,11 +94,6 @@ public class DockerClientFactory {
             checkVersion(version.getVersion());
             checkDiskSpaceAndHandleExceptions(client);
             preconditionsChecked = true;
-        }
-
-        if (failFast) {
-            // Ping, to fail fast if our docker environment has gone away
-            client.pingCmd().exec();
         }
 
         return client;
@@ -197,7 +184,7 @@ public class DockerClientFactory {
      */
     public String getActiveApiVersion() {
         if (!preconditionsChecked) {
-            client(true);
+            client();
         }
         return activeApiVersion;
     }
@@ -207,7 +194,7 @@ public class DockerClientFactory {
      */
     public String getActiveExecutionDriver() {
         if (!preconditionsChecked) {
-            client(true);
+            client();
         }
         return activeExecutionDriver;
     }

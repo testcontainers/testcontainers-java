@@ -2,6 +2,7 @@ package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
 import com.google.common.collect.Sets;
@@ -39,7 +40,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try (DockerClient dockerClientForCleaning = DockerClientFactory.instance().client(false)) {
+            DockerClient dockerClientForCleaning = DockerClientFactory.instance().client();
+            try {
                 for (String dockerImageName : imagesToDelete) {
                     log.info("Removing image tagged {}", dockerImageName);
                     try {
@@ -48,7 +50,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                         log.warn("Unable to delete image " + dockerImageName, e);
                     }
                 }
-            } catch (IOException e) {
+            } catch (DockerClientException e) {
                 throw new RuntimeException(e);
             }
         }));
@@ -91,7 +93,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         Profiler profiler = new Profiler("Rule creation - build image");
         profiler.setLogger(logger);
 
-        try (DockerClient dockerClient = DockerClientFactory.instance().client(false)) {
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        try {
             if (deleteOnExit) {
                 imagesToDelete.add(dockerImageName);
             }

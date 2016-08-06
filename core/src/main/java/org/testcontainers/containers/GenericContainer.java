@@ -261,12 +261,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
-
-        try {
-            dockerClient.close();
-        } catch (IOException e) {
-            logger().debug("Failed to close docker client");
-        }
     }
 
     /**

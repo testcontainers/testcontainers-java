@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class DockerClientProviderStrategy {
 
+    protected DockerClient client;
     protected DockerClientConfig config;
 
     private static final RateLimiter PING_RATE_LIMITER = RateLimiterBuilder.newBuilder()
@@ -93,7 +94,7 @@ public abstract class DockerClientProviderStrategy {
      * @return a usable, tested, Docker client configuration for the host system environment
      */
     public DockerClient getClient() {
-        return getClientForConfig(config);
+        return client;
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
@@ -114,7 +115,7 @@ public abstract class DockerClientProviderStrategy {
     }
 
     public String getDockerHostIpAddress() {
-        return DockerClientConfigUtils.getDockerHostIpAddress(config);
+        return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
     }
 
 

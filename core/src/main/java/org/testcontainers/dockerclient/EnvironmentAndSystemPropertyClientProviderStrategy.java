@@ -1,6 +1,5 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientConfig;
 
 /**
@@ -15,7 +14,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
         try {
             // Try using environment variables
             config = DockerClientConfig.createDefaultConfigBuilder().build();
-            DockerClient client = getClientForConfig(config);
+            client = getClientForConfig(config);
 
             ping(client, 1);
         } catch (Exception e) {
@@ -38,13 +37,11 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
         }
 
         return  "    dockerHost=" + config.getDockerHost() + "\n" +
-                "    dockerCertPath='" + config.getDockerCertPath() + "'\n" +
-                "    dockerTlsVerify='" + config.getDockerTlsVerify() + "'\n" +
                 "    apiVersion='" + config.getApiVersion() + "'\n" +
                 "    registryUrl='" + config.getRegistryUrl() + "'\n" +
                 "    registryUsername='" + config.getRegistryUsername() + "'\n" +
                 "    registryPassword='" + config.getRegistryPassword() + "'\n" +
                 "    registryEmail='" + config.getRegistryEmail() + "'\n" +
-                "    dockerConfig='" + config.getDockerConfig() + "'\n";
+                "    dockerConfig='" + config.toString() + "'\n";
     }
 }

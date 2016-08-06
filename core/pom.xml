@@ -204,11 +204,13 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <echo message="unjar" />
-                                <unzip src="${project.build.directory}/${project.artifactId}-${project.version}.jar" dest="${project.build.directory}/exploded/" />
+                                <echo message="unjar"/>
+                                <unzip src="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                       dest="${project.build.directory}/exploded/"/>
                                 <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-epoll.so"
-                                      tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-epoll.so" />
-                                <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar" basedir="${project.build.directory}/exploded" />
+                                      tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-epoll.so"/>
+                                <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                     basedir="${project.build.directory}/exploded"/>
                             </target>
                         </configuration>
                         <goals>
