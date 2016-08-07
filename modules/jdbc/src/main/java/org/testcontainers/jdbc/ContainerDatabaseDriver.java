@@ -48,9 +48,9 @@ public class ContainerDatabaseDriver implements Driver {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
 
     private Driver delegate;
-    private static final Map<JdbcDatabaseContainer, Set<Connection>> containerConnections = new HashMap<>();
+    private static final Map<String, Set<Connection>> containerConnections = new HashMap<>();
     private static final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
-    private static final Set<JdbcDatabaseContainer> initializedContainers = new HashSet<>();
+    private static final Set<String> initializedContainers = new HashSet<>();
 
     static {
         load();
@@ -151,10 +151,10 @@ public class ContainerDatabaseDriver implements Driver {
               If this container has not been initialized, AND
               an init script or function has been specified, use it
              */
-            if (!initializedContainers.contains(container)) {
+            if (!initializedContainers.contains(container.getContainerId())) {
                 runInitScriptIfRequired(url, connection);
                 runInitFunctionIfRequired(url, connection);
-                initializedContainers.add(container);
+                initializedContainers.add(container.getContainerId());
             }
 
             return wrapConnection(connection, container, url);
@@ -186,11 +186,11 @@ public class ContainerDatabaseDriver implements Driver {
      * @return the connection, wrapped
      */
     private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
-        Set<Connection> connections = containerConnections.get(container);
+        Set<Connection> connections = containerConnections.get(container.getContainerId());
 
         if (connections == null) {
             connections = new HashSet<>();
-            containerConnections.put(container, connections);
+            containerConnections.put(container.getContainerId(), connections);
         }
 
         connections.add(connection);
@@ -279,5 +279,38 @@ public class ContainerDatabaseDriver implements Driver {
     @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return delegate.getParentLogger();
+    }
+
+    /**
+     * Utility method to kill ALL database containers directly from test support code. It shouldn't be necessary to use this,
+     * but it is provided for convenience - e.g. for situations where many different database containers are being
+     * tested and cleanup is needed to limit resource usage.
+     */
+    public static void killContainers() {
+        synchronized (jdbcUrlContainerCache) {
+            jdbcUrlContainerCache.values().forEach(JdbcDatabaseContainer::stop);
+            jdbcUrlContainerCache.clear();
+            containerConnections.clear();
+            initializedContainers.clear();
+        }
+
+    }
+
+    /**
+     * Utility method to kill a database container directly from test support code. It shouldn't be necessary to use this,
+     * but it is provided for convenience - e.g. for situations where many different database containers are being
+     * tested and cleanup is needed to limit resource usage.
+     * @param jdbcUrl the JDBC URL of the container which should be killed
+     */
+    public static void killContainer(String jdbcUrl) {
+        synchronized (jdbcUrlContainerCache) {
+            JdbcDatabaseContainer container = jdbcUrlContainerCache.get(jdbcUrl);
+            if (container != null) {
+                container.stop();
+                jdbcUrlContainerCache.remove(jdbcUrl);
+                containerConnections.remove(container.getContainerId());
+                initializedContainers.remove(container.getContainerId());
+            }
+        }
     }
 }
