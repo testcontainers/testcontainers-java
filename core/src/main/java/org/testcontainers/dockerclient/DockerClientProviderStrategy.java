@@ -54,7 +54,7 @@ public abstract class DockerClientProviderStrategy {
                 LOGGER.info("Looking for Docker environment. Trying {}", strategy.getDescription());
                 strategy.test();
                 return strategy;
-            } catch (Exception | ExceptionInInitializerError e) {
+            } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
                 @Nullable String throwableMessage = e.getMessage();
                 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
                 Throwable rootCause = Throwables.getRootCause(e);
