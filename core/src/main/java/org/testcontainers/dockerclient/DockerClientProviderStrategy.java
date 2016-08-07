@@ -3,7 +3,7 @@ package org.testcontainers.dockerclient;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.netty.DockerCmdExecFactoryImpl;
+import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 import com.google.common.base.Throwables;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -100,7 +100,7 @@ public abstract class DockerClientProviderStrategy {
     protected DockerClient getClientForConfig(DockerClientConfig config) {
         return DockerClientBuilder
                     .getInstance(config)
-                    .withDockerCmdExecFactory(new DockerCmdExecFactoryImpl())
+                    .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
                     .build();
     }
 

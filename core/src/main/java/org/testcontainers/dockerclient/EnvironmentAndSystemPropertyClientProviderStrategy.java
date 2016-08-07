@@ -1,5 +1,6 @@
 package org.testcontainers.dockerclient;
 
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 
 /**
@@ -13,7 +14,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
 
         try {
             // Try using environment variables
-            config = DockerClientConfig.createDefaultConfigBuilder().build();
+            config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
             client = getClientForConfig(config);
 
             ping(client, 1);

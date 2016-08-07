@@ -1,6 +1,6 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerMachineClient;
 
@@ -33,8 +33,7 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
 
             LOGGER.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
 
-            config = DockerClientConfig
-                    .createDefaultConfigBuilder()
+            config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                     .withDockerHost("tcp://" + dockerDaemonIpAddress + ":2376")
                     .withDockerTlsVerify(true)
                     .withDockerCertPath(Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString())

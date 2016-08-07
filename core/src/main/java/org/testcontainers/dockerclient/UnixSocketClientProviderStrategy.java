@@ -1,5 +1,6 @@
 package org.testcontainers.dockerclient;
 
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +46,7 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
             throw new InvalidConfigurationException("Found docker unix domain socket but file mode was not as expected (expected: srwxr-xr-x). This problem is possibly due to occurrence of this issue in the past: https://github.com/docker/docker/issues/13121");
         }
 
-        config = DockerClientConfig.createDefaultConfigBuilder()
+        config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withDockerHost(dockerHost)
                 .withDockerTlsVerify(false)
                 .build();
