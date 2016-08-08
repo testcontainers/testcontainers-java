@@ -9,7 +9,7 @@ import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.PropertySource;
+import org.springframework.mock.env.MockPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.GenericContainer;
 
@@ -32,19 +32,12 @@ public abstract class AbstractIntegrationTest {
 
         @PostConstruct
         public void init() {
-            environment.getPropertySources().addFirst(new PropertySource("containers") {
-                @Override
-                public Object getProperty(String name) {
-                    switch (name) {
-                        case "spring.redis.host":
-                            return redis.getContainerIpAddress();
-                        case "spring.redis.port":
-                            return redis.getMappedPort(6379);
-                        default:
-                            return null;
-                    }
-                }
-            });
+            MockPropertySource propertySource = new MockPropertySource("TestContainers");
+
+            propertySource.setProperty("spring.redis.host", redis.getContainerIpAddress());
+            propertySource.setProperty("spring.redis.port", redis.getMappedPort(6379));
+
+            environment.getPropertySources().addFirst(propertySource);
         }
     }
 
