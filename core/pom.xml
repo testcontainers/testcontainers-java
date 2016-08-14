@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
             <exclusions>
                 <!-- replace with junixsocket -->
                 <exclusion>
@@ -189,6 +189,7 @@
                                 <exclude>META-INF/services/javax.ws.rs.ext.*</exclude>
                                 <exclude>META-INF/services/org.glassfish.hk2.extension.*</exclude>
                                 <exclude>META-INF/services/org.jvnet.hk2.external.generator.*</exclude>
+                                <exclude>META-INF/services/org.glassfish.jersey.internal.spi.*</exclude>
                             </excludes>
                         </filter>
                     </filters>
