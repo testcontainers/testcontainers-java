@@ -130,7 +130,7 @@ public class DockerClientFactory {
     private void checkDiskSpace(DockerClient client) {
 
         List<Image> images = client.listImagesCmd().exec();
-        if (!images.stream().anyMatch(it -> asList(it.getRepoTags()).contains("alpine:3.2"))) {
+        if (!images.stream().anyMatch(it -> it.getRepoTags() != null && asList(it.getRepoTags()).contains("alpine:3.2"))) {
             PullImageResultCallback callback = client.pullImageCmd("alpine:3.2").exec(new PullImageResultCallback());
             callback.awaitSuccess();
         }
