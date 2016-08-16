@@ -30,11 +30,10 @@ public class Slf4jLogConsumer implements Consumer<OutputFrame> {
                 String message = utf8String.trim();
                 switch (outputType) {
                     case END:
-                    case STDOUT:
-                        logger.info("{}{}: {}", prefix, outputType, message);
                         break;
+                    case STDOUT:
                     case STDERR:
-                        logger.error("{}{}: {}", prefix, outputType, message);
+                        logger.info("{}{}: {}", prefix, outputType, message);
                         break;
                     default:
                         throw new IllegalArgumentException("Unexpected outputType " + outputType);

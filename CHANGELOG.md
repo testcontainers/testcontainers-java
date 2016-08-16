@@ -12,7 +12,6 @@ All notable changes to this project will be documented in this file.
 - Update to v3.0.2 of docker-java library
 - Switch to a shared, single instance docker client rather than a separate client instance per container rule (#193)
 - Ensure that docker-compose pulls images (with no timeout), prior to trying to start (#188)
-- Change log levels used for docker-compose containers (#192)
 - Use official `docker/compose` image for running docker-compose (#190)
 
 ## [1.1.3] - 2016-07-27
