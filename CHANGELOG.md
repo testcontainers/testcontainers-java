@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.4] - 2016-08-16
+### Fixed
+- Fix JDBC proxy driver behaviour when used with Tomcat connection pool to avoid spawning excessive numbers of containers (#195)
+- Shade Jersey dependencies in JDBC module to avoid classpath conflicts (#202)
+- Fix NullPointerException when docker host has untagged images (#201)
+- Fix relative paths for volumes mounted in docker-compose containers (#189)
+
+### Changed
+- Update to v3.0.2 of docker-java library
+- Switch to a shared, single instance docker client rather than a separate client instance per container rule (#193)
+- Ensure that docker-compose pulls images (with no timeout), prior to trying to start (#188)
+- Change log levels used for docker-compose containers (#192)
+- Use official `docker/compose` image for running docker-compose (#190)
+
 ## [1.1.3] - 2016-07-27
 ### Fixed
 - Further fix for shading of netty Linux native libs, specifically when run using Docker Compose support
