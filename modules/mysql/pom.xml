@@ -45,5 +45,15 @@
             <version>1.6</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-jdbc</artifactId>
+            <version>8.5.4</version>
+        </dependency>
+        <dependency>
+          <groupId>org.vibur</groupId>
+          <artifactId>vibur-dbcp</artifactId>
+          <version>9.0</version>
+        </dependency>
     </dependencies>
 </project>

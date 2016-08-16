@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.SystemUtils;
+import org.junit.After;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -12,13 +13,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.junit.Assume.assumeFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 /**
  *
  */
 public class JDBCDriverTest {
+
+    @After
+    public void testCleanup() {
+        ContainerDatabaseDriver.killContainers();
+    }
 
     @Test
     public void testMySQLWithVersion() throws SQLException {
@@ -32,7 +38,7 @@ public class JDBCDriverTest {
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
-    	assumeFalse(SystemUtils.IS_OS_WINDOWS);
+        assumeFalse(SystemUtils.IS_OS_WINDOWS);
         HikariDataSource ds = getDataSource("jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", 1);
         Statement statement = ds.getConnection().createStatement();
         statement.execute("SELECT @@GLOBAL.innodb_file_format");
@@ -56,39 +62,6 @@ public class JDBCDriverTest {
         performSimpleTest("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
 
         performTestForScriptedSchema("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction");
-    }
-
-    @Test
-    public void testMySQLWithConnectionPoolUsingSameContainer() throws SQLException {
-        HikariDataSource dataSource = getDataSource("jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", 10);
-        for (int i = 0; i < 100; i++) {
-            new QueryRunner(dataSource).insert("INSERT INTO my_counter (n) VALUES (5)", new ResultSetHandler<Object>() {
-                @Override
-                public Object handle(ResultSet rs) throws SQLException {
-                    return true;
-                }
-            });
-        }
-
-        new QueryRunner(dataSource).query("SELECT COUNT(1) FROM my_counter", new ResultSetHandler<Object>() {
-            @Override
-            public Object handle(ResultSet rs) throws SQLException {
-                rs.next();
-                int resultSetInt = rs.getInt(1);
-                assertEquals("Reuse of a datasource points to the same DB container", 100, resultSetInt);
-                return true;
-            }
-        });
-
-        new QueryRunner(dataSource).query("SELECT SUM(n) FROM my_counter", new ResultSetHandler<Object>() {
-            @Override
-            public Object handle(ResultSet rs) throws SQLException {
-                rs.next();
-                int resultSetInt = rs.getInt(1);
-                assertEquals("Reuse of a datasource points to the same DB container", 500, resultSetInt);
-                return true;
-            }
-        });
     }
 
     @Test
