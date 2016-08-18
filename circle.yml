@@ -14,11 +14,11 @@ dependencies:
   override:
     - "sudo docker -d -e lxc -s btrfs -H 0.0.0.0:2376 -H unix:///var/run/docker.sock --log-level=debug --debug=true":
         background: true
-    - mvn install -DskipTests
+    - mvn  -B install -DskipTests
 test:
   override:
-    - mvn test
-    - mvn test -f shade-test/pom.xml
+    - mvn -B test
+    - mvn -B test -f shade-test/pom.xml
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
