@@ -2,25 +2,23 @@ package org.testcontainers.containers.wait;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import org.rnorth.ducttape.TimeoutException;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.ContainerLaunchException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
 /**
  * Waits until an HTTP(S) endpoint returns a given status code.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
+public class HttpWaitStrategy extends GenericWaitStrategy<HttpWaitStrategy> {
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpWaitStrategy.class);
+
     /**
      * Authorization HTTP header.
      */
@@ -31,11 +29,16 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
      */
     private static final String AUTH_BASIC = "Basic ";
 
+    private int port = 0;
     private String path = "/";
     private int statusCode = HttpURLConnection.HTTP_OK;
     private boolean tlsEnabled;
     private String username;
     private String password;
+
+    public HttpWaitStrategy() {
+        super("successful http request");
+    }
 
     /**
      * Waits for the given status code.
@@ -56,6 +59,17 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
      */
     public HttpWaitStrategy forPath(String path) {
         this.path = path;
+        return this;
+    }
+
+    /**
+     * Set request port.
+     *
+     * @param port the port to check on
+     * @return this
+     */
+    public HttpWaitStrategy withPort(int port) {
+        this.port = port;
         return this;
     }
 
@@ -83,48 +97,30 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
     }
 
     @Override
-    protected void waitUntilReady() {
-        final Integer livenessCheckPort = getLivenessCheckPort();
-        if (null == livenessCheckPort) {
-            logger().warn("No exposed ports or mapped ports - cannot wait for status");
-            return;
+    protected boolean isReady(GenericContainer container) throws Exception {
+
+        final int readyPort = this.port != 0 ? container.getMappedPort(this.port) : getPrimaryMappedContainerPort(container).orElse(8080);
+
+        final String uri = buildLivenessUri(container.getContainerIpAddress(), readyPort).toString();
+        container.logger().info("Try to request " + uri);
+
+        final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
+
+        // authenticate
+        if (!Strings.isNullOrEmpty(username)) {
+            connection.setRequestProperty(HEADER_AUTHORIZATION, buildAuthString(username, password));
+            connection.setUseCaches(false);
         }
 
-        final String uri = buildLivenessUri(livenessCheckPort).toString();
-        logger().info("Waiting for {} seconds for URL: {}", startupTimeout.getSeconds(), uri);
+        connection.setRequestMethod("GET");
+        connection.connect();
 
-        // try to connect to the URL
-        try {
-            retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                getRateLimiter().doWhenReady(() -> {
-                    try {
-                        final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
-
-                        // authenticate
-                        if (!Strings.isNullOrEmpty(username)) {
-                            connection.setRequestProperty(HEADER_AUTHORIZATION, buildAuthString(username, password));
-                            connection.setUseCaches(false);
-                        }
-
-                        connection.setRequestMethod("GET");
-                        connection.connect();
-
-                        if (statusCode != connection.getResponseCode()) {
-                            throw new RuntimeException(String.format("HTTP response code was: %s",
-                                    connection.getResponseCode()));
-                        }
-
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                return true;
-            });
-
-        } catch (TimeoutException e) {
-            throw new ContainerLaunchException(String.format(
-                    "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCode));
+        if (statusCode != connection.getResponseCode()) {
+            container.logger().info("HTTP response code was " + connection.getResponseCode());
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -133,15 +129,14 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
      * @param livenessCheckPort the liveness port
      * @return the liveness URI
      */
-    private URI buildLivenessUri(int livenessCheckPort) {
+    private URI buildLivenessUri(String host, int livenessCheckPort) {
         final String scheme = (tlsEnabled ? "https" : "http") + "://";
-        final String host = container.getContainerIpAddress();
 
         final String portSuffix;
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {
             portSuffix = "";
         } else {
-            portSuffix = ":" + String.valueOf(livenessCheckPort);
+            portSuffix = ":" + livenessCheckPort;
         }
 
         return URI.create(scheme + host + portSuffix + path);
