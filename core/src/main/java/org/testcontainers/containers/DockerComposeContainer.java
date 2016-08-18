@@ -263,7 +263,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     public SELF withEnv(Map<String, String> env) {
-        env.forEach(env::put);
+        env.forEach(this.env::put);
         return self();
     }
 
