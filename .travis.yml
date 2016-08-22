@@ -31,8 +31,8 @@ before_install:
   - env
 
 script:
-  - mvn test
-  - mvn test -f shade-test/pom.xml
+  - mvn -B test
+  - mvn -B test -f shade-test/pom.xml
 
 cache:
   directories:
