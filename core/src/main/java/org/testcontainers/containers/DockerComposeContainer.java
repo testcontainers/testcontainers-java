@@ -183,9 +183,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public void finished(Description description) {
 
         // Kill the services using docker-compose
-        getDockerCompose("kill")
-                .start();
-        getDockerCompose("rm --all -f -v")
+        getDockerCompose("down -v")
                 .start();
 
         // shut down all the ambassador containers
