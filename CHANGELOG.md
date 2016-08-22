@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.5] - 2016-08-22
+### Fixed
+- Fix Docker Compose environment variable passthrough (#208)
+
+### Changed
+- Remove Docker Compose networks when containers are shut down (#211) as well as at JVM shutdown
+
 ## [1.1.4] - 2016-08-16
 ### Fixed
 - Fix JDBC proxy driver behaviour when used with Tomcat connection pool to avoid spawning excessive numbers of containers (#195)
@@ -183,6 +190,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.1.5]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.5
 [1.1.4]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.4
 [1.1.3]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.3
 [1.1.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.2
