@@ -1,0 +1,9 @@
+version: '2'
+services:
+  redis:
+    image: redis
+    networks:
+      - redis-net
+
+networks:
+  redis-net:
