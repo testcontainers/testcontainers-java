@@ -130,6 +130,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
             // Ensure that the default network for this compose environment, if any, is also cleaned up
             ResourceReaper.instance().registerNetworkForCleanup(identifier + "_default");
+            // Compose can define their own networks as well; ensure these are cleaned up
+            dockerClient.listNetworksCmd().exec().forEach(network -> {
+                if (network.getName().contains(identifier)) {
+                  ResourceReaper.instance().registerNetworkForCleanup(network.getName());
+                }
+            });
 
             // remember the IDs to allow containers to be killed as soon as we reach stop()
             spawnedContainerIds = containers.stream()
@@ -184,6 +190,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         // shut down all the ambassador containers
         ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
+
+        // remove the networks before removing the containers
+        ResourceReaper.instance().removeNetworks(identifier);
 
         // kill the spawned service containers
         spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));

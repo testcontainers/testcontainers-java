@@ -121,6 +121,14 @@ public final class ResourceReaper {
         registeredNetworks.add(networkName);
     }
 
+    /**
+     * Removes any networks that contain the identifier.
+     * @param identifier
+     */
+    public void removeNetworks(String identifier) {
+      removeNetwork(identifier);
+    }
+
     private void removeNetwork(String networkName) {
         List<Network> networks;
         try {
@@ -133,6 +141,7 @@ public final class ResourceReaper {
         for (Network network : networks) {
             try {
                 dockerClient.removeNetworkCmd(network.getId()).exec();
+                registeredNetworks.remove(network.getId());
                 LOGGER.debug("Removed network: {}", networkName);
             } catch (DockerException e) {
                 LOGGER.trace("Error encountered removing network (name: {}) - it may not have been removed", network.getName());
