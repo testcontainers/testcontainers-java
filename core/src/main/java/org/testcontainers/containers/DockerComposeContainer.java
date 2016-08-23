@@ -20,10 +20,7 @@ import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -40,7 +37,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private final String identifier;
     private final Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
-    private final File composeFile;
+    private final List<File> composeFiles;
     private Set<String> spawnedContainerIds;
     private Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
@@ -61,9 +58,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this(composeFile, Base58.randomString(6).toLowerCase());
     }
 
-    @SuppressWarnings("WeakerAccess")
     public DockerComposeContainer(File composeFile, String identifier) {
-        this.composeFile = composeFile;
+        this(Arrays.asList(composeFile), identifier);
+    }
+
+    public DockerComposeContainer(List<File> composeFiles) {
+        this(composeFiles, Base58.randomString(6).toLowerCase());
+    }
+
+    public DockerComposeContainer(List<File> composeFiles, String identifier) {
+        this.composeFiles = composeFiles;
 
         // Use a unique identifier so that containers created for this compose environment can be identified
         this.identifier = identifier;
@@ -98,7 +102,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private DockerCompose getDockerCompose(String cmd) {
-        return new DockerCompose(composeFile, identifier)
+        return new DockerCompose(composeFiles, identifier)
                 .withCommand(cmd)
                 .withEnv(env);
     }
@@ -282,13 +286,31 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 }
 
 class DockerCompose extends GenericContainer<DockerCompose> {
-    public DockerCompose(File composeFile, String identifier) {
+    public DockerCompose(List<File> composeFiles, String identifier) {
 
         super("docker/compose:1.8.0");
+        if(composeFiles == null || composeFiles.size() < 1) {
+            throw new RuntimeException("No docker compose file provided");
+        }
+
+        File dockerComposeMainFile = composeFiles.get(0);
         addEnv("COMPOSE_PROJECT_NAME", identifier);
         // Map the docker compose file into the container
-        String pwd = composeFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        addEnv("COMPOSE_FILE", pwd + "/" + composeFile.getAbsoluteFile().getName());
+        String pwd = dockerComposeMainFile.getAbsoluteFile().getParentFile().getAbsolutePath();
+        StringBuilder composeFileEnvVariable = new StringBuilder();
+        composeFileEnvVariable.append(pwd + "/" + dockerComposeMainFile.getAbsoluteFile().getName());
+
+        Iterator<File> composeFilesIterator = composeFiles.iterator();
+        composeFilesIterator.next();
+        while(composeFilesIterator.hasNext()) {
+            File composeFileOverride = composeFilesIterator.next();
+            composeFileEnvVariable.append(File.separator + pwd + "/" + composeFileOverride.getAbsoluteFile().getName());
+        }
+
+        String composeFileEnvVariableString = composeFileEnvVariable.toString();
+        logger().info("Settings COMPOSE_FILE={}", composeFileEnvVariableString);
+        addEnv("COMPOSE_FILE", composeFileEnvVariableString);
+
         addFileSystemBind(pwd, pwd, READ_ONLY);
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
