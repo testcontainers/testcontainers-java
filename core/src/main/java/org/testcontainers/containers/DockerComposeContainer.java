@@ -5,6 +5,7 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -24,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 
@@ -54,19 +56,25 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .withConstantThroughput()
             .build();
 
-    public DockerComposeContainer(File composeFile) {
-        this(composeFile, Base58.randomString(6).toLowerCase());
+    @Deprecated
+    public DockerComposeContainer(File composeFile, String identifier) {
+        this(identifier, composeFile);
     }
 
-    public DockerComposeContainer(File composeFile, String identifier) {
-        this(Arrays.asList(composeFile), identifier);
+    public DockerComposeContainer(File... composeFiles) {
+        this(Arrays.asList(composeFiles));
     }
 
     public DockerComposeContainer(List<File> composeFiles) {
-        this(composeFiles, Base58.randomString(6).toLowerCase());
+        this(Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
-    public DockerComposeContainer(List<File> composeFiles, String identifier) {
+    public DockerComposeContainer(String identifier, File... composeFiles) {
+        this(identifier, Arrays.asList(composeFiles));
+    }
+
+    public DockerComposeContainer(String identifier, List<File> composeFiles) {
+
         this.composeFiles = composeFiles;
 
         // Use a unique identifier so that containers created for this compose environment can be identified
@@ -289,29 +297,20 @@ class DockerCompose extends GenericContainer<DockerCompose> {
     public DockerCompose(List<File> composeFiles, String identifier) {
 
         super("docker/compose:1.8.0");
-        if(composeFiles == null || composeFiles.size() < 1) {
-            throw new RuntimeException("No docker compose file provided");
-        }
+        checkNotNull(composeFiles);
+        checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
 
-        File dockerComposeMainFile = composeFiles.get(0);
         addEnv("COMPOSE_PROJECT_NAME", identifier);
+
         // Map the docker compose file into the container
-        String pwd = dockerComposeMainFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        StringBuilder composeFileEnvVariable = new StringBuilder();
-        composeFileEnvVariable.append(pwd + "/" + dockerComposeMainFile.getAbsoluteFile().getName());
-
-        Iterator<File> composeFilesIterator = composeFiles.iterator();
-        composeFilesIterator.next();
-        while(composeFilesIterator.hasNext()) {
-            File composeFileOverride = composeFilesIterator.next();
-            composeFileEnvVariable.append(File.pathSeparator + pwd + "/" + composeFileOverride.getAbsoluteFile().getName());
-        }
-
-        String composeFileEnvVariableString = composeFileEnvVariable.toString();
-        logger().info("Set env COMPOSE_FILE={}", composeFileEnvVariableString);
-        addEnv("COMPOSE_FILE", composeFileEnvVariableString);
-
+        File dockerComposeMainFile = composeFiles.get(0);
+        final String pwd = dockerComposeMainFile.getAbsoluteFile().getParentFile().getAbsolutePath();
+        List<String> absoluteDockerComposeFiles = composeFiles.stream().map(file -> pwd + "/" + file.getAbsoluteFile().getName()).collect(Collectors.toList());
+        String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
+        logger().info("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
+        addEnv("COMPOSE_FILE", composeFileEnvVariableValue);
         addFileSystemBind(pwd, pwd, READ_ONLY);
+
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
