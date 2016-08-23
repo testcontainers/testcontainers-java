@@ -304,11 +304,11 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         composeFilesIterator.next();
         while(composeFilesIterator.hasNext()) {
             File composeFileOverride = composeFilesIterator.next();
-            composeFileEnvVariable.append(File.separator + pwd + "/" + composeFileOverride.getAbsoluteFile().getName());
+            composeFileEnvVariable.append(File.pathSeparator + pwd + "/" + composeFileOverride.getAbsoluteFile().getName());
         }
 
         String composeFileEnvVariableString = composeFileEnvVariable.toString();
-        logger().info("Settings COMPOSE_FILE={}", composeFileEnvVariableString);
+        logger().info("Set env COMPOSE_FILE={}", composeFileEnvVariableString);
         addEnv("COMPOSE_FILE", composeFileEnvVariableString);
 
         addFileSystemBind(pwd, pwd, READ_ONLY);
