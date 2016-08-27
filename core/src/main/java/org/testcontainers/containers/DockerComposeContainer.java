@@ -182,12 +182,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     @Override @VisibleForTesting
     public void finished(Description description) {
 
+        // shut down all the ambassador containers
+        ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
+
         // Kill the services using docker-compose
         getDockerCompose("down -v")
                 .start();
-
-        // shut down all the ambassador containers
-        ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
 
         // remove the networks before removing the containers
         ResourceReaper.instance().removeNetworks(identifier);
