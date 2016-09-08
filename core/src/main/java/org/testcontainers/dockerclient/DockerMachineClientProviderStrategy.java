@@ -14,6 +14,9 @@ import static com.google.common.base.Preconditions.checkArgument;
  * Use Docker machine (if available on the PATH) to locate a Docker environment.
  */
 public class DockerMachineClientProviderStrategy extends DockerClientProviderStrategy {
+    private static final String PING_TIMEOUT_DEFAULT = "30";
+    private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.dockermachineprovider.timeout";
+
     @Override
     public void test() throws InvalidConfigurationException {
 
@@ -44,7 +47,8 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
         }
 
         // If the docker-machine VM has started, the docker daemon may still not be ready. Retry pinging until it works.
-        ping(client, 30);
+        final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
+        ping(client, timeout);
     }
 
     @Override
