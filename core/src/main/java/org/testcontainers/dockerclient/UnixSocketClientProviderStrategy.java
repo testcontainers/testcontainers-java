@@ -10,10 +10,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
-
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
     private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
     private static final int SOCKET_FILE_MODE_MASK = 0xc000;
+    private static final String PING_TIMEOUT_DEFAULT = "10";
+    private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
+
 
     @Override
     public void test()
@@ -52,7 +54,8 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
                 .build();
         client = getClientForConfig(config);
 
-        ping(client, 10);
+        final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
+        ping(client, timeout);
 
         return config;
     }
