@@ -6,7 +6,7 @@ package org.testcontainers.containers;
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
-    public static final Integer DEFAULT_PORT = 5432;
+    public static final Integer POSTGRESQL_PORT = 5432;
     final String databaseName;
     final String username;
     final String password;
@@ -16,10 +16,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     }
 
     public PostgreSQLContainer(final String dockerImageName) {
-        super(dockerImageName);
-        this.databaseName = "test";
-        this.username = "test";
-        this.password = "test";
+        this(dockerImageName, "test", "test", "test");
     }
 
     public PostgreSQLContainer(
@@ -36,12 +33,13 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected Integer getLivenessCheckPort() {
-        return getMappedPort(DEFAULT_PORT);
+        return getMappedPort(POSTGRESQL_PORT);
     }
 
     @Override
     protected void configure() {
-        addExposedPort(DEFAULT_PORT);
+
+        addExposedPort(POSTGRESQL_PORT);
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
@@ -55,7 +53,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + this.getContainerIpAddress() + ":" + this.getMappedPort(DEFAULT_PORT) + "/" + databaseName;
+        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName;
     }
 
     @Override

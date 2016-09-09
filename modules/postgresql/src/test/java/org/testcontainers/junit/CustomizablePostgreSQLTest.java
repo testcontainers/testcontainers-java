@@ -27,7 +27,10 @@ public class CustomizablePostgreSQLTest {
     @Test
     public void testSimple() throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(postgres.getJdbcUrl());
+        hikariConfig.setJdbcUrl("jdbc:postgresql://"
+            + postgres.getContainerIpAddress()
+            + ":" + postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+            + "/" + DB_NAME);
         hikariConfig.setUsername(USER);
         hikariConfig.setPassword(PWD);
 
