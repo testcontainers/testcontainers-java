@@ -9,6 +9,7 @@
         <module>redis-backed-cache</module>
         <module>disque-job-queue</module>
         <module>selenium-container</module>
+        <module>spring-boot</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -36,18 +37,6 @@
         </dependency>
 
         <!-- Test dependencies -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.1.2</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.rnorth.visible-assertions</groupId>
             <artifactId>visible-assertions</artifactId>
