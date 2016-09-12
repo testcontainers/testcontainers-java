@@ -641,6 +641,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withWorkingDirectory(String workDir) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            workDir = PathUtils.createMinGWPath(workDir);
+        }
+
         this.setWorkingDirectory(workDir);
         return self();
     }
