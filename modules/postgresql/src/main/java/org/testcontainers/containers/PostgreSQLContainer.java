@@ -7,28 +7,16 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
     public static final Integer POSTGRESQL_PORT = 5432;
-    final String databaseName;
-    final String username;
-    final String password;
+    private String databaseName = "test";
+    private String username = "test";
+    private String password = "test";
 
     public PostgreSQLContainer() {
         this(IMAGE + ":latest");
     }
 
     public PostgreSQLContainer(final String dockerImageName) {
-        this(dockerImageName, "test", "test", "test");
-    }
-
-    public PostgreSQLContainer(
-        final String dockerImageName,
-        final String databaseName,
-        final String username,
-        final String password
-    ) {
         super(dockerImageName);
-        this.databaseName = databaseName;
-        this.username = username;
-        this.password = password;
     }
 
     @Override
@@ -69,5 +57,20 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getTestQueryString() {
         return "SELECT 1";
+    }
+
+    public SELF withDatabaseName(final String databaseName) {
+        this.databaseName = databaseName;
+        return self();
+    }
+
+    public SELF withUsername(final String username) {
+        this.username = username;
+        return self();
+    }
+
+    public SELF withPassword(final String password) {
+        this.password = password;
+        return self();
     }
 }
