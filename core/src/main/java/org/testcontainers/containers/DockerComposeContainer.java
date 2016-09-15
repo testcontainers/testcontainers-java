@@ -6,6 +6,7 @@ import com.github.dockerjava.api.model.Container;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -17,6 +18,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
@@ -286,8 +288,14 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         addEnv("COMPOSE_PROJECT_NAME", identifier);
         // Map the docker compose file into the container
         String pwd = composeFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        addEnv("COMPOSE_FILE", pwd + "/" + composeFile.getAbsoluteFile().getName());
-        addFileSystemBind(pwd, pwd, READ_ONLY);
+        String containerPwd = pwd;
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            containerPwd = PathUtils.createMinGWPath(containerPwd).substring(1);
+        }
+
+        addEnv("COMPOSE_FILE", containerPwd + "/" + composeFile.getAbsoluteFile().getName());
+        addFileSystemBind(pwd, containerPwd, READ_ONLY);
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
@@ -295,7 +303,7 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
-        setWorkingDirectory(pwd);
+        setWorkingDirectory(containerPwd);
     }
 
     @Override
