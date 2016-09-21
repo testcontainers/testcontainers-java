@@ -8,6 +8,8 @@ import com.github.dockerjava.core.DockerClientConfig;
  * to try and locate a docker environment.
  */
 public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerClientProviderStrategy {
+    private static final String PING_TIMEOUT_DEFAULT = "10";
+    private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.environmentprovider.timeout";
 
     @Override
     public void test() throws InvalidConfigurationException {
@@ -17,8 +19,10 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
             config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
             client = getClientForConfig(config);
 
-            ping(client, 1);
+            final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
+            ping(client, timeout);
         } catch (Exception e) {
+            LOGGER.error("ping failed with configuration {} due to {}", getDescription(), e.toString(), e);
             throw new InvalidConfigurationException("ping failed");
         }
 
