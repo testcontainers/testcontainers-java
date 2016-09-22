@@ -47,6 +47,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
 
+    private static final Object MUTEX = new Object();
+
     /**
      * Properties that should be passed through to all Compose and ambassador containers (not
      * necessarily to containers that are spawned by Compose itself)
@@ -79,12 +81,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         profiler.setLogger(logger());
         profiler.start("Docker compose container startup");
 
-        pullImages();
-        applyScaling(); // scale before up, so that all scaled instances are available first for linking
-        createServices();
-        registerContainersForShutdown();
-        startAmbassadorContainers(profiler);
-
+        synchronized (MUTEX) {
+            pullImages();
+            applyScaling(); // scale before up, so that all scaled instances are available first for linking
+            createServices();
+            registerContainersForShutdown();
+            startAmbassadorContainers(profiler);
+        }
     }
 
     private void pullImages() {
@@ -184,19 +187,22 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     @Override @VisibleForTesting
     public void finished(Description description) {
 
-        // shut down all the ambassador containers
-        ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
 
-        // Kill the services using docker-compose
-        getDockerCompose("down -v")
-                .start();
+        synchronized (MUTEX) {
+            // shut down all the ambassador containers
+            ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
 
-        // remove the networks before removing the containers
-        ResourceReaper.instance().removeNetworks(identifier);
+            // Kill the services using docker-compose
+            getDockerCompose("down -v")
+                    .start();
 
-        // kill the spawned service containers
-        spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
-        spawnedContainerIds.clear();
+            // remove the networks before removing the containers
+            ResourceReaper.instance().removeNetworks(identifier);
+
+            // kill the spawned service containers
+            spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
+            spawnedContainerIds.clear();
+        }
     }
 
     public SELF withExposedService(String serviceName, int servicePort) {
