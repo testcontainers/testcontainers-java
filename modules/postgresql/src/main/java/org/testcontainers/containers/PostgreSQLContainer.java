@@ -4,16 +4,18 @@ package org.testcontainers.containers;
  * @author richardnorth
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
     public static final Integer POSTGRESQL_PORT = 5432;
+    private String databaseName = "test";
+    private String username = "test";
+    private String password = "test";
 
     public PostgreSQLContainer() {
-        super(IMAGE + ":latest");
+        this(IMAGE + ":latest");
     }
 
-    public PostgreSQLContainer(String dockerImageName) {
+    public PostgreSQLContainer(final String dockerImageName) {
         super(dockerImageName);
     }
 
@@ -26,9 +28,9 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     protected void configure() {
 
         addExposedPort(POSTGRESQL_PORT);
-        addEnv("POSTGRES_DATABASE", "test");
-        addEnv("POSTGRES_USER", "test");
-        addEnv("POSTGRES_PASSWORD", "test");
+        addEnv("POSTGRES_DB", databaseName);
+        addEnv("POSTGRES_USER", username);
+        addEnv("POSTGRES_PASSWORD", password);
         setCommand("postgres");
     }
 
@@ -39,21 +41,36 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/test";
+        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName;
     }
 
     @Override
     public String getUsername() {
-        return "test";
+        return username;
     }
 
     @Override
     public String getPassword() {
-        return "test";
+        return password;
     }
 
     @Override
     public String getTestQueryString() {
         return "SELECT 1";
+    }
+
+    public SELF withDatabaseName(final String databaseName) {
+        this.databaseName = databaseName;
+        return self();
+    }
+
+    public SELF withUsername(final String username) {
+        this.username = username;
+        return self();
+    }
+
+    public SELF withPassword(final String password) {
+        this.password = password;
+        return self();
     }
 }

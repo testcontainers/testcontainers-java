@@ -5,8 +5,8 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -18,6 +18,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
@@ -25,7 +26,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 
@@ -83,7 +85,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.dockerClient = DockerClientFactory.instance().client();
     }
 
-    @Override @VisibleForTesting
+    @Override
+    @VisibleForTesting
     public void starting(Description description) {
         final Profiler profiler = new Profiler("Docker compose container rule");
         profiler.setLogger(logger());
@@ -99,7 +102,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void pullImages() {
         getDockerCompose("pull")
-                        .start();
+                .start();
     }
 
 
@@ -138,14 +141,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
             // register with ResourceReaper to ensure final shutdown with JVM
             containers.forEach(container ->
-                    ResourceReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
+                                       ResourceReaper.instance().registerContainerForCleanup(
+                                               container.getId(),
+                                               container.getNames()[0]
+                                       ));
 
             // Ensure that the default network for this compose environment, if any, is also cleaned up
             ResourceReaper.instance().registerNetworkForCleanup(identifier + "_default");
             // Compose can define their own networks as well; ensure these are cleaned up
             dockerClient.listNetworksCmd().exec().forEach(network -> {
                 if (network.getName().contains(identifier)) {
-                  ResourceReaper.instance().registerNetworkForCleanup(network.getName());
+                    ResourceReaper.instance().registerNetworkForCleanup(network.getName());
                 }
             });
 
@@ -170,7 +176,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
 
                     AMBASSADOR_CREATION_RATE_LIMITER.doWhenReady(() -> {
-                        Profiler localProfiler = profiler.startNested("Ambassador container: " + ambassadorContainer.getContainerName());
+                        Profiler localProfiler = profiler.startNested(
+                                "Ambassador container: " + ambassadorContainer.getContainerName());
 
                         localProfiler.start("Start ambassador container");
 
@@ -191,17 +198,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return LoggerFactory.getLogger(DockerComposeContainer.class);
     }
 
-    @Override @VisibleForTesting
+    @Override
+    @VisibleForTesting
     public void finished(Description description) {
-
-        // Kill the services using docker-compose
-        getDockerCompose("kill")
-                .start();
-        getDockerCompose("rm --all -f -v")
-                .start();
 
         // shut down all the ambassador containers
         ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
+
+        // Kill the services using docker-compose
+        getDockerCompose("down -v")
+                .start();
 
         // remove the networks before removing the containers
         ResourceReaper.instance().removeNetworks(identifier);
@@ -213,7 +219,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     public SELF withExposedService(String serviceName, int servicePort) {
 
-        if (! serviceName.matches(".*_[0-9]+")) {
+        if (!serviceName.matches(".*_[0-9]+")) {
             serviceName += "_1"; // implicit first instance of this service
         }
 
@@ -231,7 +237,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
          * as the rest of the compose environment.
          */
         AmbassadorContainer ambassadorContainer =
-                new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort)
+                new AmbassadorContainer<>(
+                        new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort)
                         .withEnv(env);
 
         // Ambassador containers will all be started together after docker compose has started
@@ -303,13 +310,21 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         addEnv("COMPOSE_PROJECT_NAME", identifier);
 
         // Map the docker compose file into the container
-        File dockerComposeMainFile = composeFiles.get(0);
-        final String pwd = dockerComposeMainFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        List<String> absoluteDockerComposeFiles = composeFiles.stream().map(file -> pwd + "/" + file.getAbsoluteFile().getName()).collect(Collectors.toList());
+        File dockerComposeBaseFile = composeFiles.get(0);
+        final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
+        final String containerPwd;
+        if (SystemUtils.IS_OS_WINDOWS) {
+            containerPwd = PathUtils.createMinGWPath(pwd).substring(1);
+        } else {
+            containerPwd = pwd;
+        }
+
+        List<String> absoluteDockerComposeFiles = composeFiles.stream().map(
+                file -> containerPwd + "/" + file.getAbsoluteFile().getName()).collect(Collectors.toList());
         String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
         logger().info("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv("COMPOSE_FILE", composeFileEnvVariableValue);
-        addFileSystemBind(pwd, pwd, READ_ONLY);
+        addFileSystemBind(pwd, containerPwd, READ_ONLY);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
@@ -318,7 +333,7 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
-        setWorkingDirectory(pwd);
+        setWorkingDirectory(containerPwd);
     }
 
     @Override
@@ -328,7 +343,8 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         this.followOutput(new Slf4jLogConsumer(logger()));
 
         // wait for the compose container to stop, which should only happen after it has spawned all the service containers
-        logger().info("Docker compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
+        logger().info(
+                "Docker compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
         while (this.isRunning()) {
             logger().trace("Compose container is still running");
             Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);

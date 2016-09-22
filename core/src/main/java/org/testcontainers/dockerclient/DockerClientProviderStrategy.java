@@ -51,8 +51,8 @@ public abstract class DockerClientProviderStrategy {
 
         for (DockerClientProviderStrategy strategy : strategies) {
             try {
-                LOGGER.info("Looking for Docker environment. Trying {}", strategy.getDescription());
                 strategy.test();
+                LOGGER.info("Looking for Docker environment. Tried {}", strategy.getDescription());
                 return strategy;
             } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
                 @Nullable String throwableMessage = e.getMessage();
