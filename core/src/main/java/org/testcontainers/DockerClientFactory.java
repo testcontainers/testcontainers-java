@@ -11,11 +11,13 @@ import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.WaitContainerResultCallback;
+
 import lombok.Synchronized;
 import org.slf4j.Logger;
 import org.testcontainers.dockerclient.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -150,21 +152,12 @@ public class DockerClientFactory {
             callback.awaitCompletion();
             String logResults = callback.toString();
 
-            int availableKB = 0;
-            int use = 0;
-            String[] lines = logResults.split("\n");
-            for (String line : lines) {
-                String[] fields = line.split("\\s+");
-                if (fields[5].equals("/")) {
-                    availableKB = Integer.valueOf(fields[3]);
-                    use = Integer.valueOf(fields[4].replace("%", ""));
-                }
-            }
-            int availableMB = availableKB / 1024;
+            DiskSpaceUsage df = parseAvailableDiskSpace(logResults);
+            LOGGER.info("Disk utilization in Docker environment is {} ({} )", 
+                    df.usedPercent.map(x -> x.toString() + "%").orElse("unknown"), 
+                    df.availableMB.map(x -> x.toString() + " MB available").orElse("unknown available"));
 
-            LOGGER.info("Disk utilization in Docker environment is {}% ({} MB available)", use, availableMB);
-
-            if (availableMB < 2048) {
+            if (df.availableMB.orElseThrow(NotAbleToGetDiskSpaceUsageException::new) < 2048) {
                 LOGGER.error("Docker environment has less than 2GB free - execution is unlikely to succeed so will be aborted.");
                 throw new NotEnoughDiskSpaceException("Not enough disk space in Docker environment");
             }
@@ -177,6 +170,25 @@ public class DockerClientFactory {
 
             }
         }
+    }
+    
+    private static class DiskSpaceUsage {
+        Optional<Integer> availableMB = Optional.empty();
+        Optional<Integer> usedPercent = Optional.empty();
+    }
+    
+    private DiskSpaceUsage parseAvailableDiskSpace(String dfOutput) {
+        DiskSpaceUsage df = new DiskSpaceUsage();
+        String[] lines = dfOutput.split("\n");
+        for (String line : lines) {
+            String[] fields = line.split("\\s+");
+            if (fields[5].equals("/")) {
+                int availableKB = Integer.valueOf(fields[3]);
+                df.availableMB = Optional.of(availableKB / 1024);
+                df.usedPercent = Optional.of(Integer.valueOf(fields[4].replace("%", "")));
+            }
+        }
+        return df;
     }
 
     /**
@@ -210,6 +222,12 @@ public class DockerClientFactory {
     private static class NotEnoughDiskSpaceException extends RuntimeException {
         NotEnoughDiskSpaceException(String message) {
             super(message);
+        }
+    }
+    
+    private static class NotAbleToGetDiskSpaceUsageException extends RuntimeException {
+        NotAbleToGetDiskSpaceUsageException() {
+            super();
         }
     }
 }
