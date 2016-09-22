@@ -3,24 +3,28 @@ package org.testcontainers.junit;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.NonNull;
-
 import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 
 /**
  * @author richardnorth
  */
 public class SimpleMySQLTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(SimpleMySQLTest.class);
 
     /*
      * Ordinarily you wouldn't try and run multiple containers simultaneously - this is just used for testing.
@@ -41,7 +45,9 @@ public class SimpleMySQLTest {
 
     @Test
     public void testSimple() throws SQLException {
-        MySQLContainer mysql = new MySQLContainer();
+        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+                .withConfigurationOverride("somepath/mysql_conf_override")
+                .withLogConsumer(new Slf4jLogConsumer(logger));
         mysql.start();
 
         try {
@@ -56,7 +62,9 @@ public class SimpleMySQLTest {
 
     @Test
     public void testSpecificVersion() throws SQLException {
-        MySQLContainer mysqlOldVersion = new MySQLContainer("mysql:5.5");
+        MySQLContainer mysqlOldVersion = (MySQLContainer) new MySQLContainer("mysql:5.5")
+                .withConfigurationOverride("somepath/mysql_conf_override")
+                .withLogConsumer(new Slf4jLogConsumer(logger));
         mysqlOldVersion.start();
 
         try {
