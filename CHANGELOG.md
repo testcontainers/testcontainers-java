@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - Fix docker compose directory mounting on windows (#224)
 - Handle and ignore further categories of failure in retrieval of docker environment disk space (#225)
 
+### Changed
+- Add extra configurability options (database name, username, password) for PostgreSQL DB containers
+
 ## [1.1.5] - 2016-08-22
 ### Fixed
 - Fix Docker Compose environment variable passthrough (#208)
