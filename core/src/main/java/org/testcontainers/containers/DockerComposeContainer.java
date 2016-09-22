@@ -85,8 +85,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.dockerClient = DockerClientFactory.instance().client();
     }
 
-    @Override
-    @VisibleForTesting
+    @Override @VisibleForTesting
     public void starting(Description description) {
         final Profiler profiler = new Profiler("Docker compose container rule");
         profiler.setLogger(logger());
@@ -198,8 +197,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return LoggerFactory.getLogger(DockerComposeContainer.class);
     }
 
-    @Override
-    @VisibleForTesting
+    @Override @VisibleForTesting
     public void finished(Description description) {
 
         // shut down all the ambassador containers
