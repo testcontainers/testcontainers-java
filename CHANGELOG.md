@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.6] - 2016-09-22
+### Fixed
+- Fix logging of discovered Docker environment variables (#218)
+- Use Docker Compose `down` action for more robust teardown of compose environments
+- Adopt longer timeout periods for testing docker client configurations, and allow these to be further customised through system properties (#217, see *ClientProviderStrategy classes)
+- Fix docker compose directory mounting on windows (#224)
+- Handle and ignore further categories of failure in retrieval of docker environment disk space (#225)
+
 ## [1.1.5] - 2016-08-22
 ### Fixed
 - Fix Docker Compose environment variable passthrough (#208)
