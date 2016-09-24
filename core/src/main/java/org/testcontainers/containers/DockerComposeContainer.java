@@ -315,7 +315,7 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         List<String> absoluteDockerComposeFiles = composeFiles.stream().map(
                 file -> containerPwd + "/" + file.getAbsoluteFile().getName()).collect(Collectors.toList());
         String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
-        logger().info("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
+        logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv("COMPOSE_FILE", composeFileEnvVariableValue);
         addFileSystemBind(pwd, containerPwd, READ_ONLY);
 
