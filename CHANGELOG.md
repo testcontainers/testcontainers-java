@@ -4,13 +4,16 @@ All notable changes to this project will be documented in this file.
 ## [1.1.6] - 2016-09-22
 ### Fixed
 - Fix logging of discovered Docker environment variables (#218)
-- Use Docker Compose `down` action for more robust teardown of compose environments
 - Adopt longer timeout periods for testing docker client configurations, and allow these to be further customised through system properties (#217, see *ClientProviderStrategy classes)
 - Fix docker compose directory mounting on windows (#224)
 - Handle and ignore further categories of failure in retrieval of docker environment disk space (#225)
 
 ### Changed
-- Add extra configurability options (database name, username, password) for PostgreSQL DB containers
+- Add extra configurability options (database name, username, password) for PostgreSQL DB containers (#220)
+- Add MariaDB container type (#215)
+- Use Docker Compose `down` action for more robust teardown of compose environments
+- Ensure that Docker Compose operations run sequentially rather than concurrently if JUnit tests are parallelized (#226)
+- Allow multiple Docker Compose files to be specified, to allow for extension/composition of services (#227)
 
 ## [1.1.5] - 2016-08-22
 ### Fixed
