@@ -1,0 +1,6 @@
+version: '2'
+services:
+  alpine:
+    build: compose-dockerfile
+    environment:
+      bar: base
