@@ -30,10 +30,7 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
 
         // If the JVM stops without containers being stopped, try and stop the container.
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            registeredContainers.forEach(this::stopContainer);
-            registeredNetworks.forEach(this::removeNetwork);
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::perform));
     }
 
     public synchronized static ResourceReaper instance() {
@@ -42,6 +39,15 @@ public final class ResourceReaper {
         }
 
         return instance;
+    }
+
+    /**
+     * Perform a cleanup.
+     *
+     */
+    public synchronized void perform() {
+        registeredContainers.forEach(this::stopContainer);
+        registeredNetworks.forEach(this::removeNetwork);
     }
 
     /**
