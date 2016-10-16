@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import com.google.common.io.Resources;
+
 /**
  * Container implementation for the MariaDB project.
  * 
@@ -30,7 +32,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     @Override
     protected void configure() {
-        optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d");
+        optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d", "mariadb-default-conf");
         
         addExposedPort(MARIADB_PORT);
         addEnv("MYSQL_DATABASE", MARIADB_DATABASE);
