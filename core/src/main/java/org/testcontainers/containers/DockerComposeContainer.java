@@ -5,6 +5,8 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
@@ -17,9 +19,10 @@ import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
-import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.PathUtils;
-import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.*;
+import org.zeroturnaround.exec.InvalidExitValueException;
+import org.zeroturnaround.exec.ProcessExecutor;
+import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
 import java.util.*;
@@ -45,6 +48,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private Set<String> spawnedContainerIds;
     private Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
+    private boolean localCompose;
 
     private static final Object MUTEX = new Object();
 
@@ -87,11 +91,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.dockerClient = DockerClientFactory.instance().client();
     }
 
-    @Override @VisibleForTesting
+    @Override
+    @VisibleForTesting
     public void starting(Description description) {
-        final Profiler profiler = new Profiler("Docker compose container rule");
+        final Profiler profiler = new Profiler("Docker Compose container rule");
         profiler.setLogger(logger());
-        profiler.start("Docker compose container startup");
+        profiler.start("Docker Compose container startup");
 
         synchronized (MUTEX) {
             pullImages();
@@ -104,7 +109,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void pullImages() {
         getDockerCompose("pull")
-                        .start();
+                .start();
     }
 
 
@@ -115,7 +120,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private DockerCompose getDockerCompose(String cmd) {
-        return new DockerCompose(composeFiles, identifier)
+        final DockerCompose dockerCompose;
+        if (localCompose) {
+            dockerCompose = new LocalDockerCompose(composeFiles, identifier);
+        } else {
+            dockerCompose = new ContainerisedDockerCompose(composeFiles, identifier);
+        }
+        return dockerCompose
                 .withCommand(cmd)
                 .withEnv(env);
     }
@@ -150,7 +161,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             // Compose can define their own networks as well; ensure these are cleaned up
             dockerClient.listNetworksCmd().exec().forEach(network -> {
                 if (network.getName().contains(identifier)) {
-                  ResourceReaper.instance().registerNetworkForCleanup(network.getName());
+                    ResourceReaper.instance().registerNetworkForCleanup(network.getName());
                 }
             });
 
@@ -294,22 +305,50 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return self();
     }
 
+    /**
+     * Use a local Docker Compose binary instead of a container.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withLocalCompose(boolean localCompose) {
+        this.localCompose = localCompose;
+        return self();
+    }
+
     private SELF self() {
         return (SELF) this;
     }
 }
 
-class DockerCompose extends GenericContainer<DockerCompose> {
-    public DockerCompose(List<File> composeFiles, String identifier) {
+interface DockerCompose {
+    String ENV_PROJECT_NAME = "COMPOSE_PROJECT_NAME";
+    String ENV_COMPOSE_FILE = "COMPOSE_FILE";
 
-        super("docker/compose:1.8.0");
+    DockerCompose withCommand(String cmd);
+
+    DockerCompose withEnv(Map<String, String> env);
+
+    void start();
+
+    default void validateFileList(List<File> composeFiles) {
         checkNotNull(composeFiles);
         checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
+    }
+}
 
-        addEnv("COMPOSE_PROJECT_NAME", identifier);
+/**
+ * Use Docker Compose container.
+ */
+class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
+    public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
+
+        super("docker/compose:1.8.0");
+        validateFileList(composeFiles);
+
+        addEnv(ENV_PROJECT_NAME, identifier);
 
         // Map the docker compose file into the container
-        File dockerComposeBaseFile = composeFiles.get(0);
+        final File dockerComposeBaseFile = composeFiles.get(0);
         final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
         final String containerPwd;
         if (SystemUtils.IS_OS_WINDOWS) {
@@ -318,11 +357,11 @@ class DockerCompose extends GenericContainer<DockerCompose> {
             containerPwd = pwd;
         }
 
-        List<String> absoluteDockerComposeFiles = composeFiles.stream().map(
+        final List<String> absoluteDockerComposeFiles = composeFiles.stream().map(
                 file -> containerPwd + "/" + file.getAbsoluteFile().getName()).collect(Collectors.toList());
-        String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
+        final String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
-        addEnv("COMPOSE_FILE", composeFileEnvVariableValue);
+        addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
         addFileSystemBind(pwd, containerPwd, READ_ONLY);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
@@ -342,11 +381,92 @@ class DockerCompose extends GenericContainer<DockerCompose> {
         this.followOutput(new Slf4jLogConsumer(logger()));
 
         // wait for the compose container to stop, which should only happen after it has spawned all the service containers
-        logger().info("Docker compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
+        logger().info("Docker Compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
         while (this.isRunning()) {
             logger().trace("Compose container is still running");
             Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
-        logger().info("Docker compose has finished running");
+        logger().info("Docker Compose has finished running");
+    }
+}
+
+/**
+ * Use local Docker Compose binary, if present.
+ */
+class LocalDockerCompose implements DockerCompose {
+    /**
+     * Executable name for Docker Compose.
+     */
+    private static final String COMPOSE_EXECUTABLE = "docker-compose";
+
+    private final List<File> composeFiles;
+    private final String identifier;
+    private String cmd = "";
+    private Map<String, String> env = new HashMap<>();
+
+    public LocalDockerCompose(List<File> composeFiles, String identifier) {
+        validateFileList(composeFiles);
+
+        this.composeFiles = composeFiles;
+        this.identifier = identifier;
+    }
+
+    @Override
+    public DockerCompose withCommand(String cmd) {
+        this.cmd = cmd;
+        return this;
+    }
+
+    @Override
+    public DockerCompose withEnv(Map<String, String> env) {
+        this.env = env;
+        return this;
+    }
+
+    @Override
+    public void start() {
+        // bail out early
+        if (!CommandLine.executableExists(COMPOSE_EXECUTABLE)) {
+            throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");
+        }
+
+        final Map<String, String> environment = Maps.newHashMap(env);
+        environment.put(ENV_PROJECT_NAME, identifier);
+
+        final File dockerComposeBaseFile = composeFiles.get(0);
+        final File pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsoluteFile();
+        environment.put(ENV_COMPOSE_FILE, new File(pwd, dockerComposeBaseFile.getAbsoluteFile().getName()).getAbsolutePath());
+
+        logger().info("Local Docker Compose is running command: {}", cmd);
+
+        final List<String> command = Splitter.onPattern(" ")
+                .omitEmptyStrings()
+                .splitToList(COMPOSE_EXECUTABLE + " " + cmd);
+
+        try {
+            new ProcessExecutor().command(command)
+                    .redirectOutput(Slf4jStream.of(logger()).asInfo())
+                    .redirectError(Slf4jStream.of(logger()).asError())
+                    .environment(environment)
+                    .directory(pwd)
+                    .exitValueNormal()
+                    .executeNoTimeout();
+
+            logger().info("Docker Compose has finished running");
+
+        } catch (InvalidExitValueException e) {
+            throw new ContainerLaunchException("Local Docker Compose exited abnormally with code " +
+                    e.getExitValue() + " whilst running command: " + cmd);
+
+        } catch (Exception e) {
+            throw new ContainerLaunchException("Error running local Docker Compose command: " + cmd, e);
+        }
+    }
+
+    /**
+     * @return a logger
+     */
+    private Logger logger() {
+        return DockerLoggerFactory.getLogger(COMPOSE_EXECUTABLE);
     }
 }
