@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
 import org.testcontainers.utility.*;
@@ -49,6 +50,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
+    private boolean pull = true;
+    private boolean tailChildContainers;
 
     private static final Object MUTEX = new Object();
 
@@ -99,9 +102,14 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         profiler.start("Docker Compose container startup");
 
         synchronized (MUTEX) {
-            pullImages();
+            if (pull) {
+                pullImages();
+            }
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();
+            if (tailChildContainers) {
+                tailChildContainerLogs();
+            }
             registerContainersForShutdown();
             startAmbassadorContainers(profiler);
         }
@@ -117,6 +125,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // Start the docker-compose container, which starts up the services
         getDockerCompose("up -d")
                 .start();
+    }
+
+    private void tailChildContainerLogs() {
+        listChildContainers().forEach(container ->
+                LogUtils.followOutput(dockerClient,
+                        container.getId(),
+                        new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]),
+                        OutputFrame.OutputType.STDOUT,
+                        OutputFrame.OutputType.STDERR)
+        );
     }
 
     private DockerCompose getDockerCompose(String cmd) {
@@ -147,10 +165,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private void registerContainersForShutdown() {
         // Ensure that all service containers that were launched by compose will be killed at shutdown
         try {
-            List<Container> containers = dockerClient.listContainersCmd()
-                    .withLabelFilter("name=/" + identifier)
-                    .withShowAll(true)
-                    .exec();
+            final List<Container> containers = listChildContainers();
 
             // register with ResourceReaper to ensure final shutdown with JVM
             containers.forEach(container ->
@@ -173,6 +188,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         } catch (DockerException e) {
             logger().debug("Failed to stop a service container with exception", e);
         }
+    }
+
+    private List<Container> listChildContainers() {
+        return dockerClient.listContainersCmd()
+                .withShowAll(true)
+                .exec().stream()
+                .filter(container -> Arrays.stream(container.getNames()).anyMatch(name ->
+                        name.startsWith("/" + identifier)))
+                .collect(Collectors.toList());
     }
 
     private void startAmbassadorContainers(Profiler profiler) {
@@ -312,6 +336,26 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     public SELF withLocalCompose(boolean localCompose) {
         this.localCompose = localCompose;
+        return self();
+    }
+
+    /**
+     * Whether to pull images first.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withPull(boolean pull) {
+        this.pull = pull;
+        return self();
+    }
+
+    /**
+     * Whether to tail child container logs.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withTailChildContainers(boolean tailChildContainers) {
+        this.tailChildContainers = tailChildContainers;
         return self();
     }
 
