@@ -1,13 +1,17 @@
 package org.testcontainers.containers.wait;
 
+import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.dockerclient.ProxiedUnixSocketClientProviderStrategy;
 
-import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -15,30 +19,82 @@ import java.util.concurrent.TimeUnit;
  *
  * @author richardnorth
  */
+@Slf4j
 public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy {
+
+    private static final String SUCCESS_MARKER = "TESTCONTAINERS_SUCCESS";
     @Override
     protected void waitUntilReady() {
         final Integer port = getLivenessCheckPort();
         if (null == port) {
+            log.debug("Liveness check port of {} is empty. Not waiting.", container.getContainerName());
             return;
         }
 
-        final String ipAddress = container.getContainerIpAddress();
-        try {
-            Unreliables.retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                getRateLimiter().doWhenReady(() -> {
+        Callable<Boolean> checkStrategy;
+
+        // Special case for Docker for Mac, see #160
+        if (DockerClientFactory.instance().isUsing(ProxiedUnixSocketClientProviderStrategy.class)) {
+            List<Integer> exposedPorts = container.getExposedPorts();
+
+            Integer exposedPort = exposedPorts.stream()
+                    .map(container::getMappedPort)
+                    .filter(port::equals)
+                    .findFirst()
+                    .orElse(null);
+
+            if (null == exposedPort) {
+                log.warn("Liveness check port of {} is set to {}, but it's not listed in exposed ports.",
+                        container.getContainerName(), port);
+                return;
+            }
+
+            String[][] commands = {
+                     { "/bin/sh", "-c", "nc -vz -w 1 localhost " + exposedPort + " && echo " + SUCCESS_MARKER },
+                     { "/bin/bash", "-c", "</dev/tcp/localhost/" + exposedPort + " && echo " + SUCCESS_MARKER }
+            };
+
+            checkStrategy = () -> {
+                for (String[] command : commands) {
                     try {
-                        new Socket(ipAddress, port).close();
-                    } catch (IOException e) {
+                        Container.ExecResult execResult = container.execInContainer(command);
+
+                        if (!execResult.getStderr().isEmpty()) {
+                            log.warn(execResult.getStderr());
+                        }
+                        if (execResult.getStdout().contains(SUCCESS_MARKER)) {
+                            return true;
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    } catch (Exception e) {
+                        continue;
+                    }
+                }
+
+                return false;
+            };
+        } else {
+            checkStrategy = () -> {
+                new Socket(container.getContainerIpAddress(), port).close();
+                return true;
+            };
+        }
+
+        try {
+            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
+                return getRateLimiter().getWhenReady(() -> {
+                    try {
+                        return checkStrategy.call();
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
-                return true;
             });
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
-                    ipAddress + ":" + port + " should be listening)");
+                    container.getContainerIpAddress() + ":" + port + " should be listening)");
         }
     }
 }
