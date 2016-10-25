@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.dockerclient.ProxiedUnixSocketClientProviderStrategy;
@@ -57,12 +56,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
             checkStrategy = () -> {
                 for (String[] command : commands) {
                     try {
-                        Container.ExecResult execResult = container.execInContainer(command);
-
-                        if (!execResult.getStderr().isEmpty()) {
-                            log.warn(execResult.getStderr());
-                        }
-                        if (execResult.getStdout().contains(SUCCESS_MARKER)) {
+                        if (container.execInContainer(command).getStdout().contains(SUCCESS_MARKER)) {
                             return true;
                         }
                     } catch (InterruptedException e) {
