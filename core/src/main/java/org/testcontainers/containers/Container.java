@@ -208,6 +208,13 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withStartupTimeout(Duration startupTimeout);
 
     /**
+     * Set the privilegedMode mode for the container
+     * @param mode boolean
+     * @return this
+     */
+    SELF withPrivilegedMode(boolean mode);
+
+    /**
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address

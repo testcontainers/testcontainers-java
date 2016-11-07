@@ -93,6 +93,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<Bind> binds = new ArrayList<>();
 
     @NonNull
+    private boolean privilegedMode;
+
+    @NonNull
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
@@ -405,6 +408,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (workingDirectory != null) {
             createCommand.withWorkingDir(workingDirectory);
         }
+
+        if (privilegedMode) {
+            createCommand.withPrivileged(privilegedMode);
+        }
     }
 
     /**
@@ -607,6 +614,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withStartupTimeout(Duration startupTimeout) {
         getWaitStrategy().withStartupTimeout(startupTimeout);
+        return self();
+    }
+
+    @Override
+    public SELF withPrivilegedMode(boolean mode) {
+        this.privilegedMode = mode;
         return self();
     }
 
