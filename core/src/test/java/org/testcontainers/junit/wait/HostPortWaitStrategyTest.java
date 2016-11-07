@@ -18,7 +18,7 @@ public class HostPortWaitStrategyTest extends AbstractWaitStrategyTest<HostPortW
      */
     @Test
     public void testWaitUntilReady_Success() {
-        waitUntilReadyAndSucceed("nc -lp 8080");
+        waitUntilReadyAndSucceed("while true; do nc -lp 8080; done");
     }
 
     /**
