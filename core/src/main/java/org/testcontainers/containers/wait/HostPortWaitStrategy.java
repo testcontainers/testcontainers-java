@@ -37,8 +37,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
             List<Integer> exposedPorts = container.getExposedPorts();
 
             Integer exposedPort = exposedPorts.stream()
-                    .map(container::getMappedPort)
-                    .filter(port::equals)
+                    .filter(it -> port.equals(container.getMappedPort(it)))
                     .findFirst()
                     .orElse(null);
 
