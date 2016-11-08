@@ -4,7 +4,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
@@ -770,17 +769,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
-        LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
-                .withFollowStream(true);
-
-        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
-        for (OutputFrame.OutputType type : types) {
-            callback.addConsumer(type, consumer);
-            if (type == STDOUT) cmd.withStdOut(true);
-            if (type == STDERR) cmd.withStdErr(true);
-        }
-
-        cmd.exec(callback);
+        LogUtils.followOutput(dockerClient, containerId, consumer, types);
     }
 
     /**
