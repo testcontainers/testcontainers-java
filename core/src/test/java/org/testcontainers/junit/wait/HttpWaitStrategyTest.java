@@ -23,7 +23,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @Test
     public void testWaitUntilReady_Success() {
-        waitUntilReadyAndSucceed("echo -e \"HTTP/1.1 200 OK" + DOUBLE_NEWLINE + "\" | nc -lp 8080");
+        waitUntilReadyAndSucceed("while true; do echo -e \"HTTP/1.1 200 OK" + DOUBLE_NEWLINE + "\" | nc -lp 8080; done");
     }
 
     /**
@@ -32,7 +32,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @Test
     public void testWaitUntilReady_Timeout() {
-        waitUntilReadyAndTimeout("echo -e \"HTTP/1.1 400 Bad Request" + DOUBLE_NEWLINE + "\" | nc -lp 8080");
+        waitUntilReadyAndTimeout("while true; do echo -e \"HTTP/1.1 400 Bad Request" + DOUBLE_NEWLINE + "\" | nc -lp 8080; done");
     }
 
     /**
