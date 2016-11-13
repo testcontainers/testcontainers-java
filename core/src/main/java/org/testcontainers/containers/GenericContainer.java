@@ -819,7 +819,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .execCreateCmd(this.containerId)
                 .withCmd(command);
 
-        logger().info("Running \"exec\" command: " + String.join(" ", command));
+        logger().debug("Running \"exec\" command: " + String.join(" ", command));
         final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId)
                 .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
 
