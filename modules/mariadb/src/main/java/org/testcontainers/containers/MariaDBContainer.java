@@ -1,7 +1,5 @@
 package org.testcontainers.containers;
 
-import com.google.common.io.Resources;
-
 /**
  * Container implementation for the MariaDB project.
  * 
