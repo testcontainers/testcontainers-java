@@ -104,7 +104,7 @@ public class PathUtils {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to process JAR file when extracting classpath resource: " + hostPath, e);
+            throw new IllegalStateException("Failed to process JAR file when extracting classpath resource: " + hostPath, e);
         }
 
         // Mark temporary files/dirs for deletion at JVM shutdown
@@ -117,7 +117,7 @@ public class PathUtils {
     private static void copyFromJarToLocation(final JarFile jarFile,
                                               final JarEntry entry,
                                               final String fromRoot,
-                                              final File toRoot) {
+                                              final File toRoot) throws IOException {
 
         String destinationName = entry.getName().replaceFirst(fromRoot, "");
         File newFile = new File(toRoot, destinationName);
@@ -131,38 +131,13 @@ public class PathUtils {
             try (InputStream is = jarFile.getInputStream(entry)) {
                 Files.copy(is, newFile.toPath());
             } catch (IOException e) {
-                throw new RuntimeException("Failed to extract classpath resource " + entry.getName() + " from JAR file " + jarFile.getName(), e);
+                log.error("Failed to extract classpath resource " + entry.getName() + " from JAR file " + jarFile.getName(), e);
+                throw e;
             }
         }
     }
 
     public static void deleteOnExit(final Path path) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> deleteRecursively(path)));
-    }
-
-
-    public static void deleteRecursively(final Path path) {
-        if (! Files.exists(path)) {
-            return;
-        }
-
-        try {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-
-                @Override
-                public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
-                    Files.deleteIfExists(dir);
-                    return super.postVisitDirectory(dir, exc);
-                }
-
-                @Override
-                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                    Files.deleteIfExists(file);
-                    return super.visitFile(file, attrs);
-                }
-
-            });
-        } catch (IOException ignored) {
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> recursiveDeleteDir(path)));
     }
 }
