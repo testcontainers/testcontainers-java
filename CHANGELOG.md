@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.7] - 2016-11-19
+### Fixed
+- Compensate for premature TCP socket opening in Docker for Mac (#160, #236)
+- (Internal) Stabilise various parts of Testcontainers' self test suite (#241)
+- Fix mounting of classpath resources when those resources are in a JAR file (#213)
+- Reduce misleading error messages caused mainly by trying to perform operations on stopped containers (#243) 
+
+### Changed
+- Uses a default MySQL and MariaDB configuration to reduce memory footprint (#209, #243)
+- Docker Compose can optionally now use a local `docker-compose` executable rather than running inside a container (#200)
+- Add support for privileged mode containers (#234, #235)
+- Allow container/network cleanup (ResourceReaper) to be triggered programmatically (#231)
+- Add optional tailing of logs for containers spawned by Docker Compose (#233) 
+- (Internal) Relocate non-proprietary database container tests to a single module
+
 ## [1.1.6] - 2016-09-22
 ### Fixed
 - Fix logging of discovered Docker environment variables (#218)
@@ -204,6 +219,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.1.7]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.7
 [1.1.6]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.6
 [1.1.5]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.5
 [1.1.4]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.4
