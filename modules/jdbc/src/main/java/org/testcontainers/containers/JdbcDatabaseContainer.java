@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -117,21 +118,24 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final String url = this.getJdbcUrl() + queryString;
 
         try {
-            return Unreliables.retryUntilSuccess(60, TimeUnit.SECONDS, () -> getJdbcDriverInstance().connect(url, info));
+            return Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> getJdbcDriverInstance().connect(url, info));
         } catch (Exception e) {
             throw new SQLException("Could not create new connection", e);
         }
     }
 
-    protected void optionallyMapResourceParameterAsVolume(String paramName, String pathNameInContainer) {
-        if (parameters.containsKey(paramName)) {
-            String resourceName = parameters.get(paramName);
+    protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {
+        String resourceName = parameters.getOrDefault(paramName, defaultResource);
+
+        if (resourceName != null) {
             URL classPathResource = ClassLoader.getSystemClassLoader().getResource(resourceName);
             if (classPathResource == null) {
                 throw new ContainerLaunchException("Could not locate a classpath resource for " + paramName +" of " + resourceName);
             }
 
-            addFileSystemBind(classPathResource.getFile(), pathNameInContainer, BindMode.READ_ONLY);
+            final String resourceFile = classPathResource.getFile();
+
+            addFileSystemBind(resourceFile, pathNameInContainer, BindMode.READ_ONLY);
         }
     }
 

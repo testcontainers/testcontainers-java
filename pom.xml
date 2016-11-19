@@ -167,6 +167,7 @@
         <module>modules/selenium</module>
         <module>modules/nginx</module>
         <module>modules/mariadb</module>
+        <module>modules/jdbc-test</module>
     </modules>
 
     <profiles>

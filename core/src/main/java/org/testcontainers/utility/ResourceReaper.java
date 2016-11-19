@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Network;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,8 @@ public final class ResourceReaper {
      */
     public void stopAndRemoveContainer(String containerId) {
         stopContainer(containerId, registeredContainers.get(containerId));
+
+        registeredContainers.remove(containerId);
     }
 
     /**
@@ -82,6 +85,13 @@ public final class ResourceReaper {
     }
 
     private void stopContainer(String containerId, String imageName) {
+
+        List<Container> allContainers = dockerClient.listContainersCmd().withShowAll(true).exec();
+
+        if (allContainers.stream().map(Container::getId).noneMatch(containerId::equals)) {
+            LOGGER.trace("Was going to clean up container but it apparently no longer exists: {}");
+            return;
+        }
 
         boolean running;
         try {
@@ -103,6 +113,13 @@ public final class ResourceReaper {
             } catch (DockerException e) {
                 LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
             }
+        }
+
+        try {
+            dockerClient.inspectContainerCmd(containerId).exec();
+        } catch (NotFoundException e) {
+            LOGGER.trace("Was going to remove container but it apparently no longer exists: {}");
+            return;
         }
 
         try {
