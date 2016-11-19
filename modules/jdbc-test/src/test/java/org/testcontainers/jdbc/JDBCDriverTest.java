@@ -23,6 +23,15 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @RunWith(Parameterized.class)
 public class JDBCDriverTest {
 
+    @Parameter
+    public String jdbcUrl;
+    @Parameter(1)
+    public boolean performTestForScriptedSchema;
+    @Parameter(2)
+    public boolean performTestForCharacterSet;
+    @Parameter(3)
+    public boolean performTestForCustomIniFile;
+
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return asList(
@@ -43,17 +52,20 @@ public class JDBCDriverTest {
                 });
     }
 
-    @Parameter
-    public String jdbcUrl;
+    public static void sampleInitFunction(Connection connection) throws SQLException {
+        connection.createStatement().execute("CREATE TABLE bar (\n" +
+                "  foo VARCHAR(255)\n" +
+                ");");
+        connection.createStatement().execute("INSERT INTO bar (foo) VALUES ('hello world');");
+        connection.createStatement().execute("CREATE TABLE my_counter (\n" +
+                "  n INT\n" +
+                ");");
+    }
 
-    @Parameter(1)
-    public boolean performTestForScriptedSchema;
-
-    @Parameter(2)
-    public boolean performTestForCharacterSet;
-
-    @Parameter(3)
-    public boolean performTestForCustomIniFile;
+    @AfterClass
+    public static void testCleanup() {
+        ContainerDatabaseDriver.killContainers();
+    }
 
     @Test
     public void test() throws SQLException {
@@ -119,7 +131,7 @@ public class JDBCDriverTest {
             statement.execute("SELECT @@GLOBAL.innodb_file_format");
             ResultSet resultSet = statement.getResultSet();
 
-            resultSet.next();
+            assertTrue("The query returns a result", resultSet.next());
             String result = resultSet.getString(1);
 
             assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
@@ -134,20 +146,5 @@ public class JDBCDriverTest {
         hikariConfig.setMaximumPoolSize(poolSize);
 
         return new HikariDataSource(hikariConfig);
-    }
-
-    public static void sampleInitFunction(Connection connection) throws SQLException {
-        connection.createStatement().execute("CREATE TABLE bar (\n" +
-                "  foo VARCHAR(255)\n" +
-                ");");
-        connection.createStatement().execute("INSERT INTO bar (foo) VALUES ('hello world');");
-        connection.createStatement().execute("CREATE TABLE my_counter (\n" +
-                "  n INT\n" +
-                ");");
-    }
-
-    @AfterClass
-    public static void testCleanup() {
-        ContainerDatabaseDriver.killContainers();
     }
 }
