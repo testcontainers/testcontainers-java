@@ -6,10 +6,7 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
@@ -110,9 +107,11 @@ public class PathUtils {
             throw new RuntimeException("Failed to process JAR file when extracting classpath resource: " + hostPath, e);
         }
 
+        // Mark temporary files/dirs for deletion at JVM shutdown
+        deleteOnExit(tmpLocation.toPath());
+
         return tmpLocation.getAbsolutePath();
     }
-
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void copyFromJarToLocation(final JarFile jarFile,
@@ -132,8 +131,38 @@ public class PathUtils {
             try (InputStream is = jarFile.getInputStream(entry)) {
                 Files.copy(is, newFile.toPath());
             } catch (IOException e) {
-                 throw new RuntimeException("Failed to extract classpath resource " + entry.getName() + " from JAR file " + jarFile.getName(), e);
+                throw new RuntimeException("Failed to extract classpath resource " + entry.getName() + " from JAR file " + jarFile.getName(), e);
             }
+        }
+    }
+
+    public static void deleteOnExit(final Path path) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> deleteRecursively(path)));
+    }
+
+
+    public static void deleteRecursively(final Path path) {
+        if (! Files.exists(path)) {
+            return;
+        }
+
+        try {
+            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+
+                @Override
+                public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
+                    Files.deleteIfExists(dir);
+                    return super.postVisitDirectory(dir, exc);
+                }
+
+                @Override
+                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                    Files.deleteIfExists(file);
+                    return super.visitFile(file, attrs);
+                }
+
+            });
+        } catch (IOException ignored) {
         }
     }
 }
