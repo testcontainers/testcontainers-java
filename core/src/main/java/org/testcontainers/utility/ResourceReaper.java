@@ -68,6 +68,8 @@ public final class ResourceReaper {
      */
     public void stopAndRemoveContainer(String containerId) {
         stopContainer(containerId, registeredContainers.get(containerId));
+
+        registeredContainers.remove(containerId);
     }
 
     /**
