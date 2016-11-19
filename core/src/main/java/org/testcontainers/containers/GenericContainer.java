@@ -472,6 +472,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+
+        if (hostPath.contains(".jar!")) {
+            // the host file is inside a JAR resource - copy to a temporary location that Docker can read
+            hostPath = PathUtils.extractClassPathResourceToTempLocation(hostPath);
+        }
+
         if (SystemUtils.IS_OS_WINDOWS) {
             hostPath = PathUtils.createMinGWPath(hostPath);
         }
