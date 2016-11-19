@@ -54,6 +54,14 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
     }
 
     @Override
+    public void onError(Throwable throwable) {
+        // Sink any errors
+        try {
+            close();
+        } catch (IOException ignored) { }
+    }
+
+    @Override
     public void close() throws IOException {
         // send an END frame to every consumer... but only once per consumer.
         for (Consumer<OutputFrame> consumer : new HashSet<>(consumers.values())) {

@@ -821,6 +821,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         }
 
+        if (!isRunning()) {
+            throw new IllegalStateException("Container is not running so exec cannot be run");
+        }
+
         this.dockerClient
                 .execCreateCmd(this.containerId)
                 .withCmd(command);
