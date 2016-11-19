@@ -472,6 +472,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+
+        if (hostPath.contains(".jar!")) {
+            // the host file is inside a JAR resource - copy to a temporary location that Docker can read
+            hostPath = PathUtils.extractClassPathResourceToTempLocation(hostPath);
+        }
+
         if (SystemUtils.IS_OS_WINDOWS) {
             hostPath = PathUtils.createMinGWPath(hostPath);
         }
@@ -813,6 +819,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             throw new UnsupportedOperationException(
                     "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
 
+        }
+
+        if (!isRunning()) {
+            throw new IllegalStateException("Container is not running so exec cannot be run");
         }
 
         this.dockerClient
