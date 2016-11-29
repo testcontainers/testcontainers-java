@@ -39,3 +39,7 @@ dependency-reduced-pom.xml
 
 # Vagrant
 .vagrant/
+
+# Gitbook
+_book/
+node_modules/
