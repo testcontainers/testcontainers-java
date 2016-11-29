@@ -22,38 +22,43 @@ every test.
 ## Example
 
 The following field in your JUnit UI test class will prepare a container running Chrome:
-	
-        @Rule
-        public BrowserWebDriverContainer chrome =
-            new BrowserWebDriverContainer()
-                    .withDesiredCapabilities(DesiredCapabilities.chrome());
+```java
+@Rule
+public BrowserWebDriverContainer chrome =
+    new BrowserWebDriverContainer()
+            .withDesiredCapabilities(DesiredCapabilities.chrome());
+```
         
 Now, instead of instantiating an instance of WebDriver directly, use the following to obtain an instance inside your
 test methods:
-
-        RemoteWebDriver driver = chrome.getWebDriver();
+```java
+RemoteWebDriver driver = chrome.getWebDriver();
+```
 
 You can then use this driver instance like a regular WebDriver.
 
 Note that, if you want to test a **web application running on the host machine** (the machine the JUnit tests are
 running on - which is quite likely), you'll need to replace any references to `localhost` with an IP address that the
 Docker container can reach. Use the `getHostIpAddress()` method, e.g.:
-
-        driver.get("http://" + chrome.getHostIpAddress() + ":8080/");
+```java
+driver.get("http://" + chrome.getHostIpAddress() + ":8080/");
+```
 
 ## Options
 
 ### Other browsers
 
 At the moment, Chrome and Firefox are supported. To switch, simply change the first parameter to the rule constructor:
-
-    new BrowserWebDriverContainer()
-                    .withDesiredCapabilities(DesiredCapabilities.chrome());
+```java
+new BrowserWebDriverContainer()
+                .withDesiredCapabilities(DesiredCapabilities.chrome());
+```
         
 or
-
-    new BrowserWebDriverContainer()
-                    .withDesiredCapabilities(DesiredCapabilities.firefox());
+```java
+new BrowserWebDriverContainer()
+                .withDesiredCapabilities(DesiredCapabilities.firefox());
+```
 
 ### Recording videos
 
@@ -61,17 +66,18 @@ By default, no videos will be recorded. However, you can instruct Test Container
 just for failing tests.
 
 To do this, simply add extra parameters to the rule constructor:
-
-    new BrowserWebDriverContainer()
-                    .withDesiredCapabilities(DesiredCapabilities.chrome())
-                    .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("./target/"))
+```java
+new BrowserWebDriverContainer()
+                .withDesiredCapabilities(DesiredCapabilities.chrome())
+                .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("./target/"))
+```
 
 or if you only want videos for test failures:
-
-    new BrowserWebDriverContainer()
-                    .withDesiredCapabilities(DesiredCapabilities.chrome())
-                    .withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
-
+```java
+new BrowserWebDriverContainer()
+                .withDesiredCapabilities(DesiredCapabilities.chrome())
+                .withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
+```
 Note that the seconds parameter to `withRecordingMode` should be a directory where recordings can be saved.
 
 ## More examples
