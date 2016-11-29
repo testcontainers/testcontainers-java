@@ -15,19 +15,21 @@ it's not necessary to have it installed on all developer/test machines.
 
 A single class rule, pointing to a `docker-compose.yml` file, should be sufficient to launch any number of services
 required by your tests:
-
-    @ClassRule
-    public static DockerComposeContainer environment =
-        new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-                .withExposedService("redis_1", REDIS_PORT)
-                .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT);
+```java
+@ClassRule
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withExposedService("redis_1", REDIS_PORT)
+            .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT);
+```
 
 In this example, `compose-test.yml` should have content such as:
-
-    redis:
-      image: redis
-    elasticsearch:
-      image: elasticsearch
+```yaml
+redis:
+  image: redis
+elasticsearch:
+  image: elasticsearch
+```
 
 Note that it is not necessary to define ports to be exposed in the YAML file; this would inhibit reuse/inclusion of the
 file in other contexts.
@@ -46,7 +48,8 @@ The rule provides methods for discovering how your tests can interact with the c
     ambassador container)
 
 For example, with the Redis example above, the following will allow your tests to access the Redis service:
-
-    String redisUrl = environment.getServiceHost("redis_1", REDIS_PORT)
-                        + ":" +
-                      environment.getServicePort("redis_1", REDIS_PORT);
+```java
+String redisUrl = environment.getServiceHost("redis_1", REDIS_PORT)
+                    + ":" +
+                  environment.getServicePort("redis_1", REDIS_PORT);
+```

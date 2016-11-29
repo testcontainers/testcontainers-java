@@ -24,9 +24,11 @@ TestContainers currently supports MySQL, PostgreSQL, Oracle XE and Virtuoso.
 
 Add a @Rule or @ClassRule to your test class, e.g.:
 
-    public class SimpleMySQLTest {
-        @Rule
-        public MySQLContainer mysql = new MySQLContainer();
+```java
+public class SimpleMySQLTest {
+    @Rule
+    public MySQLContainer mysql = new MySQLContainer();
+```
 
 Now, in your test code (or a suitable setup method), you can obtain details necessary to connect to this database:
 
@@ -85,12 +87,13 @@ Instead of running a fixed script for DB setup, it may be useful to call a Java 
  `jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
 
 The init function must be a public static method which takes a `java.sql.Connection` as its only parameter, e.g.
-
-    public class JDBCDriverTest {
-        public static void sampleInitFunction(Connection connection) throws SQLException {
-            // e.g. run schema setup or Flyway/liquibase/etc DB migrations here...
-        }
-        ...
+```java
+public class JDBCDriverTest {
+    public static void sampleInitFunction(Connection connection) throws SQLException {
+        // e.g. run schema setup or Flyway/liquibase/etc DB migrations here...
+    }
+    ...
+```
 
 #### Overriding MySQL my.cnf settings
 
@@ -107,5 +110,6 @@ and will be able to override server settings when the container starts.
 #### Virtuoso SPARQL Service URL
 
 VirtuosoContainer provides access to the SPARQL service URL
-
-    String sparqlServiceUrl = ((VirtuosoContainer)container).getSparqlUrl();
+```java
+String sparqlServiceUrl = ((VirtuosoContainer)container).getSparqlUrl();
+```

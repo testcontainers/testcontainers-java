@@ -16,13 +16,14 @@ Testcontainers will `docker build` a temporary container image, and will use it 
 
 `ImageFromDockerfile` accepts arbitrary files, strings or classpath resources to be used as files in the build context.
 At least one of these needs to be a `Dockerfile`.
-
-    @Rule
-    public GenericContainer dslContainer = new GenericContainer(
-        new ImageFromDockerfile()
-                .withFileFromString("folder/someFile.txt", "hello")
-                .withFileFromClasspath("test.txt", "mappable-resource/test-resource.txt")
-                .withFileFromClasspath("Dockerfile", "mappable-dockerfile/Dockerfile"))
+```java
+@Rule
+public GenericContainer dslContainer = new GenericContainer(
+    new ImageFromDockerfile()
+            .withFileFromString("folder/someFile.txt", "hello")
+            .withFileFromClasspath("test.txt", "mappable-resource/test-resource.txt")
+            .withFileFromClasspath("Dockerfile", "mappable-dockerfile/Dockerfile"))
+```
 
 The following methods may be used to provide the `Dockerfile` and any other required files:
 
@@ -35,15 +36,17 @@ The following methods may be used to provide the `Dockerfile` and any other requ
 
 If a static Dockerfile is not sufficient (e.g. your test needs to cover many variations that are best generated
 programmatically), there is a DSL available to allow Dockerfiles to be defined in code. e.g.:
-
-    new GenericContainer(
-            new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
-                    builder
-                            .from("alpine:3.2")
-                            .run("apk add --update nginx")
-                            .cmd("nginx", "-g", "daemon off;")
-                            .build(); }))
-            .withExposedPorts(80);
+```java
+new GenericContainer(
+        new ImageFromDockerfile()
+                .withDockerfileFromBuilder(builder -> {
+                        builder
+                                .from("alpine:3.2")
+                                .run("apk add --update nginx")
+                                .cmd("nginx", "-g", "daemon off;")
+                                .build(); }))
+                .withExposedPorts(80);
+```
 
 See `ParameterizedDockerfileContainerTest` for a very basic example of using this in conjunction with JUnit
 parameterized testing.
