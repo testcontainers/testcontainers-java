@@ -36,15 +36,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Nullable
     private DesiredCapabilities desiredCapabilities;
+    private boolean imageNameIsSet = false;
+
     @Nullable
     private RemoteWebDriver driver;
-
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private File vncRecordingDirectory = new File("/tmp");
+
     private final Collection<VncRecordingSidekickContainer> currentVncRecordings = new ArrayList<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
-
     private static final SimpleDateFormat filenameDateFormat = new SimpleDateFormat("YYYYMMdd-HHmmss");
 
     /**
@@ -53,9 +54,22 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     }
 
+    /**
+     * Constructor taking a specific webdriver container name and tag
+     * @param dockerImageName
+     */
+    public BrowserWebDriverContainer(String dockerImageName) {
+        super.setDockerImageName(dockerImageName);
+        this.imageNameIsSet = true;
+    }
+
 
     public SELF withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
-        super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
+
+        if (! imageNameIsSet) {
+            super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
+        }
+
         this.desiredCapabilities = desiredCapabilities;
         return self();
     }
