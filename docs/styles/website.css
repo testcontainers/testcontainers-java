@@ -1,0 +1,16 @@
+.summary a.custom-link[href^="https://www.gitbook.com/"] {
+    display: none !important;
+}
+
+.summary .divider:first-of-type {
+    display: none !important;
+}
+
+.book .book-summary .exc-trigger:before {
+    content: "\f105";
+}
+
+.book .book-summary .expanded > a .exc-trigger:before,
+.book .book-summary .expanded > span .exc-trigger:before {
+    content: "\f107";
+}
