@@ -10,7 +10,8 @@ module.exports = {
     plugins: [
         "-highlight",
         "prism",
-        "github"
+        "github",
+        "expandable-chapters",
     ],
     "pluginsConfig": {
         "github": {
