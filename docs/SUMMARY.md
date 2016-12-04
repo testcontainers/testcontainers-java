@@ -36,3 +36,8 @@
 * [Docker Compose](usage/docker_compose.md)
 * [Dockerfile containers](usage/dockerfile.md)
 * [Windows support](usage/windows_support.md)
+
+## Examples
+* [Selenium](https://github.com/testcontainers/testcontainers-java-examples/blob/master/selenium-container/src/test/java/SeleniumContainerTest.java)
+* [Custom Redis container](https://github.com/testcontainers/testcontainers-java-examples/blob/master/redis-backed-cache/src/test/java/RedisBackedCacheTest.java)
+* [Spring Boot testing with Redis](https://github.com/testcontainers/testcontainers-java-examples/tree/master/spring-boot/src/test/java/com/example)
