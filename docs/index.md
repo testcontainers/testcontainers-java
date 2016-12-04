@@ -2,7 +2,8 @@
 
 > TestContainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
-[![Circle CI](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master.svg?style=svg)](https://circleci.com/gh/testcontainers/testcontainers-java/tree/master) [View on Github](https://github.com/testcontainers/testcontainers-java)
+[![Build Status](https://travis-ci.org/testcontainers/testcontainers-java.svg?branch=master)](https://travis-ci.org/testcontainers/testcontainers-java)
+[View on Github](https://github.com/testcontainers/testcontainers-java)
 
 ![Testcontainers logo](https://rnorth.org/public/testcontainers/logo.png)
 
