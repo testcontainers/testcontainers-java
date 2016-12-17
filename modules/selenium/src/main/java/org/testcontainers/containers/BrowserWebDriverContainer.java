@@ -16,9 +16,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -36,7 +40,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Nullable
     private DesiredCapabilities desiredCapabilities;
-    private boolean imageNameIsSet = false;
+    private boolean customImageNameIsSet = false;
 
     @Nullable
     private RemoteWebDriver driver;
@@ -60,16 +64,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      */
     public BrowserWebDriverContainer(String dockerImageName) {
         super.setDockerImageName(dockerImageName);
-        this.imageNameIsSet = true;
+        this.customImageNameIsSet = true;
     }
 
 
     public SELF withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
-
-        if (! imageNameIsSet) {
-            super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
-        }
-
         this.desiredCapabilities = desiredCapabilities;
         return self();
     }
@@ -81,6 +80,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void configure() {
+
+        checkState(desiredCapabilities != null);
+        if (! customImageNameIsSet) {
+            super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
+        }
+
         String timeZone = System.getProperty("user.timezone");
 
         if (timeZone == null || timeZone.isEmpty()) {
