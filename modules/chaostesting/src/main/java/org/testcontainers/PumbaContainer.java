@@ -22,7 +22,8 @@ public class PumbaContainer extends GenericContainer<PumbaContainer> {
     @Override
     public void start() {
         final PumbaCommand command = new PumbaCommand(action, schedule, target);
-        setCommand(command.evaluate());
+        // todo fix
+        setCommand(command.evaluate().replaceAll("  ", " "));
         super.start();
     }
 

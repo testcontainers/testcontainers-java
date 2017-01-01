@@ -11,12 +11,12 @@ import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.PumbaActions.pauseContainersFor;
 import static org.testcontainers.PumbaSchedules.onlyOnce;
-import static org.testcontainers.PumbaTargets.singleContainer;
+import static org.testcontainers.PumbaTargets.containers;
 
 /**
  * Created by novy on 31.12.16.
  */
-public class PausingContainersTest {
+public class PausingContainersTest implements CanSpawnExampleContainers {
 
     private DockerEnvironment environment;
 
@@ -31,7 +31,7 @@ public class PausingContainersTest {
         final GenericContainer containerToPause = startedContainer();
 
         final PumbaContainer pumba = PumbaContainer.newPumba()
-                .affectingContainers(singleContainer(containerToPause.getContainerName()))
+                .affectingContainers(containers(containerToPause.getContainerName()))
                 .performingAction(pauseContainersFor(10, SupportedTimeUnit.SECONDS))
                 .scheduled(onlyOnce());
 
@@ -48,12 +48,5 @@ public class PausingContainersTest {
             final ContainerDetails container = environment.containerDetails(containerToPause.getContainerId());
             assertThat(container.isPaused()).isFalse();
         });
-    }
-
-    private GenericContainer startedContainer() {
-        final GenericContainer aContainer = new GenericContainer<>("ubuntu:latest")
-                .withCommand("bash", "-c", "while true; do echo something; sleep 1; done");
-        aContainer.start();
-        return aContainer;
     }
 }
