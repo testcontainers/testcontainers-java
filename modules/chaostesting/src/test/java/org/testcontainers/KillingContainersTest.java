@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.PumbaActions.killContainers;
-import static org.testcontainers.PumbaSchedules.onlyOnce;
+import static org.testcontainers.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.PumbaTargets.*;
 
 /**
@@ -33,9 +33,9 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         final GenericContainer containerThatShouldSurvive = startedContainer();
 
         final PumbaContainer pumba = PumbaContainer.newPumba()
-                .affectingContainers(containers(containerToKill.getContainerName()))
-                .performingAction(killContainers())
-                .scheduled(onlyOnce());
+                .performAction(killContainers())
+                .on(containers(containerToKill.getContainerName()))
+                .schedule(onlyOnce().withAllContainersAtOnce());
 
         // when
         pumba.start();
@@ -57,9 +57,9 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         final GenericContainer survivor = startedContainer();
 
         final PumbaContainer pumba = PumbaContainer.newPumba()
-                .affectingContainers(containers(firstVictim.getContainerName(), secondVictim.getContainerName()))
-                .performingAction(killContainers())
-                .scheduled(onlyOnce());
+                .on(containers(firstVictim.getContainerName(), secondVictim.getContainerName()))
+                .performAction(killContainers())
+                .schedule(onlyOnce().withAllContainersAtOnce());
 
         // when
         pumba.start();
@@ -81,9 +81,9 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         startContainerWithNameContaining("barbaz");
 
         final PumbaContainer pumba = PumbaContainer.newPumba()
-                .affectingContainers(containersMatchingRegexp(".*foobar.*"))
-                .performingAction(killContainers())
-                .scheduled(onlyOnce());
+                .on(containersMatchingRegexp(".*foobar.*"))
+                .performAction(killContainers())
+                .schedule(onlyOnce().withAllContainersAtOnce());
 
         // when
         pumba.start();
@@ -104,9 +104,9 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         startedContainer();
 
         final PumbaContainer pumba = PumbaContainer.newPumba()
-                .affectingContainers(allContainers())
-                .performingAction(killContainers())
-                .scheduled(onlyOnce());
+                .on(allContainers())
+                .performAction(killContainers())
+                .schedule(onlyOnce().withAllContainersAtOnce());
 
         // when
         pumba.start();

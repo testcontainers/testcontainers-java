@@ -8,6 +8,6 @@ interface PumbaCommandPart {
     String evaluate();
 
     default PumbaCommandPart append(PumbaCommandPart other) {
-        return () -> evaluate() + " " + other.evaluate();
+        return () -> (evaluate() + " " + other.evaluate()).trim();
     }
 }

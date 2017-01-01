@@ -1,7 +1,7 @@
 package org.testcontainers;
 
 import org.testcontainers.PumbaActions.PumbaAction;
-import org.testcontainers.PumbaSchedules.PumbaSchedule;
+import org.testcontainers.PumbaExecutionModes.PumbaExecutionMode;
 import org.testcontainers.PumbaTargets.PumbaTarget;
 import org.testcontainers.containers.GenericContainer;
 
@@ -12,7 +12,7 @@ import org.testcontainers.containers.GenericContainer;
 public class PumbaContainer extends GenericContainer<PumbaContainer> {
 
     private PumbaAction action = PumbaActions.killContainers();
-    private PumbaSchedule schedule = PumbaSchedules.onlyOnce();
+    private PumbaExecutionMode schedule = PumbaExecutionModes.onlyOnce().withAllContainersAtOnce();
     private PumbaTarget target = PumbaTargets.allContainers();
 
     private PumbaContainer() {
@@ -22,7 +22,6 @@ public class PumbaContainer extends GenericContainer<PumbaContainer> {
     @Override
     public void start() {
         final PumbaCommand command = new PumbaCommand(action, schedule, target);
-        // todo fix
         setCommand(command.evaluate().replaceAll("  ", " "));
         super.start();
     }
@@ -31,17 +30,17 @@ public class PumbaContainer extends GenericContainer<PumbaContainer> {
         return new PumbaContainer();
     }
 
-    public PumbaContainer affectingContainers(PumbaTarget target) {
+    public PumbaContainer on(PumbaTarget target) {
         this.target = target;
         return this;
     }
 
-    public PumbaContainer performingAction(PumbaAction action) {
+    public PumbaContainer performAction(PumbaAction action) {
         this.action = action;
         return this;
     }
 
-    public PumbaContainer scheduled(PumbaSchedule schedule) {
+    public PumbaContainer schedule(PumbaExecutionMode schedule) {
         this.schedule = schedule;
         return this;
     }

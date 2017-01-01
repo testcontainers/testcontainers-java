@@ -3,7 +3,7 @@ package org.testcontainers;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.PumbaActions.PumbaAction;
-import org.testcontainers.PumbaSchedules.PumbaSchedule;
+import org.testcontainers.PumbaExecutionModes.PumbaExecutionMode;
 import org.testcontainers.PumbaTargets.PumbaTarget;
 
 /**
@@ -14,13 +14,13 @@ import org.testcontainers.PumbaTargets.PumbaTarget;
 class PumbaCommand {
 
     private final PumbaAction action;
-    private final PumbaSchedule schedule;
+    private final PumbaExecutionMode executionMode;
     private final PumbaTarget target;
 
     String evaluate() {
         return commandPrefix()
+                .append(executionMode)
                 .append(action)
-                .append(schedule)
                 .append(target)
                 .evaluate();
     }

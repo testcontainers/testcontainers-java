@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.PumbaActions.pauseContainersFor;
-import static org.testcontainers.PumbaSchedules.onlyOnce;
+import static org.testcontainers.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.PumbaTargets.containers;
 
 /**
@@ -31,9 +31,9 @@ public class PausingContainersTest implements CanSpawnExampleContainers {
         final GenericContainer containerToPause = startedContainer();
 
         final PumbaContainer pumba = PumbaContainer.newPumba()
-                .affectingContainers(containers(containerToPause.getContainerName()))
-                .performingAction(pauseContainersFor(10, SupportedTimeUnit.SECONDS))
-                .scheduled(onlyOnce());
+                .on(containers(containerToPause.getContainerName()))
+                .performAction(pauseContainersFor(10, SupportedTimeUnit.SECONDS))
+                .schedule(onlyOnce().withAllContainersAtOnce());
 
         // when
         pumba.start();
