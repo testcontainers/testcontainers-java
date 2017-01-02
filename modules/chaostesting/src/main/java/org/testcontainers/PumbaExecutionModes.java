@@ -18,7 +18,7 @@ public final class PumbaExecutionModes {
 
     public static WithSchedule recurrently(int time, SupportedTimeUnit unit) {
         return new WithSchedule(
-                () -> "--interval" + TimeExpression.of(time, unit).evaluate()
+                () -> "--interval " + TimeExpression.of(time, unit).evaluate()
         );
     }
 

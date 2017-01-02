@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -12,6 +13,7 @@ import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.PumbaActions.killContainers;
 import static org.testcontainers.PumbaExecutionModes.onlyOnce;
+import static org.testcontainers.PumbaExecutionModes.recurrently;
 import static org.testcontainers.PumbaTargets.*;
 
 /**
@@ -113,6 +115,35 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
 
         // then
         await().until(() -> assertThat(environment.namesOfRunningContainers()).isEmpty());
+    }
+
+    @Test
+    public void should_kill_one_random_container_periodically() throws Exception {
+        // given
+        startContainerWithNameContaining("foobar");
+        startContainerWithNameContaining("foobar");
+
+        final PumbaContainer pumba = PumbaContainer.newPumba()
+                .on(containersMatchingRegexp(".*foobar.*"))
+                .performAction(killContainers())
+                .schedule(recurrently(5, SupportedTimeUnit.SECONDS).withOneContainerAtTime());
+
+        // when
+        pumba.start();
+
+        // then
+        await().atMost(8, TimeUnit.SECONDS).until(() ->
+                assertThat(environment.namesOfRunningContainers())
+                        .filteredOn(matchesRegexp(".*foobar.*"))
+                        .hasSize(1)
+        );
+
+        // and
+        await().atMost(8, TimeUnit.SECONDS).until(() ->
+                assertThat(environment.namesOfRunningContainers())
+                        .filteredOn(matchesRegexp(".*foobar.*"))
+                        .isEmpty()
+        );
     }
 
     private Predicate<String> matchesRegexp(String regexp) {
