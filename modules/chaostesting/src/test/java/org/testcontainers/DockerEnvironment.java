@@ -22,8 +22,16 @@ class DockerEnvironment {
 
     Collection<String> namesOfRunningContainers() {
         final List<Container> runningContainers = delegate.listContainersCmd().exec();
+        return namesOf(runningContainers);
+    }
 
-        return runningContainers.stream()
+    Collection<String> namesOfAllContainers() {
+        final List<Container> runningContainers = delegate.listContainersCmd().withShowAll(true).exec();
+        return namesOf(runningContainers);
+    }
+
+    private Collection<String> namesOf(Collection<Container> containers) {
+        return containers.stream()
                 .map(Container::getNames)
                 .flatMap(Stream::of)
                 .collect(Collectors.toSet());

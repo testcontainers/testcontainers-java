@@ -21,6 +21,13 @@ interface CanSpawnExampleContainers {
         return aContainer;
     }
 
+    default GenericContainer stoppedContainer() {
+        final GenericContainer aContainer = startedContainer();
+        // this is to avoid running Resource reaper
+        aContainer.getDockerClient().stopContainerCmd(aContainer.getContainerId()).exec();
+        return aContainer;
+    }
+
     @SneakyThrows
     default void startContainerWithNameContaining(String partOfContainerName) {
         final File temporaryFile = File.createTempFile("temp-compose", ".yml");
