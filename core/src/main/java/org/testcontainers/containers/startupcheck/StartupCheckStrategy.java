@@ -28,11 +28,14 @@ public abstract class StartupCheckStrategy {
             return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
                 StartupStatus state = checkStartupState(dockerClient, containerId);
                 switch (state) {
-                    case SUCCESSFUL:    startedOK[0] = true;
-                                        return true;
-                    case FAILED:        startedOK[0] = false;
-                                        return true;
-                    default:            return false;
+                    case SUCCESSFUL:
+                        startedOK[0] = true;
+                        return true;
+                    case FAILED:
+                        startedOK[0] = false;
+                        return true;
+                    default:
+                        return false;
                 }
             });
         });

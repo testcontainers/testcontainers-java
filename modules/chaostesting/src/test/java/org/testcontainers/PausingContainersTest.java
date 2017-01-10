@@ -39,7 +39,7 @@ public class PausingContainersTest implements CanSpawnExampleContainers {
         pumba.start();
 
         // then
-        await().until(() -> {
+        await().atMost(20, TimeUnit.SECONDS).until(() -> {
             final ContainerDetails container = environment.containerDetails(containerToPause.getContainerId());
             assertThat(container.isPaused()).isTrue();
         });

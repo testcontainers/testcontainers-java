@@ -26,7 +26,6 @@ class PumbaCommand {
     }
 
     private PumbaCommandPart commandPrefix() {
-        // todo fixme
-        return () -> "pumba --debug --host tcp://192.168.1.106:2375";
+        return () -> "pumba --debug";
     }
 }
