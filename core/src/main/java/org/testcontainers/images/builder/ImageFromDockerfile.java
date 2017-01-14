@@ -6,6 +6,7 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
 import com.google.common.collect.Sets;
+import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -113,8 +114,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             };
 
             // We have to use pipes to avoid high memory consumption since users might want to build really big images
-            PipedInputStream in = new PipedInputStream();
-            PipedOutputStream out = new PipedOutputStream(in);
+            @Cleanup PipedInputStream in = new PipedInputStream();
+            @Cleanup PipedOutputStream out = new PipedOutputStream(in);
 
             profiler.start("Configure image");
             BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(in);
