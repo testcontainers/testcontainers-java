@@ -2,9 +2,6 @@ package org.testcontainers;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.PumbaActions.PumbaAction;
-import org.testcontainers.PumbaExecutionModes.PumbaExecutionMode;
-import org.testcontainers.PumbaTargets.PumbaTarget;
 
 /**
  * Created by novy on 01.01.17.
@@ -14,8 +11,8 @@ import org.testcontainers.PumbaTargets.PumbaTarget;
 class PumbaCommand {
 
     private final PumbaAction action;
-    private final PumbaExecutionMode executionMode;
-    private final PumbaTarget target;
+    private final PumbaExecutionModes.PumbaExecutionMode executionMode;
+    private final PumbaTargets.PumbaTarget target;
 
     String evaluate() {
         return commandPrefix()

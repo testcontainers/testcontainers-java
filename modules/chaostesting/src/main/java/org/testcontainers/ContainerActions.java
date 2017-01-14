@@ -7,29 +7,29 @@ import lombok.NoArgsConstructor;
  * Created by novy on 31.12.16.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PumbaActions {
+public final class ContainerActions {
 
-    public static PumbaAction killContainers() {
+    public static ContainerAction killContainers() {
         // todo implement singal choosing
         return () -> "kill";
     }
 
-    public static PumbaAction pauseContainersFor(int time, SupportedTimeUnit unit) {
+    public static ContainerAction pauseContainersFor(int time, SupportedTimeUnit unit) {
         final PumbaCommandPart timePart = TimeExpression.of(time, unit);
 
         return () -> String.format("pause -d %s", timePart.evaluate());
     }
 
-    public static PumbaAction stopContainers() {
+    public static ContainerAction stopContainers() {
         // todo implement choosing grace period
         return () -> "stop";
     }
 
-    public static PumbaAction removeContainers() {
+    public static ContainerAction removeContainers() {
         // todo reimplement
         return () -> "rm --force --links --volumes";
     }
 
-    public interface PumbaAction extends PumbaCommandPart {
+    public interface ContainerAction extends PumbaAction {
     }
 }

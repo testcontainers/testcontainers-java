@@ -14,10 +14,6 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PumbaTargets {
 
-    public static PumbaTarget singleContainer(String containerName) {
-        return () -> containerName;
-    }
-
     public static PumbaTarget containers(String... containerNames) {
         return containers(Arrays.asList(containerNames));
     }

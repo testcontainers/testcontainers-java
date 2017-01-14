@@ -1,5 +1,6 @@
-package org.testcontainers;
+package org.testcontainers.test;
 
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
 import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.shaded.com.github.dockerjava.api.model.Container;

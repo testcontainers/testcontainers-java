@@ -1,5 +1,6 @@
-package org.testcontainers;
+package org.testcontainers.test;
 
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
 

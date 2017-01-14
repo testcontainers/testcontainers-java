@@ -1,15 +1,17 @@
-package org.testcontainers;
+package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.DockerEnvironment.ContainerDetails;
+import org.testcontainers.PumbaContainer;
+import org.testcontainers.SupportedTimeUnit;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.test.DockerEnvironment.ContainerDetails;
 
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.PumbaActions.pauseContainersFor;
+import static org.testcontainers.ContainerActions.pauseContainersFor;
 import static org.testcontainers.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.PumbaTargets.containers;
 
@@ -30,10 +32,10 @@ public class PausingContainersTest implements CanSpawnExampleContainers {
         // given
         final GenericContainer containerToPause = startedContainer();
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .on(containers(containerToPause.getContainerName()))
-                .performAction(pauseContainersFor(10, SupportedTimeUnit.SECONDS))
-                .schedule(onlyOnce().withAllContainersAtOnce());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(pauseContainersFor(10, SupportedTimeUnit.SECONDS))
+                .affect(containers(containerToPause.getContainerName()))
+                .execute(onlyOnce().onAllChosenContainers());
 
         // when
         pumba.start();

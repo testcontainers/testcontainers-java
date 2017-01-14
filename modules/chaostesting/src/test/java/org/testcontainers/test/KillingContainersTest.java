@@ -1,7 +1,9 @@
-package org.testcontainers;
+package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.testcontainers.PumbaContainer;
+import org.testcontainers.SupportedTimeUnit;
 import org.testcontainers.containers.GenericContainer;
 
 import java.util.Collection;
@@ -12,7 +14,7 @@ import java.util.regex.Pattern;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.PumbaActions.killContainers;
+import static org.testcontainers.ContainerActions.killContainers;
 import static org.testcontainers.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.PumbaExecutionModes.recurrently;
 import static org.testcontainers.PumbaTargets.*;
@@ -35,10 +37,10 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         final GenericContainer containerToKill = startedContainer();
         final GenericContainer containerThatShouldSurvive = startedContainer();
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .performAction(killContainers())
-                .on(containers(containerToKill.getContainerName()))
-                .schedule(onlyOnce().withAllContainersAtOnce());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(killContainers())
+                .affect(containers(containerToKill.getContainerName()))
+                .execute(onlyOnce().onAllChosenContainers());
 
         // when
         pumba.start();
@@ -59,10 +61,10 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         final GenericContainer secondVictim = startedContainer();
         final GenericContainer survivor = startedContainer();
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .on(containers(firstVictim.getContainerName(), secondVictim.getContainerName()))
-                .performAction(killContainers())
-                .schedule(onlyOnce().withAllContainersAtOnce());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(killContainers())
+                .affect(containers(firstVictim.getContainerName(), secondVictim.getContainerName()))
+                .execute(onlyOnce().onAllChosenContainers());
 
         // when
         pumba.start();
@@ -83,10 +85,10 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         startedContainerWithName(containerNameStartingWith("foobar"));
         startedContainerWithName(containerNameStartingWith("barbaz"));
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .on(containersMatchingRegexp("foobar.*"))
-                .performAction(killContainers())
-                .schedule(onlyOnce().withAllContainersAtOnce());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(killContainers())
+                .affect(containersMatchingRegexp("foobar.*"))
+                .execute(onlyOnce().onAllChosenContainers());
 
         // when
         pumba.start();
@@ -106,10 +108,10 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         startedContainer();
         startedContainer();
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .on(allContainers())
-                .performAction(killContainers())
-                .schedule(onlyOnce().withAllContainersAtOnce());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(killContainers())
+                .affect(allContainers())
+                .execute(onlyOnce().onAllChosenContainers());
 
         // when
         pumba.start();
@@ -124,10 +126,10 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         startedContainerWithName(containerNameStartingWith("foobar"));
         startedContainerWithName(containerNameStartingWith("foobar"));
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .on(containersMatchingRegexp("foobar.*"))
-                .performAction(killContainers())
-                .schedule(recurrently(5, SupportedTimeUnit.SECONDS).withOneContainerAtTime());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(killContainers())
+                .affect(containersMatchingRegexp("foobar.*"))
+                .execute(recurrently(5, SupportedTimeUnit.SECONDS).onRandomlyChosenContainer());
 
         // when
         pumba.start();

@@ -1,12 +1,12 @@
 package org.testcontainers;
 
-import org.testcontainers.PumbaActions.PumbaAction;
-import org.testcontainers.PumbaExecutionModes.PumbaExecutionMode;
-import org.testcontainers.PumbaTargets.PumbaTarget;
+import lombok.SneakyThrows;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
+
+import java.util.function.Supplier;
 
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 
@@ -14,20 +14,16 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
  * Created by novy on 31.12.16.
  */
 
-public final class PumbaContainer extends GenericContainer<PumbaContainer> {
+public final class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaDSL.ProvidesAction, PumbaDSL.ProvidesTarget, PumbaDSL.ProvidesExecutionMode {
 
-    private PumbaAction action;
-    private PumbaExecutionMode schedule;
-    private PumbaTarget target;
+    private Supplier<PumbaAction> action;
+    private Supplier<PumbaExecutionModes.PumbaExecutionMode> executionMode;
+    private Supplier<PumbaTargets.PumbaTarget> target;
 
     private PumbaContainer() {
         super("gaiaadm/pumba:latest");
         doNotWaitForStartupAtAll();
         mountDockerSocket();
-
-        this.action = PumbaActions.killContainers();
-        this.schedule = PumbaExecutionModes.onlyOnce().withAllContainersAtOnce();
-        this.target = PumbaTargets.allContainers();
     }
 
     private void doNotWaitForStartupAtAll() {
@@ -38,36 +34,53 @@ public final class PumbaContainer extends GenericContainer<PumbaContainer> {
         addFileSystemBind("/var/run/docker.sock", "/var/run/docker.sock", READ_WRITE);
     }
 
-    @Override
-    public void start() {
-        final PumbaCommand command = new PumbaCommand(action, schedule, target);
-        setCommand(command.evaluate());
-        super.start();
-    }
-
-    public static PumbaContainer newPumba() {
+    public static PumbaDSL.ProvidesAction newPumba() {
         return new PumbaContainer();
     }
 
-    public PumbaContainer on(PumbaTarget target) {
-        this.target = target;
+    @Override
+    public PumbaDSL.ProvidesTarget performContainerChaos(ContainerActions.ContainerAction containerAction) {
+        this.action = () -> containerAction;
         return this;
     }
 
-    public PumbaContainer performAction(PumbaAction action) {
-        this.action = action;
+    @Override
+    public PumbaDSL.ProvidesTarget performNetworkChaos(NetworkActions.NetworkAction networkAction) {
+        this.action = () -> {
+            fetchIPRouteImage();
+            return networkAction;
+        };
         return this;
     }
 
-    public PumbaContainer schedule(PumbaExecutionMode schedule) {
-        this.schedule = schedule;
+    @SneakyThrows
+    private void fetchIPRouteImage() {
+        new RemoteDockerImage("gaiadocker/iproute2:latest").get();
+    }
+
+    @Override
+    public PumbaDSL.ProvidesExecutionMode affect(PumbaTargets.PumbaTarget target) {
+        this.target = () -> target;
         return this;
+    }
+
+    @Override
+    public GenericContainer<PumbaContainer> execute(PumbaExecutionModes.PumbaExecutionMode executionMode) {
+        this.executionMode = () -> executionMode;
+        return this;
+    }
+
+    @Override
+    public void start() {
+        final PumbaCommand command = new PumbaCommand(action.get(), executionMode.get(), target.get());
+        setCommand(command.evaluate());
+        super.start();
     }
 
     private static class DoNotCheckStartup extends StartupCheckStrategy {
         @Override
         public StartupStatus checkStartupState(DockerClient dockerClient, String s) {
-            return StartupStatus.SUCCESSFUL;
+            return StartupCheckStrategy.StartupStatus.SUCCESSFUL;
         }
     }
 }

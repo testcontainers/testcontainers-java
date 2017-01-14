@@ -26,11 +26,11 @@ public final class PumbaExecutionModes {
     public static class WithSchedule {
         private final PumbaCommandPart schedule;
 
-        public PumbaExecutionMode withAllContainersAtOnce() {
+        public PumbaExecutionMode onAllChosenContainers() {
             return new PumbaExecutionMode(schedule, () -> "");
         }
 
-        public PumbaExecutionMode withOneContainerAtTime() {
+        public PumbaExecutionMode onRandomlyChosenContainer() {
             return new PumbaExecutionMode(schedule, () -> "--random");
         }
     }

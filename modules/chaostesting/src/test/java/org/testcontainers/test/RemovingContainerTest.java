@@ -1,13 +1,14 @@
-package org.testcontainers;
+package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.testcontainers.PumbaContainer;
 import org.testcontainers.containers.GenericContainer;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.PumbaActions.removeContainers;
+import static org.testcontainers.ContainerActions.removeContainers;
 import static org.testcontainers.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.PumbaTargets.containers;
 
@@ -32,10 +33,10 @@ public class RemovingContainerTest implements CanSpawnExampleContainers {
         // given
         final GenericContainer stoppedContainerToRemove = stoppedContainer();
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .on(containers(stoppedContainerToRemove.getContainerName()))
-                .performAction(removeContainers())
-                .schedule(onlyOnce().withAllContainersAtOnce());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(removeContainers())
+                .affect(containers(stoppedContainerToRemove.getContainerName()))
+                .execute(onlyOnce().onAllChosenContainers());
 
         // when
         pumba.start();
@@ -54,10 +55,10 @@ public class RemovingContainerTest implements CanSpawnExampleContainers {
         // given
         final GenericContainer containerToRemove = startedContainer();
 
-        final PumbaContainer pumba = PumbaContainer.newPumba()
-                .on(containers(containerToRemove.getContainerName()))
-                .performAction(removeContainers())
-                .schedule(onlyOnce().withAllContainersAtOnce());
+        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+                .performContainerChaos(removeContainers())
+                .affect(containers(containerToRemove.getContainerName()))
+                .execute(onlyOnce().onAllChosenContainers());
 
         // when
         pumba.start();
