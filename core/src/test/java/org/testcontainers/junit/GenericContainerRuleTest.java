@@ -282,7 +282,7 @@ public class GenericContainerRuleTest {
         assertTrue("The hosts file of container contains extra host", matcher.find());
     }
 
-    private BufferedReader getReaderForContainerPort80(GenericContainer container) {
+    public static BufferedReader getReaderForContainerPort80(GenericContainer container) {
 
         return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
