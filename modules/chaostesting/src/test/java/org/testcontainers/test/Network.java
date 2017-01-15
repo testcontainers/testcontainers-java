@@ -14,11 +14,16 @@ import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContai
 class Network {
 
     interface CanPingContainers {
+
         default PingResponse ping(GenericContainer container) {
+            return ping(container, 56);
+        }
+
+        default PingResponse ping(GenericContainer container, long packetSizeInBytes) {
             final String containerIP = Network.ipAddressOf(container);
             try {
                 final long start = System.currentTimeMillis();
-                Network.ping(containerIP);
+                Network.ping(containerIP, packetSizeInBytes);
                 final long end = System.currentTimeMillis();
                 return new PingResponse(true, end - start);
             } catch (Exception ignored) {
@@ -47,8 +52,8 @@ class Network {
         return inspected.getNetworkSettings().getNetworks().get("bridge").getIpAddress();
     }
 
-    static void ping(String address) throws Exception {
-        Runtime.getRuntime().exec("ping " + address + " -c 1").waitFor();
+    static void ping(String address, long packetSizeInBytes) throws Exception {
+        Runtime.getRuntime().exec(String.format("ping %s -c 1 -s %d", address, packetSizeInBytes)).waitFor();
     }
 }
 

@@ -11,7 +11,7 @@ interface CanSpawnExampleContainers {
 
     default GenericContainer startedContainer() {
         final GenericContainer aContainer = new GenericContainer<>("alpine:latest")
-                .withCommand("ping", "www.example.com");
+                .withCommand("sh", "-c", "while true; do echo something; sleep 1; done");
         aContainer.start();
         return aContainer;
     }
