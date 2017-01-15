@@ -11,7 +11,6 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -35,7 +34,6 @@ import org.testcontainers.utility.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -485,16 +483,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
 
-        if (hostPath.contains(".jar!")) {
-            // the host file is inside a JAR resource - copy to a temporary location that Docker can read
-            hostPath = PathUtils.extractClassPathResourceToTempLocation(hostPath);
-        }
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            hostPath = PathUtils.createMinGWPath(hostPath);
-        }
-
-        binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
+        final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
+        binds.add(new Bind(mountableFile.getMountablePath(), new Volume(containerPath), mode.accessMode));
     }
 
     /**
@@ -626,14 +616,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
-        URL resource = GenericContainer.class.getClassLoader().getResource(resourcePath);
+        final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        if (resource == null) {
-            throw new IllegalArgumentException("Could not find classpath resource at provided path: " + resourcePath);
-        }
-        String resourceFilePath = resource.getFile();
-
-        this.addFileSystemBind(resourceFilePath, containerPath, mode);
+        this.addFileSystemBind(mountableFile.getMountablePath(), containerPath, mode);
 
         return self();
     }
