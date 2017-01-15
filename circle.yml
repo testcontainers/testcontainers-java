@@ -20,14 +20,14 @@ test:
     - mvn -B test
     # Run Docker-in-Docker tests
     # Yes, we use selenium image, but we use it anyway in BrowserContainer's tests
-    - >
-      docker run --rm
-        -v "$HOME/.m2":/root/.m2/
-        -v /var/run/docker.sock:/var/run/docker.sock
-        -v "$(pwd)":/app
-        -w /app
-        selenium/standalone-chrome-debug:2.52.0
-        ./mvnw -B -pl core test -Dtest=*Docker
+    - |
+      DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run --rm \
+        -v "$HOME/.m2":/root/.m2/ \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "$(pwd)":"$(pwd)" \
+        -w "$(pwd)" \
+        selenium/standalone-chrome-debug:2.52.0 \
+        ./mvnw -B -pl core test -Dtest=*GenericContainerRuleTest
     - mvn -B test -f shade-test/pom.xml
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
