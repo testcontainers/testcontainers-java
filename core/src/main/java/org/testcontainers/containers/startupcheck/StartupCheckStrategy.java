@@ -45,7 +45,7 @@ public abstract class StartupCheckStrategy {
         return dockerClient.inspectContainerCmd(containerId).exec().getState();
     }
 
-    enum StartupStatus {
+    public enum StartupStatus {
         NOT_YET_KNOWN, SUCCESSFUL, FAILED
     }
 }
