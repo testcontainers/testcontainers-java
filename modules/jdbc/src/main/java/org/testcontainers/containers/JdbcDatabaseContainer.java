@@ -93,7 +93,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         synchronized (DRIVER_LOAD_MUTEX) {
             if (driver == null) {
                 try {
-                    driver = (Driver) ClassLoader.getSystemClassLoader().loadClass(this.getDriverClassName()).newInstance();
+                    driver = (Driver) Class.forName(this.getDriverClassName()).newInstance();
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                     throw new RuntimeException("Could not get Driver", e);
                 }
