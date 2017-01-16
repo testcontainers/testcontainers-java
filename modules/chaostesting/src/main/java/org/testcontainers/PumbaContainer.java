@@ -16,12 +16,15 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 
 public final class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaDSL.ProvidesAction, PumbaDSL.ProvidesTarget, PumbaDSL.ProvidesExecutionMode {
 
+    private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:204-master";
+    private static final String IP_ROUTE_DOCKER_IMAGE = "gaiadocker/iproute2:3.3";
+
     private Supplier<PumbaAction> action;
     private Supplier<PumbaExecutionModes.PumbaExecutionMode> executionMode;
     private Supplier<PumbaTargets.PumbaTarget> target;
 
     private PumbaContainer() {
-        super("gaiaadm/pumba:latest");
+        super(PUMBA_DOCKER_IMAGE);
         doNotWaitForStartupAtAll();
         mountDockerSocket();
     }
@@ -55,7 +58,7 @@ public final class PumbaContainer extends GenericContainer<PumbaContainer> imple
 
     @SneakyThrows
     private void fetchIPRouteImage() {
-        new RemoteDockerImage("gaiadocker/iproute2:latest").get();
+        new RemoteDockerImage(IP_ROUTE_DOCKER_IMAGE).get();
     }
 
     @Override
