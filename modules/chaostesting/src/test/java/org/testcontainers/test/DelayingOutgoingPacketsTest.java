@@ -8,6 +8,7 @@ import org.testcontainers.test.Network.CanPingContainers;
 import org.testcontainers.test.Network.PingResponse;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.NetworkActions.anAction;
 import static org.testcontainers.NetworkSubCommands.delayOutgoingPackets;
@@ -39,7 +40,7 @@ public class DelayingOutgoingPacketsTest implements CanSpawnExampleContainers, C
         pumba.start();
 
         // then
-        await().until(() -> {
+        await().atMost(20, SECONDS).until(() -> {
             final PingResponse ping = ping(aContainer);
             assertThat(ping.latencyInMilliseconds()).isGreaterThan(900);
         });

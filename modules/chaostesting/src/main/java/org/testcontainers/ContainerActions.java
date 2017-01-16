@@ -9,25 +9,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ContainerActions {
 
-    public static ContainerAction killContainers() {
-        // todo implement singal choosing
-        return () -> "kill";
+    public static KillContainers killContainers() {
+        return new KillContainers();
     }
 
-    public static ContainerAction pauseContainersFor(int time, SupportedTimeUnit unit) {
-        final PumbaCommandPart timePart = TimeExpression.of(time, unit);
-
-        return () -> String.format("pause -d %s", timePart.evaluate());
+    public static PauseContainers pauseContainers() {
+        return new PauseContainers();
     }
 
-    public static ContainerAction stopContainers() {
-        // todo implement choosing grace period
-        return () -> "stop";
+    public static StopContainers stopContainers() {
+        return new StopContainers();
     }
 
-    public static ContainerAction removeContainers() {
-        // todo reimplement
-        return () -> "rm --force --links --volumes";
+    public static RemoveContainers removeContainers() {
+        return new RemoveContainers();
     }
 
     public interface ContainerAction extends PumbaAction {
