@@ -17,6 +17,10 @@ public final class NetworkSubCommands {
         return new RateLimitOutgoingTraffic();
     }
 
+    public static DroppingPacketsModels lossOutgoingPackets() {
+        return new DroppingPacketsModels();
+    }
+
 
     interface NetworkSubCommand extends PumbaCommandPart {
     }

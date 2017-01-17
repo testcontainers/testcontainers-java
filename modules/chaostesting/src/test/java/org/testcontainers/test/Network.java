@@ -1,5 +1,6 @@
 package org.testcontainers.test;
 
+import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -53,9 +54,10 @@ class Network {
         }
 
         private String extractResponseTimeAsString() {
+            Preconditions.checkArgument(wasSuccessful(), "Trying to extract latency from unsuccessful response");
             final Pattern minResponseTimePattern = Pattern.compile("rtt min/avg/max/mdev = ([+-]?([0-9]*[.])?[0-9]+)");
             final Matcher matcher = minResponseTimePattern.matcher(lastLineOfResponse());
-            matcher.find();
+            Preconditions.checkArgument(matcher.find(), "Latency pattern not found in response");
             return matcher.group(1);
         }
 
