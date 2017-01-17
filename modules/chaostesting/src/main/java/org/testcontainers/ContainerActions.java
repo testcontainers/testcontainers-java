@@ -25,6 +25,10 @@ public final class ContainerActions {
         return new RemoveContainers();
     }
 
+    public static DroppingPackets.BernoulliModel dropOutgoingPackets() {
+        return new DroppingPackets.BernoulliModel();
+    }
+
     public interface ContainerAction extends PumbaAction {
     }
 }

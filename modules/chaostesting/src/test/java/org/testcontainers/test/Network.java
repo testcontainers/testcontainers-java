@@ -2,10 +2,17 @@ package org.testcontainers.test;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
 import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContainerResponse;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by novy on 14.01.17.
@@ -21,28 +28,40 @@ class Network {
 
         default PingResponse ping(GenericContainer container, long packetSizeInBytes) {
             final String containerIP = Network.ipAddressOf(container);
-            try {
-                final long start = System.currentTimeMillis();
-                Network.ping(containerIP, packetSizeInBytes);
-                final long end = System.currentTimeMillis();
-                return new PingResponse(true, end - start);
-            } catch (Exception ignored) {
-                return new PingResponse(false, -1);
-            }
+            return Network.ping(containerIP, packetSizeInBytes);
         }
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     static class PingResponse {
-        private final boolean successful;
-        private final long latency;
+        private final String responseContent;
 
         boolean wasSuccessful() {
-            return successful;
+            return !unknownHost() && !packetLost();
         }
 
-        long latencyInMilliseconds() {
-            return latency;
+        private boolean unknownHost() {
+            return lastLineOfResponse().contains("ping: unknown host");
+        }
+
+        private boolean packetLost() {
+            return lastLineOfResponse().contains("100% packet loss");
+        }
+
+        double latencyInMilliseconds() {
+            return Double.parseDouble(extractResponseTimeAsString());
+        }
+
+        private String extractResponseTimeAsString() {
+            final Pattern minResponseTimePattern = Pattern.compile("rtt min/avg/max/mdev = ([+-]?([0-9]*[.])?[0-9]+)");
+            final Matcher matcher = minResponseTimePattern.matcher(lastLineOfResponse());
+            matcher.find();
+            return matcher.group(1);
+        }
+
+        private String lastLineOfResponse() {
+            final String[] responseLines = responseContent.split("\n");
+            return new LinkedList<>(Arrays.asList(responseLines)).getLast();
         }
     }
 
@@ -52,8 +71,12 @@ class Network {
         return inspected.getNetworkSettings().getNetworks().get("bridge").getIpAddress();
     }
 
-    static void ping(String address, long packetSizeInBytes) throws Exception {
-        Runtime.getRuntime().exec(String.format("ping %s -c 1 -s %d", address, packetSizeInBytes)).waitFor();
+    @SneakyThrows
+    static PingResponse ping(String address, long packetSizeInBytes) {
+        final Process process = Runtime.getRuntime().exec(String.format("ping %s -c 1 -s %d", address, packetSizeInBytes));
+        return new PingResponse(
+                IOUtils.toString(process.getInputStream(), "UTF-8")
+        );
     }
 }
 
