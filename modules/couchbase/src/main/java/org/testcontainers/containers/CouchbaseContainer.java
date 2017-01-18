@@ -33,6 +33,7 @@ import lombok.Cleanup;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
+import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContainerResponse;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -105,7 +106,6 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
 
     public CouchbaseEnvironment getCouchbaseEnvironnement() {
         if (couchbaseEnvironment == null) {
-            initCluster();
             couchbaseEnvironment = DefaultCouchbaseEnvironment.builder()
                     .bootstrapCarrierDirectPort(getMappedPort(11210))
                     .bootstrapCarrierSslPort(getMappedPort(11207))
@@ -183,8 +183,8 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         return self();
     }
 
-
-    protected void initCluster() {
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
         urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(8091));
         try {
             String poolURL = "/pools/default";
