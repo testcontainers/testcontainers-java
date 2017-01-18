@@ -183,7 +183,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     }
 
 
-    public void initCluster() {
+    protected void initCluster() {
         urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(8091));
         try {
             String poolURL = "/pools/default";
@@ -250,7 +250,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         }
     }
 
-    public void callCouchbaseRestAPI(String url, String payload) throws IOException {
+    protected void callCouchbaseRestAPI(String url, String payload) throws IOException {
         String fullUrl = urlBase + url;
         HttpURLConnection httpConnection = (HttpURLConnection) ((new URL(fullUrl).openConnection()));
         httpConnection.setDoOutput(true);
