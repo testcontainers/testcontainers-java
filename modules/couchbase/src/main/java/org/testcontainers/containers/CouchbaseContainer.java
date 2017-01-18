@@ -79,7 +79,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     private String urlBase;
 
     public CouchbaseContainer() {
-        super("couchbase/server:latest");
+        super("couchbase/server:4.5.1");
     }
 
     public CouchbaseContainer(String containerName) {
