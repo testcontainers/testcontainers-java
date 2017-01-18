@@ -228,10 +228,6 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
             callCouchbaseRestAPI(setupServicesURL, setupServiceContent);
             callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
             callCouchbaseRestAPI(bucketURL, sampleBucketPayloadBuilder.toString());
-
-            CouchbaseWaitStrategy s = new CouchbaseWaitStrategy();
-            s.withBasicCredentials(clusterUsername, clusterPassword);
-            s.waitUntilReady(this);
             callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
         } catch (Exception e) {
             throw new RuntimeException(e);
