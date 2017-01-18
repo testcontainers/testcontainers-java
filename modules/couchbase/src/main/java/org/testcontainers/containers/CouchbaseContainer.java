@@ -29,6 +29,7 @@ import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
 import com.couchbase.client.java.query.N1qlQuery;
+import lombok.Cleanup;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
@@ -259,10 +260,10 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
                 "application/x-www-form-urlencoded");
         String encoded = Base64.encode((clusterUsername + ":" + clusterPassword).getBytes("UTF-8"));
         httpConnection.setRequestProperty("Authorization", "Basic " + encoded);
-        DataOutputStream out = new DataOutputStream(httpConnection.getOutputStream());
+        @Cleanup DataOutputStream out = new DataOutputStream(httpConnection.getOutputStream());
         out.writeBytes(payload);
         out.flush();
-        out.close();
+
         httpConnection.getResponseCode();
         httpConnection.disconnect();
     }
