@@ -21,7 +21,8 @@ public class TestEnvironment {
     public static boolean dockerExecutionDriverSupportsExec() {
         String executionDriver = DockerClientFactory.instance().getActiveExecutionDriver();
 
-        return !executionDriver.startsWith("lxc");
+        // Could be null starting from Docker 1.13
+        return executionDriver == null || !executionDriver.startsWith("lxc");
     }
 
     public static boolean dockerIsDockerMachine() {
