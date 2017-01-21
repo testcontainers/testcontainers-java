@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java</artifactId>
-            <version>3.0.5</version>
+            <version>3.0.7</version>
             <exclusions>
                 <!-- replace with junixsocket -->
                 <exclusion>
