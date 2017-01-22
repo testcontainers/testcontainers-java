@@ -19,8 +19,8 @@ before_install:
   - docker pull mysql:5.6
   - docker pull mysql:5.5
   - docker pull postgres:latest
-  - docker pull selenium/standalone-chrome-debug:2.45.0
-  - docker pull selenium/standalone-firefox-debug:2.45.0
+  - docker pull selenium/standalone-chrome-debug:2.52.0
+  - docker pull selenium/standalone-firefox-debug:2.52.0
   - docker pull richnorth/vnc-recorder:latest
   - docker pull nginx:1.9.4
   - docker pull dduportal/docker-compose:1.6.0
@@ -32,6 +32,15 @@ before_install:
 
 script:
   - mvn -B test
+  # Run Docker-in-Docker tests
+  - |
+      DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run --rm \
+      -v "$HOME/.m2":/root/.m2/ \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "$(pwd)":"$(pwd)" \
+      -w "$(pwd)" \
+      openjdk:8-jre \
+      ./mvnw -B -pl core test -Dtest=*GenericContainerRuleTest
   - mvn -B test -f shade-test/pom.xml
 
 cache:
