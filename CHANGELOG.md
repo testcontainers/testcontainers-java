@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.8] - 2017-01-22
+### Fixed 
+- Comaptibility fixes for Docker for Mac v1.13.0 (#272)
+- Relax docker environment disk space check to accomodate unusual empty `df` output observed on Docker for Mac with OverlayFS (#273, #278)
+- Fix inadvertent private-scoping of startup checks' `StartupStatus`, which made implementation of custom startup checks impossible (#266)
+- Fix potential resource lead/deadlock when errors are encountered building images from a Dockerfile (#274)
+
+### Changed
+- Add support for execution within a Docker container (#267), correcting resolution of container addresses
+- Add support for version 2 of private docker registries, configured via `$HOME/.docker/config.json` (#270)
+- Use current classloader instead of system classloader for loading JDBC drivers (#261)
+- Allow hardcoded container image names for Ambassador and VNC recorder containers to be changed via a configuration file (#277, #259)
+- Allow Selenium Webdriver container image name to be specified as a constructor parameter (#249, #171)
+
+
 ## [1.1.7] - 2016-11-19
 ### Fixed
 - Compensate for premature TCP socket opening in Docker for Mac (#160, #236)
