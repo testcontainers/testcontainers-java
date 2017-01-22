@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class VncRecordingSidekickContainer<SELF extends VncRecordingSidekickCont
      * @param vncServiceContainer the container whose screen should be recorded. This container must implement VncService and LinkableContainer.
      */
     public VncRecordingSidekickContainer(T vncServiceContainer) {
-        super("richnorth/vnc-recorder:latest");
+        super(TestcontainersConfiguration.getInstance().getVncRecordedContainerImage());
 
         this.vncServiceContainer = vncServiceContainer;
 

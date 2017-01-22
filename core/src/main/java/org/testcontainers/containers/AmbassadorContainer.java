@@ -5,6 +5,7 @@ import com.github.dockerjava.api.model.Container;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class AmbassadorContainer<SELF extends AmbassadorContainer<SELF>> extends
     private final int servicePort;
 
     public AmbassadorContainer(LinkableContainer otherContainer, String serviceName, int servicePort) {
-        super("richnorth/ambassador:latest");
+        super(TestcontainersConfiguration.getInstance().getAmbassadorContainerImage());
 
         /*
           Use the unique 'identifierPrefix' (random compose project name) so that the ambassador can see
