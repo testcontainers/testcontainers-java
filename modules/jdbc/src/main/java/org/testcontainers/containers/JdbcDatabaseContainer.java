@@ -117,8 +117,10 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         info.put("password", this.getPassword());
         final String url = this.getJdbcUrl() + queryString;
 
+        final Driver jdbcDriverInstance = getJdbcDriverInstance();
+
         try {
-            return Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> getJdbcDriverInstance().connect(url, info));
+            return Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> jdbcDriverInstance.connect(url, info));
         } catch (Exception e) {
             throw new SQLException("Could not create new connection", e);
         }
