@@ -8,6 +8,7 @@
     * [Usage modes](usage.md#usage-modes)
     * [Maven dependencies](usage.md#maven-dependencies)
     * [Logging](usage.md#logging)
+    * [Docker in Docker](usage/dind.md)
 
 ## Generic containers
 

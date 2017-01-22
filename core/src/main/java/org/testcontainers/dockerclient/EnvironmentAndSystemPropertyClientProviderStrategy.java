@@ -27,7 +27,6 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
         }
 
         LOGGER.info("Found docker client settings from environment");
-        LOGGER.info("Docker host IP address is {}", DockerClientConfigUtils.getDockerHostIpAddress(config));
     }
 
     @Override

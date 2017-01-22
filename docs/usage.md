@@ -19,6 +19,7 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 	* `DOCKER_TLS_VERIFY=1`
 	* `DOCKER_CERT_PATH=~/.docker`
 * If Docker Machine is installed, the docker machine environment for the *first* machine found. Docker Machine needs to be on the PATH for this to succeed.
+* If you're going to run your tests inside a container, please read [Docker in Docker](usage/dind.md) first.
 
 ### Usage modes
 

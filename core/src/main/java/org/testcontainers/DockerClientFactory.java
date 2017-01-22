@@ -1,36 +1,35 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
-import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.github.dockerjava.core.command.WaitContainerResultCallback;
 
 import lombok.Synchronized;
-import org.slf4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.dockerclient.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import static java.util.Arrays.asList;
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Singleton class that provides initialized Docker clients.
  * <p>
  * The correct client configuration to use will be determined on first use, and cached thereafter.
  */
+@Slf4j
 public class DockerClientFactory {
 
+    private static final String TINY_IMAGE = "alpine:3.2";
     private static DockerClientFactory instance;
-    private static final Logger LOGGER = getLogger(DockerClientFactory.class);
 
     // Cached client configuration
     private DockerClientProviderStrategy strategy;
@@ -80,6 +79,8 @@ public class DockerClientFactory {
         }
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(CONFIGURATION_STRATEGIES);
+
+        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
         DockerClient client = strategy.getClient();
 
         if (!preconditionsChecked) {
@@ -87,13 +88,20 @@ public class DockerClientFactory {
             Version version = client.versionCmd().exec();
             activeApiVersion = version.getApiVersion();
             activeExecutionDriver = dockerInfo.getExecutionDriver();
-            LOGGER.info("Connected to docker: \n" +
+            log.info("Connected to docker: \n" +
                     "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
                     "  API Version: " + activeApiVersion + "\n" +
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
             checkVersion(version.getVersion());
+
+            List<Image> images = client.listImagesCmd().exec();
+            // Pull the image we use to perform some checks
+            if (images.stream().noneMatch(it -> it.getRepoTags() != null && asList(it.getRepoTags()).contains(TINY_IMAGE))) {
+                client.pullImageCmd(TINY_IMAGE).exec(new PullImageResultCallback()).awaitSuccess();
+            }
+
             checkDiskSpaceAndHandleExceptions(client);
             preconditionsChecked = true;
         }
@@ -121,7 +129,7 @@ public class DockerClientFactory {
         } catch (NotEnoughDiskSpaceException e) {
             throw e;
         } catch (Exception e) {
-            LOGGER.warn("Encountered and ignored error while checking disk space", e);
+            log.warn("Encountered and ignored error while checking disk space", e);
         }
     }
 
@@ -130,44 +138,47 @@ public class DockerClientFactory {
      * @param client an active Docker client
      */
     private void checkDiskSpace(DockerClient client) {
+        DiskSpaceUsage df = runInsideDocker(client, cmd -> cmd.withCmd("df", "-P"), (dockerClient, id) -> {
+                String logResults = dockerClient.logContainerCmd(id)
+                    .withStdOut(true)
+                    .exec(new LogToStringContainerCallback())
+                    .toString();
 
-        List<Image> images = client.listImagesCmd().exec();
-        if (!images.stream().anyMatch(it -> it.getRepoTags() != null && asList(it.getRepoTags()).contains("alpine:3.2"))) {
-            PullImageResultCallback callback = client.pullImageCmd("alpine:3.2").exec(new PullImageResultCallback());
-            callback.awaitSuccess();
+                return parseAvailableDiskSpace(logResults);
+        });
+
+        log.info("Disk utilization in Docker environment is {} ({} )",
+            df.usedPercent.map(x -> x + "%").orElse("unknown"),
+            df.availableMB.map(x -> x + " MB available").orElse("unknown available"));
+
+        if (df.availableMB.orElseThrow(NotAbleToGetDiskSpaceUsageException::new) < 2048) {
+            log.error("Docker environment has less than 2GB free - execution is unlikely to succeed so will be aborted.");
+            throw new NotEnoughDiskSpaceException("Not enough disk space in Docker environment");
         }
+    }
 
-        CreateContainerResponse createContainerResponse = client.createContainerCmd("alpine:3.2").withCmd("df", "-P").exec();
-        String id = createContainerResponse.getId();
+    public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
+        if (strategy == null) {
+            client();
+        }
+        // We can't use client() here because it might create an infinite loop
+        return runInsideDocker(strategy.getClient(), createContainerCmdConsumer, block);
+    }
+
+    private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE);
+        createContainerCmdConsumer.accept(createContainerCmd);
+        String id = createContainerCmd.exec().getId();
 
         client.startContainerCmd(id).exec();
 
-        LogContainerResultCallback callback = client.logContainerCmd(id).withStdOut(true).exec(new LogContainerCallback());
         try {
-
-            WaitContainerResultCallback waitCallback = new WaitContainerResultCallback();
-            client.waitContainerCmd(id).exec(waitCallback);
-            waitCallback.awaitStarted();
-
-            callback.awaitCompletion();
-            String logResults = callback.toString();
-
-            DiskSpaceUsage df = parseAvailableDiskSpace(logResults);
-            LOGGER.info("Disk utilization in Docker environment is {} ({} )", 
-                    df.usedPercent.map(x -> x.toString() + "%").orElse("unknown"), 
-                    df.availableMB.map(x -> x.toString() + " MB available").orElse("unknown available"));
-
-            if (df.availableMB.orElseThrow(NotAbleToGetDiskSpaceUsageException::new) < 2048) {
-                LOGGER.error("Docker environment has less than 2GB free - execution is unlikely to succeed so will be aborted.");
-                throw new NotEnoughDiskSpaceException("Not enough disk space in Docker environment");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            return block.apply(client, id);
         } finally {
             try {
                 client.removeContainerCmd(id).withRemoveVolumes(true).withForce(true).exec();
             } catch (NotFoundException | InternalServerErrorException ignored) {
-
+                log.debug("", ignored);
             }
         }
     }
@@ -229,20 +240,5 @@ public class DockerClientFactory {
         NotAbleToGetDiskSpaceUsageException() {
             super();
         }
-    }
-}
-
-class LogContainerCallback extends LogContainerResultCallback {
-    private final StringBuffer log = new StringBuffer();
-
-    @Override
-    public void onNext(Frame frame) {
-        log.append(new String(frame.getPayload()));
-        super.onNext(frame);
-    }
-
-    @Override
-    public String toString() {
-        return log.toString();
     }
 }
