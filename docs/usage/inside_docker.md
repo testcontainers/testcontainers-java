@@ -1,4 +1,4 @@
-# Docker in Docker
+# Running inside a Docker container
 
 > Since 1.1.8
 
