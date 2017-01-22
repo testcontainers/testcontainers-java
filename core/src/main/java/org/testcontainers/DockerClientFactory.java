@@ -151,7 +151,7 @@ public class DockerClientFactory {
             df.usedPercent.map(x -> x + "%").orElse("unknown"),
             df.availableMB.map(x -> x + " MB available").orElse("unknown available"));
 
-        if (df.availableMB.orElseThrow(NotAbleToGetDiskSpaceUsageException::new) < 2048) {
+        if (df.availableMB.map(it -> it < 2048).orElse(false)) {
             log.error("Docker environment has less than 2GB free - execution is unlikely to succeed so will be aborted.");
             throw new NotEnoughDiskSpaceException("Not enough disk space in Docker environment");
         }
@@ -233,12 +233,6 @@ public class DockerClientFactory {
     private static class NotEnoughDiskSpaceException extends RuntimeException {
         NotEnoughDiskSpaceException(String message) {
             super(message);
-        }
-    }
-    
-    private static class NotAbleToGetDiskSpaceUsageException extends RuntimeException {
-        NotAbleToGetDiskSpaceUsageException() {
-            super();
         }
     }
 }
