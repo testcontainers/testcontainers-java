@@ -23,7 +23,7 @@ public class CommandLine {
 
     private static final Logger LOGGER = getLogger(CommandLine.class);
 
-    private static String OS = System.getProperty("os.name").toLowerCase();
+    private static final String OS = System.getProperty("os.name").toLowerCase();
 
     /**
      * Run a shell command synchronously.
