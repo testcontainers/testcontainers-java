@@ -59,19 +59,22 @@ public class CommandLine {
      */
     public static boolean executableExists(String executable) {
 
-        String winExecutable = executable + ".exe";
+        String fullExecutableName;
+        if (isWindows() && !executable.endsWith(".exe")) {
+            fullExecutableName = executable + ".exe";
+        } else {
+            fullExecutableName = executable;
+        }
 
         // First check if we've been given the full path already
-        File directFile = new File(executable);
-        File windowsExeFile = new File(winExecutable);
-        if ((directFile.exists() && directFile.canExecute()) || (isWindows() && windowsExeFile.exists() && windowsExeFile.canExecute())) {
+        File directFile = new File(fullExecutableName);
+        if (directFile.exists() && directFile.canExecute()) {
             return true;
         }
 
         for (String pathString : getSystemPath()) {
             Path path = Paths.get(pathString);
-            if ((Files.exists(path.resolve(executable)) && Files.isExecutable(path.resolve(executable)))
-                    || (isWindows() && Files.exists(path.resolve(winExecutable)) && Files.isExecutable(path.resolve(winExecutable)))) {
+            if (Files.exists(path.resolve(executable)) && Files.isExecutable(path.resolve(executable))) {
                 return true;
             }
         }
