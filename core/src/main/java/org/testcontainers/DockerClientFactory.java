@@ -12,6 +12,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.dockerclient.*;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,7 @@ import static java.util.Arrays.asList;
 @Slf4j
 public class DockerClientFactory {
 
-    private static final String TINY_IMAGE = "alpine:3.2";
+    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
     private static DockerClientFactory instance;
 
     // Cached client configuration
