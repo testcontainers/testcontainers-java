@@ -43,7 +43,7 @@ public class TestcontainersConfiguration {
 
                 config.ambassadorContainerImage = properties.getProperty("ambassador.container.image", config.ambassadorContainerImage);
                 config.vncRecordedContainerImage = properties.getProperty("vncrecorder.container.image", config.vncRecordedContainerImage);
-                config.tinyImage = properties.getProperty("tinyimage.container.image", config.vncRecordedContainerImage);
+                config.tinyImage = properties.getProperty("tinyimage.container.image", config.tinyImage);
 
                 log.debug("Testcontainers configuration overrides loaded from {}: {}", configOverrides, config);
 
