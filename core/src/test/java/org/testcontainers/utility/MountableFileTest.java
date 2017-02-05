@@ -49,7 +49,7 @@ public class MountableFileTest {
 
         performChecks(mountableFile);
 
-        assertTrue("The resolved path contains the original space", mountableFile.getMountablePath().contains(" "));assertFalse("The resolved path does not contain an escaped space", mountableFile.getMountablePath().contains("\\ "));
+        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains(" "));assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains("\\ "));
     }
 
     /*
@@ -69,7 +69,7 @@ public class MountableFileTest {
     }
 
     private void performChecks(final MountableFile mountableFile) {
-        final String mountablePath = mountableFile.getMountablePath();
+        final String mountablePath = mountableFile.getResolvedPath();
         assertTrue("The resolved path can be found", new File(mountablePath).exists());
         assertFalse("The resolved path does not contain any URL escaping", mountablePath.contains("%20"));
     }
