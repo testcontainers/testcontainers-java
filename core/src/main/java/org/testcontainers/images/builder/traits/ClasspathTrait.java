@@ -13,6 +13,6 @@ public interface ClasspathTrait<SELF extends ClasspathTrait<SELF> & BuildContext
     default SELF withFileFromClasspath(String path, String resourcePath) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        return ((SELF) this).withFileFromPath(path, Paths.get(mountableFile.getMountablePath()));
+        return ((SELF) this).withFileFromPath(path, Paths.get(mountableFile.getResolvedPath()));
     }
 }

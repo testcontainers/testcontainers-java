@@ -1,6 +1,8 @@
 package org.testcontainers.utility;
 
 import com.google.common.base.Charsets;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,21 +23,21 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 
 /**
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
  * a path that the Docker daemon is about to create a volume mount for.
  */
+@RequiredArgsConstructor(access = PRIVATE)
 @Slf4j
 public class MountableFile {
 
     private final String path;
-    private String resolvedPath = null;
 
-    private MountableFile(final String path) {
-        this.path = path;
-    }
+    @Getter(lazy = true)
+    private final String resolvedPath = resolvePath();
 
     /**
      * Obtains a {@link MountableFile} corresponding to a resource on the classpath (including resources in JAR files)
@@ -64,35 +66,31 @@ public class MountableFile {
      *
      * @return a volume-mountable path.
      */
-    public String getMountablePath() {
-
-        // Don't recompute if already resolved
-        if (resolvedPath != null) {
-            return resolvedPath;
-        }
-
+    private String resolvePath() {
+        String result;
         if (path.contains(".jar!")) {
-            resolvedPath = extractClassPathResourceToTempLocation(this.path);
+            result = extractClassPathResourceToTempLocation(this.path);
         } else {
-            resolvedPath = unencodeResourceURIToFilePath(path);
+            result = unencodeResourceURIToFilePath(path);
         }
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            resolvedPath = PathUtils.createMinGWPath(resolvedPath);
+            result = PathUtils.createMinGWPath(result);
         }
 
-        return resolvedPath;
+        return result;
     }
 
     @NotNull
     private static URL getClasspathResource(@NotNull final String resourcePath, @NotNull final Set<ClassLoader> classLoaders) {
 
+        final Set<ClassLoader> classLoadersToSearch = new HashSet<>(classLoaders);
         // try context and system classloaders as well
-        classLoaders.add(Thread.currentThread().getContextClassLoader());
-        classLoaders.add(ClassLoader.getSystemClassLoader());
-        classLoaders.add(MountableFile.class.getClassLoader());
+        classLoadersToSearch.add(Thread.currentThread().getContextClassLoader());
+        classLoadersToSearch.add(ClassLoader.getSystemClassLoader());
+        classLoadersToSearch.add(MountableFile.class.getClassLoader());
 
-        for (final ClassLoader classLoader : classLoaders) {
+        for (final ClassLoader classLoader : classLoadersToSearch) {
             URL resource = classLoader.getResource(resourcePath);
             if (resource != null) {
                 return resource;
