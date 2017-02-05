@@ -484,7 +484,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
 
         final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-        binds.add(new Bind(mountableFile.getMountablePath(), new Volume(containerPath), mode.accessMode));
+        binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode));
     }
 
     /**
@@ -618,7 +618,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        this.addFileSystemBind(mountableFile.getMountablePath(), containerPath, mode);
+        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode);
 
         return self();
     }
