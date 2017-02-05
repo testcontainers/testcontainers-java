@@ -109,9 +109,12 @@ Testcontainers uses additional docker images under some modes of execution:
 
 > *N.B.:* both these images use the 'latest' tag, which could potentially affect repeatability of tests and compatibility with Testcontainers _if the image is ever changed_. This is a [known issue](https://github.com/testcontainers/testcontainers-java/issues/276) which will be addressed in the future. The current 'latest' version of these images will never be changed until they are replaced by a new image altogether.
 
+Last but not least, `alpine:3.2` image is used for Docker host IP address detection in some special cases.
+
 If it is necessary to override these image names (e.g. when using a private registry), you should create a file named `testcontainers.properties` and place it on the classpath with the following content:
 
 ```properties
 ambassador.container.image=replacement image name here
 vncrecorder.container.image=replacement image name here
+tinyimage.container.image=replacement image name here
 ```
