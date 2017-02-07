@@ -505,13 +505,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public SELF withVolumesFrom(String otherContainer, BindMode mode) {
-        addVolumesFrom(otherContainer, mode);
+    public SELF withVolumesFrom(Container container, BindMode mode) {
+        addVolumesFrom(container, mode);
         return self();
     }
 
-    private void addVolumesFrom(String otherContainer, BindMode mode) {
-        volumesFroms.add(new VolumesFrom(otherContainer, mode.accessMode));
+    private void addVolumesFrom(Container container, BindMode mode) {
+        volumesFroms.add(new VolumesFrom(container.getContainerName(), mode.accessMode));
     }
 
     @Override
