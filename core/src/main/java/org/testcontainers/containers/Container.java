@@ -130,6 +130,15 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
 
     /**
+     * Adds container volumes.
+     *
+     * @param otherContainer the other container object to add volumes from
+     * @param mode the bind mode
+     * @return this
+     */
+    SELF withVolumesFrom(String otherContainer, BindMode mode);
+
+    /**
      * Set the ports that this container listens on
      *
      * @param ports an array of TCP ports
