@@ -132,11 +132,11 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Adds container volumes.
      *
-     * @param otherContainer the other container object to add volumes from
+     * @param container the container to add volumes from
      * @param mode the bind mode
      * @return this
      */
-    SELF withVolumesFrom(String otherContainer, BindMode mode);
+    SELF withVolumesFrom(Container container, BindMode mode);
 
     /**
      * Set the ports that this container listens on
