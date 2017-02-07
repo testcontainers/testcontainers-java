@@ -95,6 +95,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private boolean privilegedMode;
 
     @NonNull
+    private List<VolumesFrom> volumesFroms = new ArrayList<>();
+
+    @NonNull
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
@@ -344,6 +347,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
+        VolumesFrom[] volumesFromsArray = volumesFroms.stream()
+                .toArray(VolumesFrom[]::new);
+        createCommand.withVolumesFrom(volumesFromsArray);
+
         Set<Link> allLinks = new HashSet<>();
         Set<String> allLinkedContainerNetworks = new HashSet<>();
         for (Map.Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
@@ -492,6 +499,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode);
         return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withVolumesFrom(String otherContainer, BindMode mode) {
+        addVolumesFrom(otherContainer, mode);
+        return self();
+    }
+
+    private void addVolumesFrom(String otherContainer, BindMode mode) {
+        volumesFroms.add(new VolumesFrom(otherContainer, mode.accessMode));
     }
 
     @Override
