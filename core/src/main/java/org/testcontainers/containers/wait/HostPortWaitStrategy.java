@@ -33,7 +33,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
         Callable<Boolean> checkStrategy;
 
         // Special case for Docker for Mac, see #160
-        if (DockerClientFactory.instance().isUsing(ProxiedUnixSocketClientProviderStrategy.class)) {
+        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
             List<Integer> exposedPorts = container.getExposedPorts();
 
             Integer exposedPort = exposedPorts.stream()
