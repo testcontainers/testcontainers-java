@@ -28,7 +28,7 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
         try {
             config = tryConfiguration(SOCKET_LOCATION);
             LOGGER.info("Accessing docker with local Unix socket");
-        } catch (Exception e) {
+        } catch (Exception | UnsatisfiedLinkError e) {
             throw new InvalidConfigurationException("ping failed", e);
         }
     }
