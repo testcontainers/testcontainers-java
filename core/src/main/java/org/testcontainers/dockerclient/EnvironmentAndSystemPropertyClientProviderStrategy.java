@@ -21,7 +21,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
 
             final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
             ping(client, timeout);
-        } catch (Exception e) {
+        } catch (Exception | UnsatisfiedLinkError e) {
             LOGGER.error("ping failed with configuration {} due to {}", getDescription(), e.toString(), e);
             throw new InvalidConfigurationException("ping failed");
         }

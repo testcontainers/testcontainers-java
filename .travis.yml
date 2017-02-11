@@ -41,6 +41,15 @@ script:
       -w "$(pwd)" \
       openjdk:8-jre \
       ./mvnw -B -pl core test -Dtest=*GenericContainerRuleTest
+  # Run Docker-in-Docker tests inside Alpine
+  - |
+      DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run --rm \
+      -v "$HOME/.m2":/root/.m2/ \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "$(pwd)":"$(pwd)" \
+      -w "$(pwd)" \
+      joepjoosten/openjdk-alpine-bash \
+      ./mvnw -B -pl core test -Dtest=*GenericContainerRuleTest
   - mvn -B test -f shade-test/pom.xml
 
 cache:
