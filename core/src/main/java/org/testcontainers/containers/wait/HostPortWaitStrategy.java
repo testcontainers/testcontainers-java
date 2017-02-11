@@ -33,7 +33,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
         Callable<Boolean> checkStrategy;
 
         // Special case for Docker for Mac, see #160
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        if (isUsingSocketProxyOnMac()) {
             List<Integer> exposedPorts = container.getExposedPorts();
 
             Integer exposedPort = exposedPorts.stream()
@@ -89,5 +89,10 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
                     container.getContainerIpAddress() + ":" + port + " should be listening)");
         }
+    }
+
+    private boolean isUsingSocketProxyOnMac() {
+        return DockerClientFactory.instance().isUsing(ProxiedUnixSocketClientProviderStrategy.class)
+                && System.getProperty("os.name").toLowerCase().contains("mac");
     }
 }
