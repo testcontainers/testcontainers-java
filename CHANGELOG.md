@@ -1,9 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.9] - 2017-02-12
+### Fixed
+- Fix inability to run Testcontainers on Alpine linux. Unix-socket-over-TCP is now used in linux environments where netty fails due to lack of glibc libraries (#290)
+- Fix slow feedback in the case of missing JDBC drivers by failing-fast if the required driver cannot be found (#280, #230)
+
+### Changed
+- Add ability to change 'tiny image' used for disk space checks (#287)
+- Add ability to attach volumes to a container using 'volumes from' (#244, #289)
+
 ## [1.1.8] - 2017-01-22
 ### Fixed 
-- Comaptibility fixes for Docker for Mac v1.13.0 (#272)
+- Compatibility fixes for Docker for Mac v1.13.0 (#272)
 - Relax docker environment disk space check to accomodate unusual empty `df` output observed on Docker for Mac with OverlayFS (#273, #278)
 - Fix inadvertent private-scoping of startup checks' `StartupStatus`, which made implementation of custom startup checks impossible (#266)
 - Fix potential resource lead/deadlock when errors are encountered building images from a Dockerfile (#274)
