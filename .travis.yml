@@ -48,7 +48,7 @@ script:
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v "$(pwd)":"$(pwd)" \
       -w "$(pwd)" \
-      joepjoosten/openjdk-alpine-bash \
+      kiview/openjdk-alpine-bash:8u111 \
       ./mvnw -B -pl core test -Dtest=*GenericContainerRuleTest
   - mvn -B test -f shade-test/pom.xml
 
