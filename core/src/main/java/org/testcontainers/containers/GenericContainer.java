@@ -359,15 +359,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             LinkableContainer linkableContainer = linkEntries.getValue();
 
             Set<Link> links = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-                    .map(container -> new Link(container.getNames()[0], alias))
+                    .map(com.github.dockerjava.api.model.Container::getId)
+                    .map(id -> dockerClient.inspectContainerCmd(id).exec())
+                    .filter(inspectResponse -> inspectResponse.getName().endsWith(linkableContainer.getContainerName()))
+                    .map(inspectResponse -> new Link(inspectResponse.getName(), alias))
                     .collect(Collectors.toSet());
             allLinks.addAll(links);
 
             boolean linkableContainerIsRunning = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
                     .map(com.github.dockerjava.api.model.Container::getId)
                     .map(id -> dockerClient.inspectContainerCmd(id).exec())
+                    .filter(inspectResponse -> inspectResponse.getName().endsWith(linkableContainer.getContainerName()))
                     .anyMatch(linkableContainerInspectResponse -> linkableContainerInspectResponse.getState().getRunning());
 
             if (!linkableContainerIsRunning) {
@@ -377,7 +379,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                    .filter(container -> dockerClient.inspectContainerCmd(container.getId()).exec().getName().endsWith(linkableContainer.getContainerName()))
                     .filter(container -> container.getNetworkSettings() != null &&
                             container.getNetworkSettings().getNetworks() != null)
                     .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
