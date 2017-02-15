@@ -353,22 +353,25 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         Set<Link> allLinks = new HashSet<>();
         Set<String> allLinkedContainerNetworks = new HashSet<>();
+
+        List<com.github.dockerjava.api.model.Container> containers = dockerClient.listContainersCmd().exec();
+
+        List<InspectContainerResponse> inspectContainerResponses = containers.stream()
+                .map(container -> dockerClient.inspectContainerCmd(container.getId()).exec())
+                .collect(Collectors.toList());
+
         for (Map.Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
 
             String alias = linkEntries.getKey();
             LinkableContainer linkableContainer = linkEntries.getValue();
 
-            Set<Link> links = dockerClient.listContainersCmd().exec().stream()
-                    .map(com.github.dockerjava.api.model.Container::getId)
-                    .map(id -> dockerClient.inspectContainerCmd(id).exec())
+            Set<Link> links = inspectContainerResponses.stream()
                     .filter(inspectResponse -> inspectResponse.getName().endsWith(linkableContainer.getContainerName()))
                     .map(inspectResponse -> new Link(inspectResponse.getName(), alias))
                     .collect(Collectors.toSet());
             allLinks.addAll(links);
 
-            boolean linkableContainerIsRunning = dockerClient.listContainersCmd().exec().stream()
-                    .map(com.github.dockerjava.api.model.Container::getId)
-                    .map(id -> dockerClient.inspectContainerCmd(id).exec())
+            boolean linkableContainerIsRunning = inspectContainerResponses.stream()
                     .filter(inspectResponse -> inspectResponse.getName().endsWith(linkableContainer.getContainerName()))
                     .anyMatch(linkableContainerInspectResponse -> linkableContainerInspectResponse.getState().getRunning());
 
@@ -378,7 +381,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                         " as it is not running");
             }
 
-            Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
+            Set<String> linkedContainerNetworks = containers.stream()
                     .filter(container -> dockerClient.inspectContainerCmd(container.getId()).exec().getName().endsWith(linkableContainer.getContainerName()))
                     .filter(container -> container.getNetworkSettings() != null &&
                             container.getNetworkSettings().getNetworks() != null)
