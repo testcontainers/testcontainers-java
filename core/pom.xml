@@ -149,8 +149,8 @@
                             <shadedPattern>org.testcontainers.shaded.jersey.repackaged</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com.google.common</pattern>
-                            <shadedPattern>org.testcontainers.shaded.com.google.common</shadedPattern>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>org.testcontainers.shaded.com.google</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>io.netty</pattern>
