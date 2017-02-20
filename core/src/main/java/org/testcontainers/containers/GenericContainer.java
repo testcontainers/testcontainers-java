@@ -418,6 +418,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (privilegedMode) {
             createCommand.withPrivileged(privilegedMode);
         }
+
+        createCommand.withLabels(Collections.singletonMap("org.testcontainers", "true"));
     }
 
     /**
