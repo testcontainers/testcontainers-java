@@ -15,6 +15,14 @@ TestContainers makes it easy to launch useful Docker containers for the duration
  * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
  * **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 
+## Who is using TestContainers?
+
+ * [ZeroTurnaround](https://zeroturnaround.com) - Testing of the Java Agents, micro-services, Selenium browser automation
+ * [Zipkin](http://zipkin.io) - MySQL and Cassandra testing
+ * [Apache Gora](https://gora.apache.org) - CouchDB testing
+ * [Apache James](https://james.apache.org) - LDAP and Cassandra integration testing
+ * [StreamSets](https://github.com/streamsets/datacollector) - LDAP, MySQL Vault, MongoDB, Redis integration testing
+
 ## License
 
 See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
