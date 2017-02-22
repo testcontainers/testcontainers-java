@@ -40,7 +40,8 @@ public class DockerClientFactory {
             asList(new EnvironmentAndSystemPropertyClientProviderStrategy(),
                     new UnixSocketClientProviderStrategy(),
                     new ProxiedUnixSocketClientProviderStrategy(),
-                    new DockerMachineClientProviderStrategy());
+                    new DockerMachineClientProviderStrategy(),
+                    new NamedPipeSocketClientProviderStrategy());
     private String activeApiVersion;
     private String activeExecutionDriver;
 
