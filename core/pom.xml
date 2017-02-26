@@ -160,6 +160,10 @@
                             <pattern>org.bouncycastle</pattern>
                             <shadedPattern>org.testcontainers.shaded.org.bouncycastle</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>org.newsclub</pattern>
+                            <shadedPattern>org.testcontainers.shaded.org.newsclub</shadedPattern>
+                        </relocation>
                     </relocations>
                     <artifactSet>
                         <includes>
@@ -173,6 +177,7 @@
                             <include>com.google.guava:*</include>
                             <include>io.netty:*</include>
                             <include>org.bouncycastle:*</include>
+                            <include>org.newsclub.*:*</include>
                         </includes>
                     </artifactSet>
                     <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
