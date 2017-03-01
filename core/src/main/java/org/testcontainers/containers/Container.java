@@ -388,15 +388,35 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
+    /**
+     * @deprecated set by GenericContainer and should never be set outside
+     */
+    @Deprecated
     void setDockerClient(DockerClient dockerClient);
 
+    /**
+     * @deprecated set by GenericContainer and should never be set outside
+     */
+    @Deprecated
     void setDockerDaemonInfo(Info dockerDaemonInfo);
 
+    /**
+     * @deprecated set by GenericContainer and should never be set outside
+     */
+    @Deprecated
     void setContainerId(String containerId);
 
+    /**
+     * @deprecated set by GenericContainer and should never be set outside
+     */
+    @Deprecated
     void setContainerName(String containerName);
 
     void setWaitStrategy(WaitStrategy waitStrategy);
 
+    /**
+     * @deprecated set by GenericContainer and should never be set outside
+     */
+    @Deprecated
     void setContainerInfo(InspectContainerResponse containerInfo);
 }

@@ -11,6 +11,7 @@ import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.*;
@@ -280,6 +281,26 @@ public class GenericContainerRuleTest {
 
         Matcher matcher = Pattern.compile("^192.168.1.10\\s.*somehost", Pattern.MULTILINE).matcher(hosts.toString());
         assertTrue("The hosts file of container contains extra host", matcher.find());
+    }
+
+    @Test
+    public void createContainerCmdHookTest() {
+        // Use random name to avoid the conflicts between the tests
+        String randomName = Base58.randomString(5);
+        try(
+                GenericContainer container = new GenericContainer<>("redis:3.0.2")
+                        .withCommand("redis-server", "--help")
+                        .withCustomizer(cmd -> cmd.withName("overrideMe"))
+                        // Preserves the order
+                        .withCustomizer(cmd -> cmd.withName(randomName))
+                        // Allows to override pre-configured values by GenericContainer
+                        .withCustomizer(cmd -> cmd.withCmd("redis-server", "--port", "6379"))
+        ) {
+            container.start();
+
+            assertEquals("Name is configured", "/" + randomName, container.getContainerInfo().getName());
+            assertEquals("Command is configured", "[redis-server, --port, 6379]", Arrays.toString(container.getContainerInfo().getConfig().getCmd()));
+        }
     }
 
     private BufferedReader getReaderForContainerPort80(GenericContainer container) {
