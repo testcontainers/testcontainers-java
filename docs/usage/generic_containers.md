@@ -40,10 +40,10 @@ tests have run.
 
 The class rule provides methods for discovering how your tests can interact with the containers:
 
-* `getIpAddress()` returns the IP address where the container is listening
+* `getContainerIpAddress()` returns the IP address where the container is listening
 * `getMappedPort(...)` returns the Docker mapped port for a port that has been exposed on the container
 
 For example, with the Redis example above, the following will allow your tests to access the Redis service:
 ```java
-String redisUrl = redis.getIpAddress() + ":" + redis.getMappedPort(6379);
+String redisUrl = redis.getContainerIpAddress() + ":" + redis.getMappedPort(6379);
 ```
