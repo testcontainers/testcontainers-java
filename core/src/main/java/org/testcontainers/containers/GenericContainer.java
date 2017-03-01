@@ -58,7 +58,7 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 @EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
-        implements Container<SELF> {
+        implements Container<SELF>, AutoCloseable {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -134,6 +134,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
+    private final Set<Consumer<CreateContainerCmd>> createContainerCmdHooks = new HashSet<>();
+
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
             .newBuilder()
@@ -191,6 +193,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
+            createContainerCmdHooks.forEach(hook -> hook.accept(createCommand));
 
             containerId = createCommand.exec().getId();
             ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
@@ -879,6 +882,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public void withStartupAttempts(int attempts) {
         this.startupAttempts = attempts;
+    }
+
+    @Override
+    public void close() {
+        stop();
+    }
+
+    public SELF withCustomizer(Consumer<CreateContainerCmd> hook) {
+        createContainerCmdHooks.add(hook);
+        return self();
     }
 
     /**
