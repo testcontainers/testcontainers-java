@@ -48,8 +48,10 @@ Examples/Tests:
 ### JDBC URL
 
 As long as you have TestContainers and the appropriate JDBC driver on your classpath, you can simply modify regular JDBC connection URLs to get a fresh containerized instance of the database each time your application starts up.
+
+_N.B:_
 * _TC needs to be on your application's classpath at runtime for this to work_
-* _JDBC driver needs to be set to `org.testcontainers.jdbc.ContainerDatabaseDriver`_
+* _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
 **Original URL**: `jdbc:mysql://somehostname:someport/databasename`
 
