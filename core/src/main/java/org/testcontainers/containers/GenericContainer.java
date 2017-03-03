@@ -134,7 +134,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
-    private final Set<Consumer<CreateContainerCmd>> createContainerCmdHooks = new HashSet<>();
+    private final Set<Consumer<CreateContainerCmd>> createContainerCmdMidifiers = new HashSet<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -193,7 +193,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
-            createContainerCmdHooks.forEach(hook -> hook.accept(createCommand));
+            createContainerCmdMidifiers.forEach(hook -> hook.accept(createCommand));
 
             containerId = createCommand.exec().getId();
             ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
@@ -889,8 +889,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         stop();
     }
 
-    public SELF withCustomizer(Consumer<CreateContainerCmd> hook) {
-        createContainerCmdHooks.add(hook);
+    /**
+     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart(Profiler)}.
+     * Invocation happens eagerly on a moment when container is created.
+     * Warning: this does expose the underlying docker-java API so might change outside of our control.
+     *
+     * @param modifier {@link Consumer} of {@link CreateContainerCmd}.
+     * @return this
+     */
+    public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
+        createContainerCmdMidifiers.add(modifier);
         return self();
     }
 

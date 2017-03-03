@@ -290,11 +290,11 @@ public class GenericContainerRuleTest {
         try(
                 GenericContainer container = new GenericContainer<>("redis:3.0.2")
                         .withCommand("redis-server", "--help")
-                        .withCustomizer(cmd -> cmd.withName("overrideMe"))
+                        .withCreateContainerCmdModifier(cmd -> cmd.withName("overrideMe"))
                         // Preserves the order
-                        .withCustomizer(cmd -> cmd.withName(randomName))
+                        .withCreateContainerCmdModifier(cmd -> cmd.withName(randomName))
                         // Allows to override pre-configured values by GenericContainer
-                        .withCustomizer(cmd -> cmd.withCmd("redis-server", "--port", "6379"))
+                        .withCreateContainerCmdModifier(cmd -> cmd.withCmd("redis-server", "--port", "6379"))
         ) {
             container.start();
 
