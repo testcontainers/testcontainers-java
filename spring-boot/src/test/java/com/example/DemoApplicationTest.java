@@ -1,18 +1,19 @@
 package com.example;
 
-import org.junit.Test;
-import org.springframework.web.client.RestTemplate;
-
-
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 
 public class DemoApplicationTest extends AbstractIntegrationTest {
 
-    RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    TestRestTemplate restTemplate;
 
     @Test
     public void simpleTest() {
-        String fooResource = "http://localhost:" + port + "/foo";
+        String fooResource = "/foo";
 
         info("putting 'bar' to " + fooResource);
         restTemplate.put(fooResource, "bar");
