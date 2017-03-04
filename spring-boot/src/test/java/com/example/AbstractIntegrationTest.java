@@ -2,18 +2,18 @@ package com.example;
 
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.EnvironmentTestUtils;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.GenericContainer;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(value = DemoApplication.class, initializers = AbstractIntegrationTest.Initializer.class)
-@WebIntegrationTest(randomPort = true)
+@SpringBootTest(classes = DemoApplication.class,webEnvironment = WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = AbstractIntegrationTest.Initializer.class)
 public abstract class AbstractIntegrationTest {
 
     @ClassRule
@@ -29,6 +29,4 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
-    @Value("${local.server.port}")
-    protected int port;
 }
