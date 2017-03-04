@@ -134,7 +134,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
-    private final Set<Consumer<CreateContainerCmd>> createContainerCmdMidifiers = new HashSet<>();
+    private final Set<Consumer<CreateContainerCmd>> createContainerCmdMidifiers = new LinkedHashSet<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
