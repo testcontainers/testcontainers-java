@@ -7,6 +7,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.dockerclient.ProxiedUnixSocketClientProviderStrategy;
+import org.testcontainers.dockerclient.WindowsClientProviderStrategy;
 
 import java.net.Socket;
 import java.util.List;
@@ -32,8 +33,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
         Callable<Boolean> checkStrategy;
 
-        // Special case for Docker for Mac, see #160
-        if (isUsingSocketProxyOnMac()) {
+        if (isApplicable()) {
             List<Integer> exposedPorts = container.getExposedPorts();
 
             Integer exposedPort = exposedPorts.stream()
@@ -91,8 +91,18 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
         }
     }
 
-    private boolean isUsingSocketProxyOnMac() {
-        return DockerClientFactory.instance().isUsing(ProxiedUnixSocketClientProviderStrategy.class)
-                && System.getProperty("os.name").toLowerCase().contains("mac");
+    private boolean isApplicable() {
+        // Special case for Docker for Mac, see #160
+        if(DockerClientFactory.instance().isUsing(ProxiedUnixSocketClientProviderStrategy.class)
+                && System.getProperty("os.name").toLowerCase().contains("mac")) {
+            return true;
+        }
+
+        // Special case for Docker for Windows, see #160
+        if (DockerClientFactory.instance().isUsing(WindowsClientProviderStrategy.class)) {
+            return true;
+        }
+
+        return false;
     }
 }
