@@ -134,7 +134,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
-    private final Set<Consumer<CreateContainerCmd>> createContainerCmdMidifiers = new LinkedHashSet<>();
+    private final Set<Consumer<CreateContainerCmd>> createContainerCmdModifiers = new LinkedHashSet<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -193,7 +193,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
-            createContainerCmdMidifiers.forEach(hook -> hook.accept(createCommand));
+            createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
             containerId = createCommand.exec().getId();
             ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
@@ -898,7 +898,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return this
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
-        createContainerCmdMidifiers.add(modifier);
+        createContainerCmdModifiers.add(modifier);
         return self();
     }
 
