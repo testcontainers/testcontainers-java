@@ -33,7 +33,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
         Callable<Boolean> checkStrategy;
 
-        if (isApplicable()) {
+        if (shouldCheckWithCommand()) {
             List<Integer> exposedPorts = container.getExposedPorts();
 
             Integer exposedPort = exposedPorts.stream()
@@ -91,7 +91,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
         }
     }
 
-    private boolean isApplicable() {
+    private boolean shouldCheckWithCommand() {
         // Special case for Docker for Mac, see #160
         if(DockerClientFactory.instance().isUsing(ProxiedUnixSocketClientProviderStrategy.class)
                 && System.getProperty("os.name").toLowerCase().contains("mac")) {
