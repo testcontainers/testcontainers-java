@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2017-03-12
+### Fixed
+- Fix various escaping issues that may arise when paths contain spaces (#263, #279)
+- General documentation fixes/improvements (#300, #303, #304)
+- Improve reliability of `ResourceReaper` when there are a large number of containers returned by `docker ps -a` (#295)
+
+### Changed
+- Support Docker for Windows via TCP socket connection (#291, #297, #309). _Note that Docker Compose is not yet supported under Docker for Windows (see #306)
+- Expose `docker-java`'s `CreateContainerCmd` API for low-level container tweaking (#301)
+- Shade `org.newsclub` and Guava dependencies (#299, #292)
+- Add `org.testcontainers` label to all containers created by Testcontainers (#294)
+
 ## [1.1.9] - 2017-02-12
 ### Fixed
 - Fix inability to run Testcontainers on Alpine linux. Unix-socket-over-TCP is now used in linux environments where netty fails due to lack of glibc libraries (#290)
@@ -243,6 +255,9 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.2.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.2.0
+[1.1.9]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.9
+[1.1.8]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.8
 [1.1.7]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.7
 [1.1.6]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.6
 [1.1.5]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.5

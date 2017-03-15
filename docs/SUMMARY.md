@@ -21,6 +21,7 @@
     * [Environment variables](usage/options.md#environment-variables)
     * [Command](usage/options.md#command)
     * [Volume mapping](usage/options.md#volume-mapping)
+    * [Customizing the container](usage/options.md#customizing-the-container)
     * [Startup timeout](usage/options.md#startup-timeout)
     * [Following container output](usage/options.md#following-container-output)
     * [Executing a command](usage/options.md#executing-a-command)

@@ -11,7 +11,6 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -35,7 +34,6 @@ import org.testcontainers.utility.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -58,7 +56,7 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 @EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
-        implements Container<SELF> {
+        implements Container<SELF>, AutoCloseable {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -134,6 +132,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
+    private final Set<Consumer<CreateContainerCmd>> createContainerCmdModifiers = new LinkedHashSet<>();
+
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
             .newBuilder()
@@ -191,6 +191,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
+            createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
             containerId = createCommand.exec().getId();
             ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
@@ -423,6 +424,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (privilegedMode) {
             createCommand.withPrivileged(privilegedMode);
         }
+
+        createCommand.withLabels(Collections.singletonMap("org.testcontainers", "true"));
     }
 
     /**
@@ -485,16 +488,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
 
-        if (hostPath.contains(".jar!")) {
-            // the host file is inside a JAR resource - copy to a temporary location that Docker can read
-            hostPath = PathUtils.extractClassPathResourceToTempLocation(hostPath);
-        }
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            hostPath = PathUtils.createMinGWPath(hostPath);
-        }
-
-        binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode));
+        final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
+        binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode));
     }
 
     /**
@@ -626,14 +621,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
-        URL resource = GenericContainer.class.getClassLoader().getResource(resourcePath);
+        final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        if (resource == null) {
-            throw new IllegalArgumentException("Could not find classpath resource at provided path: " + resourcePath);
-        }
-        String resourceFilePath = resource.getFile();
-
-        this.addFileSystemBind(resourceFilePath, containerPath, mode);
+        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode);
 
         return self();
     }
@@ -884,6 +874,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public void withStartupAttempts(int attempts) {
         this.startupAttempts = attempts;
+    }
+
+    @Override
+    public void close() {
+        stop();
+    }
+
+    /**
+     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart(Profiler)}.
+     * Invocation happens eagerly on a moment when container is created.
+     * Warning: this does expose the underlying docker-java API so might change outside of our control.
+     *
+     * @param modifier {@link Consumer} of {@link CreateContainerCmd}.
+     * @return this
+     */
+    public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
+        createContainerCmdModifiers.add(modifier);
+        return self();
     }
 
     /**

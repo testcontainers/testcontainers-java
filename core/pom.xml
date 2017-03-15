@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-parent</artifactId>
-        <version>1.1.10-Logzio</version>
+        <version>1.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -149,8 +149,8 @@
                             <shadedPattern>org.testcontainers.shaded.jersey.repackaged</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com.google.common</pattern>
-                            <shadedPattern>org.testcontainers.shaded.com.google.common</shadedPattern>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>org.testcontainers.shaded.com.google</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>io.netty</pattern>
@@ -159,6 +159,10 @@
                         <relocation>
                             <pattern>org.bouncycastle</pattern>
                             <shadedPattern>org.testcontainers.shaded.org.bouncycastle</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.newsclub</pattern>
+                            <shadedPattern>org.testcontainers.shaded.org.newsclub</shadedPattern>
                         </relocation>
                     </relocations>
                     <artifactSet>
@@ -173,6 +177,7 @@
                             <include>com.google.guava:*</include>
                             <include>io.netty:*</include>
                             <include>org.bouncycastle:*</include>
+                            <include>org.newsclub.*:*</include>
                         </includes>
                     </artifactSet>
                     <promoteTransitiveDependencies>true</promoteTransitiveDependencies>

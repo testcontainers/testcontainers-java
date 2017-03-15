@@ -85,14 +85,6 @@ public final class ResourceReaper {
     }
 
     private void stopContainer(String containerId, String imageName) {
-
-        List<Container> allContainers = dockerClient.listContainersCmd().withShowAll(true).exec();
-
-        if (allContainers.stream().map(Container::getId).noneMatch(containerId::equals)) {
-            LOGGER.trace("Was going to clean up container but it apparently no longer exists: {}");
-            return;
-        }
-
         boolean running;
         try {
             InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
