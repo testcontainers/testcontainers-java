@@ -9,12 +9,7 @@ import org.testcontainers.containers.wait.Wait;
  */
 public class RedmineContainer<SELF extends RedmineContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
 
-    private static final String IMAGE = "redmine";
     private static final int REDMINE_PORT = 3000;
-
-    public RedmineContainer() {
-        this(IMAGE + ":latest");
-    }
 
     public RedmineContainer(String dockerImageName) {
         super.setDockerImageName(dockerImageName);
