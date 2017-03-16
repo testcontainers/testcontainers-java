@@ -121,6 +121,10 @@
                             <shadedPattern>org.testcontainers.shaded.org.glassfish</shadedPattern>
                         </relocation>
                         <relocation>
+                            <pattern>org.aopalliance</pattern>
+                            <shadedPattern>org.testcontainers.shaded.org.aopalliance</shadedPattern>
+                        </relocation>
+                        <relocation>
                             <pattern>org.jvnet</pattern>
                             <shadedPattern>org.testcontainers.shaded.org.jvnet</shadedPattern>
                         </relocation>
@@ -169,6 +173,7 @@
                         <includes>
                             <include>org.apache.httpcomponents:*</include>
                             <include>org.glassfish.*:*</include>
+                            <include>org.aopalliance.*:*</include>
                             <include>javax.annotation:*</include>
                             <include>javax.inject:*</include>
                             <include>javax.ws.rs:*</include>
