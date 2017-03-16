@@ -7,17 +7,12 @@ import org.testcontainers.containers.wait.Wait;
 /**
  * A linkable Redmine container.
  */
-public class RedmineContainer<SELF extends RedmineContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
+public class RedmineContainer extends GenericContainer<RedmineContainer> {
 
     private static final int REDMINE_PORT = 3000;
 
     public RedmineContainer(String dockerImageName) {
-        super.setDockerImageName(dockerImageName);
-    }
-
-    @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(REDMINE_PORT);
+        super(dockerImageName);
     }
 
     @Override
@@ -26,14 +21,9 @@ public class RedmineContainer<SELF extends RedmineContainer<SELF>> extends Gener
         waitingFor(Wait.forHttp("/"));
     }
 
-    @Override
-    public SELF withEnv(String key, String value) {
-        return super.withEnv(key, value);
-    }
-
-    public SELF withLinkToContainer(LinkableContainer otherContainer, String alias) {
+    public RedmineContainer withLinkToContainer(LinkableContainer otherContainer, String alias) {
         addLink(otherContainer, alias);
-        return self();
+        return this;
     }
 
     public String getRedmineUrl() {
