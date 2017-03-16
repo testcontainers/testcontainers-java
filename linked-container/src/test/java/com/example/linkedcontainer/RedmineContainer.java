@@ -5,7 +5,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 
 /**
- * A linkable Redmine container.
+ * A Redmine container.
  */
 public class RedmineContainer extends GenericContainer<RedmineContainer> {
 
