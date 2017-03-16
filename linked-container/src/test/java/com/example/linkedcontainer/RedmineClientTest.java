@@ -25,7 +25,7 @@ public class RedmineClientTest {
             .withEnv("POSTGRES_ENV_POSTGRES_PASSWORD", POSTGRES_PASSWORD);
 
     @Rule
-    public RuleChain chain= RuleChain.outerRule(postgreSQLContainer)
+    public RuleChain chain = RuleChain.outerRule(postgreSQLContainer)
             .around(redmineContainer);
 
     @Test
