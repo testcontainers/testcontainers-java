@@ -15,12 +15,12 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
 
     @Test
     public void testWaitUntilReady_Success() {
-        waitUntilReadyAndSucceed("while true; do sleep 1; echo -e \"" + READY_MESSAGE + "\"; done");
+        waitUntilReadyAndSucceed("echo -e \"" + READY_MESSAGE + "\"; sleep 300");
     }
 
     @Test
     public void testWaitUntilReady_Timeout() {
-        waitUntilReadyAndTimeout("while true; do sleep 1; echo -e \"" + "foobar\"; done");
+        waitUntilReadyAndTimeout("echo -e \"" + "foobar\"; sleep 300");
     }
 
     @NotNull
