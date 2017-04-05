@@ -97,10 +97,6 @@ public class DockerClientFactory {
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
             checkVersion(version.getVersion());
-
-            // Pull the image we use to perform some checks
-            checkAndPullImage(client, TINY_IMAGE);
-
             checkDiskSpaceAndHandleExceptions(client);
             preconditionsChecked = true;
         }
