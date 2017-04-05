@@ -13,7 +13,7 @@ import java.util.function.Predicate;
  * Waits until containers logs expected content.
  */
 public class LogMessageWaitStrategy extends GenericContainer.AbstractWaitStrategy {
-    private String expectedLogPart;
+    private String regEx;
 
     @Override
     protected void waitUntilReady() {
@@ -21,17 +21,17 @@ public class LogMessageWaitStrategy extends GenericContainer.AbstractWaitStrateg
         container.followOutput(waitingConsumer);
 
         Predicate<OutputFrame> waitPredicate = outputFrame ->
-                outputFrame.getUtf8String().contains(expectedLogPart);
+                outputFrame.getUtf8String().matches(regEx);
 
         try {
             waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            throw new ContainerLaunchException("Timed out waiting for log output containing '" + expectedLogPart + "'");
+            throw new ContainerLaunchException("Timed out waiting for log output matching '" + regEx + "'");
         }
     }
 
-    public LogMessageWaitStrategy withExpectedLogPart(String expectedLogPart) {
-        this.expectedLogPart = expectedLogPart;
+    public LogMessageWaitStrategy withRegEx(String regEx) {
+        this.regEx = regEx;
         return this;
     }
 }

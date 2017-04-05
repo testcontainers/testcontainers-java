@@ -33,6 +33,6 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
                 super.waitUntilReady();
                 ready.set(true);
             }
-        }.withExpectedLogPart(READY_MESSAGE);
+        }.withRegEx(".*ready.*\\s");
     }
 }
