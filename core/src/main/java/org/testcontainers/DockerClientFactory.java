@@ -97,18 +97,21 @@ public class DockerClientFactory {
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
             checkVersion(version.getVersion());
-
-            List<Image> images = client.listImagesCmd().exec();
-            // Pull the image we use to perform some checks
-            if (images.stream().noneMatch(it -> it.getRepoTags() != null && asList(it.getRepoTags()).contains(TINY_IMAGE))) {
-                client.pullImageCmd(TINY_IMAGE).exec(new PullImageResultCallback()).awaitSuccess();
-            }
-
             checkDiskSpaceAndHandleExceptions(client);
             preconditionsChecked = true;
         }
 
         return client;
+    }
+
+  /**
+   * Check whether the image is available locally and pull it otherwise
+   */
+    private void checkAndPullImage(DockerClient client, String image) {
+        List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
+        if (images.isEmpty()) {
+            client.pullImageCmd(image).exec(new PullImageResultCallback()).awaitSuccess();
+        }
     }
 
     /**
@@ -168,6 +171,7 @@ public class DockerClientFactory {
     }
 
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
+        checkAndPullImage(client, TINY_IMAGE);
         CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
