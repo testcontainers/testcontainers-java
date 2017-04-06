@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2017-04-06
+### Fixed
+- Fix bug in space detection when `alpine:3.5` image has not yet been pulled (#323, #324)
+- Minor documentation fixes
+
+### Changed
+- Add AOP Alliance dependencies to shaded deps to reduce chance of conflicts (#315)
+
 ## [1.2.0] - 2017-03-12
 ### Fixed
 - Fix various escaping issues that may arise when paths contain spaces (#263, #279)
