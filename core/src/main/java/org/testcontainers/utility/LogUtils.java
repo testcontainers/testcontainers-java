@@ -23,7 +23,8 @@ public class LogUtils {
                              Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
 
         final LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
-                .withFollowStream(true);
+                .withFollowStream(true)
+                .withSince(0);
 
         final FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         for (OutputFrame.OutputType type : types) {
