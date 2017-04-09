@@ -15,12 +15,17 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
 
     @Test
     public void testWaitUntilReady_Success() {
-        waitUntilReadyAndSucceed("echo -e \"" + READY_MESSAGE + "\"; sleep 300");
+        waitUntilReadyAndSucceed("echo -e \"" + READY_MESSAGE + "\";" +
+                "echo -e \"foobar\";" +
+                "echo -e \"" + READY_MESSAGE + "\";" +
+                "sleep 300");
     }
 
     @Test
     public void testWaitUntilReady_Timeout() {
-        waitUntilReadyAndTimeout("echo -e \"" + "foobar\"; sleep 300");
+        waitUntilReadyAndTimeout("echo -e \"" + READY_MESSAGE + "\";" +
+                "echo -e \"foobar\";" +
+                "sleep 300");
     }
 
     @NotNull
@@ -33,6 +38,6 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
                 super.waitUntilReady();
                 ready.set(true);
             }
-        }.withRegEx(".*ready.*\\s");
+        }.withRegEx(".*ready.*\\s").withTimes(2);
     }
 }

@@ -15,6 +15,8 @@ import java.util.function.Predicate;
 public class LogMessageWaitStrategy extends GenericContainer.AbstractWaitStrategy {
     private String regEx;
 
+    private int times = 1;
+
     @Override
     protected void waitUntilReady() {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
@@ -24,7 +26,7 @@ public class LogMessageWaitStrategy extends GenericContainer.AbstractWaitStrateg
                 outputFrame.getUtf8String().matches(regEx);
 
         try {
-            waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS);
+            waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS, times);
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for log output matching '" + regEx + "'");
         }
@@ -32,6 +34,11 @@ public class LogMessageWaitStrategy extends GenericContainer.AbstractWaitStrateg
 
     public LogMessageWaitStrategy withRegEx(String regEx) {
         this.regEx = regEx;
+        return this;
+    }
+
+    public LogMessageWaitStrategy withTimes(int times) {
+        this.times = times;
         return this;
     }
 }

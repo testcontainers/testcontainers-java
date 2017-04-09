@@ -44,7 +44,7 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
      */
     public void waitUntil(Predicate<OutputFrame> predicate) throws TimeoutException {
         // ~2.9 million centuries ought to be enough for anyone
-        waitUntil(predicate, Long.MAX_VALUE);
+        waitUntil(predicate, Long.MAX_VALUE, 1);
     }
 
     /**
@@ -57,13 +57,30 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
      * @param limit     maximum time to wait
      * @param limitUnit maximum time to wait (units)
      */
-    public void waitUntil(Predicate<OutputFrame> predicate, long limit, TimeUnit limitUnit) throws TimeoutException {
-        long expiry = limitUnit.toMillis(limit) + System.currentTimeMillis();
-
-        waitUntil(predicate, expiry);
+    public void waitUntil(Predicate<OutputFrame> predicate, int limit, TimeUnit limitUnit) throws TimeoutException {
+        waitUntil(predicate, limit, limitUnit, 1);
     }
 
-    private void waitUntil(Predicate<OutputFrame> predicate, long expiry) throws TimeoutException {
+    /**
+     * Wait until any frame (usually, line) of output matches the provided predicate.
+     * <p>
+     * Note that lines will often have a trailing newline character, and this is not stripped off before the
+     * predicate is tested.
+     *
+     * @param predicate a predicate to test against each frame
+     * @param limit     maximum time to wait
+     * @param limitUnit maximum time to wait (units)
+     * @param times     number of times the predicate has to match
+     */
+    public void waitUntil(Predicate<OutputFrame> predicate, long limit, TimeUnit limitUnit, int times) throws TimeoutException {
+        long expiry = limitUnit.toMillis(limit) + System.currentTimeMillis();
+
+        waitUntil(predicate, expiry, times);
+    }
+
+    private void waitUntil(Predicate<OutputFrame> predicate, long expiry, int times) throws TimeoutException {
+
+        int numberOfMatches = 0;
         while (System.currentTimeMillis() < expiry) {
             try {
                 OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
@@ -72,7 +89,11 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
                     LOGGER.debug("{}: {}", frame.getType(), frame.getUtf8String());
 
                     if (predicate.test(frame)) {
-                        return;
+                        numberOfMatches++;
+
+                        if (numberOfMatches == times) {
+                            return;
+                        }
                     }
                 }
 
