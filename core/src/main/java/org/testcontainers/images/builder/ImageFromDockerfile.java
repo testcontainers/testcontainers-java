@@ -9,7 +9,6 @@ import com.google.common.collect.Sets;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -128,16 +127,12 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             profiler.start("Send context as TAR");
 
             try (TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(new GZIPOutputStream(out))) {
+                tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+
                 for (Map.Entry<String, Transferable> entry : transferables.entrySet()) {
-                    TarArchiveEntry tarEntry = new TarArchiveEntry(entry.getKey());
                     Transferable transferable = entry.getValue();
-                    tarEntry.setSize(transferable.getSize());
-                    tarEntry.setMode(transferable.getFileMode());
-
-                    tarArchive.putArchiveEntry(tarEntry);
-                    transferable.transferTo(tarArchive);
-                    tarArchive.closeArchiveEntry();
-
+                    final String destination = entry.getKey();
+                    transferable.transferTo(tarArchive, destination);
                 }
                 tarArchive.finish();
             }

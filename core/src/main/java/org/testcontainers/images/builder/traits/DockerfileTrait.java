@@ -1,12 +1,9 @@
 package org.testcontainers.images.builder.traits;
 
 import lombok.Getter;
-import org.apache.commons.io.IOUtils;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.images.builder.dockerfile.DockerfileBuilder;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.function.Consumer;
 
 /**
@@ -33,12 +30,8 @@ public interface DockerfileTrait<SELF extends DockerfileTrait<SELF> & BuildConte
             }
 
             @Override
-            public void transferTo(OutputStream outputStream) {
-                try {
-                    IOUtils.write(getBytes(), outputStream);
-                } catch (IOException e) {
-                    throw new RuntimeException("Can't transfer Dockerfile", e);
-                }
+            public String getDescription() {
+                return "Dockerfile: " + builder;
             }
         });
     }

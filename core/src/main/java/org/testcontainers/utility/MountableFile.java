@@ -4,35 +4,34 @@ import com.google.common.base.Charsets;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.images.builder.Transferable;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PACKAGE;
 import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 
 /**
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
  * a path that the Docker daemon is about to create a volume mount for.
  */
-@RequiredArgsConstructor(access = PRIVATE)
+@RequiredArgsConstructor(access = PACKAGE)
 @Slf4j
-public class MountableFile {
+public class MountableFile implements Transferable {
 
     private final String path;
 
@@ -60,25 +59,13 @@ public class MountableFile {
     }
 
     /**
-     * Obtain a path that the Docker daemon should be able to use to volume mount a file/resource
-     * into a container. If this is a classpath resource residing in a JAR, it will be extracted to
-     * a temporary location so that the Docker daemon is able to access it.
+     * Obtains a {@link MountableFile} corresponding to a file on the docker host filesystem.
      *
-     * @return a volume-mountable path.
+     * @param path the path to the resource
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    private String resolvePath() {
-        String result;
-        if (path.contains(".jar!")) {
-            result = extractClassPathResourceToTempLocation(this.path);
-        } else {
-            result = unencodeResourceURIToFilePath(path);
-        }
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            result = PathUtils.createMinGWPath(result);
-        }
-
-        return result;
+    public static MountableFile forHostPath(final Path path) {
+        return new MountableFile(path.toAbsolutePath().toString());
     }
 
     @NotNull
@@ -105,16 +92,41 @@ public class MountableFile {
             }
         }
 
-        throw new IllegalArgumentException("Resource with path " + resourcePath + " could not be found on any of these classloaders: " + classLoaders);
+        throw new IllegalArgumentException("Resource with path " + resourcePath + " could not be found on any of these classloaders: " + classLoadersToSearch);
     }
 
     private static String unencodeResourceURIToFilePath(@NotNull final String resource) {
         try {
             // Convert any url-encoded characters (e.g. spaces) back into unencoded form
-            return new URI(resource).getPath();
-        } catch (URISyntaxException e) {
+            return URLDecoder.decode(resource, Charsets.UTF_8.name())
+                    .replaceFirst("jar:", "")
+                    .replaceFirst("file:", "")
+                    .replaceAll("!.*", "");
+        } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    /**
+     * Obtain a path that the Docker daemon should be able to use to volume mount a file/resource
+     * into a container. If this is a classpath resource residing in a JAR, it will be extracted to
+     * a temporary location so that the Docker daemon is able to access it.
+     *
+     * @return a volume-mountable path.
+     */
+    private String resolvePath() {
+        String result;
+        if (path.contains(".jar!")) {
+            result = extractClassPathResourceToTempLocation(this.path);
+        } else {
+            result = unencodeResourceURIToFilePath(path);
+        }
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            result = PathUtils.createMinGWPath(result);
+        }
+
+        return result;
     }
 
     /**
@@ -129,13 +141,7 @@ public class MountableFile {
         //noinspection ResultOfMethodCallIgnored
         tmpLocation.delete();
 
-        String jarPath = hostPath.replaceFirst("jar:", "").replaceFirst("file:", "").replaceAll("!.*", "");
-        String urldecodedJarPath;
-        try {
-            urldecodedJarPath = URLDecoder.decode(jarPath, Charsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("Could not URLDecode path with UTF-8 encoding: " + hostPath, e);
-        }
+        String urldecodedJarPath = unencodeResourceURIToFilePath(hostPath);
         String internalPath = hostPath.replaceAll("[^!]*!/", "");
 
         try (JarFile jarFile = new JarFile(urldecodedJarPath)) {
@@ -164,9 +170,9 @@ public class MountableFile {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void copyFromJarToLocation(final JarFile jarFile,
-                                              final JarEntry entry,
-                                              final String fromRoot,
-                                              final File toRoot) throws IOException {
+                                       final JarEntry entry,
+                                       final String fromRoot,
+                                       final File toRoot) throws IOException {
 
         String destinationName = entry.getName().replaceFirst(fromRoot, "");
         File newFile = new File(toRoot, destinationName);
@@ -192,5 +198,85 @@ public class MountableFile {
 
     private void deleteOnExit(final Path path) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> recursiveDeleteDir(path)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void transferTo(final TarArchiveOutputStream outputStream, String destinationPathInTar) {
+        recursiveTar(destinationPathInTar, this.getResolvedPath(), this.getResolvedPath(), outputStream);
+    }
+
+    /*
+     * Recursively copies a file/directory into a TarArchiveOutputStream
+     */
+    private void recursiveTar(String destination, String sourceRootDir, String sourceCurrentItem, TarArchiveOutputStream tarArchive) {
+        try {
+            final File sourceFile = new File(sourceCurrentItem).getCanonicalFile();     // e.g. /foo/bar/baz
+            final File sourceRootFile = new File(sourceRootDir).getCanonicalFile();     // e.g. /foo
+            final String relativePathToSourceFile = sourceRootFile.toPath().relativize(sourceFile.toPath()).toFile().toString();    // e.g. /bar/baz
+
+            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, destination + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
+
+            // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)
+            tarEntry.setMode(getUnixFileMode(sourceCurrentItem));
+            tarArchive.putArchiveEntry(tarEntry);
+
+            if (sourceFile.isFile()) {
+                Files.copy(sourceFile.toPath(), tarArchive);
+            }
+            // a directory entry merely needs to exist in the TAR file - there is no data stored yet
+            tarArchive.closeArchiveEntry();
+
+            final File[] children = sourceFile.listFiles();
+            if (children != null) {
+                // recurse into child files/directories
+                for (final File child : children) {
+                    recursiveTar(destination, sourceRootDir + File.separator, child.getCanonicalPath(), tarArchive);
+                }
+            }
+        } catch (IOException e) {
+            log.error("Error when copying TAR file entry: {}", sourceCurrentItem, e);
+            throw new UncheckedIOException(e); // fail fast
+        }
+    }
+
+    @Override
+    public long getSize() {
+
+        final File file = new File(this.getResolvedPath());
+        if (file.isFile()) {
+            return file.length();
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public String getDescription() {
+        return this.getResolvedPath();
+    }
+
+    @Override
+    public int getFileMode() {
+        return getUnixFileMode(this.getResolvedPath());
+    }
+
+    private int getUnixFileMode(final String pathAsString) {
+        final Path path = Paths.get(pathAsString);
+        try {
+            return (int) Files.getAttribute(path, "unix:mode");
+        } catch (IOException e) {
+            // fallback for non-posix environments
+            int mode = DEFAULT_FILE_MODE;
+            if (Files.isDirectory(path)) {
+                mode = DEFAULT_DIR_MODE;
+            } else if (Files.isExecutable(path)) {
+                mode |= 0111; // equiv to +x for user/group/others
+            }
+
+            return mode;
+        }
     }
 }

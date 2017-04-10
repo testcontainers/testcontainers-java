@@ -82,6 +82,13 @@
             </exclusions>
         </dependency>
 
+        <!-- Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest -->
+        <dependency>
+            <groupId>fakejar</groupId>
+            <artifactId>fakejar</artifactId>
+            <version>0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!-- Prevent netty version conflicts with redisson, used for testing -->
@@ -232,4 +239,11 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>testlib</id>
+            <url>file://${project.basedir}/testlib/repo</url>
+        </repository>
+    </repositories>
 </project>
