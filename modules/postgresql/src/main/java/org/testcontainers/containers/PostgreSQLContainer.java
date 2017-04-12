@@ -1,5 +1,12 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.WaitingConsumer;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
+
 /**
  * @author richardnorth
  */
@@ -72,5 +79,24 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public SELF withPassword(final String password) {
         this.password = password;
         return self();
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        String regEx = ".*database system is ready to accept connections.*\\s";
+        logger().info("Waiting for database to log '{}'", regEx);
+
+        WaitingConsumer waitingConsumer = new WaitingConsumer();
+        this.followOutput(waitingConsumer);
+
+
+        Predicate<OutputFrame> waitPredicate = outputFrame ->
+                outputFrame.getUtf8String().matches(regEx);
+
+        try {
+            waitingConsumer.waitUntil(waitPredicate, 120, TimeUnit.SECONDS, 2);
+        } catch (TimeoutException e) {
+            throw new ContainerLaunchException("Timed out waiting for log output matching '" + regEx + "'");
+        }
     }
 }
