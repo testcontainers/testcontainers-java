@@ -10,7 +10,6 @@ import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -85,14 +84,21 @@ public class DockerfileTest {
                     }
 
                     @Override
+                    public byte[] getBytes() {
+                        return new byte[0];
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "test file";
+                    }
+
+                    @Override
                     public int getFileMode() {
                         return 0123;
                     }
 
-                    @Override
-                    public void transferTo(OutputStream outputStream) {
 
-                    }
                 })
                 .withDockerfileFromBuilder(builder -> builder
                         .from("alpine:3.2")

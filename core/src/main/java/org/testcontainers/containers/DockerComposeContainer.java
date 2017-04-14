@@ -8,7 +8,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
-import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -32,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.stream.Collectors.toList;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 
@@ -196,7 +196,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 .exec().stream()
                 .filter(container -> Arrays.stream(container.getNames()).anyMatch(name ->
                         name.startsWith("/" + identifier)))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private void startAmbassadorContainers(Profiler profiler) {
@@ -394,15 +394,13 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         // Map the docker compose file into the container
         final File dockerComposeBaseFile = composeFiles.get(0);
         final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        final String containerPwd;
-        if (SystemUtils.IS_OS_WINDOWS) {
-            containerPwd = PathUtils.createMinGWPath(pwd).substring(1);
-        } else {
-            containerPwd = pwd;
-        }
+        final String containerPwd = MountableFile.forHostPath(pwd).getResolvedPath();
 
-        final List<String> absoluteDockerComposeFiles = composeFiles.stream().map(
-                file -> containerPwd + "/" + file.getAbsoluteFile().getName()).collect(Collectors.toList());
+        final List<String> absoluteDockerComposeFiles = composeFiles.stream()
+                        .map(File::getAbsolutePath)
+                        .map(MountableFile::forHostPath)
+                        .map(MountableFile::getResolvedPath)
+                        .collect(toList());
         final String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);

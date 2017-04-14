@@ -1,0 +1,1 @@
+This is example content to show recursive mounting of files from inside a JAR archive.
