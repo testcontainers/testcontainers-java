@@ -30,7 +30,7 @@ public class OutputFrame {
     public String getUtf8String() {
 
         if (bytes == null) {
-            return null;
+            return "";
         }
 
         return new String(bytes, Charsets.UTF_8);
