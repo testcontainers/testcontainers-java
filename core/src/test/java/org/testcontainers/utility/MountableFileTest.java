@@ -29,7 +29,14 @@ public class MountableFileTest {
 
     @Test
     public void forClasspathResourceFromJar() throws Exception {
-        final MountableFile mountableFile = MountableFile.forClasspathResource("docker-java.properties");
+        final MountableFile mountableFile = MountableFile.forClasspathResource("META-INF/dummy_unique_name.txt");
+
+        performChecks(mountableFile);
+    }
+
+    @Test
+    public void forClasspathResourceFromJarWithAbsolutePath() throws Exception {
+        final MountableFile mountableFile = MountableFile.forClasspathResource("/META-INF/dummy_unique_name.txt");
 
         performChecks(mountableFile);
     }
@@ -49,7 +56,8 @@ public class MountableFileTest {
 
         performChecks(mountableFile);
 
-        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains(" "));assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains("\\ "));
+        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains(" "));
+        assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains("\\ "));
     }
 
     /*
