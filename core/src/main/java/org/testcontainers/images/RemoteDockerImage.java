@@ -1,6 +1,7 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
@@ -20,7 +21,7 @@ import java.util.Set;
 
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
+    public static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
 
     private final String dockerImageName;
 
@@ -55,7 +56,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 }
 
                 // Update the cache
-                List<Image> updatedImages = dockerClient.listImagesCmd().exec();
+                ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
+
+                if (Boolean.parseBoolean(System.getProperty("useFilter"))) {
+                    listImagesCmd = listImagesCmd.withImageNameFilter(dockerImageName);
+                }
+
+                List<Image> updatedImages = listImagesCmd.exec();
                 for (Image image : updatedImages) {
                     if (image.getRepoTags() != null) {
                         Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
