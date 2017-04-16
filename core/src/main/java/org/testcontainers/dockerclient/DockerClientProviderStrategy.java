@@ -94,7 +94,7 @@ public abstract class DockerClientProviderStrategy {
      * @return a usable, tested, Docker client configuration for the host system environment
      */
     public DockerClient getClient() {
-        return client;
+        return new AuditLoggingDockerClient(client);
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {

@@ -429,6 +429,8 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
             Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
         logger().info("Docker Compose has finished running");
+
+        AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
     }
 }
 
