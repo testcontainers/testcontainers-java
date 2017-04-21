@@ -1,18 +1,17 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Predicate;
+import java.time.Duration;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * @author richardnorth
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-    public static final String NAME = "postgresql";
-    public static final String IMAGE = "postgres";
+    static final String NAME = "postgresql";
+    static final String IMAGE = "postgres";
     public static final Integer POSTGRESQL_PORT = 5432;
     private String databaseName = "test";
     private String username = "test";
@@ -24,6 +23,10 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     public PostgreSQLContainer(final String dockerImageName) {
         super(dockerImageName);
+        this.waitStrategy = new LogMessageWaitStrategy()
+                .withRegEx(".*database system is ready to accept connections.*\\s")
+                .withTimes(2)
+                .withStartupTimeout(Duration.of(60, SECONDS));
     }
 
     @Override
@@ -83,20 +86,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void waitUntilContainerStarted() {
-        String regEx = ".*database system is ready to accept connections.*\\s";
-        logger().info("Waiting for database to log '{}'", regEx);
-
-        WaitingConsumer waitingConsumer = new WaitingConsumer();
-        this.followOutput(waitingConsumer);
-
-
-        Predicate<OutputFrame> waitPredicate = outputFrame ->
-                outputFrame.getUtf8String().matches(regEx);
-
-        try {
-            waitingConsumer.waitUntil(waitPredicate, 120, TimeUnit.SECONDS, 2);
-        } catch (TimeoutException e) {
-            throw new ContainerLaunchException("Timed out waiting for log output matching '" + regEx + "'");
-        }
+        getWaitStrategy().waitUntilReady(this);
     }
 }
