@@ -1,11 +1,17 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+
+import java.time.Duration;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 /**
  * @author richardnorth
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-    public static final String NAME = "postgresql";
-    public static final String IMAGE = "postgres";
+    static final String NAME = "postgresql";
+    static final String IMAGE = "postgres";
     public static final Integer POSTGRESQL_PORT = 5432;
     private String databaseName = "test";
     private String username = "test";
@@ -17,6 +23,10 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     public PostgreSQLContainer(final String dockerImageName) {
         super(dockerImageName);
+        this.waitStrategy = new LogMessageWaitStrategy()
+                .withRegEx(".*database system is ready to accept connections.*\\s")
+                .withTimes(2)
+                .withStartupTimeout(Duration.of(60, SECONDS));
     }
 
     @Override
@@ -72,5 +82,10 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public SELF withPassword(final String password) {
         this.password = password;
         return self();
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
     }
 }
