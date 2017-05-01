@@ -867,8 +867,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @param attempts number of attempts
      */
-    public void withStartupAttempts(int attempts) {
+    public SELF withStartupAttempts(int attempts) {
         this.startupAttempts = attempts;
+        return self();
     }
 
     @Override

@@ -86,7 +86,8 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
                 OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
                 if (frame != null) {
-                    LOGGER.debug("{}: {}", frame.getType(), frame.getUtf8String());
+                    final String trimmedFrameText = frame.getUtf8String().replaceFirst("\n$", "");
+                    LOGGER.debug("{}: {}", frame.getType(), trimmedFrameText);
 
                     if (predicate.test(frame)) {
                         numberOfMatches++;
