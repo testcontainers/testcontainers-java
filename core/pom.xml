@@ -18,7 +18,8 @@
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java</artifactId>
-            <version>3.0.9</version>
+            <version>${docker-java.version}</version>
+            <scope>compile</scope>
             <exclusions>
                 <!-- replace with junixsocket -->
                 <exclusion>
@@ -150,10 +151,6 @@
                         <relocation>
                             <pattern>com.fasterxml.jackson</pattern>
                             <shadedPattern>org.testcontainers.shaded.com.fasterxml.jackson</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>com.github.dockerjava</pattern>
-                            <shadedPattern>org.testcontainers.shaded.com.github.dockerjava</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>jersey.repackaged</pattern>

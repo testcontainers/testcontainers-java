@@ -1,28 +1,28 @@
 package org.testcontainers.containers;
 
-import com.google.common.util.concurrent.Uninterruptibles;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
+import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.checkState;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -55,7 +55,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     /**
      */
     public BrowserWebDriverContainer() {
-
+        this.waitStrategy = new LogMessageWaitStrategy()
+                .withRegEx(".*RemoteWebDriver instances should connect to.*\n")
+                .withStartupTimeout(Duration.of(15, SECONDS));
     }
 
     /**
@@ -63,6 +65,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * @param dockerImageName
      */
     public BrowserWebDriverContainer(String dockerImageName) {
+        this();
         super.setDockerImageName(dockerImageName);
         this.customImageNameIsSet = true;
     }
@@ -143,26 +146,18 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     @Override
-    protected void waitUntilContainerStarted() {
-        // Repeatedly try and open a webdriver session
-
-        AtomicInteger backoff = new AtomicInteger(1000);
-
-        driver = Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(backoff.getAndUpdate(current -> (int)(current * 1.5)), TimeUnit.MILLISECONDS);
-            RemoteWebDriver driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
-            driver.getCurrentUrl();
-
-            logger().info("Obtained a connection to container ({})", BrowserWebDriverContainer.this.getSeleniumAddress());
-            return driver;
-        });
-
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (recordingMode != VncRecordingMode.SKIP) {
             LOGGER.debug("Starting VNC recording");
-            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this);
+
+            // Use multiple startup attempts due to race condition between Selenium being available and VNC being available
+            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this)
+                    .withStartupAttempts(3);
+
             recordingSidekickContainer.start();
             currentVncRecordings.add(recordingSidekickContainer);
         }
+        this.driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
     }
 
     /**
