@@ -11,6 +11,7 @@ import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
@@ -25,6 +26,8 @@ import java.util.regex.Pattern;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
+import static org.testcontainers.containers.BindMode.READ_WRITE;
+import static org.testcontainers.containers.SelinuxContext.SHARED;
 
 /**
  * Tests for GenericContainerRules
@@ -99,6 +102,15 @@ public class GenericContainerRuleTest {
     public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
             .withExposedPorts(80)
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
+            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+
+    /**
+     * Map a file on the classpath to a file in the container, and then expose the content for testing.
+     */
+    @ClassRule
+    public static GenericContainer alpineClasspathResourceSelinx = new GenericContainer("alpine:3.2")
+            .withExposedPorts(80)
+            .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_WRITE, SHARED)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
     /**
@@ -201,6 +213,15 @@ public class GenericContainerRuleTest {
         String line = getReaderForContainerPort80(alpineClasspathResource).readLine();
 
         assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMapping", "FOOBAR", line);
+    }
+
+    @Test
+    public void customClasspathResourceMappingWithSelinuxTest() throws IOException {
+        // Note: This functionality doesn't work if you are running your build inside a Docker container;
+        // in that case this test will fail.
+        String line = getReaderForContainerPort80(alpineClasspathResourceSelinx).readLine();
+
+        assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux", "FOOBAR", line);
     }
 
     @Test

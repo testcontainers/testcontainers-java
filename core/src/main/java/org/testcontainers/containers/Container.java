@@ -80,11 +80,24 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
      * for building a container in a fluent style.
      *
-     * @param hostPath the file system path on the host
+     * @param hostPath      the file system path on the host
      * @param containerPath the file system path inside the container
-     * @param mode the bind mode
+     * @param mode          the bind mode
      */
-    void addFileSystemBind(String hostPath, String containerPath, BindMode mode);
+    default void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode) {
+        addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.NONE);
+    }
+
+    /**
+     * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
+     * for building a container in a fluent style.
+     *
+     * @param hostPath      the file system path on the host
+     * @param containerPath the file system path inside the container
+     * @param mode          the bind mode
+     * @param selinuxContext selinux context argument to use for this file
+     */
+    void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
      * Add a link to another container.
@@ -205,7 +218,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param mode          access mode for the file
      * @return this
      */
-    SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode);
+    default SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode) {
+        withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+        return self();
+    }
+
+    /**
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
+     *
+     * @param resourcePath   path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
+     * @param containerPath  path this should be mapped to inside the container
+     * @param mode           access mode for the file
+     * @param selinuxContext selinux context argument to use for this file
+     * @return this
+     */
+    SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
      * Set the duration of waiting time until container treated as started.
