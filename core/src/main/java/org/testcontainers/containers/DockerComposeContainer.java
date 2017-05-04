@@ -46,7 +46,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final String identifier;
     private final Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
     private final List<File> composeFiles;
-    private Set<String> spawnedContainerIds;
+    private Set<String> spawnedContainerIds = Collections.emptySet();
     private Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
