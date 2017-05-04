@@ -11,7 +11,6 @@ import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
