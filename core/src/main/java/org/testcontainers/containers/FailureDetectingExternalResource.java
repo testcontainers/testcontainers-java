@@ -25,9 +25,8 @@ public class FailureDetectingExternalResource implements TestRule {
 
                 List<Throwable> errors = new ArrayList<Throwable>();
 
-                starting(description);
-
                 try {
+                    starting(description);
                     base.evaluate();
                     succeeded(description);
                 } catch (Throwable e) {
