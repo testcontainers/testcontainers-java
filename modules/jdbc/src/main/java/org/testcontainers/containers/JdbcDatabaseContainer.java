@@ -71,21 +71,22 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 throw new ContainerLaunchException("Container failed to start");
             }
 
-            Connection connection = DB_CONNECT_RATE_LIMIT.getWhenReady(() -> createConnection(""));
+            try (Connection connection = DB_CONNECT_RATE_LIMIT.getWhenReady(() -> createConnection(""))) {
+                boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
 
-            boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
-
-            if (success) {
-                logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
-                return connection;
-            } else {
-                throw new SQLException("Failed to execute test query");
+                if (success) {
+                    logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
+                    return null;
+                } else {
+                    throw new SQLException("Failed to execute test query");
+                }
             }
         });
     }
 
     /**
      * Obtain an instance of the correct JDBC driver for this particular database container type
+     *
      * @return a JDBC Driver
      */
     public Driver getJdbcDriverInstance() {
@@ -106,9 +107,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * Creates a connection to the underlying containerized database instance.
      *
-     * @param queryString   any special query string parameters that should be appended to the JDBC connection URL. The
-     *                      '?' character must be included
-     * @return              a Connection
+     * @param queryString any special query string parameters that should be appended to the JDBC connection URL. The
+     *                    '?' character must be included
+     * @return a Connection
      * @throws SQLException if there is a repeated failure to create the connection
      */
     public Connection createConnection(String queryString) throws SQLException {
