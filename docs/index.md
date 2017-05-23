@@ -31,7 +31,7 @@ See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-ja
 
 This project includes a modified class (ScriptUtils) taken from the Spring JDBC project, adapted under the terms of the Apache license. Copyright for that class remains with the original authors.
 
-This project was initially inspired by a [gist](https://gist.github.com/mosheeshel/c427b43c36b256731a0b) by [Moshe Eschel](https://github.com/mosheeshel).
+This project was initially inspired by a [gist](https://gist.github.com/mosheeshel/c427b43c36b256731a0b) by [Moshe Eshel](https://github.com/mosheeshel).
 
 ## Contributing
 
