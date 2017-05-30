@@ -1,7 +1,6 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -14,7 +13,10 @@ import org.testcontainers.DockerClientFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -44,7 +46,6 @@ public final class ResourceReaper {
 
     /**
      * Perform a cleanup.
-     *
      */
     public synchronized void performCleanup() {
         registeredContainers.forEach(this::stopContainer);
@@ -85,10 +86,13 @@ public final class ResourceReaper {
     }
 
     private void stopContainer(String containerId, String imageName) {
-        boolean running;
+        boolean present;
         try {
-            InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
-            running = containerInfo.getState().getRunning();
+            Optional<Container> container = dockerClient.listContainersCmd().exec()
+                    .stream()
+                    .filter(it -> it.getId().equals(containerId))
+                    .findFirst();
+            present = container.isPresent();
         } catch (NotFoundException e) {
             LOGGER.trace("Was going to stop container but it apparently no longer exists: {}");
             return;
@@ -97,20 +101,8 @@ public final class ResourceReaper {
             return;
         }
 
-        if (running) {
-            try {
-                LOGGER.trace("Stopping container: {}", containerId);
-                dockerClient.killContainerCmd(containerId).exec();
-                LOGGER.trace("Stopped container: {}", imageName);
-            } catch (DockerException e) {
-                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
-            }
-        }
-
-        try {
-            dockerClient.inspectContainerCmd(containerId).exec();
-        } catch (NotFoundException e) {
-            LOGGER.trace("Was going to remove container but it apparently no longer exists: {}");
+        if (!present) {
+            LOGGER.trace("Was going to stop container but it apparently no longer exists: {}");
             return;
         }
 
@@ -130,7 +122,7 @@ public final class ResourceReaper {
     /**
      * Register a network to be cleaned up at JVM shutdown.
      *
-     * @param networkName   the image name of the network
+     * @param networkName the image name of the network
      */
     public void registerNetworkForCleanup(String networkName) {
         registeredNetworks.add(networkName);
@@ -138,16 +130,20 @@ public final class ResourceReaper {
 
     /**
      * Removes any networks that contain the identifier.
+     *
      * @param identifier
      */
     public void removeNetworks(String identifier) {
-      removeNetwork(identifier);
+        removeNetwork(identifier);
     }
 
     private void removeNetwork(String networkName) {
         List<Network> networks;
         try {
-            networks = dockerClient.listNetworksCmd().withNameFilter(networkName).exec();
+            networks = dockerClient.listNetworksCmd().exec()
+                    .stream()
+                    .filter(network -> network.getName().startsWith(networkName))
+                    .collect(toList());
         } catch (DockerException e) {
             LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", networkName);
             return;
