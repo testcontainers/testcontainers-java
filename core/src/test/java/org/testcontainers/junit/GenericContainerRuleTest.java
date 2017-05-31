@@ -107,7 +107,7 @@ public class GenericContainerRuleTest {
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainer alpineClasspathResourceSelinx = new GenericContainer("alpine:3.2")
+    public static GenericContainer alpineClasspathResourceSelinux = new GenericContainer("alpine:3.2")
             .withExposedPorts(80)
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_WRITE, SHARED)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
@@ -216,10 +216,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void customClasspathResourceMappingWithSelinuxTest() throws IOException {
-        // Note: This functionality doesn't work if you are running your build inside a Docker container;
-        // in that case this test will fail.
-        String line = getReaderForContainerPort80(alpineClasspathResourceSelinx).readLine();
-
+        String line = getReaderForContainerPort80(alpineClasspathResourceSelinux).readLine();
         assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux", "FOOBAR", line);
     }
 
