@@ -21,7 +21,7 @@ import static org.testcontainers.SupportedTimeUnit.MINUTES;
 /**
  * Created by novy on 15.01.17.
  */
-public class RateLimitingOutgoingPacketsTest implements CanSpawnExampleContainers, CanPingContainers {
+public class RateLimitingOutgoingPacketsTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers, CanPingContainers {
 
     @Test
     public void should_be_able_to_rate_limit_outgoing_packets_from_container() throws Exception {
@@ -43,7 +43,7 @@ public class RateLimitingOutgoingPacketsTest implements CanSpawnExampleContainer
         pumba.start();
 
         // then
-        await().atMost(20, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).until(() -> {
             final PingResponse pingResponse = ping(containerToRateLimit, 117);
             assertThat(pingResponse.latencyInMilliseconds()).isGreaterThan(1000);
         });

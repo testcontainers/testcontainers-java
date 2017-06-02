@@ -1,6 +1,5 @@
 package org.testcontainers.test;
 
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
 import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.shaded.com.github.dockerjava.api.model.Container;
@@ -13,12 +12,12 @@ import java.util.stream.Stream;
 /**
  * Created by novy on 31.12.16.
  */
-class DockerEnvironment {
+class DockerEnvironment implements HasAccessToDockerClient {
 
     private final DockerClient delegate;
 
     DockerEnvironment() {
-        this.delegate = DockerClientFactory.instance().client();
+        this.delegate = dockerClient();
     }
 
     Collection<String> namesOfRunningContainers() {

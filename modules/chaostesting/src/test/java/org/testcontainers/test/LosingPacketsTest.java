@@ -18,7 +18,7 @@ import static org.testcontainers.SupportedTimeUnit.MINUTES;
 /**
  * Created by novy on 17.01.17.
  */
-public class LosingPacketsTest implements CanSpawnExampleContainers, CanPingContainers {
+public class LosingPacketsTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers, CanPingContainers {
 
     @Test
     public void should_be_able_to_drop_outgoing_packets_with_bernoulli_model() throws Exception {
@@ -41,9 +41,9 @@ public class LosingPacketsTest implements CanSpawnExampleContainers, CanPingCont
         pumba.start();
 
         // then
-        await().atMost(20, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).until(() -> {
             final PingResponse pingResponse = ping(aContainer);
-            assertThat(pingResponse.wasSuccessful()).isFalse();
+            assertThat(pingResponse.packetLost()).isTrue();
         });
     }
 
@@ -72,9 +72,9 @@ public class LosingPacketsTest implements CanSpawnExampleContainers, CanPingCont
         pumba.start();
 
         // then
-        await().atMost(20, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).until(() -> {
             final PingResponse pingResponse = ping(aContainer);
-            assertThat(pingResponse.wasSuccessful()).isFalse();
+            assertThat(pingResponse.packetLost()).isTrue();
         });
     }
 
@@ -100,9 +100,9 @@ public class LosingPacketsTest implements CanSpawnExampleContainers, CanPingCont
         pumba.start();
 
         // then
-        await().atMost(20, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).until(() -> {
             final PingResponse pingResponse = ping(aContainer);
-            assertThat(pingResponse.wasSuccessful()).isFalse();
+            assertThat(pingResponse.packetLost()).isTrue();
         });
     }
 }

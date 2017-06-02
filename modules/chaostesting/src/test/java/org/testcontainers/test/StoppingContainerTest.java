@@ -17,7 +17,7 @@ import static org.testcontainers.PumbaTargets.containers;
 /**
  * Created by novy on 31.12.16.
  */
-public class StoppingContainerTest implements CanSpawnExampleContainers {
+public class StoppingContainerTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers {
 
     private DockerEnvironment environment;
 
@@ -40,7 +40,7 @@ public class StoppingContainerTest implements CanSpawnExampleContainers {
         pumba.start();
 
         // then
-        await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).until(() -> {
             final ContainerDetails container = environment.containerDetails(containerToStop.getContainerId());
             assertThat(container.isRunning()).isFalse();
         });

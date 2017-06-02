@@ -1,6 +1,7 @@
 package org.testcontainers;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.images.RemoteDockerImage;
@@ -13,11 +14,11 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 /**
  * Created by novy on 31.12.16.
  */
-
+@Slf4j
 public final class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaDSL.ProvidesAction, PumbaDSL.ProvidesTarget, PumbaDSL.ProvidesExecutionMode {
 
-    private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:204-master";
-    private static final String IP_ROUTE_DOCKER_IMAGE = "gaiadocker/iproute2:3.3";
+    private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:master";
+    private static final String IP_ROUTE_DOCKER_IMAGE = "gaiadocker/iproute2:latest";
 
     private Supplier<PumbaAction> action;
     private Supplier<PumbaExecutionModes.PumbaExecutionMode> executionMode;
@@ -76,7 +77,9 @@ public final class PumbaContainer extends GenericContainer<PumbaContainer> imple
     @Override
     public void start() {
         final PumbaCommand command = new PumbaCommand(action.get(), executionMode.get(), target.get());
-        setCommand(command.evaluate());
+        final String evaluatedCommand = command.evaluate();
+        setCommand(evaluatedCommand);
+        log.info("Executing pumba container with command \"{}\"", evaluatedCommand);
         super.start();
     }
 

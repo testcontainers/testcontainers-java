@@ -2,13 +2,15 @@ package org.testcontainers.test;
 
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
+import org.testcontainers.shaded.com.github.dockerjava.api.async.ResultCallback;
 import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContainerResponse;
+import org.testcontainers.shaded.com.github.dockerjava.api.model.Frame;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -19,7 +21,8 @@ import java.util.regex.Pattern;
  * Created by novy on 14.01.17.
  */
 
-class Network {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+class Network implements CanSpawnExampleContainers {
 
     interface CanPingContainers {
 
@@ -28,8 +31,7 @@ class Network {
         }
 
         default PingResponse ping(GenericContainer container, long packetSizeInBytes) {
-            final String containerIP = Network.ipAddressOf(container);
-            return Network.ping(containerIP, packetSizeInBytes);
+            return new Network().ping(container, packetSizeInBytes);
         }
     }
 
@@ -37,16 +39,16 @@ class Network {
     static class PingResponse {
         private final String responseContent;
 
-        boolean wasSuccessful() {
+        boolean packetLost() {
+            return lastLineOfResponse().contains("100% packet loss");
+        }
+
+        private boolean wasSuccessful() {
             return !unknownHost() && !packetLost();
         }
 
         private boolean unknownHost() {
             return lastLineOfResponse().contains("ping: unknown host");
-        }
-
-        private boolean packetLost() {
-            return lastLineOfResponse().contains("100% packet loss");
         }
 
         double latencyInMilliseconds() {
@@ -55,7 +57,9 @@ class Network {
 
         private String extractResponseTimeAsString() {
             Preconditions.checkArgument(wasSuccessful(), "Trying to extract latency from unsuccessful response");
-            final Pattern minResponseTimePattern = Pattern.compile("rtt min/avg/max/mdev = ([+-]?([0-9]*[.])?[0-9]+)");
+            final Pattern minResponseTimePattern = Pattern.compile(
+                    "round-trip min/avg/max = [0-9]*[.]?[0-9]+/([0-9]*[.]?[0-9]+)/[0-9]*[.]?[0-9]+ ms"
+            );
             final Matcher matcher = minResponseTimePattern.matcher(lastLineOfResponse());
             Preconditions.checkArgument(matcher.find(), "Latency pattern not found in response");
             return matcher.group(1);
@@ -67,18 +71,18 @@ class Network {
         }
     }
 
-    static String ipAddressOf(GenericContainer container) {
-        final DockerClient client = DockerClientFactory.instance().client();
-        final InspectContainerResponse inspected = client.inspectContainerCmd(container.getContainerId()).exec();
-        return inspected.getNetworkSettings().getNetworks().get("bridge").getIpAddress();
+    @SneakyThrows
+    PingResponse ping(GenericContainer container, long packetSizeInBytes) {
+        final GenericContainer pinger = startedContainer();
+        final Container.ExecResult pingResponse = pinger.execInContainer(
+                "sh", "-c", String.format("ping %s -c 1 -s %d", ipAddressOf(container), packetSizeInBytes)
+        );
+        return new PingResponse(pingResponse.getStdout());
     }
 
-    @SneakyThrows
-    static PingResponse ping(String address, long packetSizeInBytes) {
-        final Process process = Runtime.getRuntime().exec(String.format("ping %s -c 1 -s %d", address, packetSizeInBytes));
-        return new PingResponse(
-                IOUtils.toString(process.getInputStream(), "UTF-8")
-        );
+    private String ipAddressOf(GenericContainer container) {
+        final InspectContainerResponse inspected = dockerClient().inspectContainerCmd(container.getContainerId()).exec();
+        return inspected.getNetworkSettings().getNetworks().get("bridge").getIpAddress();
     }
 }
 

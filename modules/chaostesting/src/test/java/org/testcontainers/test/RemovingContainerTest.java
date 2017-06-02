@@ -18,7 +18,7 @@ import static org.testcontainers.PumbaTargets.containers;
 
 @Ignore
 // todo: there are some issues on pumba side, mentioned in every test case
-public class RemovingContainerTest implements CanSpawnExampleContainers {
+public class RemovingContainerTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers {
 
     private DockerEnvironment environment;
 

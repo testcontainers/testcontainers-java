@@ -18,7 +18,7 @@ import static org.testcontainers.PumbaTargets.containers;
 /**
  * Created by novy on 31.12.16.
  */
-public class PausingContainersTest implements CanSpawnExampleContainers {
+public class PausingContainersTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers {
 
     private DockerEnvironment environment;
 

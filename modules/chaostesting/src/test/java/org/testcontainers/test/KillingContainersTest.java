@@ -22,7 +22,7 @@ import static org.testcontainers.PumbaTargets.*;
 /**
  * Created by novy on 31.12.16.
  */
-public class KillingContainersTest implements CanSpawnExampleContainers {
+public class KillingContainersTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers {
 
     private DockerEnvironment environment;
 
@@ -46,7 +46,7 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         pumba.start();
 
         // then
-        await().until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).until(() -> {
             final Collection<String> namesOfRunningContainers = environment.namesOfRunningContainers();
 
             assertThat(namesOfRunningContainers).doesNotContain(containerToKill.getContainerName());
@@ -70,7 +70,7 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         pumba.start();
 
         // then
-        await().until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).until(() -> {
             final Collection<String> namesOfRunningContainers = environment.namesOfRunningContainers();
 
             assertThat(namesOfRunningContainers).doesNotContain(firstVictim.getContainerName(), secondVictim.getContainerName());
@@ -94,7 +94,7 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         pumba.start();
 
         // then
-        await().until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).until(() -> {
             final Collection<String> namesOfRunningContainers = environment.namesOfRunningContainers();
 
             assertThat(namesOfRunningContainers).filteredOn(matchesRegexp("foobar.*")).isEmpty();
@@ -117,7 +117,9 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
         pumba.start();
 
         // then
-        await().atMost(20, TimeUnit.SECONDS).until(() -> assertThat(environment.namesOfRunningContainers()).isEmpty());
+        await().atMost(30, TimeUnit.SECONDS).until(() ->
+                assertThat(environment.namesOfRunningContainers()).isEmpty()
+        );
     }
 
     @Test

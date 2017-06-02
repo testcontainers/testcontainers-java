@@ -18,7 +18,7 @@ import static org.testcontainers.PumbaTargets.containers;
 /**
  * Created by novy on 14.01.17.
  */
-public class DelayingOutgoingPacketsTest implements CanSpawnExampleContainers, CanPingContainers {
+public class DelayingOutgoingPacketsTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers, CanPingContainers {
 
     @Test
     public void should_be_able_to_delay_outgoing_packets_from_container() throws Exception {
