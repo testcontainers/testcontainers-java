@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - TBD
+### Fixed
+- Improved container cleanup if startup failed (#336, #335)
+
+### Changed
+- Upgraded docker-java library to 3.0.10 (#349)
+- Added basic audit logging of Testcontainers' actions via a specific SLF4J logger name with metadata captured via MDC. Intended for use in highly shared Docker environments.
+- Use string-based detection of Selenium container startup (#328, #351)
+- Use string-based detection of PostgreSQL container startup (#327, #317)
+- Update libraries to recent versions (#333)
+- Introduce abstraction over files and classpath resources, allowing recursive copying of directories (#313)
+
 ## [1.2.1] - 2017-04-06
 ### Fixed
 - Fix bug in space detection when `alpine:3.5` image has not yet been pulled (#323, #324)
