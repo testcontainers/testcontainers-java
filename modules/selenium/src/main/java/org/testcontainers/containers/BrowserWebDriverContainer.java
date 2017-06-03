@@ -56,7 +56,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      */
     public BrowserWebDriverContainer() {
         this.waitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*Selenium Server is up and running.*\n")
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
     }
 
