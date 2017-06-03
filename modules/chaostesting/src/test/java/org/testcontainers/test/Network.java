@@ -58,7 +58,7 @@ class Network implements CanSpawnExampleContainers {
         private String extractResponseTimeAsString() {
             Preconditions.checkArgument(wasSuccessful(), "Trying to extract latency from unsuccessful response");
             final Pattern minResponseTimePattern = Pattern.compile(
-                    "round-trip min/avg/max = [0-9]*[.]?[0-9]+/([0-9]*[.]?[0-9]+)/[0-9]*[.]?[0-9]+ ms"
+                    "round-trip min/avg/max = ([0-9]*[.]?[0-9]+)/[0-9]*[.]?[0-9]+/[0-9]*[.]?[0-9]+ ms"
             );
             final Matcher matcher = minResponseTimePattern.matcher(lastLineOfResponse());
             Preconditions.checkArgument(matcher.find(), "Latency pattern not found in response");
