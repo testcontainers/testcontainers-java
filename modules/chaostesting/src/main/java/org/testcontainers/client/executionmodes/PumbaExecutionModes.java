@@ -1,8 +1,11 @@
-package org.testcontainers;
+package org.testcontainers.client.executionmodes;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.testcontainers.client.commandparts.PumbaCommandPart;
+import org.testcontainers.client.commandparts.SupportedTimeUnit;
+import org.testcontainers.client.commandparts.TimeExpression;
 
 /**
  * Created by novy on 01.01.17.
@@ -35,14 +38,4 @@ public final class PumbaExecutionModes {
         }
     }
 
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static final class PumbaExecutionMode implements PumbaCommandPart {
-        private final PumbaCommandPart schedulePart;
-        private final PumbaCommandPart containersToAffect;
-
-        @Override
-        public String evaluate() {
-            return schedulePart.append(containersToAffect).evaluate();
-        }
-    }
 }

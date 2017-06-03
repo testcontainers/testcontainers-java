@@ -1,14 +1,15 @@
-package org.testcontainers;
+package org.testcontainers.client.actions.containeractions;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.testcontainers.client.commandparts.PumbaCommandPart;
 
 /**
  * Created by novy on 17.01.17.
  */
 
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-public class RemoveContainers implements ContainerActions.ContainerAction {
+public class RemoveContainers implements ContainerAction {
     private boolean force = false;
     private boolean links = false;
     private boolean volumes = false;

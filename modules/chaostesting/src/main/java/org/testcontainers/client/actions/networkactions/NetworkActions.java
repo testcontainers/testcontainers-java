@@ -1,11 +1,12 @@
-package org.testcontainers;
+package org.testcontainers.client.actions.networkactions;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.testcontainers.client.commandparts.PumbaCommandPart;
+import org.testcontainers.client.commandparts.SupportedTimeUnit;
+import org.testcontainers.client.commandparts.TimeExpression;
 
 import java.util.Optional;
-
-import static org.testcontainers.NetworkSubCommands.NetworkSubCommand;
 
 /**
  * Created by novy on 14.01.17.
@@ -15,9 +16,6 @@ public final class NetworkActions {
 
     public static NetworkActionWithSubCommand anAction() {
         return new NetworkActionWithSubCommand();
-    }
-
-    interface NetworkAction extends PumbaAction {
     }
 
     public static class NetworkActionWithSubCommand {
@@ -41,7 +39,7 @@ public final class NetworkActions {
             return this;
         }
 
-        public NetworkAction executeSubCommand(NetworkSubCommand subCommand) {
+        public NetworkAction executeSubCommand(NetworkSubCommands.NetworkSubCommand subCommand) {
             return () -> netemPart()
                     .append(durationPart())
                     .append(interfacePart())
@@ -51,7 +49,7 @@ public final class NetworkActions {
         }
 
         private PumbaCommandPart netemPart() {
-            return () -> "netem --tc-image gaiadocker/iproute2";
+            return () -> "netem --tc-image gaiadocker/iproute2:3.3";
         }
 
         private PumbaCommandPart durationPart() {

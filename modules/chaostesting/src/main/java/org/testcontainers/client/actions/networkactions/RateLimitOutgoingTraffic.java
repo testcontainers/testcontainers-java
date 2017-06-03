@@ -1,8 +1,9 @@
-package org.testcontainers;
+package org.testcontainers.client.actions.networkactions;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.testcontainers.client.commandparts.PumbaCommandPart;
 
 /**
  * Created by novy on 15.01.17.

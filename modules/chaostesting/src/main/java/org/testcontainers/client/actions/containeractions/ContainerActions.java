@@ -1,7 +1,8 @@
-package org.testcontainers;
+package org.testcontainers.client.actions.containeractions;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.testcontainers.client.actions.PumbaAction;
 
 /**
  * Created by novy on 31.12.16.
@@ -25,6 +26,4 @@ public final class ContainerActions {
         return new RemoveContainers();
     }
 
-    public interface ContainerAction extends PumbaAction {
-    }
 }

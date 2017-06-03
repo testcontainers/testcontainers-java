@@ -42,7 +42,6 @@ class DockerEnvironment implements HasAccessToDockerClient {
         return new ContainerDetails(inspectResponse);
     }
 
-
     static class ContainerDetails {
         private final InspectContainerResponse response;
 

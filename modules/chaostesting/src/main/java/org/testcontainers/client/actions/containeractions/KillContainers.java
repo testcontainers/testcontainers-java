@@ -1,13 +1,14 @@
-package org.testcontainers;
+package org.testcontainers.client.actions.containeractions;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.testcontainers.client.commandparts.PumbaCommandPart;
 
 /**
  * Created by novy on 16.01.17.
  */
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-public class KillContainers implements ContainerActions.ContainerAction {
+public class KillContainers implements ContainerAction {
     private KillSignal signal = KillSignal.SIGKILL;
 
     public KillContainers withSignal(KillSignal signal) {

@@ -1,7 +1,10 @@
-package org.testcontainers;
+package org.testcontainers.client.actions.networkactions;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.testcontainers.client.commandparts.PumbaCommandPart;
+import org.testcontainers.client.commandparts.SupportedTimeUnit;
+import org.testcontainers.client.commandparts.TimeExpression;
 
 import java.util.Optional;
 

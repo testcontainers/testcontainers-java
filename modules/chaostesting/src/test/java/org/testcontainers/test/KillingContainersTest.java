@@ -1,10 +1,13 @@
 package org.testcontainers.test;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.PumbaContainer;
-import org.testcontainers.SupportedTimeUnit;
+import org.testcontainers.PumbaExecutables;
+import org.testcontainers.client.PumbaClient;
+import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -14,21 +17,28 @@ import java.util.regex.Pattern;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.ContainerActions.killContainers;
-import static org.testcontainers.PumbaExecutionModes.onlyOnce;
-import static org.testcontainers.PumbaExecutionModes.recurrently;
-import static org.testcontainers.PumbaTargets.*;
+import static org.testcontainers.client.actions.containeractions.ContainerActions.killContainers;
+import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
+import static org.testcontainers.client.executionmodes.PumbaExecutionModes.recurrently;
+import static org.testcontainers.client.targets.PumbaTargets.*;
 
 /**
  * Created by novy on 31.12.16.
  */
-public class KillingContainersTest extends ShutdownsOrphanedContainers implements CanSpawnExampleContainers {
+public class KillingContainersTest implements CanSpawnExampleContainers {
 
     private DockerEnvironment environment;
+    private PumbaClient pumba;
 
     @Before
     public void setUp() throws Exception {
         environment = new DockerEnvironment();
+        pumba = new PumbaClient(PumbaExecutables.dockerized());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        ResourceReaper.instance().performCleanup();
     }
 
     @Test
@@ -37,13 +47,11 @@ public class KillingContainersTest extends ShutdownsOrphanedContainers implement
         final GenericContainer containerToKill = startedContainer();
         final GenericContainer containerThatShouldSurvive = startedContainer();
 
-        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+        // when
+        pumba
                 .performContainerChaos(killContainers())
                 .affect(containers(containerToKill.getContainerName()))
                 .execute(onlyOnce().onAllChosenContainers());
-
-        // when
-        pumba.start();
 
         // then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
@@ -61,13 +69,11 @@ public class KillingContainersTest extends ShutdownsOrphanedContainers implement
         final GenericContainer secondVictim = startedContainer();
         final GenericContainer survivor = startedContainer();
 
-        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+        // when
+        pumba
                 .performContainerChaos(killContainers())
                 .affect(containers(firstVictim.getContainerName(), secondVictim.getContainerName()))
                 .execute(onlyOnce().onAllChosenContainers());
-
-        // when
-        pumba.start();
 
         // then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
@@ -85,13 +91,11 @@ public class KillingContainersTest extends ShutdownsOrphanedContainers implement
         startedContainerWithName(containerNameStartingWith("foobar"));
         startedContainerWithName(containerNameStartingWith("barbaz"));
 
-        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+        // when
+        pumba
                 .performContainerChaos(killContainers())
                 .affect(containersMatchingRegexp("foobar.*"))
                 .execute(onlyOnce().onAllChosenContainers());
-
-        // when
-        pumba.start();
 
         // then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
@@ -108,13 +112,11 @@ public class KillingContainersTest extends ShutdownsOrphanedContainers implement
         startedContainer();
         startedContainer();
 
-        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+        // when
+        pumba
                 .performContainerChaos(killContainers())
                 .affect(allContainers())
                 .execute(onlyOnce().onAllChosenContainers());
-
-        // when
-        pumba.start();
 
         // then
         await().atMost(30, TimeUnit.SECONDS).until(() ->
@@ -128,13 +130,11 @@ public class KillingContainersTest extends ShutdownsOrphanedContainers implement
         startedContainerWithName(containerNameStartingWith("foobar"));
         startedContainerWithName(containerNameStartingWith("foobar"));
 
-        final GenericContainer<PumbaContainer> pumba = PumbaContainer.newPumba()
+        // when
+        pumba
                 .performContainerChaos(killContainers())
                 .affect(containersMatchingRegexp("foobar.*"))
                 .execute(recurrently(5, SupportedTimeUnit.SECONDS).onRandomlyChosenContainer());
-
-        // when
-        pumba.start();
 
         // then
         await().atMost(8, TimeUnit.SECONDS).until(() ->

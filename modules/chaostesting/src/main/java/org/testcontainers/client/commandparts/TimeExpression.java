@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.client.commandparts;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -7,16 +7,16 @@ import lombok.RequiredArgsConstructor;
  * Created by novy on 01.01.17.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-class TimeExpression implements PumbaCommandPart {
+public class TimeExpression implements PumbaCommandPart {
 
     private final long value;
     private final SupportedTimeUnit unit;
 
-    static TimeExpression of(int value, SupportedTimeUnit unit) {
+    public static TimeExpression of(int value, SupportedTimeUnit unit) {
         return new TimeExpression(value, unit);
     }
 
-    static TimeExpression of(long value, SupportedTimeUnit unit) {
+    public static TimeExpression of(long value, SupportedTimeUnit unit) {
         return new TimeExpression(value, unit);
     }
 
@@ -25,7 +25,7 @@ class TimeExpression implements PumbaCommandPart {
         return value + unit.abbreviation();
     }
 
-    long asMilliseconds() {
+    public long asMilliseconds() {
         return value * unit.millisecondsMultiplier();
     }
 }

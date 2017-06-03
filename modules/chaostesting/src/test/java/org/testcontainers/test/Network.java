@@ -43,14 +43,6 @@ class Network implements CanSpawnExampleContainers {
             return lastLineOfResponse().contains("100% packet loss");
         }
 
-        private boolean wasSuccessful() {
-            return !unknownHost() && !packetLost();
-        }
-
-        private boolean unknownHost() {
-            return lastLineOfResponse().contains("ping: unknown host");
-        }
-
         double latencyInMilliseconds() {
             return Double.parseDouble(extractResponseTimeAsString());
         }
@@ -63,6 +55,14 @@ class Network implements CanSpawnExampleContainers {
             final Matcher matcher = minResponseTimePattern.matcher(lastLineOfResponse());
             Preconditions.checkArgument(matcher.find(), "Latency pattern not found in response");
             return matcher.group(1);
+        }
+
+        private boolean wasSuccessful() {
+            return !unknownHost() && !packetLost();
+        }
+
+        private boolean unknownHost() {
+            return lastLineOfResponse().contains("ping: unknown host");
         }
 
         private String lastLineOfResponse() {

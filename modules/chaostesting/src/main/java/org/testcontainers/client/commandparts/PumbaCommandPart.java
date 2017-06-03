@@ -1,9 +1,9 @@
-package org.testcontainers;
+package org.testcontainers.client.commandparts;
 
 /**
  * Created by novy on 01.01.17.
  */
-interface PumbaCommandPart {
+public interface PumbaCommandPart {
 
     String evaluate();
 

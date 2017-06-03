@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.client.targets;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -34,6 +34,4 @@ public final class PumbaTargets {
         return () -> "";
     }
 
-    public interface PumbaTarget extends PumbaCommandPart {
-    }
 }

@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.client.commandparts;
 
 /**
  * Created by novy on 01.01.17.
