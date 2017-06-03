@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -8,6 +9,8 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.NginxContainer;
+import org.testcontainers.junit.assumptions.Assumptions;
+import org.testcontainers.junit.assumptions.DockerAvailableAssumptionRule;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -20,9 +23,12 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
  */
 public class SimpleNginxTest {
 
-    @Rule
-    public NginxContainer nginx = new NginxContainer()
+    @ClassRule
+    public static NginxContainer nginx = new NginxContainer()
             .withCustomContent(System.getProperty("user.home") + "/.tmp-test-container");
+
+    @ClassRule
+    public static DockerAvailableAssumptionRule assumptions = Assumptions.assumeDockerPresent();
 
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()

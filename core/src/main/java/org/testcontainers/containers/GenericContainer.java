@@ -108,7 +108,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /*
      * Unique instance of DockerClient for use by this container object.
      */
-    protected DockerClient dockerClient = DockerClientFactory.instance().client();
+    protected DockerClient dockerClient;
 
     /*
      * Info about the Docker server; lazily fetched.
@@ -162,6 +162,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         profiler.setLogger(logger());
 
         try {
+            dockerClient = DockerClientFactory.instance().client();
+
             profiler.start("Prepare container configuration and host configuration");
             configure();
 
@@ -724,7 +726,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = new RemoteDockerImage(dockerImageName);
 
         // Mimic old behavior where we resolve image once it's set
-        getDockerImageName();
+        //getDockerImageName();
     }
 
     /**
