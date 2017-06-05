@@ -179,7 +179,6 @@
         <module>modules/selenium</module>
         <module>modules/nginx</module>
         <module>modules/mariadb</module>
-        <module>modules/jdbc-test</module>
     </modules>
 
     <profiles>
@@ -192,6 +191,15 @@
         </profile>
         <profile>
             <id>shade</id>
+        </profile>
+        <profile>
+            <id>test-only</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>modules/jdbc-test</module>
+            </modules>
         </profile>
         <profile>
             <id>sign</id>
