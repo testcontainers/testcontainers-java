@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.3.0] - TBD
+## [1.3.0] - 2017-06-05
 ### Fixed
 - Improved container cleanup if startup failed (#336, #335)
 
