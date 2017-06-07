@@ -23,6 +23,8 @@ public class CommandLine {
 
     private static final Logger LOGGER = getLogger(CommandLine.class);
 
+    private static final String OS = System.getProperty("os.name").toLowerCase();
+
     /**
      * Run a shell command synchronously.
      *
@@ -57,8 +59,15 @@ public class CommandLine {
      */
     public static boolean executableExists(String executable) {
 
+        String fullExecutableName;
+        if (isWindows() && !executable.endsWith(".exe")) {
+            fullExecutableName = executable + ".exe";
+        } else {
+            fullExecutableName = executable;
+        }
+
         // First check if we've been given the full path already
-        File directFile = new File(executable);
+        File directFile = new File(fullExecutableName);
         if (directFile.exists() && directFile.canExecute()) {
             return true;
         }
@@ -76,6 +85,10 @@ public class CommandLine {
     @NotNull
     public static String[] getSystemPath() {
         return System.getenv("PATH").split(Pattern.quote(File.pathSeparator));
+    }
+
+    private static boolean isWindows() {
+        return OS.startsWith("windows");
     }
 
     private static class ShellCommandException extends RuntimeException {
