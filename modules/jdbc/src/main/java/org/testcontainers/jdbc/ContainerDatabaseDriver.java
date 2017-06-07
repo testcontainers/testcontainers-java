@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 public class ContainerDatabaseDriver implements Driver {
 
     private static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^:]+))?://[^\\?]+(\\?.*)?");
+    private static final Pattern DAEMON_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_DAEMON=([^\\?&]+).*");
     private static final Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITSCRIPT=([^\\?&]+).*");
     private static final Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITFUNCTION=" +
             "((\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
@@ -186,6 +187,9 @@ public class ContainerDatabaseDriver implements Driver {
      * @return the connection, wrapped
      */
     private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
+        final Matcher matcher = DAEMON_MATCHING_PATTERN.matcher(url);
+        final boolean isDaemon = matcher.matches() ? Boolean.parseBoolean(matcher.group(2)) : false;
+
         Set<Connection> connections = containerConnections.get(container.getContainerId());
 
         if (connections == null) {
@@ -199,7 +203,7 @@ public class ContainerDatabaseDriver implements Driver {
 
         return new ConnectionWrapper(connection, () -> {
             finalConnections.remove(connection);
-            if (finalConnections.isEmpty()) {
+            if (!isDaemon && finalConnections.isEmpty()) {
                 container.stop();
                 jdbcUrlContainerCache.remove(url);
             }
