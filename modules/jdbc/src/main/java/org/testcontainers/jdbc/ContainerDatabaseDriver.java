@@ -1,5 +1,6 @@
 package org.testcontainers.jdbc;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.slf4j.LoggerFactory;
@@ -315,6 +316,18 @@ public class ContainerDatabaseDriver implements Driver {
                 containerConnections.remove(container.getContainerId());
                 initializedContainers.remove(container.getContainerId());
             }
+        }
+    }
+
+    /**
+     * Utility method to get an instance of a database container given its JDBC URL.
+     * @param jdbcUrl the JDBC URL of the container instance to get
+     * @return an instance of database container or <code>null</code> if no container associated with JDBC URL
+     */
+    @VisibleForTesting
+    static JdbcDatabaseContainer getContainer(String jdbcUrl) {
+        synchronized (jdbcUrlContainerCache) {
+            return jdbcUrlContainerCache.get(jdbcUrl);
         }
     }
 }
