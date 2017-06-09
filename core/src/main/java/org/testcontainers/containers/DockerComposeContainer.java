@@ -243,12 +243,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             getDockerCompose("down -v")
                     .start();
 
-            // remove the networks before removing the containers
-            ResourceReaper.instance().removeNetworks(identifier);
-
             // kill the spawned service containers
             spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
             spawnedContainerIds.clear();
+
+            // remove the networks after removing the containers
+            ResourceReaper.instance().removeNetworks(identifier);
         }
     }
 
