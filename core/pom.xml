@@ -50,6 +50,11 @@
             <artifactId>slf4j-ext</artifactId>
             <version>1.7.25</version>
         </dependency>
+        <dependency>
+            <groupId>org.rnorth.visible-assertions</groupId>
+            <artifactId>visible-assertions</artifactId>
+            <version>1.0.5</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>

@@ -24,7 +24,8 @@ public class TestcontainersConfiguration {
 
     private String ambassadorContainerImage = "richnorth/ambassador:latest";
     private String vncRecordedContainerImage = "richnorth/vnc-recorder:latest";
-    private String tinyImage = "alpine:3.2";
+    private String tinyImage = "alpine:3.5";
+    private Boolean disableChecks = false;
 
     private static TestcontainersConfiguration loadConfiguration() {
         final TestcontainersConfiguration config = new TestcontainersConfiguration();
@@ -44,6 +45,7 @@ public class TestcontainersConfiguration {
                 config.ambassadorContainerImage = properties.getProperty("ambassador.container.image", config.ambassadorContainerImage);
                 config.vncRecordedContainerImage = properties.getProperty("vncrecorder.container.image", config.vncRecordedContainerImage);
                 config.tinyImage = properties.getProperty("tinyimage.container.image", config.tinyImage);
+                config.disableChecks = Boolean.parseBoolean(properties.getProperty("checks.disable", config.disableChecks + ""));
 
                 log.debug("Testcontainers configuration overrides loaded from {}: {}", configOverrides, config);
 

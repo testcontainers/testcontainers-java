@@ -2,18 +2,28 @@ package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.Info;
-import com.github.dockerjava.api.model.Version;
+import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.*;
+import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -82,7 +92,8 @@ public class DockerClientFactory {
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(CONFIGURATION_STRATEGIES);
 
-        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
+        String hostIpAddress = strategy.getDockerHostIpAddress();
+        log.info("Docker host IP address is {}", hostIpAddress);
         DockerClient client = strategy.getClient();
 
         if (!preconditionsChecked) {
@@ -96,8 +107,71 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            checkVersion(version.getVersion());
-            checkDiskSpaceAndHandleExceptions(client);
+            if (!TestcontainersConfiguration.getInstance().getDisableChecks()) {
+                VisibleAssertions.info("Checking the system...");
+
+                VisibleAssertions.assertThat("Docker version", version.getVersion(), new BaseMatcher<String>() {
+                    @Override
+                    public boolean matches(Object o) {
+                        return new ComparableVersion(o.toString()).compareTo(new ComparableVersion("1.6.0")) >= 0;
+                    }
+
+                    @Override
+                    public void describeTo(Description description) {
+                        description.appendText("is newer than 1.6.0");
+                    }
+                });
+
+                MountableFile mountableFile = MountableFile.forClasspathResource(this.getClass().getName().replace(".", "/") + ".class");
+
+                runInsideDocker(
+                        client,
+                        cmd -> cmd
+                                .withCmd("/bin/sh", "-c", "while true; do printf 'hello' | nc -l -p 80; done")
+                                .withBinds(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro))
+                                .withExposedPorts(new ExposedPort(80))
+                                .withPublishAllPorts(true),
+                        (dockerClient, id) -> {
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+                            try {
+                                dockerClient
+                                        .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
+                                        .exec(new ExecStartResultCallback(outputStream, null))
+                                        .awaitCompletion();
+                            } catch (Exception e) {
+                                log.debug("Can't exec disk checking command", e);
+                            }
+
+                            DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
+
+                            VisibleAssertions.assertTrue(
+                                    "Docker environment has more than 2GB free",
+                                    df.availableMB.map(it -> it >= 2048).orElse(true)
+                            );
+
+                            try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(id, "/dummy").exec()) {
+                                stream.read();
+                                VisibleAssertions.pass("File should be mountable");
+                            } catch (Exception e) {
+                                VisibleAssertions.fail("File should be mountable but fails with " + e.getMessage());
+                            }
+
+                            InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
+
+                            String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
+
+                            String response;
+                            try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
+                                response = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
+                            } catch (IOException e) {
+                                response = e.getMessage();
+                            }
+                            VisibleAssertions.assertEquals("Exposed port is accessible", "hello", response);
+
+                            return null;
+                        });
+            }
             preconditionsChecked = true;
         }
 
@@ -121,47 +195,6 @@ public class DockerClientFactory {
         return strategy.getDockerHostIpAddress();
     }
 
-    private void checkVersion(String version) {
-        String[] splitVersion = version.split("\\.");
-        if (Integer.valueOf(splitVersion[0]) <= 1 && Integer.valueOf(splitVersion[1]) < 6) {
-            throw new IllegalStateException("Docker version 1.6.0+ is required, but version " + version + " was found");
-        }
-    }
-
-    private void checkDiskSpaceAndHandleExceptions(DockerClient client) {
-        try {
-            checkDiskSpace(client);
-        } catch (NotEnoughDiskSpaceException e) {
-            throw e;
-        } catch (Exception e) {
-            log.warn("Encountered and ignored error while checking disk space", e);
-        }
-    }
-
-    /**
-     * Check whether this docker installation is likely to have disk space problems
-     * @param client an active Docker client
-     */
-    private void checkDiskSpace(DockerClient client) {
-        DiskSpaceUsage df = runInsideDocker(client, cmd -> cmd.withCmd("df", "-P"), (dockerClient, id) -> {
-                String logResults = dockerClient.logContainerCmd(id)
-                    .withStdOut(true)
-                    .exec(new LogToStringContainerCallback())
-                    .toString();
-
-                return parseAvailableDiskSpace(logResults);
-        });
-
-        log.info("Disk utilization in Docker environment is {} ({} )",
-            df.usedPercent.map(x -> x + "%").orElse("unknown"),
-            df.availableMB.map(x -> x + " MB available").orElse("unknown available"));
-
-        if (df.availableMB.map(it -> it < 2048).orElse(false)) {
-            log.error("Docker environment has less than 2GB free - execution is unlikely to succeed so will be aborted.");
-            throw new NotEnoughDiskSpaceException("Not enough disk space in Docker environment");
-        }
-    }
-
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
         if (strategy == null) {
             client();
@@ -176,9 +209,8 @@ public class DockerClientFactory {
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
 
-        client.startContainerCmd(id).exec();
-
         try {
+            client.startContainerCmd(id).exec();
             return block.apply(client, id);
         } finally {
             try {
@@ -199,7 +231,7 @@ public class DockerClientFactory {
         String[] lines = dfOutput.split("\n");
         for (String line : lines) {
             String[] fields = line.split("\\s+");
-            if (fields[5].equals("/")) {
+            if (fields.length > 5 && fields[5].equals("/")) {
                 int availableKB = Integer.valueOf(fields[3]);
                 df.availableMB = Optional.of(availableKB / 1024);
                 df.usedPercent = Optional.of(Integer.valueOf(fields[4].replace("%", "")));
