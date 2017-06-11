@@ -17,7 +17,9 @@ sudo: required
 services:
   - docker
 
-cache: false
+cache:
+  directories:
+    - '$HOME/.m2'
 
 install:
   - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
