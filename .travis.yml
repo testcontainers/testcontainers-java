@@ -31,13 +31,10 @@ install:
   - export DOCKER_HOST=tcp://127.0.0.1:2375
   - export DOCKER_TLS_VERIFY=0
   - env
-  - ./mvnw -DskipTests=true -Dmaven.javadoc.skip=true install
+  - ./mvnw -T4 -DskipTests=true -Dmaven.javadoc.skip=true install
 
 jobs:
   include:
-    - stage: install
-      install: skip
-      script: ./mvnw dependency:go-offline
     - stage: test
       env: [ NAME=core ]
       script: ./mvnw -pl core test
