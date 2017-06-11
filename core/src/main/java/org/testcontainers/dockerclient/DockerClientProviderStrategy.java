@@ -49,6 +49,9 @@ public abstract class DockerClientProviderStrategy {
         return true;
     }
 
+    /**
+     * @return highest to lowest priority value
+     */
     protected int getPriority() {
         return 0;
     }
