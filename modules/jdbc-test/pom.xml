@@ -24,10 +24,12 @@
             <artifactId>postgresql</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>mariadb</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Database drivers for testing -->

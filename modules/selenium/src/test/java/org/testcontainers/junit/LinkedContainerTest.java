@@ -4,10 +4,13 @@ import lombok.Cleanup;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.NginxContainer;
 
 import java.io.*;
-import java.net.URLConnection;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
@@ -15,13 +18,18 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
 /**
  * @author richardnorth
  */
-public class SimpleNginxTest {
+public class LinkedContainerTest {
 
     static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
     @Rule
     public NginxContainer nginx = new NginxContainer()
             .withCustomContent(contentFolder.toString());
+
+    @Rule
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+            .withDesiredCapabilities(DesiredCapabilities.chrome())
+            .withLinkToContainer(nginx, "nginx");
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
@@ -41,15 +49,11 @@ public class SimpleNginxTest {
     }
 
     @Test
-    public void testSimple() throws Exception {
+    public void testWebDriverToNginxContainerAccessViaContainerLink() throws Exception {
+        RemoteWebDriver driver = chrome.getWebDriver();
 
-        info("Base URL is " + nginx.getBaseUrl("http", 80));
+        driver.get("http://nginx/");
 
-        URLConnection urlConnection = nginx.getBaseUrl("http", 80).openConnection();
-        @Cleanup BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-        String line = reader.readLine();
-        System.out.println(line);
-
-        assertTrue("Using URLConnection, an HTTP GET from the nginx server returns the index.html from the custom content directory", line.contains("This worked"));
+        assertEquals("Using selenium, an HTTP GET from the nginx server returns the index.html from the custom content directory", "This worked", driver.findElement(By.tagName("body")).getText());
     }
 }
