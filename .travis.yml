@@ -19,8 +19,7 @@ services:
 
 cache:
   directories:
-    - '$HOME/.m2/repository'
-    - '$HOME/.m2/wrapper'
+    - '$HOME/.m2'
 
 install:
   - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
