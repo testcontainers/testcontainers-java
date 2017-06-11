@@ -17,7 +17,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
  */
 public class SimpleNginxTest {
 
-    static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
+    private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
     @Rule
     public NginxContainer nginx = new NginxContainer()
