@@ -13,10 +13,12 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -61,13 +63,32 @@ public abstract class DockerClientProviderStrategy {
     public static DockerClientProviderStrategy getFirstValidStrategy(List<DockerClientProviderStrategy> strategies) {
         List<String> configurationFailures = new ArrayList<>();
 
-        return strategies.stream()
-                .filter(DockerClientProviderStrategy::isApplicable)
-                .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
+        return Stream
+                .concat(
+                        Stream
+                                .of(TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName())
+                                .filter(Objects::nonNull)
+                                .flatMap(it -> {
+                                    try {
+                                        Class<? extends DockerClientProviderStrategy> strategyClass = (Class) Thread.currentThread().getContextClassLoader().loadClass(it);
+                                        return Stream.of(strategyClass.newInstance());
+                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                                        LOGGER.warn("Can't instantiate a strategy from " + it, e);
+                                        return Stream.empty();
+                                    }
+                                }),
+                        strategies
+                                .stream()
+                                .filter(DockerClientProviderStrategy::isApplicable)
+                                .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
+                )
                 .flatMap(strategy -> {
                     try {
                         strategy.test();
                         LOGGER.info("Found Docker environment with {}", strategy.getDescription());
+
+                        TestcontainersConfiguration.getInstance().updateGlobalConfig("docker.client.strategy", strategy.getClass().getName());
+
                         return Stream.of(strategy);
                     } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
                         @Nullable String throwableMessage = e.getMessage();

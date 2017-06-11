@@ -32,7 +32,7 @@ public class ProxiedUnixSocketClientProviderStrategy extends UnixSocketClientPro
 
             config = tryConfiguration("tcp://localhost:" + proxyPort);
 
-            log.info("Accessing unix domain socket via TCP proxy (" + DOCKER_SOCK_PATH + " via localhost:" + proxyPort + ")");
+            log.debug("Accessing unix domain socket via TCP proxy (" + DOCKER_SOCK_PATH + " via localhost:" + proxyPort + ")");
         } catch (Exception e) {
 
             proxy.stop();
