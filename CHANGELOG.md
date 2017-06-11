@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## UNRELEASED
+### Changed
+- Added `TC_DAEMON` JDBC URL flag to prevent `ContainerDatabaseDriver` from shutting down containers at the time all connections are closed. (#359, #360)
+
 ## [1.3.0] - 2017-06-05
 ### Fixed
 - Improved container cleanup if startup failed (#336, #335)

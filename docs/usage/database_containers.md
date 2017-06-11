@@ -97,6 +97,14 @@ public class JDBCDriverTest {
     ...
 ```
 
+#### Running container in daemon mode
+
+By default database container is being stopped as soon as last connection is closed. There are cases when you might need to start container and keep it running till you stop it explicitly or JVM is shutdown. To do this, add `TC_DAEMON` parameter to the URL as follows:
+
+ `jdbc:tc:mysql://hostname/databasename?TC_DAEMON=true`
+
+With this parameter database container will keep running even when there're no open connections.
+
 #### Overriding MySQL my.cnf settings
 
 For MySQL databases, it is possible to override configuration settings using resources on the classpath. Assuming `somepath/mysql_conf_override`
