@@ -5,9 +5,8 @@ Testcontainers' release process is automated as a Travis deployment. This descri
 ## Steps
 
 1. Ensure that the master branch is building and that tests are passing.
-1. Check that the [`CHANGELOG`](CHANGELOG.md) file is up to date and includes all merged features.
-1. Create a tag for the new release with the desired version number. **The tag name is used as the Maven version**, so please keep the tag name plain (e.g. 1.2.3).
-1. Push the tag and associated commit to Github.
+1. Ensure that the [`CHANGELOG`](CHANGELOG.md) file is up to date and includes all merged features.
+1. Create a new release on GitHub. **The tag name is used as the Maven version**, so please keep the tag name plain (e.g. 1.2.3).
 1. Check that the Travis build passed.
 1. Release of published artifacts is fully automated. Once the Travis build completes, there are no further actions to perform on the repository.
 1. When available through Maven Central, poke [@whichrich](https://twitter.com/whichrich) to announce the release on Twitter!
