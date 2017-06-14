@@ -26,7 +26,21 @@
                     <groupId>de.gesellix</groupId>
                     <artifactId>unix-socket-factory</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.connectors</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <dependency>
