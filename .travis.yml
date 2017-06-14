@@ -17,62 +17,53 @@ sudo: required
 services:
   - docker
 
-before_install:
+cache:
+  directories:
+    - '$HOME/.m2'
+
+install:
+  - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
   - sudo apt-get update -qq
   - sudo apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew install docker-engine
-  - env
-# Pre-fetch docker images - seems to need to be done before docker env vars are set
-  - docker pull redis:3.0.2
-  - docker pull rabbitmq:3.5.3
-  - docker pull mongo:3.1.5
-  - docker pull alpine:3.2
-  - docker pull mysql:latest
-  - docker pull mysql:5.5.43
-  - docker pull mysql:5.6
-  - docker pull mysql:5.5
-  - docker pull postgres:latest
-  - docker pull selenium/standalone-chrome-debug:2.52.0
-  - docker pull selenium/standalone-firefox-debug:2.52.0
-  - docker pull richnorth/vnc-recorder:latest
-  - docker pull nginx:1.9.4
-  - docker pull dduportal/docker-compose:1.6.0
-  - docker pull richnorth/ambassador:latest
-# Update env vars required by testcontainers
+  - docker info
+  # Update env vars required by testcontainers
   - export DOCKER_HOST=tcp://127.0.0.1:2375
   - export DOCKER_TLS_VERIFY=0
   - env
+  - ./mvnw -T4 -DskipTests=true -Dmaven.javadoc.skip=true install
 
-install: mvn install -P !build-extras -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+jobs:
+  include:
+    - stage: test
+      env: [ NAME=core ]
+      script: ./mvnw -pl core test
 
-script:
-  - mvn -B -P !build-extras test
-  # Run Docker-in-Docker tests
-  - |
-      DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run --rm \
-      -v "$HOME/.m2":/root/.m2/ \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -v "$(pwd)":"$(pwd)" \
-      -w "$(pwd)" \
-      openjdk:8-jre \
-      ./mvnw -B -P !build-extras -pl core test -Dtest=*GenericContainerRuleTest
-  # Run Docker-in-Docker tests inside Alpine
-  - |
-      DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run --rm \
-      -v "$HOME/.m2":/root/.m2/ \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -v "$(pwd)":"$(pwd)" \
-      -w "$(pwd)" \
-      kiview/openjdk-alpine-bash:8u111 \
-      ./mvnw -B -P !build-extras -pl core test -Dtest=*GenericContainerRuleTest
-  - mvn -B -P !build-extras test -f shade-test/pom.xml
+    - env: [ NAME=selenium ]
+      script: ./mvnw -pl modules/selenium test
 
-deploy:
-  provider: script
-  script: release/deploy.sh
-  on:
-    tags: true
-    branch: master
+    - env: [ NAME=modules ]
+      script: ./mvnw -pl !core,!modules/selenium test
 
-cache:
-  directories:
-    - '$HOME/.m2/repository'
+    # Run Docker-in-Docker tests inside Alpine
+    - env: [ NAME=docker-in-alpine-docker ]
+      script: |
+                DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
+                -v "$HOME/.m2":/root/.m2/ \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                -v "$(pwd)":"$(pwd)" \
+                -w "$(pwd)" \
+                openjdk:8-jdk-alpine \
+                ./mvnw -pl core test -Dtest=*GenericContainerRuleTest
+
+    - env: [ NAME=shade ]
+      script: ./mvnw test -f shade-test/pom.xml
+
+    - stage: deploy
+      install: skip
+      script: skip
+      deploy:
+        provider: script
+        script: release/deploy.sh
+        on:
+          tags: true
+          branch: master
