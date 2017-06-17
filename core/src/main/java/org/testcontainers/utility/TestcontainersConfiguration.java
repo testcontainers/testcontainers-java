@@ -25,7 +25,7 @@ public class TestcontainersConfiguration {
     private String ambassadorContainerImage = "richnorth/ambassador:latest";
     private String vncRecordedContainerImage = "richnorth/vnc-recorder:latest";
     private String tinyImage = "alpine:3.5";
-    private Boolean disableChecks = false;
+    private boolean disableChecks = false;
 
     private static TestcontainersConfiguration loadConfiguration() {
         final TestcontainersConfiguration config = new TestcontainersConfiguration();
