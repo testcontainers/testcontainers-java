@@ -107,7 +107,7 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            if (!TestcontainersConfiguration.getInstance().getDisableChecks()) {
+            if (!TestcontainersConfiguration.getInstance().isDisableChecks()) {
                 VisibleAssertions.info("Checking the system...");
 
                 checkDockerVersion(version.getVersion());
