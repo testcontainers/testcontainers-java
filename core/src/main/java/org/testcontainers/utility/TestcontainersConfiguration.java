@@ -24,7 +24,7 @@ public class TestcontainersConfiguration {
     @Getter(lazy = true)
     private static final TestcontainersConfiguration instance = loadConfiguration();
 
-    final Properties properties;
+    private final Properties properties;
 
     public String getAmbassadorContainerImage() {
         return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
