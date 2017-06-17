@@ -18,7 +18,7 @@ public class NetworkTest {
         @Test
         public void testNetworkSupport() throws Exception {
             try (
-                    Network network = Network.newNetwork().as(Network.AutoCreated.class);
+                    Network network = newNetwork().as(Network.AutoCreated.class);
 
                     GenericContainer foo = new GenericContainer()
                             .withNetwork(network)
@@ -45,7 +45,7 @@ public class NetworkTest {
                             .build()
                             .as(Network.AutoCreated.class);
             ) {
-                VisibleAssertions.assertEquals(
+                assertEquals(
                         "Flag is set",
                         "macvlan",
                         DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getName()).exec().getDriver()
@@ -61,7 +61,7 @@ public class NetworkTest {
                             .build()
                             .as(Network.AutoCreated.class);
             ) {
-                VisibleAssertions.assertEquals(
+                assertEquals(
                         "Flag is set",
                         "macvlan",
                         DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getName()).exec().getDriver()

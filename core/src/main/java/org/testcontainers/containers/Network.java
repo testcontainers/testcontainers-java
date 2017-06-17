@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.*;
 import lombok.experimental.Delegate;
+import lombok.experimental.FieldDefaults;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
@@ -46,6 +47,7 @@ public interface Network extends AutoCloseable {
 
     @Builder
     @Getter
+    @FieldDefaults(level = AccessLevel.PRIVATE)
     class NetworkImpl implements Network {
 
         final String name = UUID.randomUUID().toString();

@@ -24,14 +24,14 @@ public class LinkedContainerTest {
 
     private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
-    Network.JUnitRule network = Network.newNetwork().as(Network.JUnitRule.class);
+    private Network.JUnitRule network = Network.newNetwork().as(Network.JUnitRule.class);
 
-    NginxContainer nginx = new NginxContainer<>()
+    private NginxContainer nginx = new NginxContainer<>()
             .withNetwork(network)
             .withNetworkAliases("nginx")
             .withCustomContent(contentFolder.toString());
 
-    BrowserWebDriverContainer chrome = new BrowserWebDriverContainer<>()
+    private BrowserWebDriverContainer chrome = new BrowserWebDriverContainer<>()
             .withNetwork(network)
             .withDesiredCapabilities(DesiredCapabilities.chrome());
 
