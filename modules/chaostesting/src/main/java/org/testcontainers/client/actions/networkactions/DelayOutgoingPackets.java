@@ -28,7 +28,7 @@ public class DelayOutgoingPackets implements NetworkSubCommands.NetworkSubComman
         return this;
     }
 
-    public DelayOutgoingPackets withCorreltaion(int correlation) {
+    public DelayOutgoingPackets withCorrelation(int correlation) {
         this.correlation = correlation;
         return this;
     }
