@@ -110,17 +110,7 @@ public class DockerClientFactory {
             if (!TestcontainersConfiguration.getInstance().getDisableChecks()) {
                 VisibleAssertions.info("Checking the system...");
 
-                VisibleAssertions.assertThat("Docker version", version.getVersion(), new BaseMatcher<String>() {
-                    @Override
-                    public boolean matches(Object o) {
-                        return new ComparableVersion(o.toString()).compareTo(new ComparableVersion("1.6.0")) >= 0;
-                    }
-
-                    @Override
-                    public void describeTo(Description description) {
-                        description.appendText("is newer than 1.6.0");
-                    }
-                });
+                checkDockerVersion(version.getVersion());
 
                 MountableFile mountableFile = MountableFile.forClasspathResource(this.getClass().getName().replace(".", "/") + ".class");
 
@@ -132,42 +122,10 @@ public class DockerClientFactory {
                                 .withExposedPorts(new ExposedPort(80))
                                 .withPublishAllPorts(true),
                         (dockerClient, id) -> {
-                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-                            try {
-                                dockerClient
-                                        .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
-                                        .exec(new ExecStartResultCallback(outputStream, null))
-                                        .awaitCompletion();
-                            } catch (Exception e) {
-                                log.debug("Can't exec disk checking command", e);
-                            }
-
-                            DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
-
-                            VisibleAssertions.assertTrue(
-                                    "Docker environment has more than 2GB free",
-                                    df.availableMB.map(it -> it >= 2048).orElse(true)
-                            );
-
-                            try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(id, "/dummy").exec()) {
-                                stream.read();
-                                VisibleAssertions.pass("File should be mountable");
-                            } catch (Exception e) {
-                                VisibleAssertions.fail("File should be mountable but fails with " + e.getMessage());
-                            }
-
-                            InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
-
-                            String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
-
-                            String response;
-                            try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
-                                response = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
-                            } catch (IOException e) {
-                                response = e.getMessage();
-                            }
-                            VisibleAssertions.assertEquals("Exposed port is accessible", "hello", response);
+                            checkDiskSpace(dockerClient, id);
+                            checkMountableFile(dockerClient, id);
+                            checkExposedPort(hostIpAddress, dockerClient, id);
 
                             return null;
                         });
@@ -178,7 +136,64 @@ public class DockerClientFactory {
         return client;
     }
 
-  /**
+    private void checkDockerVersion(String dockerVersion) {
+        VisibleAssertions.assertThat("Docker version", dockerVersion, new BaseMatcher<String>() {
+            @Override
+            public boolean matches(Object o) {
+                return new ComparableVersion(o.toString()).compareTo(new ComparableVersion("1.6.0")) >= 0;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("is newer than 1.6.0");
+            }
+        });
+    }
+
+    private void checkDiskSpace(DockerClient dockerClient, String id) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        try {
+            dockerClient
+                    .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
+                    .exec(new ExecStartResultCallback(outputStream, null))
+                    .awaitCompletion();
+        } catch (Exception e) {
+            log.debug("Can't exec disk checking command", e);
+        }
+
+        DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
+
+        VisibleAssertions.assertTrue(
+                "Docker environment has more than 2GB free",
+                df.availableMB.map(it -> it >= 2048).orElse(true)
+        );
+    }
+
+    private void checkMountableFile(DockerClient dockerClient, String id) {
+        try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(id, "/dummy").exec()) {
+            stream.read();
+            VisibleAssertions.pass("File should be mountable");
+        } catch (Exception e) {
+            VisibleAssertions.fail("File should be mountable but fails with " + e.getMessage());
+        }
+    }
+
+    private void checkExposedPort(String hostIpAddress, DockerClient dockerClient, String id) {
+        InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
+
+        String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
+
+        String response;
+        try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
+            response = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
+        } catch (IOException e) {
+            response = e.getMessage();
+        }
+        VisibleAssertions.assertEquals("Exposed port is accessible", "hello", response);
+    }
+
+    /**
    * Check whether the image is available locally and pull it otherwise
    */
     private void checkAndPullImage(DockerClient client, String image) {
