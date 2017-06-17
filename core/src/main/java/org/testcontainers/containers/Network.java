@@ -109,17 +109,12 @@ public interface Network extends AutoCloseable {
 
     class AutoCreated implements Network {
 
-        @Delegate(excludes = Excludes.class)
-        protected final Network network;
+        @Delegate(types = Network.class)
+        protected final Network.Runnable network;
 
         public AutoCreated(Network network) {
-            this.network = network;
-            as(Runnable.class).run();
-        }
-
-        @Override
-        public boolean isCreated() {
-            return true;
+            this.network = network.as(Runnable.class);
+            this.network.run();
         }
     }
 
