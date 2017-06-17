@@ -5,7 +5,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Network;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,11 +143,33 @@ public final class ResourceReaper {
 
     private void removeNetwork(String networkName) {
         try {
-            dockerClient.removeNetworkCmd(networkName).exec();
+            try {
+                // First try to remove by name
+                dockerClient.removeNetworkCmd(networkName).exec();
+            } catch (Exception e) {
+                LOGGER.trace("Error encountered removing network by name ({}) - it may not have been removed", networkName);
+            }
+
+            List<Network> networks;
+            try {
+                // Then try to list all networks with the same name
+                networks = dockerClient.listNetworksCmd().withNameFilter(networkName).exec();
+            } catch (Exception e) {
+                LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", networkName);
+                return;
+            }
+
+            for (Network network : networks) {
+                try {
+                    dockerClient.removeNetworkCmd(network.getId()).exec();
+                    registeredNetworks.remove(network.getId());
+                    LOGGER.debug("Removed network: {}", networkName);
+                } catch (Exception e) {
+                    LOGGER.trace("Error encountered removing network (name: {}) - it may not have been removed", network.getName());
+                }
+            }
+        } finally {
             registeredNetworks.remove(networkName);
-            LOGGER.debug("Removed network: {}", networkName);
-        } catch (DockerException e) {
-            LOGGER.trace("Error encountered removing network (name: {}) - it may not have been removed", networkName);
         }
     }
 }
