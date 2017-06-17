@@ -4,10 +4,12 @@ import lombok.Cleanup;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.NginxContainer;
 
 import java.io.*;
@@ -22,14 +24,21 @@ public class LinkedContainerTest {
 
     private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
-    @Rule
-    public NginxContainer nginx = new NginxContainer()
+    Network.JUnitRule network = Network.newNetwork().as(Network.JUnitRule.class);
+
+    NginxContainer nginx = new NginxContainer<>()
+            .withNetwork(network)
+            .withNetworkAliases("nginx")
             .withCustomContent(contentFolder.toString());
 
+    BrowserWebDriverContainer chrome = new BrowserWebDriverContainer<>()
+            .withNetwork(network)
+            .withDesiredCapabilities(DesiredCapabilities.chrome());
+
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-            .withDesiredCapabilities(DesiredCapabilities.chrome())
-            .withLinkToContainer(nginx, "nginx");
+    public RuleChain chain = RuleChain.outerRule(network)
+            .around(nginx)
+            .around(chrome);
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {

@@ -197,6 +197,24 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withNetworkMode(String networkMode);
 
     /**
+     * Set the network for this container, similar to the <code>--network &lt;name&gt;</code>
+     * option on the docker CLI.
+     *
+     * @param network the instance of {@link Network}
+     * @return this
+     */
+    SELF withNetwork(Network network);
+
+    /**
+     * Set the network aliases for this container, similar to the <code>--network-alias &lt;my-service&gt;</code>
+     * option on the docker CLI.
+     *
+     * @param aliases the list of aliases
+     * @return this
+     */
+    SELF withNetworkAliases(String... aliases);
+
+    /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
      * This will only work if you are running your tests outside a Docker container.
      *

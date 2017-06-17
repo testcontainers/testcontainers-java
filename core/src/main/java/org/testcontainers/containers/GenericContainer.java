@@ -76,6 +76,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private String networkMode;
 
     @NonNull
+    private Network network;
+
+    @NonNull
+    private List<String> networkAliases = new ArrayList<>();
+
+    @NonNull
     private Future<String> image;
 
     @NonNull
@@ -412,7 +418,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
-        if (networkMode != null) {
+        if (network != null) {
+            if (!network.isCreated()) {
+                throw new ContainerLaunchException("Aborting attempt to use non-existing network " + network.getName());
+            }
+
+            createCommand.withNetworkMode(network.getName());
+            createCommand.withAliases(this.networkAliases);
+        } else if (networkMode != null) {
             createCommand.withNetworkMode(networkMode);
         }
 
@@ -612,6 +625,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withNetworkMode(String networkMode) {
         this.networkMode = networkMode;
+        return self();
+    }
+
+    @Override
+    public SELF withNetwork(Network network) {
+        this.network = network;
+        return self();
+    }
+
+    @Override
+    public SELF withNetworkAliases(String... aliases) {
+        Collections.addAll(this.networkAliases, aliases);
         return self();
     }
 
