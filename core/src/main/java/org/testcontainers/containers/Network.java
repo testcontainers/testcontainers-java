@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.*;
 import lombok.experimental.Delegate;
-import lombok.experimental.FieldDefaults;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
@@ -47,17 +46,16 @@ public interface Network extends AutoCloseable {
 
     @Builder
     @Getter
-    @FieldDefaults(level = AccessLevel.PRIVATE)
     class NetworkImpl implements Network {
 
-        final String name = UUID.randomUUID().toString();
+        private final String name = UUID.randomUUID().toString();
 
-        Boolean enableIpv6;
+        private Boolean enableIpv6;
 
-        String driver;
+        private String driver;
 
         @Singular
-        Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers = new LinkedHashSet<>();
+        private Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers = new LinkedHashSet<>();
 
         @Override
         public boolean isCreated() {
