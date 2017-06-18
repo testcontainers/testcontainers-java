@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 ### Changed
 - Added `TC_DAEMON` JDBC URL flag to prevent `ContainerDatabaseDriver` from shutting down containers at the time all connections are closed. (#359, #360)
+- Added pre-flight checks (can be disabled with `checks.disable` configuration property) (#363)
+- Removed unused Jersey dependencies (#361)
 - Improved startup time by adding dynamic priorities to DockerClientProviderStrategy (#362)
 - Added global configuration file `~/.testcontainers.properties` (#362)
 

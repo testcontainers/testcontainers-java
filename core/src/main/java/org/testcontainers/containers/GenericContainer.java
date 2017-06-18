@@ -8,9 +8,7 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
+import lombok.*;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -108,17 +106,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /*
      * Unique instance of DockerClient for use by this container object.
      */
+    @Setter(AccessLevel.NONE)
     protected DockerClient dockerClient = DockerClientFactory.instance().client();
 
     /*
      * Info about the Docker server; lazily fetched.
      */
+    @Setter(AccessLevel.NONE)
     protected Info dockerDaemonInfo = null;
 
     /*
      * Set during container startup
      */
+    @Setter(AccessLevel.NONE)
     protected String containerId;
+
+    @Setter(AccessLevel.NONE)
     protected String containerName;
 
     /**
@@ -128,6 +131,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
 
     @Nullable
+    @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
@@ -143,7 +147,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
 
     public GenericContainer() {
-        this("alpine:3.2");
+        this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-parent</artifactId>
-        <version>1.2.2-SNAPSHOT</version>
+        <version>0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -26,7 +26,21 @@
                     <groupId>de.gesellix</groupId>
                     <artifactId>unix-socket-factory</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.connectors</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <dependency>
@@ -49,6 +63,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-ext</artifactId>
             <version>1.7.25</version>
+        </dependency>
+        <dependency>
+            <groupId>org.rnorth.visible-assertions</groupId>
+            <artifactId>visible-assertions</artifactId>
+            <version>1.0.5</version>
         </dependency>
 
         <!-- Test dependencies -->
