@@ -147,7 +147,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
 
     public GenericContainer() {
-        this("alpine:3.2");
+        this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {

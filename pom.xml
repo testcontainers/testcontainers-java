@@ -95,12 +95,6 @@
             <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.rnorth.visible-assertions</groupId>
-            <artifactId>visible-assertions</artifactId>
-            <version>1.0.5</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
