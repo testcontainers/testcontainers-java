@@ -5,7 +5,7 @@
 
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers-parent</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -160,7 +160,7 @@
                 <configuration>
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
             <plugin>
