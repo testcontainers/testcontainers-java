@@ -35,7 +35,11 @@ public class TestcontainersConfiguration {
     }
 
     public String getTinyImage() {
-        return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.2");
+        return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
+    }
+
+    public boolean isDisableChecks() {
+        return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
     }
 
     public String getDockerClientStrategyClassName() {
