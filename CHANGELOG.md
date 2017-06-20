@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 ### Changed
 - Added `TC_DAEMON` JDBC URL flag to prevent `ContainerDatabaseDriver` from shutting down containers at the time all connections are closed. (#359, #360)
+- Added pre-flight checks (can be disabled with `checks.disable` configuration property) (#363)
 - Removed unused Jersey dependencies (#361)
+- Fixed non-POSIX fallback for file attribute reading (#371)
 - Added support for the Docker networks (#372)
 
 ## [1.3.0] - 2017-06-05

@@ -267,7 +267,7 @@ public class MountableFile implements Transferable {
         final Path path = Paths.get(pathAsString);
         try {
             return (int) Files.getAttribute(path, "unix:mode");
-        } catch (IOException e) {
+        } catch (IOException | UnsupportedOperationException e) {
             // fallback for non-posix environments
             int mode = DEFAULT_FILE_MODE;
             if (Files.isDirectory(path)) {
