@@ -24,7 +24,7 @@ cache:
 install:
   - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
   - sudo apt-get update -qq
-  - sudo apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew install docker-engine
+  - sudo apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew install docker-ce
   - docker info
   # Update env vars required by testcontainers
   - export DOCKER_HOST=tcp://127.0.0.1:2375
