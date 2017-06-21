@@ -1,57 +1,110 @@
 package org.testcontainers.utility;
 
-import com.google.common.base.MoreObjects;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * Provides a mechanism for fetching configuration/defaults from the classpath.
  */
 @Data
-@Slf4j @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestcontainersConfiguration {
+
+    private static String PROPERTIES_FILE_NAME = "testcontainers.properties";
+
+    private static File GLOBAL_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     @Getter(lazy = true)
     private static final TestcontainersConfiguration instance = loadConfiguration();
 
-    private String ambassadorContainerImage = "richnorth/ambassador:latest";
-    private String vncRecordedContainerImage = "richnorth/vnc-recorder:latest";
-    private String tinyImage = "alpine:3.5";
-    private boolean disableChecks = false;
+    private final Properties properties;
 
-    private static TestcontainersConfiguration loadConfiguration() {
-        final TestcontainersConfiguration config = new TestcontainersConfiguration();
+    public String getAmbassadorContainerImage() {
+        return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
+    }
 
-        ClassLoader loader = MoreObjects.firstNonNull(
-                Thread.currentThread().getContextClassLoader(),
-                TestcontainersConfiguration.class.getClassLoader());
-        final URL configOverrides = loader.getResource("testcontainers.properties");
-        if (configOverrides != null) {
+    public String getVncRecordedContainerImage() {
+        return (String) properties.getOrDefault("vncrecorder.container.image", "richnorth/vnc-recorder:latest");
+    }
 
-            log.debug("Testcontainers configuration overrides will be loaded from {}", configOverrides);
+    public String getTinyImage() {
+        return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
+    }
 
-            final Properties properties = new Properties();
-            try (final InputStream inputStream = configOverrides.openStream()) {
-                properties.load(inputStream);
+    public boolean isDisableChecks() {
+        return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
+    }
 
-                config.ambassadorContainerImage = properties.getProperty("ambassador.container.image", config.ambassadorContainerImage);
-                config.vncRecordedContainerImage = properties.getProperty("vncrecorder.container.image", config.vncRecordedContainerImage);
-                config.tinyImage = properties.getProperty("tinyimage.container.image", config.tinyImage);
-                config.disableChecks = Boolean.parseBoolean(properties.getProperty("checks.disable", config.disableChecks + ""));
+    public String getDockerClientStrategyClassName() {
+        return (String) properties.get("docker.client.strategy");
+    }
 
-                log.debug("Testcontainers configuration overrides loaded from {}: {}", configOverrides, config);
-
-            } catch (IOException e) {
-                log.error("Testcontainers config override was found on classpath but could not be loaded", e);
+    @Synchronized
+    public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
+        try {
+            Properties globalProperties = new Properties();
+            GLOBAL_CONFIG_FILE.createNewFile();
+            try (InputStream inputStream = new FileInputStream(GLOBAL_CONFIG_FILE)) {
+                globalProperties.load(inputStream);
             }
+
+            if (value.equals(globalProperties.get(prop))) {
+                return false;
+            }
+
+            globalProperties.setProperty(prop, value);
+
+            try (OutputStream outputStream = new FileOutputStream(GLOBAL_CONFIG_FILE)) {
+                globalProperties.store(outputStream, "Modified by Testcontainers");
+            }
+
+            // Update internal state only if global config was successfully updated
+            properties.setProperty(prop, value);
+            return true;
+        } catch (Exception e) {
+            log.debug("Can't store global property {} in {}", prop, GLOBAL_CONFIG_FILE);
+            return false;
+        }
+    }
+
+    @SneakyThrows(MalformedURLException.class)
+    private static TestcontainersConfiguration loadConfiguration() {
+        final TestcontainersConfiguration config = new TestcontainersConfiguration(
+                Stream
+                        .of(
+                                TestcontainersConfiguration.class.getClassLoader().getResource(PROPERTIES_FILE_NAME),
+                                Thread.currentThread().getContextClassLoader().getResource(PROPERTIES_FILE_NAME),
+                                GLOBAL_CONFIG_FILE.toURI().toURL()
+                        )
+                        .filter(Objects::nonNull)
+                        .map(it -> {
+                            log.debug("Testcontainers configuration overrides will be loaded from {}", it);
+
+                            final Properties subProperties = new Properties();
+                            try (final InputStream inputStream = it.openStream()) {
+                                subProperties.load(inputStream);
+                            } catch (FileNotFoundException e) {
+                                log.trace("Testcontainers config override was found on " + it + " but the file was not found", e);
+                            } catch (IOException e) {
+                                log.warn("Testcontainers config override was found on " + it + " but could not be loaded", e);
+                            }
+                            return subProperties;
+                        })
+                        .reduce(new Properties(), (a, b) -> {
+                            a.putAll(b);
+                            return a;
+                        })
+        );
+
+        if (!config.getProperties().isEmpty()) {
+            log.debug("Testcontainers configuration overrides loaded from {}", config);
         }
 
         return config;
