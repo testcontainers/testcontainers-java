@@ -485,10 +485,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public void addFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+    public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
 
         final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-        binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode));
+        binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
     }
 
     /**
@@ -619,10 +619,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode) {
+    public SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode) {
+        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode);
+        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
 
         return self();
     }
