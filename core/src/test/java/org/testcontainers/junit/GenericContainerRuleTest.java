@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
+import static org.testcontainers.containers.BindMode.READ_WRITE;
+import static org.testcontainers.containers.SelinuxContext.SHARED;
 
 /**
  * Tests for GenericContainerRules
@@ -99,6 +101,15 @@ public class GenericContainerRuleTest {
     public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
             .withExposedPorts(80)
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
+            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+
+    /**
+     * Map a file on the classpath to a file in the container, and then expose the content for testing.
+     */
+    @ClassRule
+    public static GenericContainer alpineClasspathResourceSelinux = new GenericContainer("alpine:3.2")
+            .withExposedPorts(80)
+            .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_WRITE, SHARED)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
     /**
@@ -201,6 +212,12 @@ public class GenericContainerRuleTest {
         String line = getReaderForContainerPort80(alpineClasspathResource).readLine();
 
         assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMapping", "FOOBAR", line);
+    }
+
+    @Test
+    public void customClasspathResourceMappingWithSelinuxTest() throws IOException {
+        String line = getReaderForContainerPort80(alpineClasspathResourceSelinux).readLine();
+        assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux", "FOOBAR", line);
     }
 
     @Test
