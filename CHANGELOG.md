@@ -1,14 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## UNRELEASED
+## [1.3.1] - 2017-06-22
+### Fixed
+- Fixed non-POSIX fallback for file attribute reading (#371)
+- Fixed NullPointerException in AuditLogger when running using slf4j-log4j12 bridge (#375)
+- Improved cleanup of JDBC connections during database container startup checks
+
 ### Changed
+- Extracted MariaDB into a separate repository (#337)
 - Added `TC_DAEMON` JDBC URL flag to prevent `ContainerDatabaseDriver` from shutting down containers at the time all connections are closed. (#359, #360)
 - Added pre-flight checks (can be disabled with `checks.disable` configuration property) (#363)
-- Removed unused Jersey dependencies (#361)
-- Fixed non-POSIX fallback for file attribute reading (#371)
 - Improved startup time by adding dynamic priorities to DockerClientProviderStrategy (#362)
 - Added global configuration file `~/.testcontainers.properties` (#362)
+- Added container arguments to specify SELinux contexts for mounts (#334)
+- Removed unused Jersey dependencies (#361)
+- Removed deprecated, wrongly-generated setters from `GenericContainer` 
 
 ## [1.3.0] - 2017-06-05
 ### Fixed
