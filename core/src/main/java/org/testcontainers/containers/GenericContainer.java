@@ -419,11 +419,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         createCommand.withExtraHosts(extraHostsArray);
 
         if (network != null) {
-            if (!network.isCreated()) {
-                throw new ContainerLaunchException("Aborting attempt to use non-existing network " + network.getName());
-            }
-
-            createCommand.withNetworkMode(network.getName());
+            createCommand.withNetworkMode(network.getId());
             createCommand.withAliases(this.networkAliases);
         } else if (networkMode != null) {
             createCommand.withNetworkMode(networkMode);

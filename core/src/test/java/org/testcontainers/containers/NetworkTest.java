@@ -6,7 +6,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.Network.newNetwork;
 
 @RunWith(Enclosed.class)
@@ -15,7 +15,7 @@ public class NetworkTest {
     public static class WithRules {
 
         @Rule
-        public Network.JUnitRule network = newNetwork().as(Network.JUnitRule.class);
+        public Network network = newNetwork();
 
         @Rule
         public GenericContainer foo = new GenericContainer()
@@ -40,7 +40,7 @@ public class NetworkTest {
         @Test
         public void testNetworkSupport() throws Exception {
             try (
-                    Network network = newNetwork().as(Network.AutoCreated.class);
+                    Network network = newNetwork();
 
                     GenericContainer foo = new GenericContainer()
                             .withNetwork(network)
@@ -64,9 +64,9 @@ public class NetworkTest {
             try (
                     Network network = Network.builder()
                             .driver("macvlan")
-                            .build()
-                            .as(Network.AutoCreated.class);
+                            .build();
             ) {
+                network.create();
                 assertEquals(
                         "Flag is set",
                         "macvlan",
@@ -80,14 +80,25 @@ public class NetworkTest {
             try (
                     Network network = Network.builder()
                             .createNetworkCmdModifier(cmd -> cmd.withDriver("macvlan"))
-                            .build()
-                            .as(Network.AutoCreated.class);
+                            .build();
             ) {
+                network.create();
                 assertEquals(
                         "Flag is set",
                         "macvlan",
                         DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getName()).exec().getDriver()
                 );
+            }
+        }
+
+        @Test
+        public void testLaziness() throws Exception {
+            try (
+                    Network network = newNetwork()
+            ) {
+                assertFalse("Not created by default", network.isCreated());
+                assertNotNull("Returns an id", network.getId());
+                assertTrue("Is created after id request", network.isCreated());
             }
         }
     }

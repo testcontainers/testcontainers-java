@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 - Added pre-flight checks (can be disabled with `checks.disable` configuration property) (#363)
 - Removed unused Jersey dependencies (#361)
 - Fixed non-POSIX fallback for file attribute reading (#371)
-- Added support for the Docker networks (#372)
+- Added support for Docker networks (#372)
 
 ## [1.3.0] - 2017-06-05
 ### Fixed

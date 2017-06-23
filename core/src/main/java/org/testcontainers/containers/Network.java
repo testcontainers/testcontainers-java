@@ -2,18 +2,21 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.*;
-import lombok.experimental.Delegate;
 import org.junit.rules.ExternalResource;
+import org.junit.rules.TestRule;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public interface Network extends AutoCloseable {
+public interface Network extends AutoCloseable, TestRule {
+
+    String getId();
 
     String getName();
 
@@ -22,6 +25,10 @@ public interface Network extends AutoCloseable {
     String getDriver();
 
     boolean isCreated();
+
+    default boolean create() {
+        return getId() != null;
+    }
 
     @Override
     default void close() {
@@ -46,7 +53,7 @@ public interface Network extends AutoCloseable {
 
     @Builder
     @Getter
-    class NetworkImpl implements Network {
+    class NetworkImpl extends ExternalResource implements Network {
 
         private final String name = UUID.randomUUID().toString();
 
@@ -57,86 +64,44 @@ public interface Network extends AutoCloseable {
         @Singular
         private Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers = new LinkedHashSet<>();
 
-        @Override
-        public boolean isCreated() {
-            return false;
-        }
-    }
+        @Getter(lazy = true)
+        private final String id = ((Supplier<String>) () -> {
+            ResourceReaper.instance().registerNetworkForCleanup(getName());
 
-    @RequiredArgsConstructor
-    class Runnable implements Network, java.lang.Runnable {
+            CreateNetworkCmd createNetworkCmd = DockerClientFactory.instance().client().createNetworkCmd();
 
-        @Delegate(excludes = Excludes.class)
-        protected final Network network;
+            createNetworkCmd.withName(getName());
+            createNetworkCmd.withCheckDuplicate(true);
 
-        private final AtomicBoolean created = new AtomicBoolean(false);
-
-        @Override
-        public void run() {
-            if (!created.getAndSet(true)) {
-                ResourceReaper.instance().registerNetworkForCleanup(getName());
-
-                CreateNetworkCmd createNetworkCmd = DockerClientFactory.instance().client().createNetworkCmd();
-
-                createNetworkCmd.withName(getName());
-                createNetworkCmd.withCheckDuplicate(true);
-
-                if (getEnableIpv6() != null) {
-                    createNetworkCmd.withEnableIpv6(getEnableIpv6());
-                }
-
-                if (getDriver() != null) {
-                    createNetworkCmd.withDriver(getDriver());
-                }
-
-                if (network instanceof NetworkImpl) {
-                    for (Consumer<CreateNetworkCmd> consumer : ((NetworkImpl) network).getCreateNetworkCmdModifiers()) {
-                        consumer.accept(createNetworkCmd);
-                    }
-                }
-
-                createNetworkCmd.exec();
+            if (getEnableIpv6() != null) {
+                createNetworkCmd.withEnableIpv6(getEnableIpv6());
             }
-        }
+
+            if (getDriver() != null) {
+                createNetworkCmd.withDriver(getDriver());
+            }
+
+            for (Consumer<CreateNetworkCmd> consumer : createNetworkCmdModifiers) {
+                consumer.accept(createNetworkCmd);
+            }
+
+            return createNetworkCmd.exec().getId();
+        }).get();
 
         @Override
         public boolean isCreated() {
-            return created.get();
-        }
-    }
-
-    class AutoCreated implements Network {
-
-        @Delegate(types = Network.class)
-        protected final Network.Runnable network;
-
-        public AutoCreated(Network network) {
-            this.network = network.as(Runnable.class);
-            this.network.run();
-        }
-    }
-
-    class JUnitRule extends ExternalResource implements Network {
-
-        @Delegate(types = Network.class)
-        protected final Network.Runnable network;
-
-        public JUnitRule(Network network) {
-            this.network = network.as(Runnable.class);
+            // Lombok with @Getter(lazy = true) will use AtomicReference as a field type for id
+            return ((AtomicReference<String>) (Object) id).get() != null;
         }
 
         @Override
         protected void before() throws Throwable {
-            network.run();
+            create();
         }
 
         @Override
         protected void after() {
-            network.close();
+            close();
         }
-    }
-
-    interface Excludes {
-        boolean isCreated();
     }
 }
