@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## UNRELEASED
+### Fixed
+
+### Changed
+
 ## [1.3.1] - 2017-06-22
 ### Fixed
 - Fixed non-POSIX fallback for file attribute reading (#371)
