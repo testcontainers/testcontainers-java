@@ -1,6 +1,7 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerMachineClient;
 
@@ -13,9 +14,20 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * Use Docker machine (if available on the PATH) to locate a Docker environment.
  */
+@Slf4j
 public class DockerMachineClientProviderStrategy extends DockerClientProviderStrategy {
     private static final String PING_TIMEOUT_DEFAULT = "30";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.dockermachineprovider.timeout";
+
+    @Override
+    protected boolean isApplicable() {
+        return DockerMachineClient.instance().isInstalled();
+    }
+
+    @Override
+    protected int getPriority() {
+        return ProxiedUnixSocketClientProviderStrategy.PRIORITY - 10;
+    }
 
     @Override
     public void test() throws InvalidConfigurationException {
@@ -28,13 +40,13 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
             checkArgument(machineNameOptional.isPresent(), "docker-machine is installed but no default machine could be found");
             String machineName = machineNameOptional.get();
 
-            LOGGER.info("Found docker-machine, and will use machine named {}", machineName);
+            log.info("Found docker-machine, and will use machine named {}", machineName);
 
             DockerMachineClient.instance().ensureMachineRunning(machineName);
 
             String dockerDaemonIpAddress = DockerMachineClient.instance().getDockerDaemonIpAddress(machineName);
 
-            LOGGER.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
+            log.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
 
             config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                     .withDockerHost("tcp://" + dockerDaemonIpAddress + ":2376")

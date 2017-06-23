@@ -38,6 +38,20 @@
         </dependency>
 
         <dependency>
+            <!-- docker-java uses SslConfigurator from jersey-common for TLS -->
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+            <version>2.23.1</version>
+            <exclusions>
+                <!-- SslConfigurator doesn't use classes from dependencies -->
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
             <version>2.0.1</version>

@@ -2,6 +2,8 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
     private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
@@ -16,18 +19,16 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
 
+    @Override
+    protected boolean isApplicable() {
+        return SystemUtils.IS_OS_LINUX;
+    }
 
     @Override
-    public void test()
-            throws InvalidConfigurationException {
-
-        if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
-            throw new InvalidConfigurationException("this strategy is only applicable to Linux");
-        }
-
+    public void test() throws InvalidConfigurationException {
         try {
             config = tryConfiguration(SOCKET_LOCATION);
-            LOGGER.info("Accessing docker with local Unix socket");
+            log.info("Accessing docker with local Unix socket");
         } catch (Exception | UnsatisfiedLinkError e) {
             throw new InvalidConfigurationException("ping failed", e);
         }
