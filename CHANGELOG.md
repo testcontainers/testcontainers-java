@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Changed
+- Added no-args `getMappedPort` overloaded method
 
 ## [1.3.1] - 2017-06-22
 ### Fixed
