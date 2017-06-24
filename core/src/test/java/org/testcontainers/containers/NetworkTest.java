@@ -66,11 +66,11 @@ public class NetworkTest {
                             .driver("macvlan")
                             .build();
             ) {
-                network.create();
+                String id = network.getId();
                 assertEquals(
                         "Flag is set",
                         "macvlan",
-                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getName()).exec().getDriver()
+                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
                 );
             }
         }
@@ -82,23 +82,12 @@ public class NetworkTest {
                             .createNetworkCmdModifier(cmd -> cmd.withDriver("macvlan"))
                             .build();
             ) {
-                network.create();
+                String id = network.getId();
                 assertEquals(
                         "Flag is set",
                         "macvlan",
-                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getName()).exec().getDriver()
+                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
                 );
-            }
-        }
-
-        @Test
-        public void testLaziness() throws Exception {
-            try (
-                    Network network = newNetwork()
-            ) {
-                assertFalse("Not created by default", network.isCreated());
-                assertNotNull("Returns an id", network.getId());
-                assertTrue("Is created after id request", network.isCreated());
             }
         }
     }
