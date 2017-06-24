@@ -32,6 +32,7 @@ public interface Network extends AutoCloseable, TestRule {
     }
 
     @Builder
+    @Getter
     class NetworkImpl extends ExternalResource implements Network {
 
         private final String name = UUID.randomUUID().toString();
