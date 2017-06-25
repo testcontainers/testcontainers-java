@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.NginxContainer;
 
 import java.io.*;
@@ -23,13 +24,18 @@ public class LinkedContainerTest {
     private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
     @Rule
-    public NginxContainer nginx = new NginxContainer()
+    public Network network = Network.newNetwork();
+
+    @Rule
+    public NginxContainer nginx = new NginxContainer<>()
+            .withNetwork(network)
+            .withNetworkAliases("nginx")
             .withCustomContent(contentFolder.toString());
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-            .withDesiredCapabilities(DesiredCapabilities.chrome())
-            .withLinkToContainer(nginx, "nginx");
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer<>()
+            .withNetwork(network)
+            .withDesiredCapabilities(DesiredCapabilities.chrome());
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
