@@ -851,6 +851,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     *
+     * Method allow to copy file which we have in our repository to docker container
+     *
+     * @param localPath path with file which we would like to place in container
+     * @param containerPath path where we want to copy file
+     */
+    @Override
+    public void copyFileToContanier(String localPath, String containerPath){
+
+        if (!isRunning()) {
+            throw new IllegalStateException("Container is not running so copy cannot be run");
+        }
+
+        this.dockerClient
+                .copyArchiveToContainerCmd(this.containerId)
+                .withHostResource(localPath)
+                .withRemotePath(containerPath)
+                .exec();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -418,6 +418,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     InspectContainerResponse getContainerInfo();
 
+    void copyFileToContanier(String localPath, String containerPath);
+
     void setExposedPorts(List<Integer> exposedPorts);
 
     void setPortBindings(List<String> portBindings);
