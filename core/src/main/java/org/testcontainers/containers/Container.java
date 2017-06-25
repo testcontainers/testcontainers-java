@@ -10,6 +10,7 @@ import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -407,6 +408,27 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     ExecResult execInContainer(Charset outputCharset, String... command)
                     throws UnsupportedOperationException, IOException, InterruptedException;
+
+    /**
+     *
+     * Copies a file which resides inside the classpath to the container.
+     *
+     * @param mountableLocalFile file which is copied into the container
+     * @param containerPath destination path inside the container
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException;
+
+    /**
+     * Copies a file which resides inside the container to user defined directory
+     *
+     * @param containerPath path to file which is copied from container
+     * @param destinationPath destination path to which file is copied with file name
+     * @throws IOException if there's an issue communicating with Docker or receiving entry from TarArchiveInputStream
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
 
     List<Integer> getExposedPorts();
 
