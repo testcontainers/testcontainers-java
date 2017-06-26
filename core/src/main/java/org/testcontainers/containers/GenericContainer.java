@@ -30,8 +30,7 @@ import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -851,22 +850,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     *
-     * Method allow to copy file which we have in our repository to docker container
-     *
-     * @param localPath path with file which we would like to place in container
-     * @param containerPath path where we want to copy file
+     * {@inheritDoc}
      */
     @Override
-    public void copyFileToContanier(String localPath, String containerPath){
-
-        if (!isRunning()) {
-            throw new IllegalStateException("Container is not running so copy cannot be run");
-        }
+    public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException {
 
         this.dockerClient
                 .copyArchiveToContainerCmd(this.containerId)
-                .withHostResource(localPath)
+                .withHostResource(mountableLocalFile.getDescription())
                 .withRemotePath(containerPath)
                 .exec();
     }

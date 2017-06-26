@@ -10,6 +10,7 @@ import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -392,6 +393,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     ExecResult execInContainer(Charset outputCharset, String... command)
                     throws UnsupportedOperationException, IOException, InterruptedException;
 
+    /**
+     *
+     * Method allow to copy file which we have in our repository to docker container
+     *
+     * @param mountableLocalFile path to file which we would like to place in container
+     * @param containerPath path where we want to copy file
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException;
+
     List<Integer> getExposedPorts();
 
     List<String> getPortBindings();
@@ -417,8 +429,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     String getContainerName();
 
     InspectContainerResponse getContainerInfo();
-
-    void copyFileToContanier(String localPath, String containerPath);
 
     void setExposedPorts(List<Integer> exposedPorts);
 

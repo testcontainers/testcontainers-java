@@ -1,5 +1,6 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
@@ -12,6 +13,7 @@ import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.*;
@@ -120,6 +122,13 @@ public class GenericContainerRuleTest {
             .withExposedPorts(80)
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
+
+    /**
+     * Create a container which wait for some time to test if copy to container works.
+     */
+    @ClassRule
+    public static GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+            .withCommand("sleep 9999");
 
 //    @Test
 //    public void simpleRedisTest() {
@@ -317,6 +326,32 @@ public class GenericContainerRuleTest {
 
             assertEquals("Name is configured", "/" + randomName, container.getContainerInfo().getName());
             assertEquals("Command is configured", "[redis-server, --port, 6379]", Arrays.toString(container.getContainerInfo().getConfig().getCmd()));
+        }
+    }
+
+    @Test
+    public void copyToContainerTest() throws Exception {
+        final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+        alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+
+        try (final InputStream response = alpineCopyToContainer
+                                    .getDockerClient()
+                                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/home/test_copy_to_container.txt")
+                                    .exec()) {
+            boolean bytesAvailable = response.available() > 0;
+            assertTrue("The file was copied to the container.", bytesAvailable);
+        }
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void copyToContainerShouldFailBecauseNoFileTest() throws NotFoundException, IOException {
+
+        try (final InputStream response = alpineCopyToContainer
+                                    .getDockerClient()
+                                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/tmp/test.txt")
+                                    .exec()) {
+            boolean bytesAvailable = response.available() > 0;
+            assertTrue("The file was copied to the container.", bytesAvailable);
         }
     }
 
