@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 ### Fixed
 - Fixed the case when disk's size is bigger than Integer's max value (#379, #380)
+- Add timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
 
 ### Changed
 - Added support for Docker networks (#372)
