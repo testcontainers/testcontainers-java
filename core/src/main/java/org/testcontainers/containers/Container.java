@@ -305,6 +305,20 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     Boolean isRunning();
 
     /**
+     * Get the actual mapped port for a first port exposed by the container.
+     *
+     * @return the port that the exposed port is mapped to
+     * @throws IllegalStateException if there are no exposed ports
+     */
+    default Integer getFirstMappedPort() {
+        return getExposedPorts()
+                .stream()
+                .findFirst()
+                .map(this::getMappedPort)
+                .orElseThrow(() -> new IllegalStateException("Container doesn't expose any ports"));
+    }
+
+    /**
      * Get the actual mapped port for a given port exposed by the container.
      *
      * @param originalPort the original TCP port that is exposed

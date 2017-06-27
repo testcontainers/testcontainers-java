@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Added support for Docker networks (#372)
+- Added `getFirstMappedPort` method
 
 ## [1.3.1] - 2017-06-22
 ### Fixed
