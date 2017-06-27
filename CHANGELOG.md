@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Fixed the case when disk's size is bigger than Integer's max value (#379, #380)
 
 ### Changed
 - Added support for Docker networks (#372)
