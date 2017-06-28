@@ -21,8 +21,9 @@ cache:
   directories:
     - '$HOME/.m2'
 
-before_install:
+install:
   - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
+  - ./mvnw -T4 -DskipTests=true -Dmaven.javadoc.skip=true install
 
 jobs:
   include:
