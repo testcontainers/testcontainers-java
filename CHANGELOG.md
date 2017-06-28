@@ -3,9 +3,14 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Fixed the case when disk's size is bigger than Integer's max value (#379, #380)
+- Fix erroneous version reference used during CI testing of shaded dependencies
+- Fix leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
+- Add timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
 
 ### Changed
 - Added support for Docker networks (#372)
+- Added `getFirstMappedPort` method
 
 ## [1.3.1] - 2017-06-22
 ### Fixed

@@ -325,7 +325,7 @@ public class GenericContainerRuleTest {
         return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-            Socket socket = new Socket(container.getContainerIpAddress(), container.getMappedPort(80));
+            Socket socket = new Socket(container.getContainerIpAddress(), container.getFirstMappedPort());
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
     }

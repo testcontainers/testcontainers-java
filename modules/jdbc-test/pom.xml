@@ -63,11 +63,13 @@
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-jdbc</artifactId>
             <version>8.5.4</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.vibur</groupId>
             <artifactId>vibur-dbcp</artifactId>
             <version>9.0</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

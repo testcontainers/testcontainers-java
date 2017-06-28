@@ -8,6 +8,7 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -235,21 +236,24 @@ public class DockerClientFactory {
             }
         }
     }
-    
-    private static class DiskSpaceUsage {
-        Optional<Integer> availableMB = Optional.empty();
+
+    @VisibleForTesting
+    static class DiskSpaceUsage {
+        Optional<Long> availableMB = Optional.empty();
         Optional<Integer> usedPercent = Optional.empty();
     }
-    
-    private DiskSpaceUsage parseAvailableDiskSpace(String dfOutput) {
+
+    @VisibleForTesting
+    DiskSpaceUsage parseAvailableDiskSpace(String dfOutput) {
         DiskSpaceUsage df = new DiskSpaceUsage();
         String[] lines = dfOutput.split("\n");
         for (String line : lines) {
             String[] fields = line.split("\\s+");
             if (fields.length > 5 && fields[5].equals("/")) {
-                int availableKB = Integer.valueOf(fields[3]);
-                df.availableMB = Optional.of(availableKB / 1024);
+                long availableKB = Long.valueOf(fields[3]);
+                df.availableMB = Optional.of(availableKB / 1024L);
                 df.usedPercent = Optional.of(Integer.valueOf(fields[4].replace("%", "")));
+                break;
             }
         }
         return df;
