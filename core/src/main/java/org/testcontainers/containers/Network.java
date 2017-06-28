@@ -48,8 +48,6 @@ public interface Network extends AutoCloseable, TestRule {
         private final String id = create();
 
         private String create() {
-            ResourceReaper.instance().registerNetworkForCleanup(name);
-
             CreateNetworkCmd createNetworkCmd = DockerClientFactory.instance().client().createNetworkCmd();
 
             createNetworkCmd.withName(name);
@@ -67,7 +65,9 @@ public interface Network extends AutoCloseable, TestRule {
                 consumer.accept(createNetworkCmd);
             }
 
-            return createNetworkCmd.exec().getId();
+            String id = createNetworkCmd.exec().getId();
+            ResourceReaper.instance().registerNetworkForCleanup(id);
+            return id;
         }
 
         @Override
