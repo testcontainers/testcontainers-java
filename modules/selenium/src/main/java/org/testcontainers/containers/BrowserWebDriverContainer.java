@@ -6,6 +6,8 @@ import org.junit.runner.Description;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.rnorth.ducttape.timeouts.Timeouts;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
@@ -20,6 +22,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -157,7 +160,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             recordingSidekickContainer.start();
             currentVncRecordings.add(recordingSidekickContainer);
         }
-        this.driver = new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities);
+
+        driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
+                Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
+                        () ->
+                                () -> new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities)));
     }
 
     /**
