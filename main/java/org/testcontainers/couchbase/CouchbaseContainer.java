@@ -58,7 +58,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     private boolean index = true;
 
     @Getter
-    private boolean primaryIndex = false;
+    private boolean primaryIndex = true;
 
     @Getter
     private boolean fts = false;
