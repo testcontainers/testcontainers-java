@@ -23,13 +23,6 @@ cache:
 
 install:
   - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
-  - sudo apt-get update -qq
-  - sudo apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew install docker-ce
-  - docker info
-  # Update env vars required by testcontainers
-  - export DOCKER_HOST=tcp://127.0.0.1:2375
-  - export DOCKER_TLS_VERIFY=0
-  - env
   - ./mvnw -T4 -DskipTests=true -Dmaven.javadoc.skip=true install
 
 jobs:
@@ -44,9 +37,10 @@ jobs:
     - env: [ NAME=modules ]
       script: ./mvnw -pl !core,!modules/selenium test
 
-    # Run Docker-in-Docker tests inside Alpine
-    - env: [ NAME=docker-in-alpine-docker ]
-      script: |
+    # Run Docker-in-Docker tests inside Alpine and shading tests
+    - env: [ NAME="docker-in-alpine-docker&shade" ]
+      script:
+        - |
                 DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
                 -v "$HOME/.m2":/root/.m2/ \
                 -v /var/run/docker.sock:/var/run/docker.sock \
@@ -55,10 +49,11 @@ jobs:
                 openjdk:8-jdk-alpine \
                 ./mvnw -pl core test -Dtest=*GenericContainerRuleTest
 
-    - env: [ NAME=shade ]
-      script: ./mvnw test -f shade-test/pom.xml
+        - ./mvnw test -f shade-test/pom.xml
 
     - stage: deploy
+      sudo: false
+      services: []
       install: skip
       script: skip
       deploy:
