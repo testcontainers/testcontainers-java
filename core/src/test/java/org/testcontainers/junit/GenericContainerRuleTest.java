@@ -331,27 +331,42 @@ public class GenericContainerRuleTest {
 
     @Test
     public void copyToContainerTest() throws Exception {
-        final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-        alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
 
-        try (final InputStream response = alpineCopyToContainer
-                                    .getDockerClient()
-                                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/home/test_copy_to_container.txt")
-                                    .exec()) {
-            boolean bytesAvailable = response.available() > 0;
-            assertTrue("The file was copied to the container.", bytesAvailable);
+        try (
+            GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                    .withCommand("sleep 9999")
+        ){
+            alpineCopyToContainer.start();
+
+            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+
+            try (final InputStream response = alpineCopyToContainer
+                    .getDockerClient()
+                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/home/test_copy_to_container.txt")
+                    .exec()) {
+                boolean bytesAvailable = response.available() > 0;
+                assertTrue("The file wasn't copied to the container.", bytesAvailable);
+            }
         }
     }
 
     @Test(expected = NotFoundException.class)
     public void copyToContainerShouldFailBecauseNoFileTest() throws NotFoundException, IOException {
 
-        try (final InputStream response = alpineCopyToContainer
-                                    .getDockerClient()
-                                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/tmp/test.txt")
-                                    .exec()) {
-            boolean bytesAvailable = response.available() > 0;
-            assertTrue("The file was copied to the container.", bytesAvailable);
+        try (
+                final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                        .withCommand("sleep 9999")
+        ) {
+            alpineCopyToContainer.start();
+
+            try (final InputStream response = alpineCopyToContainer
+                    .getDockerClient()
+                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/tmp/test.txt")
+                    .exec()) {
+                boolean bytesAvailable = response.available() > 0;
+                assertTrue("The file wasn't copied to the container.", bytesAvailable);
+            }
         }
     }
 

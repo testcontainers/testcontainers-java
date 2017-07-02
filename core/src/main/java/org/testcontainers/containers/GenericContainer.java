@@ -857,7 +857,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         this.dockerClient
                 .copyArchiveToContainerCmd(this.containerId)
-                .withHostResource(mountableLocalFile.getDescription())
+                .withHostResource(mountableLocalFile.getResolvedPath())
                 .withRemotePath(containerPath)
                 .exec();
     }
