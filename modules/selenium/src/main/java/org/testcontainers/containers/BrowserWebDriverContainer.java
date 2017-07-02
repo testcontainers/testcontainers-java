@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.checkState;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
@@ -87,8 +86,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void configure() {
 
-        checkState(desiredCapabilities != null);
-        if (! customImageNameIsSet) {
+        if(desiredCapabilities == null) {
+            throw new IllegalStateException();
+        }
+
+        if (!customImageNameIsSet) {
             super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
         }
 
