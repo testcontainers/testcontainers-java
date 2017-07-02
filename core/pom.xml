@@ -219,6 +219,7 @@
                             <include>javax.inject:*</include>
                             <include>javax.ws.rs:*</include>
                             <include>com.fasterxml.*:*</include>
+                            <include>com.github.docker-java:*</include>
                             <include>com.google.guava:*</include>
                             <include>io.netty:*</include>
                             <include>org.bouncycastle:*</include>
