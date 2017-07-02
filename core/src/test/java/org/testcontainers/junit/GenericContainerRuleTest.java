@@ -122,14 +122,7 @@ public class GenericContainerRuleTest {
             .withExposedPorts(80)
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
-
-    /**
-     * Create a container which wait for some time to test if copy to container works.
-     */
-    @ClassRule
-    public static GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
-            .withCommand("sleep 9999");
-
+    
 //    @Test
 //    public void simpleRedisTest() {
 //        String ipAddress = redis.getContainerIpAddress();
