@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Fixed erroneous version reference used during CI testing of shaded dependencies
 - Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
 - Added timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
+- Fixed double encoding of listNetwork's filter until it's fixed in docker-java (#385)
 
 ### Changed
 - Added support for Docker networks (#372)
