@@ -176,7 +176,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             // Compose can define their own networks as well; ensure these are cleaned up
             dockerClient.listNetworksCmd().exec().forEach(network -> {
                 if (network.getName().contains(identifier)) {
-                    ResourceReaper.instance().registerNetworkForCleanup(network.getName());
+                    ResourceReaper.instance().registerNetworkForCleanup(network.getId());
                 }
             });
 
