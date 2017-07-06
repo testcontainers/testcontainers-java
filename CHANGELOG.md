@@ -8,11 +8,13 @@ All notable changes to this project will be documented in this file.
 - Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
 - Added timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
 - Fixed double encoding of listNetwork's filter until it's fixed in docker-java (#385)
+- Fixed various shading issues
 
 ### Changed
 - Added support for Docker networks (#372)
 - Added `getFirstMappedPort` method (#377)
 - Extracted Oracle XE container into a separate repository ([testcontainers/testcontainers-java-module-oracle-xe](https://github.com/testcontainers/testcontainers-java-module-oracle-xe))
+- Added shading tests
 
 ## [1.3.1] - 2017-06-22
 ### Fixed
