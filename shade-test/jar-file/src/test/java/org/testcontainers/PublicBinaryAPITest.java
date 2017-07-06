@@ -26,9 +26,13 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * This test checks that we don't expose any shaded class in our public API.
+ * We use {@link Parameterized} runner here to create a test per public class in Testcontainers' JAR file.
+ */
 @RunWith(Parameterized.class)
 @RequiredArgsConstructor
-public class PublicAPITest extends AbstractJarFileTest {
+public class PublicBinaryAPITest extends AbstractJarFileTest {
 
     private static String SHADED_PACKAGE = "org.testcontainers.shaded.";
     private static String SHADED_PACKAGE_PATH = SHADED_PACKAGE.replaceAll("\\.", "/");
@@ -66,7 +70,7 @@ public class PublicAPITest extends AbstractJarFileTest {
                     ClassNode node = new ClassNode();
                     reader.accept(node, ClassReader.SKIP_CODE);
                     if ((node.access & Opcodes.ACC_PUBLIC) != 0) {
-                        result.add(new Object[]{fileName, node});
+                        result.add(new Object[]{ fileName, node });
                     }
                 }
 
