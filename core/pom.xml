@@ -29,6 +29,10 @@
                     <groupId>org.glassfish.jersey.connectors</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -217,9 +221,17 @@
                         <filter>
                             <artifact>*:*</artifact>
                             <excludes>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                                <exclude>META-INF/maven/</exclude>
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                                <exclude>META-INF/io.netty.versions.properties</exclude>
+                                <exclude>mozilla/public-suffix-list.txt</exclude>
+                                <!-- README.md comes from docker-java -->
+                                <exclude>META-INF/services/README.md</exclude>
                                 <exclude>META-INF/services/com.fasterxml.jackson.core.*</exclude>
                                 <exclude>META-INF/services/com.github.dockerjava.api.command.*</exclude>
                                 <exclude>META-INF/services/javax.ws.rs.ext.*</exclude>
