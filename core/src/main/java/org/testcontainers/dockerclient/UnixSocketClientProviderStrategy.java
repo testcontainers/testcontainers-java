@@ -25,7 +25,7 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC && new File(DOCKER_SOCK_PATH).exists();
+        return SystemUtils.IS_OS_UNIX && new File(DOCKER_SOCK_PATH).exists();
     }
 
     @Override
