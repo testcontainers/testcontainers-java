@@ -86,7 +86,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void configure() {
 
-        if(desiredCapabilities == null) {
+        if (desiredCapabilities == null) {
             throw new IllegalStateException();
         }
 

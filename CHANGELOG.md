@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Added support for Docker networks (#372)
-- Added `getFirstMappedPort` method
+- Added `getFirstMappedPort` method (#377)
 - Extracted Oracle XE container into a separate repository ([testcontainers/testcontainers-java-module-oracle-xe](https://github.com/testcontainers/testcontainers-java-module-oracle-xe))
 - Added shading tests
 
