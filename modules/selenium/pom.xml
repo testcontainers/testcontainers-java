@@ -19,19 +19,6 @@
             <artifactId>testcontainers</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.docker-java</groupId>
-            <artifactId>docker-java</artifactId>
-            <version>${docker-java.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- WebDriver dependency as 'provided' scope -->
         <dependency>
@@ -57,45 +44,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <relocations>
-                        <relocation>
-                            <pattern>com.google.common</pattern>
-                            <shadedPattern>org.testcontainers.shaded.com.google.common</shadedPattern>
-                        </relocation>
-                    </relocations>
-                    <filters>
-                        <filter>
-                            <artifact>org.bouncycastle:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <artifactSet>
-                        <excludes>
-                            <exclude>com.google.guava:*</exclude>
-                        </excludes>
-                    </artifactSet>
-                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                    <shadedArtifactAttached>false</shadedArtifactAttached>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
