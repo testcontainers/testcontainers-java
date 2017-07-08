@@ -8,6 +8,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.apache.commons.lang.StringUtils;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -46,8 +47,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final String identifier;
     private final Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
     private final List<File> composeFiles;
-    private Set<String> spawnedContainerIds = Collections.emptySet();
-    private Map<String, Integer> scalingPreferences = new HashMap<>();
+    private final Set<String> spawnedContainerIds = new HashSet<>();
+    private final Set<String> spawnedNetworkIds = new HashSet<>();
+    private final Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
     private boolean pull = true;
@@ -117,14 +119,14 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void pullImages() {
         getDockerCompose("pull")
-                .start();
+                .invoke();
     }
 
 
     private void createServices() {
         // Start the docker-compose container, which starts up the services
         getDockerCompose("up -d")
-                .start();
+                .invoke();
     }
 
     private void tailChildContainerLogs() {
@@ -158,7 +160,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             }
 
             getDockerCompose(sb.toString())
-                    .start();
+                    .invoke();
         }
     }
 
@@ -173,17 +175,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
             // Ensure that the default network for this compose environment, if any, is also cleaned up
             ResourceReaper.instance().registerNetworkForCleanup(identifier + "_default");
+            spawnedNetworkIds.add(identifier + "_default");
+
             // Compose can define their own networks as well; ensure these are cleaned up
             dockerClient.listNetworksCmd().exec().forEach(network -> {
                 if (network.getName().contains(identifier)) {
+                    spawnedNetworkIds.add(network.getId());
                     ResourceReaper.instance().registerNetworkForCleanup(network.getId());
                 }
             });
 
             // remember the IDs to allow containers to be killed as soon as we reach stop()
-            spawnedContainerIds = containers.stream()
+            spawnedContainerIds.addAll(containers.stream()
                     .map(Container::getId)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toSet()));
 
         } catch (DockerException e) {
             logger().debug("Failed to stop a service container with exception", e);
@@ -240,15 +245,25 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
 
             // Kill the services using docker-compose
-            getDockerCompose("down -v")
-                    .start();
+            try {
+                getDockerCompose("down -v").invoke();
 
-            // remove the networks before removing the containers
-            ResourceReaper.instance().removeNetworks(identifier);
+                // If we reach here then docker-compose down has cleared networks and containers;
+                //  we can unregister from ResourceReaper
+                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().unregisterNetwork(identifier));
+                spawnedContainerIds.forEach(id -> ResourceReaper.instance().unregisterContainer(id));
+            } catch (ContainerLaunchException e) {
+                // docker-compose down failed; use ResourceReaper to ensure cleanup
 
-            // kill the spawned service containers
-            spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
+                // remove the networks before removing the containers
+                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().removeNetworks(identifier));
+
+                // kill the spawned service containers
+                spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
+            }
+
             spawnedContainerIds.clear();
+            spawnedNetworkIds.clear();
         }
     }
 
@@ -372,7 +387,7 @@ interface DockerCompose {
 
     DockerCompose withEnv(Map<String, String> env);
 
-    void start();
+    void invoke();
 
     default void validateFileList(List<File> composeFiles) {
         checkNotNull(composeFiles);
@@ -417,7 +432,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
     }
 
     @Override
-    public void start() {
+    public void invoke() {
         super.start();
 
         this.followOutput(new Slf4jLogConsumer(logger()));
@@ -431,6 +446,19 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         logger().info("Docker Compose has finished running");
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
+
+        final Integer exitCode = this.dockerClient.inspectContainerCmd(containerId)
+                .exec()
+                .getState()
+                .getExitCode();
+
+        if (exitCode == null || exitCode != 0) {
+            throw new ContainerLaunchException(
+                    "Containerised Docker Compose exited abnormally with code " +
+                            exitCode +
+                            " whilst running command: " +
+                            StringUtils.join(this.getCommandParts(), ' '));
+        }
     }
 }
 
@@ -468,7 +496,7 @@ class LocalDockerCompose implements DockerCompose {
     }
 
     @Override
-    public void start() {
+    public void invoke() {
         // bail out early
         if (!CommandLine.executableExists(COMPOSE_EXECUTABLE)) {
             throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");

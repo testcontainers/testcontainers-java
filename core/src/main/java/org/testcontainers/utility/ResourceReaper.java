@@ -10,7 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -143,13 +146,6 @@ public final class ResourceReaper {
 
     private void removeNetwork(String networkName) {
         try {
-            try {
-                // First try to remove by name
-                dockerClient.removeNetworkCmd(networkName).exec();
-            } catch (Exception e) {
-                LOGGER.trace("Error encountered removing network by name ({}) - it may not have been removed", networkName);
-            }
-
             List<Network> networks;
             try {
                 // Then try to list all networks with the same name
@@ -171,5 +167,13 @@ public final class ResourceReaper {
         } finally {
             registeredNetworks.remove(networkName);
         }
+    }
+
+    public void unregisterNetwork(String identifier) {
+        registeredNetworks.remove(identifier);
+    }
+
+    public void unregisterContainer(String identifier) {
+        registeredContainers.remove(identifier);
     }
 }
