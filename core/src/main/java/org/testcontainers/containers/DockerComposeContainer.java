@@ -250,16 +250,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
                 // If we reach here then docker-compose down has cleared networks and containers;
                 //  we can unregister from ResourceReaper
-                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().unregisterNetwork(identifier));
                 spawnedContainerIds.forEach(id -> ResourceReaper.instance().unregisterContainer(id));
+                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().unregisterNetwork(identifier));
             } catch (ContainerLaunchException e) {
                 // docker-compose down failed; use ResourceReaper to ensure cleanup
 
-                // remove the networks before removing the containers
-                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().removeNetworks(identifier));
-
                 // kill the spawned service containers
                 spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
+
+                // remove the networks after removing the containers
+                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().removeNetworks(identifier));
             }
 
             spawnedContainerIds.clear();
