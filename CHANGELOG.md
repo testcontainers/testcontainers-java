@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+
+### Changed
+
+## [1.4.0] - 2017-07-09
+### Fixed
 - Fixed the case when disk's size is bigger than Integer's max value (#379, #380)
 - Fixed erroneous version reference used during CI testing of shaded dependencies
 - Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
