@@ -137,11 +137,38 @@ public final class ResourceReaper {
     }
 
     /**
-     * Removes any networks that contain the identifier.
+     * @param networkName   the name of the network
+     * @deprecated see {@link ResourceReaper#registerNetworkIdForCleanup(String)}
+     */
+    @Deprecated
+    public void registerNetworkForCleanup(String networkName) {
+        try {
+            // Try to find the network by name, so that we can register its ID for later deletion
+            dockerClient.listNetworksCmd()
+                    .withNameFilter(networkName)
+                    .exec()
+            .forEach(network -> registerNetworkIdForCleanup(network.getId()));
+        } catch (Exception e) {
+            LOGGER.trace("Error encountered when looking up network (name: {})", networkName);
+        }
+    }
+
+    /**
+     * Removes a network by ID.
      * @param id
      */
     public void removeNetworkById(String id) {
       removeNetwork(id);
+    }
+
+    /**
+     * Removes a network by ID.
+     * @param identifier
+     * @deprecated see {@link ResourceReaper#removeNetworkById(String)}
+     */
+    @Deprecated
+    public void removeNetworks(String identifier) {
+        removeNetworkById(identifier);
     }
 
     private void removeNetwork(String id) {
@@ -149,12 +176,15 @@ public final class ResourceReaper {
             List<Network> networks;
             try {
                 // Try to find the network if it still exists
+                // Listing by ID first prevents docker-java logging an error if we just go blindly into removeNetworkCmd
                 networks = dockerClient.listNetworksCmd().withIdFilter(id).exec();
             } catch (Exception e) {
                 LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", id);
                 return;
             }
 
+            // at this point networks should contain either 0 or 1 entries, depending on whether the network exists
+            // using a for loop we essentially treat the network like an optional, only applying the removal if it exists
             for (Network network : networks) {
                 try {
                     dockerClient.removeNetworkCmd(network.getId()).exec();
