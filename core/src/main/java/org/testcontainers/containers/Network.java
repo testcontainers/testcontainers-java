@@ -20,7 +20,7 @@ public interface Network extends AutoCloseable, TestRule {
 
     @Override
     default void close() {
-        ResourceReaper.instance().removeNetworks(getId());
+        ResourceReaper.instance().removeNetworkById(getId());
     }
 
     static Network newNetwork() {
@@ -66,7 +66,7 @@ public interface Network extends AutoCloseable, TestRule {
             }
 
             String id = createNetworkCmd.exec().getId();
-            ResourceReaper.instance().registerNetworkForCleanup(id);
+            ResourceReaper.instance().registerNetworkIdForCleanup(id);
             return id;
         }
 

@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
 - Added timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
 - Fixed various shading issues
+- Improved removal of containers/networks when using Docker Compose, eliminating irrelevant errors during cleanup (#342, #394)
 
 ### Changed
 - Added support for Docker networks (#372)
