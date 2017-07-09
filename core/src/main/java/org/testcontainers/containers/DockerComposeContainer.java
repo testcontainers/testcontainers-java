@@ -118,15 +118,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void pullImages() {
-        getDockerCompose("pull")
-                .invoke();
+        runWithCompose("pull");
     }
 
 
     private void createServices() {
-        // Start the docker-compose container, which starts up the services
-        getDockerCompose("up -d")
-                .invoke();
+        // Run the docker-compose container, which starts up the services
+        runWithCompose("up -d");
     }
 
     private void tailChildContainerLogs() {
@@ -139,16 +137,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         );
     }
 
-    private DockerCompose getDockerCompose(String cmd) {
+    private void runWithCompose(String cmd) {
         final DockerCompose dockerCompose;
         if (localCompose) {
             dockerCompose = new LocalDockerCompose(composeFiles, identifier);
         } else {
             dockerCompose = new ContainerisedDockerCompose(composeFiles, identifier);
         }
-        return dockerCompose
+
+        dockerCompose
                 .withCommand(cmd)
-                .withEnv(env);
+                .withEnv(env)
+                .invoke();
     }
 
     private void applyScaling() {
@@ -159,8 +159,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 sb.append(" ").append(scale.getKey()).append("=").append(scale.getValue());
             }
 
-            getDockerCompose(sb.toString())
-                    .invoke();
+            runWithCompose(sb.toString());
         }
     }
 
@@ -173,15 +172,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             containers.forEach(container ->
                     ResourceReaper.instance().registerContainerForCleanup(container.getId(), container.getNames()[0]));
 
-            // Ensure that the default network for this compose environment, if any, is also cleaned up
-            ResourceReaper.instance().registerNetworkForCleanup(identifier + "_default");
-            spawnedNetworkIds.add(identifier + "_default");
-
             // Compose can define their own networks as well; ensure these are cleaned up
             dockerClient.listNetworksCmd().exec().forEach(network -> {
                 if (network.getName().contains(identifier)) {
                     spawnedNetworkIds.add(network.getId());
-                    ResourceReaper.instance().registerNetworkForCleanup(network.getId());
+                    ResourceReaper.instance().registerNetworkIdForCleanup(network.getId());
                 }
             });
 
@@ -246,20 +241,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
             // Kill the services using docker-compose
             try {
-                getDockerCompose("down -v").invoke();
+                runWithCompose("down -v");
 
                 // If we reach here then docker-compose down has cleared networks and containers;
                 //  we can unregister from ResourceReaper
-                spawnedContainerIds.forEach(id -> ResourceReaper.instance().unregisterContainer(id));
-                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().unregisterNetwork(identifier));
-            } catch (ContainerLaunchException e) {
+                spawnedContainerIds.forEach(ResourceReaper.instance()::unregisterContainer);
+                spawnedNetworkIds.forEach(ResourceReaper.instance()::unregisterNetwork);
+            } catch (Exception e) {
                 // docker-compose down failed; use ResourceReaper to ensure cleanup
 
                 // kill the spawned service containers
-                spawnedContainerIds.forEach(id -> ResourceReaper.instance().stopAndRemoveContainer(id));
+                spawnedContainerIds.forEach(ResourceReaper.instance()::stopAndRemoveContainer);
 
                 // remove the networks after removing the containers
-                spawnedNetworkIds.forEach(id -> ResourceReaper.instance().removeNetworks(identifier));
+                spawnedNetworkIds.forEach(ResourceReaper.instance()::removeNetworkById);
             }
 
             spawnedContainerIds.clear();

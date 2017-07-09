@@ -130,28 +130,28 @@ public final class ResourceReaper {
     /**
      * Register a network to be cleaned up at JVM shutdown.
      *
-     * @param networkName   the image name of the network
+     * @param id   the ID of the network
      */
-    public void registerNetworkForCleanup(String networkName) {
-        registeredNetworks.add(networkName);
+    public void registerNetworkIdForCleanup(String id) {
+        registeredNetworks.add(id);
     }
 
     /**
      * Removes any networks that contain the identifier.
-     * @param identifier
+     * @param id
      */
-    public void removeNetworks(String identifier) {
-      removeNetwork(identifier);
+    public void removeNetworkById(String id) {
+      removeNetwork(id);
     }
 
-    private void removeNetwork(String networkName) {
+    private void removeNetwork(String id) {
         try {
             List<Network> networks;
             try {
-                // Then try to list all networks with the same name
-                networks = dockerClient.listNetworksCmd().withNameFilter(networkName).exec();
+                // Try to find the network if it still exists
+                networks = dockerClient.listNetworksCmd().withIdFilter(id).exec();
             } catch (Exception e) {
-                LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", networkName);
+                LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", id);
                 return;
             }
 
@@ -159,13 +159,13 @@ public final class ResourceReaper {
                 try {
                     dockerClient.removeNetworkCmd(network.getId()).exec();
                     registeredNetworks.remove(network.getId());
-                    LOGGER.debug("Removed network: {}", networkName);
+                    LOGGER.debug("Removed network: {}", id);
                 } catch (Exception e) {
                     LOGGER.trace("Error encountered removing network (name: {}) - it may not have been removed", network.getName());
                 }
             }
         } finally {
-            registeredNetworks.remove(networkName);
+            registeredNetworks.remove(id);
         }
     }
 
