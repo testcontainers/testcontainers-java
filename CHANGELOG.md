@@ -3,9 +3,12 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
-- Fixed Guava shading in `jdbc` module
 
 ### Changed
+
+## [1.4.1] - 2017-07-10
+### Fixed
+- Fixed Guava shading in `jdbc` module
 
 ## [1.4.0] - 2017-07-09
 ### Fixed
