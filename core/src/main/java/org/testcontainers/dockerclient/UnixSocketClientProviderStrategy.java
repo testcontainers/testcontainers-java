@@ -19,6 +19,8 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
 
+    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 5;
+
     @Override
     protected boolean isApplicable() {
         return SystemUtils.IS_OS_LINUX;
@@ -66,4 +68,8 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
         return "local Unix socket (" + SOCKET_LOCATION + ")";
     }
 
+    @Override
+    protected int getPriority() {
+        return PRIORITY;
+    }
 }
