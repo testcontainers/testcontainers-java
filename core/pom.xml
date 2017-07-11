@@ -33,6 +33,11 @@
             <version>${docker-java.version}</version>
             <scope>compile</scope>
             <exclusions>
+                <!-- replace with junixsocket -->
+                <exclusion>
+                    <groupId>de.gesellix</groupId>
+                    <artifactId>unix-socket-factory</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.glassfish.jersey.core</groupId>
                     <artifactId>*</artifactId>
@@ -66,6 +71,12 @@
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
             <version>2.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.rnorth</groupId>
+            <artifactId>tcp-unix-socket-proxy</artifactId>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
@@ -270,8 +281,6 @@
                                        dest="${project.build.directory}/exploded/"/>
                                 <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-epoll.so"
                                       tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-epoll.so"/>
-                                <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-kqueue.jnilib"
-                                      tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-kqueue.jnilib"/>
                                 <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                      basedir="${project.build.directory}/exploded"/>
                             </target>

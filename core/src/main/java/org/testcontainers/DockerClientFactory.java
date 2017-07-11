@@ -50,6 +50,7 @@ public class DockerClientFactory {
     private static final List<DockerClientProviderStrategy> CONFIGURATION_STRATEGIES =
             asList(new EnvironmentAndSystemPropertyClientProviderStrategy(),
                     new UnixSocketClientProviderStrategy(),
+                    new ProxiedUnixSocketClientProviderStrategy(),
                     new DockerMachineClientProviderStrategy(),
                     new WindowsClientProviderStrategy());
     private String activeApiVersion;

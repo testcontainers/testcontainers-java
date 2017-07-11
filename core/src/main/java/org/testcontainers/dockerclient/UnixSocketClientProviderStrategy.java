@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,9 +13,6 @@ import java.nio.file.Paths;
 
 @Slf4j
 public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
-
-    public static final int PRIORITY = 100;
-
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
     private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
     private static final int SOCKET_FILE_MODE_MASK = 0xc000;
@@ -25,12 +21,7 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_UNIX && new File(DOCKER_SOCK_PATH).exists();
-    }
-
-    @Override
-    protected int getPriority() {
-        return PRIORITY;
+        return SystemUtils.IS_OS_LINUX;
     }
 
     @Override

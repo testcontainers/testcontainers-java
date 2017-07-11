@@ -12,7 +12,7 @@ import org.apache.commons.lang.SystemUtils;
 @Slf4j
 public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerClientProviderStrategy {
 
-    public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY - 10;
+    public static final int PRIORITY = 100;
 
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.environmentprovider.timeout";
