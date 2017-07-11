@@ -1,11 +1,9 @@
 package org.testcontainers;
 
 import org.assertj.core.api.ListAssert;
-import org.junit.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.*;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,7 +59,8 @@ public class JarFileShadingTest {
         );
 
         assertThatFileList(root.resolve("META-INF").resolve("native")).containsOnly(
-                "liborg-testcontainers-shaded-netty-transport-native-epoll.so"
+                "liborg-testcontainers-shaded-netty-transport-native-epoll.so",
+                "liborg-testcontainers-shaded-netty-transport-native-kqueue.jnilib"
         );
     }
 
