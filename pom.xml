@@ -155,7 +155,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <docker-java.version>3.0.10</docker-java.version>
+        <docker-java.version>3.0.12</docker-java.version>
     </properties>
 
     <modules>
