@@ -16,8 +16,7 @@
 
 package org.testcontainers.jdbc.ext;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,11 +109,11 @@ public abstract class ScriptUtils {
 	public static void splitSqlScript(String resource, String script, String separator, String commentPrefix,
                                       String blockCommentStartDelimiter, String blockCommentEndDelimiter, List<String> statements) {
 
-		Preconditions.checkArgument(!Strings.isNullOrEmpty(script), "script must not be null or empty");
-		Preconditions.checkArgument(separator != null, "separator must not be null");
-		Preconditions.checkArgument(!Strings.isNullOrEmpty(commentPrefix), "commentPrefix must not be null or empty");
-		Preconditions.checkArgument(!Strings.isNullOrEmpty(blockCommentStartDelimiter), "blockCommentStartDelimiter must not be null or empty");
-		Preconditions.checkArgument(!Strings.isNullOrEmpty(blockCommentEndDelimiter), "blockCommentEndDelimiter must not be null or empty");
+		checkArgument(StringUtils.isNotEmpty(script), "script must not be null or empty");
+		checkArgument(separator != null, "separator must not be null");
+		checkArgument(StringUtils.isNotEmpty(commentPrefix), "commentPrefix must not be null or empty");
+		checkArgument(StringUtils.isNotEmpty(blockCommentStartDelimiter), "blockCommentStartDelimiter must not be null or empty");
+		checkArgument(StringUtils.isNotEmpty(blockCommentEndDelimiter), "blockCommentEndDelimiter must not be null or empty");
 
 		StringBuilder sb = new StringBuilder();
 		boolean inLiteral = false;
@@ -183,8 +182,14 @@ public abstract class ScriptUtils {
 			}
 			sb.append(c);
 		}
-		if (!Strings.isNullOrEmpty(sb.toString())) {
+		if (StringUtils.isNotEmpty(sb.toString())) {
 			statements.add(sb.toString());
+		}
+	}
+
+	private static void checkArgument(boolean expression, String errorMessage) {
+		if (!expression) {
+			throw new IllegalArgumentException(errorMessage);
 		}
 	}
 
