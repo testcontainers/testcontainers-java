@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Changed
+- Removed Guava usage from `jdbc` module (#401)
 
 ## [1.4.1] - 2017-07-10
 ### Fixed
