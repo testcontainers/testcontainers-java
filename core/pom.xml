@@ -281,6 +281,8 @@
                                        dest="${project.build.directory}/exploded/"/>
                                 <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-epoll.so"
                                       tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-epoll.so"/>
+                                <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-kqueue.jnilib"
+                                      tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-kqueue.jnilib"/>
                                 <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                      basedir="${project.build.directory}/exploded"/>
                             </target>

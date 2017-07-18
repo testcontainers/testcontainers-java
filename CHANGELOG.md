@@ -3,8 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy. (Fixes #402)
 
 ### Changed
+- Updated docker-java to 3.0.12 (#393)
 - Removed Guava usage from `jdbc` module (#401)
 
 ## [1.4.1] - 2017-07-10
