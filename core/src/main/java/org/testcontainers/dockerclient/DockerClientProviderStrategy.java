@@ -75,8 +75,14 @@ public abstract class DockerClientProviderStrategy {
                                     try {
                                         Class<? extends DockerClientProviderStrategy> strategyClass = (Class) Thread.currentThread().getContextClassLoader().loadClass(it);
                                         return Stream.of(strategyClass.newInstance());
-                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                                        LOGGER.warn("Can't instantiate a strategy from " + it, e);
+                                    } catch (ClassNotFoundException e) {
+                                        LOGGER.warn("Can't instantiate a strategy from {} (ClassNotFoundException). " +
+                                                "This probably means that cached configuration refers to a client provider " +
+                                                "class that is not available in this version of Testcontainers. Other " +
+                                                "strategies will be tried instead.", it);
+                                        return Stream.empty();
+                                    } catch (InstantiationException | IllegalAccessException e) {
+                                        LOGGER.warn("Can't instantiate a strategy from {}", it, e);
                                         return Stream.empty();
                                     }
                                 }),
