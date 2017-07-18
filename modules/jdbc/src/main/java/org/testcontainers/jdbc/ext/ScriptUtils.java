@@ -246,7 +246,7 @@ public abstract class ScriptUtils {
 
 		try {
 			if (LOGGER.isInfoEnabled()) {
-				LOGGER.info("Executing SQL script from " + script);
+				LOGGER.info("Executing SQL script from " + scriptPath);
 			}
 
 			long startTime = System.currentTimeMillis();
