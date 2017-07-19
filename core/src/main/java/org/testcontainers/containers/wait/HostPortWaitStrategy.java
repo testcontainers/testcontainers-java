@@ -7,8 +7,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.dockerclient.ProxiedUnixSocketClientProviderStrategy;
-import org.testcontainers.dockerclient.UnixSocketClientProviderStrategy;
+import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.WindowsClientProviderStrategy;
 
 import java.net.Socket;
@@ -95,8 +94,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
     private boolean shouldCheckWithCommand() {
         // Special case for Docker for Mac, see #160
-        if ((DockerClientFactory.instance().isUsing(ProxiedUnixSocketClientProviderStrategy.class) ||
-                DockerClientFactory.instance().isUsing(UnixSocketClientProviderStrategy.class)) &&
+        if (DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class) &&
                 SystemUtils.IS_OS_MAC_OSX) {
             return true;
         }

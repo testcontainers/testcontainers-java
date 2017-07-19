@@ -5,6 +5,7 @@ import com.github.dockerjava.core.DockerClientConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.ComparableVersion;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,8 +24,10 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_LINUX ||
-                (SystemUtils.IS_OS_MAC_OSX && !SystemUtils.OS_VERSION.startsWith("10.11"));
+        final boolean nettyDoesSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
+                ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
+
+        return SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets;
     }
 
     @Override

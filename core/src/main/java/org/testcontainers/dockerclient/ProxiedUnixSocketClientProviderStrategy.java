@@ -3,6 +3,7 @@ package org.testcontainers.dockerclient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.rnorth.tcpunixsocketproxy.TcpToUnixSocketProxy;
+import org.testcontainers.utility.ComparableVersion;
 
 import java.io.File;
 
@@ -15,7 +16,10 @@ public class ProxiedUnixSocketClientProviderStrategy extends UnixSocketClientPro
 
     @Override
     protected boolean isApplicable() {
-        return !SystemUtils.IS_OS_LINUX && socketFile.exists();
+        final boolean nettyDoesNotSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
+                ComparableVersion.OS_VERSION.isLessThan("10.12");
+
+        return nettyDoesNotSupportMacUnixSockets && socketFile.exists();
     }
 
     @Override
