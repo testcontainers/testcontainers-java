@@ -1,9 +1,13 @@
 package org.testcontainers;
 
 import org.assertj.core.api.ListAssert;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.*;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
