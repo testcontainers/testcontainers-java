@@ -6,7 +6,6 @@ All notable changes to this project will be documented in this file.
 - Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy. (Fixes #402)
 
 ### Changed
-- Updated docker-java to 3.0.12 (#393)
 - Removed Guava usage from `jdbc` module (#401)
 
 ## [1.4.1] - 2017-07-10
@@ -19,7 +18,6 @@ All notable changes to this project will be documented in this file.
 - Fixed erroneous version reference used during CI testing of shaded dependencies
 - Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
 - Added timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
-- Fixed double encoding of listNetwork's filter until it's fixed in docker-java (#385)
 - Fixed various shading issues
 - Improved removal of containers/networks when using Docker Compose, eliminating irrelevant errors during cleanup (#342, #394)
 
