@@ -16,9 +16,6 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 @Slf4j
 public class DockerMachineClientProviderStrategy extends DockerClientProviderStrategy {
-
-    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 10;
-
     private static final String PING_TIMEOUT_DEFAULT = "30";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.dockermachineprovider.timeout";
 
@@ -29,7 +26,7 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
 
     @Override
     protected int getPriority() {
-        return PRIORITY;
+        return ProxiedUnixSocketClientProviderStrategy.PRIORITY - 10;
     }
 
     @Override

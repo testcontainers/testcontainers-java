@@ -5,8 +5,8 @@ import com.github.dockerjava.core.DockerClientConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.ComparableVersion;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,23 +14,20 @@ import java.nio.file.Paths;
 
 @Slf4j
 public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
-
-    public static final int PRIORITY = 100;
-
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
     private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
     private static final int SOCKET_FILE_MODE_MASK = 0xc000;
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
 
-    @Override
-    protected boolean isApplicable() {
-        return SystemUtils.IS_OS_UNIX && new File(DOCKER_SOCK_PATH).exists();
-    }
+    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 20;
 
     @Override
-    protected int getPriority() {
-        return PRIORITY;
+    protected boolean isApplicable() {
+        final boolean nettyDoesSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
+                ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
+
+        return SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets;
     }
 
     @Override
@@ -75,4 +72,8 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
         return "local Unix socket (" + SOCKET_LOCATION + ")";
     }
 
+    @Override
+    protected int getPriority() {
+        return PRIORITY;
+    }
 }

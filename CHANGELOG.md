@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy when running on OS X prior to v10.12. (Fixes #402)
 
 ### Changed
 - Removed Guava usage from `jdbc` module (#401)

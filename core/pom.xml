@@ -69,6 +69,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.rnorth</groupId>
+            <artifactId>tcp-unix-socket-proxy</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>zt-exec</artifactId>
             <version>1.8</version>
