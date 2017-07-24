@@ -94,7 +94,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
     private boolean shouldCheckWithCommand() {
         // Special case for Docker for Mac, see #160
-        if (DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class) &&
+        if (! DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class) &&
                 SystemUtils.IS_OS_MAC_OSX) {
             return true;
         }
