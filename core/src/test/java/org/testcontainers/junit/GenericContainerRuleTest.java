@@ -145,6 +145,15 @@ public class GenericContainerRuleTest {
 //    }
 
     @Test
+    public void testIsRunning() {
+        try (GenericContainer container = new GenericContainer()) {
+            assertFalse("Container is not started and not running", container.isRunning());
+            container.start();
+            assertTrue("Container is started and running", container.isRunning());
+        }
+    }
+
+    @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(rabbitMq.getContainerIpAddress());
