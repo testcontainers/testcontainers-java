@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy when running on OS X prior to v10.12. (Fixes #402)
+- Changed to use version 2.0 of the Visible Assertions library for startup pre-flight checks. This no longer has a dependency on Jansi, and is intended to resolve a JVM crash issue apparently caused by native lib version conflicts (#395). Please note that the newer ANSI code is less mature and thus has had less testing, particularly in interesting terminal environments such as Windows. If issues are encountered, coloured assertion output may be disabled by setting the system property `visibleassertions.ansi.enabled` to `true`.
 - Fixed NullPointerException when calling GenericContainer#isRunning on not started container (#411)
 
 ### Changed

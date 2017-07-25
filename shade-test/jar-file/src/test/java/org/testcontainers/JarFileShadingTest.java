@@ -1,7 +1,9 @@
 package org.testcontainers;
 
 import org.assertj.core.api.ListAssert;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;

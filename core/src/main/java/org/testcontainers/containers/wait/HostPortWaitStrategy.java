@@ -1,6 +1,7 @@
 package org.testcontainers.containers.wait;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.SystemUtils;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
@@ -93,8 +94,8 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
     private boolean shouldCheckWithCommand() {
         // Special case for Docker for Mac, see #160
-        if(!DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class)
-                && System.getProperty("os.name").toLowerCase().contains("mac")) {
+        if (! DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class) &&
+                SystemUtils.IS_OS_MAC_OSX) {
             return true;
         }
 
