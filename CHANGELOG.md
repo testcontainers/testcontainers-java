@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Fixed NullPointerException when calling GenericContainer#isRunning on not started container (#411)
 
 ### Changed
 - Removed Guava usage from `jdbc` module (#401)
