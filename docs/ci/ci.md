@@ -63,9 +63,17 @@ test_container:
       -v "$(pwd)":"$(pwd)"
       -w "$(pwd)"
       -u 0:0
-      gradle ./gradlew -DintegrationTest.single=ContainerPingServiceSpec
+      gradle:3.4 ./gradlew -DintegrationTest.single=ContainerPingServiceSpec
       check --no-daemon -i
  only:
    - master
 ```
+
+In this job we run in a multiline command a docker container:
+* using the official gradle image
+* to be delete when finished
+* run in the *host* network to be able to connect with the docker service
+* use the root user if you are running a Shared Runner
+* we are interesed only in our TestContainer test
+
 
