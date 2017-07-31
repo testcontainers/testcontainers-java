@@ -48,13 +48,12 @@
 
 ## Continuous Integration
 
-* [CI with shared runners at Gitlab](ci/ci.md#gitlab)
+* [GitLab CI](ci/ci.md#gitlab)
 
 ## Examples
 * [Selenium](https://github.com/testcontainers/testcontainers-java-examples/blob/master/selenium-container/src/test/java/SeleniumContainerTest.java)
 * [Custom Redis container](https://github.com/testcontainers/testcontainers-java-examples/blob/master/redis-backed-cache/src/test/java/RedisBackedCacheTest.java)
 * [Spring Boot testing with Redis](https://github.com/testcontainers/testcontainers-java-examples/tree/master/spring-boot/src/test/java/com/example)
-* [Grails app testing RabbitMQ + MySQL (spanish)](https://gitlab.com/jorge-aguilera/pingpong)
 ## 
 * [License](index.md#license)
 * [Attributions](index.md#attributions)
