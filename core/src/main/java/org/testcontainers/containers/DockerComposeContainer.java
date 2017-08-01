@@ -396,7 +396,7 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 
-        super("docker/compose:1.8.0");
+        super(TestcontainersConfiguration.getInstance().getDockerComposeContainerImage());
         validateFileList(composeFiles);
 
         addEnv(ENV_PROJECT_NAME, identifier);
