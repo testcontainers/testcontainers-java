@@ -34,6 +34,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("vncrecorder.container.image", "richnorth/vnc-recorder:latest");
     }
 
+    public String getDockerComposeContainerImage() {
+        return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.8.0");
+    }
+
     public String getTinyImage() {
         return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
     }
