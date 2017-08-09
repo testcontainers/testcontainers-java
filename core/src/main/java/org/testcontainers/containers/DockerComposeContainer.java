@@ -9,6 +9,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -464,7 +465,15 @@ class LocalDockerCompose implements DockerCompose {
     /**
      * Executable name for Docker Compose.
      */
-    private static final String COMPOSE_EXECUTABLE = "docker-compose";
+    private static String composeExecutable;
+
+    static {
+        if(SystemUtils.IS_OS_WINDOWS) {
+            composeExecutable = "docker-compose.exe";
+        } else {
+            composeExecutable = "docker-compose";
+        }
+    }
 
     private final List<File> composeFiles;
     private final String identifier;
@@ -493,8 +502,8 @@ class LocalDockerCompose implements DockerCompose {
     @Override
     public void invoke() {
         // bail out early
-        if (!CommandLine.executableExists(COMPOSE_EXECUTABLE)) {
-            throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");
+        if (!CommandLine.executableExists(composeExecutable)) {
+            throw new ContainerLaunchException("Local Docker Compose not found. Is " + composeExecutable + " on the PATH?");
         }
 
         final Map<String, String> environment = Maps.newHashMap(env);
@@ -508,7 +517,7 @@ class LocalDockerCompose implements DockerCompose {
 
         final List<String> command = Splitter.onPattern(" ")
                 .omitEmptyStrings()
-                .splitToList(COMPOSE_EXECUTABLE + " " + cmd);
+                .splitToList(composeExecutable + " " + cmd);
 
         try {
             new ProcessExecutor().command(command)
@@ -534,6 +543,6 @@ class LocalDockerCompose implements DockerCompose {
      * @return a logger
      */
     private Logger logger() {
-        return DockerLoggerFactory.getLogger(COMPOSE_EXECUTABLE);
+        return DockerLoggerFactory.getLogger(composeExecutable);
     }
 }
