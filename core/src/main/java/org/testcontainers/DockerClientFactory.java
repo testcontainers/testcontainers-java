@@ -166,7 +166,7 @@ public class DockerClientFactory {
         DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
 
         VisibleAssertions.assertTrue(
-                "Docker environment has more than 2GB free",
+                "Docker environment has less than 2GB free",
                 df.availableMB.map(it -> it >= 2048).orElse(true)
         );
     }
