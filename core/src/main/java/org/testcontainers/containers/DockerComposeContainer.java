@@ -465,15 +465,7 @@ class LocalDockerCompose implements DockerCompose {
     /**
      * Executable name for Docker Compose.
      */
-    private static String composeExecutable;
-
-    static {
-        if(SystemUtils.IS_OS_WINDOWS) {
-            composeExecutable = "docker-compose.exe";
-        } else {
-            composeExecutable = "docker-compose";
-        }
-    }
+    private static final String composeExecutable = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
 
     private final List<File> composeFiles;
     private final String identifier;
