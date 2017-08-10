@@ -465,7 +465,7 @@ class LocalDockerCompose implements DockerCompose {
     /**
      * Executable name for Docker Compose.
      */
-    private static final String composeExecutable = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
+    private static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
 
     private final List<File> composeFiles;
     private final String identifier;
@@ -494,8 +494,8 @@ class LocalDockerCompose implements DockerCompose {
     @Override
     public void invoke() {
         // bail out early
-        if (!CommandLine.executableExists(composeExecutable)) {
-            throw new ContainerLaunchException("Local Docker Compose not found. Is " + composeExecutable + " on the PATH?");
+        if (!CommandLine.executableExists(COMPOSE_EXECUTABLE)) {
+            throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");
         }
 
         final Map<String, String> environment = Maps.newHashMap(env);
@@ -509,7 +509,7 @@ class LocalDockerCompose implements DockerCompose {
 
         final List<String> command = Splitter.onPattern(" ")
                 .omitEmptyStrings()
-                .splitToList(composeExecutable + " " + cmd);
+                .splitToList(COMPOSE_EXECUTABLE + " " + cmd);
 
         try {
             new ProcessExecutor().command(command)
@@ -535,6 +535,6 @@ class LocalDockerCompose implements DockerCompose {
      * @return a logger
      */
     private Logger logger() {
-        return DockerLoggerFactory.getLogger(composeExecutable);
+        return DockerLoggerFactory.getLogger(COMPOSE_EXECUTABLE);
     }
 }
