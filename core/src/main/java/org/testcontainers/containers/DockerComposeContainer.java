@@ -9,6 +9,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -464,7 +465,7 @@ class LocalDockerCompose implements DockerCompose {
     /**
      * Executable name for Docker Compose.
      */
-    private static final String COMPOSE_EXECUTABLE = "docker-compose";
+    private static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
 
     private final List<File> composeFiles;
     private final String identifier;
