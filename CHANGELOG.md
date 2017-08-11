@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## UNRELEASED
+### Fixed
+- Fixed local Docker Compose executable name resolution on Windows (#416)
+
+### Changed
+
 ## [1.4.2] - 2017-07-25
 ### Fixed
 - Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy when running on OS X prior to v10.12. (Fixes #402)
