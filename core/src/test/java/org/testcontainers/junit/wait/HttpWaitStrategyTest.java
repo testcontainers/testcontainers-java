@@ -14,16 +14,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
     /**
-     * Doubly-escaped newline sequence indicating end of the HTTP header.
+     * newline sequence indicating end of the HTTP header.
      */
-    private static final String DOUBLE_NEWLINE = "\\\r\\\n\\\r\\\n";
+    private static final String NEWLINE = "\r\n";
+
+    private static final String GOOD_RESPONSE_BODY = "Good Response Body";
 
     /**
      * Expects that the WaitStrategy returns successfully after receiving an HTTP 200 response from the container.
      */
     @Test
     public void testWaitUntilReady_Success() {
-        waitUntilReadyAndSucceed("while true; do echo -e \"HTTP/1.1 200 OK" + DOUBLE_NEWLINE + "\" | nc -lp 8080; done");
+        waitUntilReadyAndSucceed(createShellCommand("200 OK", GOOD_RESPONSE_BODY));
     }
 
     /**
@@ -32,7 +34,16 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @Test
     public void testWaitUntilReady_Timeout() {
-        waitUntilReadyAndTimeout("while true; do echo -e \"HTTP/1.1 400 Bad Request" + DOUBLE_NEWLINE + "\" | nc -lp 8080; done");
+        waitUntilReadyAndTimeout(createShellCommand("400 Bad Request", GOOD_RESPONSE_BODY));
+    }
+
+    /**
+     * Expects that the WaitStrategy throws a {@link RetryCountExceededException} after not the expected response body
+     * from the container within the timeout period.
+     */
+    @Test
+    public void testWaitUntilReady_Timeout_BadResponseBody() {
+        waitUntilReadyAndTimeout(createShellCommand("200 OK", "Bad Response"));
     }
 
     /**
@@ -48,6 +59,16 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
                 super.waitUntilReady();
                 ready.set(true);
             }
-        };
+        }.forResponseBody(GOOD_RESPONSE_BODY)
+                .forResponseContaining("Body")
+                .forResponsePredicate(s -> s.length() == GOOD_RESPONSE_BODY.length());
+    }
+
+    private String createShellCommand(String header, String responseBody) {
+        int length = responseBody.getBytes().length;
+        return "while true; do { echo -e \"HTTP/1.1 "+header+NEWLINE+
+                "Content-Type: text/html"+NEWLINE+
+                "Content-Length: "+length +NEWLINE+ "\";"
+                +" echo \""+responseBody+"\";} | nc -lp 8080; done";
     }
 }
