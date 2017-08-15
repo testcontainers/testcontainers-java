@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Fixed local Docker Compose executable name resolution on Windows (#416)
 
 ### Changed
+- Added methods to HttpWaitStrategy to test response body
 
 ## [1.4.2] - 2017-07-25
 ### Fixed
