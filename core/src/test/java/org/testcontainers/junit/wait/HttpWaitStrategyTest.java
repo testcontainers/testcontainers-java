@@ -59,9 +59,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
                 super.waitUntilReady();
                 ready.set(true);
             }
-        }.forResponseBody(GOOD_RESPONSE_BODY)
-                .forResponseContaining("Body")
-                .forResponsePredicate(s -> s.length() == GOOD_RESPONSE_BODY.length());
+        }.forResponsePredicate(s -> s.equals(GOOD_RESPONSE_BODY));
     }
 
     private String createShellCommand(String header, String responseBody) {

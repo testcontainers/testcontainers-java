@@ -38,9 +38,6 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
     private boolean tlsEnabled;
     private String username;
     private String password;
-
-    private String responseBody;
-    private String responseContaining;
     private Predicate<String> responsePredicate;
 
     /**
@@ -89,26 +86,6 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
     }
 
     /**
-     * Waits for the given response body
-     * @param responseBody The response body to expect
-     * @return this
-     */
-    public HttpWaitStrategy forResponseBody(String responseBody) {
-        this.responseBody = responseBody;
-        return this;
-    }
-
-    /**
-     * Waits for the response to contain the expected String
-     * @param responseContaining the String the response is expected to contain
-     * @return this
-     */
-    public HttpWaitStrategy forResponseContaining(String responseContaining) {
-        this.responseContaining = responseContaining;
-        return this;
-    }
-
-    /**
      * Waits for the response to pass the given predicate
      * @param responsePredicate The predicate to test the response against
      * @return this
@@ -150,19 +127,7 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
                                     connection.getResponseCode()));
                         }
 
-                        String actualResponseBody = getResponseBody(connection);
-
-                        if(responseBody != null && !actualResponseBody.equals(responseBody)) {
-                            throw new RuntimeException(String.format("Response was: %s",
-                                    connection.getContent()));
-                        }
-
-                        if(responseContaining != null && !actualResponseBody.contains(responseContaining)) {
-                            throw new RuntimeException(String.format("Response was: %s",
-                                    connection.getContent()));
-                        }
-
-                        if(responsePredicate != null && !responsePredicate.test(actualResponseBody)) {
+                        if(responsePredicate != null && !responsePredicate.test(getResponseBody(connection))) {
                             throw new RuntimeException(String.format("Response: %s did not match predicate",
                                     connection.getContent()));
                         }
