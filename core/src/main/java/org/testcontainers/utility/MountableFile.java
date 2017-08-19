@@ -139,7 +139,7 @@ public class MountableFile implements Transferable {
     private String resolveFilesystemPath() {
         String result = getResourcePath();
 
-        if (result.startsWith("/")) {
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
             result = result.substring(1);
         }
 
@@ -231,22 +231,22 @@ public class MountableFile implements Transferable {
      */
     @Override
     public void transferTo(final TarArchiveOutputStream outputStream, String destinationPathInTar) {
-        recursiveTar(destinationPathInTar, this.getResolvedPath(), this.getResolvedPath(), this.getFilesystemPath(), outputStream);
+        recursiveTar(destinationPathInTar, this.getFilesystemPath(), this.getFilesystemPath(), outputStream);
     }
 
     /*
      * Recursively copies a file/directory into a TarArchiveOutputStream
      */
-    private void recursiveTar(String destination, String sourceRootDir, String sourceCurrentItem, String filesystemPath, TarArchiveOutputStream tarArchive) {
+    private void recursiveTar(String entryFilename, String rootPath, String itemPath, TarArchiveOutputStream tarArchive) {
         try {
-            final File sourceFile = new File(filesystemPath).getCanonicalFile();     // e.g. /foo/bar/baz
-            final File sourceRootFile = new File(filesystemPath).getCanonicalFile();     // e.g. /foo
+            final File sourceFile = new File(itemPath).getCanonicalFile();     // e.g. /foo/bar/baz
+            final File sourceRootFile = new File(rootPath).getCanonicalFile();     // e.g. /foo
             final String relativePathToSourceFile = sourceRootFile.toPath().relativize(sourceFile.toPath()).toFile().toString();    // e.g. /bar/baz
 
-            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, destination + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
+            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, entryFilename + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
 
             // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)
-            tarEntry.setMode(getUnixFileMode(sourceCurrentItem));
+            tarEntry.setMode(getUnixFileMode(itemPath));
             tarArchive.putArchiveEntry(tarEntry);
 
             if (sourceFile.isFile()) {
@@ -259,11 +259,11 @@ public class MountableFile implements Transferable {
             if (children != null) {
                 // recurse into child files/directories
                 for (final File child : children) {
-                    recursiveTar(destination, sourceRootDir + File.separator, child.getCanonicalPath(), child.getCanonicalPath(), tarArchive);
+                    recursiveTar(entryFilename, sourceRootFile.getCanonicalPath(), child.getCanonicalPath(), tarArchive);
                 }
             }
         } catch (IOException e) {
-            log.error("Error when copying TAR file entry: {}", sourceCurrentItem, e);
+            log.error("Error when copying TAR file entry: {}", itemPath, e);
             throw new UncheckedIOException(e); // fail fast
         }
     }

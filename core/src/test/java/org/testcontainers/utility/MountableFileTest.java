@@ -74,8 +74,8 @@ public class MountableFileTest {
 
     private void performChecks(final MountableFile mountableFile) {
         final String mountablePath = mountableFile.getFilesystemPath();
-        assertTrue("The resolved path can be found", new File(mountablePath).exists());
-        assertFalse("The resolved path does not contain any URL escaping", mountablePath.contains("%20"));
+        assertTrue("The filesystem path '" + mountablePath + "' can be found", new File(mountablePath).exists());
+        assertFalse("The filesystem path '" + mountablePath + "' does not contain any URL escaping", mountablePath.contains("%20"));
     }
 
 }
