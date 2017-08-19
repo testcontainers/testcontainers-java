@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 ### Fixed
 - Fixed local Docker Compose executable name resolution on Windows (#416)
+- Added workaround to make MountableFile host path work on Windows (#444)
 
 ### Changed
 
