@@ -170,16 +170,4 @@ public abstract class DockerClientProviderStrategy {
     public String getDockerHostIpAddress() {
         return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
     }
-
-
-    class InvalidConfigurationException extends RuntimeException {
-
-        public InvalidConfigurationException(String s) {
-            super(s);
-        }
-
-        public InvalidConfigurationException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 }
