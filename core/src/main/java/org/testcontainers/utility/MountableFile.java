@@ -33,6 +33,8 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 @Slf4j
 public class MountableFile implements Transferable {
 
+    private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
+
     private final String path;
 
     @Getter(lazy = true)
@@ -163,7 +165,7 @@ public class MountableFile implements Transferable {
      * @return the path of the temporary file/directory
      */
     private String extractClassPathResourceToTempLocation(final String hostPath) {
-        File tmpLocation = new File(".testcontainers-tmp-" + Base58.randomString(5));
+        File tmpLocation = createTempDirectory();
         //noinspection ResultOfMethodCallIgnored
         tmpLocation.delete();
 
@@ -192,6 +194,14 @@ public class MountableFile implements Transferable {
         deleteOnExit(tmpLocation.toPath());
 
         return tmpLocation.getAbsolutePath();
+    }
+
+    private File createTempDirectory() {
+        try {
+            return Files.createTempDirectory(Paths.get(System.getProperty("java.io.tmpdir")), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+        } catch  (IOException e) {
+            return new File(TESTCONTAINERS_TMP_DIR_PREFIX + Base58.randomString(5));
+        }
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
