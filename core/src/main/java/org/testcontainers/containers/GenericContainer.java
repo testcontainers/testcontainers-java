@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
@@ -554,7 +554,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withExposedPorts(Integer... ports) {
-        this.setExposedPorts(asList(ports));
+        this.setExposedPorts(newArrayList(ports));
         return self();
 
     }
