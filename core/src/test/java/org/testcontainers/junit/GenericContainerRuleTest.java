@@ -23,6 +23,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
@@ -337,5 +338,13 @@ public class GenericContainerRuleTest {
             Socket socket = new Socket(container.getContainerIpAddress(), container.getFirstMappedPort());
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
+    }
+
+    @Test
+    public void addExposedPortAfterWithExposedPortsTest() {
+        redis.addExposedPort(8987);
+        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
+        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
+        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
     }
 }
