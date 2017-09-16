@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
+### Changed
+- Added caching of failure to find a docker daemon, so that subsequent tests fail fast. This is likely to be a significant improvement in situations where there is no docker daemon available, dramatically reducing run time and log output when further attempts to find the docker daemon cannot succeed.
+
 ### Fixed
 - Fixed local Docker Compose executable name resolution on Windows (#416)
 - Made tar composing work on Windows as well (#444)
