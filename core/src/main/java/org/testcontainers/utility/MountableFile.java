@@ -183,8 +183,8 @@ public class MountableFile implements Transferable {
 
         if (!entry.isDirectory()) {
             // Create parent directories
-            newFile.mkdirs();
-            newFile.delete();
+            Path parent = newFile.getAbsoluteFile().toPath().getParent();
+            parent.toFile().mkdirs();
             newFile.deleteOnExit();
 
             try (InputStream is = jarFile.getInputStream(entry)) {
