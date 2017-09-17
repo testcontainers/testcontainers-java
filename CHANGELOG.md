@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 ### Fixed
 - Fixed local Docker Compose executable name resolution on Windows (#416)
+- Made tar composing work on Windows as well (#444)
 
 ### Changed
 - Load `DockerClientProviderStrategy` via Service Loader (#434, #435)
