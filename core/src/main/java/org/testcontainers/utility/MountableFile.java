@@ -38,6 +38,11 @@ public class MountableFile implements Transferable {
     @Getter(lazy = true)
     private final String resolvedPath = resolvePath();
 
+    @Getter(lazy = true)
+    private final String filesystemPath = resolveFilesystemPath();
+
+    private String resourcePath;
+
     /**
      * Obtains a {@link MountableFile} corresponding to a resource on the classpath (including resources in JAR files)
      *
@@ -115,18 +120,39 @@ public class MountableFile implements Transferable {
      * @return a volume-mountable path.
      */
     private String resolvePath() {
-        String result;
-        if (path.contains(".jar!")) {
-            result = extractClassPathResourceToTempLocation(this.path);
-        } else {
-            result = unencodeResourceURIToFilePath(path);
-        }
+        String result = getResourcePath();
 
         if (SystemUtils.IS_OS_WINDOWS) {
             result = PathUtils.createMinGWPath(result);
         }
 
         return result;
+    }
+
+    /**
+     * Obtain a path in local filesystem that the Docker daemon should be able to use to volume mount a file/resource
+     * into a container. If this is a classpath resource residing in a JAR, it will be extracted to
+     * a temporary location so that the Docker daemon is able to access it.
+     *
+     * @return
+     */
+    private String resolveFilesystemPath() {
+        String result = getResourcePath();
+
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+            result = result.substring(1);
+        }
+
+        return result;
+    }
+
+    private String getResourcePath() {
+        if (path.contains(".jar!")) {
+            resourcePath = extractClassPathResourceToTempLocation(this.path);
+        } else {
+            resourcePath = unencodeResourceURIToFilePath(path);
+        }
+        return resourcePath;
     }
 
     /**
@@ -205,22 +231,22 @@ public class MountableFile implements Transferable {
      */
     @Override
     public void transferTo(final TarArchiveOutputStream outputStream, String destinationPathInTar) {
-        recursiveTar(destinationPathInTar, this.getResolvedPath(), this.getResolvedPath(), outputStream);
+        recursiveTar(destinationPathInTar, this.getFilesystemPath(), this.getFilesystemPath(), outputStream);
     }
 
     /*
      * Recursively copies a file/directory into a TarArchiveOutputStream
      */
-    private void recursiveTar(String destination, String sourceRootDir, String sourceCurrentItem, TarArchiveOutputStream tarArchive) {
+    private void recursiveTar(String entryFilename, String rootPath, String itemPath, TarArchiveOutputStream tarArchive) {
         try {
-            final File sourceFile = new File(sourceCurrentItem).getCanonicalFile();     // e.g. /foo/bar/baz
-            final File sourceRootFile = new File(sourceRootDir).getCanonicalFile();     // e.g. /foo
+            final File sourceFile = new File(itemPath).getCanonicalFile();     // e.g. /foo/bar/baz
+            final File sourceRootFile = new File(rootPath).getCanonicalFile();     // e.g. /foo
             final String relativePathToSourceFile = sourceRootFile.toPath().relativize(sourceFile.toPath()).toFile().toString();    // e.g. /bar/baz
 
-            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, destination + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
+            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, entryFilename + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
 
             // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)
-            tarEntry.setMode(getUnixFileMode(sourceCurrentItem));
+            tarEntry.setMode(getUnixFileMode(itemPath));
             tarArchive.putArchiveEntry(tarEntry);
 
             if (sourceFile.isFile()) {
@@ -233,11 +259,11 @@ public class MountableFile implements Transferable {
             if (children != null) {
                 // recurse into child files/directories
                 for (final File child : children) {
-                    recursiveTar(destination, sourceRootDir + File.separator, child.getCanonicalPath(), tarArchive);
+                    recursiveTar(entryFilename, sourceRootFile.getCanonicalPath(), child.getCanonicalPath(), tarArchive);
                 }
             }
         } catch (IOException e) {
-            log.error("Error when copying TAR file entry: {}", sourceCurrentItem, e);
+            log.error("Error when copying TAR file entry: {}", itemPath, e);
             throw new UncheckedIOException(e); // fail fast
         }
     }
@@ -245,7 +271,7 @@ public class MountableFile implements Transferable {
     @Override
     public long getSize() {
 
-        final File file = new File(this.getResolvedPath());
+        final File file = new File(this.getFilesystemPath());
         if (file.isFile()) {
             return file.length();
         } else {
@@ -260,7 +286,7 @@ public class MountableFile implements Transferable {
 
     @Override
     public int getFileMode() {
-        return getUnixFileMode(this.getResolvedPath());
+        return getUnixFileMode(this.getFilesystemPath());
     }
 
     private int getUnixFileMode(final String pathAsString) {
