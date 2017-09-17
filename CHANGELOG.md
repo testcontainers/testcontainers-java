@@ -4,10 +4,14 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 ### Fixed
 - Fixed local Docker Compose executable name resolution on Windows (#416)
-- Made tar composing work on Windows as well (#444)
+- Fix TAR composition on Windows (#444)
+- Allow `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
+- Stop creation of temporary directory prior to creating temporary file (#443)
 
 ### Changed
 - Load `DockerClientProviderStrategy` via Service Loader (#434, #435)
+- Make it possible to specify docker compose container is configuration (#422, #425)
+
 
 ## [1.4.2] - 2017-07-25
 ### Fixed
