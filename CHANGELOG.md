@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Load `DockerClientProviderStrategy` via Service Loader (#434, #435)
-- Make it possible to specify docker compose container is configuration (#422, #425)
+- Make it possible to specify docker compose container in configuration (#422, #425)
 
 
 ## [1.4.2] - 2017-07-25
