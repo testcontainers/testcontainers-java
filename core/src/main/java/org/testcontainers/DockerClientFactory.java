@@ -142,7 +142,7 @@ public class DockerClientFactory {
 
             @Override
             public void describeTo(Description description) {
-                description.appendText("is newer than 1.6.0");
+                description.appendText("should be at least 1.6.0");
             }
         });
     }
@@ -162,7 +162,7 @@ public class DockerClientFactory {
         DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
 
         VisibleAssertions.assertTrue(
-                "Docker environment has more than 2GB free",
+                "Docker environment should have more than 2GB free disk space",
                 df.availableMB.map(it -> it >= 2048).orElse(true)
         );
     }
@@ -187,7 +187,7 @@ public class DockerClientFactory {
         } catch (IOException e) {
             response = e.getMessage();
         }
-        VisibleAssertions.assertEquals("Exposed port is accessible", "hello", response);
+        VisibleAssertions.assertEquals("A port exposed by a docker container should be accessible", "hello", response);
     }
 
     /**
