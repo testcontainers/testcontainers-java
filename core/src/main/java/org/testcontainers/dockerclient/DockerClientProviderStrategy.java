@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 /**
@@ -34,6 +35,8 @@ public abstract class DockerClientProviderStrategy {
             .withRate(2, TimeUnit.SECONDS)
             .withConstantThroughput()
             .build();
+
+    private static final AtomicBoolean FAIL_FAST_ALWAYS = new AtomicBoolean(false);
 
     /**
      * @throws InvalidConfigurationException if this strategy fails
@@ -64,6 +67,11 @@ public abstract class DockerClientProviderStrategy {
      * @return a working DockerClientConfig, as determined by successful execution of a ping command
      */
     public static DockerClientProviderStrategy getFirstValidStrategy(List<DockerClientProviderStrategy> strategies) {
+
+        if (FAIL_FAST_ALWAYS.get()) {
+            throw new IllegalStateException("Previous attempts to find a Docker environment failed. Will not retry. Please see logs and check configuration");
+        }
+
         List<String> configurationFailures = new ArrayList<>();
 
         return Stream
@@ -134,6 +142,7 @@ public abstract class DockerClientProviderStrategy {
                     }
                     LOGGER.error("As no valid configuration was found, execution cannot continue");
 
+                    FAIL_FAST_ALWAYS.set(true);
                     return new IllegalStateException("Could not find a valid Docker environment. Please see logs and check configuration");
                 });
     }
