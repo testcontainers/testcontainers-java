@@ -127,10 +127,12 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
                                     connection.getResponseCode()));
                         }
 
-                        String responseBody = getResponseBody(connection);
-                        if(responsePredicate != null && !responsePredicate.test(responseBody)) {
-                            throw new RuntimeException(String.format("Response: %s did not match predicate",
-                                   responseBody));
+                        if(responsePredicate != null) {
+                            String responseBody = getResponseBody(connection);
+                            if(!responsePredicate.test(responseBody)) {
+                                throw new RuntimeException(String.format("Response: %s did not match predicate",
+                                        responseBody));
+                            }
                         }
 
                     } catch (IOException e) {
