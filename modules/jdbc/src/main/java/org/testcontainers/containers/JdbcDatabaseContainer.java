@@ -60,6 +60,19 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     protected abstract String getTestQueryString();
 
+    public SELF withUsername(String username) {
+        throw new UnsupportedOperationException();
+    }
+
+    public SELF withPassword(String password){
+        throw new UnsupportedOperationException();
+    }
+
+    public SELF withDatabaseName(String dbName) {
+        throw new UnsupportedOperationException();
+
+    }
+
     @Override
     protected void waitUntilContainerStarted() {
         // Repeatedly try and open a connection to the DB and execute a test query
