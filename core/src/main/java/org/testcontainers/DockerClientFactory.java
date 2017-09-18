@@ -25,12 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-
-import static java.util.Arrays.asList;
 
 /**
  * Singleton class that provides initialized Docker clients.
@@ -46,13 +46,6 @@ public class DockerClientFactory {
     // Cached client configuration
     private DockerClientProviderStrategy strategy;
     private boolean preconditionsChecked = false;
-
-    private static final List<DockerClientProviderStrategy> CONFIGURATION_STRATEGIES =
-            asList(new EnvironmentAndSystemPropertyClientProviderStrategy(),
-                    new UnixSocketClientProviderStrategy(),
-                    new ProxiedUnixSocketClientProviderStrategy(),
-                    new DockerMachineClientProviderStrategy(),
-                    new WindowsClientProviderStrategy());
     private String activeApiVersion;
     private String activeExecutionDriver;
 
@@ -91,7 +84,10 @@ public class DockerClientFactory {
             return strategy.getClient();
         }
 
-        strategy = DockerClientProviderStrategy.getFirstValidStrategy(CONFIGURATION_STRATEGIES);
+        List<DockerClientProviderStrategy> configurationStrategies = new ArrayList<DockerClientProviderStrategy>();
+        ServiceLoader.load(DockerClientProviderStrategy.class).forEach( cs -> configurationStrategies.add( cs ) );
+
+        strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
         log.info("Docker host IP address is {}", hostIpAddress);
