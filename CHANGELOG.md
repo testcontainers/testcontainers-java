@@ -9,12 +9,12 @@ All notable changes to this project will be documented in this file.
 - Stopping creation of temporary directory prior to creating temporary file (#443)
 
 ### Changed
+- Added `forResponsePredicate` method to HttpWaitStrategy to test response body (#441)
 - Changed `DockerClientProviderStrategy` to be loaded via Service Loader (#434, #435)
 - Made it possible to specify docker compose container in configuration (#422, #425)
 - Clarified wording of pre-flight check messages (#457, #436)
 - Added caching of failure to find a docker daemon, so that subsequent tests fail fast. This is likely to be a significant improvement in situations where there is no docker daemon available, dramatically reducing run time and log output when further attempts to find the docker daemon cannot succeed.
 - Allowing JDBC containers' username, password and DB name to be customized (#400, #354)
-
 
 ## [1.4.2] - 2017-07-25
 ### Fixed
