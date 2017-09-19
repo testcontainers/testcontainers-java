@@ -69,16 +69,19 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         return "SELECT 1";
     }
 
+    @Override
     public SELF withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
+    @Override
     public SELF withUsername(final String username) {
         this.username = username;
         return self();
     }
 
+    @Override
     public SELF withPassword(final String password) {
         this.password = password;
         return self();
