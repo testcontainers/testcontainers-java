@@ -3,15 +3,17 @@ package org.testcontainers.containers.wait;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.rnorth.ducttape.TimeoutException;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
@@ -36,6 +38,7 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
     private boolean tlsEnabled;
     private String username;
     private String password;
+    private Predicate<String> responsePredicate;
 
     /**
      * Waits for the given status code.
@@ -82,6 +85,16 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
         return this;
     }
 
+    /**
+     * Waits for the response to pass the given predicate
+     * @param responsePredicate The predicate to test the response against
+     * @return this
+     */
+    public HttpWaitStrategy forResponsePredicate(Predicate<String> responsePredicate) {
+        this.responsePredicate = responsePredicate;
+        return this;
+    }
+
     @Override
     protected void waitUntilReady() {
         final Integer livenessCheckPort = getLivenessCheckPort();
@@ -112,6 +125,14 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
                         if (statusCode != connection.getResponseCode()) {
                             throw new RuntimeException(String.format("HTTP response code was: %s",
                                     connection.getResponseCode()));
+                        }
+
+                        if(responsePredicate != null) {
+                            String responseBody = getResponseBody(connection);
+                            if(!responsePredicate.test(responseBody)) {
+                                throw new RuntimeException(String.format("Response: %s did not match predicate",
+                                        responseBody));
+                            }
                         }
 
                     } catch (IOException e) {
@@ -154,5 +175,21 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
      */
     private String buildAuthString(String username, String password) {
         return AUTH_BASIC + BaseEncoding.base64().encode((username + ":" + password).getBytes());
+    }
+
+    private String getResponseBody(HttpURLConnection connection) throws IOException {
+        BufferedReader reader;
+        if (200 <= connection.getResponseCode() && connection.getResponseCode() <= 299) {
+            reader = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+        } else {
+            reader = new BufferedReader(new InputStreamReader((connection.getErrorStream())));
+        }
+
+        StringBuilder builder = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            builder.append(line);
+        }
+        return builder.toString();
     }
 }
