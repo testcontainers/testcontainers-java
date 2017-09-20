@@ -3,18 +3,47 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Fixed local Docker Compose executable name resolution on Windows (#416)
+- Fixed TAR composition on Windows (#444)
+- Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
+- Stopping creation of temporary directory prior to creating temporary file (#443)
+
+### Changed
+- Added `forResponsePredicate` method to HttpWaitStrategy to test response body (#441)
+- Changed `DockerClientProviderStrategy` to be loaded via Service Loader (#434, #435)
+- Made it possible to specify docker compose container in configuration (#422, #425)
+- Clarified wording of pre-flight check messages (#457, #436)
+- Added caching of failure to find a docker daemon, so that subsequent tests fail fast. This is likely to be a significant improvement in situations where there is no docker daemon available, dramatically reducing run time and log output when further attempts to find the docker daemon cannot succeed.
+- Allowing JDBC containers' username, password and DB name to be customized (#400, #354)
+
+## [1.4.2] - 2017-07-25
+### Fixed
+- Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy when running on OS X prior to v10.12. (Fixes #402)
+- Changed to use version 2.0 of the Visible Assertions library for startup pre-flight checks. This no longer has a dependency on Jansi, and is intended to resolve a JVM crash issue apparently caused by native lib version conflicts (#395). Please note that the newer ANSI code is less mature and thus has had less testing, particularly in interesting terminal environments such as Windows. If issues are encountered, coloured assertion output may be disabled by setting the system property `visibleassertions.ansi.enabled` to `true`.
+- Fixed NullPointerException when calling GenericContainer#isRunning on not started container (#411)
+
+### Changed
+- Removed Guava usage from `jdbc` module (#401)
+
+## [1.4.1] - 2017-07-10
+### Fixed
+- Fixed Guava shading in `jdbc` module
+
+## [1.4.0] - 2017-07-09
+### Fixed
 - Fixed the case when disk's size is bigger than Integer's max value (#379, #380)
 - Fixed erroneous version reference used during CI testing of shaded dependencies
 - Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
 - Added timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
-- Fixed double encoding of listNetwork's filter until it's fixed in docker-java (#385)
 - Fixed various shading issues
+- Improved removal of containers/networks when using Docker Compose, eliminating irrelevant errors during cleanup (#342, #394)
 
 ### Changed
 - Added support for Docker networks (#372)
 - Added `getFirstMappedPort` method (#377)
 - Extracted Oracle XE container into a separate repository ([testcontainers/testcontainers-java-module-oracle-xe](https://github.com/testcontainers/testcontainers-java-module-oracle-xe))
 - Added shading tests
+- Updated docker-java to 3.0.12 (#393)
 
 ## [1.3.1] - 2017-06-22
 ### Fixed
@@ -306,6 +335,9 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.4.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.2
+[1.4.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.1
+[1.4.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.0
 [1.2.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.2.0
 [1.1.9]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.9
 [1.1.8]: https://github.com/testcontainers/testcontainers-java/releases/tag/testcontainers-1.1.8

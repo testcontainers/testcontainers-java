@@ -6,6 +6,8 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 
     private final String[] parts;
 
+    public static final ComparableVersion OS_VERSION = new ComparableVersion(System.getProperty("os.version"));
+
     public ComparableVersion(String version) {
         this.parts = version.split("\\.");
     }
@@ -23,5 +25,13 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
         }
 
         return 0;
+    }
+
+    public boolean isLessThan(String other) {
+        return this.compareTo(new ComparableVersion(other)) < 0;
+    }
+
+    public boolean isGreaterThanOrEqualTo(String other) {
+        return this.compareTo(new ComparableVersion(other)) >= 0;
     }
 }

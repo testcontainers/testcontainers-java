@@ -23,6 +23,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
@@ -143,6 +144,15 @@ public class GenericContainerRuleTest {
 //        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("bar"));
 //        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("baz"));
 //    }
+
+    @Test
+    public void testIsRunning() {
+        try (GenericContainer container = new GenericContainer()) {
+            assertFalse("Container is not started and not running", container.isRunning());
+            container.start();
+            assertTrue("Container is started and running", container.isRunning());
+        }
+    }
 
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
@@ -328,5 +338,13 @@ public class GenericContainerRuleTest {
             Socket socket = new Socket(container.getContainerIpAddress(), container.getFirstMappedPort());
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
+    }
+
+    @Test
+    public void addExposedPortAfterWithExposedPortsTest() {
+        redis.addExposedPort(8987);
+        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
+        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
+        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
     }
 }

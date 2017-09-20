@@ -69,12 +69,6 @@
     </developers>
 
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-        </dependency>
-
         <!-- Project lombok for additional safety/convenience support -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -83,12 +77,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -167,7 +155,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <docker-java.version>3.0.10</docker-java.version>
+        <docker-java.version>3.0.12</docker-java.version>
     </properties>
 
     <modules>

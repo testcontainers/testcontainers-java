@@ -1,8 +1,6 @@
 package org.testcontainers.jdbc;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.JdbcDatabaseContainerProvider;
@@ -13,6 +11,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -223,10 +222,16 @@ public class ContainerDatabaseDriver implements Driver {
         if (matcher.matches()) {
             String initScriptPath = matcher.group(2);
             try {
-                URL resource = Resources.getResource(initScriptPath);
-                String sql = Resources.toString(resource, Charsets.UTF_8);
+                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+
+                if (resource == null) {
+                    LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+                    throw new SQLException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
+                }
+
+                String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
                 ScriptUtils.executeSqlScript(connection, initScriptPath, sql);
-            } catch (IOException | IllegalArgumentException e) {
+            } catch (IOException e) {
                 LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                 throw new SQLException("Could not load classpath init script: " + initScriptPath, e);
             } catch (ScriptException e) {
@@ -324,7 +329,6 @@ public class ContainerDatabaseDriver implements Driver {
      * @param jdbcUrl the JDBC URL of the container instance to get
      * @return an instance of database container or <code>null</code> if no container associated with JDBC URL
      */
-    @VisibleForTesting
     static JdbcDatabaseContainer getContainer(String jdbcUrl) {
         synchronized (jdbcUrlContainerCache) {
             return jdbcUrlContainerCache.get(jdbcUrl);

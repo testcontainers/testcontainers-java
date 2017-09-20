@@ -3,6 +3,7 @@ package org.testcontainers.dockerclient;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 /**
@@ -33,6 +35,8 @@ public abstract class DockerClientProviderStrategy {
             .withRate(2, TimeUnit.SECONDS)
             .withConstantThroughput()
             .build();
+
+    private static final AtomicBoolean FAIL_FAST_ALWAYS = new AtomicBoolean(false);
 
     /**
      * @throws InvalidConfigurationException if this strategy fails
@@ -63,6 +67,11 @@ public abstract class DockerClientProviderStrategy {
      * @return a working DockerClientConfig, as determined by successful execution of a ping command
      */
     public static DockerClientProviderStrategy getFirstValidStrategy(List<DockerClientProviderStrategy> strategies) {
+
+        if (FAIL_FAST_ALWAYS.get()) {
+            throw new IllegalStateException("Previous attempts to find a Docker environment failed. Will not retry. Please see logs and check configuration");
+        }
+
         List<String> configurationFailures = new ArrayList<>();
 
         return Stream
@@ -74,8 +83,14 @@ public abstract class DockerClientProviderStrategy {
                                     try {
                                         Class<? extends DockerClientProviderStrategy> strategyClass = (Class) Thread.currentThread().getContextClassLoader().loadClass(it);
                                         return Stream.of(strategyClass.newInstance());
-                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                                        LOGGER.warn("Can't instantiate a strategy from " + it, e);
+                                    } catch (ClassNotFoundException e) {
+                                        LOGGER.warn("Can't instantiate a strategy from {} (ClassNotFoundException). " +
+                                                "This probably means that cached configuration refers to a client provider " +
+                                                "class that is not available in this version of Testcontainers. Other " +
+                                                "strategies will be tried instead.", it);
+                                        return Stream.empty();
+                                    } catch (InstantiationException | IllegalAccessException e) {
+                                        LOGGER.warn("Can't instantiate a strategy from {}", it, e);
                                         return Stream.empty();
                                     }
                                 }),
@@ -127,6 +142,7 @@ public abstract class DockerClientProviderStrategy {
                     }
                     LOGGER.error("As no valid configuration was found, execution cannot continue");
 
+                    FAIL_FAST_ALWAYS.set(true);
                     return new IllegalStateException("Could not find a valid Docker environment. Please see logs and check configuration");
                 });
     }
@@ -141,7 +157,7 @@ public abstract class DockerClientProviderStrategy {
     protected DockerClient getClientForConfig(DockerClientConfig config) {
         return DockerClientBuilder
                     .getInstance(config)
-                    .withDockerCmdExecFactory(new TestcontainersDockerCmdExecFactory())
+                    .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
                     .build();
     }
 
@@ -162,17 +178,5 @@ public abstract class DockerClientProviderStrategy {
 
     public String getDockerHostIpAddress() {
         return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
-    }
-
-
-    class InvalidConfigurationException extends RuntimeException {
-
-        public InvalidConfigurationException(String s) {
-            super(s);
-        }
-
-        public InvalidConfigurationException(String message, Throwable cause) {
-            super(message, cause);
-        }
     }
 }

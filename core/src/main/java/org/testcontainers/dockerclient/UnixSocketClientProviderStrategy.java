@@ -5,6 +5,7 @@ import com.github.dockerjava.core.DockerClientConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.ComparableVersion;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,9 +20,14 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
 
+    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 20;
+
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_LINUX;
+        final boolean nettyDoesSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
+                ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
+
+        return SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets;
     }
 
     @Override
@@ -66,4 +72,8 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
         return "local Unix socket (" + SOCKET_LOCATION + ")";
     }
 
+    @Override
+    protected int getPriority() {
+        return PRIORITY;
+    }
 }
