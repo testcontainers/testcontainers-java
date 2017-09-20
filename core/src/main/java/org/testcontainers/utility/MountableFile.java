@@ -34,6 +34,7 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 public class MountableFile implements Transferable {
 
     private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
+    public static final String OS_MAC_TMP_DIR = "/tmp";
 
     private final String path;
 
@@ -198,7 +199,10 @@ public class MountableFile implements Transferable {
 
     private File createTempDirectory() {
         try {
-            return Files.createTempDirectory(Paths.get(System.getProperty("java.io.tmpdir")), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+            if (SystemUtils.IS_OS_MAC) {
+                return Files.createTempDirectory(Paths.get(OS_MAC_TMP_DIR), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+            }
+            return Files.createTempDirectory(TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
         } catch  (IOException e) {
             return new File(TESTCONTAINERS_TMP_DIR_PREFIX + Base58.randomString(5));
         }
