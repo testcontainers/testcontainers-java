@@ -1,36 +1,15 @@
 package org.testcontainers;
 
 import org.assertj.core.api.ListAssert;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JarFileShadingTest {
-
-    private static FileSystem fileSystem;
-
-    private static Path root;
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        Path path = Paths.get("..", "..", "core", "target", "testcontainers-0-SNAPSHOT.jar");
-
-        fileSystem = FileSystems.newFileSystem(URI.create("jar:" + path.toUri()), emptyMap());
-
-        root = fileSystem.getRootDirectories().iterator().next();
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        fileSystem.close();
-    }
+public class JarFileShadingTest extends AbstractJarFileTest {
 
     @Test
     public void testPackages() throws Exception {
