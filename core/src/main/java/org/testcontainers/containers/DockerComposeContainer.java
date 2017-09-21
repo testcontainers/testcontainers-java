@@ -9,6 +9,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -493,7 +494,7 @@ class LocalDockerCompose implements DockerCompose {
     @Override
     public void invoke() {
         // bail out early
-        if (!CommandLine.executableExists(COMPOSE_EXECUTABLE)) {
+        if (!isDockerComposeExists()) {
             throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");
         }
 
@@ -528,6 +529,17 @@ class LocalDockerCompose implements DockerCompose {
         } catch (Exception e) {
             throw new ContainerLaunchException("Error running local Docker Compose command: " + cmd, e);
         }
+    }
+
+    // #460 : docker-compose are not resolvable on Win10 machines because there is docker-compose.exe binary,
+    // but not docker-compose
+    private boolean isDockerComposeExists() {
+        boolean dockerComposeExists = CommandLine.executableExists(COMPOSE_EXECUTABLE);
+        if (!dockerComposeExists && SystemUtils.IS_OS_WINDOWS) {
+            return CommandLine.executableExists(COMPOSE_EXECUTABLE + ".exe");
+        }
+
+        return dockerComposeExists;
     }
 
     /**
