@@ -37,7 +37,7 @@ import org.testcontainers.images.builder.Transferable;
 public class MountableFile implements Transferable {
 
     private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
-    public static final String OS_MAC_TMP_DIR = "/tmp";
+    private static final String OS_MAC_TMP_DIR = "/tmp";
     private static final int BASE_FILE_MODE = 0100000;
     private static final int BASE_DIR_MODE = 0040000;
 
