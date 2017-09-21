@@ -494,7 +494,7 @@ class LocalDockerCompose implements DockerCompose {
     @Override
     public void invoke() {
         // bail out early
-        if (!isDockerComposeExists()) {
+        if (!dockerComposeExecutableExists()) {
             throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");
         }
 
@@ -531,9 +531,7 @@ class LocalDockerCompose implements DockerCompose {
         }
     }
 
-    // #460 : docker-compose are not resolvable on Win10 machines because there is docker-compose.exe binary,
-    // but not docker-compose
-    private boolean isDockerComposeExists() {
+    private boolean dockerComposeExecutableExists() {
         boolean dockerComposeExists = CommandLine.executableExists(COMPOSE_EXECUTABLE);
         if (!dockerComposeExists && SystemUtils.IS_OS_WINDOWS) {
             return CommandLine.executableExists(COMPOSE_EXECUTABLE + ".exe");
