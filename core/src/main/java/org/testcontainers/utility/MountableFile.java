@@ -34,7 +34,7 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 public class MountableFile implements Transferable {
 
     private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
-    public static final String OS_MAC_TMP_DIR = "/tmp";
+    private static final String OS_MAC_TMP_DIR = "/tmp";
 
     private final String path;
 
