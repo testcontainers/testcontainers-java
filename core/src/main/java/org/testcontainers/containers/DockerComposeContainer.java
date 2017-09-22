@@ -532,12 +532,11 @@ class LocalDockerCompose implements DockerCompose {
     }
 
     private boolean dockerComposeExecutableExists() {
-        boolean dockerComposeExists = CommandLine.executableExists(COMPOSE_EXECUTABLE);
-        if (!dockerComposeExists && SystemUtils.IS_OS_WINDOWS) {
+        if (SystemUtils.IS_OS_WINDOWS) {
             return CommandLine.executableExists(COMPOSE_EXECUTABLE + ".exe");
+        } else {
+            return CommandLine.executableExists(COMPOSE_EXECUTABLE);
         }
-
-        return dockerComposeExists;
     }
 
     /**
