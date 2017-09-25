@@ -100,7 +100,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
-     * Add a link to another container.
+     * Add a link to another container. Consider using {@link #withLink(LinkableContainer, String)}
+     * for building a container in a fluent style.
      *
      * @param otherContainer the other container object to link to
      * @param alias the alias (for the other container) that this container should be able to use
@@ -150,6 +151,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withVolumesFrom(Container container, BindMode mode);
+
+    /**
+     * Add a link to another container.
+     *
+     * @param otherContainer the other container object to link to
+     * @param alias the alias (for the other container) that this container should be able to use
+     */
+    SELF withLink(LinkableContainer otherContainer, String alias);
 
     /**
      * Set the ports that this container listens on
