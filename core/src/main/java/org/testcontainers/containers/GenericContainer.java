@@ -518,6 +518,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
+    public SELF withLink(LinkableContainer otherContainer, String alias) {
+        addLink(otherContainer, alias);
+        return self();
+    }
+
     private void addVolumesFrom(Container container, BindMode mode) {
         volumesFroms.add(new VolumesFrom(container.getContainerName(), mode.accessMode));
     }
