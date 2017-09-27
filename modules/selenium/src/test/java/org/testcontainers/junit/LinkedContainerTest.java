@@ -21,7 +21,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
  */
 public class LinkedContainerTest {
 
-    private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
+    private static File contentFolder = new File(System.getProperty("java.io.tmpdir") + "/.tmp-test-container");
 
     @Rule
     public Network network = Network.newNetwork();
