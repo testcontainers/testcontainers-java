@@ -46,7 +46,7 @@ public class GenericContainerRuleTest {
      */
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
-        File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
+        File contentFolder = new File(System.getProperty("java.io.tmpdir") + "/.tmp-test-container");
         contentFolder.mkdir();
         writeStringToFile(contentFolder, "file", "Hello world!");
     }
