@@ -25,12 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-
-import static java.util.Arrays.asList;
 
 /**
  * Singleton class that provides initialized Docker clients.
@@ -46,13 +46,6 @@ public class DockerClientFactory {
     // Cached client configuration
     private DockerClientProviderStrategy strategy;
     private boolean preconditionsChecked = false;
-
-    private static final List<DockerClientProviderStrategy> CONFIGURATION_STRATEGIES =
-            asList(new EnvironmentAndSystemPropertyClientProviderStrategy(),
-                    new UnixSocketClientProviderStrategy(),
-                    new ProxiedUnixSocketClientProviderStrategy(),
-                    new DockerMachineClientProviderStrategy(),
-                    new WindowsClientProviderStrategy());
     private String activeApiVersion;
     private String activeExecutionDriver;
 
@@ -91,7 +84,10 @@ public class DockerClientFactory {
             return strategy.getClient();
         }
 
-        strategy = DockerClientProviderStrategy.getFirstValidStrategy(CONFIGURATION_STRATEGIES);
+        List<DockerClientProviderStrategy> configurationStrategies = new ArrayList<DockerClientProviderStrategy>();
+        ServiceLoader.load(DockerClientProviderStrategy.class).forEach( cs -> configurationStrategies.add( cs ) );
+
+        strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
         log.info("Docker host IP address is {}", hostIpAddress);
@@ -146,7 +142,7 @@ public class DockerClientFactory {
 
             @Override
             public void describeTo(Description description) {
-                description.appendText("is newer than 1.6.0");
+                description.appendText("should be at least 1.6.0");
             }
         });
     }
@@ -166,7 +162,7 @@ public class DockerClientFactory {
         DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
 
         VisibleAssertions.assertTrue(
-                "Docker environment has more than 2GB free",
+                "Docker environment should have more than 2GB free disk space",
                 df.availableMB.map(it -> it >= 2048).orElse(true)
         );
     }
@@ -191,7 +187,7 @@ public class DockerClientFactory {
         } catch (IOException e) {
             response = e.getMessage();
         }
-        VisibleAssertions.assertEquals("Exposed port is accessible", "hello", response);
+        VisibleAssertions.assertEquals("A port exposed by a docker container should be accessible", "hello", response);
     }
 
     /**

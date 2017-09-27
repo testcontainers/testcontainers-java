@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## UNRELEASED
+### Fixed
+- Fixed local Docker Compose executable name resolution on Windows (#416)
+- Fixed TAR composition on Windows (#444)
+- Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
+- Stopping creation of temporary directory prior to creating temporary file (#443)
+
+### Changed
+- Added `forResponsePredicate` method to HttpWaitStrategy to test response body (#441)
+- Changed `DockerClientProviderStrategy` to be loaded via Service Loader (#434, #435)
+- Made it possible to specify docker compose container in configuration (#422, #425)
+- Clarified wording of pre-flight check messages (#457, #436)
+- Added caching of failure to find a docker daemon, so that subsequent tests fail fast. This is likely to be a significant improvement in situations where there is no docker daemon available, dramatically reducing run time and log output when further attempts to find the docker daemon cannot succeed.
+- Allowing JDBC containers' username, password and DB name to be customized (#400, #354)
+
 ## [1.4.2] - 2017-07-25
 ### Fixed
 - Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy when running on OS X prior to v10.12. (Fixes #402)

@@ -397,7 +397,7 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 
-        super("docker/compose:1.8.0");
+        super(TestcontainersConfiguration.getInstance().getDockerComposeContainerImage());
         validateFileList(composeFiles);
 
         addEnv(ENV_PROJECT_NAME, identifier);
@@ -465,7 +465,7 @@ class LocalDockerCompose implements DockerCompose {
     /**
      * Executable name for Docker Compose.
      */
-    private static final String COMPOSE_EXECUTABLE = "docker-compose";
+    private static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
 
     private final List<File> composeFiles;
     private final String identifier;
