@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
-- Fixed local Docker Compose executable name resolution on Windows (#416)
+- Fixed local Docker Compose executable name resolution on Windows (#416, #460)
 - Fixed TAR composition on Windows (#444)
 - Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
 - Stopping creation of temporary directory prior to creating temporary file (#443)
