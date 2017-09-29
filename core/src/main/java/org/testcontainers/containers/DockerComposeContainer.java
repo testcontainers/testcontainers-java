@@ -494,7 +494,7 @@ class LocalDockerCompose implements DockerCompose {
     @Override
     public void invoke() {
         // bail out early
-        if (!CommandLine.executableExists(COMPOSE_EXECUTABLE)) {
+        if (!dockerComposeExecutableExists()) {
             throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");
         }
 
@@ -528,6 +528,14 @@ class LocalDockerCompose implements DockerCompose {
 
         } catch (Exception e) {
             throw new ContainerLaunchException("Error running local Docker Compose command: " + cmd, e);
+        }
+    }
+
+    private boolean dockerComposeExecutableExists() {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return CommandLine.executableExists(COMPOSE_EXECUTABLE + ".exe");
+        } else {
+            return CommandLine.executableExists(COMPOSE_EXECUTABLE);
         }
     }
 
