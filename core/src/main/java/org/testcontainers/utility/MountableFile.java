@@ -10,7 +10,11 @@ import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.images.builder.Transferable;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Files;
@@ -33,7 +37,11 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 @Slf4j
 public class MountableFile implements Transferable {
 
+    private static final int BASE_FILE_MODE = 0100000;
+    private static final int BASE_DIR_MODE = 0040000;
+
     private final String path;
+    private final int permissions;
 
     @Getter(lazy = true)
     private final String resolvedPath = resolvePath();
@@ -50,7 +58,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forClasspathResource(@NotNull final String resourceName) {
-        return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString());
+        return forClasspathResource(resourceName, 0);
     }
 
     /**
@@ -60,7 +68,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path) {
-        return new MountableFile(new File(path).toURI().toString());
+        return forHostPath(path, 0);
     }
 
     /**
@@ -70,8 +78,42 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(final Path path) {
-        return new MountableFile(path.toAbsolutePath().toString());
+        return forHostPath(path, 0);
     }
+
+    /**
+     * Obtains a {@link MountableFile} corresponding to a resource on the classpath (including resources in JAR files)
+     *
+     * @param resourceName the classpath path to the resource
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forClasspathResource(@NotNull final String resourceName, int mode) {
+        return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString(), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} corresponding to a file on the docker host filesystem.
+     *
+     * @param path the path to the resource
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forHostPath(@NotNull final String path, int mode) {
+        return new MountableFile(new File(path).toURI().toString(), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} corresponding to a file on the docker host filesystem.
+     *
+     * @param path the path to the resource
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forHostPath(final Path path, int mode) {
+        return new MountableFile(path.toAbsolutePath().toString(), mode);
+    }
+
 
     @NotNull
     private static URL getClasspathResource(@NotNull final String resourcePath, @NotNull final Set<ClassLoader> classLoaders) {
@@ -291,6 +333,10 @@ public class MountableFile implements Transferable {
 
     private int getUnixFileMode(final String pathAsString) {
         final Path path = Paths.get(pathAsString);
+        if (this.permissions > 0) {
+            return this.getModeValue(path);
+        }
+
         try {
             return (int) Files.getAttribute(path, "unix:mode");
         } catch (IOException | UnsupportedOperationException e) {
@@ -304,5 +350,10 @@ public class MountableFile implements Transferable {
 
             return mode;
         }
+    }
+
+    private int getModeValue(final Path path) {
+        int result = Files.isDirectory(path) ? BASE_DIR_MODE : BASE_FILE_MODE;
+        return result | this.permissions;
     }
 }
