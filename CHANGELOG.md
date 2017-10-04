@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Fixed TAR composition on Windows (#444)
 - Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
 - Stopping creation of temporary directory prior to creating temporary file (#443)
+- Make Network instances reusable (i.e. work with `@ClassRule`) (#469)
 
 ### Changed
 - Added `forResponsePredicate` method to HttpWaitStrategy to test response body (#441)
