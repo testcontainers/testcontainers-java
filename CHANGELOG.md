@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## UNRELEASED
+## [1.4.3] - 2017-10-14
 ### Fixed
 - Fixed local Docker Compose executable name resolution on Windows (#416, #460)
 - Fixed TAR composition on Windows (#444)
