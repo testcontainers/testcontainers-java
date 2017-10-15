@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## UNRELEASED
+_No changes yet_
+
 ## [1.4.3] - 2017-10-14
 ### Fixed
 - Fixed local Docker Compose executable name resolution on Windows ([\#416](https://github.com/testcontainers/testcontainers-java/issues/416), [\#460](https://github.com/testcontainers/testcontainers-java/issues/460))
