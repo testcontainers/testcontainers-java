@@ -395,7 +395,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      *
-     * Method allow to copy file which we have in our repository to docker container
+     * Method allow to copy file which is inside classpath to docker container
      *
      * @param mountableLocalFile path to file which we would like to place in container
      * @param containerPath path where we want to copy file

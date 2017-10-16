@@ -122,7 +122,7 @@ public class GenericContainerRuleTest {
             .withExposedPorts(80)
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
-    
+
 //    @Test
 //    public void simpleRedisTest() {
 //        String ipAddress = redis.getContainerIpAddress();
