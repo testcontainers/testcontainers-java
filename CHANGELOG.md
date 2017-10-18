@@ -2,7 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
-_No changes yet_
+### Fixed
+- Fixed regression in 1.4.3 when using Docker Compose on Windows ([\#439](https://github.com/testcontainers/testcontainers-java/issues/439))
+
+### Changed
 
 ## [1.4.3] - 2017-10-14
 ### Fixed
