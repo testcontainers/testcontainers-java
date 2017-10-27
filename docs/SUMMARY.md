@@ -6,7 +6,7 @@
     * [Prerequisites](usage.md#prerequisites)
     * [Docker environment discovery](usage.md#docker-environment-discovery)
     * [Usage modes](usage.md#usage-modes)
-    * [Maven dependencies](usage.md#maven-dependencies)
+    * [Gradle/Maven dependencies](usage.md#gradle-maven-dependencies)
     * [Logging](usage.md#logging)
     * [Properties](usage/properties.md)
     * [Running inside Docker](usage/inside_docker.md)
@@ -36,6 +36,8 @@
     * [JUnit rule](usage/database_containers.md#junit-rule)
     * [JDBC URL](usage/database_containers.md#jdbc-url)
     * [Using an init script](usage/database_containers.md#using-an-init-script)
+
+* [Elasticsearch containers](usage/elasticsearch_container.md)
 
 * [Selenium WebDriver containers](usage/webdriver_containers.md)
     * [Benefits](usage/webdriver_containers.md#benefits)
