@@ -90,5 +90,24 @@ public class NetworkTest {
                 );
             }
         }
+
+        @Test
+        public void testReusability() throws Exception {
+            try (Network network = Network.newNetwork()) {
+                String firstId = network.getId();
+                assertNotNull(
+                        "Network exists",
+                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(firstId).exec()
+                );
+
+                network.close();
+
+                assertNotEquals(
+                        "New network created",
+                        firstId,
+                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getId()).exec().getId()
+                );
+            }
+        }
     }
 }
