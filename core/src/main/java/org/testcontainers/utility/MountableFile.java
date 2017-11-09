@@ -41,7 +41,7 @@ public class MountableFile implements Transferable {
     private static final int BASE_DIR_MODE = 0040000;
 
     private final String path;
-    private final int permissions;
+    private final int forcedFileMode;
 
     @Getter(lazy = true)
     private final String resolvedPath = resolvePath();
@@ -58,7 +58,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forClasspathResource(@NotNull final String resourceName) {
-        return forClasspathResource(resourceName, 0);
+        return forClasspathResource(resourceName, -1);
     }
 
     /**
@@ -68,7 +68,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path) {
-        return forHostPath(path, 0);
+        return forHostPath(path, -1);
     }
 
     /**
@@ -78,7 +78,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(final Path path) {
-        return forHostPath(path, 0);
+        return forHostPath(path, -1);
     }
 
     /**
@@ -333,7 +333,7 @@ public class MountableFile implements Transferable {
 
     private int getUnixFileMode(final String pathAsString) {
         final Path path = Paths.get(pathAsString);
-        if (this.permissions > 0) {
+        if (this.forcedFileMode > -1) {
             return this.getModeValue(path);
         }
 
@@ -354,6 +354,6 @@ public class MountableFile implements Transferable {
 
     private int getModeValue(final Path path) {
         int result = Files.isDirectory(path) ? BASE_DIR_MODE : BASE_FILE_MODE;
-        return result | this.permissions;
+        return result | this.forcedFileMode;
     }
 }
