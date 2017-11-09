@@ -3,28 +3,34 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
-- Fixed local Docker Compose executable name resolution on Windows (#416, #460)
-- Fixed TAR composition on Windows (#444)
-- Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
-- Stopping creation of temporary directory prior to creating temporary file (#443)
+- Fixed regression in 1.4.3 when using Docker Compose on Windows ([\#439](https://github.com/testcontainers/testcontainers-java/issues/439))
 
 ### Changed
-- Added `forResponsePredicate` method to HttpWaitStrategy to test response body (#441)
-- Changed `DockerClientProviderStrategy` to be loaded via Service Loader (#434, #435)
-- Made it possible to specify docker compose container in configuration (#422, #425)
-- Clarified wording of pre-flight check messages (#457, #436)
+- Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))
+
+## [1.4.3] - 2017-10-14
+### Fixed
+- Fixed local Docker Compose executable name resolution on Windows ([\#416](https://github.com/testcontainers/testcontainers-java/issues/416), [\#460](https://github.com/testcontainers/testcontainers-java/issues/460))
+- Fixed TAR composition on Windows ([\#444](https://github.com/testcontainers/testcontainers-java/issues/444))
+- Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` ([\#453](https://github.com/testcontainers/testcontainers-java/issues/453))
+- Stopping creation of temporary directory prior to creating temporary file ([\#443](https://github.com/testcontainers/testcontainers-java/issues/443))
+
+### Changed
+- Added `forResponsePredicate` method to HttpWaitStrategy to test response body ([\#441](https://github.com/testcontainers/testcontainers-java/issues/441))
+- Changed `DockerClientProviderStrategy` to be loaded via Service Loader ([\#434](https://github.com/testcontainers/testcontainers-java/issues/434), [\#435](https://github.com/testcontainers/testcontainers-java/issues/435))
+- Made it possible to specify docker compose container in configuration ([\#422](https://github.com/testcontainers/testcontainers-java/issues/422), [\#425](https://github.com/testcontainers/testcontainers-java/issues/425))
+- Clarified wording of pre-flight check messages ([\#457](https://github.com/testcontainers/testcontainers-java/issues/457), [\#436](https://github.com/testcontainers/testcontainers-java/issues/436))
 - Added caching of failure to find a docker daemon, so that subsequent tests fail fast. This is likely to be a significant improvement in situations where there is no docker daemon available, dramatically reducing run time and log output when further attempts to find the docker daemon cannot succeed.
-- Allowing JDBC containers' username, password and DB name to be customized (#400, #354)
-- Added support for explicitly setting file mode when copying file into container (#446) 
+- Allowing JDBC containers' username, password and DB name to be customized ([\#400](https://github.com/testcontainers/testcontainers-java/issues/400), [\#354](https://github.com/testcontainers/testcontainers-java/issues/354))
 
 ## [1.4.2] - 2017-07-25
 ### Fixed
-- Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy when running on OS X prior to v10.12. (Fixes #402)
-- Changed to use version 2.0 of the Visible Assertions library for startup pre-flight checks. This no longer has a dependency on Jansi, and is intended to resolve a JVM crash issue apparently caused by native lib version conflicts (#395). Please note that the newer ANSI code is less mature and thus has had less testing, particularly in interesting terminal environments such as Windows. If issues are encountered, coloured assertion output may be disabled by setting the system property `visibleassertions.ansi.enabled` to `true`.
-- Fixed NullPointerException when calling GenericContainer#isRunning on not started container (#411)
+- Worked around incompatibility between Netty's Unix socket support and OS X 10.11. Reinstated use of TCP-Unix Socket proxy when running on OS X prior to v10.12. (Fixes [\#402](https://github.com/testcontainers/testcontainers-java/issues/402))
+- Changed to use version 2.0 of the Visible Assertions library for startup pre-flight checks. This no longer has a dependency on Jansi, and is intended to resolve a JVM crash issue apparently caused by native lib version conflicts ([\#395](https://github.com/testcontainers/testcontainers-java/issues/395)). Please note that the newer ANSI code is less mature and thus has had less testing, particularly in interesting terminal environments such as Windows. If issues are encountered, coloured assertion output may be disabled by setting the system property `visibleassertions.ansi.enabled` to `true`.
+- Fixed NullPointerException when calling GenericContainer#isRunning on not started container ([\#411](https://github.com/testcontainers/testcontainers-java/issues/411))
 
 ### Changed
-- Removed Guava usage from `jdbc` module (#401)
+- Removed Guava usage from `jdbc` module ([\#401](https://github.com/testcontainers/testcontainers-java/issues/401))
 
 ## [1.4.1] - 2017-07-10
 ### Fixed
@@ -32,140 +38,140 @@ All notable changes to this project will be documented in this file.
 
 ## [1.4.0] - 2017-07-09
 ### Fixed
-- Fixed the case when disk's size is bigger than Integer's max value (#379, #380)
+- Fixed the case when disk's size is bigger than Integer's max value ([\#379](https://github.com/testcontainers/testcontainers-java/issues/379), [\#380](https://github.com/testcontainers/testcontainers-java/issues/380))
 - Fixed erroneous version reference used during CI testing of shaded dependencies
-- Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules (#382)
-- Added timeout and retries for creation of `RemoteWebDriver` (#381, #373, #257)
+- Fixed leakage of Vibur and Tomcat JDBC test dependencies in `jdbc-test` and `mysql` modules ([\#382](https://github.com/testcontainers/testcontainers-java/issues/382))
+- Added timeout and retries for creation of `RemoteWebDriver` ([\#381](https://github.com/testcontainers/testcontainers-java/issues/381), [\#373](https://github.com/testcontainers/testcontainers-java/issues/373), [\#257](https://github.com/testcontainers/testcontainers-java/issues/257))
 - Fixed various shading issues
-- Improved removal of containers/networks when using Docker Compose, eliminating irrelevant errors during cleanup (#342, #394)
+- Improved removal of containers/networks when using Docker Compose, eliminating irrelevant errors during cleanup ([\#342](https://github.com/testcontainers/testcontainers-java/issues/342), [\#394](https://github.com/testcontainers/testcontainers-java/issues/394))
 
 ### Changed
-- Added support for Docker networks (#372)
-- Added `getFirstMappedPort` method (#377)
+- Added support for Docker networks ([\#372](https://github.com/testcontainers/testcontainers-java/issues/372))
+- Added `getFirstMappedPort` method ([\#377](https://github.com/testcontainers/testcontainers-java/issues/377))
 - Extracted Oracle XE container into a separate repository ([testcontainers/testcontainers-java-module-oracle-xe](https://github.com/testcontainers/testcontainers-java-module-oracle-xe))
 - Added shading tests
-- Updated docker-java to 3.0.12 (#393)
+- Updated docker-java to 3.0.12 ([\#393](https://github.com/testcontainers/testcontainers-java/issues/393))
 
 ## [1.3.1] - 2017-06-22
 ### Fixed
-- Fixed non-POSIX fallback for file attribute reading (#371)
-- Fixed NullPointerException in AuditLogger when running using slf4j-log4j12 bridge (#375)
+- Fixed non-POSIX fallback for file attribute reading ([\#371](https://github.com/testcontainers/testcontainers-java/issues/371))
+- Fixed NullPointerException in AuditLogger when running using slf4j-log4j12 bridge ([\#375](https://github.com/testcontainers/testcontainers-java/issues/375))
 - Improved cleanup of JDBC connections during database container startup checks
 
 ### Changed
-- Extracted MariaDB into a separate repository (#337)
-- Added `TC_DAEMON` JDBC URL flag to prevent `ContainerDatabaseDriver` from shutting down containers at the time all connections are closed. (#359, #360)
-- Added pre-flight checks (can be disabled with `checks.disable` configuration property) (#363)
-- Improved startup time by adding dynamic priorities to DockerClientProviderStrategy (#362)
-- Added global configuration file `~/.testcontainers.properties` (#362)
-- Added container arguments to specify SELinux contexts for mounts (#334)
-- Removed unused Jersey dependencies (#361)
+- Extracted MariaDB into a separate repository ([\#337](https://github.com/testcontainers/testcontainers-java/issues/337))
+- Added `TC_DAEMON` JDBC URL flag to prevent `ContainerDatabaseDriver` from shutting down containers at the time all connections are closed. ([\#359](https://github.com/testcontainers/testcontainers-java/issues/359), [\#360](https://github.com/testcontainers/testcontainers-java/issues/360))
+- Added pre-flight checks (can be disabled with `checks.disable` configuration property) ([\#363](https://github.com/testcontainers/testcontainers-java/issues/363))
+- Improved startup time by adding dynamic priorities to DockerClientProviderStrategy ([\#362](https://github.com/testcontainers/testcontainers-java/issues/362))
+- Added global configuration file `~/.testcontainers.properties` ([\#362](https://github.com/testcontainers/testcontainers-java/issues/362))
+- Added container arguments to specify SELinux contexts for mounts ([\#334](https://github.com/testcontainers/testcontainers-java/issues/334))
+- Removed unused Jersey dependencies ([\#361](https://github.com/testcontainers/testcontainers-java/issues/361))
 - Removed deprecated, wrongly-generated setters from `GenericContainer` 
 
 ## [1.3.0] - 2017-06-05
 ### Fixed
-- Improved container cleanup if startup failed (#336, #335)
+- Improved container cleanup if startup failed ([\#336](https://github.com/testcontainers/testcontainers-java/issues/336), [\#335](https://github.com/testcontainers/testcontainers-java/issues/335))
 
 ### Changed
-- Upgraded docker-java library to 3.0.10 (#349)
+- Upgraded docker-java library to 3.0.10 ([\#349](https://github.com/testcontainers/testcontainers-java/issues/349))
 - Added basic audit logging of Testcontainers' actions via a specific SLF4J logger name with metadata captured via MDC. Intended for use in highly shared Docker environments.
-- Use string-based detection of Selenium container startup (#328, #351)
-- Use string-based detection of PostgreSQL container startup (#327, #317)
-- Update libraries to recent versions (#333)
-- Introduce abstraction over files and classpath resources, allowing recursive copying of directories (#313)
+- Use string-based detection of Selenium container startup ([\#328](https://github.com/testcontainers/testcontainers-java/issues/328), [\#351](https://github.com/testcontainers/testcontainers-java/issues/351))
+- Use string-based detection of PostgreSQL container startup ([\#327](https://github.com/testcontainers/testcontainers-java/issues/327), [\#317](https://github.com/testcontainers/testcontainers-java/issues/317))
+- Update libraries to recent versions ([\#333](https://github.com/testcontainers/testcontainers-java/issues/333))
+- Introduce abstraction over files and classpath resources, allowing recursive copying of directories ([\#313](https://github.com/testcontainers/testcontainers-java/issues/313))
 
 ## [1.2.1] - 2017-04-06
 ### Fixed
-- Fix bug in space detection when `alpine:3.5` image has not yet been pulled (#323, #324)
+- Fix bug in space detection when `alpine:3.5` image has not yet been pulled ([\#323](https://github.com/testcontainers/testcontainers-java/issues/323), [\#324](https://github.com/testcontainers/testcontainers-java/issues/324))
 - Minor documentation fixes
 
 ### Changed
-- Add AOP Alliance dependencies to shaded deps to reduce chance of conflicts (#315)
+- Add AOP Alliance dependencies to shaded deps to reduce chance of conflicts ([\#315](https://github.com/testcontainers/testcontainers-java/issues/315))
 
 ## [1.2.0] - 2017-03-12
 ### Fixed
-- Fix various escaping issues that may arise when paths contain spaces (#263, #279)
-- General documentation fixes/improvements (#300, #303, #304)
-- Improve reliability of `ResourceReaper` when there are a large number of containers returned by `docker ps -a` (#295)
+- Fix various escaping issues that may arise when paths contain spaces ([\#263](https://github.com/testcontainers/testcontainers-java/issues/263), [\#279](https://github.com/testcontainers/testcontainers-java/issues/279))
+- General documentation fixes/improvements ([\#300](https://github.com/testcontainers/testcontainers-java/issues/300), [\#303](https://github.com/testcontainers/testcontainers-java/issues/303), [\#304](https://github.com/testcontainers/testcontainers-java/issues/304))
+- Improve reliability of `ResourceReaper` when there are a large number of containers returned by `docker ps -a` ([\#295](https://github.com/testcontainers/testcontainers-java/issues/295))
 
 ### Changed
-- Support Docker for Windows via TCP socket connection (#291, #297, #309). _Note that Docker Compose is not yet supported under Docker for Windows (see #306)
-- Expose `docker-java`'s `CreateContainerCmd` API for low-level container tweaking (#301)
-- Shade `org.newsclub` and Guava dependencies (#299, #292)
-- Add `org.testcontainers` label to all containers created by Testcontainers (#294)
+- Support Docker for Windows via TCP socket connection ([\#291](https://github.com/testcontainers/testcontainers-java/issues/291), [\#297](https://github.com/testcontainers/testcontainers-java/issues/297), [\#309](https://github.com/testcontainers/testcontainers-java/issues/309)). _Note that Docker Compose is not yet supported under Docker for Windows (see [\#306](https://github.com/testcontainers/testcontainers-java/issues/306))
+- Expose `docker-java`'s `CreateContainerCmd` API for low-level container tweaking ([\#301](https://github.com/testcontainers/testcontainers-java/issues/301))
+- Shade `org.newsclub` and Guava dependencies ([\#299](https://github.com/testcontainers/testcontainers-java/issues/299), [\#292](https://github.com/testcontainers/testcontainers-java/issues/292))
+- Add `org.testcontainers` label to all containers created by Testcontainers ([\#294](https://github.com/testcontainers/testcontainers-java/issues/294))
 
 ## [1.1.9] - 2017-02-12
 ### Fixed
-- Fix inability to run Testcontainers on Alpine linux. Unix-socket-over-TCP is now used in linux environments where netty fails due to lack of glibc libraries (#290)
-- Fix slow feedback in the case of missing JDBC drivers by failing-fast if the required driver cannot be found (#280, #230)
+- Fix inability to run Testcontainers on Alpine linux. Unix-socket-over-TCP is now used in linux environments where netty fails due to lack of glibc libraries ([\#290](https://github.com/testcontainers/testcontainers-java/issues/290))
+- Fix slow feedback in the case of missing JDBC drivers by failing-fast if the required driver cannot be found ([\#280](https://github.com/testcontainers/testcontainers-java/issues/280), [\#230](https://github.com/testcontainers/testcontainers-java/issues/230))
 
 ### Changed
-- Add ability to change 'tiny image' used for disk space checks (#287)
-- Add ability to attach volumes to a container using 'volumes from' (#244, #289)
+- Add ability to change 'tiny image' used for disk space checks ([\#287](https://github.com/testcontainers/testcontainers-java/issues/287))
+- Add ability to attach volumes to a container using 'volumes from' ([\#244](https://github.com/testcontainers/testcontainers-java/issues/244), [\#289](https://github.com/testcontainers/testcontainers-java/issues/289))
 
 ## [1.1.8] - 2017-01-22
 ### Fixed 
-- Compatibility fixes for Docker for Mac v1.13.0 (#272)
-- Relax docker environment disk space check to accomodate unusual empty `df` output observed on Docker for Mac with OverlayFS (#273, #278)
-- Fix inadvertent private-scoping of startup checks' `StartupStatus`, which made implementation of custom startup checks impossible (#266)
-- Fix potential resource lead/deadlock when errors are encountered building images from a Dockerfile (#274)
+- Compatibility fixes for Docker for Mac v1.13.0 ([\#272](https://github.com/testcontainers/testcontainers-java/issues/272))
+- Relax docker environment disk space check to accomodate unusual empty `df` output observed on Docker for Mac with OverlayFS ([\#273](https://github.com/testcontainers/testcontainers-java/issues/273), [\#278](https://github.com/testcontainers/testcontainers-java/issues/278))
+- Fix inadvertent private-scoping of startup checks' `StartupStatus`, which made implementation of custom startup checks impossible ([\#266](https://github.com/testcontainers/testcontainers-java/issues/266))
+- Fix potential resource lead/deadlock when errors are encountered building images from a Dockerfile ([\#274](https://github.com/testcontainers/testcontainers-java/issues/274))
 
 ### Changed
-- Add support for execution within a Docker container (#267), correcting resolution of container addresses
-- Add support for version 2 of private docker registries, configured via `$HOME/.docker/config.json` (#270)
-- Use current classloader instead of system classloader for loading JDBC drivers (#261)
-- Allow hardcoded container image names for Ambassador and VNC recorder containers to be changed via a configuration file (#277, #259)
-- Allow Selenium Webdriver container image name to be specified as a constructor parameter (#249, #171)
+- Add support for execution within a Docker container ([\#267](https://github.com/testcontainers/testcontainers-java/issues/267)), correcting resolution of container addresses
+- Add support for version 2 of private docker registries, configured via `$HOME/.docker/config.json` ([\#270](https://github.com/testcontainers/testcontainers-java/issues/270))
+- Use current classloader instead of system classloader for loading JDBC drivers ([\#261](https://github.com/testcontainers/testcontainers-java/issues/261))
+- Allow hardcoded container image names for Ambassador and VNC recorder containers to be changed via a configuration file ([\#277](https://github.com/testcontainers/testcontainers-java/issues/277), [\#259](https://github.com/testcontainers/testcontainers-java/issues/259))
+- Allow Selenium Webdriver container image name to be specified as a constructor parameter ([\#249](https://github.com/testcontainers/testcontainers-java/issues/249), [\#171](https://github.com/testcontainers/testcontainers-java/issues/171))
 
 
 ## [1.1.7] - 2016-11-19
 ### Fixed
-- Compensate for premature TCP socket opening in Docker for Mac (#160, #236)
-- (Internal) Stabilise various parts of Testcontainers' self test suite (#241)
-- Fix mounting of classpath resources when those resources are in a JAR file (#213)
-- Reduce misleading error messages caused mainly by trying to perform operations on stopped containers (#243) 
+- Compensate for premature TCP socket opening in Docker for Mac ([\#160](https://github.com/testcontainers/testcontainers-java/issues/160), [\#236](https://github.com/testcontainers/testcontainers-java/issues/236))
+- (Internal) Stabilise various parts of Testcontainers' self test suite ([\#241](https://github.com/testcontainers/testcontainers-java/issues/241))
+- Fix mounting of classpath resources when those resources are in a JAR file ([\#213](https://github.com/testcontainers/testcontainers-java/issues/213))
+- Reduce misleading error messages caused mainly by trying to perform operations on stopped containers ([\#243](https://github.com/testcontainers/testcontainers-java/issues/243)) 
 
 ### Changed
-- Uses a default MySQL and MariaDB configuration to reduce memory footprint (#209, #243)
-- Docker Compose can optionally now use a local `docker-compose` executable rather than running inside a container (#200)
-- Add support for privileged mode containers (#234, #235)
-- Allow container/network cleanup (ResourceReaper) to be triggered programmatically (#231)
-- Add optional tailing of logs for containers spawned by Docker Compose (#233) 
+- Uses a default MySQL and MariaDB configuration to reduce memory footprint ([\#209](https://github.com/testcontainers/testcontainers-java/issues/209), [\#243](https://github.com/testcontainers/testcontainers-java/issues/243))
+- Docker Compose can optionally now use a local `docker-compose` executable rather than running inside a container ([\#200](https://github.com/testcontainers/testcontainers-java/issues/200))
+- Add support for privileged mode containers ([\#234](https://github.com/testcontainers/testcontainers-java/issues/234), [\#235](https://github.com/testcontainers/testcontainers-java/issues/235))
+- Allow container/network cleanup (ResourceReaper) to be triggered programmatically ([\#231](https://github.com/testcontainers/testcontainers-java/issues/231))
+- Add optional tailing of logs for containers spawned by Docker Compose ([\#233](https://github.com/testcontainers/testcontainers-java/issues/233)) 
 - (Internal) Relocate non-proprietary database container tests to a single module
 
 ## [1.1.6] - 2016-09-22
 ### Fixed
-- Fix logging of discovered Docker environment variables (#218)
-- Adopt longer timeout periods for testing docker client configurations, and allow these to be further customised through system properties (#217, see *ClientProviderStrategy classes)
-- Fix docker compose directory mounting on windows (#224)
-- Handle and ignore further categories of failure in retrieval of docker environment disk space (#225)
+- Fix logging of discovered Docker environment variables ([\#218](https://github.com/testcontainers/testcontainers-java/issues/218))
+- Adopt longer timeout periods for testing docker client configurations, and allow these to be further customised through system properties ([\#217](https://github.com/testcontainers/testcontainers-java/issues/217), see *ClientProviderStrategy classes)
+- Fix docker compose directory mounting on windows ([\#224](https://github.com/testcontainers/testcontainers-java/issues/224))
+- Handle and ignore further categories of failure in retrieval of docker environment disk space ([\#225](https://github.com/testcontainers/testcontainers-java/issues/225))
 
 ### Changed
-- Add extra configurability options (database name, username, password) for PostgreSQL DB containers (#220)
-- Add MariaDB container type (#215)
+- Add extra configurability options (database name, username, password) for PostgreSQL DB containers ([\#220](https://github.com/testcontainers/testcontainers-java/issues/220))
+- Add MariaDB container type ([\#215](https://github.com/testcontainers/testcontainers-java/issues/215))
 - Use Docker Compose `down` action for more robust teardown of compose environments
-- Ensure that Docker Compose operations run sequentially rather than concurrently if JUnit tests are parallelized (#226)
-- Allow multiple Docker Compose files to be specified, to allow for extension/composition of services (#227)
+- Ensure that Docker Compose operations run sequentially rather than concurrently if JUnit tests are parallelized ([\#226](https://github.com/testcontainers/testcontainers-java/issues/226))
+- Allow multiple Docker Compose files to be specified, to allow for extension/composition of services ([\#227](https://github.com/testcontainers/testcontainers-java/issues/227))
 
 ## [1.1.5] - 2016-08-22
 ### Fixed
-- Fix Docker Compose environment variable passthrough (#208)
+- Fix Docker Compose environment variable passthrough ([\#208](https://github.com/testcontainers/testcontainers-java/issues/208))
 
 ### Changed
-- Remove Docker Compose networks when containers are shut down (#211) as well as at JVM shutdown
+- Remove Docker Compose networks when containers are shut down ([\#211](https://github.com/testcontainers/testcontainers-java/issues/211)) as well as at JVM shutdown
 
 ## [1.1.4] - 2016-08-16
 ### Fixed
-- Fix JDBC proxy driver behaviour when used with Tomcat connection pool to avoid spawning excessive numbers of containers (#195)
-- Shade Jersey dependencies in JDBC module to avoid classpath conflicts (#202)
-- Fix NullPointerException when docker host has untagged images (#201)
-- Fix relative paths for volumes mounted in docker-compose containers (#189)
+- Fix JDBC proxy driver behaviour when used with Tomcat connection pool to avoid spawning excessive numbers of containers ([\#195](https://github.com/testcontainers/testcontainers-java/issues/195))
+- Shade Jersey dependencies in JDBC module to avoid classpath conflicts ([\#202](https://github.com/testcontainers/testcontainers-java/issues/202))
+- Fix NullPointerException when docker host has untagged images ([\#201](https://github.com/testcontainers/testcontainers-java/issues/201))
+- Fix relative paths for volumes mounted in docker-compose containers ([\#189](https://github.com/testcontainers/testcontainers-java/issues/189))
 
 ### Changed
 - Update to v3.0.2 of docker-java library
-- Switch to a shared, single instance docker client rather than a separate client instance per container rule (#193)
-- Ensure that docker-compose pulls images (with no timeout), prior to trying to start (#188)
-- Use official `docker/compose` image for running docker-compose (#190)
+- Switch to a shared, single instance docker client rather than a separate client instance per container rule ([\#193](https://github.com/testcontainers/testcontainers-java/issues/193))
+- Ensure that docker-compose pulls images (with no timeout), prior to trying to start ([\#188](https://github.com/testcontainers/testcontainers-java/issues/188))
+- Use official `docker/compose` image for running docker-compose ([\#190](https://github.com/testcontainers/testcontainers-java/issues/190))
 
 ## [1.1.3] - 2016-07-27
 ### Fixed
@@ -186,8 +192,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.1.1] - 2016-07-17
 ### Fixed
-- Improve shutdown of unnecessary docker clients (#170)
-- Shade `io.netty` dependencies into the testcontainers core JAR to reduce conflicts (#170 and #157)
+- Improve shutdown of unnecessary docker clients ([\#170](https://github.com/testcontainers/testcontainers-java/issues/170))
+- Shade `io.netty` dependencies into the testcontainers core JAR to reduce conflicts ([\#170](https://github.com/testcontainers/testcontainers-java/issues/170) and [\#157](https://github.com/testcontainers/testcontainers-java/issues/157))
 - Remove timeouts for docker compose execution, particularly useful when image pulls are involved
 - Improve output logging from docker-compose, pausing to log output in case of failure rather than letting logs intermingle.
 

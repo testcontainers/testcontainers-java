@@ -9,19 +9,14 @@ import org.junit.rules.TestRule;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
 
     String getId();
-
-    @Override
-    default void close() {
-        ResourceReaper.instance().removeNetworkById(getId());
-    }
 
     static Network newNetwork() {
         return builder().build();
@@ -42,10 +37,20 @@ public interface Network extends AutoCloseable, TestRule {
         private String driver;
 
         @Singular
-        private Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers = new LinkedHashSet<>();
+        private Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers;
 
-        @Getter(lazy = true)
-        private final String id = create();
+        private String id;
+
+        private final AtomicBoolean initialized = new AtomicBoolean();
+
+        @Override
+        public String getId() {
+            if (initialized.compareAndSet(false, true)) {
+                id = create();
+            }
+
+            return id;
+        }
 
         private String create() {
             CreateNetworkCmd createNetworkCmd = DockerClientFactory.instance().client().createNetworkCmd();
@@ -73,6 +78,13 @@ public interface Network extends AutoCloseable, TestRule {
         @Override
         protected void after() {
             close();
+        }
+
+        @Override
+        public void close() {
+            if (initialized.getAndSet(false)) {
+                ResourceReaper.instance().removeNetworkById(id);
+            }
         }
     }
 }
