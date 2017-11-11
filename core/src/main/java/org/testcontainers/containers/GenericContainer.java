@@ -99,7 +99,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private List<VolumesFrom> volumesFroms = new ArrayList<>();
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
     @NonNull
+    @Deprecated
     private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
@@ -522,6 +526,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         volumesFroms.add(new VolumesFrom(container.getContainerName(), mode.accessMode));
     }
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
     @Override
     public void addLink(LinkableContainer otherContainer, String alias) {
         this.linkedContainers.put(alias, otherContainer);
