@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))
 - Added support for explicitly setting file mode when copying file into container ([\#446](https://github.com/testcontainers/testcontainers-java/issues/446), [\#467](https://github.com/testcontainers/testcontainers-java/issues/467)) 
+- Mark all links functionality as deprecated. This is pending removal in a later release. Please see [\#465](https://github.com/testcontainers/testcontainers-java/issues/465). {@link Network} features should be used instead.
 
 ## [1.4.3] - 2017-10-14
 ### Fixed
