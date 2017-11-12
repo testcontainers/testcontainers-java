@@ -4,7 +4,10 @@ You can override some default properties if your environment requires that.
 
 ## Configuration file location
 The configuration will be loaded from multiple locations. Properties are considered in the following order:
-1. `.testcontainers.properties` in user's home folder (i.e. `/home/myuser/.testcontainers.properties` on Linux or `C:/Users/myuser/.testcontainers.properties` on Windows)
+1. `.testcontainers.properties` in user's home folder. Example locations:  
+        **Linux:** `/home/myuser/.testcontainers.properties`  
+        **Windows:** `C:/Users/myuser/.testcontainers.properties`  
+        **macOS:** `/Users/myuser/.testcontainers.properties`
 2. `testcontainers.properties` on classpath
 
 ## Disabling the startup checks
