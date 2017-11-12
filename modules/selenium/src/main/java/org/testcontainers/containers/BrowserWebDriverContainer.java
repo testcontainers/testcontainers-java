@@ -229,7 +229,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * @param otherContainer the container rule to link to
      * @param alias          the alias (hostname) that this other container should be referred to by
      * @return this
+     *
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
      */
+    @Deprecated
     public SELF withLinkToContainer(LinkableContainer otherContainer, String alias) {
         addLink(otherContainer, alias);
         return self();

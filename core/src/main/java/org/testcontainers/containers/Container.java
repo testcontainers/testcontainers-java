@@ -104,7 +104,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param otherContainer the other container object to link to
      * @param alias the alias (for the other container) that this container should be able to use
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
      */
+    @Deprecated
     void addLink(LinkableContainer otherContainer, String alias);
 
     /**
@@ -420,6 +422,10 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     List<Bind> getBinds();
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
     Map<String, LinkableContainer> getLinkedContainers();
 
     DockerClient getDockerClient();
@@ -446,6 +452,10 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setBinds(List<Bind> binds);
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setWaitStrategy(WaitStrategy waitStrategy);
