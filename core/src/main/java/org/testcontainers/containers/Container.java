@@ -395,10 +395,10 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      *
-     * Method allow to copy file which is inside classpath to docker container
+     * Copies a file which resides inside the classpath to the container.
      *
-     * @param mountableLocalFile path to file which we would like to place in container
-     * @param containerPath path where we want to copy file
+     * @param mountableLocalFile file which is copied into the container
+     * @param containerPath destination path inside the container
      * @throws IOException if there's an issue communicating with Docker
      * @throws InterruptedException if the thread waiting for the response is interrupted
      */
