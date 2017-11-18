@@ -404,6 +404,16 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException;
 
+    /**
+     * Copies a file which resides inside the container to user defined directory
+     *
+     * @param containerPath path to file which is copied from container
+     * @param destinationPath destination path to which file is copied with file name
+     * @throws IOException if there's an issue communicating with Docker or receiving entry from TarArchiveInputStream
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
+
     List<Integer> getExposedPorts();
 
     List<String> getPortBindings();

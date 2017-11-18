@@ -7,6 +7,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
@@ -324,44 +325,65 @@ public class GenericContainerRuleTest {
 
     @Test
     public void copyToContainerTest() throws Exception {
+        //compare purpose
+        File outputFile = new File("src/test/resources/copy-from/test_copy_to_container.txt");
+        File currentFile = new File("src/test/resources/test_copy_to_container.txt");
+        if(outputFile.exists()){
+            outputFile.delete();
+        }
 
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
-                    .withCommand("sleep 9999")
-        ){
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                    .withCommand("top")){
             alpineCopyToContainer.start();
 
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", "src/test/resources/copy-from/test_copy_to_container.txt");
 
-            try (final InputStream response = alpineCopyToContainer
-                    .getDockerClient()
-                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/home/test_copy_to_container.txt")
-                    .exec()) {
-                boolean bytesAvailable = response.available() > 0;
-                assertTrue("The file wasn't copied to the container.", bytesAvailable);
+            assertTrue("Files aren't same ", FileUtils.contentEquals(currentFile, outputFile));
+
+            //clean up
+            if(outputFile.exists()){
+                outputFile.delete();
             }
         }
     }
 
     @Test(expected = NotFoundException.class)
-    public void copyToContainerShouldFailBecauseNoFileTest() throws NotFoundException, IOException {
+    public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException, IOException, InterruptedException {
 
-        try (
-                final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
-                        .withCommand("sleep 9999")
-        ) {
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                        .withCommand("top")) {
             alpineCopyToContainer.start();
+            alpineCopyToContainer.copyFileFromContainer("/home/test.txt", "src/test/resources/copy-from/test.txt");
+        }
+    }
 
-            try (final InputStream response = alpineCopyToContainer
-                    .getDockerClient()
-                    .copyArchiveFromContainerCmd(alpineCopyToContainer.getContainerId(), "/tmp/test.txt")
-                    .exec()) {
-                boolean bytesAvailable = response.available() > 0;
-                assertTrue("The file wasn't copied to the container.", bytesAvailable);
+    @Test
+    public void shouldCopyFileFromContainerTest() throws IOException, InterruptedException {
+
+        File outputFile = new File("src/test/resources/copy-from/test_copy_to_container.txt");
+        File currentFile = new File("src/test/resources/test_copy_to_container.txt");
+        if(outputFile.exists()){
+            outputFile.delete();
+        }
+
+        try (GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                .withCommand("top")) {
+            alpineCopyToContainer.start();
+            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", "src/test/resources/copy-from/test_copy_to_container.txt");
+
+            assertTrue("Files aren't same ", FileUtils.contentEquals(currentFile, outputFile));
+
+            //clean up
+            if(outputFile.exists()){
+                outputFile.delete();
             }
         }
     }
+
 
     private BufferedReader getReaderForContainerPort80(GenericContainer container) {
 
