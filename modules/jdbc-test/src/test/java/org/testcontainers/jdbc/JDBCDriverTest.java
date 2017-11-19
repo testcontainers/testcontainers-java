@@ -30,6 +30,7 @@ public class JDBCDriverTest {
         CharacterSet,
         CustomIniFile,
         JDBCParams,
+        PmdKnownBroken
     }
 
     @Parameter
@@ -56,7 +57,9 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema)},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)}});
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
+                {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
+            });
     }
 
     public static void sampleInitFunction(Connection connection) throws SQLException {
@@ -76,7 +79,7 @@ public class JDBCDriverTest {
 
     @Test
     public void test() throws SQLException {
-        performSimpleTest(jdbcUrl);
+        performSimpleTest(jdbcUrl, options.contains(Options.PmdKnownBroken));
 
         if (options.contains(Options.ScriptedSchema)) {
             performTestForScriptedSchema(jdbcUrl);
@@ -100,9 +103,9 @@ public class JDBCDriverTest {
         }
     }
 
-    private void performSimpleTest(String jdbcUrl) throws SQLException {
+    private void performSimpleTest(String jdbcUrl, boolean pmdKnownBroken) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("SELECT 1", rs -> {
+            boolean result = new QueryRunner(dataSource, pmdKnownBroken).query("SELECT 1", rs -> {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
                 assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
