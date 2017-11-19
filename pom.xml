@@ -163,6 +163,7 @@
         <module>modules/jdbc</module>
         <module>modules/mysql</module>
         <module>modules/postgresql</module>
+        <module>modules/cockroach</module>
         <module>modules/selenium</module>
         <module>modules/nginx</module>
         <module>modules/jdbc-test</module>
