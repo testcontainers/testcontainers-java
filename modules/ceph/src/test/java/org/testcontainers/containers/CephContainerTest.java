@@ -28,8 +28,7 @@ public class CephContainerTest {
     public CephContainer cephContainer = new CephContainer()
             .withAwsAccessKey("test")
             .withAwsSecretKey("test")
-            .withBucketName("test")
-            .withStartupTimeout(Duration.ofMinutes(5));
+            .withBucketName("test");
 
     private AmazonS3 amazonS3;
 

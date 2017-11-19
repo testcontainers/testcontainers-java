@@ -4,13 +4,18 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.time.Duration;
 
+@Getter
 public class CephContainer<SELF extends CephContainer<SELF>> extends GenericContainer<SELF> {
 
-    private static final String IMAGE = "ceph/demo";
+    public static final String IMAGE = "ceph/demo";
+    public static final int S3_PORT = 80;
+    public static final int REST_API_PORT = 5000;
 
     private String awsAccessKey = "ceph";
 
@@ -24,10 +29,8 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
 
     private NetworkAutoDetectMode networkAutoDetectMode = NetworkAutoDetectMode.IPV4_ONLY;
 
-    private Duration startupTimeout = Duration.ofSeconds(20);
-
     public CephContainer() {
-        super(IMAGE + ":latest");
+        super(IMAGE + ":tag-stable-3.0-jewel-ubuntu-16.04");
     }
 
     public CephContainer(String dockerImageName) {
@@ -42,12 +45,18 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
         withEnv("CEPH_DEMO_ACCESS_KEY", awsAccessKey);
         withEnv("CEPH_DEMO_SECRET_KEY", awsSecretKey);
         withEnv("CEPH_DEMO_BUCKET", bucketName);
-        withExposedPorts(6789, 6800, 6801, 6802, 6803, 6804, 6805, 80, 5000);
+        withExposedPorts(REST_API_PORT, S3_PORT);
         waitingFor(
-                new LogMessageWaitStrategy()
-                        .withRegEx(".*\\/entrypoint.sh: SUCCESS\n")
-                        .withStartupTimeout(startupTimeout)
+                new HttpWaitStrategy()
+                        .forPath("/api/v0.1/health")
+                        .forStatusCode(200)
+                        .withStartupTimeout(Duration.ofMinutes(5))
         );
+    }
+
+    @Override
+    protected Integer getLivenessCheckPort() {
+        return getMappedPort(REST_API_PORT);
     }
 
     public AWSCredentialsProvider getAWSCredentialsProvider() {
@@ -58,7 +67,7 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
 
     public AwsClientBuilder.EndpointConfiguration getAWSEndpointConfiguration() {
         return new AwsClientBuilder.EndpointConfiguration(
-                getContainerIpAddress() + ":" + getMappedPort(80),
+                getContainerIpAddress() + ":" + getMappedPort(S3_PORT),
                 "us-east-1"
         );
     }
@@ -73,18 +82,10 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
         return self();
     }
 
-    public String getBucketName() {
-        return bucketName;
-    }
-
     public SELF withBucketName(String bucketName) {
         //because s3cmd transforming bucket name to uppercase
         this.bucketName = bucketName.toUpperCase();
         return self();
-    }
-
-    public String getRgwName() {
-        return rgwName;
     }
 
     public SELF withRgwName(String rgwName) {
@@ -92,17 +93,9 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
         return self();
     }
 
-    public String getDemoUid() {
-        return demoUid;
-    }
-
     public SELF withDemoUid(String demoUid) {
         this.demoUid = demoUid;
         return self();
-    }
-
-    public NetworkAutoDetectMode getNetworkAutoDetectMode() {
-        return networkAutoDetectMode;
     }
 
     public SELF withNetworkAutoDetectMode(NetworkAutoDetectMode networkAutoDetectMode) {
@@ -110,24 +103,13 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
         return self();
     }
 
-    public Duration getStartupTimeout() {
-        return startupTimeout;
-    }
-
-    public SELF withStartupTimeout(Duration startupTimeout) {
-        this.startupTimeout = startupTimeout;
-        return self();
-    }
-
+    @AllArgsConstructor
     public enum NetworkAutoDetectMode {
         IPV6_OR_IPV4("1"),
         IPV4_ONLY("4"),
         IPV6_ONLY("6");
 
-        private String value;
+        private final String value;
 
-        NetworkAutoDetectMode(String value) {
-            this.value = value;
-        }
     }
 }
