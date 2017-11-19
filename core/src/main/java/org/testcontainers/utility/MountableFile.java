@@ -1,15 +1,9 @@
 package org.testcontainers.utility;
 
-import com.google.common.base.Charsets;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.NotNull;
-import org.testcontainers.images.builder.Transferable;
+import static lombok.AccessLevel.PACKAGE;
+import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 
+import com.google.common.base.Charsets;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,9 +19,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import static lombok.AccessLevel.PACKAGE;
-import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.lang.SystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.testcontainers.images.builder.Transferable;
 
 /**
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
@@ -37,6 +36,8 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 @Slf4j
 public class MountableFile implements Transferable {
 
+    private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
+    private static final String OS_MAC_TMP_DIR = "/tmp";
     private static final int BASE_FILE_MODE = 0100000;
     private static final int BASE_DIR_MODE = 0040000;
 
@@ -205,7 +206,7 @@ public class MountableFile implements Transferable {
      * @return the path of the temporary file/directory
      */
     private String extractClassPathResourceToTempLocation(final String hostPath) {
-        File tmpLocation = new File(".testcontainers-tmp-" + Base58.randomString(5));
+        File tmpLocation = createTempDirectory();
         //noinspection ResultOfMethodCallIgnored
         tmpLocation.delete();
 
@@ -234,6 +235,17 @@ public class MountableFile implements Transferable {
         deleteOnExit(tmpLocation.toPath());
 
         return tmpLocation.getAbsolutePath();
+    }
+
+    private File createTempDirectory() {
+        try {
+            if (SystemUtils.IS_OS_MAC) {
+                return Files.createTempDirectory(Paths.get(OS_MAC_TMP_DIR), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+            }
+            return Files.createTempDirectory(TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+        } catch  (IOException e) {
+            return new File(TESTCONTAINERS_TMP_DIR_PREFIX + Base58.randomString(5));
+        }
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

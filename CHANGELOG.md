@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 ### Fixed
 - Fixed regression in 1.4.3 when using Docker Compose on Windows ([\#439](https://github.com/testcontainers/testcontainers-java/issues/439))
+- Fixed local Docker Compose executable name resolution on Windows (#416)
+- Fixed TAR composition on Windows (#444)
+- Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
+- Stopping creation of temporary directory prior to creating temporary file (#443)
+- Ensure that temp files are created in a temp directory (#423)
 
 ### Changed
 - Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))
