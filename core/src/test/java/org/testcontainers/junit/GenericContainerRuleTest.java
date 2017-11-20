@@ -2,6 +2,7 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -42,14 +43,15 @@ public class GenericContainerRuleTest {
     private static final String RABBITMQ_TEST_MESSAGE = "Hello world";
     private static final int RABBITMQ_PORT = 5672;
     private static final int MONGO_PORT = 27017;
-    private static final File CONTENT_FOLDER = new File(System.getProperty("user.home") + "/.tmp-test-container");
+
     /*
      * Test data setup
      */
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
-        CONTENT_FOLDER.mkdir();
-        writeStringToFile(CONTENT_FOLDER, "file", "Hello world!");
+        File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
+        contentFolder.mkdir();
+        writeStringToFile(contentFolder, "file", "Hello world!");
     }
 
     /**
@@ -324,18 +326,19 @@ public class GenericContainerRuleTest {
 
     @Test
     public void copyToContainerTest() throws Exception {
+        final File tempResultFolder = Files.createTempDir();
 
         try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
                     .withCommand("top")){
+            
             alpineCopyToContainer.start();
-
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
             alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
-                    CONTENT_FOLDER.getAbsolutePath() + "/test_copy_to_container.txt");
+                    tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
 
             File expectedFile = new File(mountableFile.getResolvedPath());
-            File actualFile = new File(CONTENT_FOLDER.getAbsolutePath() + "/test_copy_to_container.txt");
+            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
             assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
         }
     }
@@ -352,6 +355,8 @@ public class GenericContainerRuleTest {
 
     @Test
     public void shouldCopyFileFromContainerTest() throws IOException, InterruptedException {
+        final File tempResultFolder = Files.createTempDir();
+
         try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
                 .withCommand("top")) {
 
@@ -359,14 +364,14 @@ public class GenericContainerRuleTest {
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
             alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
-                    CONTENT_FOLDER.getAbsolutePath() + "/test_copy_from_container.txt");
+                    tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
 
             File expectedFile = new File(mountableFile.getResolvedPath());
-            File actualFile = new File(CONTENT_FOLDER.getAbsolutePath() + "/test_copy_from_container.txt");
+            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
             assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
         }
     }
-    
+
     private BufferedReader getReaderForContainerPort80(GenericContainer container) {
 
         return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
