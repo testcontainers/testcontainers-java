@@ -9,7 +9,7 @@ import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.*;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -32,7 +32,9 @@ import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -869,39 +871,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException {
-        try (final InputStream response = this.dockerClient
+        try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(this.dockerClient
                 .copyArchiveFromContainerCmd(this.containerId, containerPath)
-                .exec()) {
-            try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(response)) {
-                createFileFromTarArchiveInputStream(destinationPath, tarInputStream);
-            }
-        }
-    }
-
-    /**
-     * Create file from archive stream
-     *
-     * @param destinationPath path with file name where file will be saved
-     * @param tarArchiveInputStream archive stream from container
-     * @throws IOException if there will be error during getNextTarEntry
-     */
-    private void createFileFromTarArchiveInputStream(final String destinationPath, final TarArchiveInputStream tarArchiveInputStream) throws IOException {
-        try (final FileOutputStream out = new FileOutputStream(destinationPath)) {
-            final TarArchiveEntry entry = tarArchiveInputStream.getNextTarEntry();
-            long size = entry.getSize();
-            byte[] buf = new byte[1024 * 16];
-            int read;
-            int left = buf.length;
-            if (left > size)
-                left = (int) size;
-            while ((read = tarArchiveInputStream.read(buf, 0, left)) != -1) {
-
-                out.write(buf, 0, read);
-
-                size = size - read;
-                if (left > size)
-                    left = (int) size;
-            }
+                .exec())) {
+            tarInputStream.getNextTarEntry();
+            IOUtils.copy(tarInputStream, new FileOutputStream(destinationPath));
         }
     }
 
