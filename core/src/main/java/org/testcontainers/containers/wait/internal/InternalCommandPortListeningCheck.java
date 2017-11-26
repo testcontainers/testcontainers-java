@@ -3,7 +3,7 @@ package org.testcontainers.containers.wait.internal;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.Container;
 
-import java.util.List;
+import java.util.Set;
 
 import static java.lang.String.format;
 
@@ -16,7 +16,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
     private static final String SUCCESS_MARKER = "TESTCONTAINERS_SUCCESS";
 
     private final Container<?> container;
-    private final List<Integer> internalPorts;
+    private final Set<Integer> internalPorts;
 
     @Override
     public Boolean call() {

@@ -1,12 +1,12 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-
-import static java.util.Collections.singletonList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author richardnorth
@@ -19,9 +19,10 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
         super("nginx:1.9.4");
     }
 
+    @NotNull
     @Override
-    protected List<Integer> getLivenessCheckPorts() {
-        return singletonList(getMappedPort(80));
+    protected Set<Integer> getLivenessCheckPorts() {
+        return new HashSet<>(getMappedPort(80));
     }
 
     @Override

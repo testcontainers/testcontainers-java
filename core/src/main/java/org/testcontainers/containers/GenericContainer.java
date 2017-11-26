@@ -11,6 +11,7 @@ import com.google.common.base.Strings;
 import lombok.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -97,7 +98,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private List<Bind> binds = new ArrayList<>();
 
-    @NonNull
     private boolean privilegedMode;
 
     @NonNull
@@ -343,9 +343,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * @return the port on which to check if the container is ready
+     * @return the ports on which to check if the container is ready
      */
-    protected List<Integer> getLivenessCheckPorts() {
+    @NotNull @NonNull
+    protected Set<Integer> getLivenessCheckPorts() {
         final Set<Integer> result = new HashSet<>();
         if (exposedPorts.size() > 0) {
             result.addAll(exposedPorts.stream()
@@ -365,7 +366,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             result.add(this.getLivenessCheckPort());
         }
 
-        return new ArrayList<>(result);
+        return result;
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
@@ -1054,7 +1055,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         /**
          * @return the ports on which to check if the container is ready
          */
-        protected List<Integer> getLivenessCheckPorts() {
+        protected Set<Integer> getLivenessCheckPorts() {
             return container.getLivenessCheckPorts();
         }
 

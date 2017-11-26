@@ -1,8 +1,9 @@
 package org.testcontainers.containers;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
-import static java.util.Collections.singletonList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author richardnorth
@@ -25,9 +26,10 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         super(dockerImageName);
     }
 
+    @NotNull
     @Override
-    protected List<Integer> getLivenessCheckPorts() {
-        return singletonList(getMappedPort(MYSQL_PORT));
+    protected Set<Integer> getLivenessCheckPorts() {
+        return new HashSet<>(getMappedPort(MYSQL_PORT));
     }
 
     @Override
