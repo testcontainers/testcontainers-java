@@ -42,7 +42,7 @@ public class MountableFile implements Transferable {
     private static final int BASE_DIR_MODE = 0040000;
 
     private final String path;
-    private final int forcedFileMode;
+    private final Integer forcedFileMode;
 
     @Getter(lazy = true)
     private final String resolvedPath = resolvePath();
@@ -59,7 +59,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forClasspathResource(@NotNull final String resourceName) {
-        return forClasspathResource(resourceName, -1);
+        return forClasspathResource(resourceName, null);
     }
 
     /**
@@ -69,7 +69,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path) {
-        return forHostPath(path, -1);
+        return forHostPath(path, null);
     }
 
     /**
@@ -79,7 +79,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(final Path path) {
-        return forHostPath(path, -1);
+        return forHostPath(path, null);
     }
 
     /**
@@ -89,7 +89,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forClasspathResource(@NotNull final String resourceName, int mode) {
+    public static MountableFile forClasspathResource(@NotNull final String resourceName, Integer mode) {
         return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString(), mode);
     }
 
@@ -100,7 +100,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forHostPath(@NotNull final String path, int mode) {
+    public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
         return new MountableFile(new File(path).toURI().toString(), mode);
     }
 
@@ -111,7 +111,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forHostPath(final Path path, int mode) {
+    public static MountableFile forHostPath(final Path path, Integer mode) {
         return new MountableFile(path.toAbsolutePath().toString(), mode);
     }
 
@@ -345,7 +345,7 @@ public class MountableFile implements Transferable {
 
     private int getUnixFileMode(final String pathAsString) {
         final Path path = Paths.get(pathAsString);
-        if (this.forcedFileMode > -1) {
+        if (this.forcedFileMode != null) {
             return this.getModeValue(path);
         }
 
