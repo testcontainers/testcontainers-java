@@ -40,7 +40,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
                     return;
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
 

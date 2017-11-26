@@ -14,12 +14,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.inOrder;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
-/**
- * TODO: Javadocs
- */
 public class WaitAllStrategyTest {
 
     @Mock
