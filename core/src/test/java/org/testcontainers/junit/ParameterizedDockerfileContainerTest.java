@@ -16,16 +16,10 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @RunWith(Parameterized.class)
 public class ParameterizedDockerfileContainerTest {
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Object[][] data() {
-        return new Object[][] {
-                { "alpine:3.2", "3.2"},
-                { "alpine:3.3", "3.3"},
-                { "alpine:3.4", "3.4"},
-                { "alpine:3.5", "3.5"},
-                { "alpine:3.6", "3.6"}
-        };
-    }
+    private final String expectedVersion;
+
+    @Rule
+    public GenericContainer container;
 
     public ParameterizedDockerfileContainerTest(String baseImage, String expectedVersion) {
         container = new GenericContainer(new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
@@ -38,10 +32,16 @@ public class ParameterizedDockerfileContainerTest {
         this.expectedVersion = expectedVersion;
     }
 
-    @Rule
-    public GenericContainer container;
-
-    private final String expectedVersion;
+    @Parameterized.Parameters(name = "{0}")
+    public static Object[][] data() {
+        return new Object[][] {
+                { "alpine:3.2", "3.2"},
+                { "alpine:3.3", "3.3"},
+                { "alpine:3.4", "3.4"},
+                { "alpine:3.5", "3.5"},
+                { "alpine:3.6", "3.6"}
+        };
+    }
 
     @Test
     public void simpleTest() throws Exception {
