@@ -360,7 +360,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         // for backwards compatibility
-        result.add(this.getLivenessCheckPort());
+        if (this.getLivenessCheckPort() != null) {
+            result.add(this.getLivenessCheckPort());
+        }
 
         return new ArrayList<>(result);
     }
