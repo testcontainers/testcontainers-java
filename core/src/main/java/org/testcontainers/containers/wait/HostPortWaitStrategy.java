@@ -7,8 +7,8 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.internal.TestPortListeningByInternalCommand;
-import org.testcontainers.containers.wait.internal.TestPortListeningFromHost;
+import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
+import org.testcontainers.containers.wait.internal.InternalCommandPortListeningCheck;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.WindowsClientProviderStrategy;
 
@@ -33,7 +33,7 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
             return;
         }
 
-        Callable<Boolean> checkStrategy;
+        Callable<Boolean> check;
 
         if (shouldCheckWithCommand()) {
             List<Integer> exposedPorts = container.getExposedPorts();
@@ -42,14 +42,14 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
                     .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
                     .collect(Collectors.toList());
 
-            checkStrategy = new TestPortListeningByInternalCommand(container, internalPorts);
+            check = new InternalCommandPortListeningCheck(container, internalPorts);
         } else {
-            checkStrategy = new TestPortListeningFromHost(container, externalLivenessCheckPorts);
+            check = new ExternalPortListeningCheck(container.getContainerIpAddress(), externalLivenessCheckPorts);
         }
 
         try {
             Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                return getRateLimiter().getWhenReady(checkStrategy);
+                return getRateLimiter().getWhenReady(check);
             });
 
         } catch (TimeoutException e) {
