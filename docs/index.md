@@ -23,7 +23,7 @@ TestContainers makes it easy to launch useful Docker containers for the duration
  * [Apache Gora](https://gora.apache.org) - CouchDB testing
  * [Apache James](https://james.apache.org) - LDAP and Cassandra integration testing
  * [StreamSets](https://github.com/streamsets/datacollector) - LDAP, MySQL Vault, MongoDB, Redis integration testing
- * [Playtika](http://www.playtika.com) - Kafka, Couchbase, MariaDB, Redis, Neo4j, Aerospike, MemSQL
+ * [Playtika](https://github.com/Playtika/testcontainers-spring-boot) - Kafka, Couchbase, MariaDB, Redis, Neo4j, Aerospike, MemSQL
  * [JetBrains](https://www.jetbrains.com/) - Testing of the TeamCity plugin for HashiCorp Vault
 
 ## License
