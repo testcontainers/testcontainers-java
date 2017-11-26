@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.google.common.util.concurrent.Uninterruptibles;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.BrowserType;
@@ -164,11 +163,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         if (recordingMode != VncRecordingMode.SKIP) {
             LOGGER.debug("Starting VNC recording");
 
-            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-
-            // Use multiple startup attempts due to race condition between Selenium being available and VNC being available
-            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this)
-                    .withStartupAttempts(3);
+            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this);
 
             recordingSidekickContainer.start();
             currentVncRecordings.add(recordingSidekickContainer);

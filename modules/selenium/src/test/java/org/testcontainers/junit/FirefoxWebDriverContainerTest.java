@@ -5,8 +5,6 @@ import org.junit.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
-import java.io.IOException;
-
 /**
  *
  */
@@ -17,12 +15,12 @@ public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
             .withDesiredCapabilities(DesiredCapabilities.firefox());
 
     @Test
-    public void simpleTest() throws IOException {
+    public void simpleTest() {
         doSimpleWebdriverTest(firefox);
     }
 
     @Test
-    public void simpleExploreTest() throws IOException {
+    public void simpleExploreTest() {
         doSimpleExplore(firefox);
     }
 }
