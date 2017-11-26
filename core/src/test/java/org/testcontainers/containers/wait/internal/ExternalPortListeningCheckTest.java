@@ -1,12 +1,12 @@
 package org.testcontainers.containers.wait.internal;
 
+import com.google.common.collect.ImmutableSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
 
 import java.net.ServerSocket;
-import java.util.HashSet;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
@@ -28,7 +28,7 @@ public class ExternalPortListeningCheckTest {
     @Test
     public void singleListening() {
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", new HashSet<>(listeningSocket1.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", ImmutableSet.of(listeningSocket1.getLocalPort()));
 
         final Boolean result = check.call();
 
@@ -38,7 +38,7 @@ public class ExternalPortListeningCheckTest {
     @Test
     public void multipleListening() {
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", new HashSet<>(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort()));
 
         final Boolean result = check.call();
 
@@ -48,7 +48,7 @@ public class ExternalPortListeningCheckTest {
     @Test
     public void oneNotListening() {
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", new HashSet<>(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort()));
 
         assertThrows("ExternalPortListeningCheck detects a non-listening port among many",
                 IllegalStateException.class,
