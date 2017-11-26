@@ -9,6 +9,8 @@ import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.*;
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -31,6 +33,7 @@ import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -856,6 +859,32 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             throws UnsupportedOperationException, IOException, InterruptedException {
 
         return execInContainer(UTF8, command);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException {
+
+        this.dockerClient
+                .copyArchiveToContainerCmd(this.containerId)
+                .withHostResource(mountableLocalFile.getResolvedPath())
+                .withRemotePath(containerPath)
+                .exec();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException {
+        try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(this.dockerClient
+                .copyArchiveFromContainerCmd(this.containerId, containerPath)
+                .exec())) {
+            tarInputStream.getNextTarEntry();
+            IOUtils.copy(tarInputStream, new FileOutputStream(destinationPath));
+        }
     }
 
     /**

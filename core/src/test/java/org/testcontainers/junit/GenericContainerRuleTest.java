@@ -1,17 +1,21 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.*;
@@ -327,6 +331,54 @@ public class GenericContainerRuleTest {
 
             assertEquals("Name is configured", "/" + randomName, container.getContainerInfo().getName());
             assertEquals("Command is configured", "[redis-server, --port, 6379]", Arrays.toString(container.getContainerInfo().getConfig().getCmd()));
+        }
+    }
+
+    @Test
+    public void copyToContainerTest() throws Exception {
+        final File tempResultFolder = Files.createTempDir();
+
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                    .withCommand("top")){
+            
+            alpineCopyToContainer.start();
+            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
+                    tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
+
+            File expectedFile = new File(mountableFile.getResolvedPath());
+            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
+            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
+        }
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException, IOException, InterruptedException {
+
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                        .withCommand("top")) {
+            alpineCopyToContainer.start();
+            alpineCopyToContainer.copyFileFromContainer("/home/test.txt", "src/test/resources/copy-from/test.txt");
+        }
+    }
+
+    @Test
+    public void shouldCopyFileFromContainerTest() throws IOException, InterruptedException {
+        final File tempResultFolder = Files.createTempDir();
+
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                .withCommand("top")) {
+
+            alpineCopyToContainer.start();
+            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
+                    tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
+
+            File expectedFile = new File(mountableFile.getResolvedPath());
+            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
+            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
         }
     }
 
