@@ -865,7 +865,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException {
+    public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) {
+
+        if (!isRunning()) {
+            throw new IllegalStateException("copyFileToContainer can only be used while the Container is running");
+        }
 
         this.dockerClient
                 .copyArchiveToContainerCmd(this.containerId)
@@ -878,7 +882,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException {
+    public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException {
+
+        if (!isRunning()) {
+            throw new IllegalStateException("copyFileToContainer can only be used while the Container is running");
+        }
+
         try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(this.dockerClient
                 .copyArchiveFromContainerCmd(this.containerId, containerPath)
                 .exec())) {
@@ -902,7 +911,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         if (!isRunning()) {
-            throw new IllegalStateException("Container is not running so exec cannot be run");
+            throw new IllegalStateException("execInContainer can only be used while the Container is running");
         }
 
         this.dockerClient
