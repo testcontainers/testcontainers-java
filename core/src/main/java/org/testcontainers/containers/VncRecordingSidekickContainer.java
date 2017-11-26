@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
@@ -47,9 +50,9 @@ public class VncRecordingSidekickContainer<SELF extends VncRecordingSidekickCont
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
+    protected List<Integer> getLivenessCheckPorts() {
         // no liveness check needed
-        return null;
+        return emptyList();
     }
 
     @Override
