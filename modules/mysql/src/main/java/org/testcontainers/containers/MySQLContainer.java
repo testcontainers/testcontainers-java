@@ -1,5 +1,9 @@
 package org.testcontainers.containers;
 
+import java.util.List;
+
+import static java.util.Collections.singletonList;
+
 /**
  * @author richardnorth
  */
@@ -22,8 +26,8 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MYSQL_PORT);
+    protected List<Integer> getLivenessCheckPorts() {
+        return singletonList(getMappedPort(MYSQL_PORT));
     }
 
     @Override

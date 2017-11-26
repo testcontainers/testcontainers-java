@@ -3,8 +3,10 @@ package org.testcontainers.containers;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 
 import java.time.Duration;
+import java.util.List;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singletonList;
 
 /**
  * @author richardnorth
@@ -30,8 +32,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(POSTGRESQL_PORT);
+    protected List<Integer> getLivenessCheckPorts() {
+        return singletonList(getMappedPort(POSTGRESQL_PORT));
     }
 
     @Override
