@@ -18,7 +18,7 @@ public interface FilesTrait<SELF extends FilesTrait<SELF> & BuildContextBuilderT
      * @return self
      */
     default SELF withFileFromFile(String path, File file) {
-        return withFileFromPath(path, file.toPath(), 0);
+        return withFileFromPath(path, file.toPath(), null);
     }
 
     /**
@@ -28,7 +28,7 @@ public interface FilesTrait<SELF extends FilesTrait<SELF> & BuildContextBuilderT
      * @return self
      */
     default SELF withFileFromPath(String path, Path filePath) {
-        return withFileFromPath(path, filePath, 0);
+        return withFileFromPath(path, filePath, null);
     }
 
     /**
@@ -38,7 +38,7 @@ public interface FilesTrait<SELF extends FilesTrait<SELF> & BuildContextBuilderT
      * @param mode octal value of posix file mode (000..777)
      * @return self
      */
-    default SELF withFileFromFile(String path, File file, int mode) {
+    default SELF withFileFromFile(String path, File file, Integer mode) {
         return withFileFromPath(path, file.toPath(), mode);
     }
 
@@ -49,7 +49,7 @@ public interface FilesTrait<SELF extends FilesTrait<SELF> & BuildContextBuilderT
      * @param mode octal value of posix file mode (000..777)
      * @return self
      */
-    default SELF withFileFromPath(String path, Path filePath, int mode) {
+    default SELF withFileFromPath(String path, Path filePath, Integer mode) {
         final MountableFile mountableFile = MountableFile.forHostPath(filePath, mode);
         return ((SELF) this).withFileFromTransferable(path, mountableFile);
     }
