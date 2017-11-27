@@ -1,16 +1,12 @@
 package org.testcontainers.containers.wait;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.SystemUtils;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.containers.wait.internal.InternalCommandPortListeningCheck;
-import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
-import org.testcontainers.dockerclient.WindowsClientProviderStrategy;
 
 import java.util.List;
 import java.util.Set;
@@ -34,23 +30,19 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
             return;
         }
 
-        Callable<Boolean> check;
+        List<Integer> exposedPorts = container.getExposedPorts();
 
-        if (shouldCheckWithCommand()) {
-            List<Integer> exposedPorts = container.getExposedPorts();
+        final Set<Integer> internalPorts = exposedPorts.stream()
+                .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
+                .collect(Collectors.toSet());
 
-            final Set<Integer> internalPorts = exposedPorts.stream()
-                    .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
-                    .collect(Collectors.toSet());
+        Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(container, internalPorts);
 
-            check = new InternalCommandPortListeningCheck(container, internalPorts);
-        } else {
-            check = new ExternalPortListeningCheck(container.getContainerIpAddress(), externalLivenessCheckPorts);
-        }
+        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(container.getContainerIpAddress(), externalLivenessCheckPorts);
 
         try {
             Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                return getRateLimiter().getWhenReady(check);
+                return getRateLimiter().getWhenReady(() -> internalCheck.call() && externalCheck.call());
             });
 
         } catch (TimeoutException e) {
@@ -61,20 +53,4 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
                     " should be listening)");
         }
     }
-
-    private boolean shouldCheckWithCommand() {
-        // Special case for Docker for Mac, see #160
-        if (!DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class) &&
-                SystemUtils.IS_OS_MAC_OSX) {
-            return true;
-        }
-
-        // Special case for Docker for Windows, see #160
-        if (DockerClientFactory.instance().isUsing(WindowsClientProviderStrategy.class)) {
-            return true;
-        }
-
-        return false;
-    }
-
 }
