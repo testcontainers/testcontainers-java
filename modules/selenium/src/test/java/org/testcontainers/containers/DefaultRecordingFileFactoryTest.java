@@ -7,10 +7,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Random;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -24,20 +26,19 @@ public class DefaultRecordingFileFactoryTest {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYYMMdd-HHmmss");
 
-
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        Random random = new Random();
-        return new ArrayList<Object[]>() {{
-            add(new Object[]{format("testMethodName%d", random.nextInt()), "FAILED", FALSE});
-            add(new Object[]{format("testMethodName%d", random.nextInt()), "PASSED", TRUE});
-        }};
-    }
-
     private final DefaultRecordingFileFactory factory = new DefaultRecordingFileFactory();
     private final String methodName;
     private final String prefix;
     private final boolean success;
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        Random random = new Random();
+        Collection<Object[]> args = new ArrayList<>();
+        args.add(new Object[]{format("testMethodName%d", random.nextInt()), "FAILED", FALSE});
+        args.add(new Object[]{format("testMethodName%d", random.nextInt()), "PASSED", TRUE});
+        return args;
+    }
 
     @Test
     public void recordingFileThatShouldDescribeTheTestResultAtThePresentTime() throws Exception {
