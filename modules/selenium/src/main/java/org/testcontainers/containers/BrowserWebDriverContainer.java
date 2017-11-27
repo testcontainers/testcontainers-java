@@ -17,11 +17,9 @@ import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -47,12 +45,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Nullable
     private RemoteWebDriver driver;
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
+    private RecordingFileFactory recordingFileFactory;
     private File vncRecordingDirectory = new File("/tmp");
 
     private final Collection<VncRecordingSidekickContainer> currentVncRecordings = new ArrayList<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
-    private static final SimpleDateFormat filenameDateFormat = new SimpleDateFormat("YYYYMMdd-HHmmss");
 
     /**
      */
@@ -60,6 +58,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
+        this.withRecordingFileFactory(new DefaultRecordingFileFactory());
     }
 
     /**
@@ -187,7 +186,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         switch (recordingMode) {
             case RECORD_FAILING:
             case RECORD_ALL:
-                stopAndRetainRecording(description);
+                stopAndRetainRecording(description, false);
                 break;
         }
         currentVncRecordings.clear();
@@ -198,7 +197,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         switch (recordingMode) {
             case RECORD_ALL:
-                stopAndRetainRecording(description);
+                stopAndRetainRecording(description, true);
                 break;
         }
         currentVncRecordings.clear();
@@ -212,9 +211,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         this.stop();
     }
 
-    private void stopAndRetainRecording(Description description) {
-        File recordingFile = new File(vncRecordingDirectory, "recording-" + filenameDateFormat.format(new Date()) + ".flv");
-
+    private void stopAndRetainRecording(Description description, boolean succeeded) {
+        File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, description, succeeded);
         LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
 
         for (VncRecordingSidekickContainer container : currentVncRecordings) {
@@ -244,6 +242,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         return self();
     }
 
+    public SELF withRecordingFileFactory(RecordingFileFactory recordingFileFactory) {
+        this.recordingFileFactory = recordingFileFactory;
+        return self();
+    }
 
     public enum VncRecordingMode {
         SKIP, RECORD_ALL, RECORD_FAILING
