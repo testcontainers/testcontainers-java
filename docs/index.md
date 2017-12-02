@@ -25,6 +25,7 @@ TestContainers makes it easy to launch useful Docker containers for the duration
  * [StreamSets](https://github.com/streamsets/datacollector) - LDAP, MySQL Vault, MongoDB, Redis integration testing
  * [Playtika](https://github.com/Playtika/testcontainers-spring-boot) - Kafka, Couchbase, MariaDB, Redis, Neo4j, Aerospike, MemSQL
  * [JetBrains](https://www.jetbrains.com/) - Testing of the TeamCity plugin for HashiCorp Vault
+ * [Plumbr](https://plumbr.io) - Integration testing of data processing pipeline micro-services
 
 ## License
 
