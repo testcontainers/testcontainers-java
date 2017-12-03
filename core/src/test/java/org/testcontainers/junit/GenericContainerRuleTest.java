@@ -340,7 +340,7 @@ public class GenericContainerRuleTest {
 
         try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
                     .withCommand("top")){
-            
+
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
@@ -394,9 +394,18 @@ public class GenericContainerRuleTest {
 
     @Test
     public void addExposedPortAfterWithExposedPortsTest() {
-        redis.addExposedPort(8987);
-        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
-        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
-        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+
+        try (final GenericContainer localRedis = new GenericContainer("alpine:3.2")
+                .withExposedPorts(1234)
+                .withCommand("/bin/sh", "-c",
+                        "$(while true; do date | nc -l -p 1234; done)& " +
+                        "$(while true; do date | nc -l -p 6789; done)")) {
+            localRedis.addExposedPort(6789);
+            localRedis.start();
+
+            assertThat("Both ports should be exposed", localRedis.getExposedPorts().size(), equalTo(2));
+            assertTrue("withExposedPort should be exposed", localRedis.getExposedPorts().contains(1234));
+            assertTrue("addExposedPort should be exposed", localRedis.getExposedPorts().contains(6789));
+        }
     }
 }
