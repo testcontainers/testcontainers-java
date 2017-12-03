@@ -15,7 +15,7 @@ public class DockerPortCollisionTest {
 
     @Test
     public void doTest() throws Exception {
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 100; i++) {
             try (GenericContainer c = new GenericContainer<>("tutum/hello-world:latest")
                     .withExposedPorts(80)) {
 
@@ -23,8 +23,6 @@ public class DockerPortCollisionTest {
 
                 final Socket socket = new Socket(c.getContainerIpAddress(), c.getFirstMappedPort());
                 closer.register(socket);
-
-                Thread.sleep(1L);
             }
         }
     }
