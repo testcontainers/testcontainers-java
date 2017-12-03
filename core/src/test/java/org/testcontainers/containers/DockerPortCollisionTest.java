@@ -5,6 +5,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
@@ -27,12 +28,23 @@ public class DockerPortCollisionTest {
 
                 System.out.printf("%d: %d\n", i, c.getFirstMappedPort());
 
-                final OutputStream stream = socket.getOutputStream();
+                final OutputStream outputStream = socket.getOutputStream();
+                final InputStream inputStream = socket.getInputStream();
 
                 new Thread(() -> {
                     while (! socket.isClosed()) {
                         try {
-                            stream.write(0);
+                            outputStream.write(0);
+                        } catch (IOException ignored) {
+
+                        }
+                    }
+                }).start();
+
+                new Thread(() -> {
+                    while (! socket.isClosed()) {
+                        try {
+                            inputStream.read();
                         } catch (IOException ignored) {
 
                         }
