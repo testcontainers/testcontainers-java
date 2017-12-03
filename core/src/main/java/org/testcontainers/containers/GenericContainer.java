@@ -31,13 +31,13 @@ import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
-import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -286,22 +286,28 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             imageName = "<unknown>";
         }
 
-        final ExternalPortListeningCheck portListeningCheck = new ExternalPortListeningCheck(this.getContainerIpAddress(), this.getLivenessCheckPorts());
-
         ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
 
         // Guard against an apparent race condition where the Docker userland proxy is slow to close
         // listening ports. This step should, most of the time, do nothing.
-        Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
-            try {
-                portListeningCheck.call();
-                logger().debug("External ports not released yet following container shutdown");
-                Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
-                return false;
-            } catch (IllegalStateException ignored) {
-                return true;
+        final Thread portClosureWaitThread = new Thread(() -> {
+            for (Integer port : getLivenessCheckPorts()) {
+                try {
+                    final Socket socket = new Socket(getContainerIpAddress(), port);
+                    while (!socket.isClosed()) {
+                        logger().debug("External port: {}  not released yet", port);
+                        Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+                    }
+                } catch (IOException ignored) {
+                }
             }
         });
+        try {
+            portClosureWaitThread.start();
+            portClosureWaitThread.join(30 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
