@@ -24,6 +24,9 @@ public class DockerPortCollisionTest {
                 c.start();
 
                 final Socket socket = new Socket(c.getContainerIpAddress(), c.getFirstMappedPort());
+
+                System.out.printf("%d: %d\n", i, c.getFirstMappedPort());
+
                 final OutputStream stream = socket.getOutputStream();
 
                 new Thread(() -> {
