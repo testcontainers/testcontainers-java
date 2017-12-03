@@ -26,7 +26,7 @@ public class DockerPortCollisionTest {
         final int port = serverSocket.getLocalPort();
         serverSocket.close();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             try (GenericContainer c = new FixedHostPortGenericContainer("tutum/hello-world:latest")
                     .withFixedExposedPort(port, 80)) {
 

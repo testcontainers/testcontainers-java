@@ -34,18 +34,22 @@ public class SocketCloseWaiter {
     }
 
     public void waitUntilAllClosed(int i, TimeUnit unit) throws TimeoutException {
-        final long deadline = System.currentTimeMillis() + unit.toMillis(i);
+        final long start = System.currentTimeMillis();
+        boolean didWait = false;
         for (Socket socket : sockets) {
             try {
                 while (socket.getInputStream().read() != -1) {
-                    log.debug("Waiting for socket to be closed by server: {}", socket);
-                    if (System.currentTimeMillis() > deadline) {
+                    didWait = true;
+                    if (System.currentTimeMillis() > start + unit.toMillis(i)) {
                         throw new TimeoutException();
                     }
                     Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
                 }
             } catch (IOException ignored) {
             } finally {
+                if (didWait) {
+                    log.debug("Listening socket closed after wait ({}ms): {}", System.currentTimeMillis() - start, socket);
+                }
                 try {
                     socket.close();
                 } catch (IOException ignored) {
