@@ -1,6 +1,5 @@
 package org.testcontainers.containers.wait;
 
-import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +21,7 @@ public class SocketCloseWaiter {
     private final Set<Integer> ports;
 
     private final List<Socket> sockets = new ArrayList<>();
+    private final byte[] buffer = new byte[8192];
 
     public void start() {
         for (Integer port : ports) {
@@ -38,12 +38,11 @@ public class SocketCloseWaiter {
         boolean didWait = false;
         for (Socket socket : sockets) {
             try {
-                while (socket.getInputStream().read() != -1) {
+                while (socket.getInputStream().read(buffer) != -1) {
                     didWait = true;
                     if (System.currentTimeMillis() > start + unit.toMillis(i)) {
                         throw new TimeoutException();
                     }
-                    Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
                 }
             } catch (IOException ignored) {
             } finally {
