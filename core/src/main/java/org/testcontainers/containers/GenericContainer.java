@@ -30,6 +30,7 @@ import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.*;
 
@@ -284,7 +285,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             imageName = "<unknown>";
         }
 
+        final ExternalPortListeningCheck portListeningCheck = new ExternalPortListeningCheck(this.getContainerIpAddress(), this.getLivenessCheckPorts());
+
         ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+
+        // Guard against a race condition where the Docker userland proxy stays bound to a port
+//        Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
+//            try {
+//                portListeningCheck.call();
+//                return false;
+//            } catch (IllegalStateException ignored) {
+//                return true;
+//            }
+//        });
     }
 
     /**
@@ -327,7 +340,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * @return the port on which to check if the container is ready
-     *
      * @deprecated see {@link GenericContainer#getLivenessCheckPorts()} for replacement
      */
     @Deprecated
@@ -345,7 +357,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * @return the ports on which to check if the container is ready
      */
-    @NotNull @NonNull
+    @NotNull
+    @NonNull
     protected Set<Integer> getLivenessCheckPorts() {
         final Set<Integer> result = new HashSet<>();
         if (exposedPorts.size() > 0) {
@@ -1044,7 +1057,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         /**
          * @return the port on which to check if the container is ready
-         *
          * @deprecated see {@link AbstractWaitStrategy#getLivenessCheckPorts()}
          */
         @Deprecated
