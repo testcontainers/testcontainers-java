@@ -8,6 +8,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.containers.wait.internal.InternalCommandPortListeningCheck;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -32,9 +33,20 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
         List<Integer> exposedPorts = container.getExposedPorts();
 
-        final Set<Integer> internalPorts = exposedPorts.stream()
+        final Set<Integer> internalExposedPorts = exposedPorts.stream()
                 .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
                 .collect(Collectors.toSet());
+
+        final List<String> portBindings = container.getPortBindings();
+
+        final Set<Integer> fixedPortBindingsInternalPorts = portBindings.stream()
+                .map(pb -> pb.split(":")[1])
+                .map(Integer::valueOf)
+                .collect(Collectors.toSet());
+
+        final HashSet<Integer> internalPorts = new HashSet<>();
+        internalPorts.addAll(internalExposedPorts);
+        internalPorts.addAll(fixedPortBindingsInternalPorts);
 
         Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(container, internalPorts);
 

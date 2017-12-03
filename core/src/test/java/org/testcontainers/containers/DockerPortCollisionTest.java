@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -18,15 +19,20 @@ public class DockerPortCollisionTest {
 
     @Test
     public void doTest() throws Exception {
+
+        final ServerSocket serverSocket = new ServerSocket(0);
+        final int port = serverSocket.getLocalPort();
+        serverSocket.close();
+
         for (int i = 0; i < 100; i++) {
-            try (GenericContainer c = new GenericContainer<>("tutum/hello-world:latest")
-                    .withExposedPorts(80)) {
+            try (GenericContainer c = new FixedHostPortGenericContainer("tutum/hello-world:latest")
+                    .withFixedExposedPort(port, 80)) {
 
                 c.start();
 
-                final Socket socket = new Socket(c.getContainerIpAddress(), c.getFirstMappedPort());
+                final Socket socket = new Socket(c.getContainerIpAddress(), port);
 
-                System.out.printf("%d: %d\n", i, c.getFirstMappedPort());
+                System.out.printf("%d: %d\n", i, port);
 
                 final OutputStream outputStream = socket.getOutputStream();
                 final InputStream inputStream = socket.getInputStream();
