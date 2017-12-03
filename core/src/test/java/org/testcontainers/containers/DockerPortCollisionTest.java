@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.google.common.io.Closer;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.After;
 import org.junit.Test;
 
@@ -9,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: Javadocs
@@ -38,9 +40,10 @@ public class DockerPortCollisionTest {
                 final InputStream inputStream = socket.getInputStream();
 
                 new Thread(() -> {
-                    while (! socket.isClosed()) {
+                    while (!socket.isClosed()) {
                         try {
                             outputStream.write(0);
+                            Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
                         } catch (IOException ignored) {
 
                         }
@@ -48,7 +51,7 @@ public class DockerPortCollisionTest {
                 }).start();
 
                 new Thread(() -> {
-                    while (! socket.isClosed()) {
+                    while (!socket.isClosed()) {
                         try {
                             inputStream.read();
                         } catch (IOException ignored) {
@@ -60,6 +63,7 @@ public class DockerPortCollisionTest {
                 closer.register(socket);
             }
         }
+
     }
 
     @After

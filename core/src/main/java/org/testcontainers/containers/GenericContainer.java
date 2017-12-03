@@ -8,6 +8,7 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -289,15 +290,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
 
-        // Guard against a race condition where the Docker userland proxy stays bound to a port
-//        Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
-//            try {
-//                portListeningCheck.call();
-//                return false;
-//            } catch (IllegalStateException ignored) {
-//                return true;
-//            }
-//        });
+        // Guard against an apparent race condition where the Docker userland proxy is slow to close
+        // listening ports. This step should, most of the time, do nothing.
+        Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
+            try {
+                portListeningCheck.call();
+                logger().debug("External ports not released yet following container shutdown");
+                Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
+                return false;
+            } catch (IllegalStateException ignored) {
+                return true;
+            }
+        });
     }
 
     /**
