@@ -8,7 +8,6 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -29,6 +28,7 @@ import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.containers.wait.SocketCloseWaiter;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
@@ -37,19 +37,20 @@ import org.testcontainers.utility.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
@@ -157,7 +158,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
             .newBuilder()
-            .withRate(1, TimeUnit.SECONDS)
+            .withRate(1, SECONDS)
             .withConstantThroughput()
             .build();
 
@@ -286,27 +287,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             imageName = "<unknown>";
         }
 
+        final SocketCloseWaiter socketCloseWaiter = new SocketCloseWaiter(getContainerIpAddress(), getLivenessCheckPorts());
+
+        socketCloseWaiter.start();
+
         ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
 
-        // Guard against an apparent race condition where the Docker userland proxy is slow to close
-        // listening ports. This step should, most of the time, do nothing.
-        final Thread portClosureWaitThread = new Thread(() -> {
-            for (Integer port : getLivenessCheckPorts()) {
-                try {
-                    final Socket socket = new Socket(getContainerIpAddress(), port);
-                    while (!socket.isClosed()) {
-                        logger().debug("External port: {}  not released yet", port);
-                        Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-                    }
-                } catch (IOException ignored) {
-                }
-            }
-        });
         try {
-            portClosureWaitThread.start();
-            portClosureWaitThread.join(30 * 1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            socketCloseWaiter.waitUntilAllClosed(30, SECONDS);
+        } catch (TimeoutException ignored) {
         }
     }
 
