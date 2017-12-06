@@ -182,11 +182,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void failed(Throwable e, Description description) {
-
         switch (recordingMode) {
             case RECORD_FAILING:
             case RECORD_ALL:
-                stopAndRetainRecording(description, false);
+                stopAndRetainRecordingForDescriptionAndSuccessState(description, false);
                 break;
         }
         currentVncRecordings.clear();
@@ -194,10 +193,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void succeeded(Description description) {
-
         switch (recordingMode) {
             case RECORD_ALL:
-                stopAndRetainRecording(description, true);
+                stopAndRetainRecordingForDescriptionAndSuccessState(description, true);
                 break;
         }
         currentVncRecordings.clear();
@@ -211,7 +209,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         this.stop();
     }
 
-    private void stopAndRetainRecording(Description description, boolean succeeded) {
+    private void stopAndRetainRecordingForDescriptionAndSuccessState(Description description, boolean succeeded) {
         File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, description, succeeded);
         LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
 

@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Random;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -33,10 +32,9 @@ public class DefaultRecordingFileFactoryTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        Random random = new Random();
         Collection<Object[]> args = new ArrayList<>();
-        args.add(new Object[]{format("testMethodName%d", random.nextInt()), "FAILED", FALSE});
-        args.add(new Object[]{format("testMethodName%d", random.nextInt()), "PASSED", TRUE});
+        args.add(new Object[]{"testMethod1", "FAILED", FALSE});
+        args.add(new Object[]{"testMethod2", "PASSED", TRUE});
         return args;
     }
 
