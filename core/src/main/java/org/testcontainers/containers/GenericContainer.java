@@ -9,8 +9,8 @@ import com.github.dockerjava.api.model.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.*;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
@@ -326,7 +327,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * @return the port on which to check if the container is ready
+     *
+     * @deprecated see {@link GenericContainer#getLivenessCheckPorts()} for replacement
      */
+    @Deprecated
     protected Integer getLivenessCheckPort() {
         if (exposedPorts.size() > 0) {
             return getMappedPort(exposedPorts.get(0));
@@ -335,6 +339,30 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } else {
             return null;
         }
+    }
+
+    /**
+     * @return the port on which to check if the container is ready
+     */
+    protected List<Integer> getLivenessCheckPorts() {
+        final Set<Integer> result = new HashSet<>();
+        if (exposedPorts.size() > 0) {
+            result.addAll(exposedPorts.stream()
+                    .map(this::getMappedPort)
+                    .collect(Collectors.toList()));
+        } else if (portBindings.size() > 0) {
+            result.addAll(portBindings.stream()
+                    .map(PortBinding::parse)
+                    .map(PortBinding::getBinding)
+                    .map(Ports.Binding::getHostPortSpec)
+                    .map(Integer::valueOf)
+                    .collect(Collectors.toList()));
+        }
+
+        // for backwards compatibility
+        result.add(this.getLivenessCheckPort());
+
+        return new ArrayList<>(result);
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
@@ -376,19 +404,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             String alias = linkEntries.getKey();
             LinkableContainer linkableContainer = linkEntries.getValue();
 
-            Set<Link> links = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-                    .map(container -> new Link(container.getNames()[0], alias))
+            Set<Link> links = dockerClient.listContainersCmd()
+                    .withStatusFilter("running")
+                    .exec().stream()
+                    .flatMap(container -> Stream.of(container.getNames()))
+                    .filter(name -> name.endsWith(linkableContainer.getContainerName()))
+                    .map(name -> new Link(name, alias))
                     .collect(Collectors.toSet());
             allLinks.addAll(links);
 
-            boolean linkableContainerIsRunning = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-                    .map(com.github.dockerjava.api.model.Container::getId)
-                    .map(id -> dockerClient.inspectContainerCmd(id).exec())
-                    .anyMatch(linkableContainerInspectResponse -> linkableContainerInspectResponse.getState().getRunning());
-
-            if (!linkableContainerIsRunning) {
+            if (allLinks.size() == 0) {
                 throw new ContainerLaunchException("Aborting attempt to link to container " +
                         linkableContainer.getContainerName() +
                         " as it is not running");
@@ -1015,9 +1040,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         /**
          * @return the port on which to check if the container is ready
+         *
+         * @deprecated see {@link AbstractWaitStrategy#getLivenessCheckPorts()}
          */
+        @Deprecated
         protected Integer getLivenessCheckPort() {
             return container.getLivenessCheckPort();
+        }
+
+        /**
+         * @return the ports on which to check if the container is ready
+         */
+        protected List<Integer> getLivenessCheckPorts() {
+            return container.getLivenessCheckPorts();
         }
 
         /**

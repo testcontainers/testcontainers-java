@@ -7,13 +7,15 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.internal.TestPortListeningByInternalCommand;
+import org.testcontainers.containers.wait.internal.TestPortListeningFromHost;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.WindowsClientProviderStrategy;
 
-import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Waits until a socket connection can be established on a port exposed or mapped by the container.
@@ -23,12 +25,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy {
 
-    private static final String SUCCESS_MARKER = "TESTCONTAINERS_SUCCESS";
     @Override
     protected void waitUntilReady() {
-        final Integer port = getLivenessCheckPort();
-        if (null == port) {
-            log.debug("Liveness check port of {} is empty. Not waiting.", container.getContainerName());
+        final List<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
+        if (null == externalLivenessCheckPorts || externalLivenessCheckPorts.isEmpty()) {
+            log.debug("Liveness check ports of {} is empty. Not waiting.", container.getContainerName());
             return;
         }
 
@@ -37,64 +38,32 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
         if (shouldCheckWithCommand()) {
             List<Integer> exposedPorts = container.getExposedPorts();
 
-            Integer exposedPort = exposedPorts.stream()
-                    .filter(it -> port.equals(container.getMappedPort(it)))
-                    .findFirst()
-                    .orElse(null);
+            final List<Integer> internalPorts = exposedPorts.stream()
+                    .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
+                    .collect(Collectors.toList());
 
-            if (null == exposedPort) {
-                log.warn("Liveness check port of {} is set to {}, but it's not listed in exposed ports.",
-                        container.getContainerName(), port);
-                return;
-            }
-
-            String[][] commands = {
-                     { "/bin/sh", "-c", "nc -vz -w 1 localhost " + exposedPort + " && echo " + SUCCESS_MARKER },
-                     { "/bin/bash", "-c", "</dev/tcp/localhost/" + exposedPort + " && echo " + SUCCESS_MARKER }
-            };
-
-            checkStrategy = () -> {
-                for (String[] command : commands) {
-                    try {
-                        if (container.execInContainer(command).getStdout().contains(SUCCESS_MARKER)) {
-                            return true;
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    } catch (Exception e) {
-                        continue;
-                    }
-                }
-
-                return false;
-            };
+            checkStrategy = new TestPortListeningByInternalCommand(container, internalPorts);
         } else {
-            checkStrategy = () -> {
-                new Socket(container.getContainerIpAddress(), port).close();
-                return true;
-            };
+            checkStrategy = new TestPortListeningFromHost(container, externalLivenessCheckPorts);
         }
 
         try {
             Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                return getRateLimiter().getWhenReady(() -> {
-                    try {
-                        return checkStrategy.call();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                return getRateLimiter().getWhenReady(checkStrategy);
             });
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
-                    container.getContainerIpAddress() + ":" + port + " should be listening)");
+                    container.getContainerIpAddress() +
+                    " ports: " +
+                    externalLivenessCheckPorts +
+                    " should be listening)");
         }
     }
 
     private boolean shouldCheckWithCommand() {
         // Special case for Docker for Mac, see #160
-        if (! DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class) &&
+        if (!DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class) &&
                 SystemUtils.IS_OS_MAC_OSX) {
             return true;
         }
@@ -106,4 +75,5 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
         return false;
     }
+
 }
