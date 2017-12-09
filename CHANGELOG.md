@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Use Visible Assertions 2.1.0 for pre-flight test output (eliminating Jansi/JNR-POSIX dependencies for lower likelihood of conflict. JNA is now used internally by Visible Assertions instead).
 - Mark all links functionality as deprecated. This is pending removal in a later release. Please see [\#465](https://github.com/testcontainers/testcontainers-java/issues/465). {@link Network} features should be used instead.
 - Added support for copying files to/from running containers ([\#378](https://github.com/testcontainers/testcontainers-java/issues/378))
+- Added support for customising the recording file name ([\#500](https://github.com/testcontainers/testcontainers-java/issues/500))
 
 ## [1.4.3] - 2017-10-14
 ### Fixed

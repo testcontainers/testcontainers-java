@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.containers.DefaultRecordingFileFactory;
 
 import java.io.File;
 
@@ -17,7 +18,8 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
     @Rule
     public BrowserWebDriverContainer chromeThatRecordsAllTests = new BrowserWebDriverContainer()
             .withDesiredCapabilities(DesiredCapabilities.chrome())
-            .withRecordingMode(RECORD_ALL, new File("./target/"));
+            .withRecordingMode(RECORD_ALL, new File("./target/"))
+            .withRecordingFileFactory(new DefaultRecordingFileFactory());
 
     @Rule
     public BrowserWebDriverContainer chromeThatRecordsFailingTests = new BrowserWebDriverContainer()
