@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 - Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
 - Stopping creation of temporary directory prior to creating temporary file (#443)
 - Ensure that temp files are created in a temp directory (#423)
+- Added `WaitAllStrategy` as a mechanism for composing multiple startup `WaitStrategy` objects together
+- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers. 
 
 ### Changed
 - Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))
@@ -16,6 +18,8 @@ All notable changes to this project will be documented in this file.
 - Use Visible Assertions 2.1.0 for pre-flight test output (eliminating Jansi/JNR-POSIX dependencies for lower likelihood of conflict. JNA is now used internally by Visible Assertions instead).
 - Mark all links functionality as deprecated. This is pending removal in a later release. Please see [\#465](https://github.com/testcontainers/testcontainers-java/issues/465). {@link Network} features should be used instead.
 - Added support for copying files to/from running containers ([\#378](https://github.com/testcontainers/testcontainers-java/issues/378))
+- Add `getLivenessCheckPorts` as an eventual replacement for `getLivenessCheckPort`; this allows multiple ports to be included in post-startup wait strategies.
+- Refactor wait strategy port checking and improve test coverage.
 - Added support for customising the recording file name ([\#500](https://github.com/testcontainers/testcontainers-java/issues/500))
 
 ## [1.4.3] - 2017-10-14
