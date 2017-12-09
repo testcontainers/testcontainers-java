@@ -8,22 +8,25 @@ import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
+import java.util.List;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
+import static java.time.LocalDateTime.now;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.junit.Assert.assertThat;
 import static org.junit.runner.Description.createTestDescription;
 
 @RunWith(Parameterized.class)
 @Value
 public class DefaultRecordingFileFactoryTest {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYYMMdd-HHmmss");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss");
 
     private final DefaultRecordingFileFactory factory = new DefaultRecordingFileFactory();
     private final String methodName;
@@ -45,12 +48,13 @@ public class DefaultRecordingFileFactoryTest {
 
         File recordingFile = factory.recordingFileForTest(vncRecordingDirectory, description, success);
 
-        File expectedFile = new File(vncRecordingDirectory, format("%s-%s-%s-%s.flv",
-                prefix,
-                getClass().getSimpleName(),
-                methodName,
-                DATE_FORMAT.format(new Date()))
+        String expectedFilePrefix = format("%s-%s-%s", prefix, getClass().getSimpleName(), methodName);
+
+        List<File> expectedPossibleFileNames = Arrays.asList(
+                new File(vncRecordingDirectory, format("%s-%s.flv", expectedFilePrefix, now().format(DATETIME_FORMATTER))),
+                new File(vncRecordingDirectory, format("%s-%s.flv", expectedFilePrefix, now().minusSeconds(1L).format(DATETIME_FORMATTER)))
         );
-        assertEquals(expectedFile, recordingFile);
+
+        assertThat(expectedPossibleFileNames, hasItem(recordingFile));
     }
 }
