@@ -87,7 +87,7 @@ new BrowserWebDriverContainer()
                 .withRecordingFileFactory(new CustomRecordingFileFactory())
 ```
 
-Note the factory must implement org.testcontainers.containers.RecordingFileFactory.
+Note the factory must implement `org.testcontainers.containers.RecordingFileFactory`.
 
 ## More examples
 
