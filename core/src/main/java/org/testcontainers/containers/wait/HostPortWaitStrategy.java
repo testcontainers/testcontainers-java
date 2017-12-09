@@ -30,15 +30,14 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
             return;
         }
 
+        @SuppressWarnings("unchecked")
         List<Integer> exposedPorts = container.getExposedPorts();
 
-        final Set<Integer> internalPorts = exposedPorts.stream()
-                .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
-                .collect(Collectors.toSet());
+        final Set<Integer> internalPorts = getInternalPorts(externalLivenessCheckPorts, exposedPorts);
 
         Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(container, internalPorts);
 
-        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(container.getContainerIpAddress(), externalLivenessCheckPorts);
+        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(container, externalLivenessCheckPorts);
 
         try {
             Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
@@ -52,5 +51,11 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
                     externalLivenessCheckPorts +
                     " should be listening)");
         }
+    }
+
+    private Set<Integer> getInternalPorts(Set<Integer> externalLivenessCheckPorts, List<Integer> exposedPorts) {
+        return exposedPorts.stream()
+                .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
+                .collect(Collectors.toSet());
     }
 }

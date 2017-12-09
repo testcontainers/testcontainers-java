@@ -327,7 +327,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * @return the port on which to check if the container is ready
-     *
      * @deprecated see {@link GenericContainer#getLivenessCheckPorts()} for replacement
      */
     @Deprecated
@@ -345,21 +344,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * @return the ports on which to check if the container is ready
      */
-    @NotNull @NonNull
+    @NotNull
+    @NonNull
     protected Set<Integer> getLivenessCheckPorts() {
         final Set<Integer> result = new HashSet<>();
-        if (exposedPorts.size() > 0) {
-            result.addAll(exposedPorts.stream()
-                    .map(this::getMappedPort)
-                    .collect(Collectors.toList()));
-        } else if (portBindings.size() > 0) {
-            result.addAll(portBindings.stream()
-                    .map(PortBinding::parse)
-                    .map(PortBinding::getBinding)
-                    .map(Ports.Binding::getHostPortSpec)
-                    .map(Integer::valueOf)
-                    .collect(Collectors.toList()));
-        }
+        result.addAll(getExposedPortNumbers());
+        result.addAll(getBoundPortNumbers());
 
         // for backwards compatibility
         if (this.getLivenessCheckPort() != null) {
@@ -367,6 +357,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         return result;
+    }
+
+    private List<Integer> getExposedPortNumbers() {
+        return exposedPorts.stream()
+                .map(this::getMappedPort)
+                .collect(Collectors.toList());
+    }
+
+    private List<Integer> getBoundPortNumbers() {
+        return portBindings.stream()
+                .map(PortBinding::parse)
+                .map(PortBinding::getBinding)
+                .map(Ports.Binding::getHostPortSpec)
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
@@ -1044,7 +1049,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         /**
          * @return the port on which to check if the container is ready
-         *
          * @deprecated see {@link AbstractWaitStrategy#getLivenessCheckPorts()}
          */
         @Deprecated

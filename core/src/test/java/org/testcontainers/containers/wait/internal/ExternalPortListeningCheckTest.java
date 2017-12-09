@@ -5,9 +5,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.containers.Container;
 
 import java.net.ServerSocket;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class ExternalPortListeningCheckTest {
@@ -15,6 +18,7 @@ public class ExternalPortListeningCheckTest {
     private ServerSocket listeningSocket1;
     private ServerSocket listeningSocket2;
     private ServerSocket nonListeningSocket;
+    private Container mockContainer;
 
     @Before
     public void setUp() throws Exception {
@@ -23,12 +27,15 @@ public class ExternalPortListeningCheckTest {
 
         nonListeningSocket = new ServerSocket(0);
         nonListeningSocket.close();
+
+        mockContainer = mock(Container.class);
+        when(mockContainer.getContainerIpAddress()).thenReturn("127.0.0.1");
     }
 
     @Test
     public void singleListening() {
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", ImmutableSet.of(listeningSocket1.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort()));
 
         final Boolean result = check.call();
 
@@ -38,7 +45,7 @@ public class ExternalPortListeningCheckTest {
     @Test
     public void multipleListening() {
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort()));
 
         final Boolean result = check.call();
 
@@ -48,7 +55,7 @@ public class ExternalPortListeningCheckTest {
     @Test
     public void oneNotListening() {
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck("127.0.0.1", ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort()));
 
         assertThrows("ExternalPortListeningCheck detects a non-listening port among many",
                 IllegalStateException.class,
