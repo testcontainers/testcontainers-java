@@ -1,28 +1,21 @@
 package org.testcontainers.containers.wait.internal;
 
-import org.junit.After;
-import org.junit.Before;
+import com.google.common.collect.ImmutableSet;
+import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
-
-import java.util.HashSet;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class InternalCommandPortListeningCheckTest {
 
-    private GenericContainer nginx;
-
-    @Before
-    public void setUp() {
-        nginx = new GenericContainer<>("nginx:1.9.4");
-        nginx.start();
-    }
+    @Rule
+    public GenericContainer nginx = new GenericContainer<>("nginx:1.9.4");
 
     @Test
     public void singleListening() {
-        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, new HashSet<>(80));
+        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, ImmutableSet.of(80));
 
         final Boolean result = check.call();
 
@@ -31,15 +24,10 @@ public class InternalCommandPortListeningCheckTest {
 
     @Test
     public void nonListening() {
-        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, new HashSet<>(80, 1234));
+        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, ImmutableSet.of(80, 1234));
 
         assertThrows("InternalCommandPortListeningCheck detects a non-listening port among many",
                 IllegalStateException.class,
                 (Runnable) check::call);
-    }
-
-    @After
-    public void tearDown() {
-        nginx.stop();
     }
 }

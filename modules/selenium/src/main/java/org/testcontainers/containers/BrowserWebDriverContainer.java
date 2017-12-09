@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -24,7 +25,6 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -92,7 +92,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(SELENIUM_PORT), getMappedPort(VNC_PORT));
+        return ImmutableSet.of(getMappedPort(SELENIUM_PORT), getMappedPort(VNC_PORT));
     }
 
     @Override
