@@ -23,9 +23,11 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singletonList;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -87,8 +89,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(SELENIUM_PORT);
+    protected List<Integer> getLivenessCheckPorts() {
+        return singletonList(getMappedPort(SELENIUM_PORT));
     }
 
     @Override

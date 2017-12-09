@@ -4,6 +4,9 @@ import org.testcontainers.containers.traits.LinkableContainer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 /**
  * @author richardnorth
@@ -17,8 +20,8 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(80);
+    protected List<Integer> getLivenessCheckPorts() {
+        return singletonList(getMappedPort(80));
     }
 
     @Override

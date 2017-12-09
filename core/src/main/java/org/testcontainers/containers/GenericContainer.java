@@ -332,6 +332,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Deprecated
     protected Integer getLivenessCheckPort() {
+        // legacy implementation for backwards compatibility
         if (exposedPorts.size() > 0) {
             return getMappedPort(exposedPorts.get(0));
         } else if (portBindings.size() > 0) {
