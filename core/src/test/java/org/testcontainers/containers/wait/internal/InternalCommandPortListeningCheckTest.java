@@ -5,7 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 
-import static com.google.common.primitives.Ints.asList;
+import java.util.HashSet;
+
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
@@ -21,7 +22,7 @@ public class InternalCommandPortListeningCheckTest {
 
     @Test
     public void singleListening() {
-        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, asList(80));
+        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, new HashSet<>(80));
 
         final Boolean result = check.call();
 
@@ -30,7 +31,7 @@ public class InternalCommandPortListeningCheckTest {
 
     @Test
     public void nonListening() {
-        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, asList(80, 1234));
+        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, new HashSet<>(80, 1234));
 
         assertThrows("InternalCommandPortListeningCheck detects a non-listening port among many",
                 IllegalStateException.class,

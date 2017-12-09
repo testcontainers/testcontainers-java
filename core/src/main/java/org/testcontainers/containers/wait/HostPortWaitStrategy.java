@@ -13,6 +13,7 @@ import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.WindowsClientProviderStrategy;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -27,8 +28,8 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
 
     @Override
     protected void waitUntilReady() {
-        final List<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
-        if (null == externalLivenessCheckPorts || externalLivenessCheckPorts.isEmpty()) {
+        final Set<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
+        if (externalLivenessCheckPorts.isEmpty()) {
             log.debug("Liveness check ports of {} is empty. Not waiting.", container.getContainerName());
             return;
         }
@@ -38,9 +39,9 @@ public class HostPortWaitStrategy extends GenericContainer.AbstractWaitStrategy 
         if (shouldCheckWithCommand()) {
             List<Integer> exposedPorts = container.getExposedPorts();
 
-            final List<Integer> internalPorts = exposedPorts.stream()
+            final Set<Integer> internalPorts = exposedPorts.stream()
                     .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
 
             check = new InternalCommandPortListeningCheck(container, internalPorts);
         } else {

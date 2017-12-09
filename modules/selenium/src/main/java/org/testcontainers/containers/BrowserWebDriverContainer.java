@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.BrowserType;
@@ -23,11 +24,11 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Collections.singletonList;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -88,9 +89,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         return self();
     }
 
+    @NotNull
     @Override
-    protected List<Integer> getLivenessCheckPorts() {
-        return singletonList(getMappedPort(SELENIUM_PORT));
+    protected Set<Integer> getLivenessCheckPorts() {
+        return new HashSet<>(getMappedPort(SELENIUM_PORT), getMappedPort(VNC_PORT));
     }
 
     @Override

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 @RequiredArgsConstructor
 public class ExternalPortListeningCheck implements Callable<Boolean> {
     private final String address;
-    private final List<Integer> externalLivenessCheckPorts;
+    private final Set<Integer> externalLivenessCheckPorts;
 
     @Override
     public Boolean call() {
