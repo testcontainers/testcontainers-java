@@ -413,13 +413,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             String alias = linkEntries.getKey();
             LinkableContainer linkableContainer = linkEntries.getValue();
 
-            Set<Link> links = dockerClient.listContainersCmd()
-                    .withStatusFilter("running")
-                    .exec().stream()
-                    .flatMap(container -> Stream.of(container.getNames()))
-                    .filter(name -> name.endsWith(linkableContainer.getContainerName()))
-                    .map(name -> new Link(name, alias))
-                    .collect(Collectors.toSet());
+            Set<Link> links = findLinksFromThisContainer(alias, linkableContainer);
             allLinks.addAll(links);
 
             if (allLinks.size() == 0) {
@@ -428,13 +422,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                         " as it is not running");
             }
 
-            Set<String> linkedContainerNetworks = dockerClient.listContainersCmd().exec().stream()
-                    .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-                    .filter(container -> container.getNetworkSettings() != null &&
-                            container.getNetworkSettings().getNetworks() != null)
-                    .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
-                    .distinct()
-                    .collect(Collectors.toSet());
+            Set<String> linkedContainerNetworks = findAllNetworksForLinkedContainers(linkableContainer);
             allLinkedContainerNetworks.addAll(linkedContainerNetworks);
         }
 
@@ -475,6 +463,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         createCommand.withLabels(Collections.singletonMap("org.testcontainers", "true"));
+    }
+
+    private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
+        return dockerClient.listContainersCmd()
+                .withStatusFilter("running")
+                .exec().stream()
+                .flatMap(container -> Stream.of(container.getNames()))
+                .filter(name -> name.endsWith(linkableContainer.getContainerName()))
+                .map(name -> new Link(name, alias))
+                .collect(Collectors.toSet());
+    }
+
+    private Set<String> findAllNetworksForLinkedContainers(LinkableContainer linkableContainer) {
+        return dockerClient.listContainersCmd().exec().stream()
+                .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+                .filter(container -> container.getNetworkSettings() != null &&
+                        container.getNetworkSettings().getNetworks() != null)
+                .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
+                .distinct()
+                .collect(Collectors.toSet());
     }
 
     /**
