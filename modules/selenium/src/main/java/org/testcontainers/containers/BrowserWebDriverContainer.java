@@ -1,6 +1,8 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.google.common.collect.ImmutableSet;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.openqa.selenium.remote.BrowserType;
@@ -12,7 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
+import org.testcontainers.containers.wait.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.WaitAllStrategy;
+import org.testcontainers.containers.wait.WaitStrategy;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -20,6 +25,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -55,9 +61,15 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     /**
      */
     public BrowserWebDriverContainer() {
-        this.waitStrategy = new LogMessageWaitStrategy()
+        final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
+
+        this.waitStrategy = new WaitAllStrategy()
+                .withStrategy(logWaitStrategy)
+                .withStrategy(new HostPortWaitStrategy())
+                .withStartupTimeout(Duration.of(15, SECONDS));
+
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
     }
 
@@ -77,9 +89,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         return self();
     }
 
+    @NotNull
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(SELENIUM_PORT);
+    protected Set<Integer> getLivenessCheckPorts() {
+        return ImmutableSet.of(getMappedPort(SELENIUM_PORT), getMappedPort(VNC_PORT));
     }
 
     @Override
@@ -154,9 +167,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         if (recordingMode != VncRecordingMode.SKIP) {
             LOGGER.debug("Starting VNC recording");
 
-            // Use multiple startup attempts due to race condition between Selenium being available and VNC being available
-            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this)
-                    .withStartupAttempts(3);
+            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this);
 
             recordingSidekickContainer.start();
             currentVncRecordings.add(recordingSidekickContainer);

@@ -1,5 +1,10 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author richardnorth
  */
@@ -21,9 +26,10 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         super(dockerImageName);
     }
 
+    @NotNull
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MYSQL_PORT);
+    protected Set<Integer> getLivenessCheckPorts() {
+        return new HashSet<>(getMappedPort(MYSQL_PORT));
     }
 
     @Override
