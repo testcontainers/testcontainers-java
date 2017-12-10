@@ -182,7 +182,7 @@ public class MountableFile implements Transferable {
         String result = getResourcePath();
 
         if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
-            result = PathUtils.createMinGWPath(result);
+            result = PathUtils.createMinGWPath(result).substring(1);
         }
 
         return result;

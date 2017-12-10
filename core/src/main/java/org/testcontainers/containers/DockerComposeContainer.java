@@ -398,6 +398,7 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
     private static final String DOCKER_SOCKET_PATH = "//var/run/docker.sock";
+    public static final char UNIX_PATH_SEPERATOR = ':';
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 
@@ -416,7 +417,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
                         .map(MountableFile::forHostPath)
                         .map(MountableFile::getFilesystemPath)
                         .collect(toList());
-        final String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
+        final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
         addFileSystemBind(pwd, containerPwd, READ_ONLY);
