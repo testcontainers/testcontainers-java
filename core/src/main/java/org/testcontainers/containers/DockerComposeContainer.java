@@ -10,6 +10,7 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -395,6 +396,9 @@ interface DockerCompose {
  * Use Docker Compose container.
  */
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
+
+    private static final String DOCKER_SOCKET_PATH = "//var/run/docker.sock";
+
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 
         super(TestcontainersConfiguration.getInstance().getDockerComposeContainerImage());
@@ -405,12 +409,12 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         // Map the docker compose file into the container
         final File dockerComposeBaseFile = composeFiles.get(0);
         final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        final String containerPwd = MountableFile.forHostPath(pwd).getResolvedPath();
+        final String containerPwd = MountableFile.forHostPath(pwd).getFilesystemPath();
 
         final List<String> absoluteDockerComposeFiles = composeFiles.stream()
                         .map(File::getAbsolutePath)
                         .map(MountableFile::forHostPath)
-                        .map(MountableFile::getResolvedPath)
+                        .map(MountableFile::getFilesystemPath)
                         .collect(toList());
         final String composeFileEnvVariableValue = Joiner.on(File.pathSeparator).join(absoluteDockerComposeFiles);
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
@@ -421,10 +425,17 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
         //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind("/var/run/docker.sock", "/docker.sock", READ_WRITE);
+        addFileSystemBind(getDockerSocketHostPath(), "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
+    }
+
+    @NotNull
+    private String getDockerSocketHostPath() {
+        return SystemUtils.IS_OS_WINDOWS
+                ? "/" + DOCKER_SOCKET_PATH
+                : DOCKER_SOCKET_PATH;
     }
 
     @Override

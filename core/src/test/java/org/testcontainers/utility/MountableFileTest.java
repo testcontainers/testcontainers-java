@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class MountableFileTest {
 
@@ -108,7 +106,7 @@ public class MountableFileTest {
     }
 
     private void performChecks(final MountableFile mountableFile) {
-        final String mountablePath = mountableFile.getFilesystemPath();
+        final String mountablePath = mountableFile.getResolvedPath();
         assertTrue("The filesystem path '" + mountablePath + "' can be found", new File(mountablePath).exists());
         assertFalse("The filesystem path '" + mountablePath + "' does not contain any URL escaping", mountablePath.contains("%20"));
     }
