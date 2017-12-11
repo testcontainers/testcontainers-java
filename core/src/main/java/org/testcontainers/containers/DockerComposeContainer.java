@@ -397,7 +397,7 @@ interface DockerCompose {
  */
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
-    private static final String DOCKER_SOCKET_PATH = "//var/run/docker.sock";
+    private static final String DOCKER_SOCKET_PATH = "/var/run/docker.sock";
     public static final char UNIX_PATH_SEPERATOR = ':';
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
