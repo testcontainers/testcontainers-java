@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Problems with using container based docker-compose on Windows ([\#514](https://github.com/testcontainers/testcontainers-java/pull/514))
+- Problems with copying files on Windows ([\#514](https://github.com/testcontainers/testcontainers-java/pull/514))
 - Fixed regression in 1.4.3 when using Docker Compose on Windows ([\#439](https://github.com/testcontainers/testcontainers-java/issues/439))
 - Fixed local Docker Compose executable name resolution on Windows (#416)
 - Fixed TAR composition on Windows (#444)
