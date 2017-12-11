@@ -1,9 +1,15 @@
 package org.testcontainers.utility;
 
-import static lombok.AccessLevel.PACKAGE;
-import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
-
 import com.google.common.base.Charsets;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.lang.SystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.testcontainers.images.builder.Transferable;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,14 +25,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.NotNull;
-import org.testcontainers.images.builder.Transferable;
+
+import static lombok.AccessLevel.PACKAGE;
+import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 
 /**
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
@@ -165,8 +166,8 @@ public class MountableFile implements Transferable {
     private String resolvePath() {
         String result = getResourcePath();
 
-        if (SystemUtils.IS_OS_WINDOWS) {
-            result = PathUtils.createMinGWPath(result);
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+            result = result.substring(1);
         }
 
         return result;
@@ -177,13 +178,15 @@ public class MountableFile implements Transferable {
      * into a container. If this is a classpath resource residing in a JAR, it will be extracted to
      * a temporary location so that the Docker daemon is able to access it.
      *
+     * TODO: rename method accordingly and check if really needed like this
+     *
      * @return
      */
     private String resolveFilesystemPath() {
         String result = getResourcePath();
 
         if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
-            result = result.substring(1);
+            result = PathUtils.createMinGWPath(result).substring(1);
         }
 
         return result;
@@ -285,7 +288,7 @@ public class MountableFile implements Transferable {
      */
     @Override
     public void transferTo(final TarArchiveOutputStream outputStream, String destinationPathInTar) {
-        recursiveTar(destinationPathInTar, this.getFilesystemPath(), this.getFilesystemPath(), outputStream);
+        recursiveTar(destinationPathInTar, this.getResolvedPath(), this.getResolvedPath(), outputStream);
     }
 
     /*
@@ -325,7 +328,7 @@ public class MountableFile implements Transferable {
     @Override
     public long getSize() {
 
-        final File file = new File(this.getFilesystemPath());
+        final File file = new File(this.getResolvedPath());
         if (file.isFile()) {
             return file.length();
         } else {
@@ -340,7 +343,7 @@ public class MountableFile implements Transferable {
 
     @Override
     public int getFileMode() {
-        return getUnixFileMode(this.getFilesystemPath());
+        return getUnixFileMode(this.getResolvedPath());
     }
 
     private int getUnixFileMode(final String pathAsString) {
