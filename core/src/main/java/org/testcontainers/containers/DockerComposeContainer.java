@@ -10,7 +10,6 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Description;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -432,7 +431,6 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         setWorkingDirectory(containerPwd);
     }
 
-    @NotNull
     private String getDockerSocketHostPath() {
         return SystemUtils.IS_OS_WINDOWS
                 ? "/" + DOCKER_SOCKET_PATH
