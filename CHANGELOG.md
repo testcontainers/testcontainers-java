@@ -1,18 +1,19 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## UNRELEASED
+## [1.5.0] - 2017-12-12
 ### Fixed
-- Problems with using container based docker-compose on Windows ([\#514](https://github.com/testcontainers/testcontainers-java/pull/514))
-- Problems with copying files on Windows ([\#514](https://github.com/testcontainers/testcontainers-java/pull/514))
+- Fixed problems with using container based docker-compose on Windows ([\#514](https://github.com/testcontainers/testcontainers-java/pull/514))
+- Fixed problems with copying files on Windows ([\#514](https://github.com/testcontainers/testcontainers-java/pull/514))
 - Fixed regression in 1.4.3 when using Docker Compose on Windows ([\#439](https://github.com/testcontainers/testcontainers-java/issues/439))
-- Fixed local Docker Compose executable name resolution on Windows (#416)
-- Fixed TAR composition on Windows (#444)
-- Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` (#453)
-- Stopping creation of temporary directory prior to creating temporary file (#443)
-- Ensure that temp files are created in a temp directory (#423)
+- Fixed local Docker Compose executable name resolution on Windows ([\#416](https://github.com/testcontainers/testcontainers-java/issues/#416))
+- Fixed TAR composition on Windows ([\#444](https://github.com/testcontainers/testcontainers-java/issues/#444))
+- Allowing `addExposedPort` to be used after ports have been specified with `withExposedPorts` ([\#453](https://github.com/testcontainers/testcontainers-java/issues/#453))
+- Stopping creation of temporary directory prior to creating temporary file ([\#443](https://github.com/testcontainers/testcontainers-java/issues/#443))
+- Ensure that temp files are created in a temp directory ([\#423](https://github.com/testcontainers/testcontainers-java/issues/#423))
 - Added `WaitAllStrategy` as a mechanism for composing multiple startup `WaitStrategy` objects together
-- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes #466). 
+- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes [\#466](https://github.com/testcontainers/testcontainers-java/issues/#466)). 
+- Add retry logic around checkExposedPort pre-flight check for improved robustness.
 
 ### Changed
 - Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))
@@ -358,6 +359,8 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
+[1.4.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.5.0
+[1.4.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.3
 [1.4.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.2
 [1.4.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.1
 [1.4.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.0
