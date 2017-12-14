@@ -56,6 +56,11 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     }
 
     @Override
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
     public String getUsername() {
         return username;
     }
