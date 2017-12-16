@@ -46,6 +46,13 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public abstract String getJdbcUrl();
 
     /**
+     * @return the database name
+     */
+    public String getDatabaseName() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * @return the standard database username that should be used for connections
      */
     public abstract String getUsername();

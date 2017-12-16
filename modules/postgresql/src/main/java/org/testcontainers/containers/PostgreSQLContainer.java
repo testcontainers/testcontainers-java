@@ -59,6 +59,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     }
 
     @Override
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
     public String getUsername() {
         return username;
     }
