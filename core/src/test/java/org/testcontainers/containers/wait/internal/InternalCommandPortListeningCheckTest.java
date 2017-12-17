@@ -15,7 +15,7 @@ public class InternalCommandPortListeningCheckTest {
     // that the command formatting uses the correct casing for hexadecimal numberd (i.e. 1F90 and not 1f90).
     @Rule
     public GenericContainer nginx = new GenericContainer<>("nginx:1.9.4")
-            .withClasspathResourceMapping("nginx.conf", "/etc/nginx/conf.d/default.conf", BindMode.READ_ONLY);
+            .withClasspathResourceMapping("nginx_on_8080.conf", "/etc/nginx/conf.d/default.conf", BindMode.READ_ONLY);
 
     @Test
     public void singleListening() {
