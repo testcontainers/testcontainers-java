@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 ### Fixed
- - Fixed case-senisitivity problem with internal port check. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
+ - Fixed problem with case-sensitivity when checking internal port. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
 
 ### Changed
 - Added `getDatabaseName` method to JdbcDatabaseContainer, MySQLContainer, PostgreSQLContainer ([\#473](https://github.com/testcontainers/testcontainers-java/issues/473))
