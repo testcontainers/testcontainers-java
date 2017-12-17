@@ -17,7 +17,10 @@ import static java.util.Collections.emptySet;
 
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
+ *
+ * @deprecated please use {@link VncRecordingContainer}
  */
+@Deprecated
 public class VncRecordingSidekickContainer<SELF extends VncRecordingSidekickContainer<SELF, T>, T extends VncService & LinkableContainer> extends GenericContainer<SELF> {
     private final T vncServiceContainer;
     private final Path tempDir;

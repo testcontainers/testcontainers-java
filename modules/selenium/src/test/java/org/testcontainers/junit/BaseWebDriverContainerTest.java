@@ -28,13 +28,13 @@ public class BaseWebDriverContainerTest {
     }
 
     @NotNull
-    private RemoteWebDriver setupDriverFromRule(BrowserWebDriverContainer rule) {
+    private static RemoteWebDriver setupDriverFromRule(BrowserWebDriverContainer rule) {
         RemoteWebDriver driver = rule.getWebDriver();
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
         return driver;
     }
 
-    protected void doSimpleExplore(BrowserWebDriverContainer rule) {
+    protected static void doSimpleExplore(BrowserWebDriverContainer rule) {
         RemoteWebDriver driver = setupDriverFromRule(rule);
         driver.get("http://en.wikipedia.org/wiki/Randomness");
     }

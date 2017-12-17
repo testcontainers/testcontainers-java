@@ -3,6 +3,7 @@ package org.testcontainers.containers.traits;
 /**
  * A container which exposes a VNC server.
  */
+@Deprecated
 public interface VncService {
     /**
      * @return a URL which can be used to connect to the VNC server from the machine running the tests. Exposed for convenience, e.g. to aid manual debugging
