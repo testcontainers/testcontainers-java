@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+### Fixed
+ - Fixed problem with case-sensitivity when checking internal port. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
+
 ### Changed
 - Added `getDatabaseName` method to JdbcDatabaseContainer, MySQLContainer, PostgreSQLContainer ([\#473](https://github.com/testcontainers/testcontainers-java/issues/473))
 
