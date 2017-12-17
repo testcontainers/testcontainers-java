@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## UNRELEASED
+### Fixed
+ - Fixed case-senisitivity problem with internal port check. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
+
 ## [1.5.0] - 2017-12-12
 ### Fixed
 - Fixed problems with using container based docker-compose on Windows ([\#514](https://github.com/testcontainers/testcontainers-java/pull/514))
