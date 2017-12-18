@@ -18,7 +18,7 @@ public interface Network extends AutoCloseable, TestRule {
     Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
         @Override
         public void close() {
-            // Do not avoid users to close SHARED network, only ResourceReaper is allowed to close (destroy) it
+            // Do not allow users to close SHARED network, only ResourceReaper is allowed to close (destroy) it
         }
     };
 
