@@ -2,11 +2,8 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.*;
-import lombok.experimental.Delegate;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
