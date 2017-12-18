@@ -2,7 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ### Fixed
- - Fixed problem with case-sensitivity when checking internal port. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
+- Fixed problem with case-sensitivity when checking internal port. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
+- Add retry logic around checkExposedPort pre-flight check for improved robustness ([\#513](https://github.com/testcontainers/testcontainers-java/issues/513))
 
 ### Changed
 - Added `getDatabaseName` method to JdbcDatabaseContainer, MySQLContainer, PostgreSQLContainer ([\#473](https://github.com/testcontainers/testcontainers-java/issues/473))
@@ -18,8 +19,7 @@ All notable changes to this project will be documented in this file.
 - Stopping creation of temporary directory prior to creating temporary file ([\#443](https://github.com/testcontainers/testcontainers-java/issues/443))
 - Ensure that temp files are created in a temp directory ([\#423](https://github.com/testcontainers/testcontainers-java/issues/423))
 - Added `WaitAllStrategy` as a mechanism for composing multiple startup `WaitStrategy` objects together
-- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes [\#466](https://github.com/testcontainers/testcontainers-java/issues/466)).
-- Add retry logic around checkExposedPort pre-flight check for improved robustness.
+- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes [\#466](https://github.com/testcontainers/testcontainers-java/issues/466)). 
 
 ### Changed
 - Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))
