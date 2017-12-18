@@ -42,7 +42,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     private int frameRate = 30;
 
-    public VncRecordingContainer(@NonNull GenericContainer<?> targetContainer) throws IllegalStateException {
+    public VncRecordingContainer(@NonNull GenericContainer<?> targetContainer) {
         this(
                 targetContainer.getNetwork(),
                 targetContainer.getNetworkAliases().stream()
