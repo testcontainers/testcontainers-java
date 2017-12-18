@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.Frame;
 import lombok.Getter;
 import lombok.NonNull;
@@ -10,6 +11,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.Closeable;
@@ -19,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
@@ -34,7 +37,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     public static final int DEFAULT_VNC_PORT = 5900;
 
-    private final String targetNetworkAlias;
+    private final Supplier<String> targetContainerIdSupplier;
 
     private String vncPassword = DEFAULT_VNC_PASSWORD;
 
@@ -43,22 +46,12 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     private int frameRate = 30;
 
     public VncRecordingContainer(@NonNull GenericContainer<?> targetContainer) {
-        this(
-                targetContainer.getNetwork(),
-                targetContainer.getNetworkAliases().stream()
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalStateException("Target container must have a network alias"))
-        );
+        this(targetContainer::getContainerId);
     }
 
-    /**
-     * Create a sidekick container and attach it to another container. The VNC output of that container will be recorded.
-     */
-    public VncRecordingContainer(@NonNull Network network, @NonNull String targetNetworkAlias) throws IllegalStateException {
+    public VncRecordingContainer(@NonNull Supplier<String> targetContainerIdSupplier) {
         super(TestcontainersConfiguration.getInstance().getVncRecordedContainerImage());
-
-        this.targetNetworkAlias = targetNetworkAlias;
-        withNetwork(network);
+        this.targetContainerIdSupplier = targetContainerIdSupplier;
 
         waitingFor(new AbstractWaitStrategy() {
 
@@ -112,11 +105,38 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     @Override
     protected void configure() {
         withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
+
+        if (getNetwork() == null) {
+            withNetwork(Network.newNetwork());
+        }
+
+        String alias = "vnchost-" + Base58.randomString(8);
+        dockerClient.connectToNetworkCmd()
+                .withContainerId(targetContainerIdSupplier.get())
+                .withNetworkId(getNetwork().getId())
+                .withContainerNetwork(new ContainerNetwork().withAliases(alias))
+                .exec();
+
         setCommand(
                 "-c",
                 "echo '" + Base64.encodeBase64String(vncPassword.getBytes()) + "' | base64 -d > /vnc_password && " +
-                "flvrec.py -o " + RECORDING_FILE_NAME + " -d -r " + frameRate + " -P /vnc_password " + targetNetworkAlias + " " + vncPort
+                "flvrec.py -o " + RECORDING_FILE_NAME + " -d -r " + frameRate + " -P /vnc_password " + alias + " " + vncPort
         );
+    }
+
+    @Override
+    public void stop() {
+        try {
+            dockerClient.disconnectFromNetworkCmd()
+                    .withContainerId(targetContainerIdSupplier.get())
+                    .withNetworkId(getNetwork().getId())
+                    .withForce(true)
+                    .exec();
+        } catch (Exception e) {
+            logger().warn("Failed to disconnect container with id '{}' from network '{}'", targetContainerIdSupplier.get(), getNetwork().getId(), e);
+        }
+
+        super.stop();
     }
 
     @SneakyThrows

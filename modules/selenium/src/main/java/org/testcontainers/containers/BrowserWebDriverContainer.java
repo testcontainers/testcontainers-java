@@ -18,7 +18,6 @@ import org.testcontainers.containers.wait.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.WaitAllStrategy;
 import org.testcontainers.containers.wait.WaitStrategy;
-import org.testcontainers.utility.Base58;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -102,14 +101,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
-            if (getNetwork() == null) {
-                withNetwork(Network.SHARED);
-            }
-
-            if (getNetworkAliases().isEmpty()) {
-                withNetworkAliases("vnchost-" + Base58.randomString(8));
-            }
-
             vncRecordingContainer = new VncRecordingContainer(this)
                     .withVncPassword(DEFAULT_PASSWORD)
                     .withVncPort(VNC_PORT);
@@ -177,15 +168,15 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (vncRecordingContainer != null) {
-            LOGGER.debug("Starting VNC recording");
-            vncRecordingContainer.start();
-        }
-
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
                 Timeouts.getWithTimeout(1, TimeUnit.SECONDS,
                         () ->
                                 () -> new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities)));
+
+        if (vncRecordingContainer != null) {
+            LOGGER.debug("Starting VNC recording");
+            vncRecordingContainer.start();
+        }
     }
 
     /**

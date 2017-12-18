@@ -16,8 +16,6 @@ import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
 
-    Network SHARED = newNetwork();
-
     String getId();
 
     static Network newNetwork() {
