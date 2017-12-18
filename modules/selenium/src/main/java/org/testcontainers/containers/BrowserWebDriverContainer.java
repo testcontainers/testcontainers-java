@@ -223,11 +223,23 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     private void stopAndRetainRecordingForDescriptionAndSuccessState(Description description, boolean succeeded) {
-        if (recordingMode == VncRecordingMode.RECORD_ALL || (!succeeded && recordingMode == VncRecordingMode.RECORD_FAILING)) {
+        final boolean shouldRecord;
+        switch (recordingMode) {
+            case RECORD_ALL:
+                shouldRecord = true;
+                break;
+            case RECORD_FAILING:
+                shouldRecord = !succeeded;
+                break;
+            default:
+                shouldRecord = false;
+        }
+
+        if (shouldRecord) {
             File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, description, succeeded);
             LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
 
-            vncRecordingContainer.saveRecordToFile(recordingFile);
+            vncRecordingContainer.saveRecordingToFile(recordingFile);
         }
     }
 

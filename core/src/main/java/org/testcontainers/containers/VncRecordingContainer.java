@@ -107,7 +107,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
 
         if (getNetwork() == null) {
-            withNetwork(Network.newNetwork());
+            withNetwork(Network.SHARED);
         }
 
         String alias = "vnchost-" + Base58.randomString(8);
@@ -140,7 +140,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     }
 
     @SneakyThrows
-    public InputStream streamRecord() {
+    public InputStream streamRecording() {
         TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
                 dockerClient.copyArchiveFromContainerCmd(containerId, RECORDING_FILE_NAME).exec()
         );
@@ -149,8 +149,8 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     }
 
     @SneakyThrows
-    public void saveRecordToFile(File file) {
-        try(InputStream inputStream = streamRecord()) {
+    public void saveRecordingToFile(File file) {
+        try(InputStream inputStream = streamRecording()) {
             Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }

@@ -1,20 +1,29 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.CreateNetworkCmd;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Singular;
+import lombok.*;
+import lombok.experimental.Delegate;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
+
+    Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
+        @Override
+        public void close() {
+            // Do not avoid users to close SHARED network, only ResourceReaper is allowed to close (destroy) it
+        }
+    };
 
     String getId();
 
