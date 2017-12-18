@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.*;
 import org.testcontainers.utility.ComparableVersion;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -177,16 +179,18 @@ public class DockerClientFactory {
     }
 
     private void checkExposedPort(String hostIpAddress, DockerClient dockerClient, String id) {
-        InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
+        String response = Unreliables.retryUntilSuccess(3, TimeUnit.SECONDS, () -> {
+            InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
 
-        String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
+            String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
 
-        String response;
-        try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
-            response = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
-        } catch (IOException e) {
-            response = e.getMessage();
-        }
+            try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
+                return IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
+            } catch (IOException e) {
+                return e.getMessage();
+            }
+        });
+
         VisibleAssertions.assertEquals("A port exposed by a docker container should be accessible", "hello", response);
     }
 
