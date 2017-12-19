@@ -23,8 +23,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +52,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private RecordingFileFactory recordingFileFactory;
     private File vncRecordingDirectory = new File("/tmp");
 
-    private final Collection<VncRecordingSidekickContainer> currentVncRecordings = new ArrayList<>();
+    private VncRecordingContainer vncRecordingContainer = null;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
@@ -100,6 +98,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         if (desiredCapabilities == null) {
             throw new IllegalStateException();
+        }
+
+        if (recordingMode != VncRecordingMode.SKIP) {
+            if (getNetwork() == null) {
+                withNetwork(Network.SHARED);
+            }
+
+            vncRecordingContainer = new VncRecordingContainer(this)
+                    .withVncPassword(DEFAULT_PASSWORD)
+                    .withVncPort(VNC_PORT);
         }
 
         if (!customImageNameIsSet) {
@@ -164,19 +172,15 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (recordingMode != VncRecordingMode.SKIP) {
-            LOGGER.debug("Starting VNC recording");
-
-            VncRecordingSidekickContainer recordingSidekickContainer = new VncRecordingSidekickContainer<>(this);
-
-            recordingSidekickContainer.start();
-            currentVncRecordings.add(recordingSidekickContainer);
-        }
-
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
                 Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
                         () ->
                                 () -> new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities)));
+
+        if (vncRecordingContainer != null) {
+            LOGGER.debug("Starting VNC recording");
+            vncRecordingContainer.start();
+        }
     }
 
     /**
@@ -193,39 +197,54 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void failed(Throwable e, Description description) {
-        switch (recordingMode) {
-            case RECORD_FAILING:
-            case RECORD_ALL:
-                stopAndRetainRecordingForDescriptionAndSuccessState(description, false);
-                break;
-        }
-        currentVncRecordings.clear();
+        stopAndRetainRecordingForDescriptionAndSuccessState(description, false);
     }
 
     @Override
     protected void succeeded(Description description) {
-        switch (recordingMode) {
-            case RECORD_ALL:
-                stopAndRetainRecordingForDescriptionAndSuccessState(description, true);
-                break;
-        }
-        currentVncRecordings.clear();
+        stopAndRetainRecordingForDescriptionAndSuccessState(description, true);
     }
 
     @Override
-    protected void finished(Description description) {
+    public void stop() {
         if (driver != null) {
-            driver.quit();
+            try {
+                driver.quit();
+            } catch (Exception e) {
+                LOGGER.debug("Failed to quit the driver", e);
+            }
         }
-        this.stop();
+
+        if (vncRecordingContainer != null) {
+            try {
+                vncRecordingContainer.stop();
+            } catch (Exception e) {
+                LOGGER.debug("Failed to stop vncRecordingContainer", e);
+            }
+        }
+
+        super.stop();
     }
 
     private void stopAndRetainRecordingForDescriptionAndSuccessState(Description description, boolean succeeded) {
-        File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, description, succeeded);
-        LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
+        final boolean shouldRecord;
+        switch (recordingMode) {
+            case RECORD_ALL:
+                shouldRecord = true;
+                break;
+            case RECORD_FAILING:
+                shouldRecord = !succeeded;
+                break;
+            default:
+                shouldRecord = false;
+                break;
+        }
 
-        for (VncRecordingSidekickContainer container : currentVncRecordings) {
-            container.stopAndRetainRecording(recordingFile);
+        if (shouldRecord) {
+            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, description, succeeded);
+            LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
+
+            vncRecordingContainer.saveRecordingToFile(recordingFile);
         }
     }
 

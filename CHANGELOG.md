@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Added `getDatabaseName` method to JdbcDatabaseContainer, MySQLContainer, PostgreSQLContainer ([\#473](https://github.com/testcontainers/testcontainers-java/issues/473))
+- Added `VncRecordingContainer` - Network-based, attachable re-implementation of `VncRecordingSidekickContainer` ([\#526](https://github.com/testcontainers/testcontainers-java/pull/526))
 
 ## [1.5.0] - 2017-12-12
 ### Fixed

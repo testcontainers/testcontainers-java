@@ -2,6 +2,8 @@ package org.testcontainers.junit;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.DefaultRecordingFileFactory;
@@ -10,29 +12,32 @@ import java.io.File;
 
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
 
-/**
- *
- */
+@RunWith(Enclosed.class)
 public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
 
-    @Rule
-    public BrowserWebDriverContainer chromeThatRecordsAllTests = new BrowserWebDriverContainer()
-            .withDesiredCapabilities(DesiredCapabilities.chrome())
-            .withRecordingMode(RECORD_ALL, new File("./target/"))
-            .withRecordingFileFactory(new DefaultRecordingFileFactory());
+    public static class ChromeThatRecordsAllTests {
 
-    @Rule
-    public BrowserWebDriverContainer chromeThatRecordsFailingTests = new BrowserWebDriverContainer()
-            .withDesiredCapabilities(DesiredCapabilities.chrome());
+        @Rule
+        public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+                .withDesiredCapabilities(DesiredCapabilities.chrome())
+                .withRecordingMode(RECORD_ALL, new File("./target/"))
+                .withRecordingFileFactory(new DefaultRecordingFileFactory());
 
-
-    @Test
-    public void recordingTestThatShouldBeRecordedButDeleted() {
-        doSimpleExplore(chromeThatRecordsFailingTests);
+        @Test
+        public void recordingTestThatShouldBeRecordedAndRetained() {
+            doSimpleExplore(chrome);
+        }
     }
 
-    @Test
-    public void recordingTestThatShouldBeRecordedAndRetained() {
-        doSimpleExplore(chromeThatRecordsAllTests);
+    public static class ChromeThatRecordsFailingTests {
+
+        @Rule
+        public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+                .withDesiredCapabilities(DesiredCapabilities.chrome());
+
+        @Test
+        public void recordingTestThatShouldBeRecordedButDeleted() {
+            doSimpleExplore(chrome);
+        }
     }
 }
