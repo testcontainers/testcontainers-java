@@ -169,7 +169,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
-                Timeouts.getWithTimeout(1, TimeUnit.SECONDS,
+                Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
                         () ->
                                 () -> new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities)));
 
