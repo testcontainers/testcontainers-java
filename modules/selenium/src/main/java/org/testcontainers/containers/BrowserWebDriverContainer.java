@@ -237,6 +237,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                 break;
             default:
                 shouldRecord = false;
+                break;
         }
 
         if (shouldRecord) {

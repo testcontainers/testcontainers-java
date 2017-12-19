@@ -1,7 +1,9 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.CreateNetworkCmd;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Singular;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
 import org.testcontainers.DockerClientFactory;
