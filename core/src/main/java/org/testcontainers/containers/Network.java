@@ -9,12 +9,20 @@ import org.junit.rules.TestRule;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
+
+    Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
+        @Override
+        public void close() {
+            // Do not allow users to close SHARED network, only ResourceReaper is allowed to close (destroy) it
+        }
+    };
 
     String getId();
 
