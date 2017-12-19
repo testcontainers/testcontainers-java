@@ -101,6 +101,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
+            if (getNetwork() == null) {
+                withNetwork(Network.SHARED);
+            }
+
             vncRecordingContainer = new VncRecordingContainer(this)
                     .withVncPassword(DEFAULT_PASSWORD)
                     .withVncPort(VNC_PORT);
