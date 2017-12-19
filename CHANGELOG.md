@@ -1,6 +1,8 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.5.1] - 2017-12-19
+
 ### Fixed
 - Fixed problem with case-sensitivity when checking internal port. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
 - Add retry logic around checkExposedPort pre-flight check for improved robustness ([\#513](https://github.com/testcontainers/testcontainers-java/issues/513))
@@ -366,7 +368,8 @@ All notable changes to this project will be documented in this file.
 ## [0.9] - 2015-04-29
 Initial release
 
-[1.4.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.5.0
+[1.5.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.5.1
+[1.5.0]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.5.0
 [1.4.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.3
 [1.4.2]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.2
 [1.4.1]: https://github.com/testcontainers/testcontainers-java/releases/tag/1.4.1
