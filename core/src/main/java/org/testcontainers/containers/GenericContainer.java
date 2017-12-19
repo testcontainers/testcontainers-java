@@ -84,9 +84,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Network network;
 
     @NonNull
-    private List<String> networkAliases = Arrays.asList(
+    private List<String> networkAliases = new ArrayList<>(Arrays.asList(
             "tc-" + Base58.randomString(8)
-    );
+    ));
 
     @NonNull
     private Future<String> image;
