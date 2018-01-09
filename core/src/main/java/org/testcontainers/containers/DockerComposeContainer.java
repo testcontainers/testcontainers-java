@@ -27,6 +27,9 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -397,6 +400,7 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
     private static final String DOCKER_SOCKET_PATH = "/var/run/docker.sock";
+    private static final String DOCKER_CONFIG_PATH = "/root/.docker";
     public static final char UNIX_PATH_SEPERATOR = ':';
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
@@ -429,6 +433,11 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
+        Path dockerConfig = Paths.get(System.getProperty("user.home"), ".docker");
+        if (Files.exists(dockerConfig)){
+            addFileSystemBind(dockerConfig.toString(), DOCKER_CONFIG_PATH, READ_ONLY);
+        }
+
     }
 
     private String getDockerSocketHostPath() {
