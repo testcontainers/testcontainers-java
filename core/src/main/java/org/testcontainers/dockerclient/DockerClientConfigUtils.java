@@ -9,6 +9,8 @@ import org.testcontainers.DockerClientFactory;
 import java.io.File;
 import java.util.Optional;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 @Slf4j
 public class DockerClientConfigUtils {
 
@@ -23,10 +25,13 @@ public class DockerClientConfigUtils {
                     cmd -> cmd.withCmd("sh", "-c", "ip route|awk '/default/ { print $3 }'"),
                     (client, id) -> {
                         try {
-                            return client.logContainerCmd(id)
-                                    .withStdOut(true)
-                                    .exec(new LogToStringContainerCallback())
-                                    .toString();
+                            LogToStringContainerCallback loggingCallback = new LogToStringContainerCallback();
+                            client.logContainerCmd(id).withStdOut(true)
+                                                      .withFollowStream(true)
+                                                      .exec(loggingCallback)
+                                                      .awaitStarted();
+                            loggingCallback.awaitCompletion(3, SECONDS);
+                            return loggingCallback.toString();
                         } catch (Exception e) {
                             log.warn("Can't parse the default gateway IP", e);
                             return null;
