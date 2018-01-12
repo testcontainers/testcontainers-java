@@ -1,12 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+### Fixed
+- Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
+
 ## [1.5.1] - 2017-12-19
 
 ### Fixed
 - Fixed problem with case-sensitivity when checking internal port. ([\#524](https://github.com/testcontainers/testcontainers-java/pull/524))
 - Add retry logic around checkExposedPort pre-flight check for improved robustness ([\#513](https://github.com/testcontainers/testcontainers-java/issues/513))
-- Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
 
 ### Changed
 - Added `getDatabaseName` method to JdbcDatabaseContainer, MySQLContainer, PostgreSQLContainer ([\#473](https://github.com/testcontainers/testcontainers-java/issues/473))
