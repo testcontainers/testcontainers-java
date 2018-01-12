@@ -27,9 +27,7 @@ public class DockerClientConfigUtils {
                         try {
                             LogToStringContainerCallback loggingCallback = new LogToStringContainerCallback();
                             client.logContainerCmd(id).withStdOut(true)
-                                                      .withStdErr(true)
                                                       .withFollowStream(true)
-                                                      .withTailAll()
                                                       .exec(loggingCallback)
                                                       .awaitStarted();
                             loggingCallback.awaitCompletion(3, SECONDS);
