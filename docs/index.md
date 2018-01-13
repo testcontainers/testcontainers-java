@@ -14,7 +14,7 @@ TestContainers makes it easy to launch useful Docker containers for the duration
  * **Data access layer integration tests**: use a containerized instance of a MySQL, PostgreSQL or Oracle database to test your data access layer code for complete compatibility, but without requiring complex setup on developers' machines and safe in the knowledge that your tests will always start with a known DB state. Any other database type that can be containerized can also be used.
  * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
  * **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
- * **Much more!** Check out the various [contributed modules](modules.md) or create your own custom container classes using [`GenericContainer`](generic_containers.md) as a base.
+ * **Much more!** Check out the various [contributed modules](https://github.com/testcontainers) or create your own custom container classes using [`GenericContainer`](usage/generic_containers.md) as a base.
 
 ## Who is using TestContainers?
 
