@@ -190,7 +190,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return LoggerFactory.getLogger(DockerComposeContainer.class);
     }
 
-    @Override @VisibleForTesting
+    @Override
+    @VisibleForTesting
     public void finished(Description description) {
 
 
@@ -227,7 +228,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     public SELF withExposedService(String serviceName, int servicePort) {
 
-        if (! serviceName.matches(".*_[0-9]+")) {
+        if (!serviceName.matches(".*_[0-9]+")) {
             serviceName += "_1"; // implicit first instance of this service
         }
 
@@ -362,7 +363,9 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
     private static final String DOCKER_SOCKET_PATH = "/var/run/docker.sock";
-    private static final String DOCKER_CONFIG_PATH = "/root/.docker";
+    private static final String DOCKER_CONFIG_FILE = "/root/.docker/config.json";
+    private static final String DOCKER_CONFIG_ENV = "DOCKER_CONFIG_FILE";
+    private static final String DOCKER_CONFIG_PROPERTY = "dockerConfigFile";
     public static final char UNIX_PATH_SEPERATOR = ':';
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
@@ -378,10 +381,10 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         final String containerPwd = MountableFile.forHostPath(pwd).getFilesystemPath();
 
         final List<String> absoluteDockerComposeFiles = composeFiles.stream()
-                        .map(File::getAbsolutePath)
-                        .map(MountableFile::forHostPath)
-                        .map(MountableFile::getFilesystemPath)
-                        .collect(toList());
+                .map(File::getAbsolutePath)
+                .map(MountableFile::forHostPath)
+                .map(MountableFile::getFilesystemPath)
+                .collect(toList());
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
@@ -395,9 +398,17 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
-        Path dockerConfig = Paths.get(System.getProperty("user.home"), ".docker");
-        if (Files.exists(dockerConfig)){
-            addFileSystemBind(dockerConfig.toString(), DOCKER_CONFIG_PATH, READ_ONLY);
+
+        String dockerConfigEnv = System.getenv(DOCKER_CONFIG_ENV);
+        String dockerConfigProperty = System.getProperty(DOCKER_CONFIG_PROPERTY);
+        Path dockerConfig = Paths.get(System.getProperty("user.home"), ".docker", "config.json");
+
+        if (dockerConfigEnv != null && !dockerConfigEnv.trim().isEmpty()) {
+            addFileSystemBind(dockerConfigEnv.toString(), DOCKER_CONFIG_FILE, READ_ONLY);
+        } else if (dockerConfigProperty != null && !dockerConfigProperty.trim().isEmpty()) {
+            addFileSystemBind(dockerConfigProperty.toString(), DOCKER_CONFIG_FILE, READ_ONLY);
+        } else if (Files.exists(dockerConfig)) {
+            addFileSystemBind(dockerConfig.toString(), DOCKER_CONFIG_FILE, READ_ONLY);
         }
 
     }
