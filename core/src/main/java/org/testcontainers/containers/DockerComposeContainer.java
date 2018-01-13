@@ -403,10 +403,10 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         String dockerConfigProperty = System.getProperty(DOCKER_CONFIG_PROPERTY);
         Path dockerConfig = Paths.get(System.getProperty("user.home"), ".docker", "config.json");
 
-        if (dockerConfigEnv != null && !dockerConfigEnv.trim().isEmpty()) {
-            addFileSystemBind(dockerConfigEnv.toString(), DOCKER_CONFIG_FILE, READ_ONLY);
-        } else if (dockerConfigProperty != null && !dockerConfigProperty.trim().isEmpty()) {
-            addFileSystemBind(dockerConfigProperty.toString(), DOCKER_CONFIG_FILE, READ_ONLY);
+        if (dockerConfigEnv != null && !dockerConfigEnv.trim().isEmpty() && Files.exists(Paths.get(dockerConfigEnv))) {
+            addFileSystemBind(dockerConfigEnv, DOCKER_CONFIG_FILE, READ_ONLY);
+        } else if (dockerConfigProperty != null && !dockerConfigProperty.trim().isEmpty() && Files.exists(Paths.get(dockerConfigProperty))) {
+            addFileSystemBind(dockerConfigProperty, DOCKER_CONFIG_FILE, READ_ONLY);
         } else if (Files.exists(dockerConfig)) {
             addFileSystemBind(dockerConfig.toString(), DOCKER_CONFIG_FILE, READ_ONLY);
         }
