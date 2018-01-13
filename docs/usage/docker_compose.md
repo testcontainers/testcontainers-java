@@ -53,3 +53,44 @@ String redisUrl = environment.getServiceHost("redis_1", REDIS_PORT)
                     + ":" +
                   environment.getServicePort("redis_1", REDIS_PORT);
 ```
+
+## Using private repositories in Docker compose
+When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
+By default, those setting are located in `$HOME/.docker/config.json`. 
+
+There are 3 ways to specify location of the `config.json` for Docker Compose
+* Use `DOCKER_CONFIG_FILE` environment variable. 
+
+    `export DOCKER_CONFIG_FILE=/some/location/config.json` 
+
+* Use `dockerConfigFile` java property
+    
+    `java -DdockerConfigFile=/some/location/config.json`
+
+* Don't specify anything, in this case default location `$HOME/.docker/config.json`, if present, will be used 
+
+####Note to OSX users
+By default, Docker for mac uses Keychain to store private repositories' keys. So, your `config.json` looks like
+```$json
+{
+  "auths" : {
+    "https://index.docker.io/v1/" : {
+    }
+  },
+  "credsStore" : "osxkeychain"
+}
+```
+
+Docker Compose in container cannot access the Keychain, thus making the configuration useless. 
+To work around this problem, create `config.json` in separate location with real authentication keys, like 
+```$json
+{
+  "auths" : {
+    "https://index.docker.io/v1/" : {
+     "auth": "QWEADSZXC..."
+    }
+  },
+  "credsStore" : "osxkeychain"
+}
+```
+and specify the location to TestContainers using any of the two first methods from above. 

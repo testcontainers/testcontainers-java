@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
+- Compose is now can pull images from private repositories.
 
 ## [1.5.1] - 2017-12-19
 
