@@ -101,7 +101,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         profiler.start("Docker Compose container startup");
 
         synchronized (MUTEX) {
-            ResourceReaper.instance().registerFilterForCleanup("label=com.docker.compose.project=" + project);
+            registerContainersForShutdown();
             if (pull) {
                 pullImages();
             }
