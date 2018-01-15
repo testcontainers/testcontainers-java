@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +47,7 @@ public final class ResourceReaper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
-    private static final List<String> REGISTERED_FILTERS = new ArrayList<>();
+    private static final List<List<Map.Entry<String, String>>> REGISTERED_FILTERS = new ArrayList<>();
 
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
@@ -76,8 +77,11 @@ public final class ResourceReaper {
                 .withPublishAllPorts(true)
                 .withName("tc-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-                .withBinds(new Bind("/var/run/docker.sock", new Volume("/var/run/docker.sock")))
-                .withBinds(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro))
+                .withBinds(
+                        new Bind("/var/run/docker.sock", new Volume("/var/run/docker.sock")),
+                        // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
+                        new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro)
+                )
                 .exec()
                 .getId();
 
@@ -95,12 +99,9 @@ public final class ResourceReaper {
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
         REGISTERED_FILTERS.add(
-                URLEncodedUtils.format(
-                        DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
-                                .map(it -> new BasicNameValuePair("label", it.getKey() + "=" + it.getValue()))
-                                .collect(Collectors.toList()),
-                        (String) null
-                )
+                DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
+                        .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
+                        .collect(Collectors.toList())
         );
 
         Thread kiraThread = new Thread(
@@ -111,24 +112,36 @@ public final class ResourceReaper {
                             OutputStream out = clientSocket.getOutputStream();
                             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                            while(true) {
-                                if (REGISTERED_FILTERS.size() <= index) {
-                                    try {
-                                        TimeUnit.MILLISECONDS.sleep(100);
-                                        continue;
-                                    } catch (InterruptedException e) {
-                                        throw new RuntimeException(e);
+                            synchronized (REGISTERED_FILTERS) {
+                                while (true) {
+                                    if (REGISTERED_FILTERS.size() <= index) {
+                                        try {
+                                            REGISTERED_FILTERS.wait(1_000);
+                                            continue;
+                                        } catch (InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
                                     }
-                                }
-                                out.write(REGISTERED_FILTERS.get(index).getBytes());
-                                out.write('\n');
-                                out.flush();
+                                    List<Map.Entry<String, String>> filters = REGISTERED_FILTERS.get(index);
 
-                                while (!"ACK".equalsIgnoreCase(in.readLine())) {
-                                }
+                                    String query = URLEncodedUtils.format(
+                                            filters.stream()
+                                                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
+                                                    .collect(Collectors.toList()),
+                                            (String) null
+                                    );
 
-                                ryukScheduledLatch.countDown();
-                                index++;
+                                    log.debug("Sending '{}' to Ryuk", query);
+                                    out.write(query.getBytes());
+                                    out.write('\n');
+                                    out.flush();
+
+                                    while (!"ACK".equalsIgnoreCase(in.readLine())) {
+                                    }
+
+                                    ryukScheduledLatch.countDown();
+                                    index++;
+                                }
                             }
                         } catch (IOException e) {
                             log.warn("Can not connect to Ryuk at {}:{}", hostIpAddress, ryukPort, e);
@@ -170,8 +183,11 @@ public final class ResourceReaper {
      *
      * @param filter the filter
      */
-    public void registerFilterForCleanup(String filter) {
-        REGISTERED_FILTERS.add(filter);
+    public void registerFilterForCleanup(List<Map.Entry<String, String>> filter) {
+        synchronized (REGISTERED_FILTERS) {
+            REGISTERED_FILTERS.add(filter);
+            REGISTERED_FILTERS.notifyAll();
+        }
     }
 
     /**
