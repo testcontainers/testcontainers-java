@@ -2,35 +2,32 @@ package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
-import org.testcontainers.dockerclient.*;
+import org.testcontainers.dockerclient.DockerClientProviderStrategy;
+import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.utility.ComparableVersion;
-import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.Socket;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.concurrent.TimeUnit;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -42,12 +39,22 @@ import java.util.function.Consumer;
 @Slf4j
 public class DockerClientFactory {
 
+    public static final String TESTCONTAINERS_LABEL = DockerClientFactory.class.getPackage().getName();
+    public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
+
+    public static final String SESSION_ID = UUID.randomUUID().toString();
+
+    public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
+            TESTCONTAINERS_LABEL, "true",
+            TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
+    );
+
     private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
     private static DockerClientFactory instance;
 
     // Cached client configuration
     private DockerClientProviderStrategy strategy;
-    private boolean preconditionsChecked = false;
+    private boolean initialized = false;
     private String activeApiVersion;
     private String activeExecutionDriver;
 
@@ -95,7 +102,7 @@ public class DockerClientFactory {
         log.info("Docker host IP address is {}", hostIpAddress);
         DockerClient client = strategy.getClient();
 
-        if (!preconditionsChecked) {
+        if (!initialized) {
             Info dockerInfo = client.infoCmd().exec();
             Version version = client.versionCmd().exec();
             activeApiVersion = version.getApiVersion();
@@ -106,30 +113,19 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
+            String ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+            log.info("Ryuk started");
+
+            VisibleAssertions.info("Checking the system...");
+
+            checkDockerVersion(version.getVersion());
+
             if (!TestcontainersConfiguration.getInstance().isDisableChecks()) {
-                VisibleAssertions.info("Checking the system...");
-
-                checkDockerVersion(version.getVersion());
-
-                MountableFile mountableFile = MountableFile.forClasspathResource(this.getClass().getName().replace(".", "/") + ".class");
-
-                runInsideDocker(
-                        client,
-                        cmd -> cmd
-                                .withCmd("/bin/sh", "-c", "while true; do printf 'hello' | nc -l -p 80; done")
-                                .withBinds(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro))
-                                .withExposedPorts(new ExposedPort(80))
-                                .withPublishAllPorts(true),
-                        (dockerClient, id) -> {
-
-                            checkDiskSpace(dockerClient, id);
-                            checkMountableFile(dockerClient, id);
-                            checkExposedPort(hostIpAddress, dockerClient, id);
-
-                            return null;
-                        });
+                checkDiskSpace(client, ryukContainerId);
+                checkMountableFile(client, ryukContainerId);
             }
-            preconditionsChecked = true;
+
+            initialized = true;
         }
 
         return client;
@@ -178,22 +174,6 @@ public class DockerClientFactory {
         }
     }
 
-    private void checkExposedPort(String hostIpAddress, DockerClient dockerClient, String id) {
-        String response = Unreliables.retryUntilSuccess(3, TimeUnit.SECONDS, () -> {
-            InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
-
-            String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
-
-            try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
-                return IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
-            } catch (IOException e) {
-                return e.getMessage();
-            }
-        });
-
-        VisibleAssertions.assertEquals("A port exposed by a docker container should be accessible", "hello", response);
-    }
-
     /**
    * Check whether the image is available locally and pull it otherwise
    */
@@ -221,7 +201,8 @@ public class DockerClientFactory {
 
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
         checkAndPullImage(client, TINY_IMAGE);
-        CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE);
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE)
+                .withLabels(DEFAULT_LABELS);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
 
@@ -263,7 +244,7 @@ public class DockerClientFactory {
      * @return the docker API version of the daemon that we have connected to
      */
     public String getActiveApiVersion() {
-        if (!preconditionsChecked) {
+        if (!initialized) {
             client();
         }
         return activeApiVersion;
@@ -273,7 +254,7 @@ public class DockerClientFactory {
      * @return the docker execution driver of the daemon that we have connected to
      */
     public String getActiveExecutionDriver() {
-        if (!preconditionsChecked) {
+        if (!initialized) {
             client();
         }
         return activeExecutionDriver;

@@ -211,10 +211,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
-            createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
             containerId = createCommand.exec().getId();
-            ResourceReaper.instance().registerContainerForCleanup(containerId, dockerImageName);
 
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
@@ -464,7 +462,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withPrivileged(privilegedMode);
         }
 
-        createCommand.withLabels(Collections.singletonMap("org.testcontainers", "true"));
+        createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
+
+        Map<String, String> labels = createCommand.getLabels();
+        labels = new HashMap<>(labels != null ? labels : Collections.emptyMap());
+        labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+        createCommand.withLabels(labels);
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {

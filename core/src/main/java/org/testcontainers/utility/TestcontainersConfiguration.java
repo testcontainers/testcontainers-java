@@ -46,6 +46,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
     }
 
+    public String getRyukImage() {
+        return (String) properties.getOrDefault("ryuk.container.image", "bsideup/moby-ryuk:0.2.1");
+    }
+
     public boolean isDisableChecks() {
         return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
     }

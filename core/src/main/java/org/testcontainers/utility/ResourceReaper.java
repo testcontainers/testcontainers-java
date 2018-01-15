@@ -1,27 +1,53 @@
 package org.testcontainers.utility;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.core.command.PullImageResultCallback;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
  */
+@Slf4j
 public final class ResourceReaper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
+
+    private static final List<String> REGISTERED_FILTERS = new ArrayList<>();
+
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
@@ -32,6 +58,94 @@ public final class ResourceReaper {
 
         // If the JVM stops without containers being stopped, try and stop the container.
         Runtime.getRuntime().addShutdownHook(new Thread(this::performCleanup));
+    }
+
+    @SneakyThrows(InterruptedException.class)
+    public static String start(String hostIpAddress, DockerClient client) {
+        String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
+        client.pullImageCmd(ryukImage).exec(new PullImageResultCallback()).awaitSuccess();
+
+        MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
+
+        String ryukContainerId = client.createContainerCmd(ryukImage)
+                .withHostConfig(new HostConfig() {
+                    @JsonProperty("AutoRemove")
+                    boolean autoRemove = true;
+                })
+                .withExposedPorts(new ExposedPort(8080))
+                .withPublishAllPorts(true)
+                .withName("tc-ryuk-" + DockerClientFactory.SESSION_ID)
+                .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
+                .withBinds(new Bind("/var/run/docker.sock", new Volume("/var/run/docker.sock")))
+                .withBinds(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro))
+                .exec()
+                .getId();
+
+        client.startContainerCmd(ryukContainerId).exec();
+
+        InspectContainerResponse inspectedContainer = client.inspectContainerCmd(ryukContainerId).exec();
+
+        Integer ryukPort = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().stream()
+                .flatMap(Stream::of)
+                .findFirst()
+                .map(Ports.Binding::getHostPortSpec)
+                .map(Integer::parseInt)
+                .get();
+
+        CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
+
+        REGISTERED_FILTERS.add(
+                URLEncodedUtils.format(
+                        DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
+                                .map(it -> new BasicNameValuePair("label", it.getKey() + "=" + it.getValue()))
+                                .collect(Collectors.toList()),
+                        (String) null
+                )
+        );
+
+        Thread kiraThread = new Thread(
+                () -> {
+                    while (true) {
+                        int index = 0;
+                        try(Socket clientSocket = new Socket(hostIpAddress, ryukPort)) {
+                            OutputStream out = clientSocket.getOutputStream();
+                            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+                            while(true) {
+                                if (REGISTERED_FILTERS.size() <= index) {
+                                    try {
+                                        TimeUnit.MILLISECONDS.sleep(100);
+                                        continue;
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                                out.write(REGISTERED_FILTERS.get(index).getBytes());
+                                out.write('\n');
+                                out.flush();
+
+                                while (!"ACK".equalsIgnoreCase(in.readLine())) {
+                                }
+
+                                ryukScheduledLatch.countDown();
+                                index++;
+                            }
+                        } catch (IOException e) {
+                            log.warn("Can not connect to Ryuk at {}:{}", hostIpAddress, ryukPort, e);
+                        }
+                    }
+                },
+                "tc-ryuk"
+        );
+        kiraThread.setDaemon(true);
+        kiraThread.start();
+
+        // We need to wait before we can start any containers to make sure that we delete them
+        if (!ryukScheduledLatch.await(5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Can not connect to Ryuk");
+        }
+
+        return ryukContainerId;
     }
 
     public synchronized static ResourceReaper instance() {
@@ -49,6 +163,15 @@ public final class ResourceReaper {
     public synchronized void performCleanup() {
         registeredContainers.forEach(this::stopContainer);
         registeredNetworks.forEach(this::removeNetwork);
+    }
+
+    /**
+     * Register a filter to be cleaned up.
+     *
+     * @param filter the filter
+     */
+    public void registerFilterForCleanup(String filter) {
+        REGISTERED_FILTERS.add(filter);
     }
 
     /**
