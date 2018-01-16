@@ -47,7 +47,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getRyukImage() {
-        return (String) properties.getOrDefault("ryuk.container.image", "bsideup/moby-ryuk:0.2.1");
+        return (String) properties.getOrDefault("ryuk.container.image", "bsideup/moby-ryuk:0.2.2");
     }
 
     public boolean isDisableChecks() {

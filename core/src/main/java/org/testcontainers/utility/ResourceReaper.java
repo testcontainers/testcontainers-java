@@ -13,7 +13,6 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -64,7 +63,7 @@ public final class ResourceReaper {
     @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
-        client.pullImageCmd(ryukImage).exec(new PullImageResultCallback()).awaitSuccess();
+        DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
 
@@ -98,11 +97,13 @@ public final class ResourceReaper {
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
-        REGISTERED_FILTERS.add(
-                DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
-                        .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
-                        .collect(Collectors.toList())
-        );
+        synchronized (REGISTERED_FILTERS) {
+            REGISTERED_FILTERS.add(
+                    DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
+                            .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
+                            .collect(Collectors.toList())
+            );
+        }
 
         Thread kiraThread = new Thread(
                 () -> {

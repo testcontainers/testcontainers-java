@@ -177,7 +177,7 @@ public class DockerClientFactory {
     /**
    * Check whether the image is available locally and pull it otherwise
    */
-    private void checkAndPullImage(DockerClient client, String image) {
+    public void checkAndPullImage(DockerClient client, String image) {
         List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
         if (images.isEmpty()) {
             client.pullImageCmd(image).exec(new PullImageResultCallback()).awaitSuccess();
