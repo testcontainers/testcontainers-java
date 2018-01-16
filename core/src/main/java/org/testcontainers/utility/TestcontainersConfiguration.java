@@ -30,6 +30,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
     }
 
+    public String getSocatContainerImage() {
+        return (String) properties.getOrDefault("socat.container.image", "alpine/socat:latest");
+    }
+
     public String getVncRecordedContainerImage() {
         return (String) properties.getOrDefault("vncrecorder.container.image", "richnorth/vnc-recorder:latest");
     }

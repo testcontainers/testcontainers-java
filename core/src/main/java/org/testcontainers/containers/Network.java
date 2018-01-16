@@ -52,7 +52,7 @@ public interface Network extends AutoCloseable, TestRule {
         private final AtomicBoolean initialized = new AtomicBoolean();
 
         @Override
-        public String getId() {
+        public synchronized String getId() {
             if (initialized.compareAndSet(false, true)) {
                 id = create();
             }
