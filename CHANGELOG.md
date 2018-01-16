@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Added Kafka module ([\#546](https://github.com/testcontainers/testcontainers-java/pull/546))
+- Added "Death Note" to track & kill spawned containers even if the JVM was "kill -9"ed ([\#545](https://github.com/testcontainers/testcontainers-java/pull/545))
 
 ## [1.5.1] - 2017-12-19
 
