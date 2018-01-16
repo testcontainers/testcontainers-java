@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,18 +47,16 @@ public final class ResourceReaper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
-    private static final List<List<Map.Entry<String, String>>> REGISTERED_FILTERS = new ArrayList<>();
+    private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
 
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private AtomicBoolean hookIsSet = new AtomicBoolean(false);
 
     private ResourceReaper() {
         dockerClient = DockerClientFactory.instance().client();
-
-        // If the JVM stops without containers being stopped, try and stop the container.
-        Runtime.getRuntime().addShutdownHook(new Thread(this::performCleanup));
     }
 
     @SneakyThrows(InterruptedException.class)
@@ -77,7 +76,7 @@ public final class ResourceReaper {
                 .withName("tc-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(
-                        new Bind("/var/run/docker.sock", new Volume("/var/run/docker.sock")),
+                        new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")),
                         // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
                         new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro)
                 )
@@ -97,8 +96,8 @@ public final class ResourceReaper {
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
-        synchronized (REGISTERED_FILTERS) {
-            REGISTERED_FILTERS.add(
+        synchronized (DEATH_NOTE) {
+            DEATH_NOTE.add(
                     DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
                             .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
                             .collect(Collectors.toList())
@@ -113,17 +112,17 @@ public final class ResourceReaper {
                             OutputStream out = clientSocket.getOutputStream();
                             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                            synchronized (REGISTERED_FILTERS) {
+                            synchronized (DEATH_NOTE) {
                                 while (true) {
-                                    if (REGISTERED_FILTERS.size() <= index) {
+                                    if (DEATH_NOTE.size() <= index) {
                                         try {
-                                            REGISTERED_FILTERS.wait(1_000);
+                                            DEATH_NOTE.wait(1_000);
                                             continue;
                                         } catch (InterruptedException e) {
                                             throw new RuntimeException(e);
                                         }
                                     }
-                                    List<Map.Entry<String, String>> filters = REGISTERED_FILTERS.get(index);
+                                    List<Map.Entry<String, String>> filters = DEATH_NOTE.get(index);
 
                                     String query = URLEncodedUtils.format(
                                             filters.stream()
@@ -185,9 +184,9 @@ public final class ResourceReaper {
      * @param filter the filter
      */
     public void registerFilterForCleanup(List<Map.Entry<String, String>> filter) {
-        synchronized (REGISTERED_FILTERS) {
-            REGISTERED_FILTERS.add(filter);
-            REGISTERED_FILTERS.notifyAll();
+        synchronized (DEATH_NOTE) {
+            DEATH_NOTE.add(filter);
+            DEATH_NOTE.notifyAll();
         }
     }
 
@@ -198,6 +197,7 @@ public final class ResourceReaper {
      * @param imageName   the image name of the container (used for logging)
      */
     public void registerContainerForCleanup(String containerId, String imageName) {
+        setHook();
         registeredContainers.put(containerId, imageName);
     }
 
@@ -273,6 +273,7 @@ public final class ResourceReaper {
      * @param id   the ID of the network
      */
     public void registerNetworkIdForCleanup(String id) {
+        setHook();
         registeredNetworks.add(id);
     }
 
@@ -345,5 +346,12 @@ public final class ResourceReaper {
 
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
+    }
+
+    private void setHook() {
+        if (hookIsSet.compareAndSet(false, true)) {
+            // If the JVM stops without containers being stopped, try and stop the container.
+            Runtime.getRuntime().addShutdownHook(new Thread(this::performCleanup));
+        }
     }
 }
