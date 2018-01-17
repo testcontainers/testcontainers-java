@@ -18,8 +18,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         this("4.0.0");
     }
 
-    public KafkaContainer(String confluencePlatformVersion) {
-        super("confluentinc/cp-kafka:" + confluencePlatformVersion);
+    public KafkaContainer(String confluentPlatformVersion) {
+        super("confluentinc/cp-kafka:" + confluentPlatformVersion);
 
         withNetwork(Network.newNetwork());
         withNetworkAliases("kafka-" + Base58.randomString(6));
