@@ -438,7 +438,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         setWorkingDirectory(containerPwd);
 
         String dockerConfigPath = determineDockerConfigPath();
-        if (dockerConfigPath != null && dockerConfigPath.isEmpty()) {
+        if (dockerConfigPath != null && !dockerConfigPath.isEmpty()) {
             addFileSystemBind(dockerConfigPath, DOCKER_CONFIG_FILE, READ_ONLY);
         }
     }
