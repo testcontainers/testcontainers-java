@@ -17,11 +17,13 @@ public abstract class AbstractCouchbaseTest {
 
     public static final String DEFAULT_BUCKET = "default";
 
+    public static final String DEFAULT_PASSWORD = "password";
+
     @Getter(lazy = true)
     private final static CouchbaseContainer couchbaseContainer = initCouchbaseContainer();
 
     @Getter(lazy = true)
-    private final static Bucket bucket = openBucket(DEFAULT_BUCKET);
+    private final static Bucket bucket = openBucket(DEFAULT_BUCKET, DEFAULT_PASSWORD);
 
     @After
     public void clear() {
@@ -39,6 +41,7 @@ public abstract class AbstractCouchbaseTest {
                 .withNewBucket(DefaultBucketSettings.builder()
                         .enableFlush(true)
                         .name(DEFAULT_BUCKET)
+                        .password(DEFAULT_PASSWORD)
                         .quota(100)
                         .replicas(0)
                         .type(BucketType.COUCHBASE)
@@ -47,9 +50,9 @@ public abstract class AbstractCouchbaseTest {
         return couchbaseContainer;
     }
 
-    private static Bucket openBucket(String bucketName) {
+    private static Bucket openBucket(String bucketName, String password) {
         CouchbaseCluster cluster = getCouchbaseContainer().getCouchbaseCluster();
-        Bucket bucket = cluster.openBucket(bucketName);
+        Bucket bucket = cluster.openBucket(bucketName, password);
         Runtime.getRuntime().addShutdownHook(new Thread(bucket::close));
         return bucket;
     }

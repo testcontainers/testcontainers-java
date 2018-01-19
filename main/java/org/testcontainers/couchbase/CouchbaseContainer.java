@@ -18,7 +18,7 @@ package org.testcontainers.couchbase;
 import com.couchbase.client.core.utils.Base64;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.CouchbaseCluster;
-import com.couchbase.client.java.cluster.BucketSettings;
+import com.couchbase.client.java.cluster.*;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
@@ -32,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -246,9 +247,16 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     }
 
     public void createBucket(BucketSettings bucketSetting, boolean primaryIndex) {
-        BucketSettings bucketSettings = getCouchbaseCluster().clusterManager(clusterUsername, clusterPassword).insertBucket(bucketSetting);
+        ClusterManager clusterManager = getCouchbaseCluster().clusterManager(clusterUsername, clusterPassword);
+        // Insert Bucket
+        BucketSettings bucketSettings = clusterManager.insertBucket(bucketSetting);
+        // Insert Bucket admin user
+        UserSettings userSettings = UserSettings.build()
+                .password(bucketSetting.password())
+                .roles(Collections.singletonList(new UserRole("bucket_admin", bucketSetting.name())));
+        clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
         if (index) {
-            Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name());
+            Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name(), bucketSettings.password());
             new CouchbaseQueryServiceWaitStrategy(bucket).waitUntilReady(this);
             if (primaryIndex) {
                 bucket.query(Index.createPrimaryIndex().on(bucketSetting.name()));
