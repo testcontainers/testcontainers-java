@@ -81,9 +81,10 @@ public class GenericContainerRuleTest {
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainer alpineEnvVar = new GenericContainer("alpine:3.2")
+    public static GenericContainer alpineEnvVar = new GenericContainer<>("alpine:3.2")
             .withExposedPorts(80)
-            .withEnv("MAGIC_NUMBER", "42")
+            .withEnv("MAGIC_NUMBER", "4")
+            .withEnv("MAGIC_NUMBER", oldValue -> oldValue.orElse("") + "2")
             .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
 
     /**

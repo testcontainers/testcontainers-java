@@ -17,8 +17,10 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface Container<SELF extends Container<SELF>> extends LinkableContainer {
 
@@ -181,6 +183,18 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withEnv(String key, String value);
+
+    /**
+     * Add an environment variable to be passed to the container.
+     *
+     * @param key   environment variable key
+     * @param mapper environment variable value mapper, accepts old value as an argument
+     * @return this
+     */
+    default SELF withEnv(String key, Function<Optional<String>, String> mapper) {
+        Optional<String> oldValue = Optional.ofNullable(getEnvMap().get(key));
+        return withEnv(key, mapper.apply(oldValue));
+    }
 
     /**
      * Add environment variables to be passed to the container.
