@@ -140,6 +140,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param hostPath the file system path on the host
      * @param containerPath the file system path inside the container
+     * @return this
+     */
+    default SELF withFileSystemBind(String hostPath, String containerPath) {
+        return withFileSystemBind(hostPath, containerPath, BindMode.READ_WRITE);
+    }
+
+    /**
+     * Adds a file system binding.
+     *
+     * @param hostPath the file system path on the host
+     * @param containerPath the file system path inside the container
      * @param mode the bind mode
      * @return this
      */
@@ -383,6 +394,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
+    @Deprecated
     Info fetchDockerDaemonInfo() throws IOException;
 
     /**
@@ -438,7 +450,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     Future<String> getImage();
 
+    /**
+     *
+     * @deprecated use getEnvMap
+     */
+    @Deprecated
     List<String> getEnv();
+
+    Map<String, String> getEnvMap();
 
     String[] getCommandParts();
 
@@ -452,12 +471,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     DockerClient getDockerClient();
 
+    @Deprecated
     Info getDockerDaemonInfo();
 
     String getContainerId();
 
     String getContainerName();
 
+    @Deprecated
     InspectContainerResponse getContainerInfo();
 
     void setExposedPorts(List<Integer> exposedPorts);

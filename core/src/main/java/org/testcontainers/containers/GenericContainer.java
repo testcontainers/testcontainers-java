@@ -92,7 +92,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Future<String> image;
 
     @NonNull
-    private List<String> env = new ArrayList<>();
+    private Map<String, String> env = new HashMap<>();
 
     @NonNull
     private String[] commandParts = new String[0];
@@ -396,7 +396,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withCmd(commandParts);
         }
 
-        String[] envArray = env.stream()
+        String[] envArray = env.entrySet().stream()
+                .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
 
@@ -533,12 +534,37 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.commandParts = commandParts;
     }
 
+    @Override
+    public Map<String, String> getEnvMap() {
+        return env;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getEnv() {
+        return env.entrySet().stream()
+                .map(it -> it.getKey() + "=" + it.getValue())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void setEnv(List<String> env) {
+        this.env = env.stream()
+                .map(it -> it.split("="))
+                .collect(Collectors.toMap(
+                        it -> it[0],
+                        it -> it[1]
+                ));
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void addEnv(String key, String value) {
-        env.add(key + "=" + value);
+        env.put(key, value);
     }
 
     /**
