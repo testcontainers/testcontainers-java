@@ -19,6 +19,8 @@ public abstract class AbstractDatabaseDelegate<CONTAINER, CONNECTION> implements
      */
     private CONNECTION connection;
 
+    private boolean isConnectionStarted = false;
+
     public AbstractDatabaseDelegate(CONTAINER container) {
         this.container = container;
     }
@@ -27,8 +29,9 @@ public abstract class AbstractDatabaseDelegate<CONTAINER, CONNECTION> implements
      * Get or create new connection to the database
      */
     protected CONNECTION getConnection() {
-        if (connection == null) {
+        if (!isConnectionStarted) {
             connection = createNewConnection();
+            isConnectionStarted = true;
         }
         return connection;
     }
@@ -44,8 +47,9 @@ public abstract class AbstractDatabaseDelegate<CONTAINER, CONNECTION> implements
 
     @Override
     public void close() {
-        if (connection != null) {
+        if (isConnectionStarted) {
             closeConnectionQuietly(connection);
+            isConnectionStarted = false;
         }
     }
 
