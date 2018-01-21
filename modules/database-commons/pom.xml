@@ -9,19 +9,13 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jdbc</artifactId>
-    <name>TestContainers :: JDBC</name>
+    <artifactId>database-commons</artifactId>
+    <name>TestContainers :: Database-Commons</name>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>database-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

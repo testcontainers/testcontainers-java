@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package org.testcontainers.jdbc.ext;
+package org.testcontainers.ext;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.delegate.DatabaseDelegate;
 
 import javax.script.ScriptException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -212,17 +210,16 @@ public abstract class ScriptUtils {
 		return false;
 	}
 
-    public static void executeSqlScript(Connection connection, String scriptPath, String script) throws ScriptException {
-        executeSqlScript(connection, scriptPath, script, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR, DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+    public static void executeDatabaseScript(DatabaseDelegate databaseDelegate, String scriptPath, String script) throws ScriptException {
+        executeDatabaseScript(databaseDelegate, scriptPath, script, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR, DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
     }
 
     /**
-	 * Execute the given SQL script.
+	 * Execute the given database script.
 	 * <p>Statement separators and comments will be removed before executing
 	 * individual statements within the supplied script.
      * <p><b>Do not use this method to execute DDL if you expect rollback.</b>
-     * @param connection the JDBC connection to use to execute the script; already
-     * configured and ready to use
+     * @param databaseDelegate database delegate for script execution
      * @param scriptPath the resource (potentially associated with a specific encoding)
      * to load the SQL script from
      * @param script the raw script content
@@ -240,13 +237,13 @@ public abstract class ScriptUtils {
      * @param blockCommentEndDelimiter the <em>end</em> block comment delimiter; never
 * {@code null} or empty       @throws ScriptException if an error occurred while executing the SQL script
 	 */
-	public static void executeSqlScript(Connection connection, String scriptPath, String script, boolean continueOnError,
+	public static void executeDatabaseScript(DatabaseDelegate databaseDelegate, String scriptPath, String script, boolean continueOnError,
 			boolean ignoreFailedDrops, String commentPrefix, String separator, String blockCommentStartDelimiter,
 			String blockCommentEndDelimiter) throws ScriptException {
 
 		try {
 			if (LOGGER.isInfoEnabled()) {
-				LOGGER.info("Executing SQL script from " + scriptPath);
+				LOGGER.info("Executing database script from " + scriptPath);
 			}
 
 			long startTime = System.currentTimeMillis();
@@ -261,44 +258,14 @@ public abstract class ScriptUtils {
 
 			splitSqlScript(scriptPath, script, separator, commentPrefix, blockCommentStartDelimiter,
 				blockCommentEndDelimiter, statements);
-			int lineNumber = 0;
-			Statement stmt = connection.createStatement();
-			try {
-				for (String statement : statements) {
-					lineNumber++;
-					try {
-						stmt.execute(statement);
-						int rowsAffected = stmt.getUpdateCount();
-						if (LOGGER.isDebugEnabled()) {
-							LOGGER.debug(rowsAffected + " returned as updateCount for SQL: " + statement);
-						}
-					}
-					catch (SQLException ex) {
-						boolean dropStatement = statement.trim().toLowerCase().startsWith("drop");
-						if (continueOnError || (dropStatement && ignoreFailedDrops)) {
-							if (LOGGER.isDebugEnabled()) {
-								LOGGER.debug("Failed to execute SQL script statement at line " + lineNumber
-										+ " of resource " + scriptPath + ": " + statement, ex);
-							}
-						}
-						else {
-							throw new ScriptStatementFailedException(statement, lineNumber, scriptPath, ex);
-						}
-					}
-				}
-			}
-			finally {
-				try {
-					stmt.close();
-				}
-				catch (Throwable ex) {
-					LOGGER.debug("Could not close JDBC Statement", ex);
-				}
+
+			try (DatabaseDelegate closeableDelegate = databaseDelegate) {
+				closeableDelegate.execute(statements, scriptPath, continueOnError, ignoreFailedDrops);
 			}
 
 			long elapsedTime = System.currentTimeMillis() - startTime;
 			if (LOGGER.isInfoEnabled()) {
-				LOGGER.info("Executed SQL script from " + scriptPath + " in " + elapsedTime + " ms.");
+				LOGGER.info("Executed database script from " + scriptPath + " in " + elapsedTime + " ms.");
 			}
 		}
 		catch (Exception ex) {
@@ -317,8 +284,8 @@ public abstract class ScriptUtils {
         }
     }
 
-    private static class ScriptStatementFailedException extends RuntimeException {
-        public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath, SQLException ex) {
+    public static class ScriptStatementFailedException extends RuntimeException {
+        public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath, Exception ex) {
             super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement), ex);
         }
     }
