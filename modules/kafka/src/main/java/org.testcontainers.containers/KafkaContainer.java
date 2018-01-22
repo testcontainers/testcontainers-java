@@ -25,11 +25,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withNetworkAliases("kafka-" + Base58.randomString(6));
         withExposedPorts(KAFKA_PORT);
 
-        withEnv("KAFKA_BROKER_ID", "1");
+        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
+        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
         withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9092,BROKER://127.0.0.1:9093");
         withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
+        withEnv("KAFKA_BROKER_ID", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");

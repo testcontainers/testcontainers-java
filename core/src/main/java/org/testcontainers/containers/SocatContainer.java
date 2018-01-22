@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.HashMap;
@@ -17,6 +18,7 @@ public class SocatContainer extends GenericContainer<SocatContainer> {
     public SocatContainer() {
         super(TestcontainersConfiguration.getInstance().getSocatContainerImage());
         withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
+        withCreateContainerCmdModifier(it -> it.withName("testcontainers-socat-" + Base58.randomString(8)));
     }
 
     public SocatContainer withTarget(int exposedPort, String host) {
