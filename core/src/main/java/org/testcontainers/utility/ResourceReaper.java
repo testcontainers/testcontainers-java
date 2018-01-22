@@ -73,7 +73,7 @@ public final class ResourceReaper {
                 })
                 .withExposedPorts(new ExposedPort(8080))
                 .withPublishAllPorts(true)
-                .withName("tc-ryuk-" + DockerClientFactory.SESSION_ID)
+                .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(
                         new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")),
@@ -148,7 +148,7 @@ public final class ResourceReaper {
                         }
                     }
                 },
-                "tc-ryuk"
+                "testcontainers-ryuk"
         );
         kiraThread.setDaemon(true);
         kiraThread.start();

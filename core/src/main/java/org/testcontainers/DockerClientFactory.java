@@ -114,7 +114,7 @@ public class DockerClientFactory {
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
             String ryukContainerId = ResourceReaper.start(hostIpAddress, client);
-            log.info("Ryuk started");
+            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
 
             VisibleAssertions.info("Checking the system...");
 
