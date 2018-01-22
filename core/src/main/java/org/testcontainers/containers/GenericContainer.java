@@ -912,6 +912,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized Info fetchDockerDaemonInfo() throws IOException {
 

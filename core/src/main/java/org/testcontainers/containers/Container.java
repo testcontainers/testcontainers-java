@@ -408,6 +408,10 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
     @Deprecated
     Info fetchDockerDaemonInfo() throws IOException;
 
@@ -485,6 +489,10 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     DockerClient getDockerClient();
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
     @Deprecated
     Info getDockerDaemonInfo();
 
@@ -492,6 +500,10 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     String getContainerName();
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().inspectContainerCmd(container.getContainerId()).exec()}
+     */
     @Deprecated
     InspectContainerResponse getContainerInfo();
 
