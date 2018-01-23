@@ -29,13 +29,13 @@ public class CouchbaseContainerTest extends AbstractCouchbaseTest {
 
     @Test
     public void should_execute_n1ql() {
-        getBucket().query(N1qlQuery.simple("INSERT INTO " + DEFAULT_BUCKET + " (KEY, VALUE) VALUES ('" + ID + "', " + DOCUMENT + ")"));
+        getBucket().query(N1qlQuery.simple("INSERT INTO " + TEST_BUCKET + " (KEY, VALUE) VALUES ('" + ID + "', " + DOCUMENT + ")"));
 
-        N1qlQueryResult query = getBucket().query(N1qlQuery.simple("SELECT * FROM " + DEFAULT_BUCKET + " USE KEYS '" + ID + "'"));
+        N1qlQueryResult query = getBucket().query(N1qlQuery.simple("SELECT * FROM " + TEST_BUCKET + " USE KEYS '" + ID + "'"));
         Assert.assertTrue(query.parseSuccess());
         Assert.assertTrue(query.finalSuccess());
         List<N1qlQueryRow> n1qlQueryRows = query.allRows();
         Assert.assertEquals(1, n1qlQueryRows.size());
-        Assert.assertEquals(DOCUMENT, n1qlQueryRows.get(0).value().get(DEFAULT_BUCKET).toString());
+        Assert.assertEquals(DOCUMENT, n1qlQueryRows.get(0).value().get(TEST_BUCKET).toString());
     }
 }

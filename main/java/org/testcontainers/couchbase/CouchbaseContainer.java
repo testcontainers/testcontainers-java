@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * Based on Laurent Doguin version
- *
+ * <p>
  * Optimized by ctayeb
  */
 public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends GenericContainer<SELF> {
@@ -254,7 +254,11 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         UserSettings userSettings = UserSettings.build()
                 .password(bucketSetting.password())
                 .roles(Collections.singletonList(new UserRole("bucket_admin", bucketSetting.name())));
-        clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
+        try {
+            clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
+        } catch (Exception e) {
+            logger().warn("Unable to insert user '" + bucketSetting.name() + "', maybe you are using older version");
+        }
         if (index) {
             Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name(), bucketSettings.password());
             new CouchbaseQueryServiceWaitStrategy(bucket).waitUntilReady(this);

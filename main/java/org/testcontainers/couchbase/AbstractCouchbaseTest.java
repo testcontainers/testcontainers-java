@@ -15,7 +15,7 @@ import org.junit.After;
  */
 public abstract class AbstractCouchbaseTest {
 
-    public static final String DEFAULT_BUCKET = "default";
+    public static final String TEST_BUCKET = "test";
 
     public static final String DEFAULT_PASSWORD = "password";
 
@@ -23,7 +23,7 @@ public abstract class AbstractCouchbaseTest {
     private final static CouchbaseContainer couchbaseContainer = initCouchbaseContainer();
 
     @Getter(lazy = true)
-    private final static Bucket bucket = openBucket(DEFAULT_BUCKET, DEFAULT_PASSWORD);
+    private final static Bucket bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
 
     @After
     public void clear() {
@@ -40,7 +40,7 @@ public abstract class AbstractCouchbaseTest {
         CouchbaseContainer couchbaseContainer = new CouchbaseContainer()
                 .withNewBucket(DefaultBucketSettings.builder()
                         .enableFlush(true)
-                        .name(DEFAULT_BUCKET)
+                        .name(TEST_BUCKET)
                         .password(DEFAULT_PASSWORD)
                         .quota(100)
                         .replicas(0)
