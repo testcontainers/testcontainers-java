@@ -22,13 +22,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         super("confluentinc/cp-kafka:" + confluentPlatformVersion);
 
         withNetwork(Network.newNetwork());
-        String myNetworkAlias = "kafka-" + Base58.randomString(6);
-        withNetworkAliases(myNetworkAlias);
+        String networkAlias = "kafka-" + Base58.randomString(6);
+        withNetworkAliases(networkAlias);
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
         // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9092,BROKER://" + myNetworkAlias + ":9093");
+        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9092,BROKER://" + networkAlias + ":9093");
         withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
@@ -54,14 +54,14 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     public void start() {
-        String myNetworkAlias = getNetworkAliases().get(0);
+        String networkAlias = getNetworkAliases().get(0);
         proxy = new SocatContainer()
                 .withNetwork(getNetwork())
-                .withTarget(9092, myNetworkAlias)
-                .withTarget(2181, myNetworkAlias);
+                .withTarget(9092, networkAlias)
+                .withTarget(2181, networkAlias);
 
         proxy.start();
-        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + myNetworkAlias + ":9093,PLAINTEXT://" + proxy.getContainerIpAddress() + ":" + proxy.getFirstMappedPort());
+        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":9093,PLAINTEXT://" + proxy.getContainerIpAddress() + ":" + proxy.getFirstMappedPort());
 
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
