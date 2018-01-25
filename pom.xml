@@ -166,6 +166,7 @@
         <module>modules/selenium</module>
         <module>modules/nginx</module>
         <module>modules/jdbc-test</module>
+        <module>modules/couchbase</module>
     </modules>
 
     <profiles>
