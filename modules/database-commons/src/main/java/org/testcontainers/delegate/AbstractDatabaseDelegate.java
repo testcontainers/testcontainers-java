@@ -3,16 +3,10 @@ package org.testcontainers.delegate;
 import java.util.Collection;
 
 /**
- * @param <CONTAINER>  testcontainers container
  * @param <CONNECTION> connection to the database
  * @author Eugeny Karpov
  */
-public abstract class AbstractDatabaseDelegate<CONTAINER, CONNECTION> implements DatabaseDelegate {
-
-    /**
-     * Testcontainers container
-     */
-    protected CONTAINER container;
+public abstract class AbstractDatabaseDelegate<CONNECTION> implements DatabaseDelegate {
 
     /**
      * Database connection
@@ -20,10 +14,6 @@ public abstract class AbstractDatabaseDelegate<CONTAINER, CONNECTION> implements
     private CONNECTION connection;
 
     private boolean isConnectionStarted = false;
-
-    public AbstractDatabaseDelegate(CONTAINER container) {
-        this.container = container;
-    }
 
     /**
      * Get or create new connection to the database

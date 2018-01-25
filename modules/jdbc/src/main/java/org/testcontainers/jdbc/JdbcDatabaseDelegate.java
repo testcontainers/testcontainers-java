@@ -15,10 +15,12 @@ import java.sql.Statement;
  * @author Eugeny Karpov
  */
 @Slf4j
-public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<JdbcDatabaseContainer, Statement> {
+public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<Statement> {
 
-    public JdbcDatabaseDelegate(JdbcDatabaseContainer jdbcDatabaseContainer) {
-        super(jdbcDatabaseContainer);
+    private JdbcDatabaseContainer container;
+
+    public JdbcDatabaseDelegate(JdbcDatabaseContainer container) {
+        this.container = container;
     }
 
     @Override
