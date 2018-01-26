@@ -37,3 +37,27 @@ In this job we run in a multiline command a docker container:
 * use the root user if you are running a Shared Runner
 
 
+## CircleCI 2.0
+
+Your circleci configuration should use dedicated VM for testcontainers to work. You can achieve this by specifying the 
+executor type in you `.circleci/config.yml` to use `machine` instead of default `docker` ( see [Choosing an Executor Type](https://circleci.com/docs/2.0/executor-types/) for more info ).  
+
+Here a sample of circleci configuration that does a checkout of a project and runs maven:
+
+```yml
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+executorType: machine
+jobs:
+  build:
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+    steps:
+      - checkout
+
+      - run: mvn -B clean install
+```
