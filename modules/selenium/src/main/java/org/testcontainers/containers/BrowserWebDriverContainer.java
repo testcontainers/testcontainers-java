@@ -79,6 +79,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         this();
         super.setDockerImageName(dockerImageName);
         this.customImageNameIsSet = true;
+        // We have to force SKIP mode for the recording by default because we don't know if the image has VNC or not
+        recordingMode = VncRecordingMode.SKIP;
     }
 
 
@@ -90,7 +92,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
-        return ImmutableSet.of(getMappedPort(SELENIUM_PORT), getMappedPort(VNC_PORT));
+        Integer seleniumPort = getMappedPort(SELENIUM_PORT);
+        if (recordingMode == VncRecordingMode.SKIP) {
+            return ImmutableSet.of(seleniumPort);
+        } else {
+            return ImmutableSet.of(seleniumPort, getMappedPort(VNC_PORT));
+        }
     }
 
     @Override
