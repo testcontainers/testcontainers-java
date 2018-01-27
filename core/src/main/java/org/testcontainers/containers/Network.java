@@ -10,6 +10,8 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,9 +80,12 @@ public interface Network extends AutoCloseable, TestRule {
                 consumer.accept(createNetworkCmd);
             }
 
-            String id = createNetworkCmd.exec().getId();
-            ResourceReaper.instance().registerNetworkIdForCleanup(id);
-            return id;
+            Map<String, String> labels = createNetworkCmd.getLabels();
+            labels = new HashMap<>(labels != null ? labels : Collections.emptyMap());
+            labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            createNetworkCmd.withLabels(labels);
+
+            return createNetworkCmd.exec().getId();
         }
 
         @Override
