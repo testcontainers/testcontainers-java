@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
 
+### Changed
+- Added Kafka module ([\#546](https://github.com/testcontainers/testcontainers-java/pull/546))
+
 ## [1.5.1] - 2017-12-19
 
 ### Fixed

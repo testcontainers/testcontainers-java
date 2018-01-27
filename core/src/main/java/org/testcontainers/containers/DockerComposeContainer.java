@@ -11,9 +11,6 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -27,8 +24,15 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -46,7 +50,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * Random identifier which will become part of spawned containers names, so we can shut them down
      */
     private final String identifier;
-    private final Map<String, AmbassadorContainer> ambassadorContainers = new HashMap<>();
     private final List<File> composeFiles;
     private final Set<String> spawnedContainerIds = new HashSet<>();
     private final Set<String> spawnedNetworkIds = new HashSet<>();
@@ -56,6 +59,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private boolean pull = true;
     private boolean tailChildContainers;
 
+    private final AtomicInteger nextAmbassadorPort = new AtomicInteger(2000);
+    private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
+    private final SocatContainer ambassadorContainer = new SocatContainer();
+
     private static final Object MUTEX = new Object();
 
     /**
@@ -63,12 +70,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * necessarily to containers that are spawned by Compose itself)
      */
     private Map<String, String> env = new HashMap<>();
-
-    private static final RateLimiter AMBASSADOR_CREATION_RATE_LIMITER = RateLimiterBuilder
-            .newBuilder()
-            .withRate(6, TimeUnit.MINUTES)
-            .withConstantThroughput()
-            .build();
 
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
@@ -201,31 +202,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void startAmbassadorContainers(Profiler profiler) {
-        for (final Map.Entry<String, AmbassadorContainer> address : ambassadorContainers.entrySet()) {
-
-            try {
-                // Start any ambassador containers we need
-                profiler.start("Ambassador container startup");
-
-                final AmbassadorContainer ambassadorContainer = address.getValue();
-                Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
-
-                    AMBASSADOR_CREATION_RATE_LIMITER.doWhenReady(() -> {
-                        Profiler localProfiler = profiler.startNested("Ambassador container: " + ambassadorContainer.getContainerName());
-
-                        localProfiler.start("Start ambassador container");
-
-                        ambassadorContainer.start();
-                    });
-
-                    return null;
-                });
-            } catch (Exception e) {
-                logger().warn("Exception during ambassador container startup!", e);
-            } finally {
-                profiler.stop().log();
-            }
-        }
+        profiler.start("Ambassador container startup");
+        ambassadorContainer.start();
+        profiler.stop().log();
     }
 
     private Logger logger() {
@@ -237,8 +216,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
 
         synchronized (MUTEX) {
-            // shut down all the ambassador containers
-            ambassadorContainers.forEach((String address, AmbassadorContainer container) -> container.stop());
+            // shut down the ambassador container
+            ambassadorContainer.stop();
 
             // Kill the services using docker-compose
             try {
@@ -270,7 +249,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         }
 
         /*
-         * For every service/port pair that needs to be exposed, we have to start an 'ambassador container'.
+         * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
          *
          * The ambassador container's role is to link (within the Docker network) to one of the
          * compose services, and proxy TCP network I/O out to a port that the ambassador container
@@ -282,13 +261,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
          * {@link GenericContainer} should ensure that the ambassador container is on the same network
          * as the rest of the compose environment.
          */
-        AmbassadorContainer ambassadorContainer =
-                new AmbassadorContainer<>(new FutureContainer(this.identifier + "_" + serviceName), serviceName, servicePort)
-                        .withEnv(env);
 
-        // Ambassador containers will all be started together after docker compose has started
-        ambassadorContainers.put(serviceName + ":" + servicePort, ambassadorContainer);
-
+        // Ambassador container will be started together after docker compose has started
+        int ambassadorPort = nextAmbassadorPort.getAndIncrement();
+        ambassadorPortMappings.computeIfAbsent(serviceName, __ -> new ConcurrentHashMap<>()).put(servicePort, ambassadorPort);
+        ambassadorContainer.withTarget(ambassadorPort, serviceName, servicePort);
+        ambassadorContainer.addLink(new FutureContainer(this.identifier + "_" + serviceName), serviceName);
         return self();
     }
 
@@ -307,7 +285,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
-        return ambassadorContainers.get(serviceName + ":" + servicePort).getContainerIpAddress();
+        return ambassadorContainer.getContainerIpAddress();
     }
 
     /**
@@ -321,7 +299,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a port that can be used for accessing the service container.
      */
     public Integer getServicePort(String serviceName, Integer servicePort) {
-        return ambassadorContainers.get(serviceName + ":" + servicePort).getMappedPort(servicePort);
+        return ambassadorContainer.getMappedPort(ambassadorPortMappings.get(serviceName).get(servicePort));
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
