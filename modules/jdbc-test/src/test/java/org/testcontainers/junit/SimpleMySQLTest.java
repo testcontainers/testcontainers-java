@@ -94,6 +94,22 @@ public class SimpleMySQLTest {
         }
     }
 
+    @Test
+    public void testCommandOverride() throws SQLException {
+        MySQLContainer mysqlCustomConfig = (MySQLContainer) new MySQLContainer().withCommand("mysqld --auto_increment_increment=42");
+        mysqlCustomConfig.start();
+
+        try {
+            ResultSet resultSet = performQuery(mysqlCustomConfig, "show variables like 'auto_increment_increment'");
+            String result = resultSet.getString("Value");
+
+            assertEquals("Auto increment increment should be overriden by command line", "42", result);
+        } finally {
+            mysqlCustomConfig.stop();
+        }
+
+    }
+
     @NonNull
     protected ResultSet performQuery(MySQLContainer containerRule, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
