@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Environment variables are now stored as Map instead of List ([\#550](https://github.com/testcontainers/testcontainers-java/pull/550))
 - Added `withEnv(String name, Function<Optional<String>, String> mapper)` with optional previous value ([\#550](https://github.com/testcontainers/testcontainers-java/pull/550))
 - Added `withFileSystemBind` overloaded method with `READ_WRITE` file mode by default ([\#550](https://github.com/testcontainers/testcontainers-java/pull/550))
-- All connections to MySQL containers don't use SSL anymore. ([\#374](https://github.com/testcontainers/testcontainers-java/issues/374))
+- All connections to JDBC containers (e.g. MySQL) don't use SSL anymore. ([\#374](https://github.com/testcontainers/testcontainers-java/issues/374))
 
 ## [1.5.1] - 2017-12-19
 
