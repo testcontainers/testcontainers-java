@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
 - Compose is now able to pull images from private repositories. ([\#536](https://github.com/testcontainers/testcontainers-java/issues/536))
+- Fixed overriding MySQL image command. ([\#534](https://github.com/testcontainers/testcontainers-java/issues/534))
+
+### Changed
+- Added Kafka module ([\#546](https://github.com/testcontainers/testcontainers-java/pull/546))
+- Added "Death Note" to track & kill spawned containers even if the JVM was "kill -9"ed ([\#545](https://github.com/testcontainers/testcontainers-java/pull/545))
+- Environment variables are now stored as Map instead of List ([\#550](https://github.com/testcontainers/testcontainers-java/pull/550))
+- Added `withEnv(String name, Function<Optional<String>, String> mapper)` with optional previous value ([\#550](https://github.com/testcontainers/testcontainers-java/pull/550))
+- Added `withFileSystemBind` overloaded method with `READ_WRITE` file mode by default ([\#550](https://github.com/testcontainers/testcontainers-java/pull/550))
 
 ## [1.5.1] - 2017-12-19
 

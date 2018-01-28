@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.6</version>
+            <version>1.16.20</version>
             <scope>provided</scope>
         </dependency>
 
@@ -165,6 +165,7 @@
         <module>modules/postgresql</module>
         <module>modules/selenium</module>
         <module>modules/nginx</module>
+        <module>modules/kafka</module>
         <module>modules/jdbc-test</module>
     </modules>
 
