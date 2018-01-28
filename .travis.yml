@@ -31,6 +31,12 @@ jobs:
       env: [ NAME=core ]
       script: ./mvnw -pl core test
 
+    - stage: test
+      env: [ NAME=core ]
+      jdk: oraclejdk9
+      script:
+        - ./mvnw -pl core test
+
     - env: [ NAME=selenium ]
       script: ./mvnw -pl modules/selenium test
 

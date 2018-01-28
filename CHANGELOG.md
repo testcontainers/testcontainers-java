@@ -2,11 +2,13 @@
 All notable changes to this project will be documented in this file.
 
 ### Fixed
+- Fixed incompatibility of Docker-Compose container with JDK9. ([\#562](https://github.com/testcontainers/testcontainers-java/pull/562))
 - Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
 - Compose is now able to pull images from private repositories. ([\#536](https://github.com/testcontainers/testcontainers-java/issues/536))
 - Fixed overriding MySQL image command. ([\#534](https://github.com/testcontainers/testcontainers-java/issues/534))
 
 ### Changed
+- Added JDK9 build and tests to Travis-CI. ([\#562](https://github.com/testcontainers/testcontainers-java/pull/562))
 - Added Kafka module ([\#546](https://github.com/testcontainers/testcontainers-java/pull/546))
 - Added "Death Note" to track & kill spawned containers even if the JVM was "kill -9"ed ([\#545](https://github.com/testcontainers/testcontainers-java/pull/545))
 - Environment variables are now stored as Map instead of List ([\#550](https://github.com/testcontainers/testcontainers-java/pull/550))
