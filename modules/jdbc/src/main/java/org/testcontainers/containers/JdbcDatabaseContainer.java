@@ -136,7 +136,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Properties info = new Properties();
         info.put("user", this.getUsername());
         info.put("password", this.getPassword());
-        final String url = this.getJdbcUrl() + queryString;
+        final String url = disableSSL(this.getJdbcUrl() + queryString);
 
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
@@ -145,6 +145,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         } catch (Exception e) {
             throw new SQLException("Could not create new connection", e);
         }
+    }
+
+    private String disableSSL(String connectionString){
+      String separator = connectionString.contains("?") ? "&" : "?";
+      return connectionString + separator + "useSSL=false";
     }
 
     protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {
