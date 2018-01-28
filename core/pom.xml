@@ -48,6 +48,14 @@
             </exclusions>
         </dependency>
 
+
+        <!-- Added for JDK9 compatibility since it's missing this package -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
         <dependency>
             <!-- docker-java uses SslConfigurator from jersey-common for TLS -->
             <groupId>org.glassfish.jersey.core</groupId>
