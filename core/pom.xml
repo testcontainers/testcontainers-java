@@ -69,6 +69,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.rnorth</groupId>
             <artifactId>tcp-unix-socket-proxy</artifactId>
             <version>1.0.1</version>
@@ -222,7 +228,7 @@
                             <include>org.apache.httpcomponents:*</include>
                             <include>org.glassfish.*:*</include>
                             <include>org.aopalliance.*:*</include>
-                            <include>javax.annotation:*</include>
+                            <include>com.google.code.findbugs:jsr305</include>
                             <include>javax.inject:*</include>
                             <include>javax.ws.rs:*</include>
                             <include>com.fasterxml.*:*</include>
