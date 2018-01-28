@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 - Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
 - Compose is now able to pull images from private repositories. ([\#536](https://github.com/testcontainers/testcontainers-java/issues/536))
 - Fixed overriding MySQL image command. ([\#534](https://github.com/testcontainers/testcontainers-java/issues/534))
+- Fixed shading for javax.annotation.CheckForNull ([\#563](https://github.com/testcontainers/testcontainers-java/issues/563) and [testcontainers/testcontainers-scala\#11](https://github.com/testcontainers/testcontainers-scala/issues/11)).
 
 ### Changed
 - Added Kafka module ([\#546](https://github.com/testcontainers/testcontainers-java/pull/546))
