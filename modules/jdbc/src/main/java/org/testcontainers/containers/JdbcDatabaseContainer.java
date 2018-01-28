@@ -136,7 +136,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Properties info = new Properties();
         info.put("user", this.getUsername());
         info.put("password", this.getPassword());
-        final String url = disableSSL(this.getJdbcUrl() + queryString);
+        final String url = appendDisableSslConfig(this.getJdbcUrl() + queryString);
 
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
@@ -147,7 +147,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         }
     }
 
-    private String disableSSL(String connectionString){
+    private String appendDisableSslConfig(String connectionString){
       String separator = connectionString.contains("?") ? "&" : "?";
       return connectionString + separator + "useSSL=false";
     }
