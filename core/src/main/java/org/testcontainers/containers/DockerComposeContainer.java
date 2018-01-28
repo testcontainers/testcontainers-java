@@ -399,18 +399,26 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
 
+        String dockerConfigPath = determineDockerConfigPath();
+        if (dockerConfigPath != null && dockerConfigPath.isEmpty()) {
+            addFileSystemBind(dockerConfigPath, DOCKER_CONFIG_FILE, READ_ONLY);
+        }
+    }
+
+    private String determineDockerConfigPath() {
         String dockerConfigEnv = System.getenv(DOCKER_CONFIG_ENV);
         String dockerConfigProperty = System.getProperty(DOCKER_CONFIG_PROPERTY);
         Path dockerConfig = Paths.get(System.getProperty("user.home"), ".docker", "config.json");
 
         if (dockerConfigEnv != null && !dockerConfigEnv.trim().isEmpty() && Files.exists(Paths.get(dockerConfigEnv))) {
-            addFileSystemBind(dockerConfigEnv, DOCKER_CONFIG_FILE, READ_ONLY);
+            return dockerConfigEnv;
         } else if (dockerConfigProperty != null && !dockerConfigProperty.trim().isEmpty() && Files.exists(Paths.get(dockerConfigProperty))) {
-            addFileSystemBind(dockerConfigProperty, DOCKER_CONFIG_FILE, READ_ONLY);
+            return dockerConfigProperty;
         } else if (Files.exists(dockerConfig)) {
-            addFileSystemBind(dockerConfig.toString(), DOCKER_CONFIG_FILE, READ_ONLY);
+            return dockerConfig.toString();
+        } else {
+            return null;
         }
-
     }
 
     private String getDockerSocketHostPath() {

@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
-- Compose can now pull images from private repositories.
+- Compose is now able to pull images from private repositories. ([\#536](https://github.com/testcontainers/testcontainers-java/issues/536))
 - Fixed overriding MySQL image command. ([\#534](https://github.com/testcontainers/testcontainers-java/issues/534))
 
 ### Changed
