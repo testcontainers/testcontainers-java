@@ -20,7 +20,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     public MySQLContainer() {
         super(IMAGE + ":latest");
-        setCommand("mysqld");
     }
 
     public MySQLContainer(String dockerImageName) {
