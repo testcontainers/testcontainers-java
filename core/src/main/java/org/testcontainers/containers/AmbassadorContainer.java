@@ -15,9 +15,12 @@ import static java.util.Arrays.asList;
  * An ambassador container is used as a TCP proxy, enabling any TCP port of another linked container to be exposed
  * publicly, even if that container does not make the port public itself. The <code>richnorth/ambassador:latest</code>
  * container is used (based on HAProxy).
+ *
+ * @deprecated use {@link SocatContainer}
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
+@Deprecated
 public class AmbassadorContainer<SELF extends AmbassadorContainer<SELF>> extends GenericContainer<SELF> {
 
     private final String otherContainerName;

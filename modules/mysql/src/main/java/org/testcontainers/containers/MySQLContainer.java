@@ -41,7 +41,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         addEnv("MYSQL_USER", username);
         addEnv("MYSQL_PASSWORD", password);
         addEnv("MYSQL_ROOT_PASSWORD", "test");
-        setCommand("mysqld");
         setStartupAttempts(3);
     }
 

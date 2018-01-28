@@ -13,7 +13,7 @@ import java.io.IOException;
 public class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Rule
-    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer("selenium/standalone-firefox-debug:2.53.1-beryllium")
+    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer("selenium/standalone-firefox:2.53.1-beryllium")
             .withDesiredCapabilities(DesiredCapabilities.firefox());
 
     @Test
