@@ -32,9 +32,10 @@ jobs:
       script: ./mvnw -pl core test
 
     - stage: test
-      env: [ NAME=core-jdk9 ]
+      env: [ NAME=core ]
+      jdk:
+        - oraclejdk9
       script:
-        - jdk_switcher use oraclejdk9
         - ./mvnw -pl core test
 
     - env: [ NAME=selenium ]
