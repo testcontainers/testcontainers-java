@@ -17,8 +17,10 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface Container<SELF extends Container<SELF>> extends LinkableContainer {
 
@@ -140,6 +142,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param hostPath the file system path on the host
      * @param containerPath the file system path inside the container
+     * @return this
+     */
+    default SELF withFileSystemBind(String hostPath, String containerPath) {
+        return withFileSystemBind(hostPath, containerPath, BindMode.READ_WRITE);
+    }
+
+    /**
+     * Adds a file system binding.
+     *
+     * @param hostPath the file system path on the host
+     * @param containerPath the file system path inside the container
      * @param mode the bind mode
      * @return this
      */
@@ -170,6 +183,18 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withEnv(String key, String value);
+
+    /**
+     * Add an environment variable to be passed to the container.
+     *
+     * @param key   environment variable key
+     * @param mapper environment variable value mapper, accepts old value as an argument
+     * @return this
+     */
+    default SELF withEnv(String key, Function<Optional<String>, String> mapper) {
+        Optional<String> oldValue = Optional.ofNullable(getEnvMap().get(key));
+        return withEnv(key, mapper.apply(oldValue));
+    }
 
     /**
      * Add environment variables to be passed to the container.
@@ -383,6 +408,11 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
     Info fetchDockerDaemonInfo() throws IOException;
 
     /**
@@ -438,7 +468,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     Future<String> getImage();
 
+    /**
+     *
+     * @deprecated use getEnvMap
+     */
+    @Deprecated
     List<String> getEnv();
+
+    Map<String, String> getEnvMap();
 
     String[] getCommandParts();
 
@@ -452,12 +489,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     DockerClient getDockerClient();
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
     Info getDockerDaemonInfo();
 
     String getContainerId();
 
     String getContainerName();
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().inspectContainerCmd(container.getContainerId()).exec()}
+     */
+    @Deprecated
     InspectContainerResponse getContainerInfo();
 
     void setExposedPorts(List<Integer> exposedPorts);

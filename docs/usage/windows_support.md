@@ -19,6 +19,10 @@ effort.
 ### MySQL containers
 * MySQL server prevents custom configuration file (ini-script) from being loaded due to security measures ([link to feature description](database_containers.md#using-an-init-script))
 
+### Windows Container on Windows (WCOW)
+
+* WCOW is currently not supported, since Testcontainers uses auxiliary Linux containers for certain tasks and Docker for Windows does not support hybrid engine mode at the time of writing.
+
 ## Reporting issues
 
 Please report any issues with the Windows build of Testcontainers [here](https://github.com/testcontainers/testcontainers-java/issues)
