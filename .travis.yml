@@ -33,8 +33,7 @@ jobs:
 
     - stage: test
       env: [ NAME=core ]
-      jdk:
-        - oraclejdk9
+      jdk: oraclejdk9
       script:
         - ./mvnw -pl core test
 
