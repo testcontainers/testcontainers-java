@@ -1,6 +1,8 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2018-01-28
+
 ### Fixed
 - Fixed incompatibility of Docker-Compose container with JDK9. ([\#562](https://github.com/testcontainers/testcontainers-java/pull/562))
 - Fixed retrieval of Docker host IP when running inside Docker. ([\#479](https://github.com/testcontainers/testcontainers-java/issues/479))
