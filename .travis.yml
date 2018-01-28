@@ -1,7 +1,6 @@
 language: java
 jdk:
   - oraclejdk8
-  - oraclejdk9
 
 env:
   global:
@@ -31,6 +30,12 @@ jobs:
     - stage: test
       env: [ NAME=core ]
       script: ./mvnw -pl core test
+
+    - stage: test
+      env: [ NAME=core-jdk9 ]
+      script:
+        - jdk_switcher use oraclejdk9
+        - ./mvnw -pl core test
 
     - env: [ NAME=selenium ]
       script: ./mvnw -pl modules/selenium test
