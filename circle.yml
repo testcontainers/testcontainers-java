@@ -4,4 +4,4 @@ jobs:
   build:
     steps:
       - checkout
-      - run: ./gradlew test
+      - run: ./mvnw -DskipTests package && ./gradlew test
