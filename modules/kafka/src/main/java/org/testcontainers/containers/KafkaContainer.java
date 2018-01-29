@@ -4,6 +4,10 @@ import org.testcontainers.utility.Base58;
 
 import java.util.stream.Stream;
 
+/**
+ * This container wraps Confluent Kafka and Zookeeper (optionally)
+ *
+ */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public static final int KAFKA_PORT = 9092;
