@@ -1,0 +1,30 @@
+plugins {
+    id 'nebula.provided-base' version '3.0.3'
+    id 'com.github.bsideup.maven-sync' version '1.0.5' apply false
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    apply plugin: 'nebula.provided-base'
+    apply plugin: 'com.github.bsideup.maven-sync'
+
+    repositories {
+        jcenter()
+    }
+
+    test.testLogging {
+        displayGranularity 1
+        showStackTraces = true
+        exceptionFormat = 'full'
+        events "STARTED", "PASSED", "FAILED", "SKIPPED"
+    }
+}
+
+project("core") {
+    repositories {
+        ivy {
+            url project.file("testlib/repo")
+        }
+    }
+}

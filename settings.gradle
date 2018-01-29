@@ -1,0 +1,8 @@
+include "core"
+include "modules:jdbc"
+include "modules:jdbc-test"
+include "modules:kafka"
+include "modules:mysql"
+include "modules:nginx"
+include "modules:postgresql"
+include "modules:selenium"
