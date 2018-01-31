@@ -55,6 +55,12 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     }
 
     @Override
+    protected String constructUrlForConnection(String queryString) {
+        String separator = queryString.contains("?") ? "&" : "?";
+        return getJdbcUrl() + separator + "useSSL=false";
+    }
+
+    @Override
     public String getDatabaseName() {
         return databaseName;
     }
