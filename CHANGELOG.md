@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 2018-01-31
+
+### Fixed
+
+- Fixed extraneous insertion of `useSSL=false` in all JDBC URL strings, even for DBs that do not understand it. Usage is now restricted to MySQL by default and can be overridden by authors of `JdbcDatabaseContainer` subclasses ([\#568](https://github.com/testcontainers/testcontainers-java/issues/568))
+
 ## [1.6.0] - 2018-01-28
 
 ### Fixed
