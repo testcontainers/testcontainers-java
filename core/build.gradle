@@ -6,6 +6,7 @@ configurations {
     shaded
     compileOnly.extendsFrom shaded
     testCompile.extendsFrom shaded
+    runtime.extendsFrom shaded
 }
 
 shadowJar {
@@ -109,8 +110,6 @@ dependencies {
     compile 'javax.xml.bind:jaxb-api:2.3.0'
     compile 'org.rnorth.duct-tape:duct-tape:1.0.6'
     compile 'org.rnorth.visible-assertions:visible-assertions:2.1.0'
-
-    provided 'com.github.docker-java:docker-java:3.0.12'
 
     shaded ('com.github.docker-java:docker-java:3.0.12') {
         exclude(group: 'org.glassfish.jersey.core')
