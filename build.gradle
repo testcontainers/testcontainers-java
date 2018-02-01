@@ -39,6 +39,10 @@ subprojects {
         events "STARTED", "PASSED", "FAILED", "SKIPPED"
     }
 
+    test.doFirst {
+        mkdir project.file('target')
+    }
+
     repositories {
         jcenter()
     }

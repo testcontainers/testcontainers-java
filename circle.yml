@@ -1,10 +1,10 @@
 version: 2
 executorType: machine
 jobs:
-  build:
+  core:
     steps:
       - checkout
-      - run: ./gradlew test
+      - run: ./gradlew core:test
       - run:
           name: Save test results
           command: |
@@ -13,3 +13,22 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
+  modules:
+    steps:
+      - checkout
+      - run: ./gradlew test -x core:test
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+
+workflows:
+  version: 2
+  test_all:
+    jobs:
+      - core
+      - modules
