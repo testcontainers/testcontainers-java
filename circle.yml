@@ -16,7 +16,19 @@ jobs:
   modules:
     steps:
       - checkout
-      - run: ./gradlew test -x core:test
+      - run: ./gradlew test -x core:test -x modules:selenium:test
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+  selenium:
+    steps:
+      - checkout
+      - run: ./gradlew modules:selenium:test
       - run:
           name: Save test results
           command: |
@@ -32,3 +44,4 @@ workflows:
     jobs:
       - core
       - modules
+      - selenium
