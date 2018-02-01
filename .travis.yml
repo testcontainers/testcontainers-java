@@ -22,7 +22,7 @@ cache:
     - '$HOME/.gradle'
 
 install:
-  - ./gradlew build testCompile -x test
+  - ./gradlew build -x test
 
 jobs:
   include:
