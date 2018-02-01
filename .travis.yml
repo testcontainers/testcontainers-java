@@ -19,29 +19,27 @@ services:
 
 cache:
   directories:
-    - '$HOME/.m2'
+    - '$HOME/.gradle'
 
 install:
-  - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
-  - ./mvnw -T4 -DskipTests=true -Dmaven.javadoc.skip=true install
+  - ./gradlew build testCompile -x test
 
 jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./mvnw -pl core test
+      script: ./gradlew core:test
 
     - stage: test
       env: [ NAME=core ]
       jdk: oraclejdk9
-      script:
-        - ./mvnw -pl core test
+      script: ./gradlew core:test
 
     - env: [ NAME=selenium ]
-      script: ./mvnw -pl modules/selenium test
+      script: ./gradlew modules:selenium:test
 
     - env: [ NAME=modules ]
-      script: ./mvnw -pl !core,!modules/selenium test
+      script: ./gradlew test -x core:test -x modules:selenium:test
 
     # Run Docker-in-Docker tests inside Alpine and shading tests
     - env: [ NAME="docker-in-alpine-docker&shade" ]
@@ -53,7 +51,7 @@ jobs:
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./mvnw -pl core test -Dtest=*GenericContainerRuleTest
+                ./gradlew test --tests '*GenericContainerRuleTest'
 
         - ./mvnw test -f shade-test/pom.xml
 
