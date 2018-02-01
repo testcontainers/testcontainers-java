@@ -1,0 +1,13 @@
+dependencies {
+    compile project(':modules:mysql')
+    compile project(':modules:postgresql')
+
+    testCompile 'com.google.guava:guava:18.0'
+    testCompile 'org.postgresql:postgresql:42.0.0'
+    testCompile 'mysql:mysql-connector-java:5.1.45'
+    testCompile 'org.mariadb.jdbc:mariadb-java-client:1.4.6'
+    testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
+    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
+    testCompile 'org.vibur:vibur-dbcp:9.0'
+    testCompile 'commons-dbutils:commons-dbutils:1.6'
+}
