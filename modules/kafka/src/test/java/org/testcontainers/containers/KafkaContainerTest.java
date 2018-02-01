@@ -92,7 +92,7 @@ public class KafkaContainerTest {
             String topicName = "messages";
             consumer.subscribe(Arrays.asList(topicName));
 
-            producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
+            producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz!")).get();
 
             Unreliables.retryUntilTrue(10, TimeUnit.SECONDS, () -> {
                 ConsumerRecords<String, String> records = consumer.poll(100);
@@ -104,7 +104,7 @@ public class KafkaContainerTest {
                 assertThat(records)
                         .hasSize(1)
                         .extracting(ConsumerRecord::topic, ConsumerRecord::key, ConsumerRecord::value)
-                        .containsExactly(tuple(topicName, "testcontainers", "rulezzz"));
+                        .containsExactly(tuple(topicName, "testcontainers", "rulezzz!"));
 
                 return true;
             });
