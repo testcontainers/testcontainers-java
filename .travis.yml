@@ -46,7 +46,7 @@ jobs:
       script:
         - |
                 DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
-                -v "$HOME/.m2":/root/.m2/ \
+                -v "$HOME/.gradle":/root/.gradle/ \
                 -v /var/run/docker.sock:/var/run/docker.sock \
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
