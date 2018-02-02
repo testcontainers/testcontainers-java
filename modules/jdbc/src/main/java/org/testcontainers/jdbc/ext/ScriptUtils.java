@@ -267,6 +267,7 @@ public abstract class ScriptUtils {
 				for (String statement : statements) {
 					lineNumber++;
 					try {
+					    	statement = statement.replace("\\;", ";");
 						stmt.execute(statement);
 						int rowsAffected = stmt.getUpdateCount();
 						if (LOGGER.isDebugEnabled()) {
