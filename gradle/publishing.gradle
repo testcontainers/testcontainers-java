@@ -20,7 +20,27 @@ publishing {
 
             pom.withXml {
                 def rootNode = asNode()
-                rootNode.appendNode('name', project.description)
+                rootNode.children().last() + {
+                    resolveStrategy = Closure.DELEGATE_FIRST
+
+                    name project.description
+                    url 'https://testcontainers.org'
+                    issueManagement {
+                        system 'GitHub'
+                        url 'https://github.com/testcontainers/testcontainers-java/issues'
+                    }
+                    licenses {
+                        license {
+                            name 'MIT'
+                            url 'http://opensource.org/licenses/MIT'
+                        }
+                    }
+                    scm {
+                        url 'https://github.com/testcontainers/testcontainers-java/'
+                        connection 'scm:git:git://github.com/testcontainers/testcontainers-java.git'
+                        developerConnection 'scm:git:ssh://git@github.com/testcontainers/testcontainers-java.git'
+                    }
+                }
 
                 def dependenciesNode = rootNode.appendNode('dependencies')
 

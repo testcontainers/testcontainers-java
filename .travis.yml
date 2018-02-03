@@ -41,8 +41,8 @@ jobs:
     - env: [ NAME=modules ]
       script: ./gradlew test -x core:test -x modules:selenium:test
 
-    # Run Docker-in-Docker tests inside Alpine and shading tests
-    - env: [ NAME="docker-in-alpine-docker&shade" ]
+    # Run Docker-in-Docker tests inside Alpine
+    - env: [ NAME="docker-in-alpine-docker" ]
       script:
         - |
                 DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
@@ -52,8 +52,6 @@ jobs:
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
                 ./gradlew test --tests '*GenericContainerRuleTest'
-
-        - ./mvnw test -f shade-test/pom.xml
 
     - stage: deploy
       sudo: false

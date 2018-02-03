@@ -47,7 +47,7 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 	* discuss with the authors on an issue ticket prior to doing anything big
 	* follow the style, naming and structure conventions of the rest of the project
 	* make commits atomic and easy to merge
-	* verify all tests are passing. Build the project with `mvn clean install -Pproprietary-deps` to do this.
+	* verify all tests are passing. Build the project with `./gradlew test` to do this.
 
 ## Copyright
 
