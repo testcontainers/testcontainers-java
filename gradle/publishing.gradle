@@ -1,0 +1,41 @@
+apply plugin: 'maven-publish'
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) { publication ->
+            artifactId = project.name
+
+            artifact project.tasks.jar
+            artifact sourceJar
+            artifact javadocJar
+
+            pom.withXml {
+                def rootNode = asNode()
+                rootNode.appendNode('name', project.description)
+
+                def dependenciesNode = rootNode.appendNode('dependencies')
+
+                def addDependency = { dependency, scope ->
+                    dependenciesNode.appendNode('dependency').with {
+                        appendNode('groupId', dependency.group)
+                        appendNode('artifactId', dependency.name)
+                        appendNode('version', dependency.version)
+                        appendNode('scope', scope)
+                    }
+                }
+
+                project.configurations.compile.dependencies.each { addDependency(it, 'compile') }
+                project.configurations.provided.dependencies.each { addDependency(it, 'provided') }
+            }
+        }
+    }
+}

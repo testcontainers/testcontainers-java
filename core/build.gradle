@@ -2,11 +2,24 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 description = "TestContainers Core"
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) { publication ->
+            artifactId = "testcontainers"
+
+            artifacts.removeAll { it.classifier == null }
+            artifact project.tasks.shadowJar
+        }
+    }
+}
+
+sourceSets {
+    jarFileTest
+}
+
 configurations {
     shaded
-    compileOnly.extendsFrom shaded
-    testCompile.extendsFrom shaded
-    runtime.extendsFrom shaded
+    [runtime, compileOnly]*.extendsFrom shaded
 }
 
 shadowJar {
@@ -26,7 +39,7 @@ shadowJar {
         'META-INF/services/README.md',
         'META-INF/services/com.fasterxml.jackson.core.*',
         'META-INF/services/com.github.dockerjava.api.command.*',
-        'META-INF/services/com.github.dockerjava.api.command.*',
+        'META-INF/services/javax.ws.rs.ext.*',
         'META-INF/services/org.glassfish.hk2.extension.*',
         'META-INF/services/org.jvnet.hk2.external.generator.*',
         'META-INF/services/org.glassfish.jersey.internal.spi.*',
@@ -69,33 +82,13 @@ shadowJar {
     }
 }
 
-publishing {
-    publications {
-        uberJar(MavenPublication) { publication ->
-            artifactId = "testcontainers"
+task jarFileTest(type: Test) {
+    testClassesDirs = sourceSets.jarFileTest.output.classesDirs
+    classpath = sourceSets.jarFileTest.runtimeClasspath
 
-            artifact(project.tasks.shadowJar)
+    systemProperty("jarFile", shadowJar.outputs.files.singleFile)
 
-            pom.withXml {
-                asNode().appendNode('name', project.description)
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                project.configurations.compile.allDependencies.each {
-                    if (it.name != "docker-java") {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                        dependencyNode.appendNode('scope', 'compile')
-                    }
-                }
-            }
-        }
-    }
-}
-
-configurations {
-    testCompile.extendsFrom shadow
+    dependsOn(shadowJar)
 }
 
 dependencies {
@@ -135,4 +128,9 @@ dependencies {
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
+
+    jarFileTestCompileOnly 'org.projectlombok:lombok:1.16.20'
+    jarFileTestCompile 'junit:junit:4.12'
+    jarFileTestCompile 'org.assertj:assertj-core:3.8.0'
+    jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }

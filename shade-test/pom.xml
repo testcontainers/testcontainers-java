@@ -17,7 +17,6 @@
         <module>clashing-deps-jackson</module>
         <module>clashing-deps-jersey</module>
         <module>service-lookup-dropwizard</module>
-        <module>jar-file</module>
     </modules>
 
     <dependencies>

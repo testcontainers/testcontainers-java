@@ -1,4 +1,5 @@
 plugins {
+	id 'io.franzbecker.gradle-lombok' version '1.11'
     id 'nebula.provided-base' version '3.0.3'
     id 'com.github.johnrengelman.shadow' version '2.0.2'
 }
@@ -6,7 +7,8 @@ plugins {
 subprojects {
     apply plugin: 'nebula.provided-base'
     apply plugin: 'java'
-    apply plugin: 'maven-publish'
+    apply plugin: 'io.franzbecker.gradle-lombok'
+    apply from: "$rootDir/gradle/publishing.gradle"
 
     group = "org.testcontainers"
 
@@ -14,33 +16,28 @@ subprojects {
     targetCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
 
-    if (project.name != "core") {
-        publishing {
-            publications {
-                mavenJava(MavenPublication) {
-                    from components.java
-                    artifactId = project.name
+    lombok {
+	    version = '1.16.20'
+    }
 
-                    pom.withXml {
-                        asNode().appendNode('name', project.description)
-                        asNode().dependencies.'*'
-                            .findAll() { project.configurations.provided.allDependencies.find { dep -> dep.name == it.artifactId.text() } }
-                            .each() { it.scope*.value = 'provided' }
-                    }
-                }
-            }
+    task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
+        def outputDir = file("$buildDir/delombok")
+        outputs.dir(outputDir)
+        for (srcDir in project.sourceSets.main.java.srcDirs) {
+            inputs.dir(srcDir)
+            args(srcDir, "-d", outputDir)
         }
     }
 
-    test.testLogging {
-        displayGranularity 1
-        showStackTraces = true
-        exceptionFormat = 'full'
-        events "STARTED", "PASSED", "FAILED", "SKIPPED"
-    }
+    project.tasks.sourceJar.from(delombok)
 
-    test.doFirst {
-        mkdir project.file('target')
+    test {
+        testLogging {
+            displayGranularity 1
+            showStackTraces = true
+            exceptionFormat = 'full'
+            events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
     }
 
     repositories {
@@ -48,9 +45,6 @@ subprojects {
     }
 
     dependencies {
-        compileOnly 'org.projectlombok:lombok:1.16.20'
-        testCompileOnly 'org.projectlombok:lombok:1.16.20'
-
         testCompile 'ch.qos.logback:logback-classic:1.2.3'
     }
 }
