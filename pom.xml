@@ -167,6 +167,7 @@
         <module>modules/nginx</module>
         <module>modules/kafka</module>
         <module>modules/jdbc-test</module>
+        <module>modules/database-commons</module>
     </modules>
 
     <profiles>
