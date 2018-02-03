@@ -57,8 +57,13 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     @Override
     protected String constructUrlForConnection(String queryString) {
         String url = super.constructUrlForConnection(queryString);
-        String separator = url.contains("?") ? "&" : "?";
-        return url + separator + "useSSL=false";
+
+        if (! url.contains("useSSL=")) {
+            String separator = url.contains("?") ? "&" : "?";
+            return url + separator + "useSSL=false";
+        } else {
+            return url;
+        }
     }
 
     @Override
