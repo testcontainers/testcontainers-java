@@ -8,7 +8,7 @@ import org.testcontainers.containers.GenericContainer;
 interface CanSpawnExampleContainers extends HasAccessToDockerClient {
 
     default GenericContainer startedContainer() {
-        final GenericContainer aContainer = new GenericContainer<>("alpine:3.6")
+        final GenericContainer aContainer = new GenericContainer<>("alpine:3.7")
                 .withCommand("sh", "-c", "while true; do echo something; sleep 1; done");
         aContainer.start();
         return aContainer;

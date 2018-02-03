@@ -17,7 +17,7 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 @Slf4j
 class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaExecutable {
 
-    private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:275-229940dc50ca9973d5a2504ddcc30b7762fb0c00";
+    private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:0.4.7";
     private static final String IP_ROUTE_DOCKER_IMAGE = "gaiadocker/iproute2:3.3";
 
     PumbaContainer() {
