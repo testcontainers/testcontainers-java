@@ -14,7 +14,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NetworkActions {
 
-    public static NetworkActionWithSubCommand anAction() {
+    public static NetworkActionWithSubCommand networkAction() {
         return new NetworkActionWithSubCommand();
     }
 

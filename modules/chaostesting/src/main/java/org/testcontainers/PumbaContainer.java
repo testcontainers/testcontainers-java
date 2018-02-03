@@ -20,16 +20,18 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
     private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:0.4.7";
     private static final String IP_ROUTE_DOCKER_IMAGE = "gaiadocker/iproute2:3.3";
 
+    private static final String DOCKER_SOCKET_HOST_PATH = "/var/run/docker.sock";
+    private static final String DOCKER_SOCKET_CONTAINER_PATH = "/docker.sock";
+
     PumbaContainer() {
         super(PUMBA_DOCKER_IMAGE);
+        doNotWaitForStartupAtAll();
+        mountDockerSocket();
+        fetchIPRouteImage();
     }
 
     @Override
     public void execute(PumbaCommand command) {
-        doNotWaitForStartupAtAll();
-        mountDockerSocket();
-        fetchIPRouteImage();
-
         executeCommand(command);
     }
 
@@ -38,7 +40,8 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
     }
 
     private void mountDockerSocket() {
-        addFileSystemBind("/var/run/docker.sock", "/var/run/docker.sock", READ_WRITE);
+        addFileSystemBind(DOCKER_SOCKET_HOST_PATH, DOCKER_SOCKET_CONTAINER_PATH, READ_WRITE);
+        addEnv("DOCKER_HOST", String.format("unix://%s", DOCKER_SOCKET_CONTAINER_PATH));
     }
 
     @SneakyThrows

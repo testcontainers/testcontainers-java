@@ -11,7 +11,7 @@ import org.testcontainers.test.Network.PingResponse;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.client.actions.networkactions.NetworkActions.anAction;
+import static org.testcontainers.client.actions.networkactions.NetworkActions.networkAction;
 import static org.testcontainers.client.actions.networkactions.NetworkSubCommands.lossOutgoingPackets;
 import static org.testcontainers.client.commandparts.SupportedTimeUnit.MINUTES;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
@@ -36,7 +36,7 @@ public class DroppingPacketsTest implements CanSpawnExampleContainers, CanPingCo
 
         // when
         pumba
-                .performNetworkChaos(anAction()
+                .performNetworkChaos(networkAction()
                         .lastingFor(1, MINUTES)
                         .executeSubCommand(
                                 lossOutgoingPackets()
@@ -61,7 +61,7 @@ public class DroppingPacketsTest implements CanSpawnExampleContainers, CanPingCo
 
         // when
         pumba
-                .performNetworkChaos(anAction()
+                .performNetworkChaos(networkAction()
                         .lastingFor(1, MINUTES)
                         .executeSubCommand(
                                 lossOutgoingPackets()
@@ -90,7 +90,7 @@ public class DroppingPacketsTest implements CanSpawnExampleContainers, CanPingCo
 
         // when
         pumba
-                .performNetworkChaos(anAction()
+                .performNetworkChaos(networkAction()
                         .lastingFor(1, MINUTES)
                         .executeSubCommand(
                                 lossOutgoingPackets()

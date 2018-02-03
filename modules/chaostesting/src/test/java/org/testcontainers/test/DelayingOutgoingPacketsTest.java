@@ -12,7 +12,7 @@ import org.testcontainers.test.Network.PingResponse;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.client.actions.networkactions.NetworkActions.anAction;
+import static org.testcontainers.client.actions.networkactions.NetworkActions.networkAction;
 import static org.testcontainers.client.actions.networkactions.NetworkSubCommands.delayOutgoingPackets;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.client.targets.PumbaTargets.containers;
@@ -36,7 +36,7 @@ public class DelayingOutgoingPacketsTest implements CanSpawnExampleContainers, C
 
         // when
         pumba
-                .performNetworkChaos(anAction()
+                .performNetworkChaos(networkAction()
                         .lastingFor(1, SupportedTimeUnit.MINUTES)
                         .executeSubCommand(
                                 delayOutgoingPackets()

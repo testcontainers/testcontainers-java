@@ -11,7 +11,7 @@ import org.testcontainers.test.Network.PingResponse;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.client.actions.networkactions.NetworkActions.anAction;
+import static org.testcontainers.client.actions.networkactions.NetworkActions.networkAction;
 import static org.testcontainers.client.actions.networkactions.NetworkSubCommands.rateLimitOutgoingTraffic;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.client.targets.PumbaTargets.containers;
@@ -38,7 +38,7 @@ public class RateLimitingOutgoingPacketsTest implements CanSpawnExampleContainer
         // when
         pumba
                 .performNetworkChaos(
-                        anAction()
+                        networkAction()
                                 .lastingFor(1, MINUTES)
                                 .executeSubCommand(
                                         rateLimitOutgoingTraffic().to(1, KILOBITS_PER_SECOND)
