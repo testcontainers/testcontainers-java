@@ -120,6 +120,7 @@ public abstract class ScriptUtils {
 		StringBuilder sb = new StringBuilder();
 		boolean inLiteral = false;
 		boolean inEscape = false;
+		int compoundStatementDepth = 0;
 		char[] content = script.toCharArray();
 		for (int i = 0; i < script.length(); i++) {
 			char c = content[i];
@@ -137,7 +138,15 @@ public abstract class ScriptUtils {
 			if (c == '\'') {
 				inLiteral = !inLiteral;
 			}
-			if (!inLiteral) {
+			if (!inLiteral && contentMatches(content, i, "BEGIN")) {
+				compoundStatementDepth++;
+			}
+			if (!inLiteral && contentMatches(content, i, "END")) {
+				compoundStatementDepth--;
+			}
+			final boolean inCompoundStatement = compoundStatementDepth != 0;
+
+			if (!inLiteral && !inCompoundStatement) {
 				if (script.startsWith(separator, i)) {
 					// we've reached the end of the current statement
 					if (sb.length() > 0) {
@@ -187,6 +196,21 @@ public abstract class ScriptUtils {
 		if (StringUtils.isNotEmpty(sb.toString())) {
 			statements.add(sb.toString());
 		}
+	}
+
+	private static boolean contentMatches(char[] stringChars, int offset, String substring) {
+		final char[] substringChars = substring.toCharArray();
+		final int end = offset + substringChars.length;
+		if (stringChars.length < end) {
+			return false;
+		}
+
+		for (int i = 0; i < substringChars.length; i++) {
+			if (Character.toLowerCase(stringChars[offset + i]) != Character.toLowerCase(substringChars[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static void checkArgument(boolean expression, String errorMessage) {
