@@ -28,6 +28,7 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
         doNotWaitForStartupAtAll();
         mountDockerSocket();
         fetchIPRouteImage();
+        setupLogging();
     }
 
     @Override
@@ -47,6 +48,10 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
     @SneakyThrows
     private void fetchIPRouteImage() {
         new RemoteDockerImage(IP_ROUTE_DOCKER_IMAGE).get();
+    }
+
+    private void setupLogging() {
+        withLogConsumer(frame -> log.debug("Pumba container: \"{}\"", frame.getUtf8String()));
     }
 
     private void executeCommand(PumbaCommand command) {
