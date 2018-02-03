@@ -1,16 +1,13 @@
 package org.testcontainers.test;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.shaded.com.github.dockerjava.api.async.ResultCallback;
-import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.shaded.com.github.dockerjava.api.model.Frame;
 
 import java.util.Arrays;
 import java.util.LinkedList;

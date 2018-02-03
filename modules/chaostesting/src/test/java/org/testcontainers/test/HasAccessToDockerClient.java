@@ -1,7 +1,7 @@
 package org.testcontainers.test;
 
+import com.github.dockerjava.api.DockerClient;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
 
 interface HasAccessToDockerClient {
 

@@ -1,8 +1,9 @@
 package org.testcontainers.test;
 
-import org.testcontainers.shaded.com.github.dockerjava.api.DockerClient;
-import org.testcontainers.shaded.com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.shaded.com.github.dockerjava.api.model.Container;
+
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.Container;
 
 import java.util.Collection;
 import java.util.List;
