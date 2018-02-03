@@ -1,57 +1,70 @@
 language: java
 jdk:
   - oraclejdk8
+
+env:
+  global:
+    - secure: "lw8tahEBcjos2c5QMMoeE19AKZDDU+WoEg7bumZJ+wuLErBEwlJENYU1t1oW834s1s7wgJ1kgt3jQgO6AWxR9wkFgZC+ZMPK0y/92T4MRsmmrMJFzUiu77UGS9MBj/Hu8M7aBzFNtLf0w3JrN2IsVI1xsX2z8PkK6L/G8C/Gzac="
+    - # ^^ OSSRH_JIRA_USERNAME
+    - secure: "p8rkrCcHH5/EM7CKiPKQZCn1Lhzh7a+drGCHFrzHqWsZCapEXIgmqM0SYMnievaIBI+8IljdSkkW/BNfmIxW3fYDckLj91eEslLEhlIKDb91NtklDpr96o7on7wGF/VvpiEzIahKgp+LVsun/G1v3NU0T/RPs9QJoMmnQi4K+8I="
+    - # ^^ OSSRH_JIRA_PASSWORD
+    - secure: "CWGSIr/ig2rIWSJqnDtmrK+XcUayl80ydh+fbzwi0v4hFsbbcNzm4SXFR2+HBGTBlWpWapvJoyG2iii2RHbgxVwYSyG6fEBrxtQV1oD8B/JAJoc/VJgvCsNnO54WRACqEPgV8fUX7MfKThA4hpXL3jnhM2A8J7wM969H8e4jNHk="
+    - # ^^ GPG_KEY_NAME
+    - secure: "n2RjM3CIvtqMGMXYxjMOXjXB2R7k2lbZ2aV3fcQ0uSlrFqbzyRcTB/oa+Sft3ayUzU5S/qYjCPnNbb7P49vk1K3q5z2A9RVofFk9H90JPBz4cuuLcsuW7apcDPohDNuk47QAccsL0K+KA2AjdiQ/cIe81LWJykV+ogDI7DVXBDY="
+    - # ^^ GPG_PASSPHRASE
+
 sudo: required
 services:
   - docker
 
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew install docker-engine
-  - env
-# Pre-fetch docker images - seems to need to be done before docker env vars are set
-  - docker pull redis:3.0.2
-  - docker pull rabbitmq:3.5.3
-  - docker pull mongo:3.1.5
-  - docker pull alpine:3.2
-  - docker pull mysql:latest
-  - docker pull mysql:5.5.43
-  - docker pull mysql:5.6
-  - docker pull mysql:5.5
-  - docker pull postgres:latest
-  - docker pull selenium/standalone-chrome-debug:2.52.0
-  - docker pull selenium/standalone-firefox-debug:2.52.0
-  - docker pull richnorth/vnc-recorder:latest
-  - docker pull nginx:1.9.4
-  - docker pull dduportal/docker-compose:1.6.0
-  - docker pull richnorth/ambassador:latest
-# Update env vars required by testcontainers
-  - export DOCKER_HOST=tcp://127.0.0.1:2375
-  - export DOCKER_TLS_VERIFY=0
-  - env
-
-script:
-  - mvn -B test
-  # Run Docker-in-Docker tests
-  - |
-      DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run --rm \
-      -v "$HOME/.m2":/root/.m2/ \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -v "$(pwd)":"$(pwd)" \
-      -w "$(pwd)" \
-      openjdk:8-jre \
-      ./mvnw -B -pl core test -Dtest=*GenericContainerRuleTest
-  # Run Docker-in-Docker tests inside Alpine
-  - |
-      DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run --rm \
-      -v "$HOME/.m2":/root/.m2/ \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -v "$(pwd)":"$(pwd)" \
-      -w "$(pwd)" \
-      kiview/openjdk-alpine-bash:8u111 \
-      ./mvnw -B -pl core test -Dtest=*GenericContainerRuleTest
-  - mvn -B test -f shade-test/pom.xml
-
 cache:
   directories:
-    - '$HOME/.m2/repository'
+    - '$HOME/.m2'
+
+install:
+  - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
+  - ./mvnw -T4 -DskipTests=true -Dmaven.javadoc.skip=true install
+
+jobs:
+  include:
+    - stage: test
+      env: [ NAME=core ]
+      script: ./mvnw -pl core test
+
+    - stage: test
+      env: [ NAME=core ]
+      jdk: oraclejdk9
+      script:
+        - ./mvnw -pl core test
+
+    - env: [ NAME=selenium ]
+      script: ./mvnw -pl modules/selenium test
+
+    - env: [ NAME=modules ]
+      script: ./mvnw -pl !core,!modules/selenium test
+
+    # Run Docker-in-Docker tests inside Alpine and shading tests
+    - env: [ NAME="docker-in-alpine-docker&shade" ]
+      script:
+        - |
+                DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
+                -v "$HOME/.m2":/root/.m2/ \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                -v "$(pwd)":"$(pwd)" \
+                -w "$(pwd)" \
+                openjdk:8-jdk-alpine \
+                ./mvnw -pl core test -Dtest=*GenericContainerRuleTest
+
+        - ./mvnw test -f shade-test/pom.xml
+
+    - stage: deploy
+      sudo: false
+      services: []
+      install: skip
+      script: skip
+      deploy:
+        provider: script
+        script: release/deploy.sh
+        on:
+          tags: true
+          branch: master

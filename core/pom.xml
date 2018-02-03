@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-parent</artifactId>
-        <version>1.2.2-SNAPSHOT</version>
+        <version>0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,17 +16,70 @@
 
     <dependencies>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java</artifactId>
             <version>${docker-java.version}</version>
             <scope>compile</scope>
             <exclusions>
-                <!-- replace with junixsocket -->
                 <exclusion>
-                    <groupId>de.gesellix</groupId>
-                    <artifactId>unix-socket-factory</artifactId>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.connectors</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+
+        <!-- Added for JDK9 compatibility since it's missing this package -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
+        <dependency>
+            <!-- docker-java uses SslConfigurator from jersey-common for TLS -->
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+            <version>2.23.1</version>
+            <exclusions>
+                <!-- SslConfigurator doesn't use classes from dependencies -->
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
         </dependency>
 
         <dependency>
@@ -49,6 +102,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-ext</artifactId>
             <version>1.7.25</version>
+        </dependency>
+        <dependency>
+            <groupId>org.rnorth.visible-assertions</groupId>
+            <artifactId>visible-assertions</artifactId>
+            <version>2.1.0</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -103,7 +161,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -178,7 +236,7 @@
                             <include>org.apache.httpcomponents:*</include>
                             <include>org.glassfish.*:*</include>
                             <include>org.aopalliance.*:*</include>
-                            <include>javax.annotation:*</include>
+                            <include>com.google.code.findbugs:jsr305</include>
                             <include>javax.inject:*</include>
                             <include>javax.ws.rs:*</include>
                             <include>com.fasterxml.*:*</include>
@@ -195,9 +253,17 @@
                         <filter>
                             <artifact>*:*</artifact>
                             <excludes>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                                <exclude>META-INF/maven/</exclude>
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                                <exclude>META-INF/io.netty.versions.properties</exclude>
+                                <exclude>mozilla/public-suffix-list.txt</exclude>
+                                <!-- README.md comes from docker-java -->
+                                <exclude>META-INF/services/README.md</exclude>
                                 <exclude>META-INF/services/com.fasterxml.jackson.core.*</exclude>
                                 <exclude>META-INF/services/com.github.dockerjava.api.command.*</exclude>
                                 <exclude>META-INF/services/javax.ws.rs.ext.*</exclude>
@@ -224,6 +290,8 @@
                                        dest="${project.build.directory}/exploded/"/>
                                 <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-epoll.so"
                                       tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-epoll.so"/>
+                                <move file="${project.build.directory}/exploded/META-INF/native/libnetty-transport-native-kqueue.jnilib"
+                                      tofile="${project.build.directory}/exploded/META-INF/native/liborg-testcontainers-shaded-netty-transport-native-kqueue.jnilib"/>
                                 <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                      basedir="${project.build.directory}/exploded"/>
                             </target>

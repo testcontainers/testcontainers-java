@@ -42,7 +42,7 @@ Examples/Tests:
 
  * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/jdbc-test/src/test/java/org/testcontainers/junit/SimpleMySQLTest.java)
  * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/jdbc-test/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
- * [Oracle-XE](https://github.com/testcontainers/testcontainers-java/blob/master/modules/oracle-xe/src/test/java/org/testcontainers/junit/SimpleOracleTest.java)
+ * [Oracle-XE](https://github.com/testcontainers/testcontainers-java-module-oracle-xe/blob/master/src/test/java/org/testcontainers/junit/SimpleOracleTest.java)
  * [Virtuoso](https://github.com/testcontainers/testcontainers-java/blob/master/modules/virtuoso/src/test/java/org/testcontainers/junit/SimpleVirtuosoTest.java)
 
 ### JDBC URL
@@ -96,6 +96,14 @@ public class JDBCDriverTest {
     }
     ...
 ```
+
+#### Running container in daemon mode
+
+By default database container is being stopped as soon as last connection is closed. There are cases when you might need to start container and keep it running till you stop it explicitly or JVM is shutdown. To do this, add `TC_DAEMON` parameter to the URL as follows:
+
+ `jdbc:tc:mysql://hostname/databasename?TC_DAEMON=true`
+
+With this parameter database container will keep running even when there're no open connections.
 
 #### Overriding MySQL my.cnf settings
 

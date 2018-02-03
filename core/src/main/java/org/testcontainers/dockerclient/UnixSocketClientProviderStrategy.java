@@ -2,13 +2,17 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.ComparableVersion;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
     private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
@@ -16,18 +20,21 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
 
+    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 20;
 
     @Override
-    public void test()
-            throws InvalidConfigurationException {
+    protected boolean isApplicable() {
+        final boolean nettyDoesSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
+                ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
 
-        if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
-            throw new InvalidConfigurationException("this strategy is only applicable to Linux");
-        }
+        return SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets;
+    }
 
+    @Override
+    public void test() throws InvalidConfigurationException {
         try {
             config = tryConfiguration(SOCKET_LOCATION);
-            LOGGER.info("Accessing docker with local Unix socket");
+            log.info("Accessing docker with local Unix socket");
         } catch (Exception | UnsatisfiedLinkError e) {
             throw new InvalidConfigurationException("ping failed", e);
         }
@@ -65,4 +72,8 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
         return "local Unix socket (" + SOCKET_LOCATION + ")";
     }
 
+    @Override
+    protected int getPriority() {
+        return PRIORITY;
+    }
 }

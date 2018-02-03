@@ -11,7 +11,7 @@ If you want to use TestContainers on Windows you can try the [alpha release](usa
 Testcontainers will try to connect to a Docker daemon using the following strategies in order:
 
 * Environment variables:
-	* `DOCKER_HOST` (this should be set to an HTTP/HTTPS connection rather than a unix socket at present)
+	* `DOCKER_HOST`
 	* `DOCKER_TLS_VERIFY`
 	* `DOCKER_CERT_PATH`
 * Defaults:

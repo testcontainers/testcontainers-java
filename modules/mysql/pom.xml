@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-parent</artifactId>
-        <version>1.2.2-SNAPSHOT</version>
+        <version>0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -13,11 +13,6 @@
     <name>TestContainers :: JDBC :: MySQL</name>
 
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>testcontainers</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jdbc</artifactId>
@@ -49,11 +44,13 @@
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-jdbc</artifactId>
             <version>8.5.4</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.vibur</groupId>
           <artifactId>vibur-dbcp</artifactId>
           <version>9.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

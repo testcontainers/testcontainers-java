@@ -1,21 +1,12 @@
 package org.testcontainers.junit;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 /**
@@ -25,40 +16,38 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @RunWith(Parameterized.class)
 public class ParameterizedDockerfileContainerTest {
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Object[] data() {
-        return new Object[] { "alpine:3.2", "alpine:3.3" };
-    }
-
-    public ParameterizedDockerfileContainerTest(String baseImage) {
-        container = new GenericContainer(new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
-                builder
-                        .from(baseImage)
-                        .run("apk add --update nginx")
-                        .cmd("nginx", "-g", "daemon off;")
-                        .build();
-            })).withExposedPorts(80);
-    }
+    private final String expectedVersion;
 
     @Rule
     public GenericContainer container;
 
+    public ParameterizedDockerfileContainerTest(String baseImage, String expectedVersion) {
+        container = new GenericContainer(new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
+                builder
+                        .from(baseImage)
+                        // Could potentially customise the image here, e.g. adding files, running
+                        //  commands, etc.
+                        .build();
+            })).withCommand("top");
+        this.expectedVersion = expectedVersion;
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Object[][] data() {
+        return new Object[][] {
+                { "alpine:3.2", "3.2"},
+                { "alpine:3.3", "3.3"},
+                { "alpine:3.4", "3.4"},
+                { "alpine:3.5", "3.5"},
+                { "alpine:3.6", "3.6"}
+        };
+    }
+
     @Test
-    public void simpleTest() throws IOException {
-        String address = String.format("http://%s:%s", container.getContainerIpAddress(), container.getMappedPort(80));
+    public void simpleTest() throws Exception {
+        final String release = container.execInContainer("cat", "/etc/alpine-release").getStdout();
 
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(address);
-
-        Unreliables.retryUntilSuccess(5, TimeUnit.SECONDS, () -> {
-            try (CloseableHttpResponse response = httpClient.execute(get)) {
-                assertEquals("A container built from a dockerfile can run nginx as expected, and returns a good status code",
-                                200,
-                                response.getStatusLine().getStatusCode());
-                assertTrue("A container built from a dockerfile can run nginx as expected, and returns an expected Server header",
-                                response.getHeaders("Server")[0].getValue().contains("nginx"));
-            }
-            return true;
-        });
+        assertTrue("/etc/alpine-release starts with " + expectedVersion,
+                release.startsWith(expectedVersion));
     }
 }

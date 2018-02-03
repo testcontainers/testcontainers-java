@@ -1,17 +1,21 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.*;
@@ -23,8 +27,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
+import static org.testcontainers.containers.BindMode.READ_WRITE;
+import static org.testcontainers.containers.SelinuxContext.SHARED;
 
 /**
  * Tests for GenericContainerRules
@@ -74,9 +81,10 @@ public class GenericContainerRuleTest {
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainer alpineEnvVar = new GenericContainer("alpine:3.2")
+    public static GenericContainer alpineEnvVar = new GenericContainer<>("alpine:3.2")
             .withExposedPorts(80)
-            .withEnv("MAGIC_NUMBER", "42")
+            .withEnv("MAGIC_NUMBER", "4")
+            .withEnv("MAGIC_NUMBER", oldValue -> oldValue.orElse("") + "2")
             .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
 
     /**
@@ -99,6 +107,15 @@ public class GenericContainerRuleTest {
     public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
             .withExposedPorts(80)
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
+            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+
+    /**
+     * Map a file on the classpath to a file in the container, and then expose the content for testing.
+     */
+    @ClassRule
+    public static GenericContainer alpineClasspathResourceSelinux = new GenericContainer("alpine:3.2")
+            .withExposedPorts(80)
+            .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_WRITE, SHARED)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
     /**
@@ -132,6 +149,15 @@ public class GenericContainerRuleTest {
 //        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("bar"));
 //        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("baz"));
 //    }
+
+    @Test
+    public void testIsRunning() {
+        try (GenericContainer container = new GenericContainer().withCommand("top")) {
+            assertFalse("Container is not started and not running", container.isRunning());
+            container.start();
+            assertTrue("Container is started and running", container.isRunning());
+        }
+    }
 
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
@@ -201,6 +227,12 @@ public class GenericContainerRuleTest {
         String line = getReaderForContainerPort80(alpineClasspathResource).readLine();
 
         assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMapping", "FOOBAR", line);
+    }
+
+    @Test
+    public void customClasspathResourceMappingWithSelinuxTest() throws IOException {
+        String line = getReaderForContainerPort80(alpineClasspathResourceSelinux).readLine();
+        assertEquals("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux", "FOOBAR", line);
     }
 
     @Test
@@ -303,13 +335,69 @@ public class GenericContainerRuleTest {
         }
     }
 
+    @Test
+    public void copyToContainerTest() throws Exception {
+        final File tempResultFolder = Files.createTempDir();
+
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                    .withCommand("top")){
+            
+            alpineCopyToContainer.start();
+            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
+                    tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
+
+            File expectedFile = new File(mountableFile.getResolvedPath());
+            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
+            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
+        }
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException, IOException, InterruptedException {
+
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                        .withCommand("top")) {
+            alpineCopyToContainer.start();
+            alpineCopyToContainer.copyFileFromContainer("/home/test.txt", "src/test/resources/copy-from/test.txt");
+        }
+    }
+
+    @Test
+    public void shouldCopyFileFromContainerTest() throws IOException, InterruptedException {
+        final File tempResultFolder = Files.createTempDir();
+
+        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
+                .withCommand("top")) {
+
+            alpineCopyToContainer.start();
+            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
+                    tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
+
+            File expectedFile = new File(mountableFile.getResolvedPath());
+            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
+            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
+        }
+    }
+
     private BufferedReader getReaderForContainerPort80(GenericContainer container) {
 
         return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-            Socket socket = new Socket(container.getContainerIpAddress(), container.getMappedPort(80));
+            Socket socket = new Socket(container.getContainerIpAddress(), container.getFirstMappedPort());
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
+    }
+
+    @Test
+    public void addExposedPortAfterWithExposedPortsTest() {
+        redis.addExposedPort(8987);
+        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
+        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
+        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
     }
 }

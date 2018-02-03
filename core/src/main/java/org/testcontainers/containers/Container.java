@@ -10,14 +10,17 @@ import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface Container<SELF extends Container<SELF>> extends LinkableContainer {
 
@@ -80,18 +83,33 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
      * for building a container in a fluent style.
      *
-     * @param hostPath the file system path on the host
+     * @param hostPath      the file system path on the host
      * @param containerPath the file system path inside the container
-     * @param mode the bind mode
+     * @param mode          the bind mode
      */
-    void addFileSystemBind(String hostPath, String containerPath, BindMode mode);
+    default void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode) {
+        addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.NONE);
+    }
+
+    /**
+     * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
+     * for building a container in a fluent style.
+     *
+     * @param hostPath      the file system path on the host
+     * @param containerPath the file system path inside the container
+     * @param mode          the bind mode
+     * @param selinuxContext selinux context argument to use for this file
+     */
+    void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
      * Add a link to another container.
      *
      * @param otherContainer the other container object to link to
      * @param alias the alias (for the other container) that this container should be able to use
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
      */
+    @Deprecated
     void addLink(LinkableContainer otherContainer, String alias);
 
     /**
@@ -118,6 +136,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF waitingFor(@NonNull WaitStrategy waitStrategy);
+
+    /**
+     * Adds a file system binding.
+     *
+     * @param hostPath the file system path on the host
+     * @param containerPath the file system path inside the container
+     * @return this
+     */
+    default SELF withFileSystemBind(String hostPath, String containerPath) {
+        return withFileSystemBind(hostPath, containerPath, BindMode.READ_WRITE);
+    }
 
     /**
      * Adds a file system binding.
@@ -154,6 +183,18 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withEnv(String key, String value);
+
+    /**
+     * Add an environment variable to be passed to the container.
+     *
+     * @param key   environment variable key
+     * @param mapper environment variable value mapper, accepts old value as an argument
+     * @return this
+     */
+    default SELF withEnv(String key, Function<Optional<String>, String> mapper) {
+        Optional<String> oldValue = Optional.ofNullable(getEnvMap().get(key));
+        return withEnv(key, mapper.apply(oldValue));
+    }
 
     /**
      * Add environment variables to be passed to the container.
@@ -197,6 +238,24 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withNetworkMode(String networkMode);
 
     /**
+     * Set the network for this container, similar to the <code>--network &lt;name&gt;</code>
+     * option on the docker CLI.
+     *
+     * @param network the instance of {@link Network}
+     * @return this
+     */
+    SELF withNetwork(Network network);
+
+    /**
+     * Set the network aliases for this container, similar to the <code>--network-alias &lt;my-service&gt;</code>
+     * option on the docker CLI.
+     *
+     * @param aliases the list of aliases
+     * @return this
+     */
+    SELF withNetworkAliases(String... aliases);
+
+    /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
      * This will only work if you are running your tests outside a Docker container.
      *
@@ -205,7 +264,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param mode          access mode for the file
      * @return this
      */
-    SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode);
+    default SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode) {
+        withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+        return self();
+    }
+
+    /**
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
+     *
+     * @param resourcePath   path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
+     * @param containerPath  path this should be mapped to inside the container
+     * @param mode           access mode for the file
+     * @param selinuxContext selinux context argument to use for this file
+     * @return this
+     */
+    SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
      * Set the duration of waiting time until container treated as started.
@@ -257,6 +331,20 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return is the container currently running?
      */
     Boolean isRunning();
+
+    /**
+     * Get the actual mapped port for a first port exposed by the container.
+     *
+     * @return the port that the exposed port is mapped to
+     * @throws IllegalStateException if there are no exposed ports
+     */
+    default Integer getFirstMappedPort() {
+        return getExposedPorts()
+                .stream()
+                .findFirst()
+                .map(this::getMappedPort)
+                .orElseThrow(() -> new IllegalStateException("Container doesn't expose any ports"));
+    }
 
     /**
      * Get the actual mapped port for a given port exposed by the container.
@@ -320,6 +408,11 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
     Info fetchDockerDaemonInfo() throws IOException;
 
     /**
@@ -346,6 +439,27 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     ExecResult execInContainer(Charset outputCharset, String... command)
                     throws UnsupportedOperationException, IOException, InterruptedException;
 
+    /**
+     *
+     * Copies a file which resides inside the classpath to the container.
+     *
+     * @param mountableLocalFile file which is copied into the container
+     * @param containerPath destination path inside the container
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException;
+
+    /**
+     * Copies a file which resides inside the container to user defined directory
+     *
+     * @param containerPath path to file which is copied from container
+     * @param destinationPath destination path to which file is copied with file name
+     * @throws IOException if there's an issue communicating with Docker or receiving entry from TarArchiveInputStream
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
+
     List<Integer> getExposedPorts();
 
     List<String> getPortBindings();
@@ -354,22 +468,43 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     Future<String> getImage();
 
+    /**
+     *
+     * @deprecated use getEnvMap
+     */
+    @Deprecated
     List<String> getEnv();
+
+    Map<String, String> getEnvMap();
 
     String[] getCommandParts();
 
     List<Bind> getBinds();
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
     Map<String, LinkableContainer> getLinkedContainers();
 
     DockerClient getDockerClient();
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
     Info getDockerDaemonInfo();
 
     String getContainerId();
 
     String getContainerName();
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().inspectContainerCmd(container.getContainerId()).exec()}
+     */
+    @Deprecated
     InspectContainerResponse getContainerInfo();
 
     void setExposedPorts(List<Integer> exposedPorts);
@@ -386,37 +521,11 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setBinds(List<Bind> binds);
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
-    /**
-     * @deprecated set by GenericContainer and should never be set outside
-     */
-    @Deprecated
-    void setDockerClient(DockerClient dockerClient);
-
-    /**
-     * @deprecated set by GenericContainer and should never be set outside
-     */
-    @Deprecated
-    void setDockerDaemonInfo(Info dockerDaemonInfo);
-
-    /**
-     * @deprecated set by GenericContainer and should never be set outside
-     */
-    @Deprecated
-    void setContainerId(String containerId);
-
-    /**
-     * @deprecated set by GenericContainer and should never be set outside
-     */
-    @Deprecated
-    void setContainerName(String containerName);
-
     void setWaitStrategy(WaitStrategy waitStrategy);
-
-    /**
-     * @deprecated set by GenericContainer and should never be set outside
-     */
-    @Deprecated
-    void setContainerInfo(InspectContainerResponse containerInfo);
 }

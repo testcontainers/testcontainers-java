@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.testcontainers</groupId>
 		<artifactId>testcontainers-parent</artifactId>
-		<version>1.2.2-SNAPSHOT</version>
+		<version>0-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	
@@ -19,11 +19,6 @@
 	</repositories>
   
 	<dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>testcontainers</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jdbc</artifactId>

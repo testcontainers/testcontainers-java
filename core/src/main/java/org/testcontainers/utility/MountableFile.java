@@ -10,7 +10,11 @@ import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.images.builder.Transferable;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Files;
@@ -33,10 +37,21 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 @Slf4j
 public class MountableFile implements Transferable {
 
+    private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
+    private static final String OS_MAC_TMP_DIR = "/tmp";
+    private static final int BASE_FILE_MODE = 0100000;
+    private static final int BASE_DIR_MODE = 0040000;
+
     private final String path;
+    private final Integer forcedFileMode;
 
     @Getter(lazy = true)
     private final String resolvedPath = resolvePath();
+
+    @Getter(lazy = true)
+    private final String filesystemPath = resolveFilesystemPath();
+
+    private String resourcePath;
 
     /**
      * Obtains a {@link MountableFile} corresponding to a resource on the classpath (including resources in JAR files)
@@ -45,7 +60,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forClasspathResource(@NotNull final String resourceName) {
-        return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString());
+        return forClasspathResource(resourceName, null);
     }
 
     /**
@@ -55,7 +70,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path) {
-        return new MountableFile(new File(path).toURI().toString());
+        return forHostPath(path, null);
     }
 
     /**
@@ -65,8 +80,42 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(final Path path) {
-        return new MountableFile(path.toAbsolutePath().toString());
+        return forHostPath(path, null);
     }
+
+    /**
+     * Obtains a {@link MountableFile} corresponding to a resource on the classpath (including resources in JAR files)
+     *
+     * @param resourceName the classpath path to the resource
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forClasspathResource(@NotNull final String resourceName, Integer mode) {
+        return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString(), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} corresponding to a file on the docker host filesystem.
+     *
+     * @param path the path to the resource
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
+        return new MountableFile(new File(path).toURI().toString(), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} corresponding to a file on the docker host filesystem.
+     *
+     * @param path the path to the resource
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forHostPath(final Path path, Integer mode) {
+        return new MountableFile(path.toAbsolutePath().toString(), mode);
+    }
+
 
     @NotNull
     private static URL getClasspathResource(@NotNull final String resourcePath, @NotNull final Set<ClassLoader> classLoaders) {
@@ -115,18 +164,41 @@ public class MountableFile implements Transferable {
      * @return a volume-mountable path.
      */
     private String resolvePath() {
-        String result;
-        if (path.contains(".jar!")) {
-            result = extractClassPathResourceToTempLocation(this.path);
-        } else {
-            result = unencodeResourceURIToFilePath(path);
-        }
+        String result = getResourcePath();
 
-        if (SystemUtils.IS_OS_WINDOWS) {
-            result = PathUtils.createMinGWPath(result);
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+            result = result.substring(1);
         }
 
         return result;
+    }
+
+    /**
+     * Obtain a path in local filesystem that the Docker daemon should be able to use to volume mount a file/resource
+     * into a container. If this is a classpath resource residing in a JAR, it will be extracted to
+     * a temporary location so that the Docker daemon is able to access it.
+     *
+     * TODO: rename method accordingly and check if really needed like this
+     *
+     * @return
+     */
+    private String resolveFilesystemPath() {
+        String result = getResourcePath();
+
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+            result = PathUtils.createMinGWPath(result).substring(1);
+        }
+
+        return result;
+    }
+
+    private String getResourcePath() {
+        if (path.contains(".jar!")) {
+            resourcePath = extractClassPathResourceToTempLocation(this.path);
+        } else {
+            resourcePath = unencodeResourceURIToFilePath(path);
+        }
+        return resourcePath;
     }
 
     /**
@@ -137,7 +209,7 @@ public class MountableFile implements Transferable {
      * @return the path of the temporary file/directory
      */
     private String extractClassPathResourceToTempLocation(final String hostPath) {
-        File tmpLocation = new File(".testcontainers-tmp-" + Base58.randomString(5));
+        File tmpLocation = createTempDirectory();
         //noinspection ResultOfMethodCallIgnored
         tmpLocation.delete();
 
@@ -168,6 +240,17 @@ public class MountableFile implements Transferable {
         return tmpLocation.getAbsolutePath();
     }
 
+    private File createTempDirectory() {
+        try {
+            if (SystemUtils.IS_OS_MAC) {
+                return Files.createTempDirectory(Paths.get(OS_MAC_TMP_DIR), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+            }
+            return Files.createTempDirectory(TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+        } catch  (IOException e) {
+            return new File(TESTCONTAINERS_TMP_DIR_PREFIX + Base58.randomString(5));
+        }
+    }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void copyFromJarToLocation(final JarFile jarFile,
                                        final JarEntry entry,
@@ -183,8 +266,8 @@ public class MountableFile implements Transferable {
 
         if (!entry.isDirectory()) {
             // Create parent directories
-            newFile.mkdirs();
-            newFile.delete();
+            Path parent = newFile.getAbsoluteFile().toPath().getParent();
+            parent.toFile().mkdirs();
             newFile.deleteOnExit();
 
             try (InputStream is = jarFile.getInputStream(entry)) {
@@ -211,16 +294,16 @@ public class MountableFile implements Transferable {
     /*
      * Recursively copies a file/directory into a TarArchiveOutputStream
      */
-    private void recursiveTar(String destination, String sourceRootDir, String sourceCurrentItem, TarArchiveOutputStream tarArchive) {
+    private void recursiveTar(String entryFilename, String rootPath, String itemPath, TarArchiveOutputStream tarArchive) {
         try {
-            final File sourceFile = new File(sourceCurrentItem).getCanonicalFile();     // e.g. /foo/bar/baz
-            final File sourceRootFile = new File(sourceRootDir).getCanonicalFile();     // e.g. /foo
+            final File sourceFile = new File(itemPath).getCanonicalFile();     // e.g. /foo/bar/baz
+            final File sourceRootFile = new File(rootPath).getCanonicalFile();     // e.g. /foo
             final String relativePathToSourceFile = sourceRootFile.toPath().relativize(sourceFile.toPath()).toFile().toString();    // e.g. /bar/baz
 
-            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, destination + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
+            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, entryFilename + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
 
             // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)
-            tarEntry.setMode(getUnixFileMode(sourceCurrentItem));
+            tarEntry.setMode(getUnixFileMode(itemPath));
             tarArchive.putArchiveEntry(tarEntry);
 
             if (sourceFile.isFile()) {
@@ -233,11 +316,11 @@ public class MountableFile implements Transferable {
             if (children != null) {
                 // recurse into child files/directories
                 for (final File child : children) {
-                    recursiveTar(destination, sourceRootDir + File.separator, child.getCanonicalPath(), tarArchive);
+                    recursiveTar(entryFilename, sourceRootFile.getCanonicalPath(), child.getCanonicalPath(), tarArchive);
                 }
             }
         } catch (IOException e) {
-            log.error("Error when copying TAR file entry: {}", sourceCurrentItem, e);
+            log.error("Error when copying TAR file entry: {}", itemPath, e);
             throw new UncheckedIOException(e); // fail fast
         }
     }
@@ -265,9 +348,13 @@ public class MountableFile implements Transferable {
 
     private int getUnixFileMode(final String pathAsString) {
         final Path path = Paths.get(pathAsString);
+        if (this.forcedFileMode != null) {
+            return this.getModeValue(path);
+        }
+
         try {
             return (int) Files.getAttribute(path, "unix:mode");
-        } catch (IOException e) {
+        } catch (IOException | UnsupportedOperationException e) {
             // fallback for non-posix environments
             int mode = DEFAULT_FILE_MODE;
             if (Files.isDirectory(path)) {
@@ -278,5 +365,10 @@ public class MountableFile implements Transferable {
 
             return mode;
         }
+    }
+
+    private int getModeValue(final Path path) {
+        int result = Files.isDirectory(path) ? BASE_DIR_MODE : BASE_FILE_MODE;
+        return result | this.forcedFileMode;
     }
 }

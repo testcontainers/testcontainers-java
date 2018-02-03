@@ -8,6 +8,7 @@
     * [Usage modes](usage.md#usage-modes)
     * [Maven dependencies](usage.md#maven-dependencies)
     * [Logging](usage.md#logging)
+    * [Properties](usage/properties.md)
     * [Running inside Docker](usage/inside_docker.md)
 
 ## Generic containers
@@ -46,11 +47,14 @@
 * [Dockerfile containers](usage/dockerfile.md)
 * [Windows support](usage/windows_support.md)
 
+## Continuous Integration
+
+* [GitLab CI](ci/ci.md#gitlab)
+
 ## Examples
 * [Selenium](https://github.com/testcontainers/testcontainers-java-examples/blob/master/selenium-container/src/test/java/SeleniumContainerTest.java)
 * [Custom Redis container](https://github.com/testcontainers/testcontainers-java-examples/blob/master/redis-backed-cache/src/test/java/RedisBackedCacheTest.java)
 * [Spring Boot testing with Redis](https://github.com/testcontainers/testcontainers-java-examples/tree/master/spring-boot/src/test/java/com/example)
-
 ## 
 * [License](index.md#license)
 * [Attributions](index.md#attributions)

@@ -1,8 +1,9 @@
 # Windows Support (Alpha)
 
 ## Prerequisites
-* [Docker Toolbox for Windows](https://docs.docker.com/engine/installation/windows/) needs to be installed
-* Currently Docker for Windows without Toolbox (Linux VM) is not supported
+* [Docker for Windows](https://docs.docker.com/docker-for-windows/) needs to be installed
+  * Docker version 17.06 is confirmed to work on Windows 10 with Hyper-V.
+  * On the General page in Settings, "Expose daemon on tcp://localhost:2375 without TLS" must be checked.
 
 ## Limitations
 The following features are not available or do not work correctly so make sure you do not use them or use them with 
@@ -17,6 +18,10 @@ effort.
 
 ### MySQL containers
 * MySQL server prevents custom configuration file (ini-script) from being loaded due to security measures ([link to feature description](database_containers.md#using-an-init-script))
+
+### Windows Container on Windows (WCOW)
+
+* WCOW is currently not supported, since Testcontainers uses auxiliary Linux containers for certain tasks and Docker for Windows does not support hybrid engine mode at the time of writing.
 
 ## Reporting issues
 
