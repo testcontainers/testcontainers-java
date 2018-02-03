@@ -19,7 +19,7 @@ sourceSets {
 
 configurations {
     shaded
-    [runtime, compileOnly]*.extendsFrom shaded
+    [runtime, compileOnly, testCompile]*.extendsFrom shaded
 }
 
 shadowJar {
