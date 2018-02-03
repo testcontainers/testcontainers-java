@@ -29,9 +29,4 @@ public final class PumbaTargets {
     public static PumbaTarget containersMatchingRegexp(Pattern regex) {
         return containersMatchingRegexp(regex.pattern());
     }
-
-    public static PumbaTarget allContainers() {
-        return () -> "";
-    }
-
 }

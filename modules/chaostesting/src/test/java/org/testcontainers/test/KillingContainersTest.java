@@ -1,7 +1,6 @@
 package org.testcontainers.test;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.PumbaExecutables;
 import org.testcontainers.client.PumbaClient;
@@ -19,7 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.client.actions.containeractions.ContainerActions.killContainers;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.recurrently;
-import static org.testcontainers.client.targets.PumbaTargets.*;
+import static org.testcontainers.client.targets.PumbaTargets.containers;
+import static org.testcontainers.client.targets.PumbaTargets.containersMatchingRegexp;
 
 /**
  * Created by novy on 31.12.16.
@@ -98,25 +98,6 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
             assertThat(namesOfRunningContainers).filteredOn(matchesRegexp("foobar.*")).isEmpty();
             assertThat(namesOfRunningContainers).filteredOn(matchesRegexp("barbaz.*")).isNotEmpty();
         });
-    }
-
-    @Ignore("collides with testcontainers-ryuk container")
-    @Test
-    public void should_kill_all_containers() throws Exception {
-        // given
-        startedContainer();
-        startedContainer();
-
-        // when
-        pumba
-                .performContainerChaos(killContainers())
-                .affect(allContainers())
-                .execute(onlyOnce().onAllChosenContainers());
-
-        // then
-        await().atMost(30, TimeUnit.SECONDS).until(() ->
-                assertThat(environment.namesOfRunningContainers()).isEmpty()
-        );
     }
 
     @Test
