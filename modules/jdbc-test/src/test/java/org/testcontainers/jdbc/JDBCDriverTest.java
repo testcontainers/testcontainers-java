@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,6 +69,7 @@ public class JDBCDriverTest {
 
         if (performTestForScriptedSchema) {
             performTestForScriptedSchema(jdbcUrl);
+            performTestForScriptedSchemaWithProcedure(jdbcUrl);
         }
 
         if (performTestForCharacterSet) {
@@ -100,11 +102,20 @@ public class JDBCDriverTest {
                 assertEquals("A basic SELECT query succeeds where the schema has been applied from a script", "hello world", resultSetString);
                 return true;
             });
-
-            assertTrue("The database returned a record as expected", result);
-
         }
     }
+    
+    private void performTestForScriptedSchemaWithProcedure(String jdbcUrl) throws SQLException {
+      try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
+          CallableStatement proc = dataSource.getConnection().prepareCall("{call count_foo()}");
+          boolean result = proc.execute();
+          ResultSet rs = proc.getResultSet();
+          rs.first();
+          String foo = rs.getString(1);
+          assertEquals("A stored procedure call succeesfully returned the first record from database", "hello world", foo);
+          assertTrue("Calling stored procedure returns data as expected", result);
+      }
+  }
 
     private void performSimpleTestWithCharacterSet(String jdbcUrl) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
