@@ -13,10 +13,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.client.actions.networkactions.NetworkActions.networkAction;
 import static org.testcontainers.client.actions.networkactions.NetworkSubCommands.rateLimitOutgoingTraffic;
-import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
-import static org.testcontainers.client.targets.PumbaTargets.containers;
 import static org.testcontainers.client.actions.networkactions.RateLimitOutgoingTraffic.RateUnit.KILOBITS_PER_SECOND;
 import static org.testcontainers.client.commandparts.SupportedTimeUnit.MINUTES;
+import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
+import static org.testcontainers.client.targets.PumbaTargets.containers;
 
 /**
  * Created by novy on 15.01.17.
