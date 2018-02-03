@@ -21,7 +21,7 @@ buildCache {
     remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
         region = 'us-east-1'
         bucket = 'testcontainers-build-cache'
-        push = true
+        push = isMasterBuild
     }
 }
 
