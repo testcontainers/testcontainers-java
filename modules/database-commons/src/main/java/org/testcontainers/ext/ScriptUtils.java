@@ -16,12 +16,16 @@
 
 package org.testcontainers.ext;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.delegate.DatabaseDelegate;
 
 import javax.script.ScriptException;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -210,6 +214,30 @@ public abstract class ScriptUtils {
 		return false;
 	}
 
+	/**
+	 * Load script from classpath and apply it to the given database
+	 *
+	 * @param databaseDelegate database delegate for script execution
+	 * @param initScriptPath   the resource to load the init script from
+	 */
+	public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
+		try {
+			URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+			if (resource == null) {
+				LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
+			}
+			String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
+			ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+		} catch (IOException e) {
+			LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
+		} catch (ScriptException e) {
+			LOGGER.error("Error while executing init script: {}", initScriptPath, e);
+			throw new ScriptUtils.UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
+		}
+	}
+
     public static void executeDatabaseScript(DatabaseDelegate databaseDelegate, String scriptPath, String script) throws ScriptException {
         executeDatabaseScript(databaseDelegate, scriptPath, script, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR, DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
     }
@@ -275,6 +303,16 @@ public abstract class ScriptUtils {
 
 			throw new UncategorizedScriptException(
 				"Failed to execute database script from resource [" + script + "]", ex);
+		}
+	}
+
+	public static class ScriptLoadException extends RuntimeException {
+		public ScriptLoadException(String message) {
+			super(message);
+		}
+
+		public ScriptLoadException(String message, Throwable cause) {
+			super(message, cause);
 		}
 	}
 

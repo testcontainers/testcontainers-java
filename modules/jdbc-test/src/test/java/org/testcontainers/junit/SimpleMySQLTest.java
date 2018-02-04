@@ -110,6 +110,20 @@ public class SimpleMySQLTest {
 
     }
 
+    @Test
+    public void testExplicitInitScript() throws SQLException {
+        try (MySQLContainer container = (MySQLContainer) new MySQLContainer()
+                .withInitScript("somepath/init_mysql.sql")
+                .withLogConsumer(new Slf4jLogConsumer(logger))) {
+            container.start();
+
+            ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
+            String firstColumnValue = resultSet.getString(1);
+
+            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
     @NonNull
     protected ResultSet performQuery(MySQLContainer containerRule, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
