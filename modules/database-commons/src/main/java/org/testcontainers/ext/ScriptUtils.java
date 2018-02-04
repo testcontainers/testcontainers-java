@@ -278,6 +278,16 @@ public abstract class ScriptUtils {
 		}
 	}
 
+	public static class ScriptLoadException extends RuntimeException {
+		public ScriptLoadException(String message) {
+			super(message);
+		}
+
+		public ScriptLoadException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
+
     private static class ScriptParseException extends RuntimeException {
         public ScriptParseException(String format, String scriptPath) {
             super(String.format(format, scriptPath));
@@ -285,12 +295,16 @@ public abstract class ScriptUtils {
     }
 
     public static class ScriptStatementFailedException extends RuntimeException {
+		public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath) {
+			super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement));
+		}
+
         public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath, Exception ex) {
             super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement), ex);
         }
     }
 
-    private static class UncategorizedScriptException extends RuntimeException {
+    public static class UncategorizedScriptException extends RuntimeException {
         public UncategorizedScriptException(String s, Exception ex) {
             super(s, ex);
         }
