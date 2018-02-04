@@ -7,9 +7,11 @@ bintray {
     publications = ['mavenJava']
 
     pkg {
-        repo = 'testcontainers'
-        name = 'testcontainers'
         userOrg = 'testcontainers'
+        repo = 'releases'
+        name = 'testcontainers'
+
+        publish = true
 
         version {
             name = project.version
