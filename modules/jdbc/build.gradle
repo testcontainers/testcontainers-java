@@ -1,5 +1,5 @@
 description = "Testcontainers :: JDBC"
 
 dependencies {
-    compile project(':testcontainers')
+    compile project(':database-commons')
 }
