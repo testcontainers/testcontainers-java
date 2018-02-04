@@ -1,7 +1,7 @@
 module.exports = {
     root: "./docs",
 
-    title: "TestContainers",
+    title: "Testcontainers",
 
     structure: {
         readme: "index.md"

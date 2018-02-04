@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>kafka</artifactId>
-    <name>TestContainers :: Apache Kafka</name>
+    <name>Testcontainers :: Apache Kafka</name>
 
     <dependencies>
         <dependency>

@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>jdbc</artifactId>
-    <name>TestContainers :: JDBC</name>
+    <name>Testcontainers :: JDBC</name>
 
     <dependencies>
         <dependency>

@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jdbc-test</artifactId>
-    <name>TestContainers :: JDBC :: Tests</name>
+    <name>Testcontainers :: JDBC :: Tests</name>
 
     <dependencies>
         <dependency>
