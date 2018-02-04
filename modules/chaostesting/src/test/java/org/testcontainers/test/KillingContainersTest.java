@@ -24,7 +24,7 @@ import static org.testcontainers.client.targets.PumbaTargets.containersMatchingR
 /**
  * Created by novy on 31.12.16.
  */
-public class KillingContainersTest implements CanSpawnExampleContainers {
+public class KillingContainersTest implements CanSpawnContainers {
 
     private DockerEnvironment environment;
     private PumbaClient pumba;
@@ -113,14 +113,14 @@ public class KillingContainersTest implements CanSpawnExampleContainers {
                 .execute(recurrently(5, SupportedTimeUnit.SECONDS).onRandomlyChosenContainer());
 
         // then
-        await().atMost(8, TimeUnit.SECONDS).until(() ->
+        await().atMost(5, TimeUnit.SECONDS).until(() ->
                 assertThat(environment.namesOfRunningContainers())
                         .filteredOn(matchesRegexp("foobar.*"))
                         .hasSize(1)
         );
 
         // and
-        await().atMost(8, TimeUnit.SECONDS).until(() ->
+        await().atMost(10, TimeUnit.SECONDS).until(() ->
                 assertThat(environment.namesOfRunningContainers())
                         .filteredOn(matchesRegexp("foobar.*"))
                         .isEmpty()

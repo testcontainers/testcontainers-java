@@ -4,6 +4,7 @@ package org.testcontainers.test;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
+import org.testcontainers.DockerClientFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,12 +14,12 @@ import java.util.stream.Stream;
 /**
  * Created by novy on 31.12.16.
  */
-class DockerEnvironment implements HasAccessToDockerClient {
+class DockerEnvironment {
 
     private final DockerClient delegate;
 
     DockerEnvironment() {
-        this.delegate = dockerClient();
+        this.delegate = DockerClientFactory.instance().client();
     }
 
     Collection<String> namesOfRunningContainers() {

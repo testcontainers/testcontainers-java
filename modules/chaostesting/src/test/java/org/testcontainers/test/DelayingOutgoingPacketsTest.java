@@ -5,9 +5,7 @@ import org.junit.Test;
 import org.testcontainers.PumbaExecutables;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.commandparts.SupportedTimeUnit;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.test.Network.CanPingContainers;
-import org.testcontainers.test.Network.PingResponse;
+import org.testcontainers.test.Pinger.PingResponse;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -20,36 +18,38 @@ import static org.testcontainers.client.targets.PumbaTargets.containers;
 /**
  * Created by novy on 14.01.17.
  */
-public class DelayingOutgoingPacketsTest implements CanSpawnExampleContainers, CanPingContainers {
+public class DelayingOutgoingPacketsTest implements CanSpawnContainers {
 
     private PumbaClient pumba;
+    private Pinger pinger;
 
     @Before
     public void setUp() throws Exception {
         pumba = new PumbaClient(PumbaExecutables.dockerized());
+        pinger = startedPinger();
     }
 
     @Test
     public void should_be_able_to_delay_outgoing_packets_from_container() throws Exception {
         // given
-        final GenericContainer aContainer = startedContainer();
+        final Container aContainer = startedContainer();
 
         // when
         pumba
                 .performNetworkChaos(networkAction()
-                        .lastingFor(1, SupportedTimeUnit.MINUTES)
+                        .lastingFor(30, SupportedTimeUnit.SECONDS)
                         .executeSubCommand(
                                 delayOutgoingPackets()
-                                        .delayFor(1000, SupportedTimeUnit.MILLISECONDS)
+                                        .delayFor(500, SupportedTimeUnit.MILLISECONDS)
                         )
                 )
                 .affect(containers(aContainer.getContainerName()))
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(20, SECONDS).until(() -> {
-            final PingResponse ping = ping(aContainer);
-            assertThat(ping.latencyInMilliseconds()).isGreaterThan(900);
+        await().atMost(30, SECONDS).until(() -> {
+            final PingResponse ping = pinger.ping(aContainer);
+            assertThat(ping.latencyInMilliseconds()).isGreaterThanOrEqualTo(450);
         });
     }
 }

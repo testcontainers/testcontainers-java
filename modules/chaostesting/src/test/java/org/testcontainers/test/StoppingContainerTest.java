@@ -18,7 +18,7 @@ import static org.testcontainers.client.targets.PumbaTargets.containers;
 /**
  * Created by novy on 31.12.16.
  */
-public class StoppingContainerTest implements CanSpawnExampleContainers {
+public class StoppingContainerTest implements CanSpawnContainers {
 
     private DockerEnvironment environment;
     private PumbaClient pumba;

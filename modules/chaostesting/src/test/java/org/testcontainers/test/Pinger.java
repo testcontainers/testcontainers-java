@@ -1,35 +1,37 @@
 package org.testcontainers.test;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.testcontainers.containers.Container;
-import org.testcontainers.containers.GenericContainer;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by novy on 14.01.17.
- */
+class Pinger {
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-class Network implements CanSpawnExampleContainers {
+    private final Container delegate;
 
-    interface CanPingContainers {
+    Pinger() {
+        delegate = new Container();
+    }
 
-        default PingResponse ping(GenericContainer container) {
-            return ping(container, 56);
-        }
+    void start() {
+        delegate.start();
+    }
 
-        default PingResponse ping(GenericContainer container, long packetSizeInBytes) {
-            return new Network().ping(container, packetSizeInBytes);
-        }
+    PingResponse ping(Container container) {
+        return ping(container, 16);
+    }
+
+    @SneakyThrows
+    PingResponse ping(Container container, long packetSizeInBytes) {
+        final org.testcontainers.containers.Container.ExecResult pingResponse = delegate.execInContainer(
+                "sh", "-c", String.format("ping %s -c 1 -s %d", container.ipAddress(), packetSizeInBytes)
+        );
+        return new PingResponse(pingResponse.getStdout());
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -67,20 +69,4 @@ class Network implements CanSpawnExampleContainers {
             return new LinkedList<>(Arrays.asList(responseLines)).getLast();
         }
     }
-
-    @SneakyThrows
-    PingResponse ping(GenericContainer container, long packetSizeInBytes) {
-        final GenericContainer pinger = startedContainer();
-        final Container.ExecResult pingResponse = pinger.execInContainer(
-                "sh", "-c", String.format("ping %s -c 1 -s %d", ipAddressOf(container), packetSizeInBytes)
-        );
-        return new PingResponse(pingResponse.getStdout());
-    }
-
-    private String ipAddressOf(GenericContainer container) {
-        final InspectContainerResponse inspected = dockerClient().inspectContainerCmd(container.getContainerId()).exec();
-        return inspected.getNetworkSettings().getNetworks().get("bridge").getIpAddress();
-    }
 }
-
-
