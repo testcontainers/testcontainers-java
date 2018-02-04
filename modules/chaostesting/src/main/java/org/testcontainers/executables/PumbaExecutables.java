@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.executables;
 
 import org.testcontainers.client.PumbaExecutable;
 
@@ -8,6 +8,6 @@ import org.testcontainers.client.PumbaExecutable;
 public class PumbaExecutables {
 
     public static PumbaExecutable dockerized() {
-        return new PumbaContainer();
+        return new TestcontainersExecutable();
     }
 }

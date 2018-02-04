@@ -12,7 +12,7 @@ import org.testcontainers.client.targets.PumbaTarget;
  * Created by novy on 14.01.17.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PumbaDSL {
+final class PumbaDSL {
 
     public interface ChooseAction {
         ChooseTarget performContainerChaos(ContainerAction containerAction);

@@ -1,11 +1,9 @@
-package org.testcontainers;
+package org.testcontainers.executables;
 
 import com.github.dockerjava.api.DockerClient;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
-import org.testcontainers.client.PumbaCommand;
-import org.testcontainers.client.PumbaExecutable;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.images.RemoteDockerImage;
@@ -18,7 +16,7 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
  * Created by novy on 31.12.16.
  */
 @Slf4j
-class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaExecutable {
+class PumbaContainer extends GenericContainer<PumbaContainer> {
 
     private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:0.4.7";
     private static final String IP_ROUTE_DOCKER_IMAGE = "gaiadocker/iproute2:3.3";
@@ -26,17 +24,13 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
     private static final String DOCKER_SOCKET_HOST_PATH = "/var/run/docker.sock";
     private static final String DOCKER_SOCKET_CONTAINER_PATH = "/docker.sock";
 
-    PumbaContainer() {
+    PumbaContainer(String pumbaCommandToExecute) {
         super(buildPumbaDockerImage());
+        setCommand(pumbaCommandToExecute);
         doNotWaitForStartupAtAll();
         mountDockerSocket();
         fetchIPRouteImage();
         setupLogging();
-    }
-
-    @Override
-    public void execute(PumbaCommand command) {
-        executeCommand(command);
     }
 
     private void doNotWaitForStartupAtAll() {
@@ -55,13 +49,6 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
 
     private void setupLogging() {
         withLogConsumer(frame -> log.debug("Pumba container: \"{}\"", frame.getUtf8String()));
-    }
-
-    private void executeCommand(PumbaCommand command) {
-        final String evaluatedCommand = command.evaluate();
-        setCommand(evaluatedCommand);
-        log.info("Executing pumba container with command \"{}\"", evaluatedCommand);
-        super.start();
     }
 
     private static ImageFromDockerfile buildPumbaDockerImage() {

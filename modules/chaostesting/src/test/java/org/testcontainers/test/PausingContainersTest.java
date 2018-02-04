@@ -2,8 +2,9 @@ package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.PumbaExecutables;
+import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.client.PumbaClient;
+import org.testcontainers.client.PumbaClients;
 import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.test.DockerEnvironment.ContainerDetails;
@@ -27,7 +28,7 @@ public class PausingContainersTest implements CanSpawnContainers {
     @Before
     public void setUp() throws Exception {
         environment = new DockerEnvironment();
-        pumba = new PumbaClient(PumbaExecutables.dockerized());
+        pumba = PumbaClients.forExecutable(PumbaExecutables.dockerized());
     }
 
     @Test
