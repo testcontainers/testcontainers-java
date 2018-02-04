@@ -1,0 +1,21 @@
+description = "Testcontainers :: BOM"
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) { publication ->
+            artifactId = "testcontainers-bom"
+            artifacts = []
+
+            pom.withXml {
+                def dependencyManagementNode = asNode().appendNode('dependencyManagement').appendNode('dependencies')
+
+                rootProject.subprojects.findAll { it != project }.each {
+                    def dep = dependencyManagementNode.appendNode('dependency')
+                    dep.appendNode('groupId').value = it.group
+                    dep.appendNode('artifactId').value = it.name
+                    dep.appendNode('version').value = it.version
+                }
+            }
+        }
+    }
+}

@@ -2,13 +2,16 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '1.11'
     id 'nebula.provided-base' version '3.0.3'
     id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id "com.jfrog.bintray" version "1.8.0" apply false
 }
 
 subprojects {
     apply plugin: 'nebula.provided-base'
     apply plugin: 'java'
+    apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/publishing.gradle"
+    apply from: "$rootDir/gradle/bintray.gradle"
 
     group = "org.testcontainers"
 

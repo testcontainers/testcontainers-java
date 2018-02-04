@@ -1,3 +1,5 @@
+description = "Testcontainers :: JDBC"
+
 dependencies {
-    compile project(':core')
+    compile project(':testcontainers')
 }

@@ -1,6 +1,6 @@
 dependencies {
-    compile project(':modules:mysql')
-    compile project(':modules:postgresql')
+    compile project(':mysql')
+    compile project(':postgresql')
 
     testCompile 'com.google.guava:guava:18.0'
     testCompile 'org.postgresql:postgresql:42.0.0'

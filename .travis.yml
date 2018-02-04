@@ -36,10 +36,10 @@ jobs:
       script: ./gradlew core:test
 
     - env: [ NAME=selenium ]
-      script: ./gradlew modules:selenium:test
+      script: ./gradlew selenium:test
 
     - env: [ NAME=modules ]
-      script: ./gradlew test -x core:test -x modules:selenium:test
+      script: ./gradlew test -x core:test -x selenium:test
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]

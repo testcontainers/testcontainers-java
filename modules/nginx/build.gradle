@@ -1,3 +1,5 @@
+description = "Testcontainers :: Nginx"
+
 dependencies {
-    compile project(':core')
+    compile project(':testcontainers')
 }

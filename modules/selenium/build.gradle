@@ -1,10 +1,10 @@
-description = "TestContainers :: Selenium"
+description = "Testcontainers :: Selenium"
 
 dependencies {
-    compile project(':core')
+    compile project(':testcontainers')
 
     provided 'org.seleniumhq.selenium:selenium-remote-driver:2.52.0'
 
     testCompile 'org.mortbay.jetty:jetty:6.1.25'
-    testCompile project(':modules:nginx')
+    testCompile project(':nginx')
 }

@@ -27,11 +27,12 @@ buildCache {
 
 rootProject.name = 'testcontainers-java'
 
-include "core"
-include "modules:jdbc"
-include "modules:jdbc-test"
-include "modules:kafka"
-include "modules:mysql"
-include "modules:nginx"
-include "modules:postgresql"
-include "modules:selenium"
+include "bom"
+
+include "testcontainers"
+project(':testcontainers').projectDir = "$rootDir/core" as File
+
+file('modules').eachDir { dir ->
+    include dir.name
+    project(":${dir.name}").projectDir = dir
+}

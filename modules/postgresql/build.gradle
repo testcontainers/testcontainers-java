@@ -1,6 +1,7 @@
+description = "Testcontainers :: JDBC :: PostgreSQL"
 
 dependencies {
-    compile project(':modules:jdbc')
+    compile project(':jdbc')
 
     testCompile 'org.postgresql:postgresql:9.3-1101-jdbc41'
     testCompile 'com.zaxxer:HikariCP-java6:2.3.8'

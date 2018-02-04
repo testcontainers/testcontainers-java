@@ -1,12 +1,10 @@
 apply plugin: 'com.github.johnrengelman.shadow'
 
-description = "TestContainers Core"
+description = "Testcontainers Core"
 
 publishing {
     publications {
         mavenJava(MavenPublication) { publication ->
-            artifactId = "testcontainers"
-
             artifacts.removeAll { it.classifier == null }
             artifact project.tasks.shadowJar
         }
@@ -16,6 +14,8 @@ publishing {
 sourceSets {
     jarFileTest
 }
+
+idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 configurations {
     shaded
