@@ -8,6 +8,7 @@ import org.testcontainers.client.PumbaExecutable;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 
@@ -24,7 +25,7 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
     private static final String DOCKER_SOCKET_CONTAINER_PATH = "/docker.sock";
 
     PumbaContainer() {
-        super(PUMBA_DOCKER_IMAGE);
+        super(buildPumbaDockerImage());
         doNotWaitForStartupAtAll();
         mountDockerSocket();
         fetchIPRouteImage();
@@ -61,7 +62,18 @@ class PumbaContainer extends GenericContainer<PumbaContainer> implements PumbaEx
         super.start();
     }
 
+    private static ImageFromDockerfile buildPumbaDockerImage() {
+        return new ImageFromDockerfile()
+                .withDockerfileFromBuilder(builder -> builder
+                        .from(PUMBA_DOCKER_IMAGE)
+                        .run("echo -n > /docker_entrypoint.sh")
+                        .run("echo '#!/bin/sh' >> /docker_entrypoint.sh")
+                        .run("echo 'set -e' >> /docker_entrypoint.sh")
+                        .run("echo 'exec gosu root:root \"$@\"' >> /docker_entrypoint.sh")
+                );
+    }
     private static class DoNotCheckStartup extends StartupCheckStrategy {
+
         @Override
         public StartupStatus checkStartupState(DockerClient dockerClient, String s) {
             return StartupStatus.SUCCESSFUL;
