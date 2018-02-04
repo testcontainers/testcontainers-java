@@ -51,7 +51,7 @@ jobs:
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./gradlew test --tests '*GenericContainerRuleTest'
+                ./gradlew testcontainers:test --tests '*GenericContainerRuleTest'
 
     - stage: deploy
       sudo: false
