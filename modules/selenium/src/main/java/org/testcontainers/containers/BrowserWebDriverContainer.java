@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.collect.ImmutableSet;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -20,8 +21,10 @@ import org.testcontainers.containers.wait.WaitAllStrategy;
 import org.testcontainers.containers.wait.WaitStrategy;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +58,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private VncRecordingContainer vncRecordingContainer = null;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
+    private String recordingFilename;
+    private int incr = 0;
+//    private boolean recordingOnSuiteLevel = true;
 
     /**
      */
@@ -247,11 +253,33 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                 break;
         }
 
-        if (shouldRecord) {
+        if (shouldRecord && recordingFilename != null) {
             File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, description, succeeded);
             LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
 
-            vncRecordingContainer.saveRecordingToFile(recordingFile);
+            vncRecordingContainer.saveRecordingToFile(recordingFile, recordingFilename);
+
+            // Stop recording if image has `ps` command
+            // changeit in `testcontainers.properties`
+//            #vncrecorder.container.image=richnorth/vnc-recorder:latest
+//            vncrecorder.container.image=javathought/vnc-recorder:latest
+            String[] command =
+            { "/bin/sh", "-c", "kill -9 $(ps -ef | egrep '" +
+                    recordingFilename.substring(1) +     // do egrep without leading / character
+                    "' | egrep -v grep | tr -s ' ' | cut -d' ' -f2 | sed '2q;d')"};
+
+            String err = "***EMPTY***";
+            try {
+                ExecResult result = vncRecordingContainer.execInContainer(Charset.forName("UTF-8"), command);
+                err = result.getStderr();
+
+            } catch (IOException | InterruptedException e) {
+                LOGGER.debug(e.getMessage(), e);
+            } finally {
+                recordingFilename = null;
+            }
+            LOGGER.trace(err);
+
         }
     }
 
@@ -286,5 +314,22 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         SKIP, RECORD_ALL, RECORD_FAILING
     }
 
+    /**
+     * Start a new recording to handle one file par Test in place of one file per Test Suite
+     */
+    @Override
+    @SneakyThrows
+    public void apply() {
+        if (recordingMode != VncRecordingMode.SKIP) {
+
+            recordingFilename = String.format("/screen-%d.flv", ++incr);
+
+            String[] command =
+                    {"/bin/sh", "-c", vncRecordingContainer.getCmdString(recordingFilename)};
+            vncRecordingContainer.launchInContainer(Charset.forName("UTF-8"), command);
+
+        }
+
+    }
 
 }
