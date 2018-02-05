@@ -39,7 +39,6 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     private String vncPassword = DEFAULT_VNC_PASSWORD;
 
     private int vncPort = 5900;
-
     private int frameRate = 30;
 
     public VncRecordingContainer(@NonNull GenericContainer<?> targetContainer) {
@@ -119,6 +118,10 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         );
     }
 
+    public String getCmdString(String filename) {
+          return      "flvrec.py -o " + filename + " -d -r " + frameRate + " -P /vnc_password " + targetNetworkAlias + " " + vncPort;
+    }
+
     @SneakyThrows
     public InputStream streamRecording() {
         TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
@@ -131,6 +134,22 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     @SneakyThrows
     public void saveRecordingToFile(File file) {
         try(InputStream inputStream = streamRecording()) {
+            Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    @SneakyThrows
+    public InputStream streamRecording(String recordingFilename) {
+        TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
+                dockerClient.copyArchiveFromContainerCmd(containerId, recordingFilename).exec()
+        );
+        archiveInputStream.getNextEntry();
+        return archiveInputStream;
+    }
+
+    @SneakyThrows
+    public void saveRecordingToFile(File file, String recordingFilename) {
+        try(InputStream inputStream = streamRecording(recordingFilename)) {
             Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }

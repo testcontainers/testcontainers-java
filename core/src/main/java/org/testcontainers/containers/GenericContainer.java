@@ -984,6 +984,40 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return result;
     }
 
+    public FrameConsumerResultCallback launchInContainer(Charset outputCharset, String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
+            // at time of writing, this is the expected result in CircleCI.
+            throw new UnsupportedOperationException(
+                    "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
+
+        }
+
+        if (!isRunning()) {
+            throw new IllegalStateException("execInContainer can only be used while the Container is running");
+        }
+
+        this.dockerClient
+                .execCreateCmd(this.containerId)
+                .withCmd(command);
+
+        logger().debug("Running \"exec\" command: " + String.join(" ", command));
+        final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId)
+                .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
+
+        final ToStringConsumer stdoutConsumer = new ToStringConsumer();
+        final ToStringConsumer stderrConsumer = new ToStringConsumer();
+
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
+        callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
+
+        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback);
+
+        return callback;
+    }
+
     /**
      * Allow container startup to be attempted more than once if an error occurs. To be if containers are
      * 'flaky' but this flakiness is not something that should affect test outcomes.
@@ -1012,6 +1046,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         createContainerCmdModifiers.add(modifier);
         return self();
     }
+
+    public void apply() {
+
+    };
 
     /**
      * Convenience class with access to non-public members of GenericContainer.
