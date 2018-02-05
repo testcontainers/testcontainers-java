@@ -261,12 +261,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                     recordingFilename.substring(1) +     // do egrep without leading / character
                     "' | egrep -v grep | tr -s ' ' | cut -d' ' -f2 | sed '2q;d')"};
 
-            String out = "***EMPTY***";
             String err = "***EMPTY***";
             try {
                 ExecResult result = vncRecordingContainer.execInContainer(Charset.forName("UTF-8"), command);
-
-                out = result.getStdout();
                 err = result.getStderr();
 
             } catch (IOException | InterruptedException e) {

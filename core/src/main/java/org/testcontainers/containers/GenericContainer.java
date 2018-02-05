@@ -1048,6 +1048,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public void apply() {
+        // This is not an abstract class
 
     };
 
