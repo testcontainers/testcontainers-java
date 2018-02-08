@@ -9,7 +9,7 @@
 
     <packaging>pom</packaging>
 
-    <name>TestContainers Parent POM</name>
+    <name>Testcontainers Parent POM</name>
     <description>
         Isolated container management for Java code testing
     </description>

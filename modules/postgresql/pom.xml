@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>postgresql</artifactId>
-    <name>TestContainers :: JDBC :: PostgreSQL</name>
+    <name>Testcontainers :: JDBC :: PostgreSQL</name>
 
     <dependencies>
         <dependency>

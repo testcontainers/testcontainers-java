@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>database-commons</artifactId>
-    <name>TestContainers :: Database-Commons</name>
+    <name>Testcontainers :: Database-Commons</name>
 
     <dependencies>
         <dependency>

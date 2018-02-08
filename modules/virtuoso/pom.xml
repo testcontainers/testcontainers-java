@@ -9,7 +9,7 @@
 	</parent>
 	
 	<artifactId>virtuoso</artifactId>
-	<name>TestContainers :: JDBC :: Virtuoso</name>
+	<name>Testcontainers :: JDBC :: Virtuoso</name>
 	
 	<repositories>
 		<repository>
