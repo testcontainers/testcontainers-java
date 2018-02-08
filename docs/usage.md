@@ -2,9 +2,9 @@
 
 ### Prerequisites
 
-Docker or docker-machine (for OS X) must be installed on the machine you are running tests on. TestContainers currently requires JDK 1.8 and is compatible with JUnit.
+Docker or docker-machine (for OS X) must be installed on the machine you are running tests on. Testcontainers currently requires JDK 1.8 and is compatible with JUnit.
 
-If you want to use TestContainers on Windows you can try the [alpha release](usage/windows_support.md).
+If you want to use Testcontainers on Windows you can try the [alpha release](usage/windows_support.md).
 
 ### Docker environment discovery
 
@@ -31,7 +31,7 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 
 ## Maven dependencies
 
-TestContainers is distributed in a handful of Maven modules:
+Testcontainers is distributed in a handful of Maven modules:
 
 * **testcontainers** for just core functionality, generic containers and docker-compose support
 * **mysql**, **postgresql** or **oracle-xe** for database container support
