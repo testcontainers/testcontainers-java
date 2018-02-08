@@ -234,7 +234,7 @@ public abstract class ScriptUtils {
 			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
 		} catch (ScriptException e) {
 			LOGGER.error("Error while executing init script: {}", initScriptPath, e);
-			throw new ScriptUtils.UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
+			throw new UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
 		}
 	}
 
