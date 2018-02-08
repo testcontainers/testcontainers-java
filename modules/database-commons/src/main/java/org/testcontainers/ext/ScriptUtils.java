@@ -288,21 +288,21 @@ public abstract class ScriptUtils {
 		}
 	}
 
-    private static class ScriptParseException extends RuntimeException {
-        public ScriptParseException(String format, String scriptPath) {
-            super(String.format(format, scriptPath));
-        }
-    }
+	private static class ScriptParseException extends RuntimeException {
+		public ScriptParseException(String format, String scriptPath) {
+			super(String.format(format, scriptPath));
+		}
+	}
 
-    public static class ScriptStatementFailedException extends RuntimeException {
+	public static class ScriptStatementFailedException extends RuntimeException {
 		public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath) {
-			super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement));
+			this(statement, lineNumber, scriptPath, null);
 		}
 
-        public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath, Exception ex) {
-            super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement), ex);
-        }
-    }
+		public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath, Exception ex) {
+			super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement), ex);
+		}
+	}
 
     public static class UncategorizedScriptException extends RuntimeException {
         public UncategorizedScriptException(String s, Exception ex) {

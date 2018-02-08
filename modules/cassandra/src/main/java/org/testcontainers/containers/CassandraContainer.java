@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.datastax.driver.core.Cluster;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
@@ -79,7 +80,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     /**
      * Map (effectively replace) directory in Docker with the content of resourceLocation if resource location is not null
      *
-     * Protected just in case of overridden behavior
+     * Protected to allow for changing implementation by extending the class
      *
      * @param pathNameInContainer path in docker
      * @param resourceLocation    relative classpath to resource
@@ -137,6 +138,18 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      */
     public String getPassword() {
         return PASSWORD;
+    }
+
+    /**
+     * Get configured Cluster
+     *
+     * Can be used to obtain connections to Cassandra in the container
+     */
+    public Cluster getCluster() {
+        return Cluster.builder()
+                .addContactPoint(this.getContainerIpAddress())
+                .withPort(this.getMappedPort(CQL_PORT))
+                .build();
     }
 
     private DatabaseDelegate getDatabaseDelegate() {

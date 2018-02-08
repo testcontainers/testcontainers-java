@@ -1,16 +1,14 @@
 package org.testcontainers.containers.delegate;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.CassandraContainer;
 import org.testcontainers.delegate.AbstractDatabaseDelegate;
 import org.testcontainers.exception.ConnectionCreationException;
-import org.testcontainers.ext.ScriptUtils;
-
-import static org.testcontainers.containers.CassandraContainer.CQL_PORT;
+import org.testcontainers.ext.ScriptUtils.ScriptStatementFailedException;
 
 /**
  * Cassandra database delegate
@@ -18,21 +16,15 @@ import static org.testcontainers.containers.CassandraContainer.CQL_PORT;
  * @author Eugeny Karpov
  */
 @Slf4j
+@RequiredArgsConstructor
 public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session> {
 
-    private CassandraContainer container;
-
-    public CassandraDatabaseDelegate(CassandraContainer container) {
-        this.container = container;
-    }
+    private final CassandraContainer container;
 
     @Override
     protected Session createNewConnection() {
         try {
-            return Cluster.builder()
-                    .addContactPoint(container.getContainerIpAddress())
-                    .withPort(container.getMappedPort(CQL_PORT))
-                    .build()
+            return container.getCluster()
                     .newSession();
         } catch (DriverException e) {
             log.error("Could not obtain cassandra connection");
@@ -47,10 +39,10 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
             if (result.wasApplied()) {
                 log.debug("Statement {} was applied", statement);
             } else {
-                throw new ScriptUtils.ScriptStatementFailedException(statement, lineNumber, scriptPath);
+                throw new ScriptStatementFailedException(statement, lineNumber, scriptPath);
             }
         } catch (DriverException e) {
-            throw new ScriptUtils.ScriptStatementFailedException(statement, lineNumber, scriptPath, e);
+            throw new ScriptStatementFailedException(statement, lineNumber, scriptPath, e);
         }
     }
 
