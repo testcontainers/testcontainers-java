@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>selenium</artifactId>
-    <name>TestContainers :: Selenium</name>
+    <name>Testcontainers :: Selenium</name>
 
     <dependencies>
         <dependency>
