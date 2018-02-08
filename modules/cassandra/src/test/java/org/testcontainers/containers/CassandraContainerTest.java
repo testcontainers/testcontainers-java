@@ -23,7 +23,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testSimple() {
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer()
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
@@ -35,7 +35,7 @@ public class CassandraContainerTest {
     @Test
     public void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer("cassandra:" + cassandraVersion)
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:" + cassandraVersion)
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
@@ -46,7 +46,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testConfigurationOverride() {
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer()
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withConfigurationOverride("cassandra-test-configuration-example")
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
@@ -58,7 +58,7 @@ public class CassandraContainerTest {
 
     @Test(expected = ContainerLaunchException.class)
     public void testEmptyConfigurationOverride() {
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer()
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withConfigurationOverride("cassandra-empty-configuration")
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
@@ -67,7 +67,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testInitScript() {
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer()
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withInitScript("initial.cql")
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
@@ -77,7 +77,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testInitScriptWithLegacyCassandra() {
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer("cassandra:2.2.11")
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:2.2.11")
                 .withInitScript("initial.cql")
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
@@ -87,7 +87,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testCassandraQueryWaitStrategy() {
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer()
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .waitingFor(new CassandraQueryWaitStrategy())
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
@@ -98,7 +98,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testCassandraGetCluster() {
-        try (CassandraContainer cassandraContainer = (CassandraContainer) new CassandraContainer()
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withLogConsumer(new Slf4jLogConsumer(log))) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
