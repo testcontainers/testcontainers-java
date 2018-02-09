@@ -19,11 +19,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected SocatContainer proxy;
 
     public KafkaContainer() {
-        this("4.0.0");
+        this("confluentinc/cp-kafka:4.0.0");
     }
 
-    public KafkaContainer(String confluentPlatformVersion) {
-        super("confluentinc/cp-kafka:" + confluentPlatformVersion);
+    public KafkaContainer(String confluentPlatformImage) {
+        super(confluentPlatformImage);
 
         withNetwork(Network.newNetwork());
         String networkAlias = "kafka-" + Base58.randomString(6);
