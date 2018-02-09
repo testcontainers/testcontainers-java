@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.stream.Stream;
 
@@ -19,11 +20,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected SocatContainer proxy;
 
     public KafkaContainer() {
-        this("confluentinc/cp-kafka:4.0.0");
-    }
-
-    public KafkaContainer(String confluentPlatformImage) {
-        super(confluentPlatformImage);
+        super(TestcontainersConfiguration.getInstance().getKafkaImage());
 
         withNetwork(Network.newNetwork());
         String networkAlias = "kafka-" + Base58.randomString(6);
