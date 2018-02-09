@@ -51,7 +51,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getKafkaImage() {
-        return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka:4.0.0");
+        return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
     }
 
     public boolean isDisableChecks() {
