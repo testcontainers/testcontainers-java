@@ -3,7 +3,7 @@
 ## GitLab
 
 
-To be able to run your test container into the pipeline you need to run the job as a docker container (see [Running inside Docker](usage/inside_docker.md)),
+To be able to run your test container into the pipeline you need to run the job as a docker container (see [Running inside Docker](../usage/inside_docker.md)),
 so you need Docker-In-Docker (docker:dind) service and mount the docker's socket. Also if you have "Permission denied" you
 need to run your container as root user:
 

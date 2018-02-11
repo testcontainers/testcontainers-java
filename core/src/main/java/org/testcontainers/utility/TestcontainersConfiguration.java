@@ -50,6 +50,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("ryuk.container.image", "bsideup/moby-ryuk:0.2.2");
     }
 
+    public String getKafkaImage() {
+        return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
+    }
+
     public boolean isDisableChecks() {
         return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
     }

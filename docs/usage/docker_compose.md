@@ -93,4 +93,4 @@ To work around this problem, create `config.json` in separate location with real
   "credsStore" : "osxkeychain"
 }
 ```
-and specify the location to TestContainers using any of the two first methods from above. 
+and specify the location to Testcontainers using any of the two first methods from above. 

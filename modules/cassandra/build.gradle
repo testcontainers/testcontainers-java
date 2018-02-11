@@ -1,0 +1,10 @@
+description = "TestContainers :: Cassandra"
+
+dependencies {
+    compile project(":database-commons"),
+            "com.datastax.cassandra:cassandra-driver-core:3.4.0"
+
+    /*Netty dependency to override datastax netty transitive dependency that conflicts with netty from
+        com.github.docker-java*/
+    testCompile "io.netty:netty-handler:4.1.11.Final"
+}
