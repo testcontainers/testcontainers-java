@@ -15,21 +15,21 @@ public class JarFileShadingTest extends AbstractJarFileTest {
     public void testPackages() throws Exception {
         assertThatFileList(root).containsOnly(
                 "docker-java.properties",
-                "org/",
-                "META-INF/",
-                "com/"
+                "org",
+                "META-INF",
+                "com"
         );
 
         assertThatFileList(root.resolve("org")).containsOnly(
-                "testcontainers/"
+                "testcontainers"
         );
 
         assertThatFileList(root.resolve("com")).containsOnly(
-                "github/"
+                "github"
         );
 
         assertThatFileList(root.resolve("com").resolve("github")).containsOnly(
-                "dockerjava/"
+                "dockerjava"
         );
     }
 
@@ -37,8 +37,8 @@ public class JarFileShadingTest extends AbstractJarFileTest {
     public void testMetaInf() throws Exception {
         assertThatFileList(root.resolve("META-INF")).containsOnly(
                 "MANIFEST.MF",
-                "services/",
-                "native/"
+                "services",
+                "native"
         );
 
         assertThatFileList(root.resolve("META-INF").resolve("native")).containsOnly(
@@ -56,6 +56,7 @@ public class JarFileShadingTest extends AbstractJarFileTest {
     private ListAssert<String> assertThatFileList(Path path) throws IOException {
         return (ListAssert) assertThat(Files.list(path))
                 .extracting(Path::getFileName)
-                .extracting(Object::toString);
+                .extracting(Path::toString)
+                .extracting(it -> it.endsWith("/") ? it.substring(0, it.length() - 1) : it);
     }
 }
