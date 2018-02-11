@@ -20,7 +20,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
         @Rule
         public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
                 .withDesiredCapabilities(DesiredCapabilities.chrome())
-                .withRecordingMode(RECORD_ALL, new File("./target/"))
+                .withRecordingMode(RECORD_ALL, new File("./build/"))
                 .withRecordingFileFactory(new DefaultRecordingFileFactory());
 
         @Test

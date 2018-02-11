@@ -1,7 +1,47 @@
 version: 2
 executorType: machine
 jobs:
-  build:
+  core:
     steps:
       - checkout
-      - run: ./mvnw -B test
+      - run: ./gradlew testcontainers:check
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+  modules:
+    steps:
+      - checkout
+      - run: ./gradlew check -x testcontainers:check -x selenium:check
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+  selenium:
+    steps:
+      - checkout
+      - run: ./gradlew selenium:check
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+
+workflows:
+  version: 2
+  test_all:
+    jobs:
+      - core
+      - modules
+      - selenium
