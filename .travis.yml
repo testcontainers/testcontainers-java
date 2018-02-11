@@ -2,60 +2,45 @@ language: java
 jdk:
   - oraclejdk8
 
-env:
-  global:
-    - secure: "lw8tahEBcjos2c5QMMoeE19AKZDDU+WoEg7bumZJ+wuLErBEwlJENYU1t1oW834s1s7wgJ1kgt3jQgO6AWxR9wkFgZC+ZMPK0y/92T4MRsmmrMJFzUiu77UGS9MBj/Hu8M7aBzFNtLf0w3JrN2IsVI1xsX2z8PkK6L/G8C/Gzac="
-    - # ^^ OSSRH_JIRA_USERNAME
-    - secure: "p8rkrCcHH5/EM7CKiPKQZCn1Lhzh7a+drGCHFrzHqWsZCapEXIgmqM0SYMnievaIBI+8IljdSkkW/BNfmIxW3fYDckLj91eEslLEhlIKDb91NtklDpr96o7on7wGF/VvpiEzIahKgp+LVsun/G1v3NU0T/RPs9QJoMmnQi4K+8I="
-    - # ^^ OSSRH_JIRA_PASSWORD
-    - secure: "CWGSIr/ig2rIWSJqnDtmrK+XcUayl80ydh+fbzwi0v4hFsbbcNzm4SXFR2+HBGTBlWpWapvJoyG2iii2RHbgxVwYSyG6fEBrxtQV1oD8B/JAJoc/VJgvCsNnO54WRACqEPgV8fUX7MfKThA4hpXL3jnhM2A8J7wM969H8e4jNHk="
-    - # ^^ GPG_KEY_NAME
-    - secure: "n2RjM3CIvtqMGMXYxjMOXjXB2R7k2lbZ2aV3fcQ0uSlrFqbzyRcTB/oa+Sft3ayUzU5S/qYjCPnNbb7P49vk1K3q5z2A9RVofFk9H90JPBz4cuuLcsuW7apcDPohDNuk47QAccsL0K+KA2AjdiQ/cIe81LWJykV+ogDI7DVXBDY="
-    - # ^^ GPG_PASSPHRASE
-
 sudo: required
 services:
   - docker
 
 cache:
   directories:
-    - '$HOME/.m2'
+    - '$HOME/.gradle'
 
 install:
-  - echo "MAVEN_OPTS='-XX:+TieredCompilation -XX:TieredStopAtLevel=1'" > ~/.mavenrc
-  - ./mvnw -T4 -DskipTests=true -Dmaven.javadoc.skip=true install
+  - ./gradlew build -x check
 
 jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./mvnw -pl core test
+      script: ./gradlew testcontainers:check
 
     - stage: test
       env: [ NAME=core ]
       jdk: oraclejdk9
-      script:
-        - ./mvnw -pl core test
+      script: ./gradlew testcontainers:check
 
     - env: [ NAME=selenium ]
-      script: ./mvnw -pl modules/selenium test
+      script: ./gradlew selenium:check
 
     - env: [ NAME=modules ]
-      script: ./mvnw -pl !core,!modules/selenium test
+      script: ./gradlew check -x testcontainers:check -x selenium:check
 
-    # Run Docker-in-Docker tests inside Alpine and shading tests
-    - env: [ NAME="docker-in-alpine-docker&shade" ]
+    # Run Docker-in-Docker tests inside Alpine
+    - env: [ NAME="docker-in-alpine-docker" ]
       script:
         - |
                 DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
-                -v "$HOME/.m2":/root/.m2/ \
+                -v "$HOME/.gradle":/root/.gradle/ \
                 -v /var/run/docker.sock:/var/run/docker.sock \
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./mvnw -pl core test -Dtest=*GenericContainerRuleTest
-
-        - ./mvnw test -f shade-test/pom.xml
+                ./gradlew testcontainers:test --tests '*GenericContainerRuleTest'
 
     - stage: deploy
       sudo: false
@@ -64,7 +49,7 @@ jobs:
       script: skip
       deploy:
         provider: script
-        script: release/deploy.sh
+        script: ./gradlew -Pversion=$TRAVIS_TAG release
         on:
           tags: true
           branch: master
