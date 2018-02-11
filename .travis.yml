@@ -17,18 +17,18 @@ jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./gradlew testcontainers:test
+      script: ./gradlew testcontainers:check
 
     - stage: test
       env: [ NAME=core ]
       jdk: oraclejdk9
-      script: ./gradlew testcontainers:test
+      script: ./gradlew testcontainers:check
 
     - env: [ NAME=selenium ]
-      script: ./gradlew selenium:test
+      script: ./gradlew selenium:check
 
     - env: [ NAME=modules ]
-      script: ./gradlew test -x testcontainers:test -x selenium:test
+      script: ./gradlew check -x testcontainers:check -x selenium:check
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]

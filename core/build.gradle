@@ -90,6 +90,7 @@ task jarFileTest(type: Test) {
 
     dependsOn(shadowJar)
 }
+project.tasks.check.dependsOn(jarFileTest)
 
 dependencies {
     compile 'junit:junit:4.12'

@@ -4,7 +4,7 @@ jobs:
   core:
     steps:
       - checkout
-      - run: ./gradlew testcontainers:test
+      - run: ./gradlew testcontainers:check
       - run:
           name: Save test results
           command: |
@@ -16,7 +16,7 @@ jobs:
   modules:
     steps:
       - checkout
-      - run: ./gradlew test -x testcontainers:test -x selenium:test
+      - run: ./gradlew check -x testcontainers:check -x selenium:check
       - run:
           name: Save test results
           command: |
@@ -28,7 +28,7 @@ jobs:
   selenium:
     steps:
       - checkout
-      - run: ./gradlew selenium:test
+      - run: ./gradlew selenium:check
       - run:
           name: Save test results
           command: |
