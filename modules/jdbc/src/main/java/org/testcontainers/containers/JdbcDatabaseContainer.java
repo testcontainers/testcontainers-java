@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import java.util.concurrent.Future;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -31,7 +33,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             .withConstantThroughput()
             .build();
 
-    public JdbcDatabaseContainer(String dockerImageName) {
+    public JdbcDatabaseContainer(@NonNull Future<String> image) {
+        super(image);
+    }
+
+    public JdbcDatabaseContainer(@NonNull String dockerImageName) {
         super(dockerImageName);
     }
 
