@@ -33,12 +33,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             .withConstantThroughput()
             .build();
 
-    public JdbcDatabaseContainer(@NonNull Future<String> image) {
-        super(image);
-    }
-
     public JdbcDatabaseContainer(@NonNull String dockerImageName) {
         super(dockerImageName);
+    }
+
+    public JdbcDatabaseContainer(@NonNull Future<String> image) {
+        super(image);
     }
 
     /**
