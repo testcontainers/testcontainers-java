@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import java.util.concurrent.Future;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -31,8 +33,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             .withConstantThroughput()
             .build();
 
-    public JdbcDatabaseContainer(String dockerImageName) {
+    public JdbcDatabaseContainer(@NonNull String dockerImageName) {
         super(dockerImageName);
+    }
+
+    public JdbcDatabaseContainer(@NonNull Future<String> image) {
+        super(image);
     }
 
     /**
@@ -44,13 +50,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return a JDBC URL that may be used to connect to the dockerized DB
      */
     public abstract String getJdbcUrl();
-
-    /**
-     * @return the database name
-     */
-    public String getDatabaseName() {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * @return the standard database username that should be used for connections
@@ -71,7 +70,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         throw new UnsupportedOperationException();
     }
 
-    public SELF withPassword(String password) {
+    public SELF withPassword(String password){
         throw new UnsupportedOperationException();
     }
 
@@ -127,9 +126,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * Creates a connection to the underlying containerized database instance.
      *
-     * @param queryString
-     *          query string parameters that should be appended to the JDBC connection URL.
-     *          The '?' character must be included
+     * @param queryString any special query string parameters that should be appended to the JDBC connection URL. The
+     *                    '?' character must be included
      * @return a Connection
      * @throws SQLException if there is a repeated failure to create the connection
      */
@@ -137,7 +135,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Properties info = new Properties();
         info.put("user", this.getUsername());
         info.put("password", this.getPassword());
-        final String url = constructUrlForConnection(queryString);
+        final String url = this.getJdbcUrl() + queryString;
 
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
@@ -148,20 +146,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         }
     }
 
-    /**
-     * Template method for constructing the JDBC URL to be used for creating {@link Connection}s.
-     * This should be overridden if the JDBC URL and query string concatenation or URL string
-     * construction needs to be different to normal.
-     *
-     * @param queryString
-     *          query string parameters that should be appended to the JDBC connection URL.
-     *          The '?' character must be included
-     * @return a full JDBC URL including queryString
-     */
-    protected String constructUrlForConnection(String queryString) {
-        return getJdbcUrl() + queryString;
-    }
-
     protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {
         String resourceName = parameters.getOrDefault(paramName, defaultResource);
 
@@ -170,6 +154,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             addFileSystemBind(mountableFile.getResolvedPath(), pathNameInContainer, BindMode.READ_ONLY);
         }
     }
+
+    @Override
+    protected abstract Integer getLivenessCheckPort();
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
