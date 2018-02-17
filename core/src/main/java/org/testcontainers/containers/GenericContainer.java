@@ -654,7 +654,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param containerPort
      */
     protected void addFixedExposedPort(int hostPort, int containerPort) {
-        addFixedExposedPort(hostPort, containerPort, InternetProtocol.DEFAULT);
+        addFixedExposedPort(hostPort, containerPort, InternetProtocol.tcp);
     }
 
     /**

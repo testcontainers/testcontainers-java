@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.model.InternetProtocol;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -25,7 +24,7 @@ public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericCont
      */
     public SELF withFixedExposedPort(int hostPort, int containerPort) {
 
-        return withFixedExposedPort(hostPort, containerPort, InternetProtocol.DEFAULT);
+        return withFixedExposedPort(hostPort, containerPort, InternetProtocol.tcp);
     }
 
     /**
