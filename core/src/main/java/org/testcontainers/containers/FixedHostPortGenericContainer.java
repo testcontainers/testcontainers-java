@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.InternetProtocol;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,14 +18,26 @@ public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericCont
     }
 
     /**
-     * Bind a fixed port on the docker host to a container port
+     * Bind a fixed TCP port on the docker host to a container port
      * @param hostPort          a port on the docker host, which must be available
      * @param containerPort     a port in the container
      * @return                  this container
      */
     public SELF withFixedExposedPort(int hostPort, int containerPort) {
 
-        super.addFixedExposedPort(hostPort, containerPort);
+        return withFixedExposedPort(hostPort, containerPort, InternetProtocol.DEFAULT);
+    }
+
+    /**
+     * Bind a fixed port on the docker host to a container port
+     * @param hostPort          a port on the docker host, which must be available
+     * @param containerPort     a port in the container
+     * @param protocol          an internet protocol (tcp or udp)
+     * @return                  this container
+     */
+    public SELF withFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
+
+        super.addFixedExposedPort(hostPort, containerPort, protocol);
 
         return self();
     }

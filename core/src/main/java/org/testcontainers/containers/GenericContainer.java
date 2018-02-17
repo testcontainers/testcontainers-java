@@ -644,7 +644,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Add a container port that should be bound to a fixed port on the docker host.
+     * Add a TCP container port that should be bound to a fixed port on the docker host.
      * <p>
      * Note that this method is protected scope to discourage use, as clashes or instability are more likely when
      * using fixed port mappings. If you need to use this method from a test, please use {@link FixedHostPortGenericContainer}
@@ -654,7 +654,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param containerPort
      */
     protected void addFixedExposedPort(int hostPort, int containerPort) {
-        portBindings.add(String.format("%d:%d", hostPort, containerPort));
+        addFixedExposedPort(hostPort, containerPort, InternetProtocol.DEFAULT);
+    }
+
+    /**
+     * Add a container port that should be bound to a fixed port on the docker host.
+     * <p>
+     * Note that this method is protected scope to discourage use, as clashes or instability are more likely when
+     * using fixed port mappings. If you need to use this method from a test, please use {@link FixedHostPortGenericContainer}
+     * instead of GenericContainer.
+     *
+     * @param hostPort
+     * @param containerPort
+     * @param protocol
+     */
+    protected void addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
+        portBindings.add(String.format("%d:%d/%s", hostPort, containerPort, protocol));
     }
 
     /**
