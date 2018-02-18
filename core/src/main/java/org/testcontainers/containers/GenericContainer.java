@@ -654,7 +654,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param containerPort
      */
     protected void addFixedExposedPort(int hostPort, int containerPort) {
-        addFixedExposedPort(hostPort, containerPort, InternetProtocol.tcp);
+        addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
     }
 
     /**
@@ -669,7 +669,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param protocol
      */
     protected void addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
-        portBindings.add(String.format("%d:%d/%s", hostPort, containerPort, protocol));
+        portBindings.add(String.format("%d:%d/%s", hostPort, containerPort, protocol.toDockerNotation()));
     }
 
     /**

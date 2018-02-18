@@ -5,6 +5,14 @@ package org.testcontainers.containers;
  */
 public enum InternetProtocol {
 
-    tcp,
-    udp
+    TCP,
+    UDP;
+
+    public String toDockerNotation() {
+        return name().toLowerCase();
+    }
+
+    public static InternetProtocol fromDockerNotation(String protocol) {
+        return valueOf(protocol.toUpperCase());
+    }
 }

@@ -24,7 +24,7 @@ public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericCont
      */
     public SELF withFixedExposedPort(int hostPort, int containerPort) {
 
-        return withFixedExposedPort(hostPort, containerPort, InternetProtocol.tcp);
+        return withFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
     }
 
     /**
