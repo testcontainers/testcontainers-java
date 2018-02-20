@@ -18,7 +18,7 @@ public class FlakyContainerCreationTest {
         for (int i = 0; i < 50; i++) {
             BrowserWebDriverContainer container = new BrowserWebDriverContainer()
                     .withDesiredCapabilities(DesiredCapabilities.chrome())
-                    .withRecordingMode(BrowserWebDriverContainer.VncRecordingMode.RECORD_FAILING, new File("target"));
+                    .withRecordingMode(BrowserWebDriverContainer.VncRecordingMode.RECORD_FAILING, new File("build"));
 
             container.start();
             RemoteWebDriver driver = container.getWebDriver();

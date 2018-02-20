@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.stream.Stream;
 
@@ -23,7 +24,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     public KafkaContainer(String confluentPlatformVersion) {
-        super("confluentinc/cp-kafka:" + confluentPlatformVersion);
+        super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
         withNetwork(Network.newNetwork());
         String networkAlias = "kafka-" + Base58.randomString(6);

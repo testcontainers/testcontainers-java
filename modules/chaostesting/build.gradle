@@ -1,0 +1,9 @@
+description = "Testcontainers :: chaostesting"
+
+dependencies {
+    compile project(':testcontainers')
+
+    testCompile 'com.jayway.awaitility:awaitility:1.7.0'
+    testCompile 'org.assertj:assertj-core:3.9.0'
+    testCompile 'com.google.guava:guava:23.6-jre'
+}
