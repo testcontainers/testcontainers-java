@@ -1,0 +1,17 @@
+plugins {
+    id 'groovy'
+}
+
+description = "Testcontainers :: Spock-Extension"
+
+dependencies {
+    compile project(':testcontainers')
+    compile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    testCompile project(':mysql')
+    testCompile project(':postgresql')
+    testCompile 'com.zaxxer:HikariCP:2.6.1'
+
+    testRuntime 'org.postgresql:postgresql:42.0.0'
+    testRuntime 'mysql:mysql-connector-java:6.0.6'
+}
