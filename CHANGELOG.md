@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Abstracted and changed database init script functionality to support use of SQL-like scripts with non-JDBC connections. ([\#551](https://github.com/testcontainers/testcontainers-java/pull/551))
 - Added `JdbcDatabaseContainer(Future)` constructor. ([\#543](https://github.com/testcontainers/testcontainers-java/issues/543))
+- Mark DockerMachineClientProviderStrategy as not persistable ([\#593](https://github.com/testcontainers/testcontainers-java/pull/593))
 
 ## [1.6.0] - 2018-01-28
 
