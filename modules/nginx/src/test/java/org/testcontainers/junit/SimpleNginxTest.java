@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
+import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -20,8 +21,9 @@ public class SimpleNginxTest {
     private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
     @Rule
-    public NginxContainer nginx = new NginxContainer()
-            .withCustomContent(contentFolder.toString());
+    public NginxContainer nginx = new NginxContainer<>()
+            .withCustomContent(contentFolder.toString())
+            .waitingFor(new HttpWaitStrategy());
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
