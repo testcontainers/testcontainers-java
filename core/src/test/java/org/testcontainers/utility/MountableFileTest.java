@@ -108,7 +108,7 @@ public class MountableFileTest {
     }
 
     private void performChecks(final MountableFile mountableFile) {
-        final String mountablePath = mountableFile.getFilesystemPath();
+        final String mountablePath = mountableFile.getResolvedPath();
         assertTrue("The filesystem path '" + mountablePath + "' can be found", new File(mountablePath).exists());
         assertFalse("The filesystem path '" + mountablePath + "' does not contain any URL escaping", mountablePath.contains("%20"));
     }

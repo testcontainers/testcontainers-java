@@ -80,6 +80,15 @@ new BrowserWebDriverContainer()
 ```
 Note that the seconds parameter to `withRecordingMode` should be a directory where recordings can be saved.
 
+If you would like to customise the file name of the recording, or provide a different directory at runtime based on the description of the test and/or its success or failure, you may provide a custom recording file factory as follows:
+```java
+new BrowserWebDriverContainer()
+                //...
+                .withRecordingFileFactory(new CustomRecordingFileFactory())
+```
+
+Note the factory must implement `org.testcontainers.containers.RecordingFileFactory`.
+
 ## More examples
 
 A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).

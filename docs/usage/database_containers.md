@@ -2,19 +2,19 @@
 
 ## Benefits
 
-You might want to use TestContainers' database support:
+You might want to use Testcontainers' database support:
 
- * **Instead of H2 database for DAO unit tests that depend on database features that H2 doesn't emulate.** TestContainers is not as performant as H2, but does give you the benefit of 100% database compatibility (since it runs a real DB inside of a container).
- * **Instead of a database running on the local machine or in a VM** for DAO unit tests or end-to-end integration tests that need a database to be present. In this context, the benefit of TestContainers is that the database always starts in a known state, without any contamination between test runs or on developers' local machines.
+ * **Instead of H2 database for DAO unit tests that depend on database features that H2 doesn't emulate.** Testcontainers is not as performant as H2, but does give you the benefit of 100% database compatibility (since it runs a real DB inside of a container).
+ * **Instead of a database running on the local machine or in a VM** for DAO unit tests or end-to-end integration tests that need a database to be present. In this context, the benefit of Testcontainers is that the database always starts in a known state, without any contamination between test runs or on developers' local machines.
 
 > Note: Of course, it's still important to have as few tests that hit the database as possible, and make good use of mocks for components higher up the stack.
 
 You can obtain a temporary database in one of two ways:
 
  * **JUnit @Rule/@ClassRule**: this mode starts a database inside a container before your tests and tears it down afterwards.
- * **Using a specially modified JDBC URL**: after making a very simple modification to your system's JDBC URL string, TestContainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
+ * **Using a specially modified JDBC URL**: after making a very simple modification to your system's JDBC URL string, Testcontainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
 
-TestContainers currently supports MySQL, PostgreSQL, Oracle XE and Virtuoso.
+Testcontainers currently supports MySQL, PostgreSQL, Oracle XE and Virtuoso.
 
 > Note: Oracle XE support does not bundle the proprietary Oracle JDBC drivers - you must provide these yourself.
 
@@ -47,7 +47,7 @@ Examples/Tests:
 
 ### JDBC URL
 
-As long as you have TestContainers and the appropriate JDBC driver on your classpath, you can simply modify regular JDBC connection URLs to get a fresh containerized instance of the database each time your application starts up.
+As long as you have Testcontainers and the appropriate JDBC driver on your classpath, you can simply modify regular JDBC connection URLs to get a fresh containerized instance of the database each time your application starts up.
 
 _N.B:_
 * _TC needs to be on your application's classpath at runtime for this to work_
@@ -59,13 +59,13 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 ### JDBC URL examples
 
-#### Simple TestContainers JDBC driver usage
+#### Simple Testcontainers JDBC driver usage
 
 `jdbc:tc:mysql://somehostname:someport/databasename`
 
 *(Note: this will use the latest version of MySQL)*
 
-#### Using TestContainers with a fixed version
+#### Using Testcontainers with a fixed version
 
 `jdbc:tc:mysql:5.6.23://somehostname:someport/databasename`
 
@@ -76,7 +76,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 ## Using an init script
 
-TestContainers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
+Testcontainers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
 `jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 

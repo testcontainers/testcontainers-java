@@ -5,7 +5,7 @@
 Testcontainers itself can be used from inside a container.
 This is very useful for different CI scenarios like running everything in containers on Jenkins, or Docker-based CI tools such as Drone.
 
-TestContainers will automatically detect if it's inside a container and instead of "localhost" will use the default gateway's IP.
+Testcontainers will automatically detect if it's inside a container and instead of "localhost" will use the default gateway's IP.
 
 However, additional configuration is required if you use [volume mapping](options.md#volume-mapping). The following points need to be considered:
 
@@ -21,7 +21,7 @@ $ tree .
 └── src
     └── test
         └── java
-            └── MyTestWithTestContainers.java
+            └── MyTestWithTestcontainers.java
 
 $ docker run -it --rm -v $PWD:$PWD -w $PWD -v /var/run/docker.sock:/var/run/docker.sock maven:3 mvn test
 ```

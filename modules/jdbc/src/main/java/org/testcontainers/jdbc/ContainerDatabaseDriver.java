@@ -4,7 +4,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.JdbcDatabaseContainerProvider;
-import org.testcontainers.jdbc.ext.ScriptUtils;
+import org.testcontainers.delegate.DatabaseDelegate;
+import org.testcontainers.ext.ScriptUtils;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -153,7 +154,8 @@ public class ContainerDatabaseDriver implements Driver {
               an init script or function has been specified, use it
              */
             if (!initializedContainers.contains(container.getContainerId())) {
-                runInitScriptIfRequired(url, connection);
+                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
+                runInitScriptIfRequired(url, databaseDelegate);
                 runInitFunctionIfRequired(url, connection);
                 initializedContainers.add(container.getContainerId());
             }
@@ -214,10 +216,10 @@ public class ContainerDatabaseDriver implements Driver {
      * Run an init script from the classpath.
      *
      * @param url        the JDBC URL to check for init script declarations.
-     * @param connection JDBC connection to apply init scripts to.
+     * @param databaseDelegate database delegate to apply init scripts to the database
      * @throws SQLException on script or DB error
      */
-    private void runInitScriptIfRequired(String url, Connection connection) throws SQLException {
+    private void runInitScriptIfRequired(String url, DatabaseDelegate databaseDelegate) throws SQLException {
         Matcher matcher = INITSCRIPT_MATCHING_PATTERN.matcher(url);
         if (matcher.matches()) {
             String initScriptPath = matcher.group(2);
@@ -230,7 +232,7 @@ public class ContainerDatabaseDriver implements Driver {
                 }
 
                 String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                ScriptUtils.executeSqlScript(connection, initScriptPath, sql);
+                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, sql);
             } catch (IOException e) {
                 LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                 throw new SQLException("Could not load classpath init script: " + initScriptPath, e);
