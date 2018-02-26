@@ -6,9 +6,13 @@ sudo: required
 services:
   - docker
 
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - '$HOME/.gradle'
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
 install:
   - ./gradlew build -x check
@@ -40,7 +44,7 @@ jobs:
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./gradlew testcontainers:test --tests '*GenericContainerRuleTest'
+                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest'
 
     - stage: deploy
       sudo: false
