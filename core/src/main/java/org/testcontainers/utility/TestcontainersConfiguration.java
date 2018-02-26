@@ -30,6 +30,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
     }
 
+    public String getSocatContainerImage() {
+        return (String) properties.getOrDefault("socat.container.image", "alpine/socat:latest");
+    }
+
     public String getVncRecordedContainerImage() {
         return (String) properties.getOrDefault("vncrecorder.container.image", "richnorth/vnc-recorder:latest");
     }
@@ -40,6 +44,14 @@ public class TestcontainersConfiguration {
 
     public String getTinyImage() {
         return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
+    }
+
+    public String getRyukImage() {
+        return (String) properties.getOrDefault("ryuk.container.image", "bsideup/moby-ryuk:0.2.2");
+    }
+
+    public String getKafkaImage() {
+        return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
     }
 
     public boolean isDisableChecks() {

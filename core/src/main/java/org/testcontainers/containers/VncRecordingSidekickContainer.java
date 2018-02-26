@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.traits.VncService;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -10,10 +11,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
+
+import static java.util.Collections.emptySet;
 
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
+ *
+ * @deprecated please use {@link VncRecordingContainer}
  */
+@Deprecated
 public class VncRecordingSidekickContainer<SELF extends VncRecordingSidekickContainer<SELF, T>, T extends VncService & LinkableContainer> extends GenericContainer<SELF> {
     private final T vncServiceContainer;
     private final Path tempDir;
@@ -46,10 +53,11 @@ public class VncRecordingSidekickContainer<SELF extends VncRecordingSidekickCont
         // do nothing
     }
 
+    @NotNull
     @Override
-    protected Integer getLivenessCheckPort() {
+    protected Set<Integer> getLivenessCheckPorts() {
         // no liveness check needed
-        return null;
+        return emptySet();
     }
 
     @Override

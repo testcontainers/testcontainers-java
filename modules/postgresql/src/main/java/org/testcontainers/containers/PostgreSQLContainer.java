@@ -1,8 +1,11 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -29,9 +32,10 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
                 .withStartupTimeout(Duration.of(60, SECONDS));
     }
 
+    @NotNull
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(POSTGRESQL_PORT);
+    protected Set<Integer> getLivenessCheckPorts() {
+        return new HashSet<>(getMappedPort(POSTGRESQL_PORT));
     }
 
     @Override
@@ -52,6 +56,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName;
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return databaseName;
     }
 
     @Override

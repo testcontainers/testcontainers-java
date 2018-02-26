@@ -9,12 +9,22 @@ import org.junit.rules.TestRule;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
+
+    Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
+        @Override
+        public void close() {
+            // Do not allow users to close SHARED network, only ResourceReaper is allowed to close (destroy) it
+        }
+    };
 
     String getId();
 
@@ -44,7 +54,7 @@ public interface Network extends AutoCloseable, TestRule {
         private final AtomicBoolean initialized = new AtomicBoolean();
 
         @Override
-        public String getId() {
+        public synchronized String getId() {
             if (initialized.compareAndSet(false, true)) {
                 id = create();
             }
@@ -70,9 +80,12 @@ public interface Network extends AutoCloseable, TestRule {
                 consumer.accept(createNetworkCmd);
             }
 
-            String id = createNetworkCmd.exec().getId();
-            ResourceReaper.instance().registerNetworkIdForCleanup(id);
-            return id;
+            Map<String, String> labels = createNetworkCmd.getLabels();
+            labels = new HashMap<>(labels != null ? labels : Collections.emptyMap());
+            labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            createNetworkCmd.withLabels(labels);
+
+            return createNetworkCmd.exec().getId();
         }
 
         @Override

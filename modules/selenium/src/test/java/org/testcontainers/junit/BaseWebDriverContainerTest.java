@@ -8,6 +8,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 /**
  *
@@ -28,15 +29,18 @@ public class BaseWebDriverContainerTest {
     }
 
     @NotNull
-    private RemoteWebDriver setupDriverFromRule(BrowserWebDriverContainer rule) {
+    private static RemoteWebDriver setupDriverFromRule(BrowserWebDriverContainer rule) {
         RemoteWebDriver driver = rule.getWebDriver();
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
         return driver;
     }
 
-    protected void doSimpleExplore(BrowserWebDriverContainer rule) {
+    protected static void doSimpleExplore(BrowserWebDriverContainer rule) {
         RemoteWebDriver driver = setupDriverFromRule(rule);
         driver.get("http://en.wikipedia.org/wiki/Randomness");
+
+        // Oh! The irony!
+        assertTrue("Randomness' description has the word 'pattern'", driver.findElementByPartialLinkText("pattern").isDisplayed());
     }
 
 }
