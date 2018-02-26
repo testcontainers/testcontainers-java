@@ -1,12 +1,20 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "cockroach";
     public static final String IMAGE = "cockroachdb/cockroach";
+    public static final String IMAGE_TAG = "v1.1.2";
+    public static final String JDBC_DRIVER_CLASS_NAME = "org.postgresql.Driver";
+    public static final String JDBC_URL_PREFIX = "jdbc:postgresql";
+    public static final String TEST_QUERY_STRING = "SELECT 1";
     public static final int REST_API_PORT = 8080;
     public static final int DB_PORT = 26257;
 
@@ -15,7 +23,7 @@ public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends J
     private String password = "";
 
     public CockroachContainer() {
-        this(IMAGE + ":v1.1.2");
+        this(IMAGE + ":" + IMAGE_TAG);
     }
 
     public CockroachContainer(final String dockerImageName) {
@@ -44,17 +52,22 @@ public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends J
 
     @Override
     public String getDriverClassName() {
-        return "org.postgresql.Driver";
+        return JDBC_DRIVER_CLASS_NAME;
     }
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(DB_PORT) + "/" + databaseName;
+        return JDBC_URL_PREFIX + "://" + getContainerIpAddress() + ":" + getMappedPort(DB_PORT) + "/" + databaseName;
     }
 
     @Override
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public SELF withPassword(String password) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -64,7 +77,7 @@ public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends J
 
     @Override
     public String getTestQueryString() {
-        return "SELECT 1";
+        return TEST_QUERY_STRING;
     }
 
     @Override
