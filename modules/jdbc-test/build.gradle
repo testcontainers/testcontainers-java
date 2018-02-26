@@ -1,6 +1,7 @@
 dependencies {
     compile project(':mysql')
     compile project(':postgresql')
+    compile project(':cockroach')
 
     testCompile 'com.google.guava:guava:18.0'
     testCompile 'org.postgresql:postgresql:42.0.0'
