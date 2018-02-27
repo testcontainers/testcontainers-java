@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.time.Duration;
-import java.util.Collections;
 
 public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "clickhouse";
@@ -31,10 +30,10 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
     protected void configure() {
         withExposedPorts(HTTP_PORT, NATIVE_PORT);
         waitingFor(
-                new HttpWaitStrategy()
-                        .forStatusCode(200)
-                        .forResponsePredicate(responseBody -> "Ok.".equals(responseBody))
-                        .withStartupTimeout(Duration.ofMinutes(1))
+            new HttpWaitStrategy()
+                .forStatusCode(200)
+                .forResponsePredicate(responseBody -> "Ok.".equals(responseBody))
+                .withStartupTimeout(Duration.ofMinutes(1))
         );
     }
 
