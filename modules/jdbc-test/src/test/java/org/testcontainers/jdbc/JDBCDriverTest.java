@@ -43,9 +43,10 @@ public class JDBCDriverTest {
                         {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, false},
                         {"jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false, false},
                         {"jdbc:tc:mysql://hostname/databasename", false, false, false, false},
+                        {"jdbc:tc:mysql://hostname/databasename?useSSL=false", false, false, false, false},
                         {"jdbc:tc:postgresql://hostname/databasename", false, false, false, false},
                         {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true, false},
-                        {"jdbc:tc:clickhouse://hostname/databasename", false, false, false, true},
+                        {"jdbc:tc:clickhouse://hostname/databasename", false, false, false, true}
                 });
     }
 

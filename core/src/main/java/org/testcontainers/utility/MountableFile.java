@@ -37,11 +37,13 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 @Slf4j
 public class MountableFile implements Transferable {
 
+    private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
+    private static final String OS_MAC_TMP_DIR = "/tmp";
     private static final int BASE_FILE_MODE = 0100000;
     private static final int BASE_DIR_MODE = 0040000;
 
     private final String path;
-    private final int forcedFileMode;
+    private final Integer forcedFileMode;
 
     @Getter(lazy = true)
     private final String resolvedPath = resolvePath();
@@ -58,7 +60,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forClasspathResource(@NotNull final String resourceName) {
-        return forClasspathResource(resourceName, -1);
+        return forClasspathResource(resourceName, null);
     }
 
     /**
@@ -68,7 +70,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path) {
-        return forHostPath(path, -1);
+        return forHostPath(path, null);
     }
 
     /**
@@ -78,7 +80,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(final Path path) {
-        return forHostPath(path, -1);
+        return forHostPath(path, null);
     }
 
     /**
@@ -88,7 +90,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forClasspathResource(@NotNull final String resourceName, int mode) {
+    public static MountableFile forClasspathResource(@NotNull final String resourceName, Integer mode) {
         return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString(), mode);
     }
 
@@ -99,7 +101,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forHostPath(@NotNull final String path, int mode) {
+    public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
         return new MountableFile(new File(path).toURI().toString(), mode);
     }
 
@@ -110,7 +112,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forHostPath(final Path path, int mode) {
+    public static MountableFile forHostPath(final Path path, Integer mode) {
         return new MountableFile(path.toAbsolutePath().toString(), mode);
     }
 
@@ -164,8 +166,8 @@ public class MountableFile implements Transferable {
     private String resolvePath() {
         String result = getResourcePath();
 
-        if (SystemUtils.IS_OS_WINDOWS) {
-            result = PathUtils.createMinGWPath(result);
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+            result = result.substring(1);
         }
 
         return result;
@@ -176,13 +178,15 @@ public class MountableFile implements Transferable {
      * into a container. If this is a classpath resource residing in a JAR, it will be extracted to
      * a temporary location so that the Docker daemon is able to access it.
      *
+     * TODO: rename method accordingly and check if really needed like this
+     *
      * @return
      */
     private String resolveFilesystemPath() {
         String result = getResourcePath();
 
         if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
-            result = result.substring(1);
+            result = PathUtils.createMinGWPath(result).substring(1);
         }
 
         return result;
@@ -205,7 +209,7 @@ public class MountableFile implements Transferable {
      * @return the path of the temporary file/directory
      */
     private String extractClassPathResourceToTempLocation(final String hostPath) {
-        File tmpLocation = new File(".testcontainers-tmp-" + Base58.randomString(5));
+        File tmpLocation = createTempDirectory();
         //noinspection ResultOfMethodCallIgnored
         tmpLocation.delete();
 
@@ -234,6 +238,17 @@ public class MountableFile implements Transferable {
         deleteOnExit(tmpLocation.toPath());
 
         return tmpLocation.getAbsolutePath();
+    }
+
+    private File createTempDirectory() {
+        try {
+            if (SystemUtils.IS_OS_MAC) {
+                return Files.createTempDirectory(Paths.get(OS_MAC_TMP_DIR), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+            }
+            return Files.createTempDirectory(TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+        } catch  (IOException e) {
+            return new File(TESTCONTAINERS_TMP_DIR_PREFIX + Base58.randomString(5));
+        }
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -273,7 +288,7 @@ public class MountableFile implements Transferable {
      */
     @Override
     public void transferTo(final TarArchiveOutputStream outputStream, String destinationPathInTar) {
-        recursiveTar(destinationPathInTar, this.getFilesystemPath(), this.getFilesystemPath(), outputStream);
+        recursiveTar(destinationPathInTar, this.getResolvedPath(), this.getResolvedPath(), outputStream);
     }
 
     /*
@@ -313,7 +328,7 @@ public class MountableFile implements Transferable {
     @Override
     public long getSize() {
 
-        final File file = new File(this.getFilesystemPath());
+        final File file = new File(this.getResolvedPath());
         if (file.isFile()) {
             return file.length();
         } else {
@@ -328,12 +343,12 @@ public class MountableFile implements Transferable {
 
     @Override
     public int getFileMode() {
-        return getUnixFileMode(this.getFilesystemPath());
+        return getUnixFileMode(this.getResolvedPath());
     }
 
     private int getUnixFileMode(final String pathAsString) {
         final Path path = Paths.get(pathAsString);
-        if (this.forcedFileMode > -1) {
+        if (this.forcedFileMode != null) {
             return this.getModeValue(path);
         }
 

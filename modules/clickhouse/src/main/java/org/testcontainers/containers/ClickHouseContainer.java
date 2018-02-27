@@ -3,10 +3,15 @@ package org.testcontainers.containers;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.time.Duration;
+import java.util.Collections;
 
 public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "clickhouse";
     public static final String IMAGE = "yandex/clickhouse-server";
+    public static final String IMAGE_TAG = "1.1.54310";
+    public static final String JDBC_DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
+    public static final String JDBC_URL_PREFIX = "jdbc:clickhouse";
+    public static final String TEST_QUERY_STRING = "SELECT 1";
     public static final Integer HTTP_PORT = 8123;
     public static final Integer NATIVE_PORT = 9000;
 
@@ -15,7 +20,7 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
     private String password = "";
 
     public ClickHouseContainer() {
-        super(IMAGE + ":1.1.54310");
+        super(IMAGE + ":" + IMAGE_TAG);
     }
 
     public ClickHouseContainer(String dockerImageName) {
@@ -40,12 +45,12 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
 
     @Override
     public String getDriverClassName() {
-        return "ru.yandex.clickhouse.ClickHouseDriver";
+        return JDBC_DRIVER_CLASS_NAME;
     }
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:clickhouse://" + getContainerIpAddress() + ":" + getMappedPort(HTTP_PORT) + "/" + databaseName;
+        return JDBC_URL_PREFIX + "://" + getContainerIpAddress() + ":" + getMappedPort(HTTP_PORT) + "/" + databaseName;
     }
 
     @Override
@@ -60,7 +65,7 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
 
     @Override
     public String getTestQueryString() {
-        return "SELECT 1";
+        return TEST_QUERY_STRING;
     }
 
 }

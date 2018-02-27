@@ -52,6 +52,10 @@ public abstract class DockerClientProviderStrategy {
         return true;
     }
 
+    protected boolean isPersistable() {
+        return true;
+    }
+
     /**
      * @return highest to lowest priority value
      */
@@ -93,7 +97,10 @@ public abstract class DockerClientProviderStrategy {
                                         LOGGER.warn("Can't instantiate a strategy from {}", it, e);
                                         return Stream.empty();
                                     }
-                                }),
+                                })
+                                // Ignore persisted strategy if it's not persistable anymore
+                                .filter(DockerClientProviderStrategy::isPersistable)
+                                .peek(strategy -> LOGGER.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName())),
                         strategies
                                 .stream()
                                 .filter(DockerClientProviderStrategy::isApplicable)
@@ -104,7 +111,9 @@ public abstract class DockerClientProviderStrategy {
                         strategy.test();
                         LOGGER.info("Found Docker environment with {}", strategy.getDescription());
 
-                        TestcontainersConfiguration.getInstance().updateGlobalConfig("docker.client.strategy", strategy.getClass().getName());
+                        if (strategy.isPersistable()) {
+                            TestcontainersConfiguration.getInstance().updateGlobalConfig("docker.client.strategy", strategy.getClass().getName());
+                        }
 
                         return Stream.of(strategy);
                     } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
