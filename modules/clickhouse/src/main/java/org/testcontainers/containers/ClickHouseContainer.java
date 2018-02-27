@@ -26,10 +26,10 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
     protected void configure() {
         withExposedPorts(HTTP_PORT, NATIVE_PORT);
         waitingFor(
-                new HttpWaitStrategy()
-                        .forStatusCode(200)
-                        .forResponsePredicate(responseBody -> "Ok.".equals(responseBody))
-                        .withStartupTimeout(Duration.ofMinutes(1))
+            new HttpWaitStrategy()
+                .forStatusCode(200)
+                .forResponsePredicate(responseBody -> "Ok.".equals(responseBody))
+                .withStartupTimeout(Duration.ofMinutes(1))
         );
     }
 
