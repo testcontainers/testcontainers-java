@@ -1,12 +1,8 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "cockroach";
@@ -42,10 +38,10 @@ public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends J
         withEnv("COCKROACH_DATABASE", databaseName);
         withExposedPorts(REST_API_PORT, DB_PORT);
         waitingFor(
-                new HttpWaitStrategy()
-                        .forPath("/health")
-                        .forStatusCode(200)
-                        .withStartupTimeout(Duration.ofMinutes(1))
+            new HttpWaitStrategy()
+                .forPath("/health")
+                .forStatusCode(200)
+                .withStartupTimeout(Duration.ofMinutes(1))
         );
         withCommand("start --insecure");
     }
