@@ -93,6 +93,7 @@ public class ConnectionUrl {
       if(!(isOracle = urlMatcher.matches())) {
         throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
       }
+    }
     databaseType = urlMatcher.group(1);
     
     imageTag = Optional.ofNullable(urlMatcher.group(3)).orElse("latest");
