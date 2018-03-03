@@ -85,12 +85,11 @@ public class ConnectionUrl {
      * The docker tag, if provided.
      * The URL query string, if provided
    */
-    boolean isOracle = false;
     Matcher urlMatcher = Patterns.URL_MATCHING_PATTERN.matcher(this.getUrl());
     if (!urlMatcher.matches()) {
       //Try for Oracle pattern
       urlMatcher = Patterns.ORACLE_URL_MATCHING_PATTERN.matcher(this.getUrl());
-      if(!(isOracle = urlMatcher.matches())) {
+      if(!urlMatcher.matches()) {
         throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
       }
     }
