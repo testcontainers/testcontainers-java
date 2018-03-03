@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,9 +85,14 @@ public class ConnectionUrl {
      * The docker tag, if provided.
      * The URL query string, if provided
    */
+    boolean isOracle = false;
     Matcher urlMatcher = Patterns.URL_MATCHING_PATTERN.matcher(this.getUrl());
     if (!urlMatcher.matches()) {
+      //Try for Oracle pattern
+      urlMatcher = Patterns.ORACLE_URL_MATCHING_PATTERN.matcher(this.getUrl());
+      if(!(isOracle = urlMatcher.matches())) {
         throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
+      }
     }
     databaseType = urlMatcher.group(1);
     
@@ -105,6 +111,7 @@ public class ConnectionUrl {
     }
   
     queryString = Optional.ofNullable(urlMatcher.group(5));
+    getQueryParameters();
     
     Matcher matcher = Patterns.INITSCRIPT_MATCHING_PATTERN.matcher(this.getUrl());
     if(matcher.matches()) {
@@ -146,14 +153,16 @@ public class ConnectionUrl {
   public Map<String, String> getQueryParameters() {
 
     Map<String, String> results = new HashMap<>();
-
+    StringJoiner query = new StringJoiner("&");
     Matcher matcher = Patterns.QUERY_PARAM_MATCHING_PATTERN.matcher(this.getQueryString().orElse(""));
     while (matcher.find()) {
         String key = matcher.group(1);
         String value = matcher.group(2);
+        if(!key.startsWith("TC_")) query.add(key + "=" + value);
         results.put(key, value);
     }
-
+    
+    queryString = Optional.of("?" + query.toString());
     return results;
   }
   
@@ -172,6 +181,8 @@ public class ConnectionUrl {
   public interface Patterns {
     final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^:]+))?://([^\\?]+)(\\?.*)?");
     
+    final Pattern ORACLE_URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^(thin:)]+))?:thin:@([^\\?]+)(\\?.*)?");
+    
     //Matches to part of string - hostname:port/databasename
     final Pattern DB_INSTANCE_MATCHING_PATTERN = Pattern.compile("([^:]+)(:([0-9]+))?/([^\\\\?]+)");
     
@@ -183,7 +194,7 @@ public class ConnectionUrl {
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             ".*");
 
-    final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("([A-Z_]+)=([^\\?&]+)");
+    final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("(TC_[A-Z_]+)=([^\\?&]+)");
     
     final Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^\\?&=]+)=([^\\?&]+)");
     
