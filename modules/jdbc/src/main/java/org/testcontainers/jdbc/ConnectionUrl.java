@@ -93,7 +93,6 @@ public class ConnectionUrl {
       if(!(isOracle = urlMatcher.matches())) {
         throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
       }
-    }
     databaseType = urlMatcher.group(1);
     
     imageTag = Optional.ofNullable(urlMatcher.group(3)).orElse("latest");
@@ -182,7 +181,7 @@ public class ConnectionUrl {
     final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^:]+))?://([^\\?]+)(\\?.*)?");
     
     final Pattern ORACLE_URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^(thin:)]+))?:thin:@([^\\?]+)(\\?.*)?");
-    
+
     //Matches to part of string - hostname:port/databasename
     final Pattern DB_INSTANCE_MATCHING_PATTERN = Pattern.compile("([^:]+)(:([0-9]+))?/([^\\\\?]+)");
     
@@ -195,7 +194,7 @@ public class ConnectionUrl {
             ".*");
 
     final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("(TC_[A-Z_]+)=([^\\?&]+)");
-    
+   
     final Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^\\?&=]+)=([^\\?&]+)");
     
   }

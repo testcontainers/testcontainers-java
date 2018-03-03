@@ -1,10 +1,8 @@
 package org.testcontainers.jdbc;
 
-
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 import org.junit.Test;
-
 public class ConnectionUrlTest {
 
   @Test
@@ -12,7 +10,7 @@ public class ConnectionUrlTest {
     String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d";
     ConnectionUrl url = new ConnectionUrl(urlString);
     url.parseUrl();
-    
+  
     assertEquals("Database Type value is as expected", "mysql", url.getDatabaseType());
     assertEquals("Database Image tag value is as expected", "5.6.23", url.getImageTag());
     assertEquals("Database Host String is as expected", "somehostname:3306/databasename", url.getDbHostString());
@@ -23,7 +21,6 @@ public class ConnectionUrlTest {
     
     assertEquals("Parameter a is captured", "b", url.getQueryParameters().get("a"));
     assertEquals("Parameter c is captured", "d", url.getQueryParameters().get("c"));
-    
   }
   
 
@@ -42,6 +39,7 @@ public class ConnectionUrlTest {
     assertEquals("Database Name value is as expected", "databasename", url.getDatabaseName().get());
     
     assertTrue("Connection Parameters set is empty", url.getQueryParameters().isEmpty());
+
   }
   
   @Test
@@ -49,11 +47,11 @@ public class ConnectionUrlTest {
     String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_INITSCRIPT=somepath/init_mysql.sql";
     ConnectionUrl url = new ConnectionUrl(urlString);
     url.parseUrl();
-    
+
     assertEquals("Database Type value is as expected", "somepath/init_mysql.sql", url.getInitScriptPath().get());
     assertEquals("Query String value is as expected", "?a=b&c=d", url.getQueryString().get());
     assertEquals("INIT SCRIPT Path exists in Container Parameters", "somepath/init_mysql.sql", url.getContainerParameters().get("TC_INITSCRIPT"));
-    
+
   }
   
   @Test
@@ -74,10 +72,8 @@ public class ConnectionUrlTest {
     String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_DAEMON=true";
     ConnectionUrl url = new ConnectionUrl(urlString);
     url.parseUrl();
-    
+
     assertTrue("Daemon flag is set to true.",url.isInDaemonMode());
     
   }
-  
-  
 }
