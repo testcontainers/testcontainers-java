@@ -51,4 +51,15 @@ public class Wait {
         return forHttp(path)
                 .usingTls();
     }
+
+    /**
+     * Convenience method to return a WaitStrategy for log messages.
+     *
+     * @param regex the regex pattern to check for
+     * @param times the number of times the pattern is expected
+     * @return LogMessageWaitStrategy
+     */
+    public static LogMessageWaitStrategy forLogMessage(String regex, int times) {
+        return new LogMessageWaitStrategy().withRegEx(regex).withTimes(times);
+    }
 }

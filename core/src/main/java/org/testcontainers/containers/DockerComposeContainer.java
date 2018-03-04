@@ -14,9 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
+import org.testcontainers.containers.wait.Wait;
+import org.testcontainers.containers.wait.WaitAllStrategy;
+import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.utility.*;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -26,8 +28,9 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,7 +44,7 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource {
+public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource implements StartupTimeout {
 
     /**
      * Random identifier which will become part of spawned containers names, so we can shut them down
@@ -51,15 +54,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final Set<String> spawnedContainerIds = new HashSet<>();
     private final Set<String> spawnedNetworkIds = new HashSet<>();
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
+    private final Map<String, DockerComposeContainerInstance> containerInstancesMap = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
     private boolean pull = true;
     private boolean tailChildContainers;
+    private Duration startupTimeout = Duration.ofSeconds(60);
 
     private String project;
 
     private final AtomicInteger nextAmbassadorPort = new AtomicInteger(2000);
     private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
+    private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
     private final SocatContainer ambassadorContainer = new SocatContainer();
 
     private static final Object MUTEX = new Object();
@@ -112,10 +118,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             }
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();
-            if (tailChildContainers) {
-                tailChildContainerLogs();
-            }
             startAmbassadorContainers(profiler);
+            waitUntilInstancesStarted();
         }
     }
 
@@ -127,16 +131,35 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private void createServices() {
         // Run the docker-compose container, which starts up the services
         runWithCompose("up -d");
+        createContainerInstances();
     }
 
-    private void tailChildContainerLogs() {
-        listChildContainers().forEach(container ->
-                LogUtils.followOutput(dockerClient,
-                        container.getId(),
-                        new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]),
-                        OutputFrame.OutputType.STDOUT,
-                        OutputFrame.OutputType.STDERR)
-        );
+    private void createContainerInstances() {
+        listChildContainers().forEach(this::createContainerInstance);
+    }
+
+    private void createContainerInstance(Container container) {
+        String serviceName = getServiceNameFromContainer(container);
+        final DockerComposeContainerInstance containerInstance = new DockerComposeContainerInstance(container,
+            ambassadorContainer,
+            ambassadorPortMappings.get(serviceName),
+            waitStrategyMap.get(serviceName));
+
+        if (tailChildContainers) {
+            containerInstance.followOutput(new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
+        }
+        containerInstancesMap.putIfAbsent(serviceName, containerInstance);
+    }
+
+    private String getServiceNameFromContainer(Container container) {
+        final String containerName = container.labels.get("com.docker.compose.service");
+        final String containerNumber = container.labels.get("com.docker.compose.container-number");
+        return String.format("%s_%s", containerName, containerNumber);
+    }
+
+    private void waitUntilInstancesStarted() {
+        containerInstancesMap.values()
+            .forEach(containerInstance -> containerInstance.getWaitStrategy().waitUntilReady(containerInstance));
     }
 
     private void runWithCompose(String cmd) {
@@ -227,6 +250,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     public SELF withExposedService(String serviceName, int servicePort) {
+        return withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
+    }
+
+    public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
+        return withExposedService(serviceName + "_" + instance, servicePort);
+    }
+
+    public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort, WaitStrategy waitStrategy) {
+        return withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+    }
+
+    public SELF withExposedService(String serviceName, int servicePort, WaitStrategy waitStrategy) {
 
         if (!serviceName.matches(".*_[0-9]+")) {
             serviceName += "_1"; // implicit first instance of this service
@@ -251,11 +286,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         ambassadorPortMappings.computeIfAbsent(serviceName, __ -> new ConcurrentHashMap<>()).put(servicePort, ambassadorPort);
         ambassadorContainer.withTarget(ambassadorPort, serviceName, servicePort);
         ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceName), serviceName);
-        return self();
-    }
 
-    public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
-        return withExposedService(serviceName + "_" + instance, servicePort);
+        /*
+         * can have multiple wait strategies for a single container, e.g. if waiting on several ports
+         * if no wait strategy is defined, the WaitAllStrategy will return immediately
+         */
+        final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceName, __ ->
+            (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(startupTimeout));
+
+        if(waitStrategy != null) {
+            waitStrategy.withStartupTimeout(startupTimeout);
+            waitAllStrategy.withStrategy(waitStrategy);
+        }
+        return self();
     }
 
     /**
@@ -338,6 +381,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private String randomProjectId() {
         return identifier + Base58.randomString(6).toLowerCase();
+    }
+
+    @Override
+    public SELF withStartupTimeout(Duration startupTimeout) {
+        this.startupTimeout = startupTimeout;
+        return (SELF) this;
     }
 }
 
