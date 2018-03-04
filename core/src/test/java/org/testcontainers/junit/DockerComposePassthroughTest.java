@@ -1,28 +1,28 @@
 package org.testcontainers.junit;
 
-import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.HostPortWaitStrategy;
 import org.testcontainers.utility.TestEnvironment;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.info;
-import static org.rnorth.visibleassertions.VisibleAssertions.pass;
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
 /**
  * Created by rnorth on 11/06/2016.
  */
 public class DockerComposePassthroughTest {
+
+    private final TestWaitStrategy waitStrategy = new TestWaitStrategy();
 
     @BeforeClass
     public static void checkVersion() {
@@ -31,31 +31,42 @@ public class DockerComposePassthroughTest {
 
     @Rule
     public DockerComposeContainer compose =
-            new DockerComposeContainer(new File("src/test/resources/v2-compose-test-passthrough.yml"))
-                    .withEnv("foo", "bar")
-                    .withExposedService("alpine_1", 3000);
+        new DockerComposeContainer(new File("src/test/resources/v2-compose-test-passthrough.yml"))
+            .withEnv("foo", "bar")
+            .withExposedService("alpine_1", 3000, waitStrategy);
 
-    @Test(timeout = 30_000)
-    public void testEnvVar() throws IOException {
-        BufferedReader br = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-            Socket socket = new Socket(compose.getServiceHost("alpine_1", 3000), compose.getServicePort("alpine_1", 3000));
-            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        });
+    @Test
+    public <SELF extends GenericContainer<SELF>> void testContainerInstanceProperties() {
+        final GenericContainer<SELF> container = waitStrategy.getContainer();
 
-        Unreliables.retryUntilTrue(10, TimeUnit.SECONDS, () -> {
-            while (br.ready()) {
-                String line = br.readLine();
-                if (line.contains("bar=bar")) {
-                    pass("Mapped environment variable was found");
-                    return true;
-                }
-            }
-            info("Mapped environment variable was not found yet - process probably not ready");
-            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-            return false;
-        });
+        //check environment variable was set
+        assertEquals("Environment variable set correctly", "bar", container.getEnvMap().get("bar"));
 
+        //check other container properties
+        assertNotNull("Container id is not null", container.getContainerId());
+        assertThat("Container name", container.getContainerName(), endsWith("alpine_1"));
+        assertNotNull("Port mapped", container.getMappedPort(3000));
+        assertThat("Exposed Ports", container.getExposedPorts(), hasItem(3000));
+        assertEquals("Command is as expected", "/bin/sh -c /passthrough.sh", String.join(" ", container.getCommandParts()));
+        assertEquals("Working directory is as expected", "/", container.getWorkingDirectory());
+        assertNotNull("Network mode is set", container.getNetworkMode());
+        assertThat("Image name", container.getDockerImageName(), endsWith("alpine:latest"));
+        assertNotNull("Network is set", container.getNetwork().getId());
+        assertThat("Volume", container.getBinds().get(0).getVolume().getPath(), endsWith("/data"));
+        assertNotNull("Volumes From", container.getVolumesFroms().get(0).getContainer());
+
+    }
+
+    /*
+     * WaitStrategy is the only class that has access to the DockerComposeContainerInstance reference
+     * Using a custom WaitStrategy to expose the reference for testability
+     */
+    class TestWaitStrategy extends HostPortWaitStrategy {
+
+        @SuppressWarnings("unchecked")
+        public <SELF extends GenericContainer<SELF>> GenericContainer<SELF> getContainer() {
+            return this.container;
+        }
     }
 }

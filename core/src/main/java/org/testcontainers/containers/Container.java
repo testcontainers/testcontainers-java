@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public interface Container<SELF extends Container<SELF>> extends LinkableContainer {
+public interface Container<SELF extends Container<SELF>> extends LinkableContainer, StartupTimeout {
 
     /**
      * @return a reference to this container instance, cast to the expected generic type.
@@ -280,15 +280,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
-
-    /**
-     * Set the duration of waiting time until container treated as started.
-     * @see WaitStrategy#waitUntilReady(GenericContainer)
-     *
-     * @param startupTimeout timeout
-     * @return this
-     */
-    SELF withStartupTimeout(Duration startupTimeout);
 
     /**
      * Set the privilegedMode mode for the container

@@ -3,6 +3,7 @@ package org.testcontainers.spock
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 import org.testcontainers.containers.DockerComposeContainer
+import org.testcontainers.containers.wait.Wait
 import spock.lang.Specification
 
 @Testcontainers
@@ -10,7 +11,7 @@ class ComposeContainerIT extends Specification {
 
     DockerComposeContainer composeContainer = new DockerComposeContainer(
             new File("src/test/resources/docker-compose.yml"))
-            .withExposedService("whoami_1", 80)
+            .withExposedService("whoami_1", 80, Wait.forHttp("/"))
 
     String host
 

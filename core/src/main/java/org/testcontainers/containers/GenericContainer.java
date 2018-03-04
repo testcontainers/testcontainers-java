@@ -147,7 +147,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
 
     @Nullable
-    @Setter(AccessLevel.NONE)
+    @Setter(AccessLevel.PROTECTED)
     private InspectContainerResponse containerInfo;
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
