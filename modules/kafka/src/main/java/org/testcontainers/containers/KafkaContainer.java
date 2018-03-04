@@ -40,38 +40,23 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     protected SocatContainer proxy;
 
-    public KafkaContainer(Consumer<Builder> builderConsumer) {
-        this();
-
-        this.builderConsumer = b -> {
-            b.withNetwork(Network.newNetwork());
-            String networkAlias = "kafka-" + Base58.randomString(6);
-            b.withNetworkAliases(networkAlias);
-            b.withExposedPorts(KAFKA_PORT);
-
-            // Use two listeners with different names, it will force Kafka to communicate with itself via internal
-            // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-            b.withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9092,BROKER://" + networkAlias + ":9093");
-            b.withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
-            b.withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
-
-            b.withEnv("KAFKA_BROKER_ID", "1");
-            b.withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
-            b.withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
-            b.withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
-
-            builderConsumer.accept(b);
-        };
-    }
 
     public KafkaContainer() {
-        this("4.0.0");
+        this(b -> {});
+    }
+
+    public KafkaContainer(Consumer<Builder> builderConsumer) {
+        this("4.0.0", builderConsumer);
     }
 
     public KafkaContainer(String confluentPlatformVersion) {
+        this(confluentPlatformVersion, b -> {});
+    }
+
+    public KafkaContainer(String confluentPlatformVersion, Consumer<Builder> builderConsumer) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
-        builderConsumer = b -> {};
+        this.builderConsumer = builderConsumer;
         withNetwork(Network.newNetwork());
         String networkAlias = "kafka-" + Base58.randomString(6);
         withNetworkAliases(networkAlias);
