@@ -263,8 +263,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     public SELF withExposedService(String serviceName, int servicePort, WaitStrategy waitStrategy) {
 
-        if (!serviceName.matches(".*_[0-9]+")) {
-            serviceName += "_1"; // implicit first instance of this service
+        String serviceInstanceName = serviceName;
+        if (!serviceInstanceName.matches(".*_[0-9]+")) {
+            serviceInstanceName += "_1"; // implicit first instance of this service
         }
 
         /*
@@ -283,15 +284,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         // Ambassador container will be started together after docker compose has started
         int ambassadorPort = nextAmbassadorPort.getAndIncrement();
-        ambassadorPortMappings.computeIfAbsent(serviceName, __ -> new ConcurrentHashMap<>()).put(servicePort, ambassadorPort);
-        ambassadorContainer.withTarget(ambassadorPort, serviceName, servicePort);
-        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceName), serviceName);
+        ambassadorPortMappings.computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>()).put(servicePort, ambassadorPort);
+        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
+        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
 
         /*
          * can have multiple wait strategies for a single container, e.g. if waiting on several ports
          * if no wait strategy is defined, the WaitAllStrategy will return immediately
          */
-        final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceName, __ ->
+        final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceInstanceName, __ ->
             (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(startupTimeout));
 
         if(waitStrategy != null) {

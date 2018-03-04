@@ -1,9 +1,11 @@
 package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.Network;
-import org.jetbrains.annotations.NotNull;
-import org.junit.*;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
@@ -11,8 +13,6 @@ import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -75,14 +75,5 @@ public abstract class BaseDockerComposeTest {
         .map(Network::getName)
         .sorted()
         .collect(Collectors.toList());
-    }
-
-    @NotNull
-    private Callable<Boolean> getLivenessCheck(Jedis jedis) {
-        return () -> {
-            jedis.connect();
-            jedis.ping();
-            return true;
-        };
     }
 }

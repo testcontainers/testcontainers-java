@@ -13,7 +13,7 @@ import java.io.File;
 
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
@@ -22,12 +22,12 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
  */
 public class DockerComposePassthroughTest {
 
+    private final TestWaitStrategy waitStrategy = new TestWaitStrategy();
+
     @BeforeClass
     public static void checkVersion() {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
-
-    private final TestWaitStrategy waitStrategy = new TestWaitStrategy();
 
     @Rule
     public DockerComposeContainer compose =
@@ -63,10 +63,6 @@ public class DockerComposePassthroughTest {
      * Using a custom WaitStrategy to expose the reference for testability
      */
     class TestWaitStrategy extends HostPortWaitStrategy {
-
-        @Override
-        protected void waitUntilReady() {
-        }
 
         @SuppressWarnings("unchecked")
         public <SELF extends GenericContainer<SELF>> GenericContainer<SELF> getContainer() {
