@@ -89,6 +89,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
     }
 
+    @Deprecated
     public KafkaContainer withEmbeddedZookeeper() {
         builderConsumer = builderConsumer.andThen(b -> b.withEmbeddedZookeeper());
         return self();
