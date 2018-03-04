@@ -2,7 +2,10 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.ContainerNetwork;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.model.VolumesFrom;
 import lombok.EqualsAndHashCode;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
