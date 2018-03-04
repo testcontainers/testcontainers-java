@@ -28,6 +28,10 @@ public interface Network extends AutoCloseable, TestRule {
 
     String getId();
 
+    default void applyTo(GenericContainer.Builder builder) {
+        builder.withNetwork(this);
+    }
+
     static Network newNetwork() {
         return builder().build();
     }

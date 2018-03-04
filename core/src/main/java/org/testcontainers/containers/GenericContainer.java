@@ -65,6 +65,28 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
+    @RequiredArgsConstructor
+    public static class Builder {
+
+        private final GenericContainer container;
+
+        public void withNetwork(Network network) {
+            container.withNetwork(network);
+        }
+
+        public void withNetworkAliases(String... aliases) {
+            container.withNetworkAliases(aliases);
+        }
+
+        public void withExposedPorts(Integer... ports) {
+            container.withExposedPorts(ports);
+        }
+
+        public void withEnv(String key, String value) {
+            container.withEnv(key, value);
+        }
+    }
+
     /*
      * Default settings
      */
@@ -152,6 +174,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
+    private Consumer<Builder> builderConsumer;
+
     private final Set<Consumer<CreateContainerCmd>> createContainerCmdModifiers = new LinkedHashSet<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
@@ -161,6 +185,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .withConstantThroughput()
             .build();
 
+    public GenericContainer(Consumer<Builder> builderConsumer) {
+        this(TestcontainersConfiguration.getInstance().getTinyImage(), builderConsumer);
+    }
+
+    public GenericContainer(final String dockerImageName, Consumer<Builder> builderConsumer) {
+        this(dockerImageName);
+
+        this.builderConsumer = builderConsumer;
+    }
 
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
@@ -314,7 +347,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void configure() {
-
+        if (builderConsumer != null) {
+            builderConsumer.accept(new Builder(this));
+        }
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})

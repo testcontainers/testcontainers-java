@@ -68,7 +68,7 @@ public class KafkaContainerTest {
         }
     }
 
-    protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
+    public static void testKafkaFunctionality(String bootstrapServers) throws Exception {
         try (
                 KafkaProducer<String, String> producer = new KafkaProducer<>(
                         ImmutableMap.of(
