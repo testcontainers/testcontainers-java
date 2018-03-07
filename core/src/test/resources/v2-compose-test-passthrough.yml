@@ -4,15 +4,5 @@ services:
     build: compose-dockerfile
     environment:
       bar: ${foo}
-    networks:
-      - test-net
-    working_dir: /
-    volumes_from:
-      - alpine2
-  alpine2:
-    build: compose-dockerfile
     volumes:
       - .:/data
-
-networks:
-  test-net:

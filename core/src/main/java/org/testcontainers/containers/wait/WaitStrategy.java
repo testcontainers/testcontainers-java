@@ -8,7 +8,10 @@ import java.time.Duration;
  * Approach to determine whether a container is ready.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ *
+ * @deprecated Use {@link org.testcontainers.containers.wait.strategy.WaitStrategy}
  */
+@Deprecated
 public interface WaitStrategy {
     /**
      * Wait until the container has started.

@@ -1,10 +1,8 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Info;
 import lombok.NonNull;
+import org.testcontainers.ContainerState;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
@@ -13,7 +11,6 @@ import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +19,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public interface Container<SELF extends Container<SELF>> extends LinkableContainer, StartupTimeout {
+public interface Container<SELF extends Container<SELF>> extends ContainerState, LinkableContainer, StartupTimeout {
 
     /**
      * @return a reference to this container instance, cast to the expected generic type.
@@ -136,6 +133,18 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF waitingFor(@NonNull WaitStrategy waitStrategy);
+
+    /**
+     * Specify the {@link org.testcontainers.containers.wait.strategy.WaitStrategy} to use to determine if the container is ready.
+     *
+     * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
+     * @param waitStrategy the WaitStrategy to use
+     * @return this
+     */
+    default SELF waitingFor(@NonNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
+        this.setWaitStrategy(waitStrategy);
+        return (SELF) this;
+    }
 
     /**
      * Adds a file system binding.
@@ -289,13 +298,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withPrivilegedMode(boolean mode);
 
     /**
-     * Get the IP address that this container may be reached on (may not be the local machine).
-     *
-     * @return an IP address
-     */
-    String getContainerIpAddress();
-
-    /**
      * Only consider a container to have successfully started if it has been running for this duration. The default
      * value is null; if that's the value, ignore this check.
      *
@@ -318,32 +320,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withWorkingDirectory(String workDir);
 
-    /**
-     * @return is the container currently running?
-     */
-    Boolean isRunning();
-
-    /**
-     * Get the actual mapped port for a first port exposed by the container.
-     *
-     * @return the port that the exposed port is mapped to
-     * @throws IllegalStateException if there are no exposed ports
-     */
-    default Integer getFirstMappedPort() {
-        return getExposedPorts()
-                .stream()
-                .findFirst()
-                .map(this::getMappedPort)
-                .orElseThrow(() -> new IllegalStateException("Container doesn't expose any ports"));
-    }
-
-    /**
-     * Get the actual mapped port for a given port exposed by the container.
-     *
-     * @param originalPort the original TCP port that is exposed
-     * @return the port that the exposed port is mapped to, or null if it is not exposed
-     */
-    Integer getMappedPort(int originalPort);
 
     /**
      * <b>Resolve</b> Docker image and set it.
@@ -351,42 +327,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param dockerImageName image name
      */
     void setDockerImageName(@NonNull String dockerImageName);
-
-    /**
-     * Get image name.
-     *
-     * @return image name
-     */
-    @NonNull
-    String getDockerImageName();
-
-    /**
-     * Get the IP address that containers (e.g. browsers) can use to reference a service running on the local machine,
-     * i.e. the machine on which this test is running.
-     * <p>
-     * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
-     * to be pointed at "http://" + getTestHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
-     * from inside the container is not going to work, since the container has its own IP address.
-     *
-     * @return the IP address of the host machine
-     */
-    String getTestHostIpAddress();
-
-    /**
-     * Follow container output, sending each frame (usually, line) to a consumer. Stdout and stderr will be followed.
-     *
-     * @param consumer consumer that the frames should be sent to
-     */
-    void followOutput(Consumer<OutputFrame> consumer);
-
-    /**
-     * Follow container output, sending each frame (usually, line) to a consumer. This method allows Stdout and/or stderr
-     * to be selected.
-     *
-     * @param consumer consumer that the frames should be sent to
-     * @param types    types that should be followed (one or both of STDOUT, STDERR)
-     */
-    void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types);
 
 
     /**
@@ -398,37 +338,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
-
-    /**
-     *
-     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
-     */
-    @Deprecated
-    Info fetchDockerDaemonInfo() throws IOException;
-
-    /**
-     * Run a command inside a running container, as though using "docker exec", and interpreting
-     * the output as UTF8.
-     * <p>
-     * @see #execInContainer(Charset, String...)
-     */
-    ExecResult execInContainer(String... command)
-            throws UnsupportedOperationException, IOException, InterruptedException;
-
-    /**
-     * Run a command inside a running container, as though using "docker exec".
-     * <p>
-     * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
-     * the time of writing, CircleCI was using this driver.
-     * @param outputCharset the character set used to interpret the output.
-     * @param command the parts of the command to run
-     * @return the result of execution
-     * @throws IOException if there's an issue communicating with Docker
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
-     */
-    ExecResult execInContainer(Charset outputCharset, String... command)
-                    throws UnsupportedOperationException, IOException, InterruptedException;
 
     /**
      *
@@ -451,53 +360,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
 
-    List<Integer> getExposedPorts();
-
-    List<String> getPortBindings();
-
-    List<String> getExtraHosts();
-
-    Future<String> getImage();
-
-    /**
-     *
-     * @deprecated use getEnvMap
-     */
-    @Deprecated
-    List<String> getEnv();
-
-    Map<String, String> getEnvMap();
-
-    String[] getCommandParts();
-
-    List<Bind> getBinds();
-
-    /**
-     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
-     */
-    @Deprecated
-    Map<String, LinkableContainer> getLinkedContainers();
-
-    DockerClient getDockerClient();
-
-    /**
-     *
-     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
-     */
-    @Deprecated
-    Info getDockerDaemonInfo();
-
-    String getContainerId();
-
-    String getContainerName();
-
-    /**
-     *
-     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().inspectContainerCmd(container.getContainerId()).exec()}
-     */
-    @Deprecated
-    InspectContainerResponse getContainerInfo();
-
     void setExposedPorts(List<Integer> exposedPorts);
 
     void setPortBindings(List<String> portBindings);
@@ -519,4 +381,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setWaitStrategy(WaitStrategy waitStrategy);
+
+    default void setWaitStrategy(org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
+
+    }
 }

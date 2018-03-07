@@ -1,7 +1,7 @@
 package org.testcontainers.containers.wait.internal;
 
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.containers.Container;
+import org.testcontainers.ContainerState;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
  */
 @RequiredArgsConstructor
 public class ExternalPortListeningCheck implements Callable<Boolean> {
-    private final Container<?> container;
+    private final ContainerState container;
     private final Set<Integer> externalLivenessCheckPorts;
 
     @Override

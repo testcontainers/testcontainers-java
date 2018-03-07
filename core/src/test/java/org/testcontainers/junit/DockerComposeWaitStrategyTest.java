@@ -5,7 +5,7 @@ import org.junit.runner.Description;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.containers.wait.Wait;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
 import java.time.Duration;

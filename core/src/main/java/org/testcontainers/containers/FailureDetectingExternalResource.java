@@ -15,7 +15,7 @@ import java.util.List;
  * contribute to the overall failure count (which can otherwise cause strange negative test success
  * figures).
  */
-public class FailureDetectingExternalResource implements TestRule {
+public class FailureDetectingExternalResource extends AbstractContainerState implements TestRule {
     @Override
     public Statement apply(Statement base, Description description) {
 

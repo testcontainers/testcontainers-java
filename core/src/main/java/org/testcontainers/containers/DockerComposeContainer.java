@@ -16,9 +16,9 @@ import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
-import org.testcontainers.containers.wait.Wait;
-import org.testcontainers.containers.wait.WaitAllStrategy;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.*;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -54,7 +54,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final Set<String> spawnedContainerIds = new HashSet<>();
     private final Set<String> spawnedNetworkIds = new HashSet<>();
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
-    private final Map<String, DockerComposeContainerInstance> containerInstancesMap = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
     private boolean pull = true;
@@ -119,7 +118,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();
             startAmbassadorContainers(profiler);
-            waitUntilInstancesStarted();
+            waitUntilServiceStarted();
         }
     }
 
@@ -131,35 +130,32 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private void createServices() {
         // Run the docker-compose container, which starts up the services
         runWithCompose("up -d");
-        createContainerInstances();
     }
 
-    private void createContainerInstances() {
-        listChildContainers().forEach(this::createContainerInstance);
+    private void waitUntilServiceStarted() {
+        listChildContainers().forEach(this::waitUntilServiceStarted);
     }
 
-    private void createContainerInstance(Container container) {
+    private void waitUntilServiceStarted(Container container) {
         String serviceName = getServiceNameFromContainer(container);
-        final DockerComposeContainerInstance containerInstance = new DockerComposeContainerInstance(container,
+        final DockerComposeServiceInstance containerInstance = new DockerComposeServiceInstance(container,
             ambassadorContainer,
-            ambassadorPortMappings.get(serviceName),
-            waitStrategyMap.get(serviceName));
+            ambassadorPortMappings.get(serviceName));
 
         if (tailChildContainers) {
             containerInstance.followOutput(new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
         }
-        containerInstancesMap.putIfAbsent(serviceName, containerInstance);
+        final WaitAllStrategy waitAllStrategy = waitStrategyMap.get(serviceName);
+
+        if(waitAllStrategy != null) {
+            waitAllStrategy.waitUntilReady(containerInstance);
+        }
     }
 
     private String getServiceNameFromContainer(Container container) {
         final String containerName = container.labels.get("com.docker.compose.service");
         final String containerNumber = container.labels.get("com.docker.compose.container-number");
         return String.format("%s_%s", containerName, containerNumber);
-    }
-
-    private void waitUntilInstancesStarted() {
-        containerInstancesMap.values()
-            .forEach(containerInstance -> containerInstance.getWaitStrategy().waitUntilReady(containerInstance));
     }
 
     private void runWithCompose(String cmd) {
@@ -209,7 +205,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         profiler.stop().log();
     }
 
-    private Logger logger() {
+    @Override
+    public Logger logger() {
         return LoggerFactory.getLogger(DockerComposeContainer.class);
     }
 

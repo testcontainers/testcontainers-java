@@ -3,7 +3,7 @@ package org.testcontainers.spock
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 import org.testcontainers.containers.DockerComposeContainer
-import org.testcontainers.containers.wait.Wait
+import org.testcontainers.containers.wait.strategy.Wait
 import spock.lang.Shared
 import spock.lang.Specification
 
