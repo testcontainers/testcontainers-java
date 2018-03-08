@@ -286,6 +286,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     */
     @NotNull
     @NonNull
     protected Set<Integer> getLivenessCheckPorts() {
@@ -297,6 +300,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         return result;
+    }
+
+    @Override
+    public @NotNull Set<Integer> getLivenessCheckPortNumbers() {
+        return this.getLivenessCheckPorts();
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {

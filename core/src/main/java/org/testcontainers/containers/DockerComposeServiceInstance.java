@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("ConstantConditions")
 @EqualsAndHashCode(callSuper = true)
-public class DockerComposeServiceInstance extends AbstractContainerState {
+class DockerComposeServiceInstance extends AbstractContainerState {
 
     private final Container container;
     private final GenericContainer proxyContainer;

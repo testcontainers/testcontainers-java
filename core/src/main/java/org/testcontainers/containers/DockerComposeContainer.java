@@ -10,6 +10,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
+import org.rnorth.ducttape.timeouts.Timeouts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -64,6 +65,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private final AtomicInteger nextAmbassadorPort = new AtomicInteger(2000);
     private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
+    private final Map<String, DockerComposeServiceInstance> serviceInstanceMap = new ConcurrentHashMap<>();
     private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
     private final SocatContainer ambassadorContainer = new SocatContainer();
 
@@ -133,10 +135,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void waitUntilServiceStarted() {
-        listChildContainers().forEach(this::waitUntilServiceStarted);
+        listChildContainers().forEach(this::createServiceInstance);
+        Timeouts.doWithTimeout((int) startupTimeout.getSeconds(), TimeUnit.SECONDS,
+            () -> serviceInstanceMap.forEach(this::waitUntilServiceStarted));
     }
 
-    private void waitUntilServiceStarted(Container container) {
+    private void createServiceInstance(Container container) {
         String serviceName = getServiceNameFromContainer(container);
         final DockerComposeServiceInstance containerInstance = new DockerComposeServiceInstance(container,
             ambassadorContainer,
@@ -145,10 +149,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         if (tailChildContainers) {
             containerInstance.followOutput(new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
         }
-        final WaitAllStrategy waitAllStrategy = waitStrategyMap.get(serviceName);
+       serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
+    }
 
+    private void waitUntilServiceStarted(String serviceName, DockerComposeServiceInstance serviceInstance) {
+        final WaitAllStrategy waitAllStrategy = waitStrategyMap.get(serviceName);
         if(waitAllStrategy != null) {
-            waitAllStrategy.waitUntilReady(containerInstance);
+            waitAllStrategy.waitUntilReady(serviceInstance);
         }
     }
 
