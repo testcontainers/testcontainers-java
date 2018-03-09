@@ -23,7 +23,7 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 
 ### Usage modes
 
-* [Temporary database containers](usage/database_containers.md) - specialized MySQL, PostgreSQL, Oracle XE and Virtuoso container support
+* [Temporary database containers](usage/database_containers.md) - specialized Microsoft SQL Server, MariaDB, MySQL, PostgreSQL, Oracle XE and Virtuoso container support
 * [Webdriver containers](usage/webdriver_containers.md) - run a Dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
 * [Generic containers](usage/generic_containers.md) - run any Docker container as a test dependency
 * [Docker compose](usage/docker_compose.md) - reuse services defined in a Docker Compose YAML file
