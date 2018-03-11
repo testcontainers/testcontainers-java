@@ -1,0 +1,5 @@
+description = "Testcontainers :: MS SQL Server"
+
+dependencies {
+    compile project(':jdbc')
+}
