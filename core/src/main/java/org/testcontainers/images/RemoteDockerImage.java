@@ -48,6 +48,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
             profiler.start("Check local images");
 
             int attempts = 0;
+            DockerClientException lastException = null;
             while (true) {
                 // Does our cache already know the image?
                 if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
@@ -82,19 +83,20 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 }
 
                 if (attempts++ >= 3) {
-                    logger.error("Retry limit reached while trying to pull image: " + dockerImageName + ". Please check output of `docker pull " + dockerImageName + "`");
-                    throw new ContainerFetchException("Retry limit reached while trying to pull image: " + dockerImageName);
+                    logger.error("Retry limit reached while trying to pull image: {}" + dockerImageName + ". Please check output of `docker pull {}`", dockerImageName, dockerImageName);
+                    throw new ContainerFetchException("Retry limit reached while trying to pull image: " + dockerImageName, lastException);
                 }
 
                 // The image is not available locally - pull it
                 try {
-                    dockerClient.pullImageCmd(dockerImageName).exec(new PullImageResultCallback()).awaitCompletion();
-                } catch (InterruptedException e) {
-                    throw new ContainerFetchException("Failed to fetch container image for " + dockerImageName, e);
+                    final PullImageResultCallback callback = new PullImageResultCallback();
+                    dockerClient.pullImageCmd(dockerImageName).exec(callback);
+                    callback.awaitSuccess();
+                    AVAILABLE_IMAGE_NAME_CACHE.add(dockerImageName);
+                    break;
+                } catch (DockerClientException e) {
+                    lastException = e;
                 }
-
-                // Do not break here, but step into the next iteration, where it will be verified with listImagesCmd().
-                // see https://github.com/docker/docker/issues/10708
             }
 
             return dockerImageName;

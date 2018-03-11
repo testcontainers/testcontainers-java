@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import java.util.concurrent.Future;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -15,6 +14,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -91,7 +91,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         // Repeatedly try and open a connection to the DB and execute a test query
 
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
-        Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
+        Unreliables.retryUntilSuccess(getStartupTimeoutSeconds(), TimeUnit.SECONDS, () -> {
 
             if (!isRunning()) {
                 throw new ContainerLaunchException("Container failed to start");
@@ -184,5 +184,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     @SuppressWarnings("unused")
     public void addParameter(String paramName, String value) {
         this.parameters.put(paramName, value);
+    }
+
+    /**
+     * @return startup time to allow, including image pull time, in seconds
+     */
+    protected int getStartupTimeoutSeconds() {
+        return 120;
     }
 }
