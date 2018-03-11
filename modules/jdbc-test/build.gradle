@@ -1,6 +1,7 @@
 dependencies {
     compile project(':mysql')
     compile project(':postgresql')
+    compile project(':mariadb')
 
     testCompile 'com.google.guava:guava:18.0'
     testCompile 'org.postgresql:postgresql:42.0.0'
@@ -10,4 +11,6 @@ dependencies {
     testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
     testCompile 'org.vibur:vibur-dbcp:9.0'
     testCompile 'commons-dbutils:commons-dbutils:1.6'
+
+    testCompile 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
 }
