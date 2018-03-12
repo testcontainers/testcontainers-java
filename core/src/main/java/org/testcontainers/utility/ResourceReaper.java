@@ -59,12 +59,23 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
+        return start(hostIpAddress, client, false);
+    }
+
+    @SneakyThrows(InterruptedException.class)
+    public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
+
+        List<Bind> binds = new ArrayList<>();
+        binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
+        if (withDummyMount) {
+            // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
+            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro));
+        }
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig() {
@@ -75,11 +86,7 @@ public final class ResourceReaper {
                 .withPublishAllPorts(true)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-                .withBinds(
-                        new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")),
-                        // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
-                        new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro)
-                )
+                .withBinds(binds)
                 .exec()
                 .getId();
 
