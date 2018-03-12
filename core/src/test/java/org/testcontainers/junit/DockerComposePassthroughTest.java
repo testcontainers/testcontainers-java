@@ -4,16 +4,17 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.ContainerState;
+import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
@@ -41,16 +42,14 @@ public class DockerComposePassthroughTest {
         final ContainerState container = waitStrategy.getContainer();
 
         //check environment variable was set
-        assertEquals("Environment variable set correctly", "bar", container.getEnvMap().get("bar"));
+        assertThat("Environment variable set correctly", Arrays.asList(Objects.requireNonNull(container.getContainerInfo()
+            .getConfig().getEnv())), hasItem("bar=bar"));
 
         //check other container properties
         assertNotNull("Container id is not null", container.getContainerId());
         assertThat("Container name", container.getContainerName(), endsWith("alpine_1"));
         assertNotNull("Port mapped", container.getMappedPort(3000));
         assertThat("Exposed Ports", container.getExposedPorts(), hasItem(3000));
-        assertEquals("Command is as expected", "/bin/sh -c /passthrough.sh", String.join(" ", container.getCommandParts()));
-        assertThat("Image name", container.getDockerImageName(), endsWith("alpine:latest"));
-        assertThat("Volume", container.getBinds().get(0).getVolume().getPath(), endsWith("/data"));
 
     }
 
@@ -62,7 +61,7 @@ public class DockerComposePassthroughTest {
 
         @SuppressWarnings("unchecked")
         public ContainerState getContainer() {
-            return this.container;
+            return this.waitStrategyTarget;
         }
     }
 }

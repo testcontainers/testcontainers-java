@@ -25,27 +25,26 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
         final Set<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
         if (externalLivenessCheckPorts.isEmpty()) {
-            log.debug("Liveness check ports of {} is empty. Not waiting.", container.getContainerName());
+            log.debug("Liveness check ports of {} is empty. Not waiting.", waitStrategyTarget.getContainerName());
             return;
         }
 
         @SuppressWarnings("unchecked")
-        List<Integer> exposedPorts = container.getExposedPorts();
+        List<Integer> exposedPorts = waitStrategyTarget.getExposedPorts();
 
         final Set<Integer> internalPorts = getInternalPorts(externalLivenessCheckPorts, exposedPorts);
 
-        Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(container, internalPorts);
+        Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(waitStrategyTarget, internalPorts);
 
-        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(container, externalLivenessCheckPorts);
+        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(waitStrategyTarget, externalLivenessCheckPorts);
 
         try {
-            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                return getRateLimiter().getWhenReady(() -> internalCheck.call() && externalCheck.call());
-            });
+            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS,
+                () -> getRateLimiter().getWhenReady(() -> internalCheck.call() && externalCheck.call()));
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
-                    container.getContainerIpAddress() +
+                    waitStrategyTarget.getContainerIpAddress() +
                     " ports: " +
                     externalLivenessCheckPorts +
                     " should be listening)");
@@ -54,7 +53,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
     private Set<Integer> getInternalPorts(Set<Integer> externalLivenessCheckPorts, List<Integer> exposedPorts) {
         return exposedPorts.stream()
-                .filter(it -> externalLivenessCheckPorts.contains(container.getMappedPort(it)))
+                .filter(it -> externalLivenessCheckPorts.contains(waitStrategyTarget.getMappedPort(it)))
                 .collect(Collectors.toSet());
     }
 }

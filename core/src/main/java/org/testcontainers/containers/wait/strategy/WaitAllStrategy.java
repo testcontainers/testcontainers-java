@@ -1,7 +1,6 @@
 package org.testcontainers.containers.wait.strategy;
 
 import org.rnorth.ducttape.timeouts.Timeouts;
-import org.testcontainers.ContainerState;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -14,10 +13,10 @@ public class WaitAllStrategy implements WaitStrategy {
     private Duration timeout = Duration.ofSeconds(30);
 
     @Override
-    public void waitUntilReady(ContainerState containerState) {
+    public void waitUntilReady(WaitStrategyTarget waitStrategyTarget) {
         Timeouts.doWithTimeout((int) timeout.toMillis(), TimeUnit.MILLISECONDS, () -> {
             for (WaitStrategy strategy : strategies) {
-                strategy.waitUntilReady(containerState);
+                strategy.waitUntilReady(waitStrategyTarget);
             }
         });
     }

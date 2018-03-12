@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
 - Added `JdbcDatabaseContainer(Future)` constructor. ([\#543](https://github.com/testcontainers/testcontainers-java/issues/543))
 - Mark DockerMachineClientProviderStrategy as not persistable ([\#593](https://github.com/testcontainers/testcontainers-java/pull/593))
 - Added overloaded `withExposedService()` methods to `DockerComposeContainer` to allow user to define `WaitStrategy` for compose containers. ([\#174](https://github.com/testcontainers/testcontainers-java/issues/174) and [\#515](https://github.com/testcontainers/testcontainers-java/issues/515))
+- Deprecated `WaitStrategy` and implementations in favour of classes with same names in `org.testcontainers.containers.strategy`
+- Added `ContainerState` interface representing the state of a started container
+- Added `WaitStrategyTarget` interface which is the target of the new `WaitStrategy`
 
 ## [1.6.0] - 2018-01-28
 

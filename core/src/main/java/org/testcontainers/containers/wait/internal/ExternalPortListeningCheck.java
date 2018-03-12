@@ -1,7 +1,7 @@
 package org.testcontainers.containers.wait.internal;
 
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.ContainerState;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -13,12 +13,12 @@ import java.util.concurrent.Callable;
  */
 @RequiredArgsConstructor
 public class ExternalPortListeningCheck implements Callable<Boolean> {
-    private final ContainerState container;
+    private final WaitStrategyTarget waitStrategyTarget;
     private final Set<Integer> externalLivenessCheckPorts;
 
     @Override
     public Boolean call() {
-        String address = container.getContainerIpAddress();
+        String address = waitStrategyTarget.getContainerIpAddress();
 
         for (Integer externalPort : externalLivenessCheckPorts) {
             try {

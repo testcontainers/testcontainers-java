@@ -153,7 +153,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      */
     private URI buildLivenessUri(int livenessCheckPort) {
         final String scheme = (tlsEnabled ? "https" : "http") + "://";
-        final String host = container.getContainerIpAddress();
+        final String host = waitStrategyTarget.getContainerIpAddress();
 
         final String portSuffix;
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {

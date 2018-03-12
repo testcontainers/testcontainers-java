@@ -4,5 +4,3 @@ services:
     build: compose-dockerfile
     environment:
       bar: ${foo}
-    volumes:
-      - .:/data

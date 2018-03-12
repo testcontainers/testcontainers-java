@@ -17,7 +17,7 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
     @Override
     protected void waitUntilReady() {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
-        container.followOutput(waitingConsumer);
+        waitStrategyTarget.followOutput(waitingConsumer);
 
         Predicate<OutputFrame> waitPredicate = outputFrame ->
             outputFrame.getUtf8String().matches(regEx);

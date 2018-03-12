@@ -1,7 +1,7 @@
 package org.testcontainers.containers.wait.internal;
 
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.ContainerState;
+import org.testcontainers.containers.CommandExecutor;
 
 import java.util.Set;
 
@@ -15,7 +15,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
     private static final String SUCCESS_MARKER = "TESTCONTAINERS_SUCCESS";
 
-    private final ContainerState container;
+    private final CommandExecutor commandExecutor;
     private final Set<Integer> internalPorts;
 
     @Override
@@ -36,7 +36,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
         for (String[] command : commands) {
             try {
-                if (container.execInContainer(command).getStdout().contains(SUCCESS_MARKER)) {
+                if (commandExecutor.execInContainer(command).getStdout().contains(SUCCESS_MARKER)) {
                     return;
                 }
             } catch (Exception e) {

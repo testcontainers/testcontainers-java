@@ -1,8 +1,9 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Info;
 import lombok.NonNull;
-import org.testcontainers.ContainerState;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
@@ -19,7 +20,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public interface Container<SELF extends Container<SELF>> extends ContainerState, LinkableContainer, StartupTimeout {
+public interface Container<SELF extends Container<SELF>> extends LinkableContainer, CommandExecutor, LogFollower {
 
     /**
      * @return a reference to this container instance, cast to the expected generic type.
@@ -27,6 +28,11 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
     @SuppressWarnings("unchecked")
     default SELF self() {
         return (SELF) this;
+    }
+
+    @Override
+    default String getContainerName() {
+        return CommandExecutor.super.getContainerName();
     }
 
     /**
@@ -131,20 +137,19 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
      * @see Wait#defaultWaitStrategy()
      * @param waitStrategy the WaitStrategy to use
      * @return this
+     * @deprecated use {@link #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)}
      */
+    @Deprecated
     SELF waitingFor(@NonNull WaitStrategy waitStrategy);
 
     /**
-     * Specify the {@link org.testcontainers.containers.wait.strategy.WaitStrategy} to use to determine if the container is ready.
+     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
      *
      * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      * @param waitStrategy the WaitStrategy to use
      * @return this
      */
-    default SELF waitingFor(@NonNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
-        this.setWaitStrategy(waitStrategy);
-        return (SELF) this;
-    }
+    SELF waitingFor(@NonNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy);
 
     /**
      * Adds a file system binding.
@@ -291,6 +296,15 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
     SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
+     * Set the duration of waiting time until container treated as started.
+     * @see WaitStrategy#waitUntilReady(GenericContainer)
+     *
+     * @param startupTimeout timeout
+     * @return this
+     */
+    SELF withStartupTimeout(Duration startupTimeout);
+
+    /**
      * Set the privilegedMode mode for the container
      * @param mode boolean
      * @return this
@@ -320,7 +334,6 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
      */
     SELF withWorkingDirectory(String workDir);
 
-
     /**
      * <b>Resolve</b> Docker image and set it.
      *
@@ -328,6 +341,25 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
      */
     void setDockerImageName(@NonNull String dockerImageName);
 
+    /**
+     * Get image name.
+     *
+     * @return image name
+     */
+    @NonNull
+    String getDockerImageName();
+
+    /**
+     * Get the IP address that containers (e.g. browsers) can use to reference a service running on the local machine,
+     * i.e. the machine on which this test is running.
+     * <p>
+     * For example, if a web server is running on port 8080 on this local machine, the containerized web driver needs
+     * to be pointed at "http://" + getTestHostIpAddress() + ":8080" in order to access it. Trying to hit localhost
+     * from inside the container is not going to work, since the container has its own IP address.
+     *
+     * @return the IP address of the host machine
+     */
+    String getTestHostIpAddress();
 
     /**
      * Attach an output consumer at container startup, enabling stdout and stderr to be followed, waited on, etc.
@@ -338,6 +370,13 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
      * @return this
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
+
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
+    Info fetchDockerDaemonInfo() throws IOException;
 
     /**
      *
@@ -360,6 +399,40 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
      */
     void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
 
+    List<String> getPortBindings();
+
+    List<String> getExtraHosts();
+
+    Future<String> getImage();
+
+    /**
+     *
+     * @deprecated use getEnvMap
+     */
+    @Deprecated
+    List<String> getEnv();
+
+    Map<String, String> getEnvMap();
+
+    String[] getCommandParts();
+
+    List<Bind> getBinds();
+
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
+    Map<String, LinkableContainer> getLinkedContainers();
+
+    DockerClient getDockerClient();
+
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
+    Info getDockerDaemonInfo();
+
     void setExposedPorts(List<Integer> exposedPorts);
 
     void setPortBindings(List<String> portBindings);
@@ -381,8 +454,4 @@ public interface Container<SELF extends Container<SELF>> extends ContainerState,
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setWaitStrategy(WaitStrategy waitStrategy);
-
-    default void setWaitStrategy(org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
-
-    }
 }

@@ -31,7 +31,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +50,8 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource implements StartupTimeout {
+public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource
+    implements StartupTimeout<SELF> {
 
     /**
      * Random identifier which will become part of spawned containers names, so we can shut them down
@@ -65,7 +71,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private final AtomicInteger nextAmbassadorPort = new AtomicInteger(2000);
     private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
-    private final Map<String, DockerComposeServiceInstance> serviceInstanceMap = new ConcurrentHashMap<>();
+    private final Map<String, ComposeServiceWaitStrategyTarget> serviceInstanceMap = new ConcurrentHashMap<>();
     private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
     private final SocatContainer ambassadorContainer = new SocatContainer();
 
@@ -142,8 +148,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServiceInstance(Container container) {
         String serviceName = getServiceNameFromContainer(container);
-        final DockerComposeServiceInstance containerInstance = new DockerComposeServiceInstance(container,
-            ambassadorContainer,
+        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
+            ambassadorContainer, logger(),
             ambassadorPortMappings.get(serviceName));
 
         if (tailChildContainers) {
@@ -152,7 +158,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
        serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
     }
 
-    private void waitUntilServiceStarted(String serviceName, DockerComposeServiceInstance serviceInstance) {
+    private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.get(serviceName);
         if(waitAllStrategy != null) {
             waitAllStrategy.waitUntilReady(serviceInstance);
@@ -212,8 +218,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         profiler.stop().log();
     }
 
-    @Override
-    public Logger logger() {
+    private Logger logger() {
         return LoggerFactory.getLogger(DockerComposeContainer.class);
     }
 

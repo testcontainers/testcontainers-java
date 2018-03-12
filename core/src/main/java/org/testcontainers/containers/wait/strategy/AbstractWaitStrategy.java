@@ -4,7 +4,6 @@ import lombok.NonNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
-import org.testcontainers.ContainerState;
 
 import java.time.Duration;
 import java.util.Set;
@@ -12,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractWaitStrategy implements WaitStrategy {
 
-    protected ContainerState container;
+    protected WaitStrategyTarget waitStrategyTarget;
 
     @NonNull
     protected Duration startupTimeout = Duration.ofSeconds(60);
@@ -24,18 +23,18 @@ public abstract class AbstractWaitStrategy implements WaitStrategy {
         .build();
 
     /**
-     * Wait until the container has started.
+     * Wait until the target has started.
      *
-     * @param container the container for which to wait
+     * @param waitStrategyTarget the target of the WaitStrategy
      */
     @Override
-    public void waitUntilReady(ContainerState container) {
-        this.container = container;
+    public void waitUntilReady(WaitStrategyTarget waitStrategyTarget) {
+        this.waitStrategyTarget = waitStrategyTarget;
         waitUntilReady();
     }
 
     /**
-     * Wait until {@link #container} has started.
+     * Wait until {@link #waitStrategyTarget} has started.
      */
     protected abstract void waitUntilReady();
 
@@ -44,7 +43,7 @@ public abstract class AbstractWaitStrategy implements WaitStrategy {
      *
      * @param startupTimeout timeout
      * @return this
-     * @see WaitStrategy#waitUntilReady(ContainerState)
+     * @see WaitStrategy#waitUntilReady(WaitStrategyTarget)
      */
     public WaitStrategy withStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
@@ -52,14 +51,14 @@ public abstract class AbstractWaitStrategy implements WaitStrategy {
     }
 
     protected Logger logger() {
-        return container.logger();
+        return waitStrategyTarget.getLogger();
     }
 
     /**
      * @return the ports on which to check if the container is ready
      */
     protected Set<Integer> getLivenessCheckPorts() {
-        return container.getLivenessCheckPortNumbers();
+        return waitStrategyTarget.getLivenessCheckPortNumbers();
     }
 
     /**
