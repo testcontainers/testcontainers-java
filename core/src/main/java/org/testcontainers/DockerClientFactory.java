@@ -115,7 +115,7 @@ public class DockerClientFactory {
 
             boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
 
-            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, true);
+            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, checksEnabled);
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
 
             VisibleAssertions.info("Checking the system...");
