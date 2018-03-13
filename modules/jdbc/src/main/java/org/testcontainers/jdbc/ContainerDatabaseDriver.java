@@ -147,7 +147,8 @@ public class ContainerDatabaseDriver implements Driver {
             /*
               Create a connection using the delegated driver. The container must be ready to accept connections.
              */
-            Connection connection = container.createConnection(queryString);
+            String filteredQueryString = getQueryStringWithoutTCParams(queryString);
+            Connection connection = container.createConnection(filteredQueryString);
 
             /*
               If this container has not been initialized, AND
@@ -176,6 +177,14 @@ public class ContainerDatabaseDriver implements Driver {
         }
 
         return results;
+    }
+
+    private String getQueryStringWithoutTCParams(String queryString) {
+        return TC_PARAM_MATCHING_PATTERN.matcher(queryString)
+                .replaceAll("")
+                .replaceAll("\\?&", "?")
+                .replaceAll("&&", "&")
+                .replaceAll("[?&]$", "");
     }
 
     /**

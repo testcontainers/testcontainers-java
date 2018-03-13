@@ -38,7 +38,7 @@ public class JDBCDriverTest {
                 new Object[][]{
                         {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false},
                         {"jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
+                        {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction&useUnicode=yes", true, false, false},
                         {"jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
                         {"jdbc:tc:mysql://hostname/databasename", false, false, false},
                         {"jdbc:tc:mysql://hostname/databasename?useSSL=false", false, false, false},
