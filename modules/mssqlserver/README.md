@@ -2,8 +2,6 @@
 
 Testcontainers module for the MS SQL Server database.
 
-See [testcontainers.org](https://www.testcontainers.org) for more information about Testcontainers.
-
 ## Usage example
 
 Running MS SQL Server as a stand-in for in a test:
