@@ -14,7 +14,7 @@ public class LogMessageWaitStrategy extends GenericContainer.AbstractWaitStrateg
 
     @Override
     protected void waitUntilReady() {
-        delegateWaitStrategy.waitUntilReady(this.container);
+        delegateWaitStrategy.waitUntilReady(this.waitStrategyTarget);
     }
 
     public LogMessageWaitStrategy withRegEx(String regEx) {

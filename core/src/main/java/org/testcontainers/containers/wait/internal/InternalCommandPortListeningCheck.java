@@ -1,7 +1,8 @@
 package org.testcontainers.containers.wait.internal;
 
 import lombok.RequiredArgsConstructor;
-import org.testcontainers.containers.CommandExecutor;
+import org.testcontainers.containers.ExecInContainerPattern;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.util.Set;
 
@@ -15,7 +16,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
     private static final String SUCCESS_MARKER = "TESTCONTAINERS_SUCCESS";
 
-    private final CommandExecutor commandExecutor;
+    private final WaitStrategyTarget waitStrategyTarget;
     private final Set<Integer> internalPorts;
 
     @Override
@@ -36,7 +37,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
         for (String[] command : commands) {
             try {
-                if (commandExecutor.execInContainer(command).getStdout().contains(SUCCESS_MARKER)) {
+                if (ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), waitStrategyTarget.getLogger(), command).getStdout().contains(SUCCESS_MARKER)) {
                     return;
                 }
             } catch (Exception e) {

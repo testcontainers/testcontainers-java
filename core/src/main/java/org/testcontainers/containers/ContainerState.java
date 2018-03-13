@@ -5,7 +5,6 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
-import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 
 import java.util.ArrayList;
@@ -29,8 +28,7 @@ public interface ContainerState {
      */
     default Boolean isRunning() {
         try {
-            String containerId = this.getContainerId();
-            return containerId != null && this.getContainerInfo().getState().getRunning();
+            return getContainerId() != null && DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec().getState().getRunning();
         } catch (DockerException e) {
             return false;
         }
@@ -113,12 +111,5 @@ public interface ContainerState {
     /**
      * @return the container info
      */
-    default InspectContainerResponse getContainerInfo() {
-        return DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
-    }
-
-    /**
-     * @return the logger for the current container
-     */
-    Logger getLogger();
+    InspectContainerResponse getContainerInfo();
 }

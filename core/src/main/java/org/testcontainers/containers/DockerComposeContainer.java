@@ -153,7 +153,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             ambassadorPortMappings.get(serviceName));
 
         if (tailChildContainers) {
-            containerInstance.followOutput(new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
+            LogUtils.followOutput(DockerClientFactory.instance().client(), containerInstance.getContainerId(),
+                new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
         }
        serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
     }
@@ -166,8 +167,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private String getServiceNameFromContainer(Container container) {
-        final String containerName = container.labels.get("com.docker.compose.service");
-        final String containerNumber = container.labels.get("com.docker.compose.container-number");
+        final String containerName = container.getLabels().get("com.docker.compose.service");
+        final String containerNumber = container.getLabels().get("com.docker.compose.container-number");
         return String.format("%s_%s", containerName, containerNumber);
     }
 

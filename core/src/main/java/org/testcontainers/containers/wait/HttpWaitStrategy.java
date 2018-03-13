@@ -72,6 +72,6 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
 
     @Override
     protected void waitUntilReady() {
-        delegateStrategy.waitUntilReady(this.container);
+        delegateStrategy.waitUntilReady(this.waitStrategyTarget);
     }
 }

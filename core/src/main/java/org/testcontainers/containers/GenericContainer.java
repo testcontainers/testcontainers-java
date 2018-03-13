@@ -154,27 +154,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected String containerName;
 
-    /**
-     * The approach to determine if the container is ready.
-     *
-     * @deprecated use {@link #startupWaitStrategy}
-     */
-    @Deprecated
-    @NonNull
-    protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
+    @Setter(AccessLevel.NONE)
+    private InspectContainerResponse containerInfo;
 
     /**
      * The approach to determine if the container is ready.
-     *
      */
     @NonNull
-    @Setter(AccessLevel.NONE)
-    protected org.testcontainers.containers.wait.strategy.WaitStrategy startupWaitStrategy =
-        org.testcontainers.containers.wait.strategy.Wait.defaultWaitStrategy();
-
-    @Getter(AccessLevel.NONE)
-    @Setter(AccessLevel.NONE)
-    private boolean useDeprecatedWaitStrategy;
+    protected org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
@@ -251,7 +238,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             // Tell subclasses that we're starting
             profiler.start("Inspecting container");
-            InspectContainerResponse containerInfo = this.getContainerInfo();
+            containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
             profiler.start("Call containerIsStarting on subclasses");
             containerIsStarting(containerInfo);
@@ -519,20 +506,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    @Deprecated
-    public SELF waitingFor(@NonNull WaitStrategy waitStrategy) {
-        this.waitStrategy = waitStrategy;
-        this.useDeprecatedWaitStrategy = true;
-        return self();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public SELF waitingFor(@NonNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
-        this.startupWaitStrategy = waitStrategy;
-        this.useDeprecatedWaitStrategy = false;
+        this.waitStrategy = waitStrategy;
         return self();
     }
 
@@ -541,11 +516,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Defaults to {@link Wait#defaultWaitStrategy()}.
      *
      * @return the {@link WaitStrategy} to use
-     * @deprecated use {@link #getStartupWaitStrategy()} instead
      */
-    @Deprecated
-    protected WaitStrategy getWaitStrategy() {
+    protected org.testcontainers.containers.wait.strategy.WaitStrategy getWaitStrategy() {
         return waitStrategy;
+    }
+
+    @Override
+    public void setWaitStrategy(org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
+        this.waitStrategy = waitStrategy;
     }
 
     /**
@@ -556,11 +534,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @see #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)
      */
     protected void waitUntilContainerStarted() {
-        if(useDeprecatedWaitStrategy) {
-            getWaitStrategy().waitUntilReady(this);
-        } else {
-            getStartupWaitStrategy().waitUntilReady(this);
-        }
+        getWaitStrategy().waitUntilReady(this);
     }
 
     /**
@@ -803,7 +777,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withStartupTimeout(Duration startupTimeout) {
         getWaitStrategy().withStartupTimeout(startupTimeout);
-        getStartupWaitStrategy().withStartupTimeout(startupTimeout);
         return self();
     }
 
@@ -954,6 +927,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    public ExecResult execInContainer(String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+
+        return execInContainer(UTF8, command);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) {
 
         if (!isRunning()) {
@@ -983,6 +966,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarInputStream.getNextTarEntry();
             IOUtils.copy(tarInputStream, new FileOutputStream(destinationPath));
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ExecResult execInContainer(Charset outputCharset, String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, getLogger(), command);
     }
 
     /**
@@ -1020,7 +1012,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @deprecated use {@link org.testcontainers.containers.wait.strategy.AbstractWaitStrategy}
      */
     @Deprecated
-    public static abstract class AbstractWaitStrategy implements WaitStrategy {
+    public static abstract class AbstractWaitStrategy extends org.testcontainers.containers.wait.strategy.AbstractWaitStrategy implements WaitStrategy {
         protected GenericContainer container;
 
         @NonNull

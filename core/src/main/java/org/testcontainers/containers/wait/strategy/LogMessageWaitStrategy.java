@@ -1,8 +1,10 @@
 package org.testcontainers.containers.wait.strategy;
 
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.utility.LogUtils;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -17,7 +19,7 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
     @Override
     protected void waitUntilReady() {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
-        waitStrategyTarget.followOutput(waitingConsumer);
+        LogUtils.followOutput(DockerClientFactory.instance().client(), waitStrategyTarget.getContainerId(), waitingConsumer);
 
         Predicate<OutputFrame> waitPredicate = outputFrame ->
             outputFrame.getUtf8String().matches(regEx);

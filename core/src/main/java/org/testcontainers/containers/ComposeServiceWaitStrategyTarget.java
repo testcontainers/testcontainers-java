@@ -1,9 +1,11 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.slf4j.Logger;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
     private Map<Integer, Integer> mappedPorts = new HashMap<>();
     @Getter
     private List<Integer> exposedPorts = new ArrayList<>();
+    private InspectContainerResponse containerInfo;
 
     ComposeServiceWaitStrategyTarget(Container container, GenericContainer proxyContainer,
                                      Logger logger, Map<Integer, Integer> mappedPorts) {
@@ -53,5 +56,13 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
     @Override
     public String getContainerId() {
         return this.container.getId();
+    }
+
+    @Override
+    public InspectContainerResponse getContainerInfo() {
+        if(containerInfo == null) {
+            containerInfo = DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
+        }
+        return containerInfo;
     }
 }

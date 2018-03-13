@@ -1,17 +1,21 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Info;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.wait.Wait;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +24,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public interface Container<SELF extends Container<SELF>> extends LinkableContainer, CommandExecutor, LogFollower {
+public interface Container<SELF extends Container<SELF>> extends LinkableContainer, ContainerState {
 
     /**
      * @return a reference to this container instance, cast to the expected generic type.
@@ -32,7 +36,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     @Override
     default String getContainerName() {
-        return CommandExecutor.super.getContainerName();
+        return ContainerState.super.getContainerName();
     }
 
     /**
@@ -134,22 +138,11 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Specify the {@link WaitStrategy} to use to determine if the container is ready.
      *
-     * @see Wait#defaultWaitStrategy()
-     * @param waitStrategy the WaitStrategy to use
-     * @return this
-     * @deprecated use {@link #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)}
-     */
-    @Deprecated
-    SELF waitingFor(@NonNull WaitStrategy waitStrategy);
-
-    /**
-     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
-     *
      * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      * @param waitStrategy the WaitStrategy to use
      * @return this
      */
-    SELF waitingFor(@NonNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy);
+    SELF waitingFor(@NonNull WaitStrategy waitStrategy);
 
     /**
      * Adds a file system binding.
@@ -297,7 +290,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Set the duration of waiting time until container treated as started.
-     * @see WaitStrategy#waitUntilReady(GenericContainer)
+     * @see WaitStrategy#waitUntilReady(org.testcontainers.containers.wait.strategy.WaitStrategyTarget)
      *
      * @param startupTimeout timeout
      * @return this
@@ -362,6 +355,27 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     String getTestHostIpAddress();
 
     /**
+     * Follow container output, sending each frame (usually, line) to a consumer. Stdout and stderr will be followed.
+     *
+     * @param consumer consumer that the frames should be sent to
+     */
+    default void followOutput(Consumer<OutputFrame> consumer) {
+        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+    }
+
+    /**
+     * Follow container output, sending each frame (usually, line) to a consumer. This method allows Stdout and/or stderr
+     * to be selected.
+     *
+     * @param consumer consumer that the frames should be sent to
+     * @param types    types that should be followed (one or both of STDOUT, STDERR)
+     */
+    default void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
+        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer, types);
+    }
+
+
+    /**
      * Attach an output consumer at container startup, enabling stdout and stderr to be followed, waited on, etc.
      * <p>
      * More than one consumer may be registered.
@@ -377,6 +391,23 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     @Deprecated
     Info fetchDockerDaemonInfo() throws IOException;
+
+    /**
+     * Run a command inside a running container, as though using "docker exec", and interpreting
+     * the output as UTF8.
+     * <p>
+     * @see ExecInContainerPattern#execInContainer(InspectContainerResponse, Logger, String...)
+     */
+    ExecResult execInContainer(String... command)
+            throws UnsupportedOperationException, IOException, InterruptedException;
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     * <p>
+     * @see ExecInContainerPattern#execInContainer(InspectContainerResponse, Charset, Logger, String...)
+     */
+    ExecResult execInContainer(Charset outputCharset, String... command)
+                    throws UnsupportedOperationException, IOException, InterruptedException;
 
     /**
      *
