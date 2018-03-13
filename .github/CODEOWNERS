@@ -11,3 +11,4 @@
 # Contributed modules can have different reviewers
 
 modules/mssqlserver/    @StefanHufschmidt @rnorth @bsideup @kiview
+modules/vault/          @mikeoswald @rnorth @bsideup @kiview
