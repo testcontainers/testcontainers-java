@@ -29,9 +29,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     protected Map<String, String> parameters = new HashMap<>();
 
     private static final RateLimiter DB_CONNECT_RATE_LIMIT = RateLimiterBuilder.newBuilder()
-            .withRate(10, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
+        .withRate(10, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
@@ -97,7 +97,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 throw new ContainerLaunchException("Container failed to start");
             }
 
-            try (Connection connection = DB_CONNECT_RATE_LIMIT.getWhenReady(() -> createConnection(""))) {
+            try (Connection connection = createConnection("")) {
                 boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
 
                 if (success) {
@@ -133,9 +133,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * Creates a connection to the underlying containerized database instance.
      *
-     * @param queryString
-     *          query string parameters that should be appended to the JDBC connection URL.
-     *          The '?' character must be included
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
      * @return a Connection
      * @throws SQLException if there is a repeated failure to create the connection
      */
@@ -148,7 +147,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
         try {
-            return Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> jdbcDriverInstance.connect(url, info));
+            return Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () ->
+                DB_CONNECT_RATE_LIMIT.getWhenReady(() ->
+                    jdbcDriverInstance.connect(url, info)));
         } catch (Exception e) {
             throw new SQLException("Could not create new connection", e);
         }
@@ -159,9 +160,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * This should be overridden if the JDBC URL and query string concatenation or URL string
      * construction needs to be different to normal.
      *
-     * @param queryString
-     *          query string parameters that should be appended to the JDBC connection URL.
-     *          The '?' character must be included
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
      * @return a full JDBC URL including queryString
      */
     protected String constructUrlForConnection(String queryString) {
