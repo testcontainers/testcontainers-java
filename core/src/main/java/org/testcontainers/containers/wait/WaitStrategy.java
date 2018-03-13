@@ -33,5 +33,6 @@ public interface WaitStrategy extends org.testcontainers.containers.wait.strateg
      * {@inheritDoc}
      */
     default void waitUntilReady(WaitStrategyTarget waitStrategyTarget) {
+        //default method for backwards compatibility
     }
 }

@@ -37,6 +37,6 @@ public class LogUtils {
     }
 
     public void followOutput(DockerClient dockerClient, String containerId, Consumer<OutputFrame> consumer) {
-        followOutput(dockerClient, containerId, consumer, OutputFrame.OutputType.STDOUT, OutputFrame.OutputType.STDERR);
+        followOutput(dockerClient, containerId, consumer, STDOUT, STDERR);
     }
 }

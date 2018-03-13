@@ -1,11 +1,9 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Info;
 import lombok.NonNull;
-import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -396,7 +394,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p>
-     * @see ExecInContainerPattern#execInContainer(InspectContainerResponse, Logger, String...)
+     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, org.slf4j.Logger, String...)
      */
     ExecResult execInContainer(String... command)
             throws UnsupportedOperationException, IOException, InterruptedException;
@@ -404,7 +402,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Run a command inside a running container, as though using "docker exec".
      * <p>
-     * @see ExecInContainerPattern#execInContainer(InspectContainerResponse, Charset, Logger, String...)
+     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, org.slf4j.Logger, String...)
      */
     ExecResult execInContainer(Charset outputCharset, String... command)
                     throws UnsupportedOperationException, IOException, InterruptedException;
