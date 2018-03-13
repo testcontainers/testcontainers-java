@@ -7,17 +7,26 @@ import org.testcontainers.jdbc.ConnectionUrl;
  */
 public abstract class JdbcDatabaseContainerProvider {
 
+    /**
+     * Tests if the specified database type is supported by this Container Provider. It should match to the base image name.
+     * @param databaseType {@link String}
+     * @return <code>true</code> when provider can handle this database type, else <code>false</code>.
+     */
     public abstract boolean supports(String databaseType);
 
-    public abstract JdbcDatabaseContainer newInstance(String tag);
-    
     /**
-     * Get the new Instance with Tag and Url. Default Implementation delegates call to {@link #newInstance(tag)} method.
+     * Instantiate a new {@link JdbcDatabaseContainer} with specified image tag.
      * @param tag
-     * @param url
-     * @return
+     * @return Instance of {@link JdbcDatabaseContainer}
+     */
+    public abstract JdbcDatabaseContainer newInstance(String tag);
+
+    /**
+     * Instantiate a new {@link JdbcDatabaseContainer} using information provided with {@link ConnectionUrl}.
+     * @param url {@link ConnectionUrl}
+     * @return Instance of {@link JdbcDatabaseContainer}
      */
     public JdbcDatabaseContainer newInstance(ConnectionUrl url) {
-      return newInstance(url.getImageTag());
+        return newInstance(url.getImageTag());
     }
 }
