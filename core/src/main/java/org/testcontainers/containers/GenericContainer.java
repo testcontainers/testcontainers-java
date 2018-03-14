@@ -21,6 +21,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -38,6 +39,8 @@ import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.utility.*;
 
 import java.io.File;
@@ -633,12 +636,68 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    private TestDescription toDescription(Description description) {
+        return new TestDescription() {
+            @Override
+            public String getTestId() {
+                return getDisplayName();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return description.getDisplayName();
+            }
+
+            @Override
+            public Optional<String[]> getNameParts() {
+                return Optional.of(new String[]{
+                    description.getClassName(),
+                    description.getMethodName()
+                });
+            }
+
+            @Override
+            public Optional<String> getFilesystemFriendlyName() {
+                return getNameParts().map(it -> String.join("-", it));
+            }
+        };
+    }
+
     @Override
+    @Deprecated
     protected void starting(Description description) {
+        if (this instanceof TestLifecycleAware) {
+            ((TestLifecycleAware) this).beforeTestBlock(toDescription(description));
+        }
         this.start();
     }
 
     @Override
+    @Deprecated
+    public Statement apply(Statement base, Description description) {
+        return super.apply(base, description);
+    }
+
+    @Override
+    @Deprecated
+    protected void succeeded(Description description) {
+        if (this instanceof TestLifecycleAware) {
+            ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.empty());
+        }
+        super.succeeded(description);
+    }
+
+    @Override
+    @Deprecated
+    protected void failed(Throwable e, Description description) {
+        if (this instanceof TestLifecycleAware) {
+            ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.of(e));
+        }
+        super.failed(e, description);
+    }
+
+    @Override
+    @Deprecated
     protected void finished(Description description) {
         this.stop();
     }

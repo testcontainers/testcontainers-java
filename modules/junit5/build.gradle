@@ -1,0 +1,12 @@
+description = "Testcontainers :: JUnit 5 support"
+
+test.useJUnitPlatform()
+
+dependencies {
+    compile project(':testcontainers')
+
+    compile 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+
+    testCompile 'redis.clients:jedis:2.8.0'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+}
