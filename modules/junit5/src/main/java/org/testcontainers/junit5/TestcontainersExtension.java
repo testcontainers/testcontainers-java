@@ -2,20 +2,20 @@ package org.testcontainers.junit5;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.util.*;
 
 @Slf4j
 public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
-    private static final Map<GenericContainer<?>, Boolean> singletons = new HashMap<>();
+    private static final Map<Startable, Boolean> singletons = new HashMap<>();
 
-    private final List<GenericContainer<?>> perClassContainers = new ArrayList<>();
+    private final List<Startable> perClassContainers = new ArrayList<>();
 
-    private final List<GenericContainer<?>> perTestContainers = new ArrayList<>();
+    private final List<Startable> perTestContainers = new ArrayList<>();
 
     private volatile boolean beforeAllHappened = false;
 
@@ -36,7 +36,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
         beforeAllHappened = true;
         startSingletons();
 
-        for (GenericContainer<?> perClassContainer : perClassContainers) {
+        for (Startable perClassContainer : perClassContainers) {
             if (perClassContainer instanceof TestLifecycleAware) {
                 ((TestLifecycleAware) perClassContainer).beforeTestBlock(toDescription(context));
             }
@@ -53,7 +53,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
 
         startSingletons();
 
-        for (GenericContainer<?> perTestContainer : perTestContainers) {
+        for (Startable perTestContainer : perTestContainers) {
             if (perTestContainer instanceof TestLifecycleAware) {
                 ((TestLifecycleAware) perTestContainer).beforeTestBlock(toDescription(context));
             }
@@ -63,7 +63,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
 
     @Override
     public void afterEach(ExtensionContext context) {
-        for (GenericContainer<?> perTestContainer : perTestContainers) {
+        for (Startable perTestContainer : perTestContainers) {
             if (perTestContainer instanceof TestLifecycleAware) {
                 ((TestLifecycleAware) perTestContainer).afterTestBlock(toDescription(context), context.getExecutionException());
             }
@@ -74,7 +74,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
 
     @Override
     public void afterAll(ExtensionContext context) {
-        for (GenericContainer<?> perClassContainer : perClassContainers) {
+        for (Startable perClassContainer : perClassContainers) {
             if (perClassContainer instanceof TestLifecycleAware) {
                 ((TestLifecycleAware) perClassContainer).afterTestBlock(toDescription(context), context.getExecutionException());
             }
@@ -82,7 +82,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
         }
     }
 
-    public <T extends GenericContainer<?>> T singleton(T container) {
+    public <T extends Startable> T singleton(T container) {
         if (beforeEachHappened) {
             throw new IllegalStateException("beforeEach() already happened! Did you forget to use static?");
         }
@@ -91,7 +91,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
         return container;
     }
 
-    public <T extends GenericContainer<?>> T perClass(T container) {
+    public <T extends Startable> T perClass(T container) {
         if (beforeEachHappened) {
             throw new IllegalStateException("beforeEach() already happened! Did you forget to use static?");
         }
@@ -100,7 +100,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
         return container;
     }
 
-    public <T extends GenericContainer<?>> T perTest(T container) {
+    public <T extends Startable> T perTest(T container) {
         perTestContainers.add(container);
         return container;
     }

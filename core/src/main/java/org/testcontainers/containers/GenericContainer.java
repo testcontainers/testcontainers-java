@@ -39,6 +39,7 @@ import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.utility.*;
@@ -78,7 +79,7 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 @EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
-        implements Container<SELF>, AutoCloseable, WaitStrategyTarget {
+        implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -195,6 +196,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * Starts the container using docker, pulling an image if necessary.
      */
+    @Override
     public void start() {
         Profiler profiler = new Profiler("Container startup");
         profiler.setLogger(logger());
@@ -288,6 +290,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * Stops the container.
      */
+    @Override
     public void stop() {
 
         if (containerId == null) {
@@ -665,6 +668,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     @Deprecated
+    public Statement apply(Statement base, Description description) {
+        return super.apply(base, description);
+    }
+
+    @Override
+    @Deprecated
     protected void starting(Description description) {
         if (this instanceof TestLifecycleAware) {
             ((TestLifecycleAware) this).beforeTestBlock(toDescription(description));
@@ -674,17 +683,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     @Deprecated
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
-    }
-
-    @Override
-    @Deprecated
     protected void succeeded(Description description) {
         if (this instanceof TestLifecycleAware) {
             ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.empty());
         }
-        super.succeeded(description);
     }
 
     @Override
@@ -693,7 +695,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (this instanceof TestLifecycleAware) {
             ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.of(e));
         }
-        super.failed(e, description);
     }
 
     @Override
@@ -1018,11 +1019,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withStartupAttempts(int attempts) {
         this.startupAttempts = attempts;
         return self();
-    }
-
-    @Override
-    public void close() {
-        stop();
     }
 
     /**

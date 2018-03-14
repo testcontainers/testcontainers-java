@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
@@ -11,6 +10,7 @@ import lombok.NonNull;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -20,6 +20,7 @@ import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCh
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.*;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -50,7 +51,7 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource {
+public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource implements Startable {
 
     /**
      * Random identifier which will become part of spawned containers names, so we can shut them down
@@ -110,8 +111,35 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     @Override
-    @VisibleForTesting
+    @Deprecated
+    public Statement apply(Statement base, Description description) {
+        return super.apply(base, description);
+    }
+
+    @Override
+    @Deprecated
     public void starting(Description description) {
+        start();
+    }
+
+    @Override
+    @Deprecated
+    protected void succeeded(Description description) {
+    }
+
+    @Override
+    @Deprecated
+    protected void failed(Throwable e, Description description) {
+    }
+
+    @Override
+    @Deprecated
+    public void finished(Description description) {
+        stop();
+    }
+
+    @Override
+    public void start() {
         final Profiler profiler = new Profiler("Docker Compose container rule");
         profiler.setLogger(logger());
         profiler.start("Docker Compose container startup");
@@ -220,10 +248,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     @Override
-    @VisibleForTesting
-    public void finished(Description description) {
-
-
+    public void stop() {
         synchronized (MUTEX) {
             try {
                 // shut down the ambassador container

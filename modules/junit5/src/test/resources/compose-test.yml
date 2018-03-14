@@ -1,0 +1,2 @@
+redis:
+  image: redis:3.2.11
