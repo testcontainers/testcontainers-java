@@ -88,28 +88,30 @@ public class ContainerDatabaseDriver implements Driver {
               If we already have a running container for this exact connection string, we want to connect
               to that rather than create a new container
              */
+
+            /*
+                  Extract from the JDBC connection URL:
+             * The database type (e.g. mysql, postgresql, ...)
+             * The docker tag, if provided.
+             * The URL query string, if provided
+             */
+            Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
+            if (!urlMatcher.matches()) {
+                throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
+            }
+            String databaseType = urlMatcher.group(1);
+            String tag = urlMatcher.group(3);
+            if (tag == null) {
+                tag = "latest";
+            }
+
+            queryString = urlMatcher.group(4);
+            if (queryString == null) {
+                queryString = "";
+            }
+
             JdbcDatabaseContainer container = jdbcUrlContainerCache.get(url);
             if (container == null) {
-                /*
-                  Extract from the JDBC connection URL:
-                   * The database type (e.g. mysql, postgresql, ...)
-                   * The docker tag, if provided.
-                   * The URL query string, if provided
-                 */
-                Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
-                if (!urlMatcher.matches()) {
-                    throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
-                }
-                String databaseType = urlMatcher.group(1);
-                String tag = urlMatcher.group(3);
-                if (tag == null) {
-                    tag = "latest";
-                }
-
-                queryString = urlMatcher.group(4);
-                if (queryString == null) {
-                    queryString = "";
-                }
 
                 Map<String, String> parameters = getContainerParameters(url);
 
