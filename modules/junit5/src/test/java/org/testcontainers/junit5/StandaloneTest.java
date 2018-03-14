@@ -26,16 +26,4 @@ class StandaloneTest {
         assertEquals(2, redisPerClass.getJedis().incr("key").longValue());
         assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
     }
-
-    @Test
-    void step3() {
-        assertEquals(3, redisPerClass.getJedis().incr("key").longValue());
-        assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
-    }
-
-    @Test
-    void step4() {
-        assertEquals(4, redisPerClass.getJedis().incr("key").longValue());
-        assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
-    }
 }

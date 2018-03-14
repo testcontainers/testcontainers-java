@@ -13,9 +13,9 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
 
     private static final Map<GenericContainer<?>, Boolean> singletons = new HashMap<>();
 
-    private final Set<GenericContainer<?>> perClassContainers = new HashSet<>();
+    private final List<GenericContainer<?>> perClassContainers = new ArrayList<>();
 
-    private final Set<GenericContainer<?>> perTestContainers = new HashSet<>();
+    private final List<GenericContainer<?>> perTestContainers = new ArrayList<>();
 
     private volatile boolean beforeAllHappened = false;
 
