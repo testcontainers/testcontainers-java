@@ -69,6 +69,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
             }
             perTestContainer.close();
         }
+        perTestContainers.clear();
     }
 
     @Override
@@ -100,10 +101,6 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
     }
 
     public <T extends GenericContainer<?>> T perTest(T container) {
-        if (beforeEachHappened) {
-            throw new IllegalStateException("beforeEach() already happened! Did you forget to use static?");
-        }
-
         perTestContainers.add(container);
         return container;
     }

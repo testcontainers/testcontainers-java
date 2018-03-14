@@ -17,7 +17,7 @@ abstract class AbstractTest {
 
     protected static RedisContainer redisPerClass = testcontainers.perClass(new RedisContainer());
 
-    protected static RedisContainer redisPerTest = testcontainers.perTest(new RedisContainer());
+    protected RedisContainer redisPerTest = testcontainers.perTest(new RedisContainer());
 
 }
 

@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InheritedTest1 extends AbstractTest {
 
-    static RedisContainer myRedis = testcontainers.perTest(new RedisContainer());
+    RedisContainer myRedis = testcontainers.perTest(new RedisContainer());
 
     @Test
     void step1() {
