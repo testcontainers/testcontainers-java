@@ -13,7 +13,7 @@ class StandaloneTest {
 
     static RedisContainer redisPerClass = testcontainers.perClass(new RedisContainer());
 
-    RedisContainer redisPerTest = testcontainers.perTest(new RedisContainer());
+    static RedisContainer redisPerTest = testcontainers.perTest(new RedisContainer());
 
     @Test
     void step1() {
