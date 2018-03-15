@@ -2,15 +2,20 @@ package org.testcontainers.jdbc;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ConnectionUrlTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
 
     @Test
     public void testConnectionUrl1() {
         String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d";
-        ConnectionUrl url = new ConnectionUrl(urlString);
-        url.parseUrl();
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertEquals("Database Type value is as expected", "mysql", url.getDatabaseType());
         assertEquals("Database Image tag value is as expected", "5.6.23", url.getImageTag());
@@ -28,8 +33,7 @@ public class ConnectionUrlTest {
     @Test
     public void testConnectionUrl2() {
         String urlString = "jdbc:tc:mysql://somehostname/databasename";
-        ConnectionUrl url = new ConnectionUrl(urlString);
-        url.parseUrl();
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertEquals("Database Type value is as expected", "mysql", url.getDatabaseType());
         assertEquals("Database Image tag value is as expected", "latest", url.getImageTag());
@@ -46,20 +50,23 @@ public class ConnectionUrlTest {
     @Test
     public void testInitScriptPathCapture() {
         String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_INITSCRIPT=somepath/init_mysql.sql";
-        ConnectionUrl url = new ConnectionUrl(urlString);
-        url.parseUrl();
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertEquals("Database Type value is as expected", "somepath/init_mysql.sql", url.getInitScriptPath().get());
         assertEquals("Query String value is as expected", "?a=b&c=d", url.getQueryString().get());
         assertEquals("INIT SCRIPT Path exists in Container Parameters", "somepath/init_mysql.sql", url.getContainerParameters().get("TC_INITSCRIPT"));
+
+        //Parameter sets are unmodifiable
+        thrown.expect(UnsupportedOperationException.class);
+        url.getContainerParameters().remove("TC_INITSCRIPT");
+        url.getQueryParameters().remove("a");
 
     }
 
     @Test
     public void testInitFunctionCapture() {
         String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction";
-        ConnectionUrl url = new ConnectionUrl(urlString);
-        url.parseUrl();
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertTrue("Init Function parameter exists", url.getInitFunction().isPresent());
 
@@ -71,8 +78,7 @@ public class ConnectionUrlTest {
     @Test
     public void testDaemonCapture() {
         String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_DAEMON=true";
-        ConnectionUrl url = new ConnectionUrl(urlString);
-        url.parseUrl();
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertTrue("Daemon flag is set to true.", url.isInDaemonMode());
 

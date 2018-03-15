@@ -1,15 +1,12 @@
 package org.testcontainers.jdbc;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 /**
  * This is an Immutable class holding JDBC Connection Url and its parsed components, used by {@link ContainerDatabaseDriver}.
@@ -18,67 +15,59 @@ import lombok.Getter;
  *
  * @author manikmagar
  */
+@EqualsAndHashCode(of = "url") @Getter
 public class ConnectionUrl {
 
-    @Getter
     private String url;
 
     private String databaseType;
 
-    @Getter
     private String imageTag = "latest";
-
-    private String dbHostString;
-
-    @Getter
-    private boolean inDaemonMode = false;
-
-    @Getter
-    private Optional<String> databaseHost = Optional.empty();
-
-    @Getter
-    private Optional<Integer> databasePort = Optional.empty();
-
-    @Getter
-    private Optional<String> databaseName = Optional.empty();
-
-    @Getter
-    private Optional<String> initScriptPath = Optional.empty();
-
-    @Getter
-    private Optional<InitFunctionDef> initFunction = Optional.empty();
-
-    @Getter
-    private Optional<String> queryString;
-
-    private ConnectionUrl() {
-        //Not Allowed here
-    }
-
-    public ConnectionUrl(final String url) {
-        this.url = Objects.requireNonNull(url, "Connection URL cannot be null");
-    }
-
-    public String getDatabaseType() {
-        return Objects.requireNonNull(this.databaseType, "Database Type cannot be null. Have you called parseUrl() method?");
-    }
-
 
     /**
      * This is a part of the connection string that may specify host:port/databasename.
      * It may vary for different clients and so clients can parse it as needed.
-     *
-     * @return
      */
-    public String getDbHostString() {
-        return Objects.requireNonNull(this.dbHostString, "Database Host String cannot be null. Have you called parseUrl() method?");
+    private String dbHostString;
+
+    private boolean inDaemonMode = false;
+
+    private Optional<String> databaseHost = Optional.empty();
+
+    private Optional<Integer> databasePort = Optional.empty();
+
+    private Optional<String> databaseName = Optional.empty();
+
+    private Optional<String> initScriptPath = Optional.empty();
+
+    private Optional<InitFunctionDef> initFunction = Optional.empty();
+
+    private Optional<String> queryString;
+
+    private Map<String, String> containerParameters;
+
+    private Map<String, String> queryParameters;
+
+    public static ConnectionUrl newInstance(final String url){
+        ConnectionUrl connectionUrl = new ConnectionUrl(url);
+        connectionUrl.parseUrl();
+        return connectionUrl;
+    }
+
+    private ConnectionUrl(final String url) {
+        this.url = Objects.requireNonNull(url, "Connection URL cannot be null");
     }
 
     public static boolean accepts(final String url) {
         return url.startsWith("jdbc:tc:");
     }
 
-    public void parseUrl() {
+    /**
+     * This method applies various REGEX Patterns to parse the URL associated with this instance.
+     * This is called from a @{@link ConnectionUrl#newInstance(String)} static factory method to create immutable instance of {@link ConnectionUrl}.
+     * To avoid mutation after class is instantiated, this method should not be publicly accessible.
+     */
+    private void parseUrl() {
         /*
         Extract from the JDBC connection URL:
          * The database type (e.g. mysql, postgresql, ...)
@@ -109,13 +98,21 @@ public class ConnectionUrl {
             databaseName = Optional.of(dbInstanceMatcher.group(4));
         }
 
-        queryString = Optional.ofNullable(urlMatcher.group(5));
-        getQueryParameters();
+        queryParameters = Collections.unmodifiableMap(
+                                            parseQueryParameters(
+                                                Optional.ofNullable(urlMatcher.group(5)).orElse("")));
 
-        Matcher matcher = Patterns.INITSCRIPT_MATCHING_PATTERN.matcher(this.getUrl());
-        if (matcher.matches()) {
-            initScriptPath = Optional.ofNullable(matcher.group(2));
-        }
+        String query = queryParameters
+                            .entrySet()
+                                .stream()
+                                .map(e -> e.getKey() + "=" + e.getValue())
+                                .collect(Collectors.joining("&"));
+
+        queryString = Optional.of("?" + query);
+
+        containerParameters = Collections.unmodifiableMap(parseContainerParameters());
+
+        initScriptPath = Optional.ofNullable(containerParameters.get("TC_INITSCRIPT"));
 
         Matcher funcMatcher = Patterns.INITFUNCTION_MATCHING_PATTERN.matcher(this.getUrl());
         if (funcMatcher.matches()) {
@@ -123,7 +120,7 @@ public class ConnectionUrl {
         }
 
         Matcher daemonMatcher = Patterns.DAEMON_MATCHING_PATTERN.matcher(this.getUrl());
-        inDaemonMode = daemonMatcher.matches() ? Boolean.parseBoolean(daemonMatcher.group(2)) : false;
+        inDaemonMode = daemonMatcher.matches() && Boolean.parseBoolean(daemonMatcher.group(2));
 
     }
 
@@ -132,7 +129,7 @@ public class ConnectionUrl {
      *
      * @return {@link Map}
      */
-    public Map<String, String> getContainerParameters() {
+    private Map<String, String> parseContainerParameters() {
 
         Map<String, String> results = new HashMap<>();
 
@@ -147,30 +144,21 @@ public class ConnectionUrl {
     }
 
     /**
-     * Get all Query paramters specified in the Connection URL after ?. This also includes TestContainers parameters.
+     * Get all Query parameters specified in the Connection URL after ?. This DOES NOT include TestContainers (TC_*) parameters.
      *
      * @return {@link Map}
      */
-    public Map<String, String> getQueryParameters() {
+    private Map<String, String> parseQueryParameters(final String queryString) {
 
         Map<String, String> results = new HashMap<>();
-        StringJoiner query = new StringJoiner("&");
-        Matcher matcher = Patterns.QUERY_PARAM_MATCHING_PATTERN.matcher(this.getQueryString().orElse(""));
+        Matcher matcher = Patterns.QUERY_PARAM_MATCHING_PATTERN.matcher(queryString);
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = matcher.group(2);
-            if (!key.startsWith("TC_")) query.add(key + "=" + value);
-            results.put(key, value);
+            if(!key.matches(Patterns.TC_PARAM_NAME_PATTERN)) results.put(key, value);
         }
 
-        queryString = Optional.of("?" + query.toString());
         return results;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (Objects.isNull(obj) || !(obj instanceof ConnectionUrl)) return false;
-        return this.getUrl().equals(((ConnectionUrl) obj).getUrl());
     }
 
     /**
@@ -194,7 +182,9 @@ public class ConnectionUrl {
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             ".*");
 
-        final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("(TC_[A-Z_]+)=([^\\?&]+)");
+        final String TC_PARAM_NAME_PATTERN = "(TC_[A-Z_]+)";
+
+        final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile(TC_PARAM_NAME_PATTERN + "=([^\\?&]+)");
 
         final Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^\\?&=]+)=([^\\?&]+)");
 

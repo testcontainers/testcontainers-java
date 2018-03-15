@@ -10,6 +10,12 @@ All notable changes to this project will be documented in this file.
 - Abstracted and changed database init script functionality to support use of SQL-like scripts with non-JDBC connections. ([\#551](https://github.com/testcontainers/testcontainers-java/pull/551))
 - Added `JdbcDatabaseContainer(Future)` constructor. ([\#543](https://github.com/testcontainers/testcontainers-java/issues/543))
 - Mark DockerMachineClientProviderStrategy as not persistable ([\#593](https://github.com/testcontainers/testcontainers-java/pull/593))
+- Enhancements and Fixes for JDBC URL usage to create Containers ([\#594](https://github.com/testcontainers/testcontainers-java/pull/594))
+    - Extracted JDBC URL manipulations to a separate class - `ConnectionUrl`. 
+    - Added an overloaded method `JdbcDatabaseContainerProvider.newInstance(ConnectionUrl)`, with default implementation delegating to the existing `newInstance(tag)` method. (Relates to [\#566](https://github.com/testcontainers/testcontainers-java/issues/566))
+    - Added an implementation of `MySQLContainerProvider.newInstance(ConnectionUrl)` that uses Database Name, User, and Password from JDBC URL while creating new MySQL Container. (Fixes [\#566](https://github.com/testcontainers/testcontainers-java/issues/566) for MySQL Container)
+    - Fixed JDBC URL Regex Pattern to ensure all supported Database URL's are accepted (Fixes [\#596](https://github.com/testcontainers/testcontainers-java/issues/596))
+    - Filtered out TestContainer parameters (TC_*) from query string before passing to database (Fixes [\#345](https://github.com/testcontainers/testcontainers-java/issues/345))
 
 ## [1.6.0] - 2018-01-28
 

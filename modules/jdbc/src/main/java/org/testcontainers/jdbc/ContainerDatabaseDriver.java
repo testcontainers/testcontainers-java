@@ -59,7 +59,7 @@ public class ContainerDatabaseDriver implements Driver {
     public boolean acceptsURL(String url) throws SQLException {
       return url.startsWith("jdbc:tc:");
     }
-    
+
     @Override
     public synchronized Connection connect(String url, final Properties info) throws SQLException {
 
@@ -69,34 +69,33 @@ public class ContainerDatabaseDriver implements Driver {
         if (!acceptsURL(url)) {
             return null;
         }
-        
-        ConnectionUrl cUrl = new ConnectionUrl(url);
-        cUrl.parseUrl();
+
+        ConnectionUrl connectionUrl = ConnectionUrl.newInstance(url);
 
         synchronized (jdbcUrlContainerCache) {
 
-            String queryString = cUrl.getQueryString().orElse("");
+            String queryString = connectionUrl.getQueryString().orElse("");
             /*
               If we already have a running container for this exact connection string, we want to connect
               to that rather than create a new container
              */
-            JdbcDatabaseContainer container = jdbcUrlContainerCache.get(url);
+            JdbcDatabaseContainer container = jdbcUrlContainerCache.get(connectionUrl.getUrl());
             if (container == null) {
 
-                Map<String, String> parameters = cUrl.getContainerParameters();
+                Map<String, String> parameters = connectionUrl.getContainerParameters();
 
                 /*
                   Find a matching container type using ServiceLoader.
                  */
                 ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
-                    if (candidateContainerType.supports(cUrl.getDatabaseType())) {
-                        container = candidateContainerType.newInstance(cUrl);
+                    if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
+                        container = candidateContainerType.newInstance(connectionUrl);
                         delegate = container.getJdbcDriverInstance();
                     }
                 }
                 if (container == null) {
-                    throw new UnsupportedOperationException("Database name " + cUrl.getDatabaseType() + " not supported");
+                    throw new UnsupportedOperationException("Database name " + connectionUrl.getDatabaseType() + " not supported");
                 }
 
                 /*
@@ -127,12 +126,12 @@ public class ContainerDatabaseDriver implements Driver {
              */
             if (!initializedContainers.contains(container.getContainerId())) {
                 DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
-                runInitScriptIfRequired(cUrl, databaseDelegate);
-                runInitFunctionIfRequired(cUrl, connection);
+                runInitScriptIfRequired(connectionUrl, databaseDelegate);
+                runInitFunctionIfRequired(connectionUrl, connection);
                 initializedContainers.add(container.getContainerId());
             }
 
-            return wrapConnection(connection, container, cUrl);
+            return wrapConnection(connection, container, connectionUrl);
         }
     }
 
@@ -144,12 +143,12 @@ public class ContainerDatabaseDriver implements Driver {
      *
      * @param connection the new connection to be wrapped
      * @param container  the container which the connection is associated with
-     * @param url        the testcontainers JDBC URL for this connection
+     * @param connectionUrl {@link ConnectionUrl} instance representing JDBC Url for this connection
      * @return the connection, wrapped
      */
-    private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final ConnectionUrl cUrl) {
-        
-        final boolean isDaemon = cUrl.isInDaemonMode();
+    private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final ConnectionUrl connectionUrl) {
+
+        final boolean isDaemon = connectionUrl.isInDaemonMode();
 
         Set<Connection> connections = containerConnections.get(container.getContainerId());
 
@@ -166,7 +165,7 @@ public class ContainerDatabaseDriver implements Driver {
             finalConnections.remove(connection);
             if (!isDaemon && finalConnections.isEmpty()) {
                 container.stop();
-                jdbcUrlContainerCache.remove(cUrl.getUrl());
+                jdbcUrlContainerCache.remove(connectionUrl.getUrl());
             }
         });
     }
@@ -174,13 +173,13 @@ public class ContainerDatabaseDriver implements Driver {
     /**
      * Run an init script from the classpath.
      *
-     * @param url        the JDBC URL to check for init script declarations.
+     * @param connectionUrl {@link ConnectionUrl} instance representing JDBC Url with init script.
      * @param databaseDelegate database delegate to apply init scripts to the database
      * @throws SQLException on script or DB error
      */
-    private void runInitScriptIfRequired(final ConnectionUrl cUrl, DatabaseDelegate databaseDelegate) throws SQLException {
-        if (cUrl.getInitScriptPath().isPresent()) {
-            String initScriptPath = cUrl.getInitScriptPath().get();
+    private void runInitScriptIfRequired(final ConnectionUrl connectionUrl, DatabaseDelegate databaseDelegate) throws SQLException {
+        if (connectionUrl.getInitScriptPath().isPresent()) {
+            String initScriptPath = connectionUrl.getInitScriptPath().get();
             try {
                 URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
 
@@ -204,14 +203,14 @@ public class ContainerDatabaseDriver implements Driver {
     /**
      * Run an init function (must be a public static method on an accessible class).
      *
-     * @param url        the JDBC URL to check for init function declarations.
+     * @param  connectionUrl {@link ConnectionUrl} instance representing JDBC Url with r init function declarations.
      * @param connection JDBC connection to apply init functions to.
      * @throws SQLException on script or DB error
      */
-    private void runInitFunctionIfRequired(final ConnectionUrl cUrl, Connection connection) throws SQLException {
-        if (cUrl.getInitFunction().isPresent()) {
-            String className = cUrl.getInitFunction().get().getClassName();
-            String methodName = cUrl.getInitFunction().get().getMethodName();
+    private void runInitFunctionIfRequired(final ConnectionUrl connectionUrl, Connection connection) throws SQLException {
+        if (connectionUrl.getInitFunction().isPresent()) {
+            String className = connectionUrl.getInitFunction().get().getClassName();
+            String methodName = connectionUrl.getInitFunction().get().getMethodName();
 
             try {
                 Class<?> initFunctionClazz = Class.forName(className);

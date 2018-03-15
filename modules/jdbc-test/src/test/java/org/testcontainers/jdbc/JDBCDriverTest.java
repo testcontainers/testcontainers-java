@@ -71,6 +71,9 @@ public class JDBCDriverTest {
         }
 
         if (performTestForCharacterSet) {
+            //Called twice to ensure that the query string parameters are used when
+            //connections are created from cached containers.
+            performSimpleTestWithCharacterSet(jdbcUrl);
             performSimpleTestWithCharacterSet(jdbcUrl);
         }
 
@@ -120,17 +123,31 @@ public class JDBCDriverTest {
         }
     }
 
+    /**
+     * This method intentionally verifies encoding twice to ensure that the query string parameters are used when
+     * Connections are created from cached containers.
+     *
+     * @param jdbcUrl
+     * @throws SQLException
+     */
     private void performSimpleTestWithCharacterSet(String jdbcUrl) throws SQLException {
-        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
-                rs.next();
-                String resultSetInt = rs.getString(2);
-                assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
-                return true;
-            });
+        HikariDataSource datasource1 = verifyCharacterSet(jdbcUrl);
+        HikariDataSource datasource2 = verifyCharacterSet(jdbcUrl);
+        datasource1.close();
+        datasource2.close();
+    }
 
-            assertTrue("The database returned a record as expected", result);
-        }
+    private HikariDataSource verifyCharacterSet(String jdbcUrl) throws SQLException {
+        HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
+        boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
+            rs.next();
+            String resultSetInt = rs.getString(2);
+            assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
+            return true;
+        });
+
+        assertTrue("The database returned a record as expected", result);
+        return dataSource;
     }
 
     private void performTestForCustomIniFile(final String jdbcUrl) throws SQLException {

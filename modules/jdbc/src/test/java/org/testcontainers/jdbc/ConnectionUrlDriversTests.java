@@ -48,8 +48,7 @@ public class ConnectionUrlDriversTests {
 
     @Test
     public void test() throws SQLException {
-        ConnectionUrl url = new ConnectionUrl(jdbcUrl);
-        url.parseUrl();
+        ConnectionUrl url = ConnectionUrl.newInstance(jdbcUrl);
         assertEquals("Database Type is as expected", databaseType, url.getDatabaseType());
         assertEquals("Image tag is as expected", tag, url.getImageTag());
         assertEquals("Database Host String is as expected", dbHostString, url.getDbHostString());
