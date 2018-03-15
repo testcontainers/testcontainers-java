@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import java.util.concurrent.Future;
+
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -29,9 +30,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     protected Map<String, String> parameters = new HashMap<>();
 
     private static final RateLimiter DB_CONNECT_RATE_LIMIT = RateLimiterBuilder.newBuilder()
-            .withRate(10, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
+        .withRate(10, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
@@ -133,9 +134,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * Creates a connection to the underlying containerized database instance.
      *
-     * @param queryString
-     *          query string parameters that should be appended to the JDBC connection URL.
-     *          The '?' character must be included
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
      * @return a Connection
      * @throws SQLException if there is a repeated failure to create the connection
      */
@@ -159,9 +159,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * This should be overridden if the JDBC URL and query string concatenation or URL string
      * construction needs to be different to normal.
      *
-     * @param queryString
-     *          query string parameters that should be appended to the JDBC connection URL.
-     *          The '?' character must be included
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
      * @return a full JDBC URL including queryString
      */
     protected String constructUrlForConnection(String queryString) {
