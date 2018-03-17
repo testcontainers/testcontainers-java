@@ -5,6 +5,7 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
+import com.google.common.base.Preconditions;
 import org.testcontainers.DockerClientFactory;
 
 import java.util.ArrayList;
@@ -54,7 +55,21 @@ public interface ContainerState {
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
      */
-    Integer getMappedPort(int originalPort);
+    default Integer getMappedPort(int originalPort) {
+        Preconditions.checkState(this.getContainerId() != null, "Mapped port can only be obtained after the container is started");
+
+        Ports.Binding[] binding = new Ports.Binding[0];
+        final InspectContainerResponse containerInfo = this.getContainerInfo();
+        if (containerInfo != null) {
+            binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
+        }
+
+        if (binding != null && binding.length > 0 && binding[0] != null) {
+            return Integer.valueOf(binding[0].getHostPortSpec());
+        } else {
+            throw new IllegalArgumentException("Requested port (" + originalPort + ") is not mapped");
+        }
+    }
 
     /**
      * @return the exposed ports

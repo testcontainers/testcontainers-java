@@ -7,6 +7,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.NonNull;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
@@ -148,15 +149,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServiceInstance(Container container) {
         String serviceName = getServiceNameFromContainer(container);
-        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
-            ambassadorContainer, logger(),
-            ambassadorPortMappings.get(serviceName));
+
+        if(ambassadorPortMappings.containsKey(serviceName)) {
+            final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
+                ambassadorContainer, logger(),
+                ambassadorPortMappings.get(serviceName));
+            serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
+        }
 
         if (tailChildContainers) {
-            LogUtils.followOutput(DockerClientFactory.instance().client(), containerInstance.getContainerId(),
+            LogUtils.followOutput(DockerClientFactory.instance().client(), container.getId(),
                 new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
         }
-       serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
     }
 
     private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
@@ -271,7 +275,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
     }
 
-    public SELF withExposedService(String serviceName, int servicePort, WaitStrategy waitStrategy) {
+    public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
 
         String serviceInstanceName = serviceName;
         if (!serviceInstanceName.matches(".*_[0-9]+")) {
@@ -304,11 +308,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
          */
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceInstanceName, __ ->
             (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(startupTimeout));
-
-        if(waitStrategy != null) {
-            waitStrategy.withStartupTimeout(startupTimeout);
-            waitAllStrategy.withStrategy(waitStrategy);
-        }
+        waitStrategy.withStartupTimeout(startupTimeout);
+        waitAllStrategy.withStrategy(waitStrategy);
         return self();
     }
 
@@ -397,7 +398,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     @Override
     public SELF withStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
-        return (SELF) this;
+        return self();
     }
 }
 

@@ -8,10 +8,8 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -822,27 +820,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     public String getIpAddress() {
         return getContainerIpAddress();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Integer getMappedPort(final int originalPort) {
-
-        Preconditions.checkState(containerId != null, "Mapped port can only be obtained after the container is started");
-
-        Ports.Binding[] binding = new Ports.Binding[0];
-        final InspectContainerResponse containerInfo = this.getContainerInfo();
-        if (containerInfo != null) {
-            binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
-        }
-
-        if (binding != null && binding.length > 0 && binding[0] != null) {
-            return Integer.valueOf(binding[0].getHostPortSpec());
-        } else {
-            throw new IllegalArgumentException("Requested port (" + originalPort + ") is not mapped");
-        }
     }
 
     /**

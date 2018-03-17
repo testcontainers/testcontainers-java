@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
@@ -24,22 +25,21 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
     private final GenericContainer proxyContainer;
     @Getter
     private final Logger logger;
-    private Map<Integer, Integer> mappedPorts = new HashMap<>();
+    @NonNull
+    private Map<Integer, Integer> mappedPorts;
     @Getter
     private List<Integer> exposedPorts = new ArrayList<>();
-    private InspectContainerResponse containerInfo;
+    @Getter(lazy=true)
+    private final InspectContainerResponse containerInfo = DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
 
     ComposeServiceWaitStrategyTarget(Container container, GenericContainer proxyContainer,
-                                     Logger logger, Map<Integer, Integer> mappedPorts) {
+                                     Logger logger, @NonNull Map<Integer, Integer> mappedPorts) {
         this.container = container;
 
         this.proxyContainer = proxyContainer;
         this.logger = logger;
-
-        if (mappedPorts != null) {
-            this.mappedPorts.putAll(mappedPorts);
-            this.exposedPorts.addAll(this.mappedPorts.keySet());
-        }
+        this.mappedPorts = new HashMap<>(mappedPorts);
+        this.exposedPorts.addAll(this.mappedPorts.keySet());
     }
 
     /**
@@ -54,15 +54,15 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
      * {@inheritDoc}
      */
     @Override
-    public String getContainerId() {
-        return this.container.getId();
+    public String getContainerIpAddress() {
+        return proxyContainer.getContainerIpAddress();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public InspectContainerResponse getContainerInfo() {
-        if(containerInfo == null) {
-            containerInfo = DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
-        }
-        return containerInfo;
+    public String getContainerId() {
+        return this.container.getId();
     }
 }
