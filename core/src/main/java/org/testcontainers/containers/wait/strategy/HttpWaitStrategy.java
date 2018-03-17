@@ -2,6 +2,7 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
+import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 
@@ -17,6 +18,7 @@ import java.util.function.Predicate;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
+@Slf4j
 public class HttpWaitStrategy extends AbstractWaitStrategy {
 
     /**
@@ -93,15 +95,16 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
     @Override
     protected void waitUntilReady() {
+        final String containerName = waitStrategyTarget.getContainerInfo().getName();
         final Set<Integer> livenessCheckPorts = getLivenessCheckPorts();
         if (livenessCheckPorts == null || livenessCheckPorts.isEmpty()) {
-            logger().warn("No exposed ports or mapped ports - cannot wait for status");
+            log.warn("{}: No exposed ports or mapped ports - cannot wait for status", containerName);
             return;
         }
 
         final Integer livenessCheckPort = livenessCheckPorts.iterator().next();
         final String uri = buildLivenessUri(livenessCheckPort).toString();
-        logger().info("Waiting for {} seconds for URL: {}", startupTimeout.getSeconds(), uri);
+        log.info("{}: Waiting for {} seconds for URL: {}", containerName, startupTimeout.getSeconds(), uri);
 
         // try to connect to the URL
         try {

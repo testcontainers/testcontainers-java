@@ -13,7 +13,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
@@ -47,7 +46,6 @@ public class DockerComposePassthroughTest {
 
         //check other container properties
         assertNotNull("Container id is not null", container.getContainerId());
-        assertThat("Container name", container.getContainerName(), endsWith("alpine_1"));
         assertNotNull("Port mapped", container.getMappedPort(3000));
         assertThat("Exposed Ports", container.getExposedPorts(), hasItem(3000));
 

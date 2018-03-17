@@ -1,10 +1,9 @@
 package org.testcontainers.containers.wait.strategy;
 
-import org.slf4j.Logger;
 import org.testcontainers.containers.ContainerState;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public interface WaitStrategyTarget extends ContainerState {
 
@@ -12,10 +11,9 @@ public interface WaitStrategyTarget extends ContainerState {
      * @return the ports on which to check if the container is ready
      */
     default Set<Integer> getLivenessCheckPortNumbers() {
-        final Set<Integer> result = new HashSet<>(getExposedPortNumbers());
+        final Set<Integer> result = getExposedPorts().stream()
+            .map(this::getMappedPort).distinct().collect(Collectors.toSet());
         result.addAll(getBoundPortNumbers());
         return result;
     }
-
-    Logger getLogger();
 }

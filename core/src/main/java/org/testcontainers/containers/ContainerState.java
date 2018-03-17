@@ -77,15 +77,6 @@ public interface ContainerState {
     List<Integer> getExposedPorts();
 
     /**
-     * @return the container exposed port numbers mapped to ports exposed on the docker host
-     */
-    default List<Integer> getExposedPortNumbers() {
-        return getExposedPorts().stream()
-            .map(this::getMappedPort)
-            .collect(Collectors.toList());
-    }
-
-    /**
      * @return the port bindings
      */
     default List<String> getPortBindings() {
@@ -115,13 +106,6 @@ public interface ContainerState {
      * @return the id of the container
      */
     String getContainerId();
-
-    /**
-     * @return the name of the container
-     */
-    default String getContainerName() {
-        return getContainerInfo().getName();
-    }
 
     /**
      * @return the container info

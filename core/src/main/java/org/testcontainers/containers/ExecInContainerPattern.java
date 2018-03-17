@@ -5,7 +5,7 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import lombok.experimental.UtilityClass;
-import org.slf4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
@@ -19,6 +19,7 @@ import java.nio.charset.Charset;
  * Provides utility methods for executing commands in containers
  */
 @UtilityClass
+@Slf4j
 public class ExecInContainerPattern {
 
     /**
@@ -26,13 +27,12 @@ public class ExecInContainerPattern {
      * the output as UTF8.
      * <p/>
      * @param containerInfo the container info
-     * @param logger the container logger
      * @param command the command to execute
-     * @see #execInContainer(InspectContainerResponse, Charset, Logger, String...)
+     * @see #execInContainer(InspectContainerResponse, Charset, String...)
      */
-    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, Logger logger, String... command)
+    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
-        return execInContainer(containerInfo, Charset.forName("UTF-8"), logger, command);
+        return execInContainer(containerInfo, Charset.forName("UTF-8"), command);
     }
 
     /**
@@ -42,14 +42,13 @@ public class ExecInContainerPattern {
      * the time of writing, CircleCI was using this driver.
      * @param containerInfo the container info
      * @param outputCharset the character set used to interpret the output.
-     * @param logger the container logger
      * @param command the parts of the command to run
      * @return the result of execution
      * @throws IOException if there's an issue communicating with Docker
      * @throws InterruptedException if the thread waiting for the response is interrupted
      * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
      */
-    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, Charset outputCharset, Logger logger, String... command)
+    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, Charset outputCharset, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
         if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
             // at time of writing, this is the expected result in CircleCI.
@@ -63,6 +62,7 @@ public class ExecInContainerPattern {
         }
 
         String containerId = containerInfo.getId();
+        String containerName = containerInfo.getName();
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
@@ -70,7 +70,7 @@ public class ExecInContainerPattern {
             .execCreateCmd(containerId)
             .withCmd(command);
 
-        logger.debug("Running \"exec\" command: " + String.join(" ", command));
+        log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
         final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
             .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
 
@@ -87,8 +87,8 @@ public class ExecInContainerPattern {
             stdoutConsumer.toString(outputCharset),
             stderrConsumer.toString(outputCharset));
 
-        logger.trace("stdout: " + result.getStdout());
-        logger.trace("stderr: " + result.getStderr());
+        log.trace("{}: stdout: {}", containerName, result.getStdout());
+        log.trace("{}: stderr: {}", containerName, result.getStderr());
         return result;
     }
 

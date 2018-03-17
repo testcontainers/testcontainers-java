@@ -11,7 +11,6 @@ import lombok.NonNull;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
-import org.rnorth.ducttape.timeouts.Timeouts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -51,8 +50,7 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource
-    implements StartupTimeout<SELF> {
+public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource {
 
     /**
      * Random identifier which will become part of spawned containers names, so we can shut them down
@@ -66,7 +64,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private boolean localCompose;
     private boolean pull = true;
     private boolean tailChildContainers;
-    private Duration startupTimeout = Duration.ofSeconds(60);
 
     private String project;
 
@@ -143,24 +140,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void waitUntilServiceStarted() {
         listChildContainers().forEach(this::createServiceInstance);
-        Timeouts.doWithTimeout((int) startupTimeout.getSeconds(), TimeUnit.SECONDS,
-            () -> serviceInstanceMap.forEach(this::waitUntilServiceStarted));
+        serviceInstanceMap.forEach(this::waitUntilServiceStarted);
     }
 
     private void createServiceInstance(Container container) {
         String serviceName = getServiceNameFromContainer(container);
-
-        if(ambassadorPortMappings.containsKey(serviceName)) {
-            final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
-                ambassadorContainer, logger(),
-                ambassadorPortMappings.get(serviceName));
-            serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
-        }
+        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
+            ambassadorContainer, ambassadorPortMappings.getOrDefault(serviceName, new HashMap<>()));
 
         if (tailChildContainers) {
-            LogUtils.followOutput(DockerClientFactory.instance().client(), container.getId(),
+            LogUtils.followOutput(DockerClientFactory.instance().client(), containerInstance.getContainerId(),
                 new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
         }
+       serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
     }
 
     private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
@@ -277,10 +269,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
 
-        String serviceInstanceName = serviceName;
-        if (!serviceInstanceName.matches(".*_[0-9]+")) {
-            serviceInstanceName += "_1"; // implicit first instance of this service
-        }
+        String serviceInstanceName = getServiceInstanceName(serviceName);
 
         /*
          * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
@@ -301,15 +290,40 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         ambassadorPortMappings.computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>()).put(servicePort, ambassadorPort);
         ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
         ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
+        addWaitStrategy(serviceInstanceName, waitStrategy);
+        return self();
+    }
 
-        /*
-         * can have multiple wait strategies for a single container, e.g. if waiting on several ports
-         * if no wait strategy is defined, the WaitAllStrategy will return immediately
-         */
+    private String getServiceInstanceName(String serviceName) {
+        String serviceInstanceName = serviceName;
+        if (!serviceInstanceName.matches(".*_[0-9]+")) {
+            serviceInstanceName += "_1"; // implicit first instance of this service
+        }
+        return serviceInstanceName;
+    }
+
+    /*
+     * can have multiple wait strategies for a single container, e.g. if waiting on several ports
+     * if no wait strategy is defined, the WaitAllStrategy will return immediately.
+     * The WaitAllStrategy uses an long timeout, because timeouts should be handled by the inner strategies.
+     */
+    private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceInstanceName, __ ->
-            (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(startupTimeout));
-        waitStrategy.withStartupTimeout(startupTimeout);
+            (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(Duration.ofMinutes(30)));
         waitAllStrategy.withStrategy(waitStrategy);
+    }
+
+    /**
+     Specify the {@link WaitStrategy} to use to determine if the container is ready.
+     *
+     * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
+     * @param serviceName the name of the service to wait for
+     * @param waitStrategy the WaitStrategy to use
+     * @return this
+     */
+    public SELF waitingFor(String serviceName, @NonNull WaitStrategy waitStrategy) {
+        String serviceInstanceName = getServiceInstanceName(serviceName);
+        addWaitStrategy(serviceInstanceName, waitStrategy);
         return self();
     }
 
@@ -393,12 +407,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private String randomProjectId() {
         return identifier + Base58.randomString(6).toLowerCase();
-    }
-
-    @Override
-    public SELF withStartupTimeout(Duration startupTimeout) {
-        this.startupTimeout = startupTimeout;
-        return self();
     }
 }
 

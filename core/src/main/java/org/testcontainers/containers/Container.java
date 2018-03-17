@@ -32,11 +32,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
         return (SELF) this;
     }
 
-    @Override
-    default String getContainerName() {
-        return ContainerState.super.getContainerName();
-    }
-
     /**
      * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
      * docker API, there's no easy way to get the result code from the process we ran.
@@ -394,7 +389,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, org.slf4j.Logger, String...)
+     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
      */
     ExecResult execInContainer(String... command)
             throws UnsupportedOperationException, IOException, InterruptedException;
@@ -402,7 +397,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Run a command inside a running container, as though using "docker exec".
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, org.slf4j.Logger, String...)
+     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
      */
     ExecResult execInContainer(Charset outputCharset, String... command)
                     throws UnsupportedOperationException, IOException, InterruptedException;

@@ -11,7 +11,11 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.base.Strings;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Setter;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -305,14 +309,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     protected Logger logger() {
         return DockerLoggerFactory.getLogger(this.getDockerImageName());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Logger getLogger() {
-        return this.logger();
     }
 
     /**
@@ -951,7 +947,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public ExecResult execInContainer(Charset outputCharset, String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
-        return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, getLogger(), command);
+        return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, command);
     }
 
     /**

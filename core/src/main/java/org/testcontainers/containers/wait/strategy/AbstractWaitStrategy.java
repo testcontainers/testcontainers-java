@@ -3,7 +3,6 @@ package org.testcontainers.containers.wait.strategy;
 import lombok.NonNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.Set;
@@ -48,10 +47,6 @@ public abstract class AbstractWaitStrategy implements WaitStrategy {
     public WaitStrategy withStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
         return this;
-    }
-
-    protected Logger logger() {
-        return waitStrategyTarget.getLogger();
     }
 
     /**

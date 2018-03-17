@@ -55,15 +55,11 @@ String redisUrl = environment.getServiceHost("redis_1", REDIS_PORT)
 ```
 
 ## Startup timeout
-Ordinarily, Testcontainers waits for up to 60 seconds for all the exposed service ports to start listening.
+Ordinarily Testcontainers will wait for up to 60 seconds for each exposed container's first mapped network port to start listening.
 
 This simple measure provides a basic check whether a container is ready for use.
 
-If the default 60s timeout is not sufficient, it can be altered with the `withStartupTimeout()` method.
-The timeout specified by `withStartupTimeout()` applies to all docker-compose containers.
-
 There are overloaded `withExposedService` methods that take a `WaitStrategy` so you can specify a timeout strategy per container.
-
 
 ### Waiting for startup examples
 
@@ -101,6 +97,17 @@ public static DockerComposeContainer environment =
                     .usingTls());
 ```
 
+Alternatively, you can use `waitingFor(serviceName, waitStrategy)`, 
+for example if you need to wait on a log message from a service, but don't need to expose a port.
+
+```java
+@ClassRule
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withStartupTimeout(Duration.ofSeconds(30))
+            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
+            .waitingFor("db_1", Wait.forLogMessage("started", 1));
+```
 
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 

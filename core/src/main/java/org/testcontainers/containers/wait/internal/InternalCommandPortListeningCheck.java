@@ -37,7 +37,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
         for (String[] command : commands) {
             try {
-                if (ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), waitStrategyTarget.getLogger(), command).getStdout().contains(SUCCESS_MARKER)) {
+                if (ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), command).getStdout().contains(SUCCESS_MARKER)) {
                     return;
                 }
             } catch (Exception e) {
