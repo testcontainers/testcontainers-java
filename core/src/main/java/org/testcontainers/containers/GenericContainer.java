@@ -76,7 +76,6 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  * Base class for that allows a container to be launched and controlled.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
@@ -139,6 +138,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private String workingDirectory = null;
 
+    protected final Set<Startable> dependencies = new HashSet<>();
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -193,11 +194,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = image;
     }
 
+    public SELF dependsOn(Startable... startables) {
+        Collections.addAll(dependencies, startables);
+        return self();
+    }
+
     /**
      * Starts the container using docker, pulling an image if necessary.
      */
     @Override
     public void start() {
+        if (containerId != null) {
+            return;
+        }
+
         Profiler profiler = new Profiler("Container startup");
         profiler.setLogger(logger());
 
@@ -297,15 +307,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             return;
         }
 
-        String imageName;
-
         try {
-            imageName = image.get();
-        } catch (Exception e) {
-            imageName = "<unknown>";
-        }
+            String imageName;
 
-        ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            try {
+                imageName = image.get();
+            } catch (Exception e) {
+                imageName = "<unknown>";
+            }
+
+            ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+        } finally {
+            containerId = null;
+            containerInfo = null;
+        }
     }
 
     /**
@@ -1032,6 +1047,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
         createContainerCmdModifiers.add(modifier);
         return self();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
     }
 
     /**

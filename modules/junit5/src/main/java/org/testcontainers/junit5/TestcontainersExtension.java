@@ -3,6 +3,7 @@ package org.testcontainers.junit5;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
@@ -11,7 +12,7 @@ import java.util.*;
 @Slf4j
 public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
-    private static final Map<Startable, Boolean> singletons = new HashMap<>();
+    private static final Set<Startable> SINGLETONS = new HashSet<>();
 
     private final List<Startable> perClassContainers = new ArrayList<>();
 
@@ -21,65 +22,33 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
 
     private volatile boolean beforeEachHappened = false;
 
-    protected void startSingletons() {
-        singletons.replaceAll((container, started) -> {
-            if (!started) {
-                container.start();
-            }
-
-            return true;
-        });
-    }
-
     @Override
-    public void beforeAll(ExtensionContext context) {
+    public void beforeAll(ExtensionContext context) throws Exception {
         beforeAllHappened = true;
-        startSingletons();
 
-        for (Startable perClassContainer : perClassContainers) {
-            if (perClassContainer instanceof TestLifecycleAware) {
-                ((TestLifecycleAware) perClassContainer).beforeTestBlock(toDescription(context));
-            }
-            perClassContainer.start();
-        }
+        Startables.deepStart(SINGLETONS).get();
+        start(toDescription(context), perClassContainers);
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeEach(ExtensionContext context) throws Exception {
         beforeEachHappened = true;
         if (!beforeAllHappened && !perClassContainers.isEmpty()) {
             throw new IllegalStateException("You have per-class containers defined but TestcontainersExtension is not static");
         }
 
-        startSingletons();
-
-        for (Startable perTestContainer : perTestContainers) {
-            if (perTestContainer instanceof TestLifecycleAware) {
-                ((TestLifecycleAware) perTestContainer).beforeTestBlock(toDescription(context));
-            }
-            perTestContainer.start();
-        }
+        start(toDescription(context), perTestContainers);
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
-        for (Startable perTestContainer : perTestContainers) {
-            if (perTestContainer instanceof TestLifecycleAware) {
-                ((TestLifecycleAware) perTestContainer).afterTestBlock(toDescription(context), context.getExecutionException());
-            }
-            perTestContainer.close();
-        }
+        stop(toDescription(context), context.getExecutionException(), perTestContainers);
         perTestContainers.clear();
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        for (Startable perClassContainer : perClassContainers) {
-            if (perClassContainer instanceof TestLifecycleAware) {
-                ((TestLifecycleAware) perClassContainer).afterTestBlock(toDescription(context), context.getExecutionException());
-            }
-            perClassContainer.close();
-        }
+        stop(toDescription(context), context.getExecutionException(), perClassContainers);
     }
 
     public <T extends Startable> T singleton(T container) {
@@ -87,7 +56,7 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
             throw new IllegalStateException("beforeEach() already happened! Did you forget to use static?");
         }
 
-        singletons.put(container, false);
+        SINGLETONS.add(container);
         return container;
     }
 
@@ -103,6 +72,25 @@ public class TestcontainersExtension implements BeforeAllCallback, AfterAllCallb
     public <T extends Startable> T perTest(T container) {
         perTestContainers.add(container);
         return container;
+    }
+
+    protected void start(TestDescription description, Collection<Startable> startables) throws Exception {
+        for (Startable startable : startables) {
+            if (startable instanceof TestLifecycleAware) {
+                ((TestLifecycleAware) startable).beforeTestBlock(description);
+            }
+        }
+
+        Startables.deepStart(startables).get();
+    }
+
+    protected void stop(TestDescription description, Optional<Throwable> throwable, Collection<Startable> startables) {
+        startables.parallelStream().forEach(it -> {
+            if (it instanceof TestLifecycleAware) {
+                ((TestLifecycleAware) it).afterTestBlock(description, throwable);
+            }
+            it.stop();
+        });
     }
 
     public static TestDescription toDescription(ExtensionContext context) {
