@@ -27,19 +27,21 @@ In part, because it's light and quick to run. Also, please see the [reasons give
 
 ## Dependency information
 
+Replace `VERSION` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
+
 ### Maven
 
 ```
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>dynalite</artifactId>
-    <version>1.4.3</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```
-compile group: 'org.testcontainers', name: 'dynalite', version: '1.4.3'
+compile group: 'org.testcontainers', name: 'dynalite', version: 'VERSION'
 ```
 
