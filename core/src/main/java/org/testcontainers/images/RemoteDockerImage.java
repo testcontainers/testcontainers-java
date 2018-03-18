@@ -14,14 +14,15 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    public static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
+    public static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
 
     private DockerImageName imageName;
 
@@ -50,8 +51,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
             DockerClientException lastException = null;
             while (true) {
                 // Does our cache already know the image?
-                if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName.toString())) {
-                    logger.trace("{} is already in image name cache", imageName.toString());
+                if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
+                    logger.trace("{} is already in image name cache", imageName);
                     break;
                 }
 
@@ -63,27 +64,28 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 }
 
                 List<Image> updatedImages = listImagesCmd.exec();
-                for (Image image : updatedImages) {
-                    if (image.getRepoTags() != null) {
-                        Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
-                    }
-                }
+                updatedImages.stream()
+                    .map(Image::getRepoTags)
+                    .filter(Objects::nonNull)
+                    .flatMap(Stream::of)
+                    .map(DockerImageName::new)
+                    .forEach(AVAILABLE_IMAGE_NAME_CACHE::add);
 
                 // And now?
-                if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName.toString())) {
-                    logger.trace("{} is in image name cache following listing of images", imageName.toString());
+                if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
+                    logger.trace("{} is in image name cache following listing of images", imageName);
                     break;
                 }
 
                 // Log only on first attempt
                 if (attempts == 0) {
-                    logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName.toString());
+                    logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
                     profiler.start("Pull image");
                 }
 
                 if (attempts++ >= 3) {
-                    logger.error("Retry limit reached while trying to pull image: {}. Please check output of `docker pull {}`", imageName.toString(), imageName.toString());
-                    throw new ContainerFetchException("Retry limit reached while trying to pull image: " + imageName.toString(), lastException);
+                    logger.error("Retry limit reached while trying to pull image: {}. Please check output of `docker pull {}`", imageName, imageName);
+                    throw new ContainerFetchException("Retry limit reached while trying to pull image: " + imageName, lastException);
                 }
 
                 // The image is not available locally - pull it
@@ -94,7 +96,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         .withTag(imageName.getVersionPart())
                         .exec(callback);
                     callback.awaitSuccess();
-                    AVAILABLE_IMAGE_NAME_CACHE.add(imageName.toString());
+                    AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
                     break;
                 } catch (DockerClientException e) {
                     lastException = e;
@@ -103,7 +105,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             return imageName.toString();
         } catch (DockerClientException e) {
-            throw new ContainerFetchException("Failed to get Docker client for " + imageName.toString(), e);
+            throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
         } finally {
             profiler.stop().log();
         }

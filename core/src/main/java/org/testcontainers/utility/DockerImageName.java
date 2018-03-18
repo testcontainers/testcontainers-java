@@ -2,14 +2,19 @@ package org.testcontainers.utility;
 
 
 import com.google.common.net.HostAndPort;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import java.util.regex.Pattern;
+
+@EqualsAndHashCode
 public final class DockerImageName {
 
     /* Regex patterns used for validation */
     private static final String ALPHA_NUMERIC = "[a-z0-9]+";
     private static final String SEPARATOR = "([\\.]{1}|_{1,2}|-+)";
     private static final String REPO_NAME_PART = ALPHA_NUMERIC + "(" + SEPARATOR + ALPHA_NUMERIC + ")*";
-    private static final String REPO_NAME = REPO_NAME_PART + "(/" + REPO_NAME_PART + ")*";
+    private static final Pattern REPO_NAME = Pattern.compile(REPO_NAME_PART + "(/" + REPO_NAME_PART + ")*");
 
     private final String rawName;
     private final String registry;
@@ -99,7 +104,7 @@ public final class DockerImageName {
      */
     public void assertValid() {
         HostAndPort.fromString(registry);
-        if (!repo.matches(REPO_NAME)) {
+        if (!REPO_NAME.matcher(repo).matches()) {
             throw new IllegalArgumentException(repo + " is not a valid Docker image name (in " + rawName + ")");
         }
         if (versioning == null) {
@@ -113,10 +118,10 @@ public final class DockerImageName {
 
     private interface Versioning {
         boolean isValid();
-
         String getSeparator();
     }
 
+    @Data
     private static class TagVersioning implements Versioning {
         public static final String TAG_REGEX = "[\\w][\\w\\.\\-]{0,127}";
         private final String tag;
@@ -141,6 +146,7 @@ public final class DockerImageName {
         }
     }
 
+    @Data
     private class Sha256Versioning implements Versioning {
         public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
         private final String hash;
