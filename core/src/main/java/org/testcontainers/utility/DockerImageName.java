@@ -25,7 +25,7 @@ public final class DockerImageName {
             (!name.substring(0, slashIndex).contains(".") &&
                 !name.substring(0, slashIndex).contains(":") &&
                 !name.substring(0, slashIndex).equals("localhost"))) {
-            registry = null;
+            registry = "";
             remoteName = name;
         } else {
             registry = name.substring(0, slashIndex);
@@ -53,7 +53,7 @@ public final class DockerImageName {
             (!name.substring(0, slashIndex).contains(".") &&
                 !name.substring(0, slashIndex).contains(":") &&
                 !name.substring(0, slashIndex).equals("localhost"))) {
-            registry = null;
+            registry = "";
             remoteName = name;
         } else {
             registry = name.substring(0, slashIndex - 1);
@@ -73,7 +73,7 @@ public final class DockerImageName {
      * @return the unversioned (non 'tag') part of this name
      */
     public String getUnversionedPart() {
-        if (registry != null) {
+        if (!"".equals(registry)) {
             return registry + "/" + repo;
         } else {
             return repo;
