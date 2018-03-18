@@ -118,6 +118,7 @@ public final class DockerImageName {
     }
 
     private static class TagVersioning implements Versioning {
+        public static final String TAG_REGEX = "[\\w][\\w\\.\\-]{0,127}";
         private final String tag;
 
         TagVersioning(String tag) {
@@ -126,7 +127,7 @@ public final class DockerImageName {
 
         @Override
         public boolean isValid() {
-            return tag.matches("[\\w][\\w\\.\\-]{0,127}");
+            return tag.matches(TAG_REGEX);
         }
 
         @Override
@@ -141,6 +142,7 @@ public final class DockerImageName {
     }
 
     private class Sha256Versioning implements Versioning {
+        public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
         private final String hash;
 
         Sha256Versioning(String hash) {
@@ -149,7 +151,7 @@ public final class DockerImageName {
 
         @Override
         public boolean isValid() {
-            return hash.matches("[0-9a-fA-F]{32,}");
+            return hash.matches(HASH_REGEX);
         }
 
         @Override
