@@ -111,4 +111,11 @@ public class RemoteDockerImage extends LazyFuture<String> {
             profiler.stop().log();
         }
     }
+
+    @Override
+    public String toString() {
+        return "RemoteDockerImage{" +
+            "imageName=" + imageName +
+            '}';
+    }
 }
