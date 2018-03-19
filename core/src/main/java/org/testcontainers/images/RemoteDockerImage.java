@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RemoteDockerImage extends LazyFuture<String> {
@@ -69,7 +70,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                     .filter(Objects::nonNull)
                     .flatMap(Stream::of)
                     .map(DockerImageName::new)
-                    .forEach(AVAILABLE_IMAGE_NAME_CACHE::add);
+                    .collect(Collectors.toCollection(() -> AVAILABLE_IMAGE_NAME_CACHE));
 
                 // And now?
                 if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
