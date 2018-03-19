@@ -1,15 +1,11 @@
-package org.testcontainers.containers.wait;
+package org.testcontainers.containers.wait.strategy;
 
 import java.net.HttpURLConnection;
 
 /**
  * Convenience class with logic for building common {@link WaitStrategy} instances.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
- *
- * @deprecated Use {@link org.testcontainers.containers.wait.strategy.Wait}
  */
-@Deprecated
 public class Wait {
     /**
      * Convenience method to return the default WaitStrategy.

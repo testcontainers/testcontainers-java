@@ -54,6 +54,61 @@ String redisUrl = environment.getServiceHost("redis_1", REDIS_PORT)
                   environment.getServicePort("redis_1", REDIS_PORT);
 ```
 
+## Startup timeout
+Ordinarily Testcontainers will wait for up to 60 seconds for each exposed container's first mapped network port to start listening.
+
+This simple measure provides a basic check whether a container is ready for use.
+
+There are overloaded `withExposedService` methods that take a `WaitStrategy` so you can specify a timeout strategy per container.
+
+### Waiting for startup examples
+
+Waiting for exposed port to start listening:
+```java
+@ClassRule
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withStartupTimeout(Duration.ofSeconds(30))
+            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort());
+```
+
+Wait for arbitrary status code on an HTTPS endpoint:
+```java
+@ClassRule
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withStartupTimeout(Duration.ofSeconds(30))
+            .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
+                Wait.forHttp("/all")
+                    .forStatusCode(301)
+                    .usingTls());
+```
+
+Separate wait strategies for each container:
+```java
+@ClassRule
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withStartupTimeout(Duration.ofSeconds(30))
+            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
+            .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
+                Wait.forHttp("/all")
+                    .forStatusCode(301)
+                    .usingTls());
+```
+
+Alternatively, you can use `waitingFor(serviceName, waitStrategy)`, 
+for example if you need to wait on a log message from a service, but don't need to expose a port.
+
+```java
+@ClassRule
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withStartupTimeout(Duration.ofSeconds(30))
+            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
+            .waitingFor("db_1", Wait.forLogMessage("started", 1));
+```
+
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
 By default, those setting are located in `$HOME/.docker/config.json`. 

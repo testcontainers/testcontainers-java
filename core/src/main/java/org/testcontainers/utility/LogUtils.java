@@ -35,4 +35,8 @@ public class LogUtils {
 
         cmd.exec(callback);
     }
+
+    public void followOutput(DockerClient dockerClient, String containerId, Consumer<OutputFrame> consumer) {
+        followOutput(dockerClient, containerId, consumer, STDOUT, STDERR);
+    }
 }
