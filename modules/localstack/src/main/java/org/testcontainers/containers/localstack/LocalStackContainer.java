@@ -45,9 +45,9 @@ public class LocalStackContainer extends ExternalResource {
                 .map(Service::getPort)
                 .collect(Collectors.toSet()).toArray(new Integer[]{});
 
-        delegate = new GenericContainer("atlassianlabs/localstack:0.6.0")
+        delegate = new GenericContainer("localstack/localstack:0.8.5")
                        .withExposedPorts(portsList)
-                       .withFileSystemBind("/var/run/docker.sock", "/var/run/docker.sock", READ_WRITE)
+                       .withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock", READ_WRITE)
                        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"))
                        .withEnv("SERVICES", servicesList);
 
