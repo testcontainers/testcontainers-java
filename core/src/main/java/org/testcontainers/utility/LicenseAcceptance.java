@@ -11,7 +11,7 @@ import java.util.List;
  * Utility class to ensure that licenses have been accepted by the developer.
  */
 @UtilityClass
-public class LicenceAcceptance {
+public class LicenseAcceptance {
 
     private static final String ACCEPTANCE_FILE_NAME = "container-license-acceptance.txt";
 

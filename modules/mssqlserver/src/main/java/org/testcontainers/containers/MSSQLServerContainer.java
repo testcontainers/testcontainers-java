@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.utility.LicenceAcceptance;
+import org.testcontainers.utility.LicenseAcceptance;
 
 /**
  * @author Stefan Hufschmidt
@@ -14,7 +14,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     public MSSQLServerContainer() {
         this(IMAGE + ":latest");
-        LicenceAcceptance.assertLicenseAccepted(IMAGE);
+        LicenseAcceptance.assertLicenseAccepted(IMAGE);
     }
 
     public MSSQLServerContainer(final String dockerImageName) {
