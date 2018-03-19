@@ -25,7 +25,7 @@ public class ExecInContainerPattern {
     /**
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
-     * <p/>
+     * <p></p>
      * @param containerInfo the container info
      * @param command the command to execute
      * @see #execInContainer(InspectContainerResponse, Charset, String...)
