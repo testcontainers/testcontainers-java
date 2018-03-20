@@ -404,7 +404,8 @@ public class GenericContainerRuleTest {
 
     @Test
     public void restartShouldKeepTheSameContainerButUpdateStartedTime() {
-        GenericContainer alpineContainer = new GenericContainer("alpine:3.2");
+        GenericContainer alpineContainer = new GenericContainer("alpine:3.2")
+            .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
         alpineContainer.start();
 
         String initialContainerId = alpineContainer.getContainerId();

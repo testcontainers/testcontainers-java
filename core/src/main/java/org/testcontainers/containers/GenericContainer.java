@@ -232,10 +232,25 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             profiler.start("Restarting running container");
             logger().debug("Restarting container: {}", getDockerImageName());
+
+            AtomicInteger attempt = new AtomicInteger(0);
+            Unreliables.retryUntilSuccess(startupAttempts, () -> {
+                logger().debug("Trying to restart container: {} (attempt {}/{})", image.get(),
+                    attempt.incrementAndGet(), startupAttempts);
+                tryRestart(profiler.startNested("Container restart attempt"));
+                return true;
+            });
+        } finally {
+            profiler.stop().log();
+        }
+    }
+
+    private void tryRestart(Profiler profiler) {
+        try {
             tryStop(profiler);
             tryStart(profiler);
         } finally {
-            profiler.stop().log();
+            profiler.stop();
         }
     }
 
