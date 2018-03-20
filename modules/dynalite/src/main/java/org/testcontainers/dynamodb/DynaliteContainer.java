@@ -21,7 +21,7 @@ public class DynaliteContainer extends ExternalResource {
     private final GenericContainer delegate;
 
     public DynaliteContainer() {
-        this("richnorth/dynalite:v1.2.1-1");
+        this("quay.io/testcontainers/dynalite:v1.2.1-1");
     }
 
     public DynaliteContainer(String imageName) {
