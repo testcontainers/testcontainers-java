@@ -206,10 +206,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
                 logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
-                tryStart(profiler.startNested("Container startup attempt"));
+                tryRun(profiler.startNested("Container startup attempt"));
                 return true;
             });
-
         } catch (Exception e) {
             throw new ContainerLaunchException("Container startup failed", e);
         } finally {
@@ -217,9 +216,50 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
-    private void tryStart(Profiler profiler) {
+    /**
+     * Restarts a running container.
+     *
+     * @throws ContainerNotStartedException if {@link #start()} hasn't been called first
+     */
+    public void restart() {
+        Profiler profiler = new Profiler("Container restart");
+        profiler.setLogger(logger());
+
+        if (null == containerId) {
+            throw new ContainerNotStartedException("The container is not started: run start() first");
+        }
+
         try {
-            String dockerImageName = image.get();
+            profiler.start("Restarting running container");
+            logger().debug("Restarting container: {}", getDockerImageName());
+            tryStop(profiler);
+            tryStart(profiler);
+        } finally {
+            profiler.stop().log();
+        }
+    }
+
+    private void tryRun(Profiler profiler) {
+        try {
+            tryCreate(profiler);
+            tryStart(profiler);
+        } finally {
+            profiler.stop();
+        }
+    }
+
+    private void tryStop(Profiler profiler) {
+        tryWithErrorHandling(() -> {
+            String dockerImageName = getDockerImageName();
+            logger().debug("Stopping container: {}", dockerImageName);
+            profiler.start("Stopping container");
+            dockerClient.stopContainerCmd(containerId).exec();
+        });
+    }
+
+    private void tryCreate(Profiler profiler) {
+        tryWithErrorHandling(() -> {
+            String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
@@ -228,7 +268,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             applyConfiguration(createCommand);
 
             containerId = createCommand.exec().getId();
+        });
+    }
 
+    private void tryStart(Profiler profiler) {
+        tryWithErrorHandling(() -> {
+            String dockerImageName = getDockerImageName();
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
             dockerClient.startContainerCmd(containerId).exec();
@@ -259,8 +304,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Container {} started", dockerImageName);
             containerIsStarted(containerInfo);
+        });
+    }
+
+    /**
+     * The command functional interface
+     */
+    @FunctionalInterface
+    private interface Command {
+        void execute();
+    }
+
+    private void tryWithErrorHandling(Command command) {
+        try {
+            command.execute();
         } catch (Exception e) {
-            logger().error("Could not start container", e);
+            logger().error("Could not perform command", e);
 
             // Log output if startup failed, either due to a container failure or exception (including timeout)
             logger().error("Container log output (if any) will follow:");
@@ -277,8 +336,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
-        } finally {
-            profiler.stop();
         }
     }
 
@@ -946,7 +1003,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public ExecResult execInContainer(Charset outputCharset, String... command)
-            throws UnsupportedOperationException, IOException, InterruptedException {
+        throws UnsupportedOperationException, IOException, InterruptedException {
         return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, command);
     }
 

@@ -13,6 +13,7 @@ import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.ContainerNotStartedException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.MountableFile;
@@ -341,7 +342,7 @@ public class GenericContainerRuleTest {
 
         try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
                     .withCommand("top")){
-            
+
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
@@ -399,5 +400,27 @@ public class GenericContainerRuleTest {
         assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
         assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
         assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
+    public void restartShouldKeepTheSameContainerButUpdateStartedTime() {
+        GenericContainer alpineContainer = new GenericContainer("alpine:3.2");
+        alpineContainer.start();
+
+        String initialContainerId = alpineContainer.getContainerId();
+        String startedAt = alpineContainer.getContainerInfo().getState().getStartedAt();
+
+        alpineContainer.restart();
+
+        assertEquals("The container ids do not match", initialContainerId, alpineContainer.getContainerId());
+        assertNotEquals("The started at date string is equal", startedAt,
+            alpineContainer.getContainerInfo().getState().getStartedAt());
+    }
+
+    @Test(expected = ContainerNotStartedException.class)
+    public void restartShouldThrowContainerNotStartedExceptionIfContainerIsNotRunning() {
+        GenericContainer alpineContainer = new GenericContainer("alpine:3.2");
+
+        alpineContainer.restart();
     }
 }
