@@ -147,7 +147,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
         try {
-            return Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () ->
+            return Unreliables.retryUntilSuccess(getConnectTimeoutSeconds(), TimeUnit.SECONDS, () ->
                 DB_CONNECT_RATE_LIMIT.getWhenReady(() ->
                     jdbcDriverInstance.connect(url, info)));
         } catch (Exception e) {
@@ -190,6 +190,13 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return startup time to allow, including image pull time, in seconds
      */
     protected int getStartupTimeoutSeconds() {
+        return 120;
+    }
+
+    /**
+     * @return time to allow for the database to start and establish an initial connection, in seconds
+     */
+    protected int getConnectTimeoutSeconds() {
         return 120;
     }
 }
