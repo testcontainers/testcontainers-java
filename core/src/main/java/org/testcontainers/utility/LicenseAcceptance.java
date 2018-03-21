@@ -20,7 +20,7 @@ public class LicenseAcceptance {
             final URL url = Resources.getResource(ACCEPTANCE_FILE_NAME);
             final List<String> acceptedLicences = Resources.readLines(url, Charsets.UTF_8);
 
-            if (acceptedLicences.stream().anyMatch(imageName::equals)) {
+            if (acceptedLicences.stream().map(String::trim).anyMatch(imageName::equals)) {
                 return;
             }
         } catch (Exception ignored) {

@@ -14,7 +14,6 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     public MSSQLServerContainer() {
         this(IMAGE + ":latest");
-        LicenseAcceptance.assertLicenseAccepted(IMAGE);
     }
 
     public MSSQLServerContainer(final String dockerImageName) {
@@ -28,9 +27,11 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     protected void configure() {
-
         addExposedPort(MS_SQL_SERVER_PORT);
+
+        LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
         addEnv("ACCEPT_EULA", "Y");
+
         addEnv("SA_PASSWORD", password);
     }
 

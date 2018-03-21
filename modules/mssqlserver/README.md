@@ -19,6 +19,8 @@ public class SomeTest {
         ... create a connection and run test as normal
 ```
 
+> *Note:* Due to licencing restrictions you are required to accept an EULA for this container image. To indicate that you accept the MS SQL Server image EULA, Please place a file at the root of the classpath named `container-license-acceptance.txt`, e.g. at `src/test/resources/container-license-acceptance.txt`. This file should contain the line: `microsoft/mssql-server-linux:latest`
+
 ## Dependency information
 
 Replace `VERSION` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).

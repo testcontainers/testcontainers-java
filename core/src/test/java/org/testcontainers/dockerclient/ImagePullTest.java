@@ -31,7 +31,8 @@ public class ImagePullTest {
 
     @Test
     public void test() {
-        try (final GenericContainer __ = new GenericContainer<>(image)) {
+        try (final GenericContainer container = new GenericContainer<>(image)) {
+            container.start();
             // do nothing other than start and stop
         }
     }

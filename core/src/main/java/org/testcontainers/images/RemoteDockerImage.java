@@ -6,6 +6,7 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@ToString
 public class RemoteDockerImage extends LazyFuture<String> {
 
     public static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
@@ -110,12 +112,5 @@ public class RemoteDockerImage extends LazyFuture<String> {
         } finally {
             profiler.stop().log();
         }
-    }
-
-    @Override
-    public String toString() {
-        return "RemoteDockerImage{" +
-            "imageName=" + imageName +
-            '}';
     }
 }
