@@ -15,10 +15,24 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
-  modules:
+  modules-no-jdbc-test-no-selenium:
     steps:
       - checkout
-      - run: ./gradlew check -x testcontainers:check -x selenium:check
+      - run: ./gradlew check -x testcontainers:check -x selenium:check -x modules:jdbc-test
+        environment:
+          TZ: "/usr/share/zoneinfo/ETC/UTC"
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+  modules-jdbc-test:
+    steps:
+      - checkout
+      - run: ./gradlew jdbc-test:check
         environment:
           TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
@@ -49,5 +63,6 @@ workflows:
   test_all:
     jobs:
       - core
-      - modules
+      - modules-no-jdbc-test-no-selenium
+      - modules-jdbc-test
       - selenium
