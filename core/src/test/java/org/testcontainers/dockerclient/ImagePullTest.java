@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 @RunWith(Parameterized.class)
 public class ImagePullTest {
@@ -31,7 +32,8 @@ public class ImagePullTest {
 
     @Test
     public void test() {
-        try (final GenericContainer container = new GenericContainer<>(image)) {
+        try (final GenericContainer container = new GenericContainer<>(image).withStartupCheckStrategy(
+            new OneShotStartupCheckStrategy())) {
             container.start();
             // do nothing other than start and stop
         }
