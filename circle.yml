@@ -5,6 +5,8 @@ jobs:
     steps:
       - checkout
       - run: ./gradlew testcontainers:check
+        environment:
+          TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
@@ -17,6 +19,8 @@ jobs:
     steps:
       - checkout
       - run: ./gradlew check -x testcontainers:check -x selenium:check
+        environment:
+          TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
@@ -29,6 +33,8 @@ jobs:
     steps:
       - checkout
       - run: ./gradlew selenium:check
+        environment:
+          TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
