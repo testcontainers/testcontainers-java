@@ -20,7 +20,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: ./gradlew check -x testcontainers:check -x selenium:check -x modules:jdbc-test
+          command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check
           environment:
             TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
