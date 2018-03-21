@@ -1,1 +1,1 @@
-microsoft/mssql-server-linux
+microsoft/mssql-server-linux:latest
