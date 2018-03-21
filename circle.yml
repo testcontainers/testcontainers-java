@@ -4,9 +4,10 @@ jobs:
   core:
     steps:
       - checkout
-      - run: ./gradlew testcontainers:check
-        environment:
-          TZ: "/usr/share/zoneinfo/ETC/UTC"
+      - run:
+          command: ./gradlew testcontainers:check
+          environment:
+            TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
@@ -18,9 +19,10 @@ jobs:
   modules-no-jdbc-test-no-selenium:
     steps:
       - checkout
-      - run: ./gradlew check -x testcontainers:check -x selenium:check -x modules:jdbc-test
-        environment:
-          TZ: "/usr/share/zoneinfo/ETC/UTC"
+      - run:
+          command: ./gradlew check -x testcontainers:check -x selenium:check -x modules:jdbc-test
+          environment:
+            TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
@@ -32,9 +34,10 @@ jobs:
   modules-jdbc-test:
     steps:
       - checkout
-      - run: ./gradlew jdbc-test:check
-        environment:
-          TZ: "/usr/share/zoneinfo/ETC/UTC"
+      - run:
+          command: ./gradlew jdbc-test:check
+          environment:
+            TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
@@ -46,9 +49,10 @@ jobs:
   selenium:
     steps:
       - checkout
-      - run: ./gradlew selenium:check
-        environment:
-          TZ: "/usr/share/zoneinfo/ETC/UTC"
+      - run:
+          command: ./gradlew selenium:check
+          environment:
+            TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
