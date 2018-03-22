@@ -32,8 +32,9 @@ public class ImagePullTest {
 
     @Test
     public void test() {
-        try (final GenericContainer container = new GenericContainer<>(image).withStartupCheckStrategy(
-            new OneShotStartupCheckStrategy())) {
+        try (final GenericContainer container = new GenericContainer<>(image)
+            .withCommand("/bin/sh", "-c", "sleep 0")
+            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {
             container.start();
             // do nothing other than start and stop
         }
