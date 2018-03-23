@@ -51,6 +51,7 @@ shadowJar {
     [
         "org.apache.http",
         "org.apache.commons.lang",
+        "org.apache.commons.io",
         "org.glassfish",
         "org.aopalliance",
         "org.jvnet",
@@ -79,6 +80,7 @@ shadowJar {
         include(dependency('org.newsclub.*:.*'))
         include(dependency('org.zeroturnaround:zt-exec'))
         include(dependency('commons-lang:commons-lang'))
+        include(dependency('commons-io:commons-io'))
     }
 }
 
@@ -115,6 +117,7 @@ dependencies {
     shaded 'org.rnorth:tcp-unix-socket-proxy:1.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.8'
     shaded 'commons-lang:commons-lang:2.6'
+    shaded 'commons-io:commons-io:2.5'
     // docker-java uses SslConfigurator from jersey-common for TLS
     shaded ('org.glassfish.jersey.core:jersey-common:2.23.1') {
         // SslConfigurator doesn't use classes from dependencies
