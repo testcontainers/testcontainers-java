@@ -31,19 +31,22 @@ public class JDBCDriverTest {
     public boolean performTestForCharacterSet;
     @Parameter(3)
     public boolean performTestForCustomIniFile;
+    @Parameter(4)
+    public boolean pmdKnownBroken;
 
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return asList(
                 new Object[][]{
-                        {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
-                        {"jdbc:tc:mysql://hostname/databasename", false, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?useSSL=false", false, false, false},
-                        {"jdbc:tc:postgresql://hostname/databasename", false, false, false},
-                        {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true},
+                        {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false, false},
+                        {"jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false, false},
+                        {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, false},
+                        {"jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false, false},
+                        {"jdbc:tc:mysql://hostname/databasename", false, false, false, false},
+                        {"jdbc:tc:mysql://hostname/databasename?useSSL=false", false, false, false, false},
+                        {"jdbc:tc:postgresql://hostname/databasename", false, false, false, false},
+                        {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true, false},
+                        {"jdbc:tc:clickhouse://hostname/databasename", false, false, false, true}
                 });
     }
 
@@ -64,7 +67,7 @@ public class JDBCDriverTest {
 
     @Test
     public void test() throws SQLException {
-        performSimpleTest(jdbcUrl);
+        performSimpleTest(jdbcUrl, pmdKnownBroken);
 
         if (performTestForScriptedSchema) {
             performTestForScriptedSchema(jdbcUrl);
@@ -79,9 +82,9 @@ public class JDBCDriverTest {
         }
     }
 
-    private void performSimpleTest(String jdbcUrl) throws SQLException {
+    private void performSimpleTest(String jdbcUrl, boolean pmdKnownBroken) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("SELECT 1", rs -> {
+            boolean result = new QueryRunner(dataSource, pmdKnownBroken).query("SELECT 1", rs -> {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
                 assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
