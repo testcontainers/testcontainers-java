@@ -1,0 +1,17 @@
+description = "Testcontainers :: JDBC :: Oracle XE"
+
+repositories {
+    maven {
+        url "https://maven.atlassian.com/3rdparty/"
+    }
+}
+
+dependencies {
+    compile project(':jdbc')
+
+    testCompile 'com.oracle:ojdbc6:12.1.0.1-atlassian-hosted'
+    testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
+    testCompile 'commons-dbutils:commons-dbutils:1.6'
+    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
+    testCompile 'org.vibur:vibur-dbcp:9.0'
+}

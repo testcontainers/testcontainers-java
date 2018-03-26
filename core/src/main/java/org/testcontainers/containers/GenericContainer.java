@@ -838,7 +838,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             return image.get();
         } catch (Exception e) {
-            throw new ContainerFetchException("Can't get Docker image name from " + image, e);
+            throw new ContainerFetchException("Can't get Docker image: " + image, e);
         }
     }
 
