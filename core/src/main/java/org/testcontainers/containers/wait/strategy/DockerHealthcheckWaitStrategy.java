@@ -17,7 +17,7 @@ public class DockerHealthcheckWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
 
         try {
-            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> waitStrategyTarget.isHealthy());
+            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, waitStrategyTarget::isHealthy);
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container to become healthy");
         }
