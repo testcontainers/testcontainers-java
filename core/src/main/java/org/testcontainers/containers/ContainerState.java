@@ -29,9 +29,14 @@ public interface ContainerState {
     /**
      * @return is the container currently running?
      */
-    default Boolean isRunning() {
+    default boolean isRunning() {
+        if (getContainerId() == null) {
+            return false;
+        }
+
         try {
-            return getContainerId() != null && DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec().getState().getRunning();
+            Boolean running = getCurrentContainerInfo().getState().getRunning();
+            return running != null && running; // avoid NPE when unboxing
         } catch (DockerException e) {
             return false;
         }
@@ -40,12 +45,23 @@ public interface ContainerState {
     /**
      * @return has the container health state 'healthy'?
      */
-    default Boolean isHealthy() {
+    default boolean isHealthy() {
+        if (getContainerId() == null) {
+            return false;
+        }
+
         try {
-            return getContainerId() != null && DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec().getState().getHealth().getStatus().equals(STATE_HEALTHY);
+            InspectContainerResponse inspectContainerResponse = getCurrentContainerInfo();
+            String healthStatus = inspectContainerResponse.getState().getHealth().getStatus();
+
+            return healthStatus.equals(STATE_HEALTHY);
         } catch (DockerException e) {
             return false;
         }
+    }
+
+    default InspectContainerResponse getCurrentContainerInfo() {
+        return DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
     }
 
     /**
