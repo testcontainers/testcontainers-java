@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Fixed extraneous insertion of `useSSL=false` in all JDBC URL strings, even for DBs that do not understand it. Usage is now restricted to MySQL by default and can be overridden by authors of `JdbcDatabaseContainer` subclasses ([\#568](https://github.com/testcontainers/testcontainers-java/issues/568))
+- Fixed `getServicePort` on `DockerComposeContainer` throws NullPointerException if service instance number in not used. ([\#619](https://github.com/testcontainers/testcontainers-java/issues/619))
 
 ### Changed
 - Abstracted and changed database init script functionality to support use of SQL-like scripts with non-JDBC connections. ([\#551](https://github.com/testcontainers/testcontainers-java/pull/551))

@@ -352,7 +352,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a port that can be used for accessing the service container.
      */
     public Integer getServicePort(String serviceName, Integer servicePort) {
-        return ambassadorContainer.getMappedPort(ambassadorPortMappings.get(serviceName).get(servicePort));
+        return ambassadorContainer.getMappedPort(ambassadorPortMappings.get(getServiceInstanceName(serviceName)).get(servicePort));
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
