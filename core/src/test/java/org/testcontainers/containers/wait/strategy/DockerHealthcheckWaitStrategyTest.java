@@ -30,7 +30,7 @@ public class DockerHealthcheckWaitStrategyTest {
 
     @Test
     public void containerStartFailsIfContainerIsUnhealthy() {
-        container.withCommand("ash");
+        container.withCommand("tail", "-f", "/dev/null");
         assertThrows("Container launch fails when unhealthy", ContainerLaunchException.class, container::start);
     }
 }
