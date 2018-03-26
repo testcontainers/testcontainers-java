@@ -1,13 +1,27 @@
+repositories {
+    maven {
+        url "https://maven.atlassian.com/3rdparty/"
+    }
+}
+
 dependencies {
     compile project(':mysql')
     compile project(':postgresql')
+    compile project(':mariadb')
+    compile project(':oracle-xe')
+    compile project(':mssqlserver')
 
     testCompile 'com.google.guava:guava:18.0'
     testCompile 'org.postgresql:postgresql:42.0.0'
     testCompile 'mysql:mysql-connector-java:5.1.45'
     testCompile 'org.mariadb.jdbc:mariadb-java-client:1.4.6'
+    testCompile 'com.oracle:ojdbc6:12.1.0.1-atlassian-hosted'
+    testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
+
     testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
     testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
     testCompile 'org.vibur:vibur-dbcp:9.0'
     testCompile 'commons-dbutils:commons-dbutils:1.6'
+
+    testCompile 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
 }

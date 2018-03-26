@@ -1,10 +1,10 @@
 # Contributed modules
 
-The following modules have been largely developed outside of the Testcontainers core project and are maintained and released separately:
+The following modules are available for specialised use cases:
 
-* [MS SQL Server](https://github.com/testcontainers/testcontainers-java-module-mssqlserver)
-* [Oracle XE](https://github.com/testcontainers/testcontainers-java-module-oracle-xe)
-* [Hashicorp Vault](https://github.com/testcontainers/testcontainers-java-module-vault)
-* [Dynalite](https://github.com/testcontainers/testcontainers-java-module-dynalite) (Amazon DynamoDB emulation)
-* [Atlassian Localstack](https://github.com/testcontainers/testcontainers-java-module-localstack) (emulation of a broad set of various AWS services)
-* [MariaDB](https://github.com/testcontainers/testcontainers-java-module-mariadb)
+* [MS SQL Server](../../modules/mssqlserver/README.md) - thank you to G DATA Software AG for contributing this module.
+* [Oracle XE](../../modules/oracle-xe/README.md)
+* [Dynalite](../../modules/dynalite/README.md) (Amazon DynamoDB emulation)
+* [Atlassian Localstack](../../modules/localstack/README.md) (emulation of a broad set of various AWS services)
+* [MariaDB](../../modules/mariadb/README.md)
+* [Hashicorp Vault](../../modules/vault/README.md) - thank you to Capital One Services, LLC for contributing this module.

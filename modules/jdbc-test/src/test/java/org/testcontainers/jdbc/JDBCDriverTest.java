@@ -1,5 +1,6 @@
 package org.testcontainers.jdbc;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
@@ -20,7 +21,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
-@RunWith(Parameterized.class)
+@RunWith(ParallelParameterized.class)
 public class JDBCDriverTest {
 
     @Parameter
@@ -35,26 +36,32 @@ public class JDBCDriverTest {
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return asList(
-                new Object[][]{
-                        {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
-                        {"jdbc:tc:mysql://hostname/databasename", false, false, false},
-                        {"jdbc:tc:mysql://hostname/databasename?useSSL=false", false, false, false},
-                        {"jdbc:tc:postgresql://hostname/databasename", false, false, false},
-                        {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true},
-                });
+            new Object[][]{
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false},
+                {"jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false},
+                {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
+                {"jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
+                {"jdbc:tc:mysql://hostname/databasename", false, false, false},
+                {"jdbc:tc:mysql://hostname/databasename?useSSL=false", false, false, false},
+                {"jdbc:tc:postgresql://hostname/databasename", false, false, false},
+                {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true},
+                {"jdbc:tc:mariadb:10.1.16://hostname/databasename", false, false, false},
+                {"jdbc:tc:mariadb://hostname/databasename", false, false, false},
+                {"jdbc:tc:mariadb://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
+                {"jdbc:tc:mariadb://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", true, false, false},
+                {"jdbc:tc:mariadb://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
+                {"jdbc:tc:mariadb:10.1.16://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", false, false, true}
+            });
     }
 
     public static void sampleInitFunction(Connection connection) throws SQLException {
         connection.createStatement().execute("CREATE TABLE bar (\n" +
-                "  foo VARCHAR(255)\n" +
-                ");");
+            "  foo VARCHAR(255)\n" +
+            ");");
         connection.createStatement().execute("INSERT INTO bar (foo) VALUES ('hello world');");
         connection.createStatement().execute("CREATE TABLE my_counter (\n" +
-                "  n INT\n" +
-                ");");
+            "  n INT\n" +
+            ");");
     }
 
     @AfterClass

@@ -1,0 +1,8 @@
+description = "Testcontainers :: Localstack"
+
+dependencies {
+    compile project(':testcontainers')
+
+    compileOnly 'com.amazonaws:aws-java-sdk-s3:1.11.126'
+    testCompile 'com.amazonaws:aws-java-sdk-s3:1.11.126'
+}
