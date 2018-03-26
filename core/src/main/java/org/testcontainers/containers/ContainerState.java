@@ -36,7 +36,7 @@ public interface ContainerState {
 
         try {
             Boolean running = getCurrentContainerInfo().getState().getRunning();
-            return running != null && running; // avoid NPE when unboxing
+            return Boolean.TRUE.equals(running);
         } catch (DockerException e) {
             return false;
         }

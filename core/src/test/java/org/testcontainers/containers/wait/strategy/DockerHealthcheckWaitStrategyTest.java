@@ -20,7 +20,7 @@ public class DockerHealthcheckWaitStrategyTest {
         container = new GenericContainer(new ImageFromDockerfile()
             .withFileFromClasspath("write_file_and_loop.sh", "health-wait-strategy-dockerfile/write_file_and_loop.sh")
             .withFileFromClasspath("Dockerfile", "health-wait-strategy-dockerfile/Dockerfile"))
-            .waitingFor(new DockerHealthcheckWaitStrategy().withStartupTimeout(Duration.ofSeconds(3)));
+            .waitingFor(Wait.forHealthcheck().withStartupTimeout(Duration.ofSeconds(3)));
     }
 
     @Test
