@@ -156,8 +156,8 @@ public class ContainerDatabaseDriver implements Driver {
               an init script or function has been specified, use it
              */
             if (!initializedContainers.contains(container.getContainerId())) {
-                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
-                runInitScriptIfRequired(url, databaseDelegate);
+                //DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
+                runInitScriptIfRequired(url, connection);
                 runInitFunctionIfRequired(url, connection);
                 initializedContainers.add(container.getContainerId());
             }
@@ -221,7 +221,7 @@ public class ContainerDatabaseDriver implements Driver {
      * @param databaseDelegate database delegate to apply init scripts to the database
      * @throws SQLException on script or DB error
      */
-    private void runInitScriptIfRequired(String url, DatabaseDelegate databaseDelegate) throws SQLException {
+    private void runInitScriptIfRequired(String url, Connection connection) throws SQLException {
         Matcher matcher = INITSCRIPT_MATCHING_PATTERN.matcher(url);
         if (matcher.matches()) {
             String initScriptPath = matcher.group(2);
@@ -234,7 +234,7 @@ public class ContainerDatabaseDriver implements Driver {
                 }
 
                 String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, sql);
+                ScriptUtils.executeDatabaseScript(connection, initScriptPath, sql);
             } catch (IOException e) {
                 LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                 throw new SQLException("Could not load classpath init script: " + initScriptPath, e);

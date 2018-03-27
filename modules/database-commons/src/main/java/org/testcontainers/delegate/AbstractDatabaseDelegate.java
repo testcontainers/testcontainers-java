@@ -18,7 +18,7 @@ public abstract class AbstractDatabaseDelegate<CONNECTION> implements DatabaseDe
     /**
      * Get or create new connection to the database
      */
-    protected CONNECTION getConnection() {
+    public CONNECTION getConnection() {
         if (!isConnectionStarted) {
             connection = createNewConnection();
             isConnectionStarted = true;
