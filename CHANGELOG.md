@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Deprecated `WaitStrategy` and implementations in favour of classes with same names in `org.testcontainers.containers.strategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `ContainerState` interface representing the state of a started container ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `WaitStrategyTarget` interface which is the target of the new `WaitStrategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
+- Added `withLogConsumer(String serviceName, Consumer<OutputFrame> consumer)` method to `DockerComposeContainer` ([\#605](https://github.com/testcontainers/testcontainers-java/issues/605))
 
 ## [1.6.0] - 2018-01-28
 
