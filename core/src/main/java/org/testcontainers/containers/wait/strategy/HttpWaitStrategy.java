@@ -12,6 +12,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -32,7 +35,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private static final String AUTH_BASIC = "Basic ";
 
     private String path = "/";
-    private int statusCode = HttpURLConnection.HTTP_OK;
+    private List<Integer> statusCodes = Collections.singletonList(HttpURLConnection.HTTP_OK);
     private boolean tlsEnabled;
     private String username;
     private String password;
@@ -43,9 +46,22 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      *
      * @param statusCode the expected status code
      * @return this
+     * @deprecated Use {@link #forStatusCodes(Integer...)} instead
      */
+    @Deprecated
     public HttpWaitStrategy forStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+        forStatusCodes(statusCode);
+        return this;
+    }
+
+    /**
+     * Waits for one of the given status codes.
+     *
+     * @param statusCodes the expected status codes
+     * @return this
+     */
+    public HttpWaitStrategy forStatusCodes(Integer... statusCodes) {
+        this.statusCodes = Arrays.asList(statusCodes);
         return this;
     }
 
@@ -122,7 +138,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                         connection.setRequestMethod("GET");
                         connection.connect();
 
-                        if (statusCode != connection.getResponseCode()) {
+                        if (!statusCodes.contains(connection.getResponseCode())) {
                             throw new RuntimeException(String.format("HTTP response code was: %s",
                                 connection.getResponseCode()));
                         }
@@ -144,7 +160,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException(String.format(
-                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCode));
+                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes));
         }
     }
 

@@ -97,7 +97,7 @@ public static GenericContainer elasticsearch =
                .waitingFor(Wait.forHttp("/all"));
 ```
 
-Wait for arbitrary status code on an HTTPS endpoint:
+Wait for 200 or 401 status codes on an HTTPS endpoint:
 ```java
 @ClassRule
 public static GenericContainer elasticsearch =
@@ -105,7 +105,7 @@ public static GenericContainer elasticsearch =
                .withExposedPorts(9200)
                .waitingFor(
                		Wait.forHttp("/all")
-               			 .forStatusCode(301)
+               			 .forStatusCodes(200, 401)
                			 .usingTls());
  ```
 

@@ -2,6 +2,7 @@ package org.testcontainers.containers.wait;
 
 import org.testcontainers.containers.GenericContainer;
 
+import java.util.Arrays;
 import java.util.function.Predicate;
 
 /**
@@ -21,9 +22,22 @@ public class HttpWaitStrategy extends GenericContainer.AbstractWaitStrategy {
      *
      * @param statusCode the expected status code
      * @return this
+     * @deprecated Use {@link #forStatusCodes(Integer...)} instead
      */
+    @Deprecated
     public HttpWaitStrategy forStatusCode(int statusCode) {
         delegateStrategy.forStatusCode(statusCode);
+        return this;
+    }
+
+    /**
+     * Waits for one of the given status codes.
+     *
+     * @param statusCodes the expected status codes
+     * @return this
+     */
+    public HttpWaitStrategy forStatusCodes(Integer... statusCodes) {
+        delegateStrategy.forStatusCodes(statusCodes);
         return this;
     }
 
