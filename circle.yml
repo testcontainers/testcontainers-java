@@ -4,7 +4,8 @@ jobs:
   core:
     steps:
       - checkout
-      - run: ./gradlew testcontainers:check
+      - run:
+          command: ./gradlew testcontainers:check
       - run:
           name: Save test results
           command: |
@@ -13,10 +14,30 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
-  modules:
+  modules-no-jdbc-test-no-selenium:
     steps:
       - checkout
-      - run: ./gradlew check -x testcontainers:check -x selenium:check
+      - run:
+          command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check
+          environment:
+            # Oracle JDBC drivers require a timezone to be set
+            TZ: "/usr/share/zoneinfo/ETC/UTC"
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+  modules-jdbc-test:
+    steps:
+      - checkout
+      - run:
+          command: ./gradlew jdbc-test:check
+          environment:
+            # Oracle JDBC drivers require a timezone to be set
+            TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |
@@ -28,7 +49,8 @@ jobs:
   selenium:
     steps:
       - checkout
-      - run: ./gradlew selenium:check
+      - run:
+          command: ./gradlew selenium:check
       - run:
           name: Save test results
           command: |
@@ -43,5 +65,6 @@ workflows:
   test_all:
     jobs:
       - core
-      - modules
+      - modules-no-jdbc-test-no-selenium
+      - modules-jdbc-test
       - selenium

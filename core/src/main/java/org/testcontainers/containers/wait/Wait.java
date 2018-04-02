@@ -6,7 +6,10 @@ import java.net.HttpURLConnection;
  * Convenience class with logic for building common {@link WaitStrategy} instances.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ *
+ * @deprecated Use {@link org.testcontainers.containers.wait.strategy.Wait}
  */
+@Deprecated
 public class Wait {
     /**
      * Convenience method to return the default WaitStrategy.
@@ -50,5 +53,16 @@ public class Wait {
     public static HttpWaitStrategy forHttps(String path) {
         return forHttp(path)
                 .usingTls();
+    }
+
+    /**
+     * Convenience method to return a WaitStrategy for log messages.
+     *
+     * @param regex the regex pattern to check for
+     * @param times the number of times the pattern is expected
+     * @return LogMessageWaitStrategy
+     */
+    public static LogMessageWaitStrategy forLogMessage(String regex, int times) {
+        return new LogMessageWaitStrategy().withRegEx(regex).withTimes(times);
     }
 }
