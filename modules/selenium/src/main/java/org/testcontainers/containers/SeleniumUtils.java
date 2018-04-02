@@ -38,17 +38,25 @@ public final class SeleniumUtils {
                     Manifest manifest = new Manifest();
                     manifest.read(is);
 
+                    String seleniumVersion = null;
                     Attributes buildInfo = manifest.getAttributes("Build-Info");
                     if (buildInfo != null) {
-                        String seleniumVersion = buildInfo.getValue("Selenium-Version");
+                        seleniumVersion = buildInfo.getValue("Selenium-Version");
+                    }
 
-                        if (seleniumVersion != null) {
-                            seleniumVersions.add(seleniumVersion);
-                            LOGGER.info("Selenium API version {} detected on classpath", seleniumVersion);
+                    // Compatibility Selenium > 3.X
+                    if(seleniumVersion == null) {
+                        Attributes seleniumInfo = manifest.getAttributes("Selenium");
+                        if (seleniumInfo != null) {
+                            seleniumVersion = seleniumInfo.getValue("Selenium-Version");
                         }
                     }
-                }
 
+                    if (seleniumVersion != null) {
+                        seleniumVersions.add(seleniumVersion);
+                        LOGGER.info("Selenium API version {} detected on classpath", seleniumVersion);
+                    }
+                }
             }
 
         } catch (Exception e) {
