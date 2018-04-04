@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+
+Name: Build-Info
+Build-Revision: 21ac65f960
+Build-Time: 2017-08-21T20:29:34.71Z
+Build-User: lamaille
+Selenium-Version: 3.5.2
+

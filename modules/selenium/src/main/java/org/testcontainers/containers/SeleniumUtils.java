@@ -38,17 +38,12 @@ public final class SeleniumUtils {
                     Manifest manifest = new Manifest();
                     manifest.read(is);
 
-                    Attributes buildInfo = manifest.getAttributes("Build-Info");
-                    if (buildInfo != null) {
-                        String seleniumVersion = buildInfo.getValue("Selenium-Version");
-
-                        if (seleniumVersion != null) {
-                            seleniumVersions.add(seleniumVersion);
-                            LOGGER.info("Selenium API version {} detected on classpath", seleniumVersion);
-                        }
+                    String seleniumVersion = getSeleniumVersionFromManifest(manifest);
+                    if (seleniumVersion != null) {
+                        seleniumVersions.add(seleniumVersion);
+                        LOGGER.info("Selenium API version {} detected on classpath", seleniumVersion);
                     }
                 }
-
             }
 
         } catch (Exception e) {
@@ -66,5 +61,27 @@ public final class SeleniumUtils {
         }
 
         return foundVersion;
+    }
+
+    /**
+     * Read Manifest to get Selenium Version.
+     * @param manifest
+     * @return Selenium Version detected
+     */
+    public static String getSeleniumVersionFromManifest(Manifest manifest) {
+        String seleniumVersion = null;
+        Attributes buildInfo = manifest.getAttributes("Build-Info");
+        if (buildInfo != null) {
+            seleniumVersion = buildInfo.getValue("Selenium-Version");
+        }
+
+        // Compatibility Selenium > 3.X
+        if(seleniumVersion == null) {
+            Attributes seleniumInfo = manifest.getAttributes("Selenium");
+            if (seleniumInfo != null) {
+                seleniumVersion = seleniumInfo.getValue("Selenium-Version");
+            }
+        }
+        return seleniumVersion;
     }
 }
