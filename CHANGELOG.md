@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Added `ContainerState` interface representing the state of a started container ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `WaitStrategyTarget` interface which is the target of the new `WaitStrategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - *Breaking:* Removed hard-coded `wnameless` Oracle database image name. Users should instead place a file on the classpath named `testcontainers.properties` containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag/SHA hash. For information, the approach recommended by Oracle for creating an Oracle XE docker image is described [here](https://blogs.oracle.com/oraclewebcentersuite/implement-oracle-database-xe-as-docker-containers). 
+- Added `DockerHealthcheckWaitStrategy` that is based on Docker's built-in [healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) ([\#618](https://github.com/testcontainers/testcontainers-java/pull/618)).
 
 ## [1.6.0] - 2018-01-28
 
