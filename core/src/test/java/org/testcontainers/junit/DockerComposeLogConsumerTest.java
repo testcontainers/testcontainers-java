@@ -20,7 +20,11 @@ public class DockerComposeLogConsumerTest {
             .withExposedService("redis_1", 6379)
             .withLogConsumer("redis_1", logConsumer);
 
-        environment.starting(Description.createTestDescription(Object.class, "name"));
-        logConsumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("Ready to accept connections"), 5, TimeUnit.SECONDS);
+        try {
+            environment.starting(Description.EMPTY);
+            logConsumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("Ready to accept connections"), 5, TimeUnit.SECONDS);
+        } finally {
+            environment.finished(Description.EMPTY);
+        }
     }
 }
