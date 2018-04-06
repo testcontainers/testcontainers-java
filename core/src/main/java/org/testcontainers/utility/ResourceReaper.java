@@ -161,7 +161,7 @@ public final class ResourceReaper {
         kiraThread.start();
 
         // We need to wait before we can start any containers to make sure that we delete them
-        if (!ryukScheduledLatch.await(5, TimeUnit.SECONDS)) {
+        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
             throw new IllegalStateException("Can not connect to Ryuk");
         }
 
