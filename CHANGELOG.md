@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed extraneous insertion of `useSSL=false` in all JDBC URL strings, even for DBs that do not understand it. Usage is now restricted to MySQL by default and can be overridden by authors of `JdbcDatabaseContainer` subclasses ([\#568](https://github.com/testcontainers/testcontainers-java/issues/568))
 - Fixed `getServicePort` on `DockerComposeContainer` throws NullPointerException if service instance number in not used. ([\#619](https://github.com/testcontainers/testcontainers-java/issues/619))
+- Increase Ryuk's timeout and make it configurable with `ryuk.container.timeout`. ([\#621](https://github.com/testcontainers/testcontainers-java/issues/621)[\#635](https://github.com/testcontainers/testcontainers-java/issues/635))
 
 ### Changed
 - Added compatibility with selenium greater than 3.X ([\#611](https://github.com/testcontainers/testcontainers-java/issues/611))
