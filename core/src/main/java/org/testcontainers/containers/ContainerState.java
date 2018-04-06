@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 public interface ContainerState {
 
+    String STATE_HEALTHY = "healthy";
+
     /**
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
@@ -27,12 +29,39 @@ public interface ContainerState {
     /**
      * @return is the container currently running?
      */
-    default Boolean isRunning() {
+    default boolean isRunning() {
+        if (getContainerId() == null) {
+            return false;
+        }
+
         try {
-            return getContainerId() != null && DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec().getState().getRunning();
+            Boolean running = getCurrentContainerInfo().getState().getRunning();
+            return Boolean.TRUE.equals(running);
         } catch (DockerException e) {
             return false;
         }
+    }
+
+    /**
+     * @return has the container health state 'healthy'?
+     */
+    default boolean isHealthy() {
+        if (getContainerId() == null) {
+            return false;
+        }
+
+        try {
+            InspectContainerResponse inspectContainerResponse = getCurrentContainerInfo();
+            String healthStatus = inspectContainerResponse.getState().getHealth().getStatus();
+
+            return healthStatus.equals(STATE_HEALTHY);
+        } catch (DockerException e) {
+            return false;
+        }
+    }
+
+    default InspectContainerResponse getCurrentContainerInfo() {
+        return DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
     }
 
     /**

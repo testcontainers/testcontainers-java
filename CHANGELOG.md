@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Fixed `getServicePort` on `DockerComposeContainer` throws NullPointerException if service instance number in not used. ([\#619](https://github.com/testcontainers/testcontainers-java/issues/619))
 
 ### Changed
+- Added compatibility with selenium greater than 3.X ([\#611](https://github.com/testcontainers/testcontainers-java/issues/611))
 - Abstracted and changed database init script functionality to support use of SQL-like scripts with non-JDBC connections. ([\#551](https://github.com/testcontainers/testcontainers-java/pull/551))
 - Added `JdbcDatabaseContainer(Future)` constructor. ([\#543](https://github.com/testcontainers/testcontainers-java/issues/543))
 - Mark DockerMachineClientProviderStrategy as not persistable ([\#593](https://github.com/testcontainers/testcontainers-java/pull/593))
@@ -15,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Deprecated `WaitStrategy` and implementations in favour of classes with same names in `org.testcontainers.containers.strategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `ContainerState` interface representing the state of a started container ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `WaitStrategyTarget` interface which is the target of the new `WaitStrategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
+- Added `DockerHealthcheckWaitStrategy` that is based on Docker's built-in [healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) ([\#618](https://github.com/testcontainers/testcontainers-java/pull/618)).
 
 ## [1.6.0] - 2018-01-28
 
