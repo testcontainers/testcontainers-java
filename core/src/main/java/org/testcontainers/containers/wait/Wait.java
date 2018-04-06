@@ -40,7 +40,7 @@ public class Wait {
     public static HttpWaitStrategy forHttp(String path) {
         return new HttpWaitStrategy()
                 .forPath(path)
-                .forStatusCodes(HttpURLConnection.HTTP_OK);
+                .forStatusCode(HttpURLConnection.HTTP_OK);
     }
 
     /**
