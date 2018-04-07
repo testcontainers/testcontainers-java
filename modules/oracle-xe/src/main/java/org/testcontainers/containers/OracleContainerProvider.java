@@ -11,6 +11,11 @@ public class OracleContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new OracleContainer(OracleContainer.IMAGE + ":" + tag);
+
+        if (!tag.equalsIgnoreCase("latest")) {
+            throw new UnsupportedOperationException("Oracle database tag should be set in the configured image name");
+        }
+
+        return new OracleContainer();
     }
 }
