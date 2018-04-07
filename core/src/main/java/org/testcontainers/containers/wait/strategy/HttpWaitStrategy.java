@@ -12,8 +12,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -35,33 +34,35 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private static final String AUTH_BASIC = "Basic ";
 
     private String path = "/";
-    private List<Integer> statusCodes = Collections.singletonList(HttpURLConnection.HTTP_OK);
+    private List<Integer> statusCodes = new ArrayList<>();
     private boolean tlsEnabled;
     private String username;
     private String password;
     private Predicate<String> responsePredicate;
+    private Predicate<Integer> statusCodePredicate = responseCode -> {
+        // If we did not provide any status code, we assume by default HttpURLConnection.HTTP_OK
+        return (!statusCodes.isEmpty() || HttpURLConnection.HTTP_OK == responseCode) &&
+            statusCodes.contains(responseCode);
+    };
 
     /**
      * Waits for the given status code.
      *
      * @param statusCode the expected status code
      * @return this
-     * @deprecated Use {@link #forStatusCodes(Integer...)} instead
      */
-    @Deprecated
     public HttpWaitStrategy forStatusCode(int statusCode) {
-        forStatusCodes(statusCode);
+        statusCodes.add(statusCode);
         return this;
     }
 
     /**
-     * Waits for one of the given status codes.
-     *
-     * @param statusCodes the expected status codes
+     * Waits for the response to pass the given predicate
+     * @param statusCodePredicate The predicate to test the response against
      * @return this
      */
-    public HttpWaitStrategy forStatusCodes(Integer... statusCodes) {
-        this.statusCodes = Arrays.asList(statusCodes);
+    public HttpWaitStrategy forStatusCodeMatching(Predicate<Integer> statusCodePredicate) {
+        this.statusCodePredicate = statusCodePredicate;
         return this;
     }
 
@@ -138,7 +139,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                         connection.setRequestMethod("GET");
                         connection.connect();
 
-                        if (!statusCodes.contains(connection.getResponseCode())) {
+                        if (!statusCodePredicate.test(connection.getResponseCode())) {
                             throw new RuntimeException(String.format("HTTP response code was: %s",
                                 connection.getResponseCode()));
                         }

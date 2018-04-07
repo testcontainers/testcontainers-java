@@ -79,7 +79,8 @@ public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
                 Wait.forHttp("/all")
-                    .forStatusCodes(200, 401)
+                    .forStatusCode(200)
+                    .forStatusCode(401)
                     .usingTls());
 ```
 
@@ -91,7 +92,8 @@ public static DockerComposeContainer environment =
             .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
                 Wait.forHttp("/all")
-                    .forStatusCodes(200, 401)
+                    .forStatusCode(200)
+                    .forStatusCode(401)
                     .usingTls());
 ```
 
