@@ -24,7 +24,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * Expects that the WaitStrategy returns successfully after receiving an HTTP 200 response from the container.
      */
     @Test
-    public void testWaitUntilReady_Success() {
+    public void testWaitUntilReadyWithSuccess() {
         waitUntilReadyAndSucceed(createShellCommand("200 OK", GOOD_RESPONSE_BODY));
     }
 
@@ -33,7 +33,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * response from the container within the timeout period.
      */
     @Test
-    public void testWaitUntilReady_Timeout() {
+    public void testWaitUntilReadyWithTimeout() {
         waitUntilReadyAndTimeout(createShellCommand("400 Bad Request", GOOD_RESPONSE_BODY));
     }
 
@@ -42,7 +42,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * from the container within the timeout period.
      */
     @Test
-    public void testWaitUntilReady_Timeout_BadResponseBody() {
+    public void testWaitUntilReadyWithTimeoutAndBadResponseBody() {
         waitUntilReadyAndTimeout(createShellCommand("200 OK", "Bad Response"));
     }
 
