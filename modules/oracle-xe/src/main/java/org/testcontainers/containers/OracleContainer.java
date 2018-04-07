@@ -8,13 +8,24 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 public class OracleContainer extends JdbcDatabaseContainer {
 
     public static final String NAME = "oracle";
-    public static final String IMAGE = TestcontainersConfiguration.getInstance()
-            .getProperties().getProperty("oracle.container.image","wnameless/oracle-xe-11g");
+
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
 
+    private static String resolveImageName() {
+        String image = TestcontainersConfiguration.getInstance()
+            .getProperties().getProperty("oracle.container.image");
+
+        if (image == null) {
+            throw new IllegalStateException("An image to use for Oracle containers must be configured. " +
+                "To do this, please place a file on the classpath named `testcontainers.properties`, " +
+                "containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag.");
+        }
+        return image;
+    }
+
     public OracleContainer() {
-        super(IMAGE + "@sha256:15ff9ef50b4f90613c9780b589c57d98a8a9d496decec854316d96396ec5c085");
+        super(resolveImageName());
     }
 
     public OracleContainer(String dockerImageName) {
