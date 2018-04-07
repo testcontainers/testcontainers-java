@@ -30,7 +30,7 @@ public class VaultContainerTest {
             .withSecretInVault("secret/testing2", "secret_one=password1",
                     "secret_two=password2", "secret_three=password3", "secret_three=password3",
                     "secret_four=password4")
-            .waitingFor(Wait.forHttp("/v1/secret/testing1").forStatusCodes(400));
+            .waitingFor(Wait.forHttp("/v1/secret/testing1").forStatusCode(400));
 
     @Test
     public void readFirstSecretPathWithCli() throws IOException, InterruptedException {
