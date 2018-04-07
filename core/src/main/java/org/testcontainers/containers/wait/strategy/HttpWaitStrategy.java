@@ -12,8 +12,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -34,7 +33,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private static final String AUTH_BASIC = "Basic ";
 
     private String path = "/";
-    private List<Integer> statusCodes = new ArrayList<>();
+    private Set<Integer> statusCodes = new HashSet<>();
     private boolean tlsEnabled;
     private String username;
     private String password;
@@ -57,12 +56,12 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     /**
-     * Waits for the response to pass the given predicate
+     * Waits for the status code to pass the given predicate
      * @param statusCodePredicate The predicate to test the response against
      * @return this
      */
     public HttpWaitStrategy forStatusCodeMatching(Predicate<Integer> statusCodePredicate) {
-        this.statusCodePredicate = statusCodePredicate;
+        this.statusCodePredicate.and(statusCodePredicate);
         return this;
     }
 
