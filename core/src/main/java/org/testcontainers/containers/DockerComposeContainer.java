@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -31,7 +32,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -72,6 +76,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final Map<String, ComposeServiceWaitStrategyTarget> serviceInstanceMap = new ConcurrentHashMap<>();
     private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
     private final SocatContainer ambassadorContainer = new SocatContainer();
+    private final Map<String, List<Consumer<OutputFrame>>> logConsumers = new ConcurrentHashMap<>();
 
     private static final Object MUTEX = new Object();
 
@@ -148,11 +153,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
             ambassadorContainer, ambassadorPortMappings.getOrDefault(serviceName, new HashMap<>()));
 
+        String containerId = containerInstance.getContainerId();
         if (tailChildContainers) {
-            LogUtils.followOutput(DockerClientFactory.instance().client(), containerInstance.getContainerId(),
-                new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
+            followLogs(containerId, new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
         }
-       serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
+        //follow logs using registered consumers for this service
+        logConsumers.getOrDefault(serviceName, Collections.emptyList()).forEach(consumer -> followLogs(containerId, consumer));
+        serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
     }
 
     private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
@@ -399,6 +406,27 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public SELF withTailChildContainers(boolean tailChildContainers) {
         this.tailChildContainers = tailChildContainers;
         return self();
+    }
+
+    /**
+     * Attach an output consumer at container startup, enabling stdout and stderr to be followed, waited on, etc.
+     * <p>
+     * More than one consumer may be registered.
+     *
+     * @param serviceName the name of the service as set in the docker-compose.yml file
+     * @param consumer consumer that output frames should be sent to
+     * @return this instance, for chaining
+     */
+    public SELF withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
+        String serviceInstanceName = getServiceInstanceName(serviceName);
+        final List<Consumer<OutputFrame>> consumers = this.logConsumers.getOrDefault(serviceInstanceName, new ArrayList<>());
+        consumers.add(consumer);
+        this.logConsumers.putIfAbsent(serviceInstanceName, consumers);
+        return self();
+    }
+
+    private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
+        LogUtils.followOutput(DockerClientFactory.instance().client(), containerId, consumer);
     }
 
     private SELF self() {

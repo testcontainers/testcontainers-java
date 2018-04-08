@@ -24,6 +24,7 @@ publishing {
                     resolveStrategy = Closure.DELEGATE_FIRST
 
                     name project.description
+                    description 'Isolated container management for Java code testing'
                     url 'https://testcontainers.org'
                     issueManagement {
                         system 'GitHub'
@@ -39,6 +40,13 @@ publishing {
                         url 'https://github.com/testcontainers/testcontainers-java/'
                         connection 'scm:git:git://github.com/testcontainers/testcontainers-java.git'
                         developerConnection 'scm:git:ssh://git@github.com/testcontainers/testcontainers-java.git'
+                    }
+                    developers {
+                        developer {
+                            id 'rnorth'
+                            name 'Richard North'
+                            email 'rich.north@gmail.com'
+                        }
                     }
                 }
 
