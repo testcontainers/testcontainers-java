@@ -160,7 +160,8 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException(String.format(
-                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes));
+                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes == null ?
+                    HttpURLConnection.HTTP_OK : statusCodes));
         }
     }
 
