@@ -34,9 +34,9 @@ elasticsearch:
 Note that it is not necessary to define ports to be exposed in the YAML file; this would inhibit reuse/inclusion of the
 file in other contexts.
 
-Instead, Testcontainers will spin up a small 'ambassador' container for every exposed service port, which will proxy
-between the Compose-managed container and a port that's accessible to your tests. This is done using a separate, minimal
-container that runs HAProxy in TCP proxying mode.
+Instead, Testcontainers will spin up a small 'ambassador' container, which will proxy
+between the Compose-managed containers and ports that are accessible to your tests. This is done using a separate, minimal
+container that runs socat as a TCP proxy.
 
 ## Accessing a container from tests
 
@@ -68,8 +68,8 @@ Waiting for exposed port to start listening:
 @ClassRule
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withStartupTimeout(Duration.ofSeconds(30))
-            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort());
+            .withExposedService("redis_1", REDIS_PORT, 
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)));
 ```
 
 Wait for arbitrary status code on an HTTPS endpoint:
@@ -77,7 +77,6 @@ Wait for arbitrary status code on an HTTPS endpoint:
 @ClassRule
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withStartupTimeout(Duration.ofSeconds(30))
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
                 Wait.forHttp("/all")
                     .forStatusCode(301)
@@ -89,7 +88,6 @@ Separate wait strategies for each container:
 @ClassRule
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withStartupTimeout(Duration.ofSeconds(30))
             .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
                 Wait.forHttp("/all")
@@ -104,7 +102,6 @@ for example if you need to wait on a log message from a service, but don't need 
 @ClassRule
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withStartupTimeout(Duration.ofSeconds(30))
             .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
             .waitingFor("db_1", Wait.forLogMessage("started", 1));
 ```

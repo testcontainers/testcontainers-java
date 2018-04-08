@@ -50,6 +50,7 @@
 ## Continuous Integration
 
 * [GitLab CI](ci/ci.md#gitlab)
+* [Circle CI](ci/ci.md#circleci-20)
 
 ## Examples
 * [Selenium](https://github.com/testcontainers/testcontainers-java-examples/blob/master/selenium-container/src/test/java/SeleniumContainerTest.java)

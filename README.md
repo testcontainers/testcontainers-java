@@ -16,4 +16,8 @@ See [LICENSE](LICENSE).
 
 Copyright (c) 2015, 2016 Richard North and other authors.
 
-See [AUTHORS](AUTHORS) for contributors.
+MS SQL Server module is (c) 2017 - 2019 G DATA Software AG and other authors.
+
+Hashicorp Vault module is (c) 2017 Capital One Services, LLC and other authors.
+
+See [AUTHORS](AUTHORS) for all contributors.
