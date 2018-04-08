@@ -40,8 +40,8 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private Predicate<String> responsePredicate;
     private Predicate<Integer> statusCodePredicate = responseCode -> {
         // If we did not provide any status code, we assume by default HttpURLConnection.HTTP_OK
-        return (!statusCodes.isEmpty() || HttpURLConnection.HTTP_OK == responseCode) &&
-            statusCodes.contains(responseCode);
+        if (statusCodes.isEmpty() && HttpURLConnection.HTTP_OK == responseCode) return true;
+        return statusCodes.contains(responseCode);
     };
 
     /**
@@ -160,7 +160,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException(String.format(
-                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes == null ?
+                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes.isEmpty() ?
                     HttpURLConnection.HTTP_OK : statusCodes));
         }
     }
