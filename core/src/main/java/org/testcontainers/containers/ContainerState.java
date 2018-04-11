@@ -11,6 +11,7 @@ import org.testcontainers.DockerClientFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public interface ContainerState {
@@ -127,6 +128,7 @@ public interface ContainerState {
             .map(PortBinding::parse)
             .map(PortBinding::getBinding)
             .map(Ports.Binding::getHostPortSpec)
+            .filter(Objects::nonNull)
             .map(Integer::valueOf)
             .collect(Collectors.toList());
     }
