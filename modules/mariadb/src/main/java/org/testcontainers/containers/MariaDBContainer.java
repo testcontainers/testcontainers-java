@@ -52,6 +52,11 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     }
 
     @Override
+    public String getDatabaseName() {
+    	return MARIADB_DATABASE;
+    }
+
+    @Override
     public String getUsername() {
         return MARIADB_USER;
     }
