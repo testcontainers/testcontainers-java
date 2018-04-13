@@ -34,8 +34,54 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * This 401 response is checked with a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
      */
     @Test
-    public void testWaitUntilReadyWithUnauthorized() {
-        waitUntilReadyAndSucceed(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY));
+    public void testWaitUntilReadyWithUnauthorizedWithLambda() {
+        waitUntilReadyAndSucceed(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+            createHttpWaitStrategy(ready)
+                .forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401)
+        ));
+    }
+
+    /**
+     * Expects that the WaitStrategy returns successfully after receiving an HTTP 401 response from the container.
+     * This 401 response is checked with many status codes using {@link HttpWaitStrategy#forStatusCode(int)}
+     */
+    @Test
+    public void testWaitUntilReadyWithManyStatusCodes() {
+        waitUntilReadyAndSucceed(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+            createHttpWaitStrategy(ready)
+                .forStatusCode(300)
+                .forStatusCode(401)
+                .forStatusCode(500)
+        ));
+    }
+
+    /**
+     * Expects that the WaitStrategy returns successfully after receiving an HTTP 401 response from the container.
+     * This 401 response is checked with with many status codes using {@link HttpWaitStrategy#forStatusCode(int)}
+     * and a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
+     */
+    @Test
+    public void testWaitUntilReadyWithManyStatusCodesAndLambda() {
+        waitUntilReadyAndSucceed(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+            createHttpWaitStrategy(ready)
+                .forStatusCode(300)
+                .forStatusCode(500)
+                .forStatusCodeMatching(it -> it == 401)
+        ));
+    }
+
+    /**
+     * Expects that the WaitStrategy throws a {@link RetryCountExceededException} after not receiving any of the
+     * error code defined with {@link HttpWaitStrategy#forStatusCode(int)}
+     * and {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
+     */
+    @Test
+    public void testWaitUntilReadyWithTimeoutAndWithManyStatusCodesAndLambda() {
+        waitUntilReadyAndTimeout(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+            createHttpWaitStrategy(ready)
+                .forStatusCode(300)
+                .forStatusCodeMatching(it -> it == 500)
+        ));
     }
 
     /**
@@ -62,6 +108,16 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @NotNull
     protected HttpWaitStrategy buildWaitStrategy(final AtomicBoolean ready) {
+        return createHttpWaitStrategy(ready)
+            .forResponsePredicate(s -> s.equals(GOOD_RESPONSE_BODY));
+    }
+
+    /**
+     * Create a HttpWaitStrategy instance with a waitUntilReady implementation
+     * @param ready Indicates that the WaitStrategy has completed waiting successfully.
+     * @return the HttpWaitStrategy instance
+     */
+    private HttpWaitStrategy createHttpWaitStrategy(final AtomicBoolean ready) {
         return new HttpWaitStrategy() {
             @Override
             protected void waitUntilReady() {
@@ -69,9 +125,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
                 super.waitUntilReady();
                 ready.set(true);
             }
-        }
-        .forResponsePredicate(s -> s.equals(GOOD_RESPONSE_BODY))
-            .forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401);
+        };
     }
 
     private String createShellCommand(String header, String responseBody) {
