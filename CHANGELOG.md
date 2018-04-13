@@ -4,10 +4,10 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
-- Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped [\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
+- Fixed missing `commons-codec` dependency ([\#641](https://github.com/testcontainers/testcontainers-java/issues/641))
+- Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped ([\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
 
 ### Changed
-
 - Support multiple HTTP status codes for HttpWaitStrategy ([\#630](https://github.com/testcontainers/testcontainers-java/issues/630))
 
 ## [1.7.0] - 2018-04-07
