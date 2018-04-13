@@ -72,14 +72,15 @@ public static DockerComposeContainer environment =
                 Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)));
 ```
 
-Wait for arbitrary status code on an HTTPS endpoint:
+Wait for arbitrary status codes on an HTTPS endpoint:
 ```java
 @ClassRule
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
                 Wait.forHttp("/all")
-                    .forStatusCode(301)
+                    .forStatusCode(200)
+                    .forStatusCode(401)
                     .usingTls());
 ```
 
@@ -91,7 +92,8 @@ public static DockerComposeContainer environment =
             .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
                 Wait.forHttp("/all")
-                    .forStatusCode(301)
+                    .forStatusCode(200)
+                    .forStatusCode(401)
                     .usingTls());
 ```
 
