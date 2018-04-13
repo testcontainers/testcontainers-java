@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 
 public class FrameConsumerResultCallbackTest {
