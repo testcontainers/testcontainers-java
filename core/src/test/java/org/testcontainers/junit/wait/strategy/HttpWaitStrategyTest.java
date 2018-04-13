@@ -6,6 +6,7 @@ import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 /**
  * Tests for {@link HttpWaitStrategy}.
@@ -26,6 +27,15 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     @Test
     public void testWaitUntilReadyWithSuccess() {
         waitUntilReadyAndSucceed(createShellCommand("200 OK", GOOD_RESPONSE_BODY));
+    }
+
+    /**
+     * Expects that the WaitStrategy returns successfully after receiving an HTTP 401 response from the container.
+     * This 401 response is checked with a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
+     */
+    @Test
+    public void testWaitUntilReadyWithUnauthorized() {
+        waitUntilReadyAndSucceed(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY));
     }
 
     /**

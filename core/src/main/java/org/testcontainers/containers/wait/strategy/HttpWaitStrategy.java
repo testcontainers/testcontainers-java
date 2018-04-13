@@ -61,7 +61,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      * @return this
      */
     public HttpWaitStrategy forStatusCodeMatching(Predicate<Integer> statusCodePredicate) {
-        this.statusCodePredicate = this.statusCodePredicate.and(statusCodePredicate);
+        this.statusCodePredicate = this.statusCodePredicate.or(statusCodePredicate);
         return this;
     }
 
