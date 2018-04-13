@@ -19,7 +19,7 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
     private LinkedBlockingDeque<OutputFrame> frames = new LinkedBlockingDeque<>();
 
     @Override
-    public void process(OutputFrame frame) {
+    public void accept(OutputFrame frame) {
         frames.add(frame);
     }
 

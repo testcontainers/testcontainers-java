@@ -12,15 +12,19 @@ import java.nio.charset.Charset;
 public class ToStringConsumer extends BaseConsumer<ToStringConsumer> {
     private static final byte[] ENTER_BYTES = "\n".getBytes();
 
+    private boolean firstLine = true;
     private ByteArrayOutputStream stringBuffer = new ByteArrayOutputStream();
 
     @Override
-    public void process(OutputFrame outputFrame) {
+    public void accept(OutputFrame outputFrame) {
         try {
             if (outputFrame.getBytes() != null) {
+                if (!firstLine) {
+                    stringBuffer.write(ENTER_BYTES);
+                }
                 stringBuffer.write(outputFrame.getBytes());
-                stringBuffer.write(ENTER_BYTES);
                 stringBuffer.flush();
+                firstLine = false;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

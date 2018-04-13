@@ -19,7 +19,7 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
     }
 
     @Override
-    public void process(OutputFrame outputFrame) {
+    public void accept(OutputFrame outputFrame) {
         OutputFrame.OutputType outputType = outputFrame.getType();
 
         String utf8String = outputFrame.getUtf8String();
