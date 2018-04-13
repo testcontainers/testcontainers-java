@@ -8,9 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
  * This class can be used as a generic callback for docker-java commands that produce Frames.
@@ -20,6 +26,8 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameConsumerResultCallback.class);
 
     private static final byte[] EMPTY_BYTES = new byte[0];
+
+    private static final Pattern ANSI_COLOR_PATTERN = Pattern.compile("\u001B\\[[0-9;]+m");
 
     private Map<OutputFrame.OutputType, Consumer<OutputFrame>> consumers;
 
@@ -53,9 +61,9 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
                     LOGGER.error("got frame with type {}, for which no handler is configured", frame.getStreamType());
                 } else {
                     if (frame.getStreamType() == StreamType.RAW) {
-                        processFrame(consumer, outputFrame);
+                        processRawFrame(outputFrame, consumer);
                     } else {
-                        consumer.accept(outputFrame);
+                        processOtherFrame(outputFrame, consumer);
                     }
                 }
             }
@@ -72,8 +80,17 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     @Override
     public void close() throws IOException {
+        OutputFrame lastLine = null;
+
+        if (logString.length() > 0) {
+            lastLine = new OutputFrame(OutputFrame.OutputType.STDOUT, logString.toString().getBytes());
+        }
+
         // send an END frame to every consumer... but only once per consumer.
         for (Consumer<OutputFrame> consumer : new HashSet<>(consumers.values())) {
+            if (lastLine != null) {
+                consumer.accept(lastLine);
+            }
             consumer.accept(OutputFrame.END);
         }
         super.close();
@@ -88,7 +105,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         return completionLatch;
     }
 
-    private synchronized void processFrame(Consumer<OutputFrame> consumer, OutputFrame outputFrame) {
+    private synchronized void processRawFrame(OutputFrame outputFrame, Consumer<OutputFrame> consumer) {
         if (outputFrame != null) {
             String utf8String = outputFrame.getUtf8String();
             byte[] bytes = outputFrame.getBytes();
@@ -109,6 +126,17 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
                 utf8String = processAnsiColorCodes(utf8String, consumer);
                 normalizeLogLines(utf8String, consumer);
+            }
+        }
+    }
+
+    private synchronized void processOtherFrame(OutputFrame outputFrame, Consumer<OutputFrame> consumer) {
+        if (outputFrame != null) {
+            String utf8String = outputFrame.getUtf8String();
+
+            if (utf8String != null && !utf8String.isEmpty()) {
+                utf8String = processAnsiColorCodes(utf8String, consumer);
+                consumer.accept(new OutputFrame(outputFrame.getType(), utf8String.getBytes()));
             }
         }
     }
@@ -139,7 +167,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     private String processAnsiColorCodes(String utf8String, Consumer<OutputFrame> consumer) {
         if (consumer instanceof BaseConsumer && ((BaseConsumer)consumer).isRemoveColorCodes()) {
-            utf8String = utf8String.replaceAll("\u001B\\[[0-9;]+m", "");
+            return ANSI_COLOR_PATTERN.matcher(utf8String).replaceAll("");
         }
         return utf8String;
     }
