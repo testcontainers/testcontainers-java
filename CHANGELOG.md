@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
-- Fixed missing `commons-codec` dependency ([\#641](https://github.com/testcontainers/testcontainers-java/issues/641))
+- Fixed missing `commons-codec` dependency ([\#642](https://github.com/testcontainers/testcontainers-java/issues/642))
 - Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped ([\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
 
 ### Changed
