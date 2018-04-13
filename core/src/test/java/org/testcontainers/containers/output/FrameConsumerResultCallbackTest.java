@@ -68,17 +68,17 @@ public class FrameConsumerResultCallbackTest {
         WaitingConsumer waitConsumer = new WaitingConsumer();
         callback.addConsumer(OutputType.STDOUT, waitConsumer);
         callback.onNext(new Frame(StreamType.RAW, FRAME_PAYLOAD.getBytes()));
-        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Test2"), 1, TimeUnit.MILLISECONDS);
-        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Тест1"), 1, TimeUnit.MILLISECONDS);
+        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Test2"), 1, TimeUnit.SECONDS);
+        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Тест1"), 1, TimeUnit.SECONDS);
         Exception exception = null;
         try {
-            waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Test3"), 1, TimeUnit.MILLISECONDS);
+            waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Test3"), 1, TimeUnit.SECONDS);
         } catch (Exception e) {
             exception = e;
         }
         assertTrue(exception instanceof TimeoutException);
         callback.close();
-        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Test3"), 1, TimeUnit.MILLISECONDS);
+        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("Test3"), 1, TimeUnit.SECONDS);
     }
 
     @Test
@@ -87,17 +87,17 @@ public class FrameConsumerResultCallbackTest {
         WaitingConsumer waitConsumer = new WaitingConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputType.STDOUT, waitConsumer);
         callback.onNext(new Frame(StreamType.RAW, FRAME_PAYLOAD.getBytes()));
-        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[1;33mTest2\u001B[0m"), 1, TimeUnit.MILLISECONDS);
-        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[0;32mТест1\u001B[0m"), 1, TimeUnit.MILLISECONDS);
+        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[1;33mTest2\u001B[0m"), 1, TimeUnit.SECONDS);
+        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[0;32mТест1\u001B[0m"), 1, TimeUnit.SECONDS);
         Exception exception = null;
         try {
-            waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[0;31mTest3\u001B[0m"), 1, TimeUnit.MILLISECONDS);
+            waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[0;31mTest3\u001B[0m"), 1, TimeUnit.SECONDS);
         } catch (Exception e) {
             exception = e;
         }
         assertTrue(exception instanceof TimeoutException);
         callback.close();
-        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[0;31mTest3\u001B[0m"), 1, TimeUnit.MILLISECONDS);
+        waitConsumer.waitUntil(frame -> frame.getType() == OutputType.STDOUT && frame.getUtf8String().equals("\u001B[0;31mTest3\u001B[0m"), 1, TimeUnit.SECONDS);
     }
 
     @Test
