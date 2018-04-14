@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -50,6 +51,15 @@ public class FrameConsumerResultCallbackTest {
         callback.addConsumer(OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
         assertEquals(FRAME_PAYLOAD, consumer.toUtf8String());
+    }
+
+    @Test
+    public void basicConsumer() {
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        BasicConsumer consumer = new BasicConsumer();
+        callback.addConsumer(OutputType.STDOUT, consumer);
+        callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
+        assertEquals(LOG_RESULT, consumer.toString());
     }
 
     @Test
@@ -115,5 +125,24 @@ public class FrameConsumerResultCallbackTest {
         callback.onNext(new Frame(StreamType.RAW, bytes2));
         callback.close();
         assertEquals(payload, consumer.toUtf8String());
+    }
+
+    private static class BasicConsumer implements Consumer<OutputFrame> {
+        private boolean firstLine = true;
+        private StringBuilder input = new StringBuilder();
+
+        @Override
+        public void accept(OutputFrame outputFrame) {
+            if (!firstLine) {
+                input.append('\n');
+            }
+            firstLine = false;
+            input.append(outputFrame.getUtf8String());
+        }
+
+        @Override
+        public String toString() {
+            return input.toString();
+        }
     }
 }
