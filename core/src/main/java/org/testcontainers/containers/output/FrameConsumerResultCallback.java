@@ -166,7 +166,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
     }
 
     private String processAnsiColorCodes(String utf8String, Consumer<OutputFrame> consumer) {
-        if (consumer instanceof BaseConsumer && ((BaseConsumer)consumer).isRemoveColorCodes()) {
+        if (!(consumer instanceof BaseConsumer) || ((BaseConsumer) consumer).isRemoveColorCodes()) {
             return ANSI_COLOR_PATTERN.matcher(utf8String).replaceAll("");
         }
         return utf8String;
