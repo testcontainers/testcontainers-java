@@ -23,6 +23,7 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
         OutputFrame.OutputType outputType = outputFrame.getType();
 
         String utf8String = outputFrame.getUtf8String();
+        utf8String = utf8String.replaceAll(FrameConsumerResultCallback.LINE_BREAK_AT_END_REGEX, "");
         switch (outputType) {
             case END:
                 break;

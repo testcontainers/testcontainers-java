@@ -94,12 +94,11 @@ public class FrameConsumerResultCallbackTest {
     @Test
     public void passStdoutSingleLineWithNewline() {
         String payload = "Test\n";
-        String result = "Test";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
-        assertEquals(result, consumer.toUtf8String());
+        assertEquals(payload, consumer.toUtf8String());
     }
 
     @Test

@@ -31,7 +31,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     private static final String LINE_BREAK_REGEX = "((\\r?\\n)|(\\r))";
 
-    private static final String LINE_BREAK_AT_END_REGEX = LINE_BREAK_REGEX + "$";
+    static final String LINE_BREAK_AT_END_REGEX = LINE_BREAK_REGEX + "$";
 
     private Map<OutputFrame.OutputType, Consumer<OutputFrame>> consumers;
 
@@ -135,7 +135,6 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         String utf8String = outputFrame.getUtf8String();
 
         utf8String = processAnsiColorCodes(utf8String, consumer);
-        utf8String = utf8String.replaceAll(LINE_BREAK_AT_END_REGEX, "");
         consumer.accept(new OutputFrame(outputFrame.getType(), utf8String.getBytes()));
     }
 
