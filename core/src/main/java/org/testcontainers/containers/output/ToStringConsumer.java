@@ -10,7 +10,7 @@ import java.nio.charset.Charset;
  * Created by rnorth on 26/03/2016.
  */
 public class ToStringConsumer extends BaseConsumer<ToStringConsumer> {
-    private static final byte[] ENTER_BYTES = "\n".getBytes();
+    private static final byte[] NEW_LINE = "\n".getBytes();
 
     private boolean firstLine = true;
     private ByteArrayOutputStream stringBuffer = new ByteArrayOutputStream();
@@ -20,7 +20,7 @@ public class ToStringConsumer extends BaseConsumer<ToStringConsumer> {
         try {
             if (outputFrame.getBytes() != null) {
                 if (!firstLine) {
-                    stringBuffer.write(ENTER_BYTES);
+                    stringBuffer.write(NEW_LINE);
                 }
                 stringBuffer.write(outputFrame.getBytes());
                 stringBuffer.flush();
