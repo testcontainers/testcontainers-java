@@ -63,6 +63,25 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
+    public void passStdoutNull() {
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
+        callback.addConsumer(OutputType.STDOUT, consumer);
+        callback.onNext(new Frame(StreamType.STDOUT, null));
+        assertEquals("", consumer.toUtf8String());
+    }
+
+    @Test
+    public void passStdoutEmptyLine() {
+        String payload = "";
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
+        callback.addConsumer(OutputType.STDOUT, consumer);
+        callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
+        assertEquals(payload, consumer.toUtf8String());
+    }
+
+    @Test
     public void passStdoutSingleLine() {
         String payload = "Test";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();

@@ -6,11 +6,11 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed missing `commons-codec` dependency ([\#642](https://github.com/testcontainers/testcontainers-java/issues/642))
 - Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped ([\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
-- More accurate log processing. The line breaks can be not at end of line, the frame's boundary can split multibyte unicode symbols in the middle. All of this issues is fixed ([PR \#643](https://github.com/testcontainers/testcontainers-java/pull/643))
+- Fixed log processing. The line breaks can be not at end of line, the frame's boundary can split multibyte unicode symbols in the middle. All of this issues is fixed ([PR \#643](https://github.com/testcontainers/testcontainers-java/pull/643))
 
 ### Changed
 - Support multiple HTTP status codes for HttpWaitStrategy ([\#630](https://github.com/testcontainers/testcontainers-java/issues/630))
-- Standard log consumers is are subclasses of `BaseConsumer` class. Other consumers can still only implement a `Consumer` interface, but in `BaseConsumer` class added new `removeColorCodes` property and `withRemoveAnsiCodes(boolean)` method, that can control the log preprocessor to remove/not remove ANSI color codes from log frame before send it to the `Consumer`. By default, preprocessor remove the color codes ([PR \#643](https://github.com/testcontainers/testcontainers-java/pull/643)) 
+- Standard log consumers is are subclasses of `BaseConsumer` class. `BaseConsumer` class added new `removeColorCodes` property and `withRemoveAnsiCodes(boolean)` method (true by default) ([PR \#643](https://github.com/testcontainers/testcontainers-java/pull/643)) 
 
 ## [1.7.0] - 2018-04-07
 

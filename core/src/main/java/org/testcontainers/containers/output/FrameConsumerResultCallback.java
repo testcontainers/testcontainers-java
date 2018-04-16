@@ -25,9 +25,11 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameConsumerResultCallback.class);
 
-    private static final byte[] EMPTY_BYTES = new byte[0];
+    private static final byte[] EMPTY_LINE = new byte[0];
 
     private static final Pattern ANSI_COLOR_PATTERN = Pattern.compile("\u001B\\[[0-9;]+m");
+
+    private static final String LINE_BREAK_REGEX = "((\\r?\\n)|(\\r))";
 
     private Map<OutputFrame.OutputType, Consumer<OutputFrame>> consumers;
 
@@ -59,7 +61,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
                 Consumer<OutputFrame> consumer = consumers.get(outputFrame.getType());
                 if (consumer == null) {
                     LOGGER.error("got frame with type {}, for which no handler is configured", frame.getStreamType());
-                } else {
+                } else if (outputFrame.getBytes() != null && outputFrame.getBytes().length > 0) {
                     if (frame.getStreamType() == StreamType.RAW) {
                         processRawFrame(outputFrame, consumer);
                     } else {
@@ -106,46 +108,39 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
     }
 
     private synchronized void processRawFrame(OutputFrame outputFrame, Consumer<OutputFrame> consumer) {
-        if (outputFrame != null) {
-            String utf8String = outputFrame.getUtf8String();
-            byte[] bytes = outputFrame.getBytes();
+        String utf8String = outputFrame.getUtf8String();
+        byte[] bytes = outputFrame.getBytes();
 
-            if (utf8String != null && !utf8String.isEmpty()) {
-                // Merging the strings by bytes to solve the problem breaking non-latin unicode symbols.
-                if (brokenFrame != null) {
-                    bytes = merge(brokenFrame.getBytes(), bytes);
-                    utf8String = new String(bytes);
-                    brokenFrame = null;
-                }
-                // Logger chunks can break the string in middle of multibyte unicode character.
-                // Backup the bytes to reconstruct proper char sequence with bytes from next frame.
-                if (Character.getType(utf8String.charAt(utf8String.length() - 1)) == Character.OTHER_SYMBOL) {
-                    brokenFrame = new OutputFrame(outputFrame.getType(), bytes);
-                    return;
-                }
-
-                utf8String = processAnsiColorCodes(utf8String, consumer);
-                normalizeLogLines(utf8String, consumer);
-            }
+        // Merging the strings by bytes to solve the problem breaking non-latin unicode symbols.
+        if (brokenFrame != null) {
+            bytes = merge(brokenFrame.getBytes(), bytes);
+            utf8String = new String(bytes);
+            brokenFrame = null;
         }
+        // Logger chunks can break the string in middle of multibyte unicode character.
+        // Backup the bytes to reconstruct proper char sequence with bytes from next frame.
+        int lastCharacterType = Character.getType(utf8String.charAt(utf8String.length() - 1));
+        if (lastCharacterType == Character.OTHER_SYMBOL) {
+            brokenFrame = new OutputFrame(outputFrame.getType(), bytes);
+            return;
+        }
+
+        utf8String = processAnsiColorCodes(utf8String, consumer);
+        normalizeLogLines(utf8String, consumer);
     }
 
     private synchronized void processOtherFrame(OutputFrame outputFrame, Consumer<OutputFrame> consumer) {
-        if (outputFrame != null) {
-            String utf8String = outputFrame.getUtf8String();
+        String utf8String = outputFrame.getUtf8String();
 
-            if (utf8String != null && !utf8String.isEmpty()) {
-                utf8String = processAnsiColorCodes(utf8String, consumer);
-                consumer.accept(new OutputFrame(outputFrame.getType(), utf8String.getBytes()));
-            }
-        }
+        utf8String = processAnsiColorCodes(utf8String, consumer);
+        consumer.accept(new OutputFrame(outputFrame.getType(), utf8String.getBytes()));
     }
 
     private void normalizeLogLines(String utf8String, Consumer<OutputFrame> consumer) {
         // Reformat strings to normalize enters.
-        List<String> lines = new ArrayList<>(Arrays.asList(utf8String.split("((\\r?\\n)|(\\r))")));
+        List<String> lines = new ArrayList<>(Arrays.asList(utf8String.split(LINE_BREAK_REGEX)));
         if (lines.isEmpty()) {
-            consumer.accept(new OutputFrame(OutputFrame.OutputType.STDOUT, EMPTY_BYTES));
+            consumer.accept(new OutputFrame(OutputFrame.OutputType.STDOUT, EMPTY_LINE));
             return;
         }
         if (utf8String.startsWith("\n") || utf8String.startsWith("\r")) {
