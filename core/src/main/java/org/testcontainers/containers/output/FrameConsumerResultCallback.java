@@ -137,7 +137,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
     }
 
     private void normalizeLogLines(String utf8String, Consumer<OutputFrame> consumer) {
-        // Reformat strings to normalize enters.
+        // Reformat strings to normalize new lines.
         List<String> lines = new ArrayList<>(Arrays.asList(utf8String.split(LINE_BREAK_REGEX)));
         if (lines.isEmpty()) {
             consumer.accept(new OutputFrame(OutputFrame.OutputType.STDOUT, EMPTY_LINE));

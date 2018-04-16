@@ -5,13 +5,13 @@ import lombok.Setter;
 
 import java.util.function.Consumer;
 
-public abstract class BaseConsumer<S extends BaseConsumer<S>> implements Consumer<OutputFrame> {
+public abstract class BaseConsumer<SELF extends BaseConsumer<SELF>> implements Consumer<OutputFrame> {
     @Getter
     @Setter
     private boolean removeColorCodes = true;
 
-    public S withRemoveAnsiCodes(boolean removeAnsiCodes) {
+    public SELF withRemoveAnsiCodes(boolean removeAnsiCodes) {
         this.removeColorCodes = removeAnsiCodes;
-        return (S) this;
+        return (SELF) this;
     }
 }
