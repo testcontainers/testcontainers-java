@@ -1,19 +1,12 @@
 package org.testcontainers;
 
-import org.junit.Assume;
 import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.GenericContainer;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
 
 public class DaemonTest {
 
@@ -49,19 +42,11 @@ public class DaemonTest {
 
     @Test
     public void testThatAllThreadsAreDaemons() throws Exception {
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-
-        Assume.assumeThat("context ClassLoader can return a list of classpath's URLs", contextClassLoader, instanceOf(URLClassLoader.class));
-
-        String classpath = Stream.of(((URLClassLoader) contextClassLoader).getURLs())
-            .map(URL::getFile)
-            .collect(Collectors.joining(File.pathSeparator));
-
         ProcessBuilder processBuilder = new ProcessBuilder(
             System.getProperty("java.home") + "/bin/java",
             "-ea",
             "-classpath",
-            classpath,
+            System.getProperty("java.class.path"),
             DaemonTest.class.getCanonicalName()
         );
 
