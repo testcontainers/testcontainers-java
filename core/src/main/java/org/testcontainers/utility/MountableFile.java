@@ -8,6 +8,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.images.builder.Transferable;
 
 import java.io.File;
@@ -280,7 +281,7 @@ public class MountableFile implements Transferable {
     }
 
     private void deleteOnExit(final Path path) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> recursiveDeleteDir(path)));
+        Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> recursiveDeleteDir(path)));
     }
 
     /**
