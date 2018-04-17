@@ -5,21 +5,26 @@ import com.google.common.base.Charsets;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.function.Consumer;
 
 /**
  * Created by rnorth on 26/03/2016.
  */
-public class ToStringConsumer implements Consumer<OutputFrame> {
+public class ToStringConsumer extends BaseConsumer<ToStringConsumer> {
+    private static final byte[] NEW_LINE = "\n".getBytes();
 
+    private boolean firstLine = true;
     private ByteArrayOutputStream stringBuffer = new ByteArrayOutputStream();
 
     @Override
     public void accept(OutputFrame outputFrame) {
         try {
             if (outputFrame.getBytes() != null) {
+                if (!firstLine) {
+                    stringBuffer.write(NEW_LINE);
+                }
                 stringBuffer.write(outputFrame.getBytes());
                 stringBuffer.flush();
+                firstLine = false;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
