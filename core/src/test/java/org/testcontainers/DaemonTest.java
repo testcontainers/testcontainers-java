@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.GenericContainer;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ public class DaemonTest {
         GenericContainer genericContainer = null;
 
         try {
-            genericContainer = new GenericContainer();
+            genericContainer = new GenericContainer().withCommand("top");
             genericContainer.start();
 
             Set<Thread> threads = new HashSet<>(Thread.getAllStackTraces().keySet());
@@ -43,7 +44,7 @@ public class DaemonTest {
     @Test
     public void testThatAllThreadsAreDaemons() throws Exception {
         ProcessBuilder processBuilder = new ProcessBuilder(
-            System.getProperty("java.home") + "/bin/java",
+            new File(System.getProperty("java.home")).toPath().resolve("bin").resolve("java").toString(),
             "-ea",
             "-classpath",
             System.getProperty("java.class.path"),
