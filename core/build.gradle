@@ -106,10 +106,10 @@ dependencies {
     compile 'org.apache.commons:commons-compress:1.15'
     // Added for JDK9 compatibility since it's missing this package
     compile 'javax.xml.bind:jaxb-api:2.3.0'
-    compile 'org.rnorth.duct-tape:duct-tape:1.0.6'
+    compile 'org.rnorth.duct-tape:duct-tape:1.0.7'
     compile 'org.rnorth.visible-assertions:visible-assertions:2.1.0'
 
-    shaded ('com.github.docker-java:docker-java:3.0.12') {
+    shaded ('com.github.docker-java:docker-java:3.1.0-rc-2') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
         exclude(group: 'log4j')
