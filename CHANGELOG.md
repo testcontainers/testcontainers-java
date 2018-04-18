@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Support multiple HTTP status codes for HttpWaitStrategy ([\#630](https://github.com/testcontainers/testcontainers-java/issues/630))
 - Mark all long-living threads started by Testcontainers as daemons and group them. ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
 - Remove noisy `DEBUG` logging of Netty packets ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
+- Updated docker-java to 3.1.0-rc-2 ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
 
 ## [1.7.0] - 2018-04-07
 
