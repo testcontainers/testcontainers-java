@@ -37,6 +37,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * This class is a modified version of docker-java's NettyDockerCmdExecFactory v3.1.0-rc-2
@@ -91,6 +92,8 @@ public class TestcontainersDockerCmdExecFactory extends AbstractDockerCmdExecFac
     }
 
     private DuplexChannel connect() {
+        checkState(!eventLoopGroup.isShuttingDown(), "EventLoop is shutting down");
+
         try {
             return connect(bootstrap);
         } catch (InterruptedException e) {
