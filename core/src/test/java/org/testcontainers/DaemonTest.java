@@ -9,6 +9,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+
+/**
+ * This test forks a new JVM, otherwise it's not possible to reliably diff the threads
+ */
 public class DaemonTest {
 
     public static void main(String[] args) {
@@ -51,6 +56,6 @@ public class DaemonTest {
             DaemonTest.class.getCanonicalName()
         );
 
-        assert processBuilder.inheritIO().start().waitFor() == 0;
+        assertEquals(0, processBuilder.inheritIO().start().waitFor());
     }
 }
