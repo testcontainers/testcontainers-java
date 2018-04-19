@@ -111,6 +111,10 @@ public class TestcontainersDockerCmdExecFactory extends AbstractDockerCmdExecFac
         DuplexChannel connect(final Bootstrap bootstrap) throws InterruptedException;
     }
 
+    private ThreadFactory createThreadFactory() {
+        return new DefaultThreadFactory(THREAD_PREFIX, true, Thread.NORM_PRIORITY, DockerClientFactory.TESTCONTAINERS_THREAD_GROUP);
+    }
+
     private class UnixDomainSocketInitializer implements NettyInitializer {
         @Override
         public EventLoopGroup init(Bootstrap bootstrap, DockerClientConfig dockerClientConfig) {
@@ -120,10 +124,6 @@ public class TestcontainersDockerCmdExecFactory extends AbstractDockerCmdExecFac
                 return kqueueGroup();
             }
             throw new RuntimeException("Unspported OS");
-        }
-
-        private ThreadFactory createThreadFactory() {
-            return new DefaultThreadFactory(THREAD_PREFIX, true, Thread.NORM_PRIORITY, DockerClientFactory.TESTCONTAINERS_THREAD_GROUP);
         }
 
         public EventLoopGroup epollGroup() {
@@ -163,7 +163,7 @@ public class TestcontainersDockerCmdExecFactory extends AbstractDockerCmdExecFac
     private class InetSocketInitializer implements NettyInitializer {
         @Override
         public EventLoopGroup init(Bootstrap bootstrap, final DockerClientConfig dockerClientConfig) {
-            EventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(0, new DefaultThreadFactory(THREAD_PREFIX));
+            EventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(0, createThreadFactory());
 
             // TODO do we really need BouncyCastle?
             Security.addProvider(new BouncyCastleProvider());
