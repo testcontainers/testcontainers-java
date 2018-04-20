@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
+
+### Changed
+
+## [1.7.1] - 2018-04-20
+
+### Fixed
 - Fixed missing `commons-codec` dependency ([\#642](https://github.com/testcontainers/testcontainers-java/issues/642))
 - Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped ([\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
 - Fixed log processing: multibyte unicode, linebreaks and ASCII color codes. Color codes can be turned on with `withRemoveAnsiCodes(false)` ([\#643](https://github.com/testcontainers/testcontainers-java/pull/643))
