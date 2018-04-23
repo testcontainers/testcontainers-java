@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * <p>Callers are responsible for ensuring that this fixed port is actually available; failure will occur if it is
  * not available - which could manifest as flaky or unstable tests.</p>
  */
-public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericContainer<SELF>> extends GenericContainer<SELF> {
+public class FixedHostPortGenericContainer extends GenericContainer<FixedHostPortGenericContainer> {
     public FixedHostPortGenericContainer(@NotNull String dockerImageName) {
         super(dockerImageName);
     }
@@ -22,7 +22,7 @@ public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericCont
      * @param containerPort     a port in the container
      * @return                  this container
      */
-    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+    public FixedHostPortGenericContainer withFixedExposedPort(int hostPort, int containerPort) {
 
         return withFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
     }
@@ -34,7 +34,7 @@ public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericCont
      * @param protocol          an internet protocol (tcp or udp)
      * @return                  this container
      */
-    public SELF withFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
+    public FixedHostPortGenericContainer withFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
 
         super.addFixedExposedPort(hostPort, containerPort, protocol);
 

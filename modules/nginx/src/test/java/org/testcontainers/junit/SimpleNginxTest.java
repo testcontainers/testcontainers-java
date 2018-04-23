@@ -21,7 +21,7 @@ public class SimpleNginxTest {
     private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
     @Rule
-    public NginxContainer nginx = new NginxContainer<>()
+    public NginxContainer nginx = new NginxContainer()
             .withCustomContent(contentFolder.toString())
             .waitingFor(new HttpWaitStrategy());
 

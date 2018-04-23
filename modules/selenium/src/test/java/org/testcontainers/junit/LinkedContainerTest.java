@@ -27,13 +27,13 @@ public class LinkedContainerTest {
     public Network network = Network.newNetwork();
 
     @Rule
-    public NginxContainer nginx = new NginxContainer<>()
+    public NginxContainer nginx = new NginxContainer()
             .withNetwork(network)
             .withNetworkAliases("nginx")
             .withCustomContent(contentFolder.toString());
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer<>()
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
             .withNetwork(network)
             .withDesiredCapabilities(DesiredCapabilities.chrome());
 

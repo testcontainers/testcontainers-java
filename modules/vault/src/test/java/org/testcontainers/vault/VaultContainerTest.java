@@ -23,7 +23,7 @@ public class VaultContainerTest {
     private static final String VAULT_TOKEN = "my-root-token";
 
     @ClassRule
-    public static VaultContainer vaultContainer = new VaultContainer<>()
+    public static VaultContainer vaultContainer = new VaultContainer()
             .withVaultToken(VAULT_TOKEN)
             .withVaultPort(VAULT_PORT)
             .withSecretInVault("secret/testing1", "top_secret=password123")

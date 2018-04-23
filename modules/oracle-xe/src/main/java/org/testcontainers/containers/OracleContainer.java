@@ -5,7 +5,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 /**
  * @author gusohal
  */
-public class OracleContainer extends JdbcDatabaseContainer {
+public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public static final String NAME = "oracle";
 
