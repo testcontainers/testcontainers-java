@@ -35,8 +35,7 @@ public class Wait {
      */
     public static HttpWaitStrategy forHttp(String path) {
         return new HttpWaitStrategy()
-                .forPath(path)
-                .forStatusCode(HttpURLConnection.HTTP_OK);
+                .forPath(path);
     }
 
     /**
@@ -60,5 +59,14 @@ public class Wait {
      */
     public static LogMessageWaitStrategy forLogMessage(String regex, int times) {
         return new LogMessageWaitStrategy().withRegEx(regex).withTimes(times);
+    }
+
+    /**
+     * Convenience method to return a WaitStrategy leveraging Docker's built-in healthcheck.
+     *
+     * @return DockerHealthcheckWaitStrategy
+     */
+    public static DockerHealthcheckWaitStrategy forHealthcheck() {
+        return new DockerHealthcheckWaitStrategy();
     }
 }

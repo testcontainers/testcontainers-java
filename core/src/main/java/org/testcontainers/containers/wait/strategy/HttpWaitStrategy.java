@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -32,11 +33,16 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private static final String AUTH_BASIC = "Basic ";
 
     private String path = "/";
-    private int statusCode = HttpURLConnection.HTTP_OK;
+    private Set<Integer> statusCodes = new HashSet<>();
     private boolean tlsEnabled;
     private String username;
     private String password;
     private Predicate<String> responsePredicate;
+    private Predicate<Integer> statusCodePredicate = responseCode -> {
+        // If we did not provide any status code, we assume by default HttpURLConnection.HTTP_OK
+        if (statusCodes.isEmpty() && HttpURLConnection.HTTP_OK == responseCode) return true;
+        return statusCodes.contains(responseCode);
+    };
 
     /**
      * Waits for the given status code.
@@ -45,7 +51,17 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      * @return this
      */
     public HttpWaitStrategy forStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+        statusCodes.add(statusCode);
+        return this;
+    }
+
+    /**
+     * Waits for the status code to pass the given predicate
+     * @param statusCodePredicate The predicate to test the response against
+     * @return this
+     */
+    public HttpWaitStrategy forStatusCodeMatching(Predicate<Integer> statusCodePredicate) {
+        this.statusCodePredicate = this.statusCodePredicate.or(statusCodePredicate);
         return this;
     }
 
@@ -122,7 +138,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                         connection.setRequestMethod("GET");
                         connection.connect();
 
-                        if (statusCode != connection.getResponseCode()) {
+                        if (!statusCodePredicate.test(connection.getResponseCode())) {
                             throw new RuntimeException(String.format("HTTP response code was: %s",
                                 connection.getResponseCode()));
                         }
@@ -144,7 +160,8 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException(String.format(
-                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCode));
+                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes.isEmpty() ?
+                    HttpURLConnection.HTTP_OK : statusCodes));
         }
     }
 

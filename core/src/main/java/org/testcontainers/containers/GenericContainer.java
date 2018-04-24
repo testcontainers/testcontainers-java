@@ -393,7 +393,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
         PathUtils.mkdirp(directory);
 
-        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
             PathUtils.recursiveDeleteDir(directory);
         }));
 
@@ -550,7 +550,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
         return dockerClient.listContainersCmd()
-                .withStatusFilter("running")
+                .withStatusFilter(Arrays.asList("running"))
                 .exec().stream()
                 .flatMap(container -> Stream.of(container.getNames()))
                 .filter(name -> name.endsWith(linkableContainer.getContainerName()))
@@ -910,7 +910,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             return image.get();
         } catch (Exception e) {
-            throw new ContainerFetchException("Can't get Docker image name from " + image, e);
+            throw new ContainerFetchException("Can't get Docker image: " + image, e);
         }
     }
 

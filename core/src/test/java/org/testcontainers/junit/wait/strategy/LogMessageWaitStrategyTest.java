@@ -1,8 +1,8 @@
-package org.testcontainers.junit.wait;
+package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

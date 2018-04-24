@@ -4,9 +4,33 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
-- Fixed extraneous insertion of `useSSL=false` in all JDBC URL strings, even for DBs that do not understand it. Usage is now restricted to MySQL by default and can be overridden by authors of `JdbcDatabaseContainer` subclasses ([\#568](https://github.com/testcontainers/testcontainers-java/issues/568))
 
 ### Changed
+- Added restart functionality in `GenericContainer` ([\#616](https://github.com/testcontainers/testcontainers-java/pull/616))
+
+## [1.7.1] - 2018-04-20
+
+### Fixed
+- Fixed missing `commons-codec` dependency ([\#642](https://github.com/testcontainers/testcontainers-java/issues/642))
+- Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped ([\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
+- Fixed log processing: multibyte unicode, linebreaks and ASCII color codes. Color codes can be turned on with `withRemoveAnsiCodes(false)` ([\#643](https://github.com/testcontainers/testcontainers-java/pull/643))
+- Fixed Docker host IP detection within docker container (detect only if not explicitly set) ([\#648](https://github.com/testcontainers/testcontainers-java/pull/648))
+
+### Changed
+- Support multiple HTTP status codes for HttpWaitStrategy ([\#630](https://github.com/testcontainers/testcontainers-java/issues/630))
+- Mark all long-living threads started by Testcontainers as daemons and group them. ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
+- Remove noisy `DEBUG` logging of Netty packets ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
+- Updated docker-java to 3.1.0-rc-2 ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
+
+## [1.7.0] - 2018-04-07
+
+### Fixed
+- Fixed extraneous insertion of `useSSL=false` in all JDBC URL strings, even for DBs that do not understand it. Usage is now restricted to MySQL by default and can be overridden by authors of `JdbcDatabaseContainer` subclasses ([\#568](https://github.com/testcontainers/testcontainers-java/issues/568))
+- Fixed `getServicePort` on `DockerComposeContainer` throws NullPointerException if service instance number in not used. ([\#619](https://github.com/testcontainers/testcontainers-java/issues/619))
+- Increase Ryuk's timeout and make it configurable with `ryuk.container.timeout`. ([\#621](https://github.com/testcontainers/testcontainers-java/issues/621)[\#635](https://github.com/testcontainers/testcontainers-java/issues/635))
+
+### Changed
+- Added compatibility with selenium greater than 3.X ([\#611](https://github.com/testcontainers/testcontainers-java/issues/611))
 - Abstracted and changed database init script functionality to support use of SQL-like scripts with non-JDBC connections. ([\#551](https://github.com/testcontainers/testcontainers-java/pull/551))
 - Added `JdbcDatabaseContainer(Future)` constructor. ([\#543](https://github.com/testcontainers/testcontainers-java/issues/543))
 - Mark DockerMachineClientProviderStrategy as not persistable ([\#593](https://github.com/testcontainers/testcontainers-java/pull/593))
@@ -14,7 +38,9 @@ All notable changes to this project will be documented in this file.
 - Deprecated `WaitStrategy` and implementations in favour of classes with same names in `org.testcontainers.containers.strategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `ContainerState` interface representing the state of a started container ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `WaitStrategyTarget` interface which is the target of the new `WaitStrategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
-- Added restart functionality in `GenericContainer` ([\#616](https://github.com/testcontainers/testcontainers-java/pull/616))
+- *Breaking:* Removed hard-coded `wnameless` Oracle database image name. Users should instead place a file on the classpath named `testcontainers.properties` containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag/SHA hash. For information, the approach recommended by Oracle for creating an Oracle XE docker image is described [here](https://blogs.oracle.com/oraclewebcentersuite/implement-oracle-database-xe-as-docker-containers). 
+- Added `DockerHealthcheckWaitStrategy` that is based on Docker's built-in [healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) ([\#618](https://github.com/testcontainers/testcontainers-java/pull/618)).
+- Added `withLogConsumer(String serviceName, Consumer<OutputFrame> consumer)` method to `DockerComposeContainer` ([\#605](https://github.com/testcontainers/testcontainers-java/issues/605))
 
 ## [1.6.0] - 2018-01-28
 
