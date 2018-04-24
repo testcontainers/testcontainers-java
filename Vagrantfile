@@ -3,7 +3,7 @@
 
 Vagrant.configure(2) do |config|
 
-  config.vm.box = "box-cutter/ubuntu1504-docker"
+  config.vm.box = "tbfisher/ubuntu1504docker"
 
   config.vm.network "private_network", ip: "192.168.33.10"
 
