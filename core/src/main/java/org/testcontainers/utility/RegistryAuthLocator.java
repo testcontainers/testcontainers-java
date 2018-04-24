@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -39,7 +38,9 @@ public class RegistryAuthLocator {
      */
     public RegistryAuthLocator(AuthConfig defaultAuthConfig) {
         this.defaultAuthConfig = defaultAuthConfig;
-        this.configFile = new File(System.getProperty("user.home") + "/.docker/config.json");
+        final String dockerConfigLocation = System.getenv().getOrDefault("DOCKER_CONFIG",
+            System.getProperty("user.home") + "/.docker");
+        this.configFile = new File(dockerConfigLocation + "/config.json");
         this.commandPathPrefix = "";
     }
 
@@ -62,6 +63,7 @@ public class RegistryAuthLocator {
                 // auths/<registry> is an empty dict - use a credential helper
                 return authConfigUsingCredentialsStoreOrHelper(reposName, config);
             }
+            // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
             log.error("Failure when attempting to lookup auth config. Falling back to docker-java default behaviour", e);
         }
@@ -70,13 +72,13 @@ public class RegistryAuthLocator {
 
     private AuthConfig authConfigUsingCredentialsStoreOrHelper(String hostName, JsonNode config) throws Exception {
 
-        final String credsStoreName = config.at("/credsStore").asText();
-        final String credHelper = config.at("/credHelpers/" + hostName).asText();
+        final JsonNode credsStoreName = config.at("/credsStore");
+        final JsonNode credHelper = config.at("/credHelpers/" + hostName);
 
-        if (StringUtils.isNotBlank(credHelper)) {
-            return runCredentialProvider(hostName, credHelper);
-        } else if (StringUtils.isNotBlank(credsStoreName)) {
-            return runCredentialProvider(hostName, credsStoreName);
+        if (!credHelper.isMissingNode()) {
+            return runCredentialProvider(hostName, credHelper.asText());
+        } else if (!credsStoreName.isMissingNode()) {
+            return runCredentialProvider(hostName, credsStoreName.asText());
         } else {
             throw new UnsupportedOperationException();
         }
