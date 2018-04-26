@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
+- Retry any exceptions (not just `DockerClientException`) on image pull ([\#662](https://github.com/testcontainers/testcontainers-java/issues/662))
 
 ### Changed
 
