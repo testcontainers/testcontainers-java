@@ -38,7 +38,7 @@ public class JDBCDriverTest {
         return asList(
             new Object[][]{
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false},
-                {"jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false},
+                {"jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql&allowMultiQueries=true", true, false, false},
                 {"jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
                 {"jdbc:tc:mysql://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
                 {"jdbc:tc:mysql://hostname/databasename", false, false, false},
@@ -48,7 +48,7 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mariadb:10.1.16://hostname/databasename", false, false, false},
                 {"jdbc:tc:mariadb://hostname/databasename", false, false, false},
                 {"jdbc:tc:mariadb://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
-                {"jdbc:tc:mariadb://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", true, false, false},
+                {"jdbc:tc:mariadb://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql&allowMultiQueries=true", true, false, false},
                 {"jdbc:tc:mariadb://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
                 {"jdbc:tc:mariadb:10.1.16://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", false, false, true}
             });

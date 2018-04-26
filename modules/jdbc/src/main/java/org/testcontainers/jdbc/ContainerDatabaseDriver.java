@@ -88,28 +88,30 @@ public class ContainerDatabaseDriver implements Driver {
               If we already have a running container for this exact connection string, we want to connect
               to that rather than create a new container
              */
+
+            /*
+                  Extract from the JDBC connection URL:
+             * The database type (e.g. mysql, postgresql, ...)
+             * The docker tag, if provided.
+             * The URL query string, if provided
+             */
+            Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
+            if (!urlMatcher.matches()) {
+                throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
+            }
+            String databaseType = urlMatcher.group(1);
+            String tag = urlMatcher.group(3);
+            if (tag == null) {
+                tag = "latest";
+            }
+
+            queryString = urlMatcher.group(4);
+            if (queryString == null) {
+                queryString = "";
+            }
+
             JdbcDatabaseContainer container = jdbcUrlContainerCache.get(url);
             if (container == null) {
-                /*
-                  Extract from the JDBC connection URL:
-                   * The database type (e.g. mysql, postgresql, ...)
-                   * The docker tag, if provided.
-                   * The URL query string, if provided
-                 */
-                Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
-                if (!urlMatcher.matches()) {
-                    throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
-                }
-                String databaseType = urlMatcher.group(1);
-                String tag = urlMatcher.group(3);
-                if (tag == null) {
-                    tag = "latest";
-                }
-
-                queryString = urlMatcher.group(4);
-                if (queryString == null) {
-                    queryString = "";
-                }
 
                 Map<String, String> parameters = getContainerParameters(url);
 
@@ -154,8 +156,8 @@ public class ContainerDatabaseDriver implements Driver {
               an init script or function has been specified, use it
              */
             if (!initializedContainers.contains(container.getContainerId())) {
-                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
-                runInitScriptIfRequired(url, databaseDelegate);
+                //DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
+                runInitScriptIfRequired(url, connection);
                 runInitFunctionIfRequired(url, connection);
                 initializedContainers.add(container.getContainerId());
             }
@@ -219,7 +221,7 @@ public class ContainerDatabaseDriver implements Driver {
      * @param databaseDelegate database delegate to apply init scripts to the database
      * @throws SQLException on script or DB error
      */
-    private void runInitScriptIfRequired(String url, DatabaseDelegate databaseDelegate) throws SQLException {
+    private void runInitScriptIfRequired(String url, Connection connection) throws SQLException {
         Matcher matcher = INITSCRIPT_MATCHING_PATTERN.matcher(url);
         if (matcher.matches()) {
             String initScriptPath = matcher.group(2);
@@ -232,7 +234,7 @@ public class ContainerDatabaseDriver implements Driver {
                 }
 
                 String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, sql);
+                ScriptUtils.executeDatabaseScript(connection, initScriptPath, sql);
             } catch (IOException e) {
                 LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                 throw new SQLException("Could not load classpath init script: " + initScriptPath, e);
