@@ -12,7 +12,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.dockerclient.transport.TestcontainersDockerCmdExecFactory;
+import org.testcontainers.dockerclient.transport.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
@@ -166,7 +166,7 @@ public abstract class DockerClientProviderStrategy {
     protected DockerClient getClientForConfig(DockerClientConfig config) {
         return DockerClientBuilder
                     .getInstance(config)
-                    .withDockerCmdExecFactory(new TestcontainersDockerCmdExecFactory())
+                    .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory())
                     .build();
     }
 

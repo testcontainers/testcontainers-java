@@ -115,6 +115,13 @@ dependencies {
         exclude(group: 'log4j')
         exclude(group: 'com.google.code.findbug')
     }
+    shaded ('de.gesellix:docker-filesocket:2018-02-17T21-56-51') {
+        exclude(group: 'com.squareup.okhttp3')
+        exclude(group: 'com.squareup.okio')
+    }
+    shaded 'com.squareup.okhttp3:okhttp:3.9.1'
+    shaded 'com.squareup.okio:okio:1.14.0'
+
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.rnorth:tcp-unix-socket-proxy:1.0.2'
     shaded 'org.zeroturnaround:zt-exec:1.8'
