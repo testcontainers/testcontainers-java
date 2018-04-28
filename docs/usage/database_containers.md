@@ -63,7 +63,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:mysql://somehostname:someport/databasename`
 
-*(Note: this will implicitly use the `latest` version of MySQL. Using `latest` is risky and Testcontainers will soon require an explicit tag name to be provided)*
+*(Note: this will use a fixed version of the database. You should typically specify the version you desire via a tag parameter, as below).*
 
 #### Using Testcontainers with a fixed version
 
