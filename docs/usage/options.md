@@ -124,7 +124,7 @@ public static GenericContainer elasticsearch =
 
 If the used image supports Docker's [Healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) feature, you can directly leverage the `healthy` state of the container as your wait condition:
 ```java
-@ClassRule2.32.3
+@ClassRule
 public static GenericContainer container =
     new GenericContainer("image-with-healthcheck:4.2")
                .waitingFor(Wait.forHealthcheck());
