@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Changed
+- Database container images are now pinned to a specific version rather than using `latest`. The tags selected are the most recent as of the time of this change. If a JDBC URL is used with no tag specified, a WARN level log message is output, pending a future change to make tags mandatory in the JDBC URL.
 
 ## [1.7.1] - 2018-04-20
 
