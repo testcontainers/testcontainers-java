@@ -51,7 +51,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
             profiler.start("Check local images");
 
             int attempts = 0;
-            DockerClientException lastException = null;
+            Exception lastException = null;
             while (true) {
                 // Does our cache already know the image?
                 if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
@@ -98,10 +98,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         .pullImageCmd(imageName.getUnversionedPart())
                         .withTag(imageName.getVersionPart())
                         .exec(callback);
-                    callback.awaitSuccess();
+                    callback.awaitCompletion();
                     AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
                     break;
-                } catch (DockerClientException e) {
+                } catch (Exception e) {
                     lastException = e;
                 }
             }
