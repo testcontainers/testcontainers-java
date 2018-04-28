@@ -21,7 +21,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     private String password = "test";
 
     public PostgreSQLContainer() {
-        this(IMAGE + ":latest");
+        this(IMAGE + ":9.6.8");
     }
 
     public PostgreSQLContainer(final String dockerImageName) {

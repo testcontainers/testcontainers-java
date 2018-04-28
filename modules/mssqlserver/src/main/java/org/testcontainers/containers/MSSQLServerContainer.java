@@ -13,7 +13,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     private String password = "A_Str0ng_Required_Password";
 
     public MSSQLServerContainer() {
-        this(IMAGE + ":latest");
+        this(IMAGE + ":2017-CU6");
     }
 
     public MSSQLServerContainer(final String dockerImageName) {

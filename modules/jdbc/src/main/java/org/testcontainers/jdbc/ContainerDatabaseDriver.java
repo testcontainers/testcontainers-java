@@ -104,6 +104,9 @@ public class ContainerDatabaseDriver implements Driver {
                 String tag = urlMatcher.group(3);
                 if (tag == null) {
                     tag = "latest";
+                    LOGGER.warn("No version tag set in JDBC URL. `latest` will be used now, but " +
+                        "this will stop working in a future version. Please update the JDBC URL to " +
+                        "include a tag.");
                 }
 
                 queryString = urlMatcher.group(4);

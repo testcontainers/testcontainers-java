@@ -19,7 +19,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private String password = "test";
 
     public MySQLContainer() {
-        super(IMAGE + ":latest");
+        super(IMAGE + ":5.7.22");
     }
 
     public MySQLContainer(String dockerImageName) {

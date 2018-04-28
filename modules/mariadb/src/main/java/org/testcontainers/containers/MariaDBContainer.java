@@ -2,7 +2,7 @@ package org.testcontainers.containers;
 
 /**
  * Container implementation for the MariaDB project.
- * 
+ *
  * @author Miguel Gonzalez Sanchez
  */
 public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
@@ -16,7 +16,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
 
     public MariaDBContainer() {
-        super(IMAGE + ":latest");
+        super(IMAGE + ":10.3.6");
     }
 
     public MariaDBContainer(String dockerImageName) {
@@ -31,7 +31,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     @Override
     protected void configure() {
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d", "mariadb-default-conf");
-        
+
         addExposedPort(MARIADB_PORT);
         addEnv("MYSQL_DATABASE", MARIADB_DATABASE);
         addEnv("MYSQL_USER", MARIADB_USER);
