@@ -101,13 +101,7 @@ public class ContainerDatabaseDriver implements Driver {
                     throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
                 }
                 String databaseType = urlMatcher.group(1);
-                String tag = urlMatcher.group(3);
-                if (tag == null) {
-                    tag = "latest";
-                    LOGGER.warn("No version tag set in JDBC URL. `latest` will be used now, but " +
-                        "this will stop working in a future version. Please update the JDBC URL to " +
-                        "include a tag.");
-                }
+                Optional<String> tag = Optional.ofNullable(urlMatcher.group(3));
 
                 queryString = urlMatcher.group(4);
                 if (queryString == null) {

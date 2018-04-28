@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import java.util.Optional;
+
 /**
  * Factory for MySQL containers.
  */
@@ -10,7 +12,7 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
-        return new MySQLContainer(MySQLContainer.IMAGE + ":" + tag);
+    public JdbcDatabaseContainer newInstance(Optional<String> tag) {
+        return new MySQLContainer(MySQLContainer.IMAGE + ":" + tag.orElse(MySQLContainer.DEFAULT_TAG));
     }
 }

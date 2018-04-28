@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import java.util.Optional;
+
 /**
  * Factory for MariaDB org.testcontainers.containers.
  */
@@ -10,7 +12,7 @@ public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
-        return new MariaDBContainer(MariaDBContainer.IMAGE + ":" + tag);
+    public JdbcDatabaseContainer newInstance(Optional<String> tag) {
+        return new MariaDBContainer(MariaDBContainer.IMAGE + ":" + tag.orElse(MariaDBContainer.DEFAULT_TAG));
     }
 }
