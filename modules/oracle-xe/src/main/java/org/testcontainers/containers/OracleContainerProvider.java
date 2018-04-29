@@ -1,7 +1,5 @@
 package org.testcontainers.containers;
 
-import java.util.Optional;
-
 /**
  * Factory for Oracle containers.
  */
@@ -12,9 +10,13 @@ public class OracleContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(Optional<String> tag) {
+    public JdbcDatabaseContainer newInstance() {
+        return new OracleContainer();
+    }
 
-        if (!tag.isPresent()) {
+    @Override
+    public JdbcDatabaseContainer newInstance(String tag) {
+        if (tag != null) {
             throw new UnsupportedOperationException("Oracle database tag should be set in the configured image name");
         }
 

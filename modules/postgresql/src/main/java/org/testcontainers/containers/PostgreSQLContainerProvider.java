@@ -1,7 +1,5 @@
 package org.testcontainers.containers;
 
-import java.util.Optional;
-
 /**
  * Factory for PostgreSQL containers.
  */
@@ -12,7 +10,12 @@ public class PostgreSQLContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(Optional<String> tag) {
-        return new PostgreSQLContainer(PostgreSQLContainer.IMAGE + ":" + tag.orElse(PostgreSQLContainer.DEFAULT_TAG));
+    public JdbcDatabaseContainer newInstance() {
+        return newInstance(PostgreSQLContainer.DEFAULT_TAG);
+    }
+
+    @Override
+    public JdbcDatabaseContainer newInstance(String tag) {
+        return new PostgreSQLContainer(PostgreSQLContainer.IMAGE + ":" + tag);
     }
 }

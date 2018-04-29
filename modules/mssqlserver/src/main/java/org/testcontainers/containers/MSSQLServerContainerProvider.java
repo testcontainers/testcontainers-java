@@ -1,7 +1,5 @@
 package org.testcontainers.containers;
 
-import java.util.Optional;
-
 /**
  * Factory for MS SQL Server containers.
  */
@@ -12,7 +10,12 @@ public class MSSQLServerContainerProvider extends JdbcDatabaseContainerProvider 
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(Optional<String> tag) {
-        return new MSSQLServerContainer(MSSQLServerContainer.IMAGE + ":" + tag.orElse(MSSQLServerContainer.DEFAULT_TAG));
+    public JdbcDatabaseContainer newInstance() {
+        return newInstance(MSSQLServerContainer.DEFAULT_TAG);
+    }
+
+    @Override
+    public JdbcDatabaseContainer newInstance(String tag) {
+        return new MSSQLServerContainer(MSSQLServerContainer.IMAGE + ":" + tag);
     }
 }

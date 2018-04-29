@@ -101,7 +101,7 @@ public class ContainerDatabaseDriver implements Driver {
                     throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
                 }
                 String databaseType = urlMatcher.group(1);
-                Optional<String> tag = Optional.ofNullable(urlMatcher.group(3));
+                String tag = urlMatcher.group(3);
 
                 queryString = urlMatcher.group(4);
                 if (queryString == null) {
@@ -116,7 +116,12 @@ public class ContainerDatabaseDriver implements Driver {
                 ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
                     if (candidateContainerType.supports(databaseType)) {
-                        container = candidateContainerType.newInstance(tag);
+
+                        if (tag != null) {
+                            container = candidateContainerType.newInstance(tag);
+                        } else {
+                            container = candidateContainerType.newInstance();
+                        }
                         delegate = container.getJdbcDriverInstance();
                     }
                 }
