@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
     static final long WAIT_TIMEOUT_MILLIS = 3000;
-    static final String IMAGE_NAME = "alpine:latest";
+    static final String IMAGE_NAME = "alpine:3.7";
 
     /**
      * Indicates that the WaitStrategy has completed waiting successfully.
