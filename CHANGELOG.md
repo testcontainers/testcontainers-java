@@ -6,10 +6,9 @@ All notable changes to this project will be documented in this file.
 - Fix for setting `ryuk.container.timeout` causes a `ClassCastException` ([\#684](https://github.com/testcontainers/testcontainers-java/issues/684))
 
 ### Changed
+- Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
 
 ## [1.7.2] - 2018-04-30
-
-- Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
 
 ### Fixed
 - Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
