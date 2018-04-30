@@ -80,7 +80,7 @@ public class RegistryAuthLocator {
         } else if (!credsStoreName.isMissingNode()) {
             return runCredentialProvider(hostName, credsStoreName.asText());
         } else {
-            throw new UnsupportedOperationException();
+            throw new IllegalStateException("Unsupported Docker config auths settings!");
         }
     }
 
