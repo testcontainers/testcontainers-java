@@ -1,0 +1,12 @@
+{
+    "auths": {
+        "registry.example.com": {}
+    },
+    "HttpHeaders": {
+        "User-Agent": "Docker-Client/18.03.0-ce (darwin)"
+    },
+    "credsStore": "fake",
+    "credHelpers": {
+        "registry.example.com": "fake"
+    }
+}

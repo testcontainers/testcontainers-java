@@ -94,7 +94,11 @@ public final class DockerImageName {
 
     @Override
     public String toString() {
-        return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
+        if (versioning == null) {
+            return getUnversionedPart();
+        } else {
+            return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
+        }
     }
 
     /**
@@ -114,6 +118,10 @@ public final class DockerImageName {
         if (!versioning.isValid()) {
             throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");
         }
+    }
+
+    public String getRegistry() {
+        return registry;
     }
 
     private interface Versioning {
