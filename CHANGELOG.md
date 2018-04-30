@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ## [1.7.2] - 2018-04-30
 
 ### Fixed
+- Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
 - Retry any exceptions (not just `DockerClientException`) on image pull ([\#662](https://github.com/testcontainers/testcontainers-java/issues/662))
 - Fixed handling of the paths with `+` in them ([\#664](https://github.com/testcontainers/testcontainers-java/issues/664))
 
