@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Database container images are now pinned to a specific version rather than using `latest`. The tags selected are the most recent as of the time of this change. If a JDBC URL is used with no tag specified, a WARN level log message is output, pending a future change to make tags mandatory in the JDBC URL. ([\#671](https://github.com/testcontainers/testcontainers-java/issues/671))
+- Updated docker-java to 3.1.0-rc-3, enforced `org.jetbrains:annotations:15.0`. ([\#672](https://github.com/testcontainers/testcontainers-java/issues/672))
 
 ## [1.7.1] - 2018-04-20
 
