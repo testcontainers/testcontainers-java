@@ -22,7 +22,9 @@ import com.couchbase.client.java.cluster.*;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 
@@ -40,39 +42,54 @@ import java.util.List;
  * <p>
  * Optimized by ctayeb
  */
+@AllArgsConstructor
 public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends GenericContainer<SELF> {
 
+    @Wither
     private String memoryQuota = "300";
 
+    @Wither
     private String indexMemoryQuota = "300";
 
+    @Wither
     private String clusterUsername = "Administrator";
 
+    @Wither
     private String clusterPassword = "password";
 
+    @Wither
     private boolean keyValue = true;
 
     @Getter
+    @Wither
     private boolean query = true;
 
     @Getter
+    @Wither
     private boolean index = true;
 
     @Getter
+    @Wither
     private boolean primaryIndex = true;
 
     @Getter
+    @Wither
     private boolean fts = false;
 
+    @Wither
     private boolean beerSample = false;
 
+    @Wither
     private boolean travelSample = false;
 
+    @Wither
     private boolean gamesIMSample = false;
 
-    private CouchbaseEnvironment couchbaseEnvironment;
+    @Getter(lazy = true)
+    private final CouchbaseEnvironment couchbaseEnvironment = createCouchbaseEnvironment();
 
-    private CouchbaseCluster couchbaseCluster;
+    @Getter(lazy = true)
+    private final CouchbaseCluster couchbaseCluster = createCouchbaseCluster();
 
     private List<BucketSettings> newBuckets = new ArrayList<>();
 
@@ -106,91 +123,10 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html#/"));
     }
 
-    public CouchbaseEnvironment getCouchbaseEnvironment() {
-        if (couchbaseEnvironment == null) {
-            initCluster();
-            couchbaseEnvironment = DefaultCouchbaseEnvironment.builder()
-                    .bootstrapCarrierDirectPort(getMappedPort(11210))
-                    .bootstrapCarrierSslPort(getMappedPort(11207))
-                    .bootstrapHttpDirectPort(getMappedPort(8091))
-                    .bootstrapHttpSslPort(getMappedPort(18091))
-                    .build();
-        }
-        return couchbaseEnvironment;
-    }
-
-    public CouchbaseCluster getCouchbaseCluster() {
-        if (couchbaseCluster == null) {
-            couchbaseCluster = CouchbaseCluster.create(getCouchbaseEnvironment(), getContainerIpAddress());
-        }
-        return couchbaseCluster;
-    }
-
-    public SELF withClusterUsername(String username) {
-        this.clusterUsername = username;
-        return self();
-    }
-
-    public SELF withClusterPassword(String password) {
-        this.clusterPassword = password;
-        return self();
-    }
-
-    public SELF withMemoryQuota(String memoryQuota) {
-        this.memoryQuota = memoryQuota;
-        return self();
-    }
-
-    public SELF withIndexMemoryQuota(String indexMemoryQuota) {
-        this.indexMemoryQuota = indexMemoryQuota;
-        return self();
-    }
-
-    public SELF withKeyValue(boolean withKV) {
-        this.keyValue = withKV;
-        return self();
-    }
-
-    public SELF withIndex(boolean withIndex) {
-        this.index = withIndex;
-        return self();
-    }
-
-    public SELF withPrimaryIndex(boolean primaryIndex) {
-        this.primaryIndex = primaryIndex;
-        return self();
-    }
-
-    public SELF withQuery(boolean withQuery) {
-        this.query = withQuery;
-        return self();
-    }
-
-    public SELF withFTS(boolean withFTS) {
-        this.fts = withFTS;
-        return self();
-    }
-
-    public SELF withTravelSample() {
-        this.travelSample = true;
-        return self();
-    }
-
-    public SELF withBeerSample() {
-        this.beerSample = true;
-        return self();
-    }
-
-    public SELF withGamesIMSample() {
-        this.gamesIMSample = true;
-        return self();
-    }
-
     public SELF withNewBucket(BucketSettings bucketSettings) {
         newBuckets.add(bucketSettings);
         return self();
     }
-
 
     public void initCluster() {
         urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(8091));
@@ -295,4 +231,17 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         }
     }
 
+    private CouchbaseCluster createCouchbaseCluster() {
+        return CouchbaseCluster.create(getCouchbaseEnvironment(), getContainerIpAddress());
+    }
+
+    private DefaultCouchbaseEnvironment createCouchbaseEnvironment() {
+        initCluster();
+        return DefaultCouchbaseEnvironment.builder()
+                .bootstrapCarrierDirectPort(getMappedPort(11210))
+                .bootstrapCarrierSslPort(getMappedPort(11207))
+                .bootstrapHttpDirectPort(getMappedPort(8091))
+                .bootstrapHttpSslPort(getMappedPort(18091))
+                .build();
+    }
 }
