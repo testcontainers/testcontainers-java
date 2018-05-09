@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
 ### Fixed
+- Fix for setting ryuk.container.timeout causes a ClassCastException ([\#684](https://github.com/testcontainers/testcontainers-java/issues/684))
 
 ### Changed
 
