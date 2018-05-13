@@ -25,6 +25,7 @@ import com.couchbase.client.java.query.Index;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
+import org.apache.commons.compress.utils.Sets;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 
@@ -36,6 +37,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Based on Laurent Doguin version
@@ -106,6 +108,11 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     @Override
     protected Integer getLivenessCheckPort() {
         return getMappedPort(8091);
+    }
+
+    @Override
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(getLivenessCheckPort());
     }
 
     @Override
