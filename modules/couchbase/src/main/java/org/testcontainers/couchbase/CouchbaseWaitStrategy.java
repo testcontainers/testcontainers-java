@@ -17,11 +17,11 @@ package org.testcontainers.couchbase;
 
 import com.couchbase.client.deps.com.fasterxml.jackson.databind.JsonNode;
 import com.couchbase.client.deps.com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
+import com.google.common.io.BaseEncoding;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.shaded.com.google.common.base.Strings;
-import org.testcontainers.shaded.com.google.common.io.BaseEncoding;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
