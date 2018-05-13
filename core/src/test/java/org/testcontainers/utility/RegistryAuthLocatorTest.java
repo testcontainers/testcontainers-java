@@ -57,7 +57,7 @@ public class RegistryAuthLocatorTest {
 
     @NotNull
     private RegistryAuthLocator createTestAuthLocator(String configName) throws URISyntaxException {
-        final File configFile = Paths.get(Resources.getResource("auth-config/" + configName).toURI()).toFile();
+        final File configFile = new File(Resources.getResource("auth-config/" + configName).toURI());
         return new RegistryAuthLocator(new AuthConfig(), configFile, configFile.getParentFile().getAbsolutePath() + "/");
     }
 
