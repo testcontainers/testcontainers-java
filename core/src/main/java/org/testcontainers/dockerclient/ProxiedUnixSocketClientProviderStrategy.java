@@ -8,7 +8,7 @@ import java.io.File;
 @Slf4j
 public class ProxiedUnixSocketClientProviderStrategy extends UnixSocketClientProviderStrategy {
 
-    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 10;
+    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 100;
 
     private final File socketFile = new File(DOCKER_SOCK_PATH);
 
