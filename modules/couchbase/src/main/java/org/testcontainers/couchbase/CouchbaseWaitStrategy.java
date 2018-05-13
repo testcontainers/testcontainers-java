@@ -19,6 +19,7 @@ import com.couchbase.client.deps.com.fasterxml.jackson.databind.JsonNode;
 import com.couchbase.client.deps.com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
+import lombok.Cleanup;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
@@ -92,6 +93,7 @@ public class CouchbaseWaitStrategy extends GenericContainer.AbstractWaitStrategy
             retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
                 getRateLimiter().doWhenReady(() -> {
                     try {
+                        @Cleanup("disconnect")
                         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
 
                         // authenticate

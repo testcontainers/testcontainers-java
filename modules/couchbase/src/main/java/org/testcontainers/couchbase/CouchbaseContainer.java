@@ -23,6 +23,7 @@ import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
 import lombok.AllArgsConstructor;
+import lombok.Cleanup;
 import lombok.Getter;
 import lombok.experimental.Wither;
 import org.apache.commons.compress.utils.Sets;
@@ -40,9 +41,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Based on Laurent Doguin version
- * <p>
- * Optimized by ctayeb
+ * Based on Laurent Doguin version,
+ *
+ * optimized by Tayeb Chlyah
  */
 @AllArgsConstructor
 public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends GenericContainer<SELF> {
@@ -215,6 +216,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
 
     public void callCouchbaseRestAPI(String url, String payload) throws IOException {
         String fullUrl = urlBase + url;
+        @Cleanup("disconnect")
         HttpURLConnection httpConnection = (HttpURLConnection) ((new URL(fullUrl).openConnection()));
         httpConnection.setDoOutput(true);
         httpConnection.setRequestMethod("POST");
@@ -222,6 +224,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
                 "application/x-www-form-urlencoded");
         String encoded = Base64.encode((clusterUsername + ":" + clusterPassword).getBytes("UTF-8"));
         httpConnection.setRequestProperty("Authorization", "Basic " + encoded);
+        @Cleanup
         DataOutputStream out = new DataOutputStream(httpConnection.getOutputStream());
         out.writeBytes(payload);
         out.flush();
