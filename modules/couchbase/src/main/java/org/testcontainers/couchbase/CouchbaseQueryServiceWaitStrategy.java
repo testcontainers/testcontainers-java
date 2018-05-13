@@ -7,7 +7,6 @@ import com.couchbase.client.java.Bucket;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 
 import java.time.Duration;
@@ -38,13 +37,13 @@ public class CouchbaseQueryServiceWaitStrategy extends AbstractWaitStrategy {
             retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
                 getRateLimiter().doWhenReady(() -> {
                     GetClusterConfigResponse clusterConfig = bucket.core()
-                            .<GetClusterConfigResponse>send(new GetClusterConfigRequest())
-                            .toBlocking().single();
+                        .<GetClusterConfigResponse>send(new GetClusterConfigRequest())
+                        .toBlocking().single();
                     boolean queryServiceEnabled = clusterConfig.config()
-                            .bucketConfig(bucket.name())
-                            .serviceEnabled(ServiceType.QUERY);
+                        .bucketConfig(bucket.name())
+                        .serviceEnabled(ServiceType.QUERY);
                     if (!queryServiceEnabled) {
-                        throw new RuntimeException("Query service not ready yet");
+                        throw new ContainerLaunchException("Query service not ready yet");
                     }
                 });
                 return true;

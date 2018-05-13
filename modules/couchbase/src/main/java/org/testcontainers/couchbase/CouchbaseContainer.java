@@ -25,6 +25,7 @@ import com.couchbase.client.java.query.Index;
 import lombok.AllArgsConstructor;
 import lombok.Cleanup;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.experimental.Wither;
 import org.apache.commons.compress.utils.Sets;
 import org.testcontainers.containers.GenericContainer;
@@ -138,58 +139,55 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         return self();
     }
 
+    @SneakyThrows
     public void initCluster() {
         urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(8091));
-        try {
-            String poolURL = "/pools/default";
-            String poolPayload = "memoryQuota=" + URLEncoder.encode(memoryQuota, "UTF-8") + "&indexMemoryQuota=" + URLEncoder.encode(indexMemoryQuota, "UTF-8");
+        String poolURL = "/pools/default";
+        String poolPayload = "memoryQuota=" + URLEncoder.encode(memoryQuota, "UTF-8") + "&indexMemoryQuota=" + URLEncoder.encode(indexMemoryQuota, "UTF-8");
 
-            String setupServicesURL = "/node/controller/setupServices";
-            StringBuilder servicePayloadBuilder = new StringBuilder();
-            if (keyValue) {
-                servicePayloadBuilder.append("kv,");
-            }
-            if (query) {
-                servicePayloadBuilder.append("n1ql,");
-            }
-            if (index) {
-                servicePayloadBuilder.append("index,");
-            }
-            if (fts) {
-                servicePayloadBuilder.append("fts,");
-            }
-            String setupServiceContent = "services=" + URLEncoder.encode(servicePayloadBuilder.toString(), "UTF-8");
-
-            String webSettingsURL = "/settings/web";
-            String webSettingsContent = "username=" + URLEncoder.encode(clusterUsername, "UTF-8") + "&password=" + URLEncoder.encode(clusterPassword, "UTF-8") + "&port=8091";
-
-            String bucketURL = "/sampleBuckets/install";
-
-            StringBuilder sampleBucketPayloadBuilder = new StringBuilder();
-            sampleBucketPayloadBuilder.append('[');
-            if (travelSample) {
-                sampleBucketPayloadBuilder.append("\"travel-sample\",");
-            }
-            if (beerSample) {
-                sampleBucketPayloadBuilder.append("\"beer-sample\",");
-            }
-            if (gamesIMSample) {
-                sampleBucketPayloadBuilder.append("\"gamesim-sample\",");
-            }
-            sampleBucketPayloadBuilder.append(']');
-
-            callCouchbaseRestAPI(poolURL, poolPayload);
-            callCouchbaseRestAPI(setupServicesURL, setupServiceContent);
-            callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
-            callCouchbaseRestAPI(bucketURL, sampleBucketPayloadBuilder.toString());
-
-            CouchbaseWaitStrategy s = new CouchbaseWaitStrategy();
-            s.withBasicCredentials(clusterUsername, clusterPassword);
-            s.waitUntilReady(this);
-            callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        String setupServicesURL = "/node/controller/setupServices";
+        StringBuilder servicePayloadBuilder = new StringBuilder();
+        if (keyValue) {
+            servicePayloadBuilder.append("kv,");
         }
+        if (query) {
+            servicePayloadBuilder.append("n1ql,");
+        }
+        if (index) {
+            servicePayloadBuilder.append("index,");
+        }
+        if (fts) {
+            servicePayloadBuilder.append("fts,");
+        }
+        String setupServiceContent = "services=" + URLEncoder.encode(servicePayloadBuilder.toString(), "UTF-8");
+
+        String webSettingsURL = "/settings/web";
+        String webSettingsContent = "username=" + URLEncoder.encode(clusterUsername, "UTF-8") + "&password=" + URLEncoder.encode(clusterPassword, "UTF-8") + "&port=8091";
+
+        String bucketURL = "/sampleBuckets/install";
+
+        StringBuilder sampleBucketPayloadBuilder = new StringBuilder();
+        sampleBucketPayloadBuilder.append('[');
+        if (travelSample) {
+            sampleBucketPayloadBuilder.append("\"travel-sample\",");
+        }
+        if (beerSample) {
+            sampleBucketPayloadBuilder.append("\"beer-sample\",");
+        }
+        if (gamesIMSample) {
+            sampleBucketPayloadBuilder.append("\"gamesim-sample\",");
+        }
+        sampleBucketPayloadBuilder.append(']');
+
+        callCouchbaseRestAPI(poolURL, poolPayload);
+        callCouchbaseRestAPI(setupServicesURL, setupServiceContent);
+        callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
+        callCouchbaseRestAPI(bucketURL, sampleBucketPayloadBuilder.toString());
+
+        CouchbaseWaitStrategy s = new CouchbaseWaitStrategy();
+        s.withBasicCredentials(clusterUsername, clusterPassword);
+        s.waitUntilReady(this);
+        callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
     }
 
     public void createBucket(BucketSettings bucketSetting, boolean primaryIndex) {
@@ -198,8 +196,8 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         BucketSettings bucketSettings = clusterManager.insertBucket(bucketSetting);
         // Insert Bucket admin user
         UserSettings userSettings = UserSettings.build()
-                .password(bucketSetting.password())
-                .roles(Collections.singletonList(new UserRole("bucket_admin", bucketSetting.name())));
+            .password(bucketSetting.password())
+            .roles(Collections.singletonList(new UserRole("bucket_admin", bucketSetting.name())));
         try {
             clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
         } catch (Exception e) {
@@ -221,7 +219,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         httpConnection.setDoOutput(true);
         httpConnection.setRequestMethod("POST");
         httpConnection.setRequestProperty("Content-Type",
-                "application/x-www-form-urlencoded");
+            "application/x-www-form-urlencoded");
         String encoded = Base64.encode((clusterUsername + ":" + clusterPassword).getBytes("UTF-8"));
         httpConnection.setRequestProperty("Authorization", "Basic " + encoded);
         @Cleanup
@@ -248,10 +246,10 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     private DefaultCouchbaseEnvironment createCouchbaseEnvironment() {
         initCluster();
         return DefaultCouchbaseEnvironment.builder()
-                .bootstrapCarrierDirectPort(getMappedPort(11210))
-                .bootstrapCarrierSslPort(getMappedPort(11207))
-                .bootstrapHttpDirectPort(getMappedPort(8091))
-                .bootstrapHttpSslPort(getMappedPort(18091))
-                .build();
+            .bootstrapCarrierDirectPort(getMappedPort(11210))
+            .bootstrapCarrierSslPort(getMappedPort(11207))
+            .bootstrapHttpDirectPort(getMappedPort(8091))
+            .bootstrapHttpSslPort(getMappedPort(18091))
+            .build();
     }
 }

@@ -96,8 +96,7 @@ public class CouchbaseWaitStrategy extends AbstractWaitStrategy {
             retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
                 getRateLimiter().doWhenReady(() -> {
                     try {
-                        @Cleanup("disconnect")
-                        final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
+                        @Cleanup("disconnect") final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
 
                         // authenticate
                         if (!Strings.isNullOrEmpty(username)) {
@@ -109,20 +108,20 @@ public class CouchbaseWaitStrategy extends AbstractWaitStrategy {
                         connection.connect();
 
                         if (statusCode != connection.getResponseCode()) {
-                            throw new RuntimeException(String.format("HTTP response code was: %s",
-                                    connection.getResponseCode()));
+                            throw new ContainerLaunchException(String.format("HTTP response code was: %s",
+                                connection.getResponseCode()));
                         }
 
                         // Specific Couchbase wait strategy to be sure the node is online and healthy
                         JsonNode node = om.readTree(connection.getInputStream());
                         JsonNode statusNode = node.at("/nodes/0/status");
                         String status = statusNode.asText();
-                        if (!"healthy".equals(status)){
-                            throw new RuntimeException(String.format("Couchbase Node status was: %s", status));
+                        if (!"healthy".equals(status)) {
+                            throw new ContainerLaunchException(String.format("Couchbase Node status was: %s", status));
                         }
 
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new ContainerLaunchException("Unable to check Couchbase Node status", e);
                     }
                 });
                 return true;
@@ -130,7 +129,7 @@ public class CouchbaseWaitStrategy extends AbstractWaitStrategy {
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException(String.format(
-                    "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCode));
+                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCode));
         }
     }
 

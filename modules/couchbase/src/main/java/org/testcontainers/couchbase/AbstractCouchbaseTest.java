@@ -29,8 +29,8 @@ public abstract class AbstractCouchbaseTest {
     public void clear() {
         if (getCouchbaseContainer().isIndex() && getCouchbaseContainer().isQuery() && getCouchbaseContainer().isPrimaryIndex()) {
             getBucket().query(
-                    N1qlQuery.simple(String.format("DELETE FROM `%s`", getBucket().name()),
-                            N1qlParams.build().consistency(ScanConsistency.STATEMENT_PLUS)));
+                N1qlQuery.simple(String.format("DELETE FROM `%s`", getBucket().name()),
+                    N1qlParams.build().consistency(ScanConsistency.STATEMENT_PLUS)));
         } else {
             getBucket().bucketManager().flush();
         }
@@ -38,14 +38,14 @@ public abstract class AbstractCouchbaseTest {
 
     private static CouchbaseContainer initCouchbaseContainer() {
         CouchbaseContainer couchbaseContainer = new CouchbaseContainer()
-                .withNewBucket(DefaultBucketSettings.builder()
-                        .enableFlush(true)
-                        .name(TEST_BUCKET)
-                        .password(DEFAULT_PASSWORD)
-                        .quota(100)
-                        .replicas(0)
-                        .type(BucketType.COUCHBASE)
-                        .build());
+            .withNewBucket(DefaultBucketSettings.builder()
+                .enableFlush(true)
+                .name(TEST_BUCKET)
+                .password(DEFAULT_PASSWORD)
+                .quota(100)
+                .replicas(0)
+                .type(BucketType.COUCHBASE)
+                .build());
         couchbaseContainer.start();
         return couchbaseContainer;
     }

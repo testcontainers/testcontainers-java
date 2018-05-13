@@ -20,7 +20,7 @@ public class CouchbaseContainerTest extends AbstractCouchbaseTest {
     private static final String DOCUMENT = "{\"name\":\"toto\"}";
 
     @Test
-    public void should_insert_document() {
+    public void shouldInsertDocument() {
         RawJsonDocument expected = RawJsonDocument.create(ID, DOCUMENT);
         getBucket().upsert(expected);
         RawJsonDocument result = getBucket().get(ID, RawJsonDocument.class);
@@ -28,7 +28,7 @@ public class CouchbaseContainerTest extends AbstractCouchbaseTest {
     }
 
     @Test
-    public void should_execute_n1ql() {
+    public void shouldExecuteN1ql() {
         getBucket().query(N1qlQuery.simple("INSERT INTO " + TEST_BUCKET + " (KEY, VALUE) VALUES ('" + ID + "', " + DOCUMENT + ")"));
 
         N1qlQueryResult query = getBucket().query(N1qlQuery.simple("SELECT * FROM " + TEST_BUCKET + " USE KEYS '" + ID + "'"));
