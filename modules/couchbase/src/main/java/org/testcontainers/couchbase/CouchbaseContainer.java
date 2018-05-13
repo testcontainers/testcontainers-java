@@ -47,6 +47,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends GenericContainer<SELF> {
 
+    public static final String VERSION = "5.1.0";
+
     @Wither
     private String memoryQuota = "300";
 
@@ -98,7 +100,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     private String urlBase;
 
     public CouchbaseContainer() {
-        super("couchbase/server:latest");
+        super("couchbase/server:" + VERSION);
     }
 
     public CouchbaseContainer(String containerName) {
@@ -223,9 +225,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         DataOutputStream out = new DataOutputStream(httpConnection.getOutputStream());
         out.writeBytes(payload);
         out.flush();
-        out.close();
         httpConnection.getResponseCode();
-        httpConnection.disconnect();
     }
 
     @Override
