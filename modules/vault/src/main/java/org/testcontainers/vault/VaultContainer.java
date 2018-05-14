@@ -21,7 +21,7 @@ import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
  *
  * Other helpful features include the withVaultPort, and withVaultToken methods for convenience.
  */
-public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF>
+public class VaultContainer extends GenericContainer<VaultContainer>
         implements LinkableContainer {
 
     private static final String VAULT_PORT = "8200";
@@ -78,7 +78,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @param token the root token value to set for Vault.
      * @return this
      */
-    public SELF withVaultToken(String token) {
+    public VaultContainer withVaultToken(String token) {
         withEnv("VAULT_DEV_ROOT_TOKEN_ID", token);
         withEnv("VAULT_TOKEN", token);
         return self();
@@ -90,7 +90,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @param port the port number you want to have the Vault container listen on for tests.
      * @return this
      */
-    public SELF withVaultPort(int port){
+    public VaultContainer withVaultPort(int port){
         setVaultPortRequested(true);
         String vaultPort = String.valueOf(port);
         withEnv("VAULT_ADDR", "http://0.0.0.0:" + VAULT_PORT);
@@ -110,7 +110,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @param remainingSecrets var args list of secrets to add to specified path
      * @return this
      */
-    public SELF withSecretInVault(String path, String firstSecret, String... remainingSecrets) {
+    public VaultContainer withSecretInVault(String path, String firstSecret, String... remainingSecrets) {
         List<String> list = new ArrayList<>();
         list.add(firstSecret);
         for(String secret : remainingSecrets) {
