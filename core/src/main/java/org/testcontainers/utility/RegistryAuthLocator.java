@@ -53,6 +53,12 @@ public class RegistryAuthLocator {
      */
     public AuthConfig lookupAuthConfig(DockerImageName dockerImageName) {
         log.debug("Looking up auth config for image: {}", dockerImageName);
+
+        log.debug("RegistryAuthLocator has configFile: {} ({}) and commandPathPrefix: {}",
+            configFile,
+            configFile.exists() ? "exists" : "does not exist",
+            commandPathPrefix);
+
         try {
             final JsonNode config = OBJECT_MAPPER.readTree(configFile);
 
@@ -65,7 +71,11 @@ public class RegistryAuthLocator {
             }
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
-            log.error("Failure when attempting to lookup auth config. Falling back to docker-java default behaviour", e);
+            log.error("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. " +
+                "Falling back to docker-java default behaviour",
+                dockerImageName,
+                configFile,
+                e);
         }
         return defaultAuthConfig;
     }
