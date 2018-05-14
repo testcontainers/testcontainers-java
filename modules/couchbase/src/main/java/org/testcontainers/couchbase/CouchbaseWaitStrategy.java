@@ -20,14 +20,16 @@ import com.couchbase.client.deps.com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import lombok.Cleanup;
+import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
@@ -36,7 +38,8 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
  * @author ldoguin
  * created on 18/07/16.
  */
-public class CouchbaseWaitStrategy extends GenericContainer.AbstractWaitStrategy {
+@Slf4j
+public class CouchbaseWaitStrategy extends AbstractWaitStrategy {
     /**
      * Authorization HTTP header.
      */
@@ -79,14 +82,14 @@ public class CouchbaseWaitStrategy extends GenericContainer.AbstractWaitStrategy
 
     @Override
     protected void waitUntilReady() {
-        final Integer livenessCheckPort = getLivenessCheckPort();
-        if (null == livenessCheckPort) {
-            logger().warn("No exposed ports or mapped ports - cannot wait for status");
+        Optional<Integer> livenessCheckPort = waitStrategyTarget.getLivenessCheckPortNumbers().stream().findFirst();
+        if (!livenessCheckPort.isPresent()) {
+            log.warn("No exposed ports or mapped ports - cannot wait for status");
             return;
         }
 
-        final String uri = buildLivenessUri(livenessCheckPort).toString();
-        logger().info("Waiting for {} seconds for URL: {}", startupTimeout.getSeconds(), uri);
+        final String uri = livenessCheckPort.map(this::buildLivenessUri).get().toString();
+        log.info("Waiting for {} seconds for URL: {}", startupTimeout.getSeconds(), uri);
 
         // try to connect to the URL
         try {
@@ -139,7 +142,7 @@ public class CouchbaseWaitStrategy extends GenericContainer.AbstractWaitStrategy
      */
     private URI buildLivenessUri(int livenessCheckPort) {
         final String scheme = (tlsEnabled ? "https" : "http") + "://";
-        final String host = container.getContainerIpAddress();
+        final String host = waitStrategyTarget.getContainerIpAddress();
 
         final String portSuffix;
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {

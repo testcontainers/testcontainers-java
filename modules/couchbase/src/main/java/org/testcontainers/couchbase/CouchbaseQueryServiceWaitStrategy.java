@@ -4,9 +4,11 @@ import com.couchbase.client.core.message.cluster.GetClusterConfigRequest;
 import com.couchbase.client.core.message.cluster.GetClusterConfigResponse;
 import com.couchbase.client.core.service.ServiceType;
 import com.couchbase.client.java.Bucket;
+import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +19,8 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
  * @author ctayeb
  * Created on 06/06/2017
  */
-public class CouchbaseQueryServiceWaitStrategy extends GenericContainer.AbstractWaitStrategy {
+@Slf4j
+public class CouchbaseQueryServiceWaitStrategy extends AbstractWaitStrategy {
 
     private final Bucket bucket;
 
@@ -28,7 +31,7 @@ public class CouchbaseQueryServiceWaitStrategy extends GenericContainer.Abstract
 
     @Override
     protected void waitUntilReady() {
-        logger().info("Waiting for {} seconds for QUERY service", startupTimeout.getSeconds());
+        log.info("Waiting for {} seconds for QUERY service", startupTimeout.getSeconds());
 
         // try to connect to the URL
         try {
