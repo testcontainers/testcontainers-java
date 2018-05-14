@@ -6,22 +6,20 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 
-import java.util.UUID;
-
 /**
  * @link https://store.docker.com/images/influxdb
  */
 public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF>
     implements LinkableContainer {
 
-    public static final String VERSION = "latest";
+    public static final String VERSION = "1.4.3";
     public static final Integer INFLUXDB_PORT = 8086;
 
     private static final String IMAGE_NAME = "influxdb";
 
     private boolean authEnabled = true;
     private String admin = "admin";
-    private String adminPassword = UUID.randomUUID().toString();
+    private String adminPassword = "password";
 
     private String database;
     private String username = "any";
@@ -58,16 +56,6 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
         return getMappedPort(INFLUXDB_PORT);
     }
 
-    /**
-     * Bind a fixed port on the docker host to a container port
-     *
-     * @param hostPort a port on the docker host, which must be available
-     * @return a reference to this container instance
-     */
-    public SELF withFixedExposedPort(int hostPort) {
-        super.addFixedExposedPort(hostPort, INFLUXDB_PORT);
-        return self();
-    }
 
     /**
      * Set env variable `INFLUXDB_HTTP_AUTH_ENABLED`.

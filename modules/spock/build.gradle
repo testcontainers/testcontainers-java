@@ -9,7 +9,6 @@ dependencies {
     compile 'org.spockframework:spock-core:1.0-groovy-2.4'
 
     testCompile project(':mysql')
-    testCompile project(':influxdb')
     testCompile project(':postgresql')
     testCompile 'com.zaxxer:HikariCP:2.6.1'
 

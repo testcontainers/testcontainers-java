@@ -22,6 +22,9 @@ public class SomeTest {
 
 Replace `VERSION` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
 
+[![](https://api.bintray.com/packages/testcontainers/releases/testcontainers/images/download.svg)](https://bintray.com/testcontainers/releases/testcontainers/_latestVersion)
+
+
 ### Maven
 ```
 <dependency>

@@ -1,15 +1,8 @@
 description = "Testcontainers :: InfluxDB"
 
-ext {
-    influxdbJavaClientVersion = '2.9'
-
-    junitVersion = '4.12'
-}
-
 dependencies {
     compile project(':testcontainers')
 
-    compile "org.influxdb:influxdb-java:${influxdbJavaClientVersion}"
-
-    testCompile "junit:junit:$junitVersion"
+    compileOnly 'org.influxdb:influxdb-java:2.10'
+    testCompile 'org.influxdb:influxdb-java:2.10'
 }
