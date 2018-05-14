@@ -10,6 +10,11 @@ public class PostgreSQLContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
+    public JdbcDatabaseContainer newInstance() {
+        return newInstance(PostgreSQLContainer.DEFAULT_TAG);
+    }
+
+    @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         return new PostgreSQLContainer(PostgreSQLContainer.IMAGE + ":" + tag);
     }

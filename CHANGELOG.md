@@ -2,11 +2,21 @@
 All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
-
 ### Fixed
+- Fix for setting `ryuk.container.timeout` causes a `ClassCastException` ([\#684](https://github.com/testcontainers/testcontainers-java/issues/684))
 
 ### Changed
 - Added restart functionality in `GenericContainer` ([\#616](https://github.com/testcontainers/testcontainers-java/pull/616))
+
+## [1.7.2] - 2018-04-30
+
+### Fixed
+- Retry any exceptions (not just `DockerClientException`) on image pull ([\#662](https://github.com/testcontainers/testcontainers-java/issues/662))
+- Fixed handling of the paths with `+` in them ([\#664](https://github.com/testcontainers/testcontainers-java/issues/664))
+
+### Changed
+- Database container images are now pinned to a specific version rather than using `latest`. The tags selected are the most recent as of the time of this change. If a JDBC URL is used with no tag specified, a WARN level log message is output, pending a future change to make tags mandatory in the JDBC URL. ([\#671](https://github.com/testcontainers/testcontainers-java/issues/671))
+- Updated docker-java to 3.1.0-rc-3, enforced `org.jetbrains:annotations:15.0`. ([\#672](https://github.com/testcontainers/testcontainers-java/issues/672))
 
 ## [1.7.1] - 2018-04-20
 
