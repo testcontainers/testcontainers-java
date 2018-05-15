@@ -1,5 +1,5 @@
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '1.12'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'nebula.provided-base' version '3.0.3'
     id 'com.github.johnrengelman.shadow' version '2.0.2'
     id "com.jfrog.bintray" version "1.8.0" apply false
