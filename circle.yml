@@ -14,6 +14,8 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
+      - store_artifacts:
+          path: ~/junit
   modules-no-jdbc-test-no-selenium:
     steps:
       - checkout
