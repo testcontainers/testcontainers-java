@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
