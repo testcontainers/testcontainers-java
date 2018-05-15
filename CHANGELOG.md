@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Fix for setting `ryuk.container.timeout` causes a `ClassCastException` ([\#684](https://github.com/testcontainers/testcontainers-java/issues/684))
 
 ### Changed
+- Added InfluxDB module ([\#686](https://github.com/testcontainers/testcontainers-java/pull/686))
 
 ## [1.7.2] - 2018-04-30
 
