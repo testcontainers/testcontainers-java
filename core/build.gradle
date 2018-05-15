@@ -2,15 +2,6 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 description = "Testcontainers Core"
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) { publication ->
-            artifacts.removeAll { it.classifier == null }
-            artifact project.tasks.shadowJar
-        }
-    }
-}
-
 sourceSets {
     jarFileTest
 }
@@ -24,7 +15,6 @@ configurations {
 
 shadowJar {
     configurations = [project.configurations.shaded]
-    classifier = null
 
     mergeServiceFiles()
 
@@ -45,28 +35,6 @@ shadowJar {
         'META-INF/services/org.glassfish.jersey.internal.spi.*',
         'mozilla/public-suffix-list.txt',
     ].each { exclude(it) }
-
-    relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
-
-    [
-        "org.apache.http",
-        "org.apache.commons.lang",
-        "org.apache.commons.io",
-        "org.apache.commons.codec",
-        "org.glassfish",
-        "org.aopalliance",
-        "org.jvnet",
-        "javax.annotation",
-        "javax.inject",
-        "javax.ws.rs",
-        "com.fasterxml.jackson",
-        "jersey.repackaged",
-        "com.google",
-        "io.netty",
-        "org.bouncycastle",
-        "org.newsclub",
-        "org.zeroturnaround"
-    ].each { relocate(it, "org.testcontainers.shaded.$it") }
 
     dependencies {
         include(dependency('org.apache.httpcomponents:.*'))
