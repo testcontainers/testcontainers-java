@@ -7,10 +7,12 @@ All notable changes to this project will be documented in this file.
 - Fixed provided but shaded dependencies in modules ([\#693](https://github.com/testcontainers/testcontainers-java/issues/693))
 
 ### Changed
+- Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
 
 ## [1.7.2] - 2018-04-30
 
 ### Fixed
+- Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
 - Retry any exceptions (not just `DockerClientException`) on image pull ([\#662](https://github.com/testcontainers/testcontainers-java/issues/662))
 - Fixed handling of the paths with `+` in them ([\#664](https://github.com/testcontainers/testcontainers-java/issues/664))
 
@@ -25,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped ([\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
 - Fixed log processing: multibyte unicode, linebreaks and ASCII color codes. Color codes can be turned on with `withRemoveAnsiCodes(false)` ([\#643](https://github.com/testcontainers/testcontainers-java/pull/643))
 - Fixed Docker host IP detection within docker container (detect only if not explicitly set) ([\#648](https://github.com/testcontainers/testcontainers-java/pull/648))
+- Add support for private repositories using docker credential stores/helpers ([PR \#647](https://github.com/testcontainers/testcontainers-java/pull/647), fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
 
 ### Changed
 - Support multiple HTTP status codes for HttpWaitStrategy ([\#630](https://github.com/testcontainers/testcontainers-java/issues/630))

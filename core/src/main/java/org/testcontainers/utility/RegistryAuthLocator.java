@@ -1,0 +1,127 @@
+package org.testcontainers.utility;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.model.AuthConfig;
+import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.zeroturnaround.exec.ProcessExecutor;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
+/**
+ * Utility to look up registry authentication information for an image.
+ */
+public class RegistryAuthLocator {
+
+    private static final Logger log = getLogger(RegistryAuthLocator.class);
+
+    private final AuthConfig defaultAuthConfig;
+    private final File configFile;
+    private final String commandPathPrefix;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    @VisibleForTesting
+    RegistryAuthLocator(AuthConfig defaultAuthConfig, File configFile, String commandPathPrefix) {
+        this.defaultAuthConfig = defaultAuthConfig;
+        this.configFile = configFile;
+        this.commandPathPrefix = commandPathPrefix;
+    }
+
+    /**
+     * @param defaultAuthConfig an AuthConfig object that should be returned if there is no overriding authentication
+     *                          available for images that are looked up
+     */
+    public RegistryAuthLocator(AuthConfig defaultAuthConfig) {
+        this.defaultAuthConfig = defaultAuthConfig;
+        final String dockerConfigLocation = System.getenv().getOrDefault("DOCKER_CONFIG",
+            System.getProperty("user.home") + "/.docker");
+        this.configFile = new File(dockerConfigLocation + "/config.json");
+        this.commandPathPrefix = "";
+    }
+
+    /**
+     * Looks up an AuthConfig for a given image name.
+     *
+     * @param dockerImageName image name to be looked up (potentially including a registry URL part)
+     * @return an AuthConfig that is applicable to this specific image OR the defaultAuthConfig that has been set for
+     * this {@link RegistryAuthLocator}.
+     */
+    public AuthConfig lookupAuthConfig(DockerImageName dockerImageName) {
+        log.debug("Looking up auth config for image: {}", dockerImageName);
+
+        log.debug("RegistryAuthLocator has configFile: {} ({}) and commandPathPrefix: {}",
+            configFile,
+            configFile.exists() ? "exists" : "does not exist",
+            commandPathPrefix);
+
+        try {
+            final JsonNode config = OBJECT_MAPPER.readTree(configFile);
+
+            final String reposName = dockerImageName.getRegistry();
+            final JsonNode auths = config.at("/auths/" + reposName);
+
+            if (!auths.isMissingNode() && auths.size() == 0) {
+                // auths/<registry> is an empty dict - use a credential helper
+                return authConfigUsingCredentialsStoreOrHelper(reposName, config);
+            }
+            // otherwise, defaultAuthConfig should already contain any credentials available
+        } catch (Exception e) {
+            log.error("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. " +
+                "Falling back to docker-java default behaviour",
+                dockerImageName,
+                configFile,
+                e);
+        }
+        return defaultAuthConfig;
+    }
+
+    private AuthConfig authConfigUsingCredentialsStoreOrHelper(String hostName, JsonNode config) throws Exception {
+
+        final JsonNode credsStoreName = config.at("/credsStore");
+        final JsonNode credHelper = config.at("/credHelpers/" + hostName);
+
+        if (!credHelper.isMissingNode()) {
+            return runCredentialProvider(hostName, credHelper.asText());
+        } else if (!credsStoreName.isMissingNode()) {
+            return runCredentialProvider(hostName, credsStoreName.asText());
+        } else {
+            throw new IllegalStateException("Unsupported Docker config auths settings!");
+        }
+    }
+
+    private AuthConfig runCredentialProvider(String hostName, String credHelper) throws Exception {
+        final String credentialHelperName = commandPathPrefix + "docker-credential-" + credHelper;
+        String data;
+
+        log.debug("Executing docker credential helper: {} to locate auth config for: {}",
+            credentialHelperName, hostName);
+
+        try {
+            data = new ProcessExecutor()
+                .command(credentialHelperName, "get")
+                .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
+                .readOutput(true)
+                .exitValueNormal()
+                .timeout(30, TimeUnit.SECONDS)
+                .execute()
+                .outputUTF8()
+                .trim();
+        } catch (Exception e) {
+            log.error("Failure running docker credential helper ({})", credentialHelperName);
+            throw e;
+        }
+
+        final JsonNode helperResponse = OBJECT_MAPPER.readTree(data);
+        log.debug("Credential helper provided auth config for: {}", hostName);
+
+        return new AuthConfig()
+            .withRegistryAddress(helperResponse.at("/ServerURL").asText())
+            .withUsername(helperResponse.at("/Username").asText())
+            .withPassword(helperResponse.at("/Secret").asText());
+    }
+}

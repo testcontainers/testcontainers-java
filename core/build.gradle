@@ -88,7 +88,7 @@ dependencies {
     }
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.rnorth:tcp-unix-socket-proxy:1.0.2'
-    shaded 'org.zeroturnaround:zt-exec:1.8'
+    shaded 'org.zeroturnaround:zt-exec:1.10'
     shaded 'commons-lang:commons-lang:2.6'
     shaded 'commons-io:commons-io:2.5'
     shaded 'commons-codec:commons-codec:1.11'
