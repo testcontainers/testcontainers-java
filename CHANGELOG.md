@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Fixed provided but shaded dependencies in modules ([\#693](https://github.com/testcontainers/testcontainers-java/issues/693))
 
 ### Changed
+- Added InfluxDB module ([\#686](https://github.com/testcontainers/testcontainers-java/pull/686))
 
 ## [1.7.2] - 2018-04-30
 
