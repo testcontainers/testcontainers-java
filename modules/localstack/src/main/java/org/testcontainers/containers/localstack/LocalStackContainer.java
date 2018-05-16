@@ -4,18 +4,19 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import org.jetbrains.annotations.Nullable;
-import org.junit.rules.ExternalResource;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.testcontainers.containers.BindMode.READ_WRITE;
 
 /**
  * <p>Container for Atlassian Labs Localstack, 'A fully functional local AWS cloud stack'.</p>
@@ -25,41 +26,34 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
  * {@link LocalStackContainer#getDefaultCredentialsProvider()}
  * be used to obtain compatible endpoint configuration and credentials, respectively.</p>
  */
-public class LocalStackContainer extends ExternalResource {
+public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
-    @Nullable private GenericContainer delegate;
-    private Service[] services;
+    public static final String VERSION = "0.8.6";
 
-    @Override
-    protected void before() throws Throwable {
+    private final List<Service> services = new ArrayList<>();
 
-        Preconditions.check("services list must not be empty", services != null && services.length > 0);
+    public LocalStackContainer() {
+        this(VERSION);
+    }
 
-        final String servicesList = Arrays
-                .stream(services)
-                .map(Service::getLocalStackName)
-                .collect(Collectors.joining(","));
+    public LocalStackContainer(String version) {
+        super("localstack/localstack:" + version);
 
-        final Integer[] portsList = Arrays
-                .stream(services)
-                .map(Service::getPort)
-                .collect(Collectors.toSet()).toArray(new Integer[]{});
-
-        delegate = new GenericContainer("localstack/localstack:0.8.5")
-                       .withExposedPorts(portsList)
-                       .withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock", READ_WRITE)
-                       .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"))
-                       .withEnv("SERVICES", servicesList);
-
-        delegate.start();
+        withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
+        waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
     }
 
     @Override
-    protected void after() {
+    protected void configure() {
+        super.configure();
 
-        Preconditions.check("delegate must have been created by before()", delegate != null);
+        Preconditions.check("services list must not be empty", !services.isEmpty());
 
-        delegate.stop();
+        withEnv("SERVICES", services.stream().map(Service::getLocalStackName).collect(Collectors.joining(",")));
+
+        for (Service service : services) {
+            addExposedPort(service.getPort());
+        }
     }
 
     /**
@@ -68,8 +62,8 @@ public class LocalStackContainer extends ExternalResource {
      * @return this container object
      */
     public LocalStackContainer withServices(Service... services) {
-        this.services = services;
-        return this;
+        this.services.addAll(Arrays.asList(services));
+        return self();
     }
 
     /**
@@ -85,19 +79,14 @@ public class LocalStackContainer extends ExternalResource {
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
-
-        if (delegate == null) {
-            throw new IllegalStateException("LocalStack has not been started yet!");
-        }
-
-        final String address = delegate.getContainerIpAddress();
+        final String address = getContainerIpAddress();
         String ipAddress = address;
         try {
             ipAddress = InetAddress.getByName(address).getHostAddress();
         } catch (UnknownHostException ignored) {
 
         }
-        ipAddress = ipAddress + ".xip.io";
+        ipAddress = ipAddress + ".nip.io";
         while (true) {
             try {
                 //noinspection ResultOfMethodCallIgnored
@@ -112,7 +101,7 @@ public class LocalStackContainer extends ExternalResource {
                 "http://" +
                 ipAddress +
                 ":" +
-                delegate.getMappedPort(service.getPort()), "us-east-1");
+                getMappedPort(service.getPort()), "us-east-1");
     }
 
     /**
@@ -130,6 +119,9 @@ public class LocalStackContainer extends ExternalResource {
         return new AWSStaticCredentialsProvider(new BasicAWSCredentials("accesskey", "secretkey"));
     }
 
+    @RequiredArgsConstructor
+    @Getter
+    @FieldDefaults(makeFinal = true)
     public enum Service {
         API_GATEWAY("apigateway",             4567),
         KINESIS("kinesis",                 4568),
@@ -149,18 +141,8 @@ public class LocalStackContainer extends ExternalResource {
         CLOUDFORMATION("cloudformation",          4581),
         CLOUDWATCH("cloudwatch",              4582);
 
-        private final String localStackName;
-        private final int port;
+        String localStackName;
 
-        Service(String localstackName, int port) {
-            this.localStackName = localstackName;
-            this.port = port;
-        }
-
-        public String getLocalStackName() {
-            return localStackName;
-        }
-
-        public Integer getPort() { return port; }
+        int port;
     }
 }
