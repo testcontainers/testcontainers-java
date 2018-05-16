@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
-public class DemoApplicationTest extends AbstractIntegrationTest {
+public class DemoControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     TestRestTemplate restTemplate;
