@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Added InfluxDB module ([\#686](https://github.com/testcontainers/testcontainers-java/pull/686))
+- Added MockServer module ([\#696](https://github.com/testcontainers/testcontainers-java/pull/696))
 
 ## [1.7.2] - 2018-04-30
 
