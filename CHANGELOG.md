@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
+
+### Fixed
+
+### Changed
+
+## [1.7.3] - 2018-05-16
+
 ### Fixed
 - Fix for setting `ryuk.container.timeout` causes a `ClassCastException` ([\#684](https://github.com/testcontainers/testcontainers-java/issues/684))
 - Fixed provided but shaded dependencies in modules ([\#693](https://github.com/testcontainers/testcontainers-java/issues/693))
