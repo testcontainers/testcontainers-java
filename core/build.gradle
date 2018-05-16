@@ -80,6 +80,10 @@ dependencies {
 
     compile 'org.rnorth.visible-assertions:visible-assertions:2.1.0'
 
+    compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
+        exclude(group: "log4j", module: "log4j")
+    }
+
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
@@ -87,7 +91,6 @@ dependencies {
         exclude(group: 'com.google.code.findbug')
     }
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
-    shaded 'org.rnorth:tcp-unix-socket-proxy:1.0.2'
     shaded 'org.zeroturnaround:zt-exec:1.8'
     shaded 'commons-lang:commons-lang:2.6'
     shaded 'commons-io:commons-io:2.5'
