@@ -13,7 +13,7 @@ jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./gradlew testcontainers:check
+      script: ./gradlew testcontainers:check javadoc
 
     - stage: test
       env: [ NAME=core ]
