@@ -2,15 +2,16 @@ package org.testcontainers.containers;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
- * @link https://store.docker.com/images/influxdb
+ * See <a href="https://store.docker.com/images/influxdb">https://store.docker.com/images/influxdb</a>
  */
-public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF>
-    implements LinkableContainer {
+public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF> {
 
     public static final String VERSION = "1.4.3";
     public static final Integer INFLUXDB_PORT = 8086;
@@ -52,10 +53,9 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(INFLUXDB_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Collections.singleton(getMappedPort(INFLUXDB_PORT));
     }
-
 
     /**
      * Set env variable `INFLUXDB_HTTP_AUTH_ENABLED`.
