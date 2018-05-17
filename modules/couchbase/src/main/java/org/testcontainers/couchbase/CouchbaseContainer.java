@@ -22,6 +22,7 @@ import com.couchbase.client.java.cluster.*;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.AllArgsConstructor;
 import lombok.Cleanup;
 import lombok.Getter;
@@ -47,7 +48,7 @@ import java.util.Set;
  * optimized by Tayeb Chlyah
  */
 @AllArgsConstructor
-public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends GenericContainer<SELF> {
+public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     public static final String VERSION = "5.1.0";
 
@@ -134,7 +135,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
         setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html#/"));
     }
 
-    public SELF withNewBucket(BucketSettings bucketSettings) {
+    public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
         newBuckets.add(bucketSettings);
         return self();
     }
@@ -230,8 +231,7 @@ public class CouchbaseContainer<SELF extends CouchbaseContainer<SELF>> extends G
     }
 
     @Override
-    public void start() {
-        super.start();
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!newBuckets.isEmpty()) {
             for (BucketSettings bucketSetting : newBuckets) {
                 createBucket(bucketSetting, primaryIndex);
