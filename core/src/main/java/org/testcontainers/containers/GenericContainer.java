@@ -21,6 +21,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -38,6 +39,9 @@ import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.utility.*;
 
 import java.io.File;
@@ -75,7 +79,7 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 @EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
-        implements Container<SELF>, AutoCloseable, WaitStrategyTarget {
+        implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -192,7 +196,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * Starts the container using docker, pulling an image if necessary.
      */
+    @Override
     public void start() {
+        if (containerId != null) {
+            return;
+        }
+        doStart();
+    }
+
+    protected void doStart() {
         Profiler profiler = new Profiler("Container startup");
         profiler.setLogger(logger());
 
@@ -285,21 +297,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * Stops the container.
      */
+    @Override
     public void stop() {
 
         if (containerId == null) {
             return;
         }
 
-        String imageName;
-
         try {
-            imageName = image.get();
-        } catch (Exception e) {
-            imageName = "<unknown>";
-        }
+            String imageName;
 
-        ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            try {
+                imageName = image.get();
+            } catch (Exception e) {
+                imageName = "<unknown>";
+            }
+
+            ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+        } finally {
+            containerId = null;
+            containerInfo = null;
+        }
     }
 
     /**
@@ -633,12 +651,66 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    private TestDescription toDescription(Description description) {
+        return new TestDescription() {
+            @Override
+            public String getTestId() {
+                return getDisplayName();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return description.getDisplayName();
+            }
+
+            @Override
+            public Optional<String[]> getNameParts() {
+                return Optional.of(new String[]{
+                    description.getClassName(),
+                    description.getMethodName()
+                });
+            }
+
+            @Override
+            public Optional<String> getFilesystemFriendlyName() {
+                return getNameParts().map(it -> String.join("-", it));
+            }
+        };
+    }
+
     @Override
+    @Deprecated
+    public Statement apply(Statement base, Description description) {
+        return super.apply(base, description);
+    }
+
+    @Override
+    @Deprecated
     protected void starting(Description description) {
+        if (this instanceof TestLifecycleAware) {
+            ((TestLifecycleAware) this).beforeTestBlock(toDescription(description));
+        }
         this.start();
     }
 
     @Override
+    @Deprecated
+    protected void succeeded(Description description) {
+        if (this instanceof TestLifecycleAware) {
+            ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.empty());
+        }
+    }
+
+    @Override
+    @Deprecated
+    protected void failed(Throwable e, Description description) {
+        if (this instanceof TestLifecycleAware) {
+            ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.of(e));
+        }
+    }
+
+    @Override
+    @Deprecated
     protected void finished(Description description) {
         this.stop();
     }
@@ -959,11 +1031,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withStartupAttempts(int attempts) {
         this.startupAttempts = attempts;
         return self();
-    }
-
-    @Override
-    public void close() {
-        stop();
     }
 
     /**
