@@ -10,6 +10,11 @@ public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
+    public JdbcDatabaseContainer newInstance() {
+        return newInstance(MariaDBContainer.DEFAULT_TAG);
+    }
+
+    @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         return new MariaDBContainer(MariaDBContainer.IMAGE + ":" + tag);
     }

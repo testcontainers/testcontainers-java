@@ -1,5 +1,5 @@
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '1.11'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'nebula.provided-base' version '3.0.3'
     id 'com.github.johnrengelman.shadow' version '2.0.2'
     id "com.jfrog.bintray" version "1.8.0" apply false
@@ -10,6 +10,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
+    apply plugin: 'com.github.johnrengelman.shadow'
     apply from: "$rootDir/gradle/publishing.gradle"
     apply from: "$rootDir/gradle/bintray.gradle"
 
@@ -47,6 +48,42 @@ subprojects {
 
     repositories {
         jcenter()
+    }
+
+    shadowJar {
+        configurations = []
+        classifier = null
+
+        relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
+
+        [
+            "org.apache.http",
+            "org.apache.commons.lang",
+            "org.apache.commons.io",
+            "org.apache.commons.codec",
+            "org.glassfish",
+            "org.aopalliance",
+            "org.jvnet",
+            "javax.annotation",
+            "javax.inject",
+            "javax.ws.rs",
+            "com.fasterxml.jackson",
+            "jersey.repackaged",
+            "com.google",
+            "io.netty",
+            "org.bouncycastle",
+            "org.newsclub",
+            "org.zeroturnaround"
+        ].each { relocate(it, "org.testcontainers.shaded.$it") }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) { publication ->
+                artifacts.removeAll { it.classifier == null }
+                artifact project.tasks.shadowJar
+            }
+        }
     }
 
     dependencies {

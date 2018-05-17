@@ -53,17 +53,17 @@ _N.B:_
 * _TC needs to be on your application's classpath at runtime for this to work_
 * _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
-**Original URL**: `jdbc:mysql://somehostname:someport/databasename`
+**Original URL**: `jdbc:mysql:5.7.22://somehostname:someport/databasename`
 
 Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value.
 
 ### JDBC URL examples
 
-#### Simple Testcontainers JDBC driver usage
+#### DEPRECATED: Simple Testcontainers JDBC driver usage
 
 `jdbc:tc:mysql://somehostname:someport/databasename`
 
-*(Note: this will use the latest version of MySQL)*
+*(Note: this will use a fixed version of the database. You should typically specify the version you desire via a tag parameter, as below).*
 
 #### Using Testcontainers with a fixed version
 
@@ -71,14 +71,14 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using PostgreSQL
 
-`jdbc:tc:postgresql://hostname/databasename`
+`jdbc:tc:postgresql:9.6.8://hostname/databasename`
 
 
 ## Using an init script
 
 Testcontainers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
-`jdbc:tc:mysql://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
+`jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 
 This is useful if you have a fixed script for setting up database schema, etc.
 
@@ -86,7 +86,7 @@ This is useful if you have a fixed script for setting up database schema, etc.
 
 Instead of running a fixed script for DB setup, it may be useful to call a Java function that you define. This is intended to allow you to trigger database schema migration tools. To do this, add TC_INITFUNCTION to the URL as follows, passing a full path to the class name and method:
 
- `jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
+ `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
 
 The init function must be a public static method which takes a `java.sql.Connection` as its only parameter, e.g.
 ```java
@@ -101,7 +101,7 @@ public class JDBCDriverTest {
 
 By default database container is being stopped as soon as last connection is closed. There are cases when you might need to start container and keep it running till you stop it explicitly or JVM is shutdown. To do this, add `TC_DAEMON` parameter to the URL as follows:
 
- `jdbc:tc:mysql://hostname/databasename?TC_DAEMON=true`
+ `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_DAEMON=true`
 
 With this parameter database container will keep running even when there're no open connections.
 
@@ -114,12 +114,3 @@ is a directory on the classpath containing .cnf files, the following URL can be 
 
 Any .cnf files in this classpath directory will be mapped into the database container's /etc/mysql/conf.d directory,
 and will be able to override server settings when the container starts.
-
-### Additional Non-standard Methods
-
-#### Virtuoso SPARQL Service URL
-
-VirtuosoContainer provides access to the SPARQL service URL
-```java
-String sparqlServiceUrl = ((VirtuosoContainer)container).getSparqlUrl();
-```

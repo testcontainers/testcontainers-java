@@ -97,7 +97,7 @@ public static GenericContainer elasticsearch =
                .waitingFor(Wait.forHttp("/all"));
 ```
 
-Wait for arbitrary status code on an HTTPS endpoint:
+Wait for 200 or 401 status codes on an HTTPS endpoint:
 ```java
 @ClassRule
 public static GenericContainer elasticsearch =
@@ -105,13 +105,26 @@ public static GenericContainer elasticsearch =
                .withExposedPorts(9200)
                .waitingFor(
                		Wait.forHttp("/all")
-               			 .forStatusCode(301)
+               			 .forStatusCode(200)
+               			 .forStatusCode(401)
                			 .usingTls());
- ```
+```
+
+Wait for 200...299 or 401 status codes on an HTTPS endpoint:
+```java
+@ClassRule
+public static GenericContainer elasticsearch =
+    new GenericContainer("elasticsearch:2.3")
+               .withExposedPorts(9200)
+               .waitingFor(
+               		Wait.forHttp("/all")
+               			 .forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401)
+               			 .usingTls());
+```
 
 If the used image supports Docker's [Healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) feature, you can directly leverage the `healthy` state of the container as your wait condition:
 ```java
-@ClassRule2.32.3
+@ClassRule
 public static GenericContainer container =
     new GenericContainer("image-with-healthcheck:4.2")
                .waitingFor(Wait.forHealthcheck());

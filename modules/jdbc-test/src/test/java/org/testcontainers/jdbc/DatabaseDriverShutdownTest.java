@@ -23,7 +23,7 @@ public class DatabaseDriverShutdownTest {
 
     @Test
     public void shouldStopContainerWhenAllConnectionsClosed() throws SQLException {
-        final String jdbcUrl = "jdbc:tc:postgresql://hostname/databasename";
+        final String jdbcUrl = "jdbc:tc:postgresql:9.6.8://hostname/databasename";
 
         getConnectionAndClose(jdbcUrl);
 
@@ -33,7 +33,7 @@ public class DatabaseDriverShutdownTest {
 
     @Test
     public void shouldNotStopDaemonContainerWhenAllConnectionsClosed() throws SQLException {
-        final String jdbcUrl = "jdbc:tc:postgresql://hostname/databasename?TC_DAEMON=true";
+        final String jdbcUrl = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true";
 
         getConnectionAndClose(jdbcUrl);
 

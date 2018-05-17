@@ -2,15 +2,6 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 description = "Testcontainers Core"
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) { publication ->
-            artifacts.removeAll { it.classifier == null }
-            artifact project.tasks.shadowJar
-        }
-    }
-}
-
 sourceSets {
     jarFileTest
 }
@@ -24,7 +15,6 @@ configurations {
 
 shadowJar {
     configurations = [project.configurations.shaded]
-    classifier = null
 
     mergeServiceFiles()
 
@@ -46,27 +36,6 @@ shadowJar {
         'mozilla/public-suffix-list.txt',
     ].each { exclude(it) }
 
-    relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
-
-    [
-        "org.apache.http",
-        "org.apache.commons.lang",
-        "org.apache.commons.io",
-        "org.glassfish",
-        "org.aopalliance",
-        "org.jvnet",
-        "javax.annotation",
-        "javax.inject",
-        "javax.ws.rs",
-        "com.fasterxml.jackson",
-        "jersey.repackaged",
-        "com.google",
-        "io.netty",
-        "org.bouncycastle",
-        "org.newsclub",
-        "org.zeroturnaround"
-    ].each { relocate(it, "org.testcontainers.shaded.$it") }
-
     dependencies {
         include(dependency('org.apache.httpcomponents:.*'))
         include(dependency('org.glassfish.*:.*'))
@@ -81,6 +50,7 @@ shadowJar {
         include(dependency('org.zeroturnaround:zt-exec'))
         include(dependency('commons-lang:commons-lang'))
         include(dependency('commons-io:commons-io'))
+        include(dependency('commons-codec:commons-codec'))
     }
 }
 
@@ -101,23 +71,30 @@ dependencies {
     compile 'org.jetbrains:annotations:15.0'
     compile 'javax.annotation:javax.annotation-api:1.3.1'
     compile 'com.google.code.findbugs:jsr305:3.0.2'
-    compile 'org.apache.commons:commons-compress:1.15'
+    compile 'org.apache.commons:commons-compress:1.16.1'
     // Added for JDK9 compatibility since it's missing this package
     compile 'javax.xml.bind:jaxb-api:2.3.0'
-    compile 'org.rnorth.duct-tape:duct-tape:1.0.6'
+    compile ('org.rnorth.duct-tape:duct-tape:1.0.7') {
+        exclude(group: 'org.jetbrains', module: 'annotations')
+    }
+
     compile 'org.rnorth.visible-assertions:visible-assertions:2.1.0'
 
-    shaded ('com.github.docker-java:docker-java:3.0.12') {
+    compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
+        exclude(group: "log4j", module: "log4j")
+    }
+
+    shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
         exclude(group: 'log4j')
         exclude(group: 'com.google.code.findbug')
     }
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
-    shaded 'org.rnorth:tcp-unix-socket-proxy:1.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.8'
     shaded 'commons-lang:commons-lang:2.6'
     shaded 'commons-io:commons-io:2.5'
+    shaded 'commons-codec:commons-codec:1.11'
     // docker-java uses SslConfigurator from jersey-common for TLS
     shaded ('org.glassfish.jersey.core:jersey-common:2.23.1') {
         // SslConfigurator doesn't use classes from dependencies

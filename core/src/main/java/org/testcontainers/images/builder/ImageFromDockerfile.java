@@ -39,7 +39,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private static final Set<String> imagesToDelete = Sets.newConcurrentHashSet();
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
             DockerClient dockerClientForCleaning = DockerClientFactory.instance().client();
             try {
                 for (String dockerImageName : imagesToDelete) {

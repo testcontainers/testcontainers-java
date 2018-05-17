@@ -112,6 +112,7 @@ public final class ResourceReaper {
         }
 
         Thread kiraThread = new Thread(
+                DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
                 () -> {
                     while (true) {
                         int index = 0;
@@ -358,7 +359,7 @@ public final class ResourceReaper {
     private void setHook() {
         if (hookIsSet.compareAndSet(false, true)) {
             // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(new Thread(this::performCleanup));
+            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
     }
 }

@@ -1,1 +1,1 @@
-microsoft/mssql-server-linux:latest
+microsoft/mssql-server-linux:2017-CU6
