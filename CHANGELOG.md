@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Changed
+- Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
 
 ## [1.7.2] - 2018-04-30
 
