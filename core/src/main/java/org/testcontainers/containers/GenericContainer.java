@@ -655,25 +655,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return new TestDescription() {
             @Override
             public String getTestId() {
-                return getDisplayName();
-            }
-
-            @Override
-            public String getDisplayName() {
                 return description.getDisplayName();
             }
 
             @Override
-            public Optional<String[]> getNameParts() {
-                return Optional.of(new String[]{
-                    description.getClassName(),
-                    description.getMethodName()
-                });
-            }
-
-            @Override
-            public Optional<String> getFilesystemFriendlyName() {
-                return getNameParts().map(it -> String.join("-", it));
+            public String getFilesystemFriendlyName() {
+                return description.getClassName() + "-" + description.getMethodName();
             }
         };
     }

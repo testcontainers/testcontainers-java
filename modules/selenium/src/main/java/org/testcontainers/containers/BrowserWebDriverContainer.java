@@ -206,14 +206,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     public void afterTestBlock(TestDescription description, Optional<Throwable> throwable) {
-        retainRecordingIfNeeded(
-            description.getFilesystemFriendlyName().orElseGet(() ->
-                description.getNameParts()
-                    .map(it -> String.join("-", it))
-                    .orElse(description.getDisplayName())
-            ),
-            throwable.isPresent()
-        );
+        retainRecordingIfNeeded(description.getFilesystemFriendlyName(), throwable.isPresent());
     }
 
     @Override
