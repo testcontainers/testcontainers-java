@@ -51,7 +51,7 @@ public class TestcontainersConfiguration {
     }
 
     public Integer getRyukTimeout() {
-        return (Integer) properties.getOrDefault("ryuk.container.timeout", 30);
+        return Integer.parseInt((String) properties.getOrDefault("ryuk.container.timeout", "30"));
     }
 
     public String getKafkaImage() {

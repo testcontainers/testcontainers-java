@@ -15,7 +15,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.pass;
  */
 public class HostPortWaitStrategyTest {
 
-    private static final String IMAGE_NAME = "alpine:latest";
+    private static final String IMAGE_NAME = "alpine:3.7";
 
     @ClassRule
     public static GenericContainer container = new GenericContainer(IMAGE_NAME).withExposedPorts()

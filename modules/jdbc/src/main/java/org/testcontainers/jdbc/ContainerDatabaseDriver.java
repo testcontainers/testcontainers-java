@@ -102,9 +102,6 @@ public class ContainerDatabaseDriver implements Driver {
                 }
                 String databaseType = urlMatcher.group(1);
                 String tag = urlMatcher.group(3);
-                if (tag == null) {
-                    tag = "latest";
-                }
 
                 queryString = urlMatcher.group(4);
                 if (queryString == null) {
@@ -119,7 +116,12 @@ public class ContainerDatabaseDriver implements Driver {
                 ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
                     if (candidateContainerType.supports(databaseType)) {
-                        container = candidateContainerType.newInstance(tag);
+
+                        if (tag != null) {
+                            container = candidateContainerType.newInstance(tag);
+                        } else {
+                            container = candidateContainerType.newInstance();
+                        }
                         delegate = container.getJdbcDriverInstance();
                     }
                 }

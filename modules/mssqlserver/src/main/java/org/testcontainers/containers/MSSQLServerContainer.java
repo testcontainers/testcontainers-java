@@ -6,14 +6,16 @@ import org.testcontainers.utility.LicenseAcceptance;
  * @author Stefan Hufschmidt
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-    static final String NAME = "mssqlserver";
-    static final String IMAGE = "microsoft/mssql-server-linux";
+    public static final String NAME = "mssqlserver";
+    public static final String IMAGE = "microsoft/mssql-server-linux";
+    public static final String DEFAULT_TAG = "2017-CU6";
+
     public static final Integer MS_SQL_SERVER_PORT = 1433;
     private String username = "SA";
     private String password = "A_Str0ng_Required_Password";
 
     public MSSQLServerContainer() {
-        this(IMAGE + ":latest");
+        this(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public MSSQLServerContainer(final String dockerImageName) {
