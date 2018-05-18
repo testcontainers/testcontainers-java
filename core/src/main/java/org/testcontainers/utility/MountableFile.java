@@ -38,6 +38,8 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 @Slf4j
 public class MountableFile implements Transferable {
 
+    private static final String BITBUCKET_CLONE_DIR_ENV = "BITBUCKET_CLONE_DIR";
+    private static final String BITBUCKET_TMP_SUBDIR = "tmp";
     private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-tmp-";
     private static final String OS_MAC_TMP_DIR = "/tmp";
     private static final int BASE_FILE_MODE = 0100000;
@@ -241,8 +243,23 @@ public class MountableFile implements Transferable {
         return tmpLocation.getAbsolutePath();
     }
 
+    private boolean isOnBitbucket() {
+        final String bbCloneDir = System.getenv(BITBUCKET_CLONE_DIR_ENV);
+        return bbCloneDir != null && bbCloneDir.length() > 0;
+    }
+
+    private String getBitbucketCloneDir() {
+        return System.getenv(BITBUCKET_CLONE_DIR_ENV);
+    }
+
     private File createTempDirectory() {
         try {
+            if (isOnBitbucket()) {
+                return Files.createTempDirectory(
+                    Paths.get(getBitbucketCloneDir(), BITBUCKET_TMP_SUBDIR),
+                    TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
+            }
+
             if (SystemUtils.IS_OS_MAC) {
                 return Files.createTempDirectory(Paths.get(OS_MAC_TMP_DIR), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
             }
