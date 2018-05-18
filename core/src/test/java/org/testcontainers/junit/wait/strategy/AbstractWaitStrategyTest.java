@@ -62,9 +62,13 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * @return the (unstarted) container
      */
     protected GenericContainer startContainerWithCommand(String shellCommand, WaitStrategy waitStrategy) {
+        return startContainerWithCommand(shellCommand, waitStrategy, 8080);
+    }
+
+    protected GenericContainer startContainerWithCommand(String shellCommand, WaitStrategy waitStrategy, Integer... ports) {
         // apply WaitStrategy to container
         return new GenericContainer(IMAGE_NAME)
-                .withExposedPorts(8080)
+                .withExposedPorts(ports)
                 .withCommand("sh", "-c", shellCommand)
                 .waitingFor(waitStrategy.withStartupTimeout(Duration.ofMillis(WAIT_TIMEOUT_MILLIS)));
     }
