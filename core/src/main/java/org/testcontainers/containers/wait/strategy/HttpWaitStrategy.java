@@ -157,7 +157,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                         connection.setRequestMethod("GET");
                         connection.connect();
 
-                        log.info("Get response code {}", connection.getResponseCode());
+                        log.trace("Get response code {}", connection.getResponseCode());
 
                         if (!statusCodePredicate.test(connection.getResponseCode())) {
                             throw new RuntimeException(String.format("HTTP response code was: %s",
@@ -167,7 +167,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                         if(responsePredicate != null) {
                             String responseBody = getResponseBody(connection);
 
-                            log.info("Get response {}", responseBody);
+                            log.trace("Get response {}", responseBody);
 
                             if(!responsePredicate.test(responseBody)) {
                                 throw new RuntimeException(String.format("Response: %s did not match predicate",

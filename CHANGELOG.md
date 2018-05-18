@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Allow testcontainer to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
+
 ## [1.7.3] - 2018-05-16
 
 ### Fixed
