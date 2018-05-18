@@ -2,6 +2,7 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -43,6 +44,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
         if (statusCodes.isEmpty() && HttpURLConnection.HTTP_OK == responseCode) return true;
         return statusCodes.contains(responseCode);
     };
+    private Optional<Integer> livenessPort = Optional.empty();
 
     /**
      * Waits for the given status code.
@@ -73,6 +75,17 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      */
     public HttpWaitStrategy forPath(String path) {
         this.path = path;
+        return this;
+    }
+
+    /**
+     * Wait for the given port.
+     *
+     * @param port the given port
+     * @return this
+     */
+    public HttpWaitStrategy forPort(int port) {
+        this.livenessPort = Optional.of(port);
         return this;
     }
 
@@ -112,13 +125,19 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     @Override
     protected void waitUntilReady() {
         final String containerName = waitStrategyTarget.getContainerInfo().getName();
-        final Set<Integer> livenessCheckPorts = getLivenessCheckPorts();
-        if (livenessCheckPorts == null || livenessCheckPorts.isEmpty()) {
-            log.warn("{}: No exposed ports or mapped ports - cannot wait for status", containerName);
+
+        final Integer livenessCheckPort = livenessPort.map(waitStrategyTarget::getMappedPort).orElseGet(() -> {
+            final Set<Integer> livenessCheckPorts = getLivenessCheckPorts();
+            if (livenessCheckPorts == null || livenessCheckPorts.isEmpty()) {
+                log.warn("{}: No exposed ports or mapped ports - cannot wait for status", containerName);
+                return -1;
+            }
+            return livenessCheckPorts.iterator().next();
+        });
+
+        if (null == livenessCheckPort || -1 == livenessCheckPort) {
             return;
         }
-
-        final Integer livenessCheckPort = livenessCheckPorts.iterator().next();
         final String uri = buildLivenessUri(livenessCheckPort).toString();
         log.info("{}: Waiting for {} seconds for URL: {}", containerName, startupTimeout.getSeconds(), uri);
 
@@ -138,6 +157,8 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                         connection.setRequestMethod("GET");
                         connection.connect();
 
+                        log.trace("Get response code {}", connection.getResponseCode());
+
                         if (!statusCodePredicate.test(connection.getResponseCode())) {
                             throw new RuntimeException(String.format("HTTP response code was: %s",
                                 connection.getResponseCode()));
@@ -145,6 +166,9 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
                         if(responsePredicate != null) {
                             String responseBody = getResponseBody(connection);
+
+                            log.trace("Get response {}", responseBody);
+
                             if(!responsePredicate.test(responseBody)) {
                                 throw new RuntimeException(String.format("Response: %s did not match predicate",
                                     responseBody));
