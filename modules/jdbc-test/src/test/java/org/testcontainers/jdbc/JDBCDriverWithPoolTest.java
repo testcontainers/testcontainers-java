@@ -1,5 +1,6 @@
 package org.testcontainers.jdbc;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
@@ -24,10 +25,10 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 /**
  *
  */
-@RunWith(Parameterized.class)
+@RunWith(ParallelParameterized.class)
 public class JDBCDriverWithPoolTest {
 
-    public static final String URL = "jdbc:tc:mysql://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverWithPoolTest::sampleInitFunction";
+    public static final String URL = "jdbc:tc:mysql:5://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverWithPoolTest::sampleInitFunction";
     private final DataSource dataSource;
 
     @Parameterized.Parameters

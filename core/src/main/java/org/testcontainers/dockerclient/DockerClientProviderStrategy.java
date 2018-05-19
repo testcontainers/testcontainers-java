@@ -3,7 +3,6 @@ package org.testcontainers.dockerclient;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +12,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.dockerclient.transport.TestcontainersDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
@@ -49,6 +49,10 @@ public abstract class DockerClientProviderStrategy {
     public abstract String getDescription();
 
     protected boolean isApplicable() {
+        return true;
+    }
+
+    protected boolean isPersistable() {
         return true;
     }
 
@@ -93,7 +97,10 @@ public abstract class DockerClientProviderStrategy {
                                         LOGGER.warn("Can't instantiate a strategy from {}", it, e);
                                         return Stream.empty();
                                     }
-                                }),
+                                })
+                                // Ignore persisted strategy if it's not persistable anymore
+                                .filter(DockerClientProviderStrategy::isPersistable)
+                                .peek(strategy -> LOGGER.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName())),
                         strategies
                                 .stream()
                                 .filter(DockerClientProviderStrategy::isApplicable)
@@ -104,7 +111,9 @@ public abstract class DockerClientProviderStrategy {
                         strategy.test();
                         LOGGER.info("Found Docker environment with {}", strategy.getDescription());
 
-                        TestcontainersConfiguration.getInstance().updateGlobalConfig("docker.client.strategy", strategy.getClass().getName());
+                        if (strategy.isPersistable()) {
+                            TestcontainersConfiguration.getInstance().updateGlobalConfig("docker.client.strategy", strategy.getClass().getName());
+                        }
 
                         return Stream.of(strategy);
                     } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
@@ -157,7 +166,7 @@ public abstract class DockerClientProviderStrategy {
     protected DockerClient getClientForConfig(DockerClientConfig config) {
         return DockerClientBuilder
                     .getInstance(config)
-                    .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
+                    .withDockerCmdExecFactory(new TestcontainersDockerCmdExecFactory())
                     .build();
     }
 

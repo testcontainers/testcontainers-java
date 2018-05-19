@@ -59,12 +59,23 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
+        return start(hostIpAddress, client, false);
+    }
+
+    @SneakyThrows(InterruptedException.class)
+    public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
+
+        List<Bind> binds = new ArrayList<>();
+        binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
+        if (withDummyMount) {
+            // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
+            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro));
+        }
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig() {
@@ -75,11 +86,7 @@ public final class ResourceReaper {
                 .withPublishAllPorts(true)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-                .withBinds(
-                        new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")),
-                        // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
-                        new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro)
-                )
+                .withBinds(binds)
                 .exec()
                 .getId();
 
@@ -105,6 +112,7 @@ public final class ResourceReaper {
         }
 
         Thread kiraThread = new Thread(
+                DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
                 () -> {
                     while (true) {
                         int index = 0;
@@ -154,7 +162,7 @@ public final class ResourceReaper {
         kiraThread.start();
 
         // We need to wait before we can start any containers to make sure that we delete them
-        if (!ryukScheduledLatch.await(5, TimeUnit.SECONDS)) {
+        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
             throw new IllegalStateException("Can not connect to Ryuk");
         }
 
@@ -351,7 +359,7 @@ public final class ResourceReaper {
     private void setHook() {
         if (hookIsSet.compareAndSet(false, true)) {
             // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(new Thread(this::performCleanup));
+            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
     }
 }
