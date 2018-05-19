@@ -2,17 +2,17 @@ package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.PumbaClients;
 import org.testcontainers.client.actions.containeractions.ContainerActions;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.test.DockerEnvironment.ContainerDetails;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.client.targets.PumbaTargets.containers;
 
@@ -42,7 +42,7 @@ public class StoppingContainerTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
             final ContainerDetails container = environment.containerDetails(containerToStop.getContainerId());
             assertThat(container.isRunning()).isFalse();
         });

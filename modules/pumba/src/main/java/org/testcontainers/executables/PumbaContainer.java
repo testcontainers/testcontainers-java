@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -48,7 +49,7 @@ class PumbaContainer extends GenericContainer<PumbaContainer> {
     }
 
     private void setupLogging() {
-        withLogConsumer(frame -> log.debug("Pumba container: \"{}\"", frame.getUtf8String()));
+        withLogConsumer(new Slf4jLogConsumer(log));
     }
 
     private static ImageFromDockerfile buildPumbaDockerImage() {

@@ -2,15 +2,15 @@ package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.PumbaClients;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.executables.PumbaExecutables;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.testcontainers.client.actions.containeractions.ContainerActions.removeContainers;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.client.targets.PumbaTargets.containers;
@@ -42,7 +42,7 @@ public class RemovingContainerTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, TimeUnit.SECONDS).until(() ->
+        await().atMost(30, TimeUnit.SECONDS).untilAsserted(() ->
                 assertThat(environment.namesOfAllContainers())
                         .doesNotContain(containerToRemove.getContainerName())
         );

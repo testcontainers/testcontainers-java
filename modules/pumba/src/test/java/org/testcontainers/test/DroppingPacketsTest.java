@@ -2,15 +2,15 @@ package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.PumbaClients;
 import org.testcontainers.client.commandparts.SupportedTimeUnit;
+import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.test.Pinger.PingResponse;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.testcontainers.client.actions.networkactions.NetworkActions.networkAction;
 import static org.testcontainers.client.actions.networkactions.NetworkSubCommands.lossOutgoingPackets;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
@@ -49,7 +49,7 @@ public class DroppingPacketsTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).untilAsserted(() -> {
             final PingResponse pingResponse = pinger.ping(aContainer);
             assertThat(pingResponse.packetLost()).isTrue();
         });
@@ -78,7 +78,7 @@ public class DroppingPacketsTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).untilAsserted(() -> {
             final PingResponse pingResponse = pinger.ping(aContainer);
             assertThat(pingResponse.packetLost()).isTrue();
         });
@@ -104,7 +104,7 @@ public class DroppingPacketsTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).untilAsserted(() -> {
             final PingResponse pingResponse = pinger.ping(aContainer);
             assertThat(pingResponse.packetLost()).isTrue();
         });

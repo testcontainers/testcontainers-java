@@ -2,11 +2,11 @@ package org.testcontainers.test;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.PumbaClients;
 import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.executables.PumbaExecutables;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.testcontainers.client.actions.containeractions.ContainerActions.killContainers;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.onlyOnce;
 import static org.testcontainers.client.executionmodes.PumbaExecutionModes.recurrently;
@@ -49,7 +49,7 @@ public class KillingContainersTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
             final Collection<String> namesOfRunningContainers = environment.namesOfRunningContainers();
 
             assertThat(namesOfRunningContainers).doesNotContain(containerToKill.getContainerName());
@@ -71,7 +71,7 @@ public class KillingContainersTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
             final Collection<String> namesOfRunningContainers = environment.namesOfRunningContainers();
 
             assertThat(namesOfRunningContainers).doesNotContain(firstVictim.getContainerName(), secondVictim.getContainerName());
@@ -93,7 +93,7 @@ public class KillingContainersTest implements CanSpawnContainers {
                 .execute(onlyOnce().onAllChosenContainers());
 
         // then
-        await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
             final Collection<String> namesOfRunningContainers = environment.namesOfRunningContainers();
 
             assertThat(namesOfRunningContainers).filteredOn(matchesRegexp("foobar.*")).isEmpty();
@@ -114,14 +114,14 @@ public class KillingContainersTest implements CanSpawnContainers {
                 .execute(recurrently(5, SupportedTimeUnit.SECONDS).onRandomlyChosenContainer());
 
         // then
-        await().atMost(5, TimeUnit.SECONDS).until(() ->
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
                 assertThat(environment.namesOfRunningContainers())
                         .filteredOn(matchesRegexp("foobar.*"))
                         .hasSize(1)
         );
 
         // and
-        await().atMost(10, TimeUnit.SECONDS).until(() ->
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() ->
                 assertThat(environment.namesOfRunningContainers())
                         .filteredOn(matchesRegexp("foobar.*"))
                         .isEmpty()
