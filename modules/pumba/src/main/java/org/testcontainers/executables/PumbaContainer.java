@@ -3,7 +3,6 @@ package org.testcontainers.executables;
 import com.github.dockerjava.api.DockerClient;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.SystemUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -22,7 +21,7 @@ class PumbaContainer extends GenericContainer<PumbaContainer> {
     private static final String PUMBA_DOCKER_IMAGE = "gaiaadm/pumba:0.4.7";
     private static final String IP_ROUTE_DOCKER_IMAGE = "gaiadocker/iproute2:3.3";
 
-    private static final String DOCKER_SOCKET_HOST_PATH = "/var/run/docker.sock";
+    private static final String DOCKER_SOCKET_HOST_PATH = "//var/run/docker.sock";
     private static final String DOCKER_SOCKET_CONTAINER_PATH = "/docker.sock";
 
     PumbaContainer(String pumbaCommandToExecute) {
@@ -39,7 +38,7 @@ class PumbaContainer extends GenericContainer<PumbaContainer> {
     }
 
     private void mountDockerSocket() {
-        addFileSystemBind(dockerSocketHostPath(), DOCKER_SOCKET_CONTAINER_PATH, READ_WRITE);
+        addFileSystemBind(DOCKER_SOCKET_HOST_PATH, DOCKER_SOCKET_CONTAINER_PATH, READ_WRITE);
         addEnv("DOCKER_HOST", String.format("unix://%s", DOCKER_SOCKET_CONTAINER_PATH));
     }
 
@@ -61,10 +60,6 @@ class PumbaContainer extends GenericContainer<PumbaContainer> {
                         .run("echo 'set -e' >> /docker_entrypoint.sh")
                         .run("echo 'exec gosu root:root \"$@\"' >> /docker_entrypoint.sh")
                 );
-    }
-
-    private static String dockerSocketHostPath() {
-        return SystemUtils.IS_OS_WINDOWS ? "/" + DOCKER_SOCKET_HOST_PATH : DOCKER_SOCKET_HOST_PATH;
     }
 
     private static class FailOnlyOnErrorExitCode extends StartupCheckStrategy {
