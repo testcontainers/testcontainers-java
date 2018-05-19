@@ -10,25 +10,34 @@ import com.github.dockerjava.core.AbstractDockerCmdExecFactory;
 import com.github.dockerjava.core.InvocationBuilder;
 import com.github.dockerjava.core.WebTarget;
 import com.github.dockerjava.core.exec.PingCmdExec;
+import com.github.dockerjava.netty.handler.FramedResponseStreamHandler;
+import com.github.dockerjava.netty.handler.JsonResponseCallbackHandler;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
 import de.gesellix.docker.client.filesocket.UnixSocket;
 import de.gesellix.docker.client.filesocket.UnixSocketFactory;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.experimental.Wither;
 import okhttp3.*;
+import okhttp3.internal.connection.RealConnection;
 import okio.BufferedSink;
+import okio.BufferedSource;
 import okio.Okio;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.testcontainers.DockerClientFactory;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -140,6 +149,10 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
         @Override
         public OkHttpWebTarget queryParam(String name, Object value) {
+            if (value == null) {
+                return this;
+            }
+
             SetMultimap<String, String> newQueryParams = HashMultimap.create(queryParams);
             newQueryParams.put(name, value.toString());
 
@@ -149,7 +162,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
         @Override
         public OkHttpWebTarget queryParamsSet(String name, Set<?> values) {
             SetMultimap<String, String> newQueryParams = HashMultimap.create(queryParams);
-            newQueryParams.replaceValues(name, values.stream().map(Object::toString).collect(Collectors.toSet()));
+            newQueryParams.replaceValues(name, values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toSet()));
 
             return this.withQueryParams(newQueryParams);
         }
@@ -198,8 +211,16 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
             @Override
             public void get(ResultCallback<Frame> resultCallback) {
-                // FIXME
-                return;
+                Request request = new Request.Builder()
+                    .url(httpUrl)
+                    .get()
+                    .build();
+
+                handleStreamedResponse(
+                    okHttpClient.newCall(request),
+                    resultCallback,
+                    new FramedResponseStreamHandler(resultCallback)
+                );
             }
 
             @Override
@@ -259,15 +280,85 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
             }
 
             @Override
+            @SneakyThrows(IOException.class)
             public void post(Object entity, InputStream stdin, ResultCallback<Frame> resultCallback) {
-                // FIXME
-                return;
+
+                Request request = new Request.Builder()
+                    .url(httpUrl)
+                    .post(RequestBody.create(MediaType.parse("application/json"), MAPPER.writeValueAsBytes(entity)))
+                    .build();
+
+                OkHttpClient okHttpClient = this.okHttpClient;
+
+                if (stdin != null) {
+                    // FIXME there must be a better way of handling it
+                    okHttpClient = okHttpClient.newBuilder()
+                        .addNetworkInterceptor(new Interceptor() {
+                            @Override
+                            @SneakyThrows
+                            public Response intercept(Chain chain) {
+                                RealConnection connection = (RealConnection) chain.connection();
+
+                                Field sinkField = RealConnection.class.getDeclaredField("sink");
+                                sinkField.setAccessible(true);
+                                BufferedSink sink = (BufferedSink) sinkField.get(connection);
+
+                                Thread thread = new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
+                                    try {
+                                        sink.writeAll(Okio.source(stdin));
+                                        sink.flush();
+
+                                        Thread.sleep(100);
+                                        sink.close();
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
+                                thread.start();
+
+                                return chain.proceed(chain.request());
+                            }
+                        })
+                        .build();
+                }
+
+                handleStreamedResponse(
+                    okHttpClient.newCall(request),
+                    resultCallback,
+                    new FramedResponseStreamHandler(resultCallback)
+                );
             }
 
             @Override
             public <T> void post(TypeReference<T> typeReference, ResultCallback<T> resultCallback, InputStream body) {
-                // FIXME
-                return;
+                Request request = new Request.Builder()
+                    .url(httpUrl)
+                    .post(toRequestBody(body, null))
+                    .build();
+
+                handleStreamedResponse(
+                    okHttpClient.newCall(request),
+                    resultCallback,
+                    new JsonResponseCallbackHandler<T>(typeReference, resultCallback)
+                );
+            }
+
+            protected <T> void handleStreamedResponse(Call call, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
+                try (Response response = call.execute()) {
+                    callback.onStart(response);
+                    BufferedSource source = response.body().source();
+
+                    byte[] buffer = new byte[4 * 1024];
+                    while (!source.exhausted()) {
+                        InputStream inputStream = source.inputStream();
+                        int bytesReaded = inputStream.read(buffer);
+
+                        handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReaded));
+                    }
+                    callback.onComplete();
+                } catch (Exception e) {
+                    callback.onError(e);
+                }
             }
 
             @Override
@@ -297,7 +388,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
             @Override
             @SneakyThrows(IOException.class)
-            public void put(InputStream body, com.github.dockerjava.core.MediaType  mediaType) {
+            public void put(InputStream body, com.github.dockerjava.core.MediaType mediaType) {
                 Request request = new Request.Builder()
                     .url(httpUrl)
                     .put(toRequestBody(body, mediaType.toString()))
