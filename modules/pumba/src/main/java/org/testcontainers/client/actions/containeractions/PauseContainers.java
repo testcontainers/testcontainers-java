@@ -3,8 +3,9 @@ package org.testcontainers.client.actions.containeractions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.testcontainers.client.commandparts.PumbaCommandPart;
-import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.client.commandparts.TimeExpression;
+
+import java.time.Duration;
 
 /**
  * Created by novy on 17.01.17.
@@ -12,10 +13,10 @@ import org.testcontainers.client.commandparts.TimeExpression;
 
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class PauseContainers implements ContainerAction {
-    private TimeExpression duration = TimeExpression.of(15, SupportedTimeUnit.SECONDS);
+    private TimeExpression duration = TimeExpression.of(Duration.ofSeconds(15));
 
-    public PauseContainers forDuration(long duration, SupportedTimeUnit unit) {
-        this.duration = TimeExpression.of(duration, unit);
+    public PauseContainers forDuration(Duration duration) {
+        this.duration = TimeExpression.of(duration);
         return this;
     }
 

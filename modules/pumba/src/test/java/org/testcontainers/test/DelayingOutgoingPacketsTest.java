@@ -4,9 +4,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.PumbaClients;
-import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.test.Pinger.PingResponse;
+
+import java.time.Duration;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,10 +39,10 @@ public class DelayingOutgoingPacketsTest implements CanSpawnContainers {
         // when
         pumba
                 .performNetworkChaos(networkAction()
-                        .lastingFor(30, SupportedTimeUnit.SECONDS)
+                        .lastingFor(Duration.ofSeconds(30))
                         .executeSubCommand(
                                 delayOutgoingPackets()
-                                        .delayFor(500, SupportedTimeUnit.MILLISECONDS)
+                                        .delayFor(Duration.ofMillis(500))
                         )
                 )
                 .affect(containers(aContainer.getContainerName()))

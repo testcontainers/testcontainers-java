@@ -4,8 +4,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.client.commandparts.PumbaCommandPart;
-import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.client.commandparts.TimeExpression;
+
+import java.time.Duration;
 
 /**
  * Created by novy on 01.01.17.
@@ -15,13 +16,13 @@ public final class PumbaExecutionModes {
 
     public static WithSchedule onlyOnce() {
         return new WithSchedule(
-                () -> ""
+            () -> ""
         );
     }
 
-    public static WithSchedule recurrently(int time, SupportedTimeUnit unit) {
+    public static WithSchedule recurrently(Duration duration) {
         return new WithSchedule(
-                () -> "--interval " + TimeExpression.of(time, unit).evaluate()
+            () -> "--interval " + TimeExpression.of(duration).evaluate()
         );
     }
 

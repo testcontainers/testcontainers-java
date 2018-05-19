@@ -4,11 +4,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.PumbaClients;
-import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.executables.PumbaExecutables;
 import org.testcontainers.test.DockerEnvironment.ContainerDetails;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +38,7 @@ public class PausingContainersTest implements CanSpawnContainers {
 
         // when
         pumba
-                .performContainerChaos(pauseContainers().forDuration(1, SupportedTimeUnit.SECONDS))
+                .performContainerChaos(pauseContainers().forDuration(Duration.ofSeconds(1)))
                 .affect(containers(containerToPause.getContainerName()))
                 .execute(onlyOnce().onAllChosenContainers());
 

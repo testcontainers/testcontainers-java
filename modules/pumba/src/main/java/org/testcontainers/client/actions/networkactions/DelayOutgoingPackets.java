@@ -3,9 +3,9 @@ package org.testcontainers.client.actions.networkactions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.testcontainers.client.commandparts.PumbaCommandPart;
-import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.client.commandparts.TimeExpression;
 
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -13,18 +13,18 @@ import java.util.Optional;
  */
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class DelayOutgoingPackets implements NetworkSubCommands.NetworkSubCommand {
-    private TimeExpression delayTime = TimeExpression.of(100, SupportedTimeUnit.MILLISECONDS);
-    private TimeExpression jitter = TimeExpression.of(10, SupportedTimeUnit.MILLISECONDS);
+    private TimeExpression delayTime = TimeExpression.of(Duration.ofMillis(100));
+    private TimeExpression jitter = TimeExpression.of(Duration.ofMillis(10));
     private int correlation = 20;
     private Distribution distribution = Distribution.NO_DISTRIBUTION;
 
-    public DelayOutgoingPackets delayFor(int time, SupportedTimeUnit unit) {
-        this.delayTime = TimeExpression.of(time, unit);
+    public DelayOutgoingPackets delayFor(Duration duration) {
+        this.delayTime = TimeExpression.of(duration);
         return this;
     }
 
-    public DelayOutgoingPackets withJitter(int time, SupportedTimeUnit unit) {
-        this.jitter = TimeExpression.of(time, unit);
+    public DelayOutgoingPackets withJitter(Duration duration) {
+        this.jitter = TimeExpression.of(duration);
         return this;
     }
 
@@ -62,11 +62,11 @@ public class DelayOutgoingPackets implements NetworkSubCommands.NetworkSubComman
     @Override
     public String evaluate() {
         return delayCommandPart()
-                .append(delayTimePart())
-                .append(jitterPart())
-                .append(correlationPart())
-                .append(distributionPart())
-                .evaluate();
+            .append(delayTimePart())
+            .append(jitterPart())
+            .append(correlationPart())
+            .append(distributionPart())
+            .evaluate();
     }
 
     public enum Distribution {

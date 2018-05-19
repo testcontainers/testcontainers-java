@@ -3,9 +3,9 @@ package org.testcontainers.client.actions.networkactions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.testcontainers.client.commandparts.PumbaCommandPart;
-import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.client.commandparts.TimeExpression;
 
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -20,12 +20,12 @@ public final class NetworkActions {
 
     public static class NetworkActionWithSubCommand {
 
-        private TimeExpression duration = TimeExpression.of(1, SupportedTimeUnit.MINUTES);
+        private TimeExpression duration = TimeExpression.of(Duration.ofMinutes(1));
         private String networkInterface = "eth0";
         private String targetIP;
 
-        public NetworkActionWithSubCommand lastingFor(int time, SupportedTimeUnit unit) {
-            this.duration = TimeExpression.of(time, unit);
+        public NetworkActionWithSubCommand lastingFor(Duration duration) {
+            this.duration = TimeExpression.of(duration);
             return this;
         }
 
@@ -41,11 +41,11 @@ public final class NetworkActions {
 
         public NetworkAction executeSubCommand(NetworkSubCommands.NetworkSubCommand subCommand) {
             return () -> netemPart()
-                    .append(durationPart())
-                    .append(interfacePart())
-                    .append(trafficFilterPart())
-                    .append(subCommand)
-                    .evaluate();
+                .append(durationPart())
+                .append(interfacePart())
+                .append(trafficFilterPart())
+                .append(subCommand)
+                .evaluate();
         }
 
         private PumbaCommandPart netemPart() {

@@ -4,10 +4,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.client.PumbaClient;
 import org.testcontainers.client.PumbaClients;
-import org.testcontainers.client.commandparts.SupportedTimeUnit;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.executables.PumbaExecutables;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +111,7 @@ public class KillingContainersTest implements CanSpawnContainers {
         pumba
                 .performContainerChaos(killContainers())
                 .affect(containersMatchingRegexp("foobar.*"))
-                .execute(recurrently(5, SupportedTimeUnit.SECONDS).onRandomlyChosenContainer());
+                .execute(recurrently(Duration.ofSeconds(5)).onRandomlyChosenContainer());
 
         // then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
