@@ -1,7 +1,9 @@
 package org.testcontainers.client.actions.networkactions;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Wither;
 import org.testcontainers.client.commandparts.PumbaCommandPart;
 
 /**
@@ -24,26 +26,18 @@ public class DroppingPacketsModels {
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Wither
     public static class BernoulliModel implements NetworkSubCommands.NetworkSubCommand {
-        private double percentageLoss = 0;
+        private double lossProbability = 0;
         private double correlation = 0;
-
-        public BernoulliModel withLossProbability(double percentageLoss) {
-            this.percentageLoss = percentageLoss;
-            return this;
-        }
-
-        public BernoulliModel withCorrelation(double correlation) {
-            this.correlation = correlation;
-            return this;
-        }
 
         @Override
         public String evaluate() {
             return commandPart()
-                    .append(probabilityPart())
-                    .append(correlationPart())
-                    .evaluate();
+                .append(probabilityPart())
+                .append(correlationPart())
+                .evaluate();
         }
 
         private PumbaCommandPart commandPart() {
@@ -51,7 +45,7 @@ public class DroppingPacketsModels {
         }
 
         private PumbaCommandPart probabilityPart() {
-            return () -> "--percent " + percentageLoss;
+            return () -> "--percent " + lossProbability;
         }
 
         private PumbaCommandPart correlationPart() {
@@ -60,47 +54,24 @@ public class DroppingPacketsModels {
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Wither
     public static class MarkovModel implements NetworkSubCommands.NetworkSubCommand {
-        private double p13Transition = 0;
-        private double p31Transition = 100;
-        private double p32Transition = 0;
-        private double p23Transition = 100;
-        private double p14Transition = 0;
-
-        public MarkovModel withProbabilityOfTransitionFromFirstToThirdState(double probability) {
-            this.p13Transition = probability;
-            return this;
-        }
-
-        public MarkovModel withProbabilityOfTransitionFromThirdToFirstState(double probability) {
-            this.p31Transition = probability;
-            return this;
-        }
-
-        public MarkovModel withProbabilityOfTransitionFromThirdToSecondState(double probability) {
-            this.p32Transition = probability;
-            return this;
-        }
-
-        public MarkovModel withProbabilityOfTransitionFromSecondToThirdState(double probability) {
-            this.p23Transition = probability;
-            return this;
-        }
-
-        public MarkovModel withProbabilityOfTransitionFromFirstToForthState(double probability) {
-            this.p14Transition = probability;
-            return this;
-        }
+        private double probabilityOfTransitionFromFirstToThirdState = 0;
+        private double probabilityOfTransitionFromThirdToFirstState = 100;
+        private double probabilityOfTransitionFromThirdToSecondState = 0;
+        private double probabilityOfTransitionFromSecondToThirdState = 100;
+        private double probabilityOfTransitionFromFirstToForthState = 0;
 
         @Override
         public String evaluate() {
             return commandPart()
-                    .append(p13Part())
-                    .append(p31Part())
-                    .append(p32Part())
-                    .append(p23Part())
-                    .append(p14Part())
-                    .evaluate();
+                .append(p13Part())
+                .append(p31Part())
+                .append(p32Part())
+                .append(p23Part())
+                .append(p14Part())
+                .evaluate();
         }
 
         private PumbaCommandPart commandPart() {
@@ -108,61 +79,43 @@ public class DroppingPacketsModels {
         }
 
         private PumbaCommandPart p13Part() {
-            return () -> "--p13 " + p13Transition;
+            return () -> "--p13 " + probabilityOfTransitionFromFirstToThirdState;
         }
 
         private PumbaCommandPart p31Part() {
-            return () -> "--p31 " + p31Transition;
+            return () -> "--p31 " + probabilityOfTransitionFromThirdToFirstState;
         }
 
         private PumbaCommandPart p32Part() {
-            return () -> "--p32 " + p32Transition;
+            return () -> "--p32 " + probabilityOfTransitionFromThirdToSecondState;
         }
 
         private PumbaCommandPart p23Part() {
-            return () -> "--p23 " + p23Transition;
+            return () -> "--p23 " + probabilityOfTransitionFromSecondToThirdState;
         }
 
         private PumbaCommandPart p14Part() {
-            return () -> "--p14 " + p14Transition;
+            return () -> "--p14 " + probabilityOfTransitionFromFirstToForthState;
         }
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Wither
     public static class GilbertElliotModel implements NetworkSubCommands.NetworkSubCommand {
-        private double transitionToBadStateProbability = 0;
-        private double transitionToGoodStateProbability = 100;
-        private double lossProbabilityInBadState = 100;
-        private double lossProbabilityInGoodState = 0;
-
-        public GilbertElliotModel withProbabilityOfTransitionToBadState(double probability) {
-            this.transitionToBadStateProbability = probability;
-            return this;
-        }
-
-        public GilbertElliotModel withProbabilityOfTransitionToGoodState(double probability) {
-            this.transitionToGoodStateProbability = probability;
-            return this;
-        }
-
-        public GilbertElliotModel withProbabilityOfPacketLossInBadState(double probability) {
-            this.lossProbabilityInBadState = probability;
-            return this;
-        }
-
-        public GilbertElliotModel withProbabilityOfPacketLossInGoodState(double probability) {
-            this.lossProbabilityInBadState = probability;
-            return this;
-        }
+        private double probabilityOfTransitionToBadState = 0;
+        private double probabilityOfTransitionToGoodState = 100;
+        private double probabilityOfPacketLossInBadState = 100;
+        private double probabilityOfPacketLossInGoodState = 0;
 
         @Override
         public String evaluate() {
             return commandPart()
-                    .append(transitionToBadStatePart())
-                    .append(lossInBadStatePart())
-                    .append(transitionToGoodStatePart())
-                    .append(lossInGoodStatePart())
-                    .evaluate();
+                .append(transitionToBadStatePart())
+                .append(lossInBadStatePart())
+                .append(transitionToGoodStatePart())
+                .append(lossInGoodStatePart())
+                .evaluate();
         }
 
         private PumbaCommandPart commandPart() {
@@ -170,19 +123,19 @@ public class DroppingPacketsModels {
         }
 
         private PumbaCommandPart transitionToBadStatePart() {
-            return () -> "--pb " + transitionToBadStateProbability;
+            return () -> "--pb " + probabilityOfTransitionToBadState;
         }
 
         private PumbaCommandPart transitionToGoodStatePart() {
-            return () -> "--pg " + transitionToGoodStateProbability;
+            return () -> "--pg " + probabilityOfTransitionToGoodState;
         }
 
         private PumbaCommandPart lossInBadStatePart() {
-            return () -> "--one-h " + lossProbabilityInBadState;
+            return () -> "--one-h " + probabilityOfPacketLossInBadState;
         }
 
         private PumbaCommandPart lossInGoodStatePart() {
-            return () -> "--one-k " + lossProbabilityInGoodState;
+            return () -> "--one-k " + probabilityOfPacketLossInGoodState;
         }
     }
 }
