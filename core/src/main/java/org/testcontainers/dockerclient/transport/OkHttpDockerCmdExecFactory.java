@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.PingCmd;
+import com.github.dockerjava.api.exception.*;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.AbstractDockerCmdExecFactory;
 import com.github.dockerjava.core.InvocationBuilder;
@@ -201,10 +202,9 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
             }
 
             @Override
-            @SneakyThrows(IOException.class)
             public void delete() {
                 Request request = new Request.Builder().url(httpUrl).delete().build();
-                try (Response response = okHttpClient.newCall(request).execute()) {
+                try (Response response = execute(request)) {
 
                 }
             }
@@ -217,7 +217,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                     .build();
 
                 handleStreamedResponse(
-                    okHttpClient.newCall(request),
+                    execute(request),
                     resultCallback,
                     new FramedResponseStreamHandler(resultCallback)
                 );
@@ -245,7 +245,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                     .post(RequestBody.create(null, MAPPER.writeValueAsBytes(entity)))
                     .build();
 
-                Response response = okHttpClient.newCall(request).execute();
+                Response response = execute(request);
                 return response.body().byteStream();
             }
 
@@ -257,9 +257,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                     .post(RequestBody.create(MediaType.parse("application/json"), MAPPER.writeValueAsBytes(entity)))
                     .build();
 
-                try (
-                    Response response = okHttpClient.newCall(request).execute();
-                ) {
+                try (Response response = execute(request)) {
                     String inputStream = response.body().string();
                     return MAPPER.readValue(inputStream, typeReference);
                 }
@@ -323,7 +321,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                 }
 
                 handleStreamedResponse(
-                    okHttpClient.newCall(request),
+                    execute(request),
                     resultCallback,
                     new FramedResponseStreamHandler(resultCallback)
                 );
@@ -337,14 +335,14 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                     .build();
 
                 handleStreamedResponse(
-                    okHttpClient.newCall(request),
+                    execute(request),
                     resultCallback,
                     new JsonResponseCallbackHandler<T>(typeReference, resultCallback)
                 );
             }
 
-            protected <T> void handleStreamedResponse(Call call, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
-                try (Response response = call.execute()) {
+            protected <T> void handleStreamedResponse(Response response, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
+                try {
                     callback.onStart(response);
                     BufferedSource source = response.body().source();
 
@@ -358,43 +356,42 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                     callback.onComplete();
                 } catch (Exception e) {
                     callback.onError(e);
+                } finally {
+                    response.close();
                 }
             }
 
             @Override
-            @SneakyThrows(IOException.class)
             public void postStream(InputStream body) {
                 Request request = new Request.Builder()
                     .url(httpUrl)
                     .post(toRequestBody(body, null))
                     .build();
 
-                try (Response response = okHttpClient.newCall(request).execute()) {
+                try (Response response = execute(request)) {
 
                 }
             }
 
             @Override
-            @SneakyThrows(IOException.class)
             public InputStream get() {
                 Request request = new Request.Builder()
                     .url(httpUrl)
                     .get()
                     .build();
 
-                Response response = okHttpClient.newCall(request).execute();
+                Response response = execute(request);
                 return response.body().byteStream();
             }
 
             @Override
-            @SneakyThrows(IOException.class)
             public void put(InputStream body, com.github.dockerjava.core.MediaType mediaType) {
                 Request request = new Request.Builder()
                     .url(httpUrl)
                     .put(toRequestBody(body, mediaType.toString()))
                     .build();
 
-                try (Response response = okHttpClient.newCall(request).execute()) {
+                try (Response response = execute(request)) {
 
                 }
             }
@@ -416,6 +413,39 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
                     }
                 };
+            }
+
+            @SneakyThrows(IOException.class)
+            protected Response execute(Request request) {
+                Response response = okHttpClient.newCall(request).execute();
+                int code = response.code();
+                if (code < 200 || code >= 300) {
+                    try {
+                        String body = response.body().string();
+                        switch (code) {
+                            case 304:
+                                throw new NotModifiedException(body);
+                            case 400:
+                                throw new BadRequestException(body);
+                            case 401:
+                                throw new UnauthorizedException(body);
+                            case 404:
+                                throw new NotFoundException(body);
+                            case 406:
+                                throw new NotAcceptableException(body);
+                            case 409:
+                                throw new ConflictException(body);
+                            case 500:
+                                throw new InternalServerErrorException(body);
+                            default:
+                                throw new DockerException(body, code);
+                        }
+                    } finally {
+                        response.close();
+                    }
+                } else {
+                    return response;
+                }
             }
         }
     }
