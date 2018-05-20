@@ -10,7 +10,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.SetMultimap;
 import de.gesellix.docker.client.filesocket.UnixSocket;
-import de.gesellix.docker.client.filesocket.UnixSocketFactory;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.experimental.Wither;
@@ -19,10 +18,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.internal.Internal;
 import org.apache.commons.lang.StringUtils;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 import java.net.URI;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +30,8 @@ import java.util.stream.Collectors;
 class OkHttpWebTarget implements WebTarget {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    OkHttpClient okHttpClient;
 
     DockerClientConfig dockerClientConfig;
 
@@ -50,37 +48,19 @@ class OkHttpWebTarget implements WebTarget {
             resource = "/" + resource;
         }
 
-        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
-
-        SSLConfig sslConfig = dockerClientConfig.getSSLConfig();
-        if (sslConfig != null) {
-            SSLContext sslContext = sslConfig.getSSLContext();
-            if (sslContext != null) {
-                clientBuilder
-                    .sslSocketFactory(sslContext.getSocketFactory(), new TrustAllX509TrustManager());
-            }
-        }
-
         HttpUrl.Builder urlBuilder;
 
         URI dockerHost = dockerClientConfig.getDockerHost();
         switch (dockerHost.getScheme()) {
-            case "npipe":
-                // TODO support it
-                throw new IllegalArgumentException("npipe protocol is not supported yet");
             case "unix":
-                UnixSocketFactory unixSocketFactory = new UnixSocketFactory();
-                clientBuilder
-                    .socketFactory(unixSocketFactory)
-                    .dns(unixSocketFactory);
-
                 urlBuilder = new HttpUrl.Builder()
                     .scheme("http")
                     .host(new UnixSocket().encodeHostname(dockerHost.getPath()));
                 break;
             case "tcp":
+                SSLConfig sslConfig = dockerClientConfig.getSSLConfig();
                 urlBuilder = new HttpUrl.Builder()
-                    .scheme(sslConfig == null ? "http" : "https")
+                    .scheme(sslConfig != null && sslConfig.getSSLContext() != null ? "https" : "http")
                     .host(dockerHost.getHost())
                     .port(dockerHost.getPort());
                 break;
@@ -100,7 +80,7 @@ class OkHttpWebTarget implements WebTarget {
 
         return new OkHttpInvocationBuilder(
             MAPPER,
-            clientBuilder.build(),
+            okHttpClient,
             urlBuilder.build()
         );
     }
@@ -154,22 +134,5 @@ class OkHttpWebTarget implements WebTarget {
 
         // when param value is JSON string
         return queryParam(name, MAPPER.writeValueAsString(values));
-    }
-
-    private static class TrustAllX509TrustManager implements X509TrustManager {
-        @Override
-        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
-
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
-
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
     }
 }

@@ -2,19 +2,62 @@ package org.testcontainers.dockerclient.transport.okhttp;
 
 import com.github.dockerjava.api.command.PingCmd;
 import com.github.dockerjava.core.AbstractDockerCmdExecFactory;
+import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.SSLConfig;
 import com.github.dockerjava.core.WebTarget;
 import com.github.dockerjava.core.exec.PingCmdExec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
+import de.gesellix.docker.client.filesocket.UnixSocketFactory;
+import lombok.SneakyThrows;
+import okhttp3.OkHttpClient;
 import org.apache.commons.io.IOUtils;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.net.URI;
+import java.security.cert.X509Certificate;
 
 public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
+
+    private OkHttpClient okHttpClient;
+
+    @Override
+    @SneakyThrows
+    public void init(DockerClientConfig dockerClientConfig) {
+        super.init(dockerClientConfig);
+
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+
+        URI dockerHost = dockerClientConfig.getDockerHost();
+        switch (dockerHost.getScheme()) {
+            case "npipe":
+                // TODO support it
+                throw new IllegalArgumentException("npipe protocol is not supported yet");
+            case "unix":
+                UnixSocketFactory unixSocketFactory = new UnixSocketFactory();
+                clientBuilder
+                    .socketFactory(unixSocketFactory)
+                    .dns(unixSocketFactory);
+        }
+
+        SSLConfig sslConfig = dockerClientConfig.getSSLConfig();
+        if (sslConfig != null) {
+            SSLContext sslContext = sslConfig.getSSLContext();
+            if (sslContext != null) {
+                clientBuilder
+                    .sslSocketFactory(sslContext.getSocketFactory(), new TrustAllX509TrustManager());
+            }
+        }
+
+        okHttpClient = clientBuilder.build();
+    }
 
     @Override
     protected WebTarget getBaseResource() {
         return new OkHttpWebTarget(
+            okHttpClient,
             getDockerClientConfig(),
             ImmutableList.of(),
             MultimapBuilder.hashKeys().hashSetValues().build()
@@ -42,4 +85,20 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
     }
 
+    private static class TrustAllX509TrustManager implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
 }
