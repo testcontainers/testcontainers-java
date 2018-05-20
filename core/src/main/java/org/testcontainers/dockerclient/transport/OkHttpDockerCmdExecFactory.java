@@ -343,21 +343,32 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
             protected <T> void handleStreamedResponse(Response response, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
                 try {
-                    callback.onStart(response);
-                    BufferedSource source = response.body().source();
+                    // TODO proper thread management
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        @SneakyThrows
+                        public void run() {
+                            BufferedSource source = response.body().source();
+                            InputStream inputStream = source.inputStream();
 
-                    byte[] buffer = new byte[4 * 1024];
-                    while (!source.exhausted()) {
-                        InputStream inputStream = source.inputStream();
-                        int bytesReaded = inputStream.read(buffer);
+                            byte[] buffer = new byte[4 * 1024];
+                            while (!source.exhausted() && !Thread.interrupted()) {
+                                int bytesReceived = inputStream.read(buffer);
 
-                        handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReaded));
-                    }
-                    callback.onComplete();
+                                handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
+                            }
+                            callback.onComplete();
+                        }
+                    });
+
+                    callback.onStart(() -> {
+                        thread.interrupt();
+                        response.close();
+                    });
+
+                    thread.start();
                 } catch (Exception e) {
                     callback.onError(e);
-                } finally {
-                    response.close();
                 }
             }
 
