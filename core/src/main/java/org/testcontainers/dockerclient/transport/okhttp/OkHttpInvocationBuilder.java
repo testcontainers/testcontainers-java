@@ -328,16 +328,20 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                 @Override
                 @SneakyThrows
                 public void run() {
-                    BufferedSource source = response.body().source();
-                    InputStream inputStream = source.inputStream();
+                    try {
+                        BufferedSource source = response.body().source();
+                        InputStream inputStream = source.inputStream();
 
-                    byte[] buffer = new byte[4 * 1024];
-                    while (!source.exhausted() && !Thread.interrupted()) {
-                        int bytesReceived = inputStream.read(buffer);
+                        byte[] buffer = new byte[4 * 1024];
+                        while (!source.exhausted() && !Thread.interrupted()) {
+                            int bytesReceived = inputStream.read(buffer);
 
-                        handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
+                            handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
+                        }
+                        callback.onComplete();
+                    } finally {
+                        response.close();
                     }
-                    callback.onComplete();
                 }
             });
 
