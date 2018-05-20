@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
@@ -65,7 +66,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .delete()
             .build();
 
-        execute(request).get().close();
+        executeAndGet(request).close();
     }
 
     @Override
@@ -109,7 +110,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(RequestBody.create(null, objectMapper.writeValueAsBytes(entity)))
             .build();
 
-        return execute(request).get().body().byteStream();
+        return executeAndGet(request).body().byteStream();
     }
 
     @Override
@@ -119,7 +120,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsBytes(entity)))
             .build();
 
-        try (Response response = execute(request).get()) {
+        try (Response response = executeAndGet(request)) {
             String inputStream = response.body().string();
             return objectMapper.readValue(inputStream, typeReference);
         }
@@ -220,7 +221,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(toRequestBody(body, null))
             .build();
 
-        execute(request).get().close();
+        executeAndGet(request).close();
     }
 
     @Override
@@ -230,7 +231,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .get()
             .build();
 
-        return execute(request).get().body().byteStream();
+        return executeAndGet(request).body().byteStream();
     }
 
     @Override
@@ -240,7 +241,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .put(toRequestBody(body, mediaType.toString()))
             .build();
 
-        execute(request).get().close();
+        executeAndGet(request).close();
     }
 
     protected RequestBody toRequestBody(InputStream body, @Nullable String mediaType) {
@@ -259,6 +260,15 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                 sink.writeAll(Okio.source(body));
             }
         };
+    }
+
+    @SneakyThrows
+    protected Response executeAndGet(Request request) {
+        try {
+            return execute(request).get();
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     protected CompletableFuture<Response> execute(Request request) {
