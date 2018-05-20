@@ -1,4 +1,4 @@
-package org.testcontainers.dockerclient.transport;
+package org.testcontainers.dockerclient.transport.okhttp;
 
 import com.github.dockerjava.api.command.PingCmd;
 import com.github.dockerjava.core.AbstractDockerCmdExecFactory;
@@ -7,7 +7,6 @@ import com.github.dockerjava.core.exec.PingCmdExec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
 import org.apache.commons.io.IOUtils;
-import org.testcontainers.dockerclient.transport.okhttp.OkHttpWebTarget;
 
 import java.io.IOException;
 

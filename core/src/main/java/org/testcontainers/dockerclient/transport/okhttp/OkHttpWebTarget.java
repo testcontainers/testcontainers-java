@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Wither
 @Value
-public class OkHttpWebTarget implements WebTarget {
+class OkHttpWebTarget implements WebTarget {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

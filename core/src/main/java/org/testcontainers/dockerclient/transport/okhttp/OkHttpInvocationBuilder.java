@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
-public class OkHttpInvocationBuilder implements InvocationBuilder {
+class OkHttpInvocationBuilder implements InvocationBuilder {
 
     ObjectMapper objectMapper;
 

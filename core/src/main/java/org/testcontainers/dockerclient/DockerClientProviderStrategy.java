@@ -12,7 +12,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.dockerclient.transport.OkHttpDockerCmdExecFactory;
+import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
