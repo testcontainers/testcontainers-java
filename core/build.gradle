@@ -87,7 +87,7 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
-    compile 'com.github.jnr:jnr-unixsocket:0.19'
+    compile 'org.scala-sbt.ipcsocket:ipcsocket:1.0.0'
 
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')

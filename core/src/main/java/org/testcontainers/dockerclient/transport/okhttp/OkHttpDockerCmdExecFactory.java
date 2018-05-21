@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.ConnectionPool;
 import okhttp3.Dns;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -23,6 +24,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
@@ -49,6 +51,8 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
             case "unix":
                 String socketPath = dockerHost.getPath();
                 clientBuilder
+                    // Disable pooling
+                    .connectionPool(new ConnectionPool(0, 1, TimeUnit.SECONDS))
                     .socketFactory(new UnixSocketFactory(socketPath))
                     .dns(hostname -> {
                         if (hostname.endsWith(SOCKET_SUFFIX)) {

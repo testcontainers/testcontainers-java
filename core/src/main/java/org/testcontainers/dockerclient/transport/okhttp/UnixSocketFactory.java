@@ -1,10 +1,8 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
-import jnr.unixsocket.UnixSocket;
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 import lombok.SneakyThrows;
 import lombok.Value;
+import org.scalasbt.ipcsocket.UnixDomainSocket;
 
 import javax.net.SocketFactory;
 import java.io.*;
@@ -20,21 +18,13 @@ public class UnixSocketFactory extends SocketFactory {
     @Override
     @SneakyThrows
     public Socket createSocket() {
-        return new UnixSocket(UnixSocketChannel.open()) {
-
-            @Override
-            public void connect(SocketAddress addr, Integer timeout) throws IOException {
-                addr = new UnixSocketAddress(socketPath);
-                super.connect(addr, timeout);
-            }
-
+        return new UnixDomainSocket(socketPath) {
             @Override
             public void connect(SocketAddress endpoint, int timeout) throws IOException {
-                connect(endpoint, new Integer(timeout));
             }
 
             @Override
-            public InputStream getInputStream() throws IOException {
+            public InputStream getInputStream() {
                 return new FilterInputStream(super.getInputStream()) {
                     @Override
                     public void close() throws IOException {
@@ -44,7 +34,7 @@ public class UnixSocketFactory extends SocketFactory {
             }
 
             @Override
-            public OutputStream getOutputStream() throws IOException {
+            public OutputStream getOutputStream() {
                 return new FilterOutputStream(super.getOutputStream()) {
 
                     @Override
