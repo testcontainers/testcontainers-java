@@ -278,13 +278,12 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
     }
 
     protected <T> void handleStreamedResponse(OkHttpClient okHttpClient, Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
-        Response response = execute(okHttpClient, request);
         // TODO proper thread management
         Thread thread = new Thread() {
             @Override
             @SneakyThrows
             public void run() {
-                try {
+                try (Response response = execute(okHttpClient, request)) {
                     BufferedSource source = response.body().source();
                     InputStream inputStream = source.inputStream();
 
@@ -297,8 +296,6 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                     callback.onComplete();
                 } catch (Exception e) {
                     callback.onError(e);
-                } finally {
-                    response.close();
                 }
             }
         };
