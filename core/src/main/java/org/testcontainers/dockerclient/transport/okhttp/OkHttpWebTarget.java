@@ -2,23 +2,18 @@ package org.testcontainers.dockerclient.transport.okhttp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.InvocationBuilder;
-import com.github.dockerjava.core.SSLConfig;
 import com.github.dockerjava.core.WebTarget;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.SetMultimap;
-import de.gesellix.docker.client.filesocket.UnixSocket;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.experimental.Wither;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
-import okhttp3.internal.Internal;
 import org.apache.commons.lang.StringUtils;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -33,7 +28,7 @@ class OkHttpWebTarget implements WebTarget {
 
     OkHttpClient okHttpClient;
 
-    DockerClientConfig dockerClientConfig;
+    HttpUrl baseUrl;
 
     ImmutableList<String> path;
 
@@ -48,40 +43,20 @@ class OkHttpWebTarget implements WebTarget {
             resource = "/" + resource;
         }
 
-        HttpUrl.Builder urlBuilder;
-
-        URI dockerHost = dockerClientConfig.getDockerHost();
-        switch (dockerHost.getScheme()) {
-            case "unix":
-                urlBuilder = new HttpUrl.Builder()
-                    .scheme("http")
-                    .host(new UnixSocket().encodeHostname(dockerHost.getPath()));
-                break;
-            case "tcp":
-                SSLConfig sslConfig = dockerClientConfig.getSSLConfig();
-                urlBuilder = new HttpUrl.Builder()
-                    .scheme(sslConfig != null && sslConfig.getSSLContext() != null ? "https" : "http")
-                    .host(dockerHost.getHost())
-                    .port(dockerHost.getPort());
-                break;
-            default:
-                urlBuilder = Internal.instance.getHttpUrlChecked(dockerHost.toString()).newBuilder();
-        }
-
-        urlBuilder
+        HttpUrl.Builder baseUrlBuilder = baseUrl.newBuilder()
             .encodedPath(resource);
 
         for (Map.Entry<String, Collection<String>> queryParamEntry : queryParams.asMap().entrySet()) {
             String key = queryParamEntry.getKey();
             for (String paramValue : queryParamEntry.getValue()) {
-                urlBuilder.addQueryParameter(key, paramValue);
+                baseUrlBuilder.addQueryParameter(key, paramValue);
             }
         }
 
         return new OkHttpInvocationBuilder(
             MAPPER,
             okHttpClient,
-            urlBuilder.build()
+            baseUrlBuilder.build()
         );
     }
 

@@ -51,6 +51,8 @@ shadowJar {
         include(dependency('commons-lang:commons-lang'))
         include(dependency('commons-io:commons-io'))
         include(dependency('commons-codec:commons-codec'))
+        include(dependency('com.squareup.okhttp3:.*'))
+        include(dependency('com.squareup.okio:.*'))
     }
 }
 
@@ -94,8 +96,8 @@ dependencies {
         exclude(group: 'com.squareup.okhttp3')
         exclude(group: 'com.squareup.okio')
     }
-    shaded 'com.squareup.okhttp3:okhttp:3.9.1'
-    shaded 'com.squareup.okio:okio:1.14.0'
+    shaded 'com.squareup.okhttp3:okhttp:3.10.0'
+    shaded 'com.squareup.okio:okio:1.14.1'
 
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.8'

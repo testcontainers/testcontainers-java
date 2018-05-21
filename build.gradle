@@ -73,7 +73,9 @@ subprojects {
             "io.netty",
             "org.bouncycastle",
             "org.newsclub",
-            "org.zeroturnaround"
+            "org.zeroturnaround",
+            "okhttp3",
+            "okio",
         ].each { relocate(it, "org.testcontainers.shaded.$it") }
     }
 

@@ -20,15 +20,13 @@ import okhttp3.internal.connection.RealConnection;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
-import org.testcontainers.DockerClientFactory;
+import okio.Source;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
@@ -66,7 +64,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .delete()
             .build();
 
-        executeAndGet(request).close();
+        execute(request).close();
     }
 
     @Override
@@ -76,17 +74,11 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .get()
             .build();
 
-        execute(request).whenCompleteAsync((response, e) -> {
-            if (e != null) {
-                resultCallback.onError(e);
-            } else {
-                handleStreamedResponse(
-                    response,
-                    resultCallback,
-                    new FramedResponseStreamHandler(resultCallback)
-                );
-            }
-        });
+        handleStreamedResponse(
+            request,
+            resultCallback,
+            new FramedResponseStreamHandler(resultCallback)
+        );
     }
 
     @Override
@@ -110,7 +102,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(RequestBody.create(null, objectMapper.writeValueAsBytes(entity)))
             .build();
 
-        return executeAndGet(request).body().byteStream();
+        return execute(request).body().byteStream();
     }
 
     @Override
@@ -120,7 +112,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsBytes(entity)))
             .build();
 
-        try (Response response = executeAndGet(request)) {
+        try (Response response = execute(request)) {
             String inputStream = response.body().string();
             return objectMapper.readValue(inputStream, typeReference);
         }
@@ -152,46 +144,38 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         if (stdin != null) {
             // FIXME there must be a better way of handling it
             okHttpClient = okHttpClient.newBuilder()
-                .addNetworkInterceptor(new Interceptor() {
-                    @Override
-                    @SneakyThrows
-                    public Response intercept(Chain chain) {
-                        RealConnection connection = (RealConnection) chain.connection();
+                .addNetworkInterceptor(chain -> {
+                    Response response = chain.proceed(chain.request());
+                    if (response.isSuccessful()) {
+                        Thread thread = new Thread() {
+                            @Override
+                            @SneakyThrows
+                            public void run() {
+                                Field sinkField = RealConnection.class.getDeclaredField("sink");
+                                sinkField.setAccessible(true);
 
-                        Field sinkField = RealConnection.class.getDeclaredField("sink");
-                        sinkField.setAccessible(true);
-                        BufferedSink sink = (BufferedSink) sinkField.get(connection);
-
-                        Thread thread = new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-                            try {
-                                sink.writeAll(Okio.source(stdin));
-                                sink.flush();
-
-                                Thread.sleep(100);
-                                sink.close();
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
+                                try (
+                                    BufferedSink sink = (BufferedSink) sinkField.get(chain.connection());
+                                    Source source = Okio.source(stdin);
+                                ) {
+                                    sink.writeAll(source);
+                                    sink.flush();
+                                }
                             }
-                        });
+                        };
                         thread.start();
-
-                        return chain.proceed(chain.request());
                     }
+                    return response;
                 })
                 .build();
         }
 
-        execute(okHttpClient, request).whenCompleteAsync((response, e) -> {
-            if (e != null) {
-                resultCallback.onError(e);
-            } else {
-                handleStreamedResponse(
-                    response,
-                    resultCallback,
-                    new FramedResponseStreamHandler(resultCallback)
-                );
-            }
-        });
+        handleStreamedResponse(
+            okHttpClient,
+            request,
+            resultCallback,
+            new FramedResponseStreamHandler(resultCallback)
+        );
     }
 
     @Override
@@ -200,18 +184,11 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(toRequestBody(body, null))
             .build();
 
-        execute(request).whenCompleteAsync((response, e) -> {
-            if (e != null) {
-                resultCallback.onError(e);
-            } else {
-
-                handleStreamedResponse(
-                    response,
-                    resultCallback,
-                    new JsonResponseCallbackHandler<>(typeReference, resultCallback)
-                );
-            }
-        });
+        handleStreamedResponse(
+            request,
+            resultCallback,
+            new JsonResponseCallbackHandler<>(typeReference, resultCallback)
+        );
     }
 
     @Override
@@ -221,7 +198,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(toRequestBody(body, null))
             .build();
 
-        executeAndGet(request).close();
+        execute(request).close();
     }
 
     @Override
@@ -231,7 +208,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .get()
             .build();
 
-        return executeAndGet(request).body().byteStream();
+        return execute(request).body().byteStream();
     }
 
     @Override
@@ -241,7 +218,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .put(toRequestBody(body, mediaType.toString()))
             .build();
 
-        executeAndGet(request).close();
+        execute(request).close();
     }
 
     protected RequestBody toRequestBody(InputStream body, @Nullable String mediaType) {
@@ -257,102 +234,76 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
 
             @Override
             public void writeTo(BufferedSink sink) throws IOException {
-                sink.writeAll(Okio.source(body));
+                try(Source source = Okio.source(body)) {
+                    sink.writeAll(source);
+                }
             }
         };
     }
 
-    @SneakyThrows
-    protected Response executeAndGet(Request request) {
-        try {
-            return execute(request).get();
-        } catch (ExecutionException e) {
-            throw e.getCause();
-        }
-    }
-
-    protected CompletableFuture<Response> execute(Request request) {
+    protected Response execute(Request request) {
         return execute(okHttpClient, request);
     }
 
-    protected CompletableFuture<Response> execute(OkHttpClient okHttpClient, Request request) {
-        CompletableFuture<Response> future = new CompletableFuture<>();
-
-        okHttpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                future.completeExceptionally(e);
+    @SneakyThrows(IOException.class)
+    protected Response execute(OkHttpClient okHttpClient, Request request) {
+        Response response = okHttpClient.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            String body = response.body().string();
+            switch (response.code()) {
+                case 304:
+                    throw new NotModifiedException(body);
+                case 400:
+                    throw new BadRequestException(body);
+                case 401:
+                    throw new UnauthorizedException(body);
+                case 404:
+                    throw new NotFoundException(body);
+                case 406:
+                    throw new NotAcceptableException(body);
+                case 409:
+                    throw new ConflictException(body);
+                case 500:
+                    throw new InternalServerErrorException(body);
+                default:
+                    throw new DockerException(body, response.code());
             }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                int code = response.code();
-                if (code < 200 || code >= 300) {
-                    try {
-                        String body = response.body().string();
-                        switch (code) {
-                            case 304:
-                                throw new NotModifiedException(body);
-                            case 400:
-                                throw new BadRequestException(body);
-                            case 401:
-                                throw new UnauthorizedException(body);
-                            case 404:
-                                throw new NotFoundException(body);
-                            case 406:
-                                throw new NotAcceptableException(body);
-                            case 409:
-                                throw new ConflictException(body);
-                            case 500:
-                                throw new InternalServerErrorException(body);
-                            default:
-                                throw new DockerException(body, code);
-                        }
-                    } catch (Exception e) {
-                        future.completeExceptionally(e);
-                    } finally {
-                        response.close();
-                    }
-                } else {
-                    future.complete(response);
-                }
-            }
-        });
-        return future;
+        } else {
+            return response;
+        }
     }
 
-    protected <T> void handleStreamedResponse(Response response, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
-        try {
-            // TODO proper thread management
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                @SneakyThrows
-                public void run() {
-                    try {
-                        BufferedSource source = response.body().source();
-                        InputStream inputStream = source.inputStream();
+    protected <T> void handleStreamedResponse(Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
+        handleStreamedResponse(okHttpClient, request, callback, handler);
+    }
 
-                        byte[] buffer = new byte[4 * 1024];
-                        while (!source.exhausted() && !Thread.interrupted()) {
-                            int bytesReceived = inputStream.read(buffer);
+    protected <T> void handleStreamedResponse(OkHttpClient okHttpClient, Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
+        Response response = execute(okHttpClient, request);
+        // TODO proper thread management
+        Thread thread = new Thread() {
+            @Override
+            @SneakyThrows
+            public void run() {
+                try {
+                    BufferedSource source = response.body().source();
+                    InputStream inputStream = source.inputStream();
 
-                            handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
-                        }
-                        callback.onComplete();
-                    } finally {
-                        response.close();
+                    byte[] buffer = new byte[4 * 1024];
+                    while (!source.exhausted() && !Thread.interrupted()) {
+                        int bytesReceived = inputStream.read(buffer);
+
+                        handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
                     }
+                    callback.onComplete();
+                } catch (Exception e) {
+                    callback.onError(e);
+                } finally {
+                    response.close();
                 }
-            });
+            }
+        };
 
-            callback.onStart(() -> {
-                thread.interrupt();
-                response.close();
-            });
-
-            thread.start();
-        } catch (Exception e) {
-            callback.onError(e);
-        }
+        callback.onStart(thread::interrupt);
+        thread.start();
     }
 }
