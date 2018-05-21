@@ -8,23 +8,26 @@ import com.github.dockerjava.core.WebTarget;
 import com.github.dockerjava.core.exec.PingCmdExec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
-import de.gesellix.docker.client.filesocket.UnixSocket;
-import de.gesellix.docker.client.filesocket.UnixSocketFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.Dns;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
 import okhttp3.internal.Internal;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.security.cert.X509Certificate;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
 
 @Slf4j
 public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
+
+    private static final String SOCKET_SUFFIX = ".socket";
 
     private OkHttpClient okHttpClient;
 
@@ -44,12 +47,16 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                 // TODO support it
                 throw new IllegalArgumentException("npipe protocol is not supported yet");
             case "unix":
-                UnixSocketFactory unixSocketFactory = new UnixSocketFactory();
+                String socketPath = dockerHost.getPath();
                 clientBuilder
-                    // Disable pooling
-                    .connectionPool(new ConnectionPool(0, 1, TimeUnit.SECONDS))
-                    .socketFactory(unixSocketFactory)
-                    .dns(unixSocketFactory);
+                    .socketFactory(new UnixSocketFactory(socketPath))
+                    .dns(hostname -> {
+                        if (hostname.endsWith(SOCKET_SUFFIX)) {
+                            return Collections.singletonList(InetAddress.getByAddress(hostname, new byte[]{0, 0, 0, 0}));
+                        } else {
+                            return Dns.SYSTEM.lookup(hostname);
+                        }
+                    });
         }
 
         SSLConfig sslConfig = dockerClientConfig.getSSLConfig();
@@ -69,7 +76,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
             case "unix":
                 baseUrlBuilder = new HttpUrl.Builder()
                     .scheme("http")
-                    .host(new UnixSocket().encodeHostname(dockerHost.getPath()));
+                    .host("docker" + SOCKET_SUFFIX);
                 break;
             case "tcp":
                 baseUrlBuilder = new HttpUrl.Builder()

@@ -27,6 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
@@ -283,12 +284,19 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             @Override
             @SneakyThrows
             public void run() {
-                try (Response response = execute(okHttpClient, request)) {
+                try (
+                    Response response = execute(okHttpClient, request.newBuilder().tag("streaming").build());
                     BufferedSource source = response.body().source();
                     InputStream inputStream = source.inputStream();
+                ) {
+                    AtomicBoolean shouldStop = new AtomicBoolean();
+                    callback.onStart(() -> {
+                        shouldStop.set(true);
+                        response.close();
+                    });
 
                     byte[] buffer = new byte[4 * 1024];
-                    while (!source.exhausted() && !Thread.interrupted()) {
+                    while (!(shouldStop.get() || source.exhausted())) {
                         int bytesReceived = inputStream.read(buffer);
 
                         handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
@@ -300,7 +308,6 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             }
         };
 
-        callback.onStart(thread::interrupt);
         thread.start();
     }
 }

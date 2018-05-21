@@ -76,6 +76,7 @@ subprojects {
             "org.zeroturnaround",
             "okhttp3",
             "okio",
+            "net.sf.cglib",
         ].each { relocate(it, "org.testcontainers.shaded.$it") }
     }
 

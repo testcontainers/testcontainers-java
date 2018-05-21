@@ -53,6 +53,7 @@ shadowJar {
         include(dependency('commons-codec:commons-codec'))
         include(dependency('com.squareup.okhttp3:.*'))
         include(dependency('com.squareup.okio:.*'))
+        include(dependency('cglib:cglib'))
     }
 }
 
@@ -86,15 +87,13 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
+    compile 'cglib:cglib:3.2.6'
+
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
         exclude(group: 'log4j')
         exclude(group: 'com.google.code.findbug')
-    }
-    shaded ('de.gesellix:docker-filesocket:2018-02-17T21-56-51') {
-        exclude(group: 'com.squareup.okhttp3')
-        exclude(group: 'com.squareup.okio')
     }
     shaded 'com.squareup.okhttp3:okhttp:3.10.0'
     shaded 'com.squareup.okio:okio:1.14.1'
