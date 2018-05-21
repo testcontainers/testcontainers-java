@@ -1,16 +1,16 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
+import jnr.unixsocket.UnixSocket;
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 import lombok.SneakyThrows;
 import lombok.Value;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.InvocationHandler;
-import org.newsclub.net.unix.AFUNIXSocket;
-import org.newsclub.net.unix.AFUNIXSocketAddress;
 
 import javax.net.SocketFactory;
-import java.io.File;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 @Value
 public class UnixSocketFactory extends SocketFactory {
@@ -20,19 +20,45 @@ public class UnixSocketFactory extends SocketFactory {
     @Override
     @SneakyThrows
     public Socket createSocket() {
-        AFUNIXSocket socket = AFUNIXSocket.connectTo(new AFUNIXSocketAddress(new File(socketPath)));
+        return new UnixSocket(UnixSocketChannel.open()) {
 
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(Socket.class);
-        enhancer.setCallback((InvocationHandler) (proxy, method, args) -> {
-            if ("connect".equals(method.getName())) {
-                return null;
+            @Override
+            public void connect(SocketAddress addr, Integer timeout) throws IOException {
+                addr = new UnixSocketAddress(socketPath);
+                super.connect(addr, timeout);
             }
 
-            return method.invoke(socket, args);
-        });
+            @Override
+            public void connect(SocketAddress endpoint, int timeout) throws IOException {
+                connect(endpoint, new Integer(timeout));
+            }
 
-        return (Socket) enhancer.create();
+            @Override
+            public InputStream getInputStream() throws IOException {
+                return new FilterInputStream(super.getInputStream()) {
+                    @Override
+                    public void close() throws IOException {
+                        shutdownInput();
+                    }
+                };
+            }
+
+            @Override
+            public OutputStream getOutputStream() throws IOException {
+                return new FilterOutputStream(super.getOutputStream()) {
+
+                    @Override
+                    public void write(byte[] b, int off, int len) throws IOException {
+                        out.write(b, off, len);
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+                        shutdownOutput();
+                    }
+                };
+            }
+        };
     }
 
     @Override

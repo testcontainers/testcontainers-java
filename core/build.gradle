@@ -88,7 +88,7 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
-    shaded 'cglib:cglib-nodep:3.2.6'
+    compile 'com.github.jnr:jnr-unixsocket:0.19'
 
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')
