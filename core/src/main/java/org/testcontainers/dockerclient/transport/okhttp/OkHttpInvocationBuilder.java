@@ -146,23 +146,26 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             // FIXME there must be a better way of handling it
             okHttpClient = okHttpClient.newBuilder()
                 .addNetworkInterceptor(chain -> {
-                    Thread thread = new Thread() {
-                        @Override
-                        @SneakyThrows
-                        public void run() {
-                            Field sinkField = RealConnection.class.getDeclaredField("sink");
-                            sinkField.setAccessible(true);
+                    Response response = chain.proceed(chain.request());
+                    if (response.isSuccessful()) {
+                        Thread thread = new Thread() {
+                            @Override
+                            @SneakyThrows
+                            public void run() {
+                                Field sinkField = RealConnection.class.getDeclaredField("sink");
+                                sinkField.setAccessible(true);
 
-                            try (
-                                BufferedSink sink = (BufferedSink) sinkField.get(chain.connection());
-                                Source source = Okio.source(stdin);
-                            ) {
-                                sink.writeAll(source);
+                                try (
+                                    BufferedSink sink = (BufferedSink) sinkField.get(chain.connection());
+                                    Source source = Okio.source(stdin);
+                                ) {
+                                    sink.writeAll(source);
+                                }
                             }
-                        }
-                    };
-                    thread.start();
-                    return chain.proceed(chain.request());
+                        };
+                        thread.start();
+                    }
+                    return response;
                 })
                 .build();
         }

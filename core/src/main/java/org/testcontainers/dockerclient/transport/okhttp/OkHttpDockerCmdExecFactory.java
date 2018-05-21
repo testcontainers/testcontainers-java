@@ -45,15 +45,21 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
         URI dockerHost = dockerClientConfig.getDockerHost();
         switch (dockerHost.getScheme()) {
-            case "npipe":
-                // TODO support it
-                throw new IllegalArgumentException("npipe protocol is not supported yet");
             case "unix":
+            case "npipe":
                 String socketPath = dockerHost.getPath();
+
+                if ("unix".equals(dockerHost.getScheme())) {
+                    clientBuilder
+                        .socketFactory(new UnixSocketFactory(socketPath));
+                } else {
+                    clientBuilder
+                        .socketFactory(new NamedPipeSocketFactory(socketPath));
+                }
+
                 clientBuilder
                     // Disable pooling
                     .connectionPool(new ConnectionPool(0, 1, TimeUnit.SECONDS))
-                    .socketFactory(new UnixSocketFactory(socketPath))
                     .dns(hostname -> {
                         if (hostname.endsWith(SOCKET_SUFFIX)) {
                             return Collections.singletonList(InetAddress.getByAddress(hostname, new byte[]{0, 0, 0, 0}));
@@ -78,6 +84,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
         switch (dockerHost.getScheme()) {
             case "unix":
+            case "npipe":
                 baseUrlBuilder = new HttpUrl.Builder()
                     .scheme("http")
                     .host("docker" + SOCKET_SUFFIX);
