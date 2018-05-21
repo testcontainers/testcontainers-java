@@ -18,6 +18,8 @@ shadowJar {
 
     mergeServiceFiles()
 
+    exclude 'org/newsclub/**'
+
     [
         'META-INF/io.netty.versions.properties',
         'META-INF/NOTICE',
