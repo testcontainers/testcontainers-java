@@ -46,14 +46,13 @@ shadowJar {
         include(dependency('com.google.guava:.*'))
         include(dependency('io.netty:.*'))
         include(dependency('org.bouncycastle:.*'))
-        include(dependency('org.newsclub.*:.*'))
         include(dependency('org.zeroturnaround:zt-exec'))
         include(dependency('commons-lang:commons-lang'))
         include(dependency('commons-io:commons-io'))
         include(dependency('commons-codec:commons-codec'))
         include(dependency('com.squareup.okhttp3:.*'))
         include(dependency('com.squareup.okio:.*'))
-        include(dependency('cglib:cglib'))
+        include(dependency('cglib:cglib-nodep'))
     }
 }
 
@@ -87,16 +86,16 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
-    compile 'cglib:cglib:3.2.6'
+    shaded 'cglib:cglib-nodep:3.2.6'
 
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
         exclude(group: 'log4j')
         exclude(group: 'com.google.code.findbug')
+        exclude(group: 'com.kohlschutter.junixsocket')
     }
     shaded 'com.squareup.okhttp3:okhttp:3.10.0'
-    shaded 'com.squareup.okio:okio:1.14.1'
 
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.8'

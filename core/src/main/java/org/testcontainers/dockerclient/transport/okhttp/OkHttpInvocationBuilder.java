@@ -75,7 +75,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .get()
             .build();
 
-        handleStreamedResponse(
+        executeAndStream(
             request,
             resultCallback,
             new FramedResponseStreamHandler(resultCallback)
@@ -171,7 +171,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                 .build();
         }
 
-        handleStreamedResponse(
+        executeAndStream(
             okHttpClient,
             request,
             resultCallback,
@@ -185,7 +185,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             .post(toRequestBody(body, null))
             .build();
 
-        handleStreamedResponse(
+        executeAndStream(
             request,
             resultCallback,
             new JsonResponseCallbackHandler<>(typeReference, resultCallback)
@@ -274,11 +274,11 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         }
     }
 
-    protected <T> void handleStreamedResponse(Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
-        handleStreamedResponse(okHttpClient, request, callback, handler);
+    protected <T> void executeAndStream(Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
+        executeAndStream(okHttpClient, request, callback, handler);
     }
 
-    protected <T> void handleStreamedResponse(OkHttpClient okHttpClient, Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
+    protected <T> void executeAndStream(OkHttpClient okHttpClient, Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
         // TODO proper thread management
         Thread thread = new Thread() {
             @Override
@@ -296,7 +296,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                     });
 
                     byte[] buffer = new byte[4 * 1024];
-                    while (!(shouldStop.get() || source.exhausted())) {
+                    while (!(shouldStop.get() || !source.isOpen() || source.exhausted())) {
                         int bytesReceived = inputStream.read(buffer);
 
                         handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));

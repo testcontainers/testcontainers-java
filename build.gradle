@@ -72,7 +72,6 @@ subprojects {
             "com.google",
             "io.netty",
             "org.bouncycastle",
-            "org.newsclub",
             "org.zeroturnaround",
             "okhttp3",
             "okio",
