@@ -54,7 +54,6 @@ shadowJar {
         include(dependency('commons-codec:commons-codec'))
         include(dependency('com.squareup.okhttp3:.*'))
         include(dependency('com.squareup.okio:.*'))
-        include(dependency('cglib:cglib-nodep'))
     }
 }
 
