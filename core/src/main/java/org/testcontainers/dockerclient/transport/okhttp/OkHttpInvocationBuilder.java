@@ -296,7 +296,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                     });
 
                     byte[] buffer = new byte[4 * 1024];
-                    while (!(shouldStop.get() || !source.isOpen() || source.exhausted())) {
+                    while (!(shouldStop.get() || source.exhausted())) {
                         int bytesReceived = inputStream.read(buffer);
 
                         handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
