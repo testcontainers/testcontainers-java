@@ -102,6 +102,20 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
         waitUntilReadyAndTimeout(createShellCommand("200 OK", "Bad Response"));
     }
 
+
+    /**
+     * Expects the WaitStrategy probing the right port.
+     */
+    @Test
+    public void testWaitUntilReadyWithSpecificPort() {
+        waitUntilReadyAndSucceed(startContainerWithCommand(
+            createShellCommand("200 OK", GOOD_RESPONSE_BODY, 9090),
+            createHttpWaitStrategy(ready)
+                .forPort(9090),
+            7070, 8080, 9090
+        ));
+    }
+
     /**
      * @param ready the AtomicBoolean on which to indicate success
      * @return the WaitStrategy under test
@@ -129,10 +143,14 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     }
 
     private String createShellCommand(String header, String responseBody) {
+        return createShellCommand(header, responseBody, 8080);
+    }
+
+    private String createShellCommand(String header, String responseBody, int port) {
         int length = responseBody.getBytes().length;
         return "while true; do { echo -e \"HTTP/1.1 "+header+NEWLINE+
                 "Content-Type: text/html"+NEWLINE+
                 "Content-Length: "+length +NEWLINE+ "\";"
-                +" echo \""+responseBody+"\";} | nc -lp 8080; done";
+                +" echo \""+responseBody+"\";} | nc -lp " + port + "; done";
     }
 }
