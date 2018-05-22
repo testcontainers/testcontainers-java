@@ -18,7 +18,7 @@ public class NamedPipeSocketFactory extends SocketFactory {
     @Override
     @SneakyThrows
     public Socket createSocket() {
-        return new Win32NamedPipeSocket(socketPath.replace("/", "\\\\")) {
+        return new Win32NamedPipeSocket(socketPath.replace("/", "\\")) {
 
             @Override
             public void connect(SocketAddress endpoint, int timeout) throws IOException {
