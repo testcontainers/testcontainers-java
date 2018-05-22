@@ -54,6 +54,7 @@ shadowJar {
         include(dependency('commons-codec:commons-codec'))
         include(dependency('com.squareup.okhttp3:.*'))
         include(dependency('com.squareup.okio:.*'))
+        include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
     }
 }
 
@@ -87,7 +88,11 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
-    compile 'org.scala-sbt.ipcsocket:ipcsocket:1.0.0'
+    compile "net.java.dev.jna:jna-platform:4.5.1"
+
+    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
+        exclude(group: "net.java.dev.jna")
+    }
 
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')

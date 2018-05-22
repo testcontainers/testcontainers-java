@@ -75,6 +75,7 @@ subprojects {
             "org.zeroturnaround",
             "okhttp3",
             "okio",
+            "org.scalasbt.ipcsocket",
         ].each { relocate(it, "org.testcontainers.shaded.$it") }
     }
 
