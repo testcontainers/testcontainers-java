@@ -41,6 +41,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
         super.init(dockerClientConfig);
 
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+            .readTimeout(0, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true);
 
         URI dockerHost = dockerClientConfig.getDockerHost();
