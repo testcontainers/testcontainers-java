@@ -6,8 +6,7 @@ package org.testcontainers.containers;
 public class PostgreSQLContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public boolean supports(String databaseType) {
-        return databaseType.equals(PostgreSQLContainer.NAME)
-            || databaseType.equals(PostgisContainer.NAME);
+        return databaseType.equals(PostgreSQLContainer.NAME);
     }
 
     @Override
