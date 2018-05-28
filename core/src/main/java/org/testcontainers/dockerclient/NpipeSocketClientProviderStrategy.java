@@ -32,7 +32,7 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
     public void test() throws InvalidConfigurationException {
         try {
             config = tryConfiguration(SOCKET_LOCATION);
-            log.info("Accessing docker with local Unix socket");
+            log.info("Accessing docker with {}", getDescription());
         } catch (Exception | UnsatisfiedLinkError e) {
             throw new InvalidConfigurationException("ping failed", e);
         }
