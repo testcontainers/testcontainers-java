@@ -5,7 +5,11 @@ import lombok.Value;
 import org.scalasbt.ipcsocket.Win32NamedPipeSocket;
 
 import javax.net.SocketFactory;
-import java.io.*;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -22,6 +26,7 @@ public class NamedPipeSocketFactory extends SocketFactory {
 
             @Override
             public void connect(SocketAddress endpoint, int timeout) throws IOException {
+                // Do nothing since it's not "connectable"
             }
 
             @Override

@@ -68,6 +68,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                             return Dns.SYSTEM.lookup(hostname);
                         }
                     });
+            default:
         }
 
         SSLConfig sslConfig = dockerClientConfig.getSSLConfig();

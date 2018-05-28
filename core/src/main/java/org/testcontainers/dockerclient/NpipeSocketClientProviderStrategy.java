@@ -5,12 +5,6 @@ import com.github.dockerjava.core.DockerClientConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.utility.ComparableVersion;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
 public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrategy {
@@ -41,9 +35,9 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
     @NotNull
     protected DockerClientConfig tryConfiguration(String dockerHost) {
         config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost(dockerHost)
-                .withDockerTlsVerify(false)
-                .build();
+            .withDockerHost(dockerHost)
+            .withDockerTlsVerify(false)
+            .build();
         client = getClientForConfig(config);
 
         final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));

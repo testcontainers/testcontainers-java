@@ -4,7 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.exception.*;
+import com.github.dockerjava.api.exception.BadRequestException;
+import com.github.dockerjava.api.exception.ConflictException;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.github.dockerjava.api.exception.NotAcceptableException;
+import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.exception.NotModifiedException;
+import com.github.dockerjava.api.exception.UnauthorizedException;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.InvocationBuilder;
 import com.github.dockerjava.netty.handler.FramedResponseStreamHandler;
@@ -12,10 +19,16 @@ import com.github.dockerjava.netty.handler.JsonResponseCallbackHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.AccessLevel;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import okhttp3.internal.connection.RealConnection;
 import okio.BufferedSink;
 import okio.BufferedSource;
@@ -30,7 +43,7 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-@FieldDefaults(makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 class OkHttpInvocationBuilder implements InvocationBuilder {
 
     ObjectMapper objectMapper;
