@@ -19,7 +19,7 @@ jobs:
       - checkout
       - run:
           command: |
-            echo "transport.type=okhttp" >> core/src/test/resources/
+            echo "transport.type=okhttp" >> core/src/test/resources/testcontainers.properties
             ./gradlew testcontainers:check
       - run:
           name: Save test results
