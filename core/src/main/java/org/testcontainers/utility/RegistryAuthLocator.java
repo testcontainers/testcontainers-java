@@ -65,7 +65,7 @@ public class RegistryAuthLocator {
             final String reposName = dockerImageName.getRegistry();
             final JsonNode auths = config.at("/auths/" + reposName);
 
-            if (!auths.isMissingNode() && auths.size() == 0) {
+            if (!auths.isMissingNode() || auths.size() == 0) {
                 // auths/<registry> is an empty dict - use a credential helper
                 return authConfigUsingCredentialsStoreOrHelper(reposName, config);
             }
