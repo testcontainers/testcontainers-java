@@ -58,6 +58,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
     }
 
+    public String getPulsarImage() {
+        return (String) properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar");
+    }
+
     public boolean isDisableChecks() {
         return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
     }
