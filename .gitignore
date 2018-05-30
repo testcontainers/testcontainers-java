@@ -46,3 +46,8 @@ node_modules/
 
 .gradle/
 build/
+
+# Eclipse IDE
+.settings/
+.project
+bin/
