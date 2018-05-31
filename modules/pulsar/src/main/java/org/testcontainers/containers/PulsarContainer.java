@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -19,8 +20,13 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     public PulsarContainer(String pulsarVersion) {
         super(TestcontainersConfiguration.getInstance().getPulsarImage() + ":" + pulsarVersion);
         withExposedPorts(PULSAR_PORT);
-        withClasspathResourceMapping("proxy.conf", "/pulsar/conf/proxy.conf", BindMode.READ_ONLY);
-        withCommand("/bin/bash", "-c", "bin/pulsar standalone & bin/pulsar proxy --zookeeper-servers localhost:2181 --global-zookeeper-servers localhost:2181");
+        withCommand("/bin/bash", "-c", "" +
+            "servicePort=6850 webServicePort=8280 webServicePortTls=8643 bin/apply-config-from-env.py conf/proxy.conf && " +
+            "bin/pulsar standalone & " +
+            "bin/pulsar proxy --zookeeper-servers localhost:2181 --global-zookeeper-servers localhost:2181"
+        );
+
+        waitingFor(Wait.forLogMessage(".*messaging service is ready.*\\s", 1));
     }
 
     public String getPulsarBrokerUrl() {
