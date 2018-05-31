@@ -80,6 +80,15 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void addEnv(String key, String value);
 
     /**
+     * Add a label to the container. Consider using {@link #withLabel(String, String)}
+     * for build a container in a fluent style.
+     *
+     * @param key   label key
+     * @param value label value
+     */
+    void addLabel(String key, String value);
+
+    /**
      * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
      * for building a container in a fluent style.
      *
@@ -203,6 +212,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withEnv(Map<String, String> env);
+
+    /**
+     * Add a label to the container.
+     *
+     * @param key   label key
+     * @param value label value
+     * @return this
+     */
+    SELF withLabel(String key, String value);
+
+    /**
+     * Add labels to the container.
+     * @param labels map of labels
+     * @return this
+     */
+    SELF withLabels(Map<String, String> labels);
 
     /**
      * Set the command that should be run in the container

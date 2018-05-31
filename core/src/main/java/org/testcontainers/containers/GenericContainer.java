@@ -111,6 +111,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Map<String, String> env = new HashMap<>();
 
     @NonNull
+    private Map<String, String> labels = new HashMap<>();
+
+    @NonNull
     private String[] commandParts = new String[0];
 
     @NonNull
@@ -473,6 +476,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Map<String, String> labels = createCommand.getLabels();
         labels = new HashMap<>(labels != null ? labels : Collections.emptyMap());
         labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+        labels.putAll(this.labels);
         createCommand.withLabels(labels);
     }
 
@@ -578,6 +582,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addEnv(String key, String value) {
         env.put(key, value);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addLabel(String key, String value) {
+        labels.put(key, value);
     }
 
     /**
@@ -697,6 +709,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withEnv(Map<String, String> env) {
         env.forEach(this::addEnv);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withLabel(String key, String value) {
+        this.addLabel(key, value);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withLabels(Map<String, String> labels) {
+        labels.forEach(this::addLabel);
         return self();
     }
 

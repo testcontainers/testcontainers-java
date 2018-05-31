@@ -22,6 +22,7 @@ import java.io.*;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -127,6 +128,15 @@ public class GenericContainerRuleTest {
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
 
+    /**
+     * Create a container with a custom label for testing.
+     */
+    @ClassRule
+    public static GenericContainer alpineCustomLabel = new GenericContainer("alpine:3.2")
+            .withExposedPorts(80)
+            .withLabel("our.custom", "label")
+            .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
+
 //    @Test
 //    public void simpleRedisTest() {
 //        String ipAddress = redis.getContainerIpAddress();
@@ -218,6 +228,14 @@ public class GenericContainerRuleTest {
         String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
 
         assertEquals("Environment variables can be passed into a command from a map", "42 and 50", line);
+    }
+
+    @Test
+    public void customLabelTest() {
+        Map<String, String> labels = alpineCustomLabel.getCurrentContainerInfo().getConfig().getLabels();
+        assertTrue("org.testcontainers label is present", labels.containsKey("org.testcontainers"));
+        assertTrue("our.custom label is present", labels.containsKey("our.custom"));
+        assertEquals("our.custom label value is label", labels.get("our.custom"), "label");
     }
 
     @Test
@@ -341,7 +359,7 @@ public class GenericContainerRuleTest {
 
         try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
                     .withCommand("top")){
-            
+
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
