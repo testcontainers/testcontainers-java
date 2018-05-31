@@ -10,6 +10,7 @@ dependencies {
 
     testCompile project(':mysql')
     testCompile project(':postgresql')
+    compile project(':selenium')
     testCompile 'com.zaxxer:HikariCP:2.6.1'
 
     testRuntime 'org.postgresql:postgresql:42.0.0'

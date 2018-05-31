@@ -1,18 +1,23 @@
 package org.testcontainers.spock
 
+import org.junit.runner.Description
 import org.spockframework.runtime.extension.AbstractMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
 import org.spockframework.runtime.model.SpecInfo
+import org.testcontainers.containers.BrowserWebDriverContainer
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.spock.TestcontainersExtension.ErrorListener
 
 class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 
     private final SpecInfo spec
+    private final ErrorListener errorListener
 
-    TestcontainersMethodInterceptor(SpecInfo spec) {
+    TestcontainersMethodInterceptor(SpecInfo spec, ErrorListener errorListener) {
         this.spec = spec
+        this.errorListener = errorListener
     }
 
     @Override
@@ -50,6 +55,15 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 
     @Override
     void interceptCleanupMethod(IMethodInvocation invocation) throws Throwable {
+        findAllBrowserWebDriverContainers(invocation).each {
+            if (errorListener.errors.isEmpty()) {
+                it.succeeded(Description.createTestDescription(this.class, "foobar"))
+            } else {
+                it.failed(errorListener.errors.first().getException(), Description.createTestDescription(this.class, "foobar"))
+            }
+
+        }
+
         def containers = findAllContainers(false)
         stopContainers(containers, invocation)
 
@@ -62,6 +76,14 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
     private List<FieldInfo> findAllContainers(boolean shared) {
         spec.allFields.findAll { FieldInfo f ->
             GenericContainer.isAssignableFrom(f.type) && f.shared == shared
+        }
+    }
+
+    private List<BrowserWebDriverContainer> findAllBrowserWebDriverContainers(IMethodInvocation invocation) {
+        spec.allFields.findAll { FieldInfo f ->
+            BrowserWebDriverContainer.isAssignableFrom(f.type)
+        }.collect {
+            readContainerFromField(it, invocation) as BrowserWebDriverContainer
         }
     }
 
