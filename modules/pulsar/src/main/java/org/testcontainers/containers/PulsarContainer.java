@@ -1,10 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
-
-import java.util.stream.Stream;
 
 /**
  * This container wraps Apache pulsar running in stanalone mode
