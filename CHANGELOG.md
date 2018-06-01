@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Allow `HttpWaitStrategy` to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
+- New module: Apache Pulsar ([\#713](https://github.com/testcontainers/testcontainers-java/pull/713))
 
 ## [1.7.3] - 2018-05-16
 
