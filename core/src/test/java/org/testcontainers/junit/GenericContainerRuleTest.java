@@ -238,7 +238,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void exceptionThrownWhenTryingToOverrideTestcontainersLabels() {
-        assertThrows("When trying to overwrite an 'org.testcontaienrs' label, withLabel() throws an exception",
+        assertThrows("When trying to overwrite an 'org.testcontainers' label, withLabel() throws an exception",
             IllegalArgumentException.class,
             () -> {
                 new GenericContainer("alpine:3.2")

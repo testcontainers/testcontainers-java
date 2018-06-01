@@ -592,17 +592,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public void addLabel(String key, String value) throws IllegalArgumentException {
-        if (key.startsWith("org.testcontainers")) {
-            throw new IllegalArgumentException("The org.testcontainers namespace is reserved for interal use");
-        }
-        labels.put(key, value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
 
         final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
@@ -724,7 +713,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withLabel(String key, String value) {
-        this.addLabel(key, value);
+        if (key.startsWith("org.testcontainers")) {
+            throw new IllegalArgumentException("The org.testcontainers namespace is reserved for interal use");
+        }
+        labels.put(key, value);
         return self();
     }
 
@@ -733,7 +725,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withLabels(Map<String, String> labels) {
-        labels.forEach(this::addLabel);
+        labels.forEach(this::withLabel);
         return self();
     }
 

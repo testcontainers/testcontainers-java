@@ -80,15 +80,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void addEnv(String key, String value);
 
     /**
-     * Add a label to the container. Consider using {@link #withLabel(String, String)}
-     * for build a container in a fluent style.
-     *
-     * @param key   label key
-     * @param value label value
-     */
-    void addLabel(String key, String value);
-
-    /**
      * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
      * for building a container in a fluent style.
      *
