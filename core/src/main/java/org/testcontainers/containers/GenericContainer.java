@@ -588,7 +588,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public void addLabel(String key, String value) {
+    public void addLabel(String key, String value) throws IllegalArgumentException {
+        if (key.startsWith("org.testcontainers")) {
+            throw new IllegalArgumentException("The org.testcontainers namespace is reserved for interal use");
+        }
         labels.put(key, value);
     }
 
