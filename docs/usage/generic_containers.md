@@ -23,15 +23,12 @@ public static GenericContainer redis =
 
 // Set up a plain OS container and customize environment, 
 //   command and exposed ports. This just listens on port 80 
-//   and always returns '42'.
-//   The container will have a custom label named 'our.custom'
-//   with a value 'label'.
+//   and always returns '42'
 @ClassRule
 public static GenericContainer alpine =
 	new GenericContainer("alpine:3.2")
     		.withExposedPorts(80)
                .withEnv("MAGIC_NUMBER", "42")
-               .withLabel("our.custom", "label")
                .withCommand("/bin/sh", "-c", 
                "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
 ```
