@@ -473,13 +473,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
-        Map<String, String> createCommandLabels = createCommand.getLabels();
-        createCommandLabels = new HashMap<>(createCommandLabels != null ? createCommandLabels : Collections.emptyMap());
-
         Map<String, String> combinedLabels = new HashMap<>();
         combinedLabels.putAll(labels);
+        if (createCommand.getLabels() != null) {
+            combinedLabels.putAll(createCommand.getLabels());
+        }
         combinedLabels.putAll(DockerClientFactory.DEFAULT_LABELS);
-        combinedLabels.putAll(createCommandLabels);
 
         createCommand.withLabels(combinedLabels);
     }
