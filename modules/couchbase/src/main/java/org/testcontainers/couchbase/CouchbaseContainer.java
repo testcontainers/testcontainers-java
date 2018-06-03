@@ -22,6 +22,8 @@ import com.couchbase.client.java.cluster.*;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.AllArgsConstructor;
 import lombok.Cleanup;
@@ -29,28 +31,29 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.experimental.Wither;
 import org.apache.commons.compress.utils.Sets;
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Based on Laurent Doguin version,
- *
+ * <p>
  * optimized by Tayeb Chlyah
  */
 @AllArgsConstructor
 public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     public static final String VERSION = "5.1.0";
+    public static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Wither
     private String memoryQuota = "300";
@@ -185,10 +188,28 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
         callCouchbaseRestAPI(bucketURL, sampleBucketPayloadBuilder.toString());
 
-        CouchbaseWaitStrategy s = new CouchbaseWaitStrategy();
-        s.withBasicCredentials(clusterUsername, clusterPassword);
-        s.waitUntilReady(this);
+        createNodeWaitStrategy().waitUntilReady(this);
         callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
+    }
+
+    @NotNull
+    private HttpWaitStrategy createNodeWaitStrategy() {
+        return new HttpWaitStrategy()
+            .forPath("/pools/default/")
+            .withBasicCredentials(clusterUsername, clusterPassword)
+            .forStatusCode(HTTP_OK)
+            .forResponsePredicate(response -> {
+                try {
+                    return Optional.of(MAPPER.readTree(response))
+                        .map(n -> n.at("/nodes/0/status"))
+                        .map(JsonNode::asText)
+                        .map("healthy"::equals)
+                        .orElse(false);
+                } catch (IOException e) {
+                    logger().error("Unable to parse response {}", response);
+                    return false;
+                }
+            });
     }
 
     public void createBucket(BucketSettings bucketSetting, boolean primaryIndex) {
