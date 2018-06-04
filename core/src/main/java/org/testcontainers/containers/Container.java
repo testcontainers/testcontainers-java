@@ -205,6 +205,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withEnv(Map<String, String> env);
 
     /**
+     * Add a label to the container.
+     *
+     * @param key   label key
+     * @param value label value
+     * @return this
+     */
+    SELF withLabel(String key, String value);
+
+    /**
+     * Add labels to the container.
+     * @param labels map of labels
+     * @return this
+     */
+    SELF withLabels(Map<String, String> labels);
+
+    /**
      * Set the command that should be run in the container
      *
      * @param cmd a command in single string format (will automatically be split on spaces)

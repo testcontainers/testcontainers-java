@@ -29,6 +29,14 @@ new GenericContainer(...)
 		.withEnv("API_TOKEN", "foo")
 ```
 
+### Labels
+
+To add a custom label to the container, use `withLabel`:
+```java
+new GenericContainer(...)
+        .withLabel("your.custom", "label")
+```
+
 ### Command
 
 By default the container will execute whatever command is specified in the image's Dockerfile. To override this, and specify a different command, use `withCommand`:
