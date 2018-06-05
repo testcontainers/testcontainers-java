@@ -28,6 +28,7 @@ Testcontainers makes it easy to launch useful Docker containers for the duration
  * [Plumbr](https://plumbr.io) - Integration testing of data processing pipeline micro-services
  * [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Puslar, Apache Bookeeper and Apache Heron.
  * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
+ * [Apache Camel](https://camel.apache.org) - Testing Camel agains native service such as Consul, Etcd and so on.
 
 ## License
 
