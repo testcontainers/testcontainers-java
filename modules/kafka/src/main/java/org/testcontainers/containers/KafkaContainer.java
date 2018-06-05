@@ -32,7 +32,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
         // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9093,BROKER://0.0.0.0:9092");
+        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
         withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
@@ -61,11 +61,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         String networkAlias = getNetworkAliases().get(0);
         proxy = new SocatContainer()
                 .withNetwork(getNetwork())
-                .withTarget(9093, networkAlias)
-                .withTarget(2181, networkAlias);
+                .withTarget(KAFKA_PORT, networkAlias)
+                .withTarget(ZOOKEEPER_PORT, networkAlias);
 
         proxy.start();
-        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":9093,PLAINTEXT://" + proxy.getContainerIpAddress() + ":" + proxy.getFirstMappedPort());
+        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":" + KAFKA_PORT +",PLAINTEXT://" + proxy.getContainerIpAddress() + ":" + proxy.getFirstMappedPort());
 
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
