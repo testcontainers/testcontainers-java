@@ -9,6 +9,8 @@ import org.zeroturnaround.exec.ProcessExecutor;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -45,7 +47,14 @@ public class RegistryAuthLocator {
     }
 
     /**
-     * Looks up an AuthConfig for a given image name.
+     * Looks up an AuthConfig for a given image name.<br/>
+     * Lookup is performed in following order:<br/>
+     * <ol>
+     *     <li>{@code auths} is checked for existing credentials for the specified registry.</li>
+     *     <li>if no existing auth is found, {@code credHelpers} are checked for helper for the specified registry.</li>
+     *     <li>if no suitable {@code credHelpers} found, {@code credsStore} is used.</li>
+     *     <li>if no {@code credsStore} is found then the default configuration is returned.</li>
+     * </ol>
      *
      * @param dockerImageName image name to be looked up (potentially including a registry URL part)
      * @return an AuthConfig that is applicable to this specific image OR the defaultAuthConfig that has been set for
@@ -61,13 +70,21 @@ public class RegistryAuthLocator {
 
         try {
             final JsonNode config = OBJECT_MAPPER.readTree(configFile);
-
             final String reposName = dockerImageName.getRegistry();
-            final JsonNode auths = config.at("/auths/" + reposName);
 
-            if (!auths.isMissingNode() || auths.size() == 0) {
-                // auths/<registry> is an empty dict - use a credential helper
-                return authConfigUsingCredentialsStoreOrHelper(reposName, config);
+            final AuthConfig existingAuthConfig = findExistingAuthConfig(config, reposName);
+            if (existingAuthConfig != null) {
+                return existingAuthConfig;
+            }
+            // auths is empty, using helper:
+            final AuthConfig helperAuthConfig = authConfigUsingHelper(config, reposName);
+            if (helperAuthConfig != null) {
+                return helperAuthConfig;
+            }
+            // no credsHelper to use, using credsStore:
+            final AuthConfig storeAuthConfig = authConfigUsingStore(config, reposName);
+            if (storeAuthConfig != null) {
+                return storeAuthConfig;
             }
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
@@ -80,18 +97,49 @@ public class RegistryAuthLocator {
         return defaultAuthConfig;
     }
 
-    private AuthConfig authConfigUsingCredentialsStoreOrHelper(String hostName, JsonNode config) throws Exception {
-
-        final JsonNode credsStoreName = config.at("/credsStore");
-        final JsonNode credHelper = config.at("/credHelpers/" + hostName);
-
-        if (!credHelper.isMissingNode()) {
-            return runCredentialProvider(hostName, credHelper.asText());
-        } else if (!credsStoreName.isMissingNode()) {
-            return runCredentialProvider(hostName, credsStoreName.asText());
-        } else {
-            throw new IllegalStateException("Unsupported Docker config auths settings!");
+    private AuthConfig findExistingAuthConfig(final JsonNode config, final String reposName) throws Exception {
+        final Map.Entry<String, JsonNode> entry = findAuthNode(config, reposName);
+        if (entry != null && entry.getValue() != null && entry.getValue().size() > 0) {
+            return OBJECT_MAPPER
+                .treeToValue(entry.getValue(), AuthConfig.class)
+                .withRegistryAddress(entry.getKey());
         }
+        return null;
+    }
+
+    private AuthConfig authConfigUsingHelper(final JsonNode config, final String reposName) throws Exception {
+        final JsonNode credHelpers = config.get("credHelpers");
+        if (credHelpers != null && credHelpers.size() > 0) {
+            final JsonNode helperNode = credHelpers.get(reposName);
+            if (helperNode != null && helperNode.isTextual()) {
+                final String helper = helperNode.asText();
+                return runCredentialProvider(reposName, helper);
+            }
+        }
+        return null;
+    }
+
+    private AuthConfig authConfigUsingStore(final JsonNode config, final String reposName) throws Exception {
+        final JsonNode credsStoreNode = config.get("credsStore");
+        if (credsStoreNode != null && !credsStoreNode.isMissingNode() && credsStoreNode.isTextual()) {
+            final String credsStore = credsStoreNode.asText();
+            return runCredentialProvider(reposName, credsStore);
+        }
+        return null;
+    }
+
+    private Map.Entry<String, JsonNode> findAuthNode(final JsonNode config, final String reposName) throws Exception {
+        final JsonNode auths = config.get("auths");
+        if (auths != null && auths.size() > 0) {
+            final Iterator<Map.Entry<String, JsonNode>> fields = auths.fields();
+            while (fields.hasNext()) {
+                final Map.Entry<String, JsonNode> entry = fields.next();
+                if (entry.getKey().endsWith("://" + reposName)) {
+                    return entry;
+                }
+            }
+        }
+        return null;
     }
 
     private AuthConfig runCredentialProvider(String hostName, String credHelper) throws Exception {

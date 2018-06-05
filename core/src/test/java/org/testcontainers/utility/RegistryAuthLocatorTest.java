@@ -23,7 +23,7 @@ public class RegistryAuthLocatorTest {
 
     @Test
     public void lookupAuthConfigWithoutCredentials() throws URISyntaxException {
-        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store.json");
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("unauthenticated.registry.org/org/repo"));
 
@@ -52,6 +52,29 @@ public class RegistryAuthLocatorTest {
         assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
         assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
         assertEquals("Correct secret is obtained from a credential store", "secret", authConfig.getPassword());
+    }
+
+    @Test
+    public void lookupUsingHelperEmptyAuth() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty-auth-with-helper.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"));
+
+        assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
+        assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
+        assertEquals("Correct secret is obtained from a credential store", "secret", authConfig.getPassword());
+    }
+
+    @Test
+    public void lookupNonEmptyAuthWithHelper() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-existing-auth-with-helper.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"));
+
+        assertEquals("Correct server URL is obtained from a credential store", "https://registry.example.com", authConfig.getRegistryAddress());
+        assertNull("No username is set", authConfig.getUsername());
+        assertEquals("Correct email is obtained from a credential store", "not@val.id", authConfig.getEmail());
+        assertEquals("Correct auth is obtained from a credential store", "encoded auth token", authConfig.getAuth());
     }
 
     @NotNull
