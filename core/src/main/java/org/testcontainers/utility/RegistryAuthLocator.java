@@ -47,8 +47,9 @@ public class RegistryAuthLocator {
     }
 
     /**
-     * Looks up an AuthConfig for a given image name.<br/>
-     * Lookup is performed in following order:<br/>
+     * Looks up an AuthConfig for a given image name.
+     * <p>
+     * Lookup is performed in following order:
      * <ol>
      *     <li>{@code auths} is checked for existing credentials for the specified registry.</li>
      *     <li>if no existing auth is found, {@code credHelpers} are checked for helper for the specified registry.</li>
