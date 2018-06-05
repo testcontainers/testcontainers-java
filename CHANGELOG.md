@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Allow `HttpWaitStrategy` to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
 - New module: Apache Pulsar ([\#713](https://github.com/testcontainers/testcontainers-java/pull/713))
 - Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
+- Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
 
 ## [1.7.3] - 2018-05-16
 
