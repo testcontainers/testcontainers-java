@@ -111,6 +111,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Map<String, String> env = new HashMap<>();
 
     @NonNull
+    private Map<String, String> labels = new HashMap<>();
+
+    @NonNull
     private String[] commandParts = new String[0];
 
     @NonNull
@@ -470,10 +473,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
-        Map<String, String> labels = createCommand.getLabels();
-        labels = new HashMap<>(labels != null ? labels : Collections.emptyMap());
-        labels.putAll(DockerClientFactory.DEFAULT_LABELS);
-        createCommand.withLabels(labels);
+        Map<String, String> combinedLabels = new HashMap<>();
+        combinedLabels.putAll(labels);
+        if (createCommand.getLabels() != null) {
+            combinedLabels.putAll(createCommand.getLabels());
+        }
+        combinedLabels.putAll(DockerClientFactory.DEFAULT_LABELS);
+
+        createCommand.withLabels(combinedLabels);
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
@@ -697,6 +704,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withEnv(Map<String, String> env) {
         env.forEach(this::addEnv);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withLabel(String key, String value) {
+        if (key.startsWith("org.testcontainers")) {
+            throw new IllegalArgumentException("The org.testcontainers namespace is reserved for interal use");
+        }
+        labels.put(key, value);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withLabels(Map<String, String> labels) {
+        labels.forEach(this::withLabel);
         return self();
     }
 

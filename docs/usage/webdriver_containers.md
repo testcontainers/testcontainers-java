@@ -39,9 +39,9 @@ You can then use this driver instance like a regular WebDriver.
 
 Note that, if you want to test a **web application running on the host machine** (the machine the JUnit tests are
 running on - which is quite likely), you'll need to replace any references to `localhost` with an IP address that the
-Docker container can reach. Use the `getHostIpAddress()` method, e.g.:
+Docker container can reach. Use the `getTestHostIpAddress()` method, e.g.:
 ```java
-driver.get("http://" + chrome.getHostIpAddress() + ":8080/");
+driver.get("http://" + chrome.getTestHostIpAddress() + ":8080/");
 ```
 
 ## Options

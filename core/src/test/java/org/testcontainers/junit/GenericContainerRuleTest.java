@@ -22,6 +22,7 @@ import java.io.*;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -221,6 +222,32 @@ public class GenericContainerRuleTest {
     }
 
     @Test
+    public void customLabelTest() {
+        try (final GenericContainer alpineCustomLabel = new GenericContainer("alpine:3.2")
+            .withLabel("our.custom", "label")
+            .withCommand("top")) {
+
+            alpineCustomLabel.start();
+
+            Map<String, String> labels = alpineCustomLabel.getCurrentContainerInfo().getConfig().getLabels();
+            assertTrue("org.testcontainers label is present", labels.containsKey("org.testcontainers"));
+            assertTrue("our.custom label is present", labels.containsKey("our.custom"));
+            assertEquals("our.custom label value is label", labels.get("our.custom"), "label");
+        }
+    }
+
+    @Test
+    public void exceptionThrownWhenTryingToOverrideTestcontainersLabels() {
+        assertThrows("When trying to overwrite an 'org.testcontainers' label, withLabel() throws an exception",
+            IllegalArgumentException.class,
+            () -> {
+                new GenericContainer("alpine:3.2")
+                    .withLabel("org.testcontainers.foo", "false");
+            }
+        );
+    }
+
+    @Test
     public void customClasspathResourceMappingTest() throws IOException {
         // Note: This functionality doesn't work if you are running your build inside a Docker container;
         // in that case this test will fail.
@@ -341,7 +368,7 @@ public class GenericContainerRuleTest {
 
         try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
                     .withCommand("top")){
-            
+
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");

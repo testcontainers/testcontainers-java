@@ -2,10 +2,26 @@
 All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
+
 ### Fixed
 
 ### Changed
+- Allow `HttpWaitStrategy` to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
+- New module: Apache Pulsar ([\#713](https://github.com/testcontainers/testcontainers-java/pull/713))
+- Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
+- Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
 - Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
+
+## [1.7.3] - 2018-05-16
+
+### Fixed
+- Fix for setting `ryuk.container.timeout` causes a `ClassCastException` ([\#684](https://github.com/testcontainers/testcontainers-java/issues/684))
+- Fixed provided but shaded dependencies in modules ([\#693](https://github.com/testcontainers/testcontainers-java/issues/693))
+
+### Changed
+- Added InfluxDB module ([\#686](https://github.com/testcontainers/testcontainers-java/pull/686))
+- Added MockServer module ([\#696](https://github.com/testcontainers/testcontainers-java/pull/696))
+- Changed LocalStackContainer to extend GenericContainer ([\#695](https://github.com/testcontainers/testcontainers-java/pull/695))
 
 ## [1.7.2] - 2018-04-30
 

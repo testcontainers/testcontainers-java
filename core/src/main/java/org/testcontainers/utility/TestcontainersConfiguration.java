@@ -47,15 +47,19 @@ public class TestcontainersConfiguration {
     }
 
     public String getRyukImage() {
-        return (String) properties.getOrDefault("ryuk.container.image", "bsideup/moby-ryuk:0.2.2");
+        return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.2");
     }
 
     public Integer getRyukTimeout() {
-        return (Integer) properties.getOrDefault("ryuk.container.timeout", 30);
+        return Integer.parseInt((String) properties.getOrDefault("ryuk.container.timeout", "30"));
     }
 
     public String getKafkaImage() {
         return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
+    }
+
+    public String getPulsarImage() {
+        return (String) properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar");
     }
 
     public boolean isDisableChecks() {
