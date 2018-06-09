@@ -156,7 +156,7 @@ public class ContainerDatabaseDriver implements Driver {
               an init script or function has been specified, use it
              */
             if (!initializedContainers.contains(container.getContainerId())) {
-                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
+                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container, queryString);
                 runInitScriptIfRequired(url, databaseDelegate);
                 runInitFunctionIfRequired(url, connection);
                 initializedContainers.add(container.getContainerId());
