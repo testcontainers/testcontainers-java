@@ -192,14 +192,9 @@ public class ContainerDatabaseDriver implements Driver {
      */
     private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
         final Matcher matcher = DAEMON_MATCHING_PATTERN.matcher(url);
-        final boolean isDaemon = matcher.matches() ? Boolean.parseBoolean(matcher.group(2)) : false;
+        final boolean isDaemon = matcher.matches() && Boolean.parseBoolean(matcher.group(2));
 
-        Set<Connection> connections = containerConnections.get(container.getContainerId());
-
-        if (connections == null) {
-            connections = new HashSet<>();
-            containerConnections.put(container.getContainerId(), connections);
-        }
+        Set<Connection> connections = containerConnections.computeIfAbsent(container.getContainerId(), k -> new HashSet<>());
 
         connections.add(connection);
 
