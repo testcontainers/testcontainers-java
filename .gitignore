@@ -47,8 +47,9 @@ node_modules/
 .gradle/
 build/
 
-# Eclipse IDE
-.settings/
-.classpath
-.project
-bin/
+# Eclipse IDE files
+**/.project
+**/.classpath
+**/.settings
+**/bin/
+**/out/

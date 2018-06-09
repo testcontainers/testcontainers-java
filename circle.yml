@@ -19,9 +19,6 @@ jobs:
       - checkout
       - run:
           command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check
-          environment:
-            # Oracle JDBC drivers require a timezone to be set
-            TZ: "/usr/share/zoneinfo/ETC/UTC"
       - run:
           name: Save test results
           command: |

@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
+- Fixed JDBC URL Regex Pattern to ensure all supported Database URL's are accepted ([\#596](https://github.com/testcontainers/testcontainers-java/issues/596))
+- Filtered out TestContainer parameters (TC_*) from query string before passing to database ([\#345](https://github.com/testcontainers/testcontainers-java/issues/345))
 
 ### Changed
 - Allow `HttpWaitStrategy` to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
@@ -11,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
 - Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
 - Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
+- Enhancements and Fixes for JDBC URL usage to create Containers ([\#594](https://github.com/testcontainers/testcontainers-java/pull/594))
+    - Extracted JDBC URL manipulations to a separate class - `ConnectionUrl`. 
+    - Added an overloaded method `JdbcDatabaseContainerProvider.newInstance(ConnectionUrl)`, with default implementation delegating to the existing `newInstance(tag)` method. (Relates to [\#566](https://github.com/testcontainers/testcontainers-java/issues/566))
+    - Added an implementation of `MySQLContainerProvider.newInstance(ConnectionUrl)` that uses Database Name, User, and Password from JDBC URL while creating new MySQL Container. ([\#566](https://github.com/testcontainers/testcontainers-java/issues/566) for MySQL Container)
 
 ## [1.7.3] - 2018-05-16
 
