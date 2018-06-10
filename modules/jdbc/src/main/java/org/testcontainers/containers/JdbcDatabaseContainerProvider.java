@@ -18,13 +18,6 @@ public abstract class JdbcDatabaseContainerProvider {
     public abstract boolean supports(String databaseType);
 
     /**
-     * Instantiate a new {@link JdbcDatabaseContainer} with specified image tag.
-     * @param tag
-     * @return Instance of {@link JdbcDatabaseContainer}
-     */
-    public abstract JdbcDatabaseContainer newInstance(String tag);
-
-    /**
      * Instantiate a new {@link JdbcDatabaseContainer} without any specified image tag. Subclasses <i>should</i>
      * override this method if possible, to provide a default tag that is more stable than <code>latest</code>`.
      *
@@ -36,6 +29,13 @@ public abstract class JdbcDatabaseContainerProvider {
             "be unreliable!", this.getClass().getCanonicalName());
         return this.newInstance("latest");
     }
+
+    /**
+     * Instantiate a new {@link JdbcDatabaseContainer} with specified image tag.
+     * @param tag
+     * @return Instance of {@link JdbcDatabaseContainer}
+     */
+    public abstract JdbcDatabaseContainer newInstance(String tag);
 
     /**
      * Instantiate a new {@link JdbcDatabaseContainer} using information provided with {@link ConnectionUrl}.

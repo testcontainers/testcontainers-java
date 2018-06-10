@@ -13,7 +13,6 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
 
     private static final String PASSWORD_PARAM = "password";
 
-
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(MySQLContainer.NAME);
