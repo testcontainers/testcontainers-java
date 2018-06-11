@@ -2,9 +2,13 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.net.URI;
 
 @Slf4j
 public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrategy {
@@ -25,7 +29,7 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
     @Override
     public void test() throws InvalidConfigurationException {
         try {
-            config = tryConfiguration(SOCKET_LOCATION);
+            config = tryConfiguration();
             log.info("Accessing docker with {}", getDescription());
         } catch (Exception | UnsatisfiedLinkError e) {
             throw new InvalidConfigurationException("ping failed", e);
@@ -33,11 +37,20 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
     }
 
     @NotNull
-    protected DockerClientConfig tryConfiguration(String dockerHost) {
-        config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-            .withDockerHost(dockerHost)
-            .withDockerTlsVerify(false)
-            .build();
+    private DockerClientConfig tryConfiguration() {
+        URI dockerHost = URI.create(SOCKET_LOCATION);
+
+        config = new DelegatingDockerClientConfig(
+            DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost("tcp://localhost:0")
+                .withDockerTlsVerify(false)
+                .build()
+        ) {
+            @Override
+            public URI getDockerHost() {
+                return dockerHost;
+            }
+        };
         client = getClientForConfig(config);
 
         final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
@@ -54,5 +67,12 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
     @Override
     protected int getPriority() {
         return PRIORITY;
+    }
+
+    @RequiredArgsConstructor
+    private static class DelegatingDockerClientConfig implements DockerClientConfig {
+
+        @Delegate
+        final DockerClientConfig dockerClientConfig;
     }
 }
