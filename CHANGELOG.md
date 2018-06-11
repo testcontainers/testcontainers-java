@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - New module: Apache Pulsar ([\#713](https://github.com/testcontainers/testcontainers-java/pull/713))
 - Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
 - Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
+- Add support for 'bring your own' (build from Dockerfile) Oracle images in OracleContainer ([\#734](https://github.com/testcontainers/testcontainers-java/pull/734))
 
 ## [1.7.3] - 2018-05-16
 
