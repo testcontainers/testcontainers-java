@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
 - Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
 - Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
+- Changed **internal** port of KafkaContainer back to 9092 ([\#733](https://github.com/testcontainers/testcontainers-java/pull/733))
 
 ## [1.7.3] - 2018-05-16
 
