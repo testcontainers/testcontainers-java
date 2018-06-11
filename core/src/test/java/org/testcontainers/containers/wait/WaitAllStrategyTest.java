@@ -58,7 +58,7 @@ public class WaitAllStrategyTest {
                 .withStartupTimeout(Duration.ofMillis(10));
 
         doAnswer(invocation -> {
-            Uninterruptibles.sleepUninterruptibly(20, TimeUnit.MILLISECONDS);
+            Uninterruptibles.sleepUninterruptibly(10, TimeUnit.SECONDS);
             return null;
         }).when(strategy1).waitUntilReady(eq(container));
 
