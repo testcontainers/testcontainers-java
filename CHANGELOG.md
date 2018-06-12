@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
 - Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
 - Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
-- Add support for 'bring your own' (build from Dockerfile) Oracle images in OracleContainer ([\#734](https://github.com/testcontainers/testcontainers-java/pull/734))
+- Add support for Dockerfile based images to OracleContainer ([\#734](https://github.com/testcontainers/testcontainers-java/pull/734))
 
 ## [1.7.3] - 2018-05-16
 
