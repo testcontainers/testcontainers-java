@@ -675,7 +675,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected void starting(Description description) {
         if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).beforeTestBlock(toDescription(description));
+            ((TestLifecycleAware) this).beforeTest(toDescription(description));
         }
         this.start();
     }
@@ -684,7 +684,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected void succeeded(Description description) {
         if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.empty());
+            ((TestLifecycleAware) this).afterTest(toDescription(description), Optional.empty());
         }
     }
 
@@ -692,7 +692,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected void failed(Throwable e, Description description) {
         if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).afterTestBlock(toDescription(description), Optional.of(e));
+            ((TestLifecycleAware) this).afterTest(toDescription(description), Optional.of(e));
         }
     }
 

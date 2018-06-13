@@ -4,11 +4,11 @@ import java.util.Optional;
 
 public interface TestLifecycleAware {
 
-    default void beforeTestBlock(TestDescription description) {
+    default void beforeTest(TestDescription description) {
 
     }
 
-    default void afterTestBlock(TestDescription description, Optional<Throwable> throwable) {
+    default void afterTest(TestDescription description, Optional<Throwable> throwable) {
 
     }
 }
