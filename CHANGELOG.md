@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
+- Use `latest` tag as default image tag ([\#676](https://github.com/testcontainers/testcontainers-java/issues/676))
 
 ### Changed
 - Allow `HttpWaitStrategy` to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
