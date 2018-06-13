@@ -1,0 +1,5 @@
+CREATE TABLE bar (
+  foo VARCHAR(255)
+) DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci;
+
+INSERT INTO bar (foo) VALUES ('тест');
