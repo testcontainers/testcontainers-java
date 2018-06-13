@@ -29,14 +29,17 @@ public class DirectoryTarResourceTest {
 
         final ToStringConsumer toString = new ToStringConsumer();
 
+        // 'src' is expected to be the project base directory, so all source code/resources should be copied in
+        File directory = new File("src");
+
         GenericContainer container = new GenericContainer(
                 new ImageFromDockerfile()
                         .withDockerfileFromBuilder(builder ->
                                 builder.from("alpine:3.3")
                                         .copy("/tmp/foo", "/foo")
-                                        .cmd("cat /foo/src/test/resources/test-recursive-file.txt")
+                                        .cmd("cat /foo/test/resources/test-recursive-file.txt")
                                         .build()
-                        ).withFileFromFile("/tmp/foo", new File(".")))  // '.' is expected to be the project base directory, so all source code/resources should be copied in
+                        ).withFileFromFile("/tmp/foo", directory))
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .withLogConsumer(wait.andThen(toString));
 

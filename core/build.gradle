@@ -18,6 +18,8 @@ shadowJar {
 
     mergeServiceFiles()
 
+    exclude 'org/newsclub/**'
+
     [
         'META-INF/io.netty.versions.properties',
         'META-INF/NOTICE',
@@ -46,11 +48,13 @@ shadowJar {
         include(dependency('com.google.guava:.*'))
         include(dependency('io.netty:.*'))
         include(dependency('org.bouncycastle:.*'))
-        include(dependency('org.newsclub.*:.*'))
         include(dependency('org.zeroturnaround:zt-exec'))
         include(dependency('commons-lang:commons-lang'))
         include(dependency('commons-io:commons-io'))
         include(dependency('commons-codec:commons-codec'))
+        include(dependency('com.squareup.okhttp3:.*'))
+        include(dependency('com.squareup.okio:.*'))
+        include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
     }
 }
 
@@ -84,12 +88,21 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
+    compile "net.java.dev.jna:jna-platform:4.5.1"
+
+    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
+        exclude(group: "net.java.dev.jna")
+    }
+
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
         exclude(group: 'log4j')
         exclude(group: 'com.google.code.findbug')
+        exclude(group: 'com.kohlschutter.junixsocket')
     }
+    shaded 'com.squareup.okhttp3:okhttp:3.10.0'
+
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.8'
     shaded 'commons-lang:commons-lang:2.6'

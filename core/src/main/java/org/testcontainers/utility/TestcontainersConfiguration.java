@@ -70,6 +70,10 @@ public class TestcontainersConfiguration {
         return (String) properties.get("docker.client.strategy");
     }
 
+    public String getTransportType() {
+        return properties.getProperty("transport.type", "netty");
+    }
+
     @Synchronized
     public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
         try {
