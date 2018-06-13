@@ -45,7 +45,7 @@ public final class DockerImageName {
             versioning = new TagVersioning(remoteName.split(":")[1]);
         } else {
             repo = remoteName;
-            versioning = null;
+            versioning = new TagVersioning("latest");
         }
     }
 

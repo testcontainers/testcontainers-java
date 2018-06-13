@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.util.concurrent.Future;
+
 /**
  * @author gusohal
  */
@@ -29,6 +31,10 @@ public class OracleContainer extends JdbcDatabaseContainer {
     }
 
     public OracleContainer(String dockerImageName) {
+        super(dockerImageName);
+    }
+
+    public OracleContainer(Future<String> dockerImageName) {
         super(dockerImageName);
     }
 
