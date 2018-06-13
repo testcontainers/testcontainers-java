@@ -32,26 +32,29 @@ public class JDBCDriverTest {
     public boolean performTestForCharacterSet;
     @Parameter(3)
     public boolean performTestForCustomIniFile;
+    @Parameter(4)
+    public boolean performTestForJDBCParams;
 
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return asList(
             new Object[][]{
-                {"jdbc:tc:mysql://hostname/databasename", false, false, false},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", false, false, false},
-                {"jdbc:tc:postgresql:9.6.8://hostname/databasename", false, false, false},
-                {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true},
-                {"jdbc:tc:mariadb://hostname/databasename", false, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename", false, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", true, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", false, false, true}
-            });
+                {"jdbc:tc:mysql://hostname/databasename", false, false, false, false},
+                {"jdbc:tc:mysql://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false, true},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, true},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false, true},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, true},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false, false},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false, false},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", false, false, false, false},
+                {"jdbc:tc:postgresql:9.6.8://hostname/databasename", false, false, false, false},
+                {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true, false},
+                {"jdbc:tc:mariadb://hostname/databasename", false, false, false, false},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename", false, false, false, false},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false, false},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", true, false, false, false},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, false},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", false, false, true, false}});
     }
 
     public static void sampleInitFunction(Connection connection) throws SQLException {
@@ -77,7 +80,14 @@ public class JDBCDriverTest {
             performTestForScriptedSchema(jdbcUrl);
         }
 
+        if (performTestForJDBCParams) {
+            performTestForJDBCParamUsage(jdbcUrl);
+        }
+
         if (performTestForCharacterSet) {
+            //Called twice to ensure that the query string parameters are used when
+            //connections are created from cached containers.
+            performSimpleTestWithCharacterSet(jdbcUrl);
             performSimpleTestWithCharacterSet(jdbcUrl);
         }
 
@@ -107,23 +117,55 @@ public class JDBCDriverTest {
                 assertEquals("A basic SELECT query succeeds where the schema has been applied from a script", "hello world", resultSetString);
                 return true;
             });
+        }
+    }
+
+    private void performTestForJDBCParamUsage(String jdbcUrl) throws SQLException {
+        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
+            boolean result = new QueryRunner(dataSource).query("select CURRENT_USER()", rs -> {
+                rs.next();
+                String resultUser = rs.getString(1);
+                assertEquals("User from query param is created.", "someuser@%", resultUser);
+                return true;
+            });
+
+            result = new QueryRunner(dataSource).query("SELECT DATABASE()", rs -> {
+                rs.next();
+                String resultDB = rs.getString(1);
+                assertEquals("Database name from URL String is used.", "databasename", resultDB);
+                return true;
+            });
 
             assertTrue("The database returned a record as expected", result);
 
         }
     }
 
+    /**
+     * This method intentionally verifies encoding twice to ensure that the query string parameters are used when
+     * Connections are created from cached containers.
+     *
+     * @param jdbcUrl
+     * @throws SQLException
+     */
     private void performSimpleTestWithCharacterSet(String jdbcUrl) throws SQLException {
-        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
-                rs.next();
-                String resultSetInt = rs.getString(2);
-                assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
-                return true;
-            });
+        HikariDataSource datasource1 = verifyCharacterSet(jdbcUrl);
+        HikariDataSource datasource2 = verifyCharacterSet(jdbcUrl);
+        datasource1.close();
+        datasource2.close();
+    }
 
-            assertTrue("The database returned a record as expected", result);
-        }
+    private HikariDataSource verifyCharacterSet(String jdbcUrl) throws SQLException {
+        HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
+        boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
+            rs.next();
+            String resultSetInt = rs.getString(2);
+            assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
+            return true;
+        });
+
+        assertTrue("The database returned a record as expected", result);
+        return dataSource;
     }
 
     private void performTestForCustomIniFile(final String jdbcUrl) throws SQLException {
