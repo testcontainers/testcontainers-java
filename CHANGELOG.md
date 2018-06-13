@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Changed **internal** port of KafkaContainer back to 9092 ([\#733](https://github.com/testcontainers/testcontainers-java/pull/733))
 - Add support for Dockerfile based images to OracleContainer ([\#734](https://github.com/testcontainers/testcontainers-java/pull/734))
 - Read from both `/proc/net/tcp` and `/proc/net/tcp6` in `InternalCommandPortListeningCheck` ([\#750](https://github.com/testcontainers/testcontainers-java/pull/750))
+- Added builder methods for timeouts in `JdbcDatabaseContainer` ([\#748](https://github.com/testcontainers/testcontainers-java/pull/748))
 
 ## [1.7.3] - 2018-05-16
 
