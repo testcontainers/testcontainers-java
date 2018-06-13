@@ -213,14 +213,18 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     /**
      * @return startup time to allow, including image pull time, in seconds
+     * @deprecated should not be overridden anymore, use {@link #withStartupTimeoutSeconds(int)} in constructor instead
      */
+    @Deprecated
     protected int getStartupTimeoutSeconds() {
         return startupTimeoutSeconds;
     }
 
     /**
      * @return time to allow for the database to start and establish an initial connection, in seconds
+     * @deprecated should not be overridden anymore, use {@link #withConnectTimeoutSeconds(int)} in constructor instead
      */
+    @Deprecated
     protected int getConnectTimeoutSeconds() {
         return connectTimeoutSeconds;
     }
