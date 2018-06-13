@@ -16,6 +16,7 @@ public class ImagePullTest {
         return new String[] {
             "alpine:latest",
             "alpine:3.6",
+            "alpine", // omitting the tag should work and default to latest
             "alpine@sha256:8fd4b76819e1e5baac82bd0a3d03abfe3906e034cc5ee32100d12aaaf3956dc7",
             "gliderlabs/alpine:latest",
             "gliderlabs/alpine:3.5",
