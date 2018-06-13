@@ -124,10 +124,10 @@ public class JDBCDriverTest {
 
             assertTrue("The database returned a record as expected", result);
 
-            result = new QueryRunner(dataSource).query("SELECT foo FROM bar", rs -> {
+            result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%мир'", rs -> {
                 rs.next();
                 String resultSetString = rs.getString(1);
-                assertEquals("A SELECT query succeed and the correct charset has been applied for the init script", "тест", resultSetString);
+                assertEquals("A SELECT query succeed and the correct charset has been applied for the init script", "привет мир", resultSetString);
                 return true;
             });
 
