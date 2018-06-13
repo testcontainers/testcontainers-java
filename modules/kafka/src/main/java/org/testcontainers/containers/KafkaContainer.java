@@ -57,7 +57,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     @Override
-    public void start() {
+    protected void doStart() {
         String networkAlias = getNetworkAliases().get(0);
         proxy = new SocatContainer()
                 .withNetwork(getNetwork())
@@ -76,7 +76,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             withCommand("sh", "-c", "zookeeper-server-start /zookeeper.properties & /etc/confluent/docker/run");
         }
 
-        super.start();
+        super.doStart();
     }
 
     @Override
