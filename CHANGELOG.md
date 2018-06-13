@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
 - Changed **internal** port of KafkaContainer back to 9092 ([\#733](https://github.com/testcontainers/testcontainers-java/pull/733))
 - Add support for Dockerfile based images to OracleContainer ([\#734](https://github.com/testcontainers/testcontainers-java/pull/734))
+- Read from both `/proc/net/tcp` and `/proc/net/tcp6` in `InternalCommandPortListeningCheck` ([\#750](https://github.com/testcontainers/testcontainers-java/pull/750))
 
 ## [1.7.3] - 2018-05-16
 
