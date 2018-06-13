@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - Read from both `/proc/net/tcp` and `/proc/net/tcp6` in `InternalCommandPortListeningCheck` ([\#750](https://github.com/testcontainers/testcontainers-java/pull/750))
 - Added builder methods for timeouts in `JdbcDatabaseContainer` ([\#748](https://github.com/testcontainers/testcontainers-java/pull/748))
 - Added an alternative experimental transport based on OkHttp. Enable it with `transport.type=okhttp` property ([\#710](https://github.com/testcontainers/testcontainers-java/pull/710))
+- Framework-agnostic container & test lifecycle ([\#702](https://github.com/testcontainers/testcontainers-java/pull/702))
 
 ## [1.7.3] - 2018-05-16
 
