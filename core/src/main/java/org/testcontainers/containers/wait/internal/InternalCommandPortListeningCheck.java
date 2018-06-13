@@ -30,7 +30,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
     private void tryPort(Integer internalPort) {
         String[][] commands = {
-                {"/bin/sh", "-c", format("cat /proc/net/tcp | awk '{print $2}' | grep -i :%x && echo %s", internalPort, SUCCESS_MARKER)},
+                {"/bin/sh", "-c", format("cat /proc/net/tcp{,6} | awk '{print $2}' | grep -i :%x && echo %s", internalPort, SUCCESS_MARKER)},
                 {"/bin/sh", "-c", format("nc -vz -w 1 localhost %d && echo %s", internalPort, SUCCESS_MARKER)},
                 {"/bin/bash", "-c", format("</dev/tcp/localhost/%d && echo %s", internalPort, SUCCESS_MARKER)}
         };
