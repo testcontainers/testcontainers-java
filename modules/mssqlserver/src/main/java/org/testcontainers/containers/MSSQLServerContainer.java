@@ -14,12 +14,17 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     private String username = "SA";
     private String password = "A_Str0ng_Required_Password";
 
+    private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
+    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
+
     public MSSQLServerContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public MSSQLServerContainer(final String dockerImageName) {
         super(dockerImageName);
+        withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
+        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
     }
 
     @Override
