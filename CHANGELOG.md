@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
+### Fixed
+### Changed
+
+## [1.8.0] - 2018-06-14
 
 ### Fixed
 - Fixed JDBC URL Regex Pattern to ensure all supported Database URL's are accepted ([\#596](https://github.com/testcontainers/testcontainers-java/issues/596))
