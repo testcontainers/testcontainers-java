@@ -13,6 +13,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.dockerclient.transport.TestcontainersDockerCmdExecFactory;
+import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
@@ -164,10 +165,23 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
-        return DockerClientBuilder
-                    .getInstance(config)
-                    .withDockerCmdExecFactory(new TestcontainersDockerCmdExecFactory())
-                    .build();
+        DockerClientBuilder clientBuilder = DockerClientBuilder
+            .getInstance(config);
+
+        String transportType = TestcontainersConfiguration.getInstance().getTransportType();
+        if ("okhttp".equals(transportType)) {
+            clientBuilder
+                .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory());
+        } else if ("netty".equals(transportType)) {
+            clientBuilder
+                .withDockerCmdExecFactory(new TestcontainersDockerCmdExecFactory());
+        } else {
+            throw new IllegalArgumentException("Unknown transport type: " + transportType);
+        }
+
+        LOGGER.info("Will use '{}' transport", transportType);
+
+        return clientBuilder.build();
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {

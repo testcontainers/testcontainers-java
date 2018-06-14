@@ -33,6 +33,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         .withConstantThroughput()
         .build();
 
+    private int startupTimeoutSeconds = 120;
+    private int connectTimeoutSeconds = 120;
+
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
     }
@@ -84,6 +87,28 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public SELF withDatabaseName(String dbName) {
         throw new UnsupportedOperationException();
 
+    }
+
+    /**
+     * Set startup time to allow, including image pull time, in seconds.
+     *
+     * @param startupTimeoutSeconds startup time to allow, including image pull time, in seconds
+     * @return self
+     */
+    public SELF withStartupTimeoutSeconds(int startupTimeoutSeconds) {
+        this.startupTimeoutSeconds = startupTimeoutSeconds;
+        return self();
+    }
+
+    /**
+     * Set time to allow for the database to start and establish an initial connection, in seconds.
+     *
+     * @param connectTimeoutSeconds time to allow for the database to start and establish an initial connection in seconds
+     * @return self
+     */
+    public SELF withConnectTimeoutSeconds(int connectTimeoutSeconds) {
+        this.connectTimeoutSeconds = connectTimeoutSeconds;
+        return self();
     }
 
     @Override
@@ -188,15 +213,19 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     /**
      * @return startup time to allow, including image pull time, in seconds
+     * @deprecated should not be overridden anymore, use {@link #withStartupTimeoutSeconds(int)} in constructor instead
      */
+    @Deprecated
     protected int getStartupTimeoutSeconds() {
-        return 120;
+        return startupTimeoutSeconds;
     }
 
     /**
      * @return time to allow for the database to start and establish an initial connection, in seconds
+     * @deprecated should not be overridden anymore, use {@link #withConnectTimeoutSeconds(int)} in constructor instead
      */
+    @Deprecated
     protected int getConnectTimeoutSeconds() {
-        return 120;
+        return connectTimeoutSeconds;
     }
 }

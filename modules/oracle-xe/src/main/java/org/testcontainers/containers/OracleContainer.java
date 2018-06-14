@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.util.concurrent.Future;
+
 /**
  * @author gusohal
  */
@@ -11,6 +13,9 @@ public class OracleContainer extends JdbcDatabaseContainer {
 
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
+
+    private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
+    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
 
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()
@@ -25,11 +30,19 @@ public class OracleContainer extends JdbcDatabaseContainer {
     }
 
     public OracleContainer() {
-        super(resolveImageName());
+        this(resolveImageName());
     }
 
     public OracleContainer(String dockerImageName) {
         super(dockerImageName);
+        withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
+        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
+    }
+
+    public OracleContainer(Future<String> dockerImageName) {
+        super(dockerImageName);
+        withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
+        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
     }
 
     @Override
@@ -39,7 +52,6 @@ public class OracleContainer extends JdbcDatabaseContainer {
 
     @Override
     protected void configure() {
-
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
     }
 
@@ -80,10 +92,5 @@ public class OracleContainer extends JdbcDatabaseContainer {
     @Override
     public String getTestQueryString() {
         return "SELECT 1 FROM DUAL";
-    }
-
-    @Override
-    protected int getStartupTimeoutSeconds() {
-        return 240;
     }
 }

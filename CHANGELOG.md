@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
+- Fixed JDBC URL Regex Pattern to ensure all supported Database URL's are accepted ([\#596](https://github.com/testcontainers/testcontainers-java/issues/596))
+- Filtered out TestContainer parameters (TC_*) from query string before passing to database ([\#345](https://github.com/testcontainers/testcontainers-java/issues/345))
+- Use `latest` tag as default image tag ([\#676](https://github.com/testcontainers/testcontainers-java/issues/676))
 
 ### Changed
 - Allow `HttpWaitStrategy` to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
@@ -11,6 +14,16 @@ All notable changes to this project will be documented in this file.
 - Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
 - Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
 - Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
+- Enhancements and Fixes for JDBC URL usage to create Containers ([\#594](https://github.com/testcontainers/testcontainers-java/pull/594))
+    - Extracted JDBC URL manipulations to a separate class - `ConnectionUrl`. 
+    - Added an overloaded method `JdbcDatabaseContainerProvider.newInstance(ConnectionUrl)`, with default implementation delegating to the existing `newInstance(tag)` method. (Relates to [\#566](https://github.com/testcontainers/testcontainers-java/issues/566))
+    - Added an implementation of `MySQLContainerProvider.newInstance(ConnectionUrl)` that uses Database Name, User, and Password from JDBC URL while creating new MySQL Container. ([\#566](https://github.com/testcontainers/testcontainers-java/issues/566) for MySQL Container)
+- Changed **internal** port of KafkaContainer back to 9092 ([\#733](https://github.com/testcontainers/testcontainers-java/pull/733))
+- Add support for Dockerfile based images to OracleContainer ([\#734](https://github.com/testcontainers/testcontainers-java/pull/734))
+- Read from both `/proc/net/tcp` and `/proc/net/tcp6` in `InternalCommandPortListeningCheck` ([\#750](https://github.com/testcontainers/testcontainers-java/pull/750))
+- Added builder methods for timeouts in `JdbcDatabaseContainer` ([\#748](https://github.com/testcontainers/testcontainers-java/pull/748))
+- Added an alternative experimental transport based on OkHttp. Enable it with `transport.type=okhttp` property ([\#710](https://github.com/testcontainers/testcontainers-java/pull/710))
+- Framework-agnostic container & test lifecycle ([\#702](https://github.com/testcontainers/testcontainers-java/pull/702))
 
 ## [1.7.3] - 2018-05-16
 
@@ -63,9 +76,10 @@ All notable changes to this project will be documented in this file.
 - Deprecated `WaitStrategy` and implementations in favour of classes with same names in `org.testcontainers.containers.strategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `ContainerState` interface representing the state of a started container ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
 - Added `WaitStrategyTarget` interface which is the target of the new `WaitStrategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
-- *Breaking:* Removed hard-coded `wnameless` Oracle database image name. Users should instead place a file on the classpath named `testcontainers.properties` containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag/SHA hash. For information, the approach recommended by Oracle for creating an Oracle XE docker image is described [here](https://blogs.oracle.com/oraclewebcentersuite/implement-oracle-database-xe-as-docker-containers). 
+- *Breaking:* Removed hard-coded `wnameless` Oracle database image name. Users should instead place a file on the classpath named `testcontainers.properties` containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag/SHA hash. For information, the approach recommended by Oracle for creating an Oracle XE docker image is described [here](https://blogs.oracle.com/oraclewebcentersuite/implement-oracle-database-xe-as-docker-containers).
 - Added `DockerHealthcheckWaitStrategy` that is based on Docker's built-in [healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) ([\#618](https://github.com/testcontainers/testcontainers-java/pull/618)).
 - Added `withLogConsumer(String serviceName, Consumer<OutputFrame> consumer)` method to `DockerComposeContainer` ([\#605](https://github.com/testcontainers/testcontainers-java/issues/605))
+- Added `withFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol)` method to `FixedHostPortGenericContainer` and `addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol)` to `GenericContainer` ([\#586](https://github.com/testcontainers/testcontainers-java/pull/586))
 
 ## [1.6.0] - 2018-01-28
 
@@ -106,7 +120,7 @@ All notable changes to this project will be documented in this file.
 - Stopping creation of temporary directory prior to creating temporary file ([\#443](https://github.com/testcontainers/testcontainers-java/issues/443))
 - Ensure that temp files are created in a temp directory ([\#423](https://github.com/testcontainers/testcontainers-java/issues/423))
 - Added `WaitAllStrategy` as a mechanism for composing multiple startup `WaitStrategy` objects together
-- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes [\#466](https://github.com/testcontainers/testcontainers-java/issues/466)). 
+- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes [\#466](https://github.com/testcontainers/testcontainers-java/issues/466)).
 
 ### Changed
 - Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))
