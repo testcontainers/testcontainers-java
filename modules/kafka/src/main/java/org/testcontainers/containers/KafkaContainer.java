@@ -65,7 +65,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 .withTarget(ZOOKEEPER_PORT, networkAlias);
 
         proxy.start();
-        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":" + KAFKA_PORT +",PLAINTEXT://" + proxy.getContainerIpAddress() + ":" + proxy.getFirstMappedPort());
+        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":9092" + "," + getBootstrapServers());
 
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
