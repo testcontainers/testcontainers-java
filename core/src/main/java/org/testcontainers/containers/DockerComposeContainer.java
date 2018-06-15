@@ -48,9 +48,11 @@ import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
+import static org.testcontainers.containers.ContainerisedDockerCompose.UNIX_PATH_SEPERATOR;
 
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
@@ -623,9 +625,16 @@ class LocalDockerCompose implements DockerCompose {
         final Map<String, String> environment = Maps.newHashMap(env);
         environment.put(ENV_PROJECT_NAME, identifier);
 
-        final File dockerComposeBaseFile = composeFiles.get(0);
-        final File pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsoluteFile();
-        environment.put(ENV_COMPOSE_FILE, new File(pwd, dockerComposeBaseFile.getAbsoluteFile().getName()).getAbsolutePath());
+
+        final List<String> absoluteDockerComposeFiles = composeFiles.stream()
+            .map(File::getAbsolutePath)
+            .map(MountableFile::forHostPath)
+            .map(MountableFile::getFilesystemPath)
+            .collect(toList());
+        final String composeFileEnvVariableValue = absoluteDockerComposeFiles.stream().collect(joining(UNIX_PATH_SEPERATOR + "")); // we always need the UNIX path separator
+        logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
+        final File pwd = composeFiles.get(0).getAbsoluteFile().getParentFile().getAbsoluteFile();
+        environment.put(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
 
         logger().info("Local Docker Compose is running command: {}", cmd);
 
