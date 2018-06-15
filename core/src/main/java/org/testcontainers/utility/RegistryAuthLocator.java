@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -62,6 +63,13 @@ public class RegistryAuthLocator {
      * this {@link RegistryAuthLocator}.
      */
     public AuthConfig lookupAuthConfig(DockerImageName dockerImageName) {
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            log.debug("RegistryAuthLocator is not supported on Windows. Please help test or improve it and update " +
+                "https://github.com/testcontainers/testcontainers-java/issues/756");
+            return defaultAuthConfig;
+        }
+
         log.debug("Looking up auth config for image: {}", dockerImageName);
 
         log.debug("RegistryAuthLocator has configFile: {} ({}) and commandPathPrefix: {}",
