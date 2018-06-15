@@ -21,9 +21,6 @@ import static org.testcontainers.junit.DockerComposeDoNotOverrideTest.DOCKER_COM
 import static org.testcontainers.junit.DockerComposeDoNotOverrideTest.DOCKER_COMPOSE_OVERRIDE_TEST_OVERRIDE_ENV;
 import static org.testcontainers.junit.DockerComposeDoNotOverrideTest.DOCKER_COMPOSE_OVERRIDE_TEST_OVERRIDE_YML;
 
-/**
- * Created by rnorth on 11/06/2016.
- */
 public class DockerComposeLocalOverrideTest {
 
     private static final int SERVICE_PORT = 3000;
