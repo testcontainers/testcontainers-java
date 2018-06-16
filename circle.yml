@@ -14,6 +14,8 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
+      - store_artifacts:
+          path: ~/junit
   okhttp:
     steps:
       - checkout
@@ -45,6 +47,8 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
+      - store_artifacts:
+          path: ~/junit
   modules-jdbc-test:
     steps:
       - checkout
@@ -61,6 +65,8 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
+      - store_artifacts:
+          path: ~/junit
   selenium:
     steps:
       - checkout
@@ -73,6 +79,8 @@ jobs:
             find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
           when: always
       - store_test_results:
+          path: ~/junit
+      - store_artifacts:
           path: ~/junit
 
 workflows:
