@@ -46,6 +46,8 @@ node_modules/
 
 .gradle/
 build/
+out/
+*.class
 
 # Eclipse IDE files
 **/.project
