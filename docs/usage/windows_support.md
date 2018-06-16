@@ -23,6 +23,10 @@ effort.
 
 * WCOW is currently not supported, since Testcontainers uses auxiliary Linux containers for certain tasks and Docker for Windows does not support hybrid engine mode at the time of writing.
 
+### Docker credential helpers
+
+Testcontainers supports credential helpers on Linux and MacOS, to allow pulling images from private registries. This feature is disabled on Windows due to lack of testing - if it is of value to you please help us test it. See [\#756](https://github.com/testcontainers/testcontainers-java/issues/756).
+
 ## Reporting issues
 
 Please report any issues with the Windows build of Testcontainers [here](https://github.com/testcontainers/testcontainers-java/issues)
