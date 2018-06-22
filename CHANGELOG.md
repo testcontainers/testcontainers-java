@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Linux/Mac: Added support for docker credential helpers so that images may be pulled from private registries. See [\#729](https://github.com/testcontainers/testcontainers-java/issues/729), [\#647](https://github.com/testcontainers/testcontainers-java/issues/647) and [\#567](https://github.com/testcontainers/testcontainers-java/issues/567).
 - Ensure that the `COMPOSE_FILE` environment variable is populated with all relevant compose file names when running docker-compose in local mode [\#755](https://github.com/testcontainers/testcontainers-java/issues/755).
+
 ### Changed
+- Update Apache Pulsar module to 2.0.1 [\#760](https://github.com/testcontainers/testcontainers-java/issues/760).
 
 ## [1.8.0] - 2018-06-14
 
