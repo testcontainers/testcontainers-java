@@ -47,7 +47,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * @return the name of the actual JDBC driver to use
      */
-    protected abstract String getDriverClassName();
+    public abstract String getDriverClassName();
 
     /**
      * @return a JDBC URL that may be used to connect to the dockerized DB

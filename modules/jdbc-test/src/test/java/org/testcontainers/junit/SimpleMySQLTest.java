@@ -110,9 +110,28 @@ public class SimpleMySQLTest {
 
     }
 
+    @Test
+    public void testMySQL8() throws SQLException {
+        assumeFalse(SystemUtils.IS_OS_WINDOWS);
+        MySQLContainer container = new MySQLContainer<>("mysql:8.0.11")
+            .withCommand("mysqld --default-authentication-plugin=mysql_native_password");
+        container.start();
+
+        try {
+            ResultSet resultSet = performQuery(container, "SELECT VERSION()");
+            String resultSetString = resultSet.getString(1);
+
+            assertTrue("The database version can be set using a container rule parameter", "8.0.11".equals(resultSetString));
+        }
+        finally {
+            container.stop();
+        }
+    }
+
     @NonNull
     protected ResultSet performQuery(MySQLContainer containerRule, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setDriverClassName(containerRule.getDriverClassName());
         hikariConfig.setJdbcUrl(containerRule.getJdbcUrl());
         hikariConfig.setUsername(containerRule.getUsername());
         hikariConfig.setPassword(containerRule.getPassword());
