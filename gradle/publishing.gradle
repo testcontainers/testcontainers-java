@@ -58,6 +58,16 @@ publishing {
                         appendNode('artifactId', dependency.name)
                         appendNode('version', dependency.version)
                         appendNode('scope', scope)
+
+                        if (dependency instanceof ModuleDependency && !dependency.excludeRules.empty) {
+                            def excludesNode = appendNode('exclusions')
+                            for (rule in dependency.excludeRules) {
+                                excludesNode.appendNode('exclusion').with {
+                                    appendNode('groupId', rule.group)
+                                    appendNode('artifactId', rule.module)
+                                }
+                            }
+                        }
                     }
                 }
 
