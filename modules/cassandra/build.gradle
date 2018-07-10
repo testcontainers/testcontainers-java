@@ -2,7 +2,7 @@ description = "TestContainers :: Cassandra"
 
 dependencies {
     compile project(":database-commons")
-    compile "com.datastax.cassandra:cassandra-driver-core:3.4.0"
+    compile "com.datastax.cassandra:cassandra-driver-core:3.5.1"
 
     /*Netty dependency to override datastax netty transitive dependency that conflicts with netty from
         com.github.docker-java*/
