@@ -112,8 +112,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         private final static String DEFAULT_ROLE = "bucket_admin";
 
-        final BucketSettings bucketSettings;
-        final UserSettings userSettings;
+        private final BucketSettings bucketSettings;
+        private final UserSettings userSettings;
 
         public BucketAndUserSettings(final BucketSettings bucketSettings) {
             this.bucketSettings = bucketSettings;
