@@ -29,6 +29,7 @@ import lombok.AllArgsConstructor;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.experimental.Wither;
 import org.apache.commons.compress.utils.Sets;
 import org.jetbrains.annotations.NotNull;
@@ -101,9 +102,26 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Getter(lazy = true)
     private final CouchbaseCluster couchbaseCluster = createCouchbaseCluster();
 
-    private List<BucketSettings> newBuckets = new ArrayList<>();
+    private List<BucketAndUserSettings> newBuckets = new ArrayList<>();
 
     private String urlBase;
+
+    @Value
+    @AllArgsConstructor
+    private class BucketAndUserSettings {
+
+        private final static String DEFAULT_ROLE = "bucket_admin";
+
+        final BucketSettings bucketSettings;
+        final UserSettings userSettings;
+
+        public BucketAndUserSettings(final BucketSettings bucketSettings) {
+            this.bucketSettings = bucketSettings;
+            this.userSettings = UserSettings.build()
+                .password(bucketSettings.password())
+                .roles(Collections.singletonList(new UserRole(DEFAULT_ROLE, bucketSettings.name())));
+        }
+    }
 
     public CouchbaseContainer() {
         super("couchbase/server:" + VERSION);
@@ -139,7 +157,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
-        newBuckets.add(bucketSettings);
+        newBuckets.add(new BucketAndUserSettings(bucketSettings));
+        return self();
+    }
+
+    public CouchbaseContainer withNewBucket(BucketSettings bucketSettings, UserSettings userSettings) {
+        newBuckets.add(new BucketAndUserSettings(bucketSettings, userSettings));
         return self();
     }
 
@@ -212,14 +235,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             });
     }
 
-    public void createBucket(BucketSettings bucketSetting, boolean primaryIndex) {
+    public void createBucket(BucketSettings bucketSetting, UserSettings userSettings, boolean primaryIndex) {
         ClusterManager clusterManager = getCouchbaseCluster().clusterManager(clusterUsername, clusterPassword);
         // Insert Bucket
         BucketSettings bucketSettings = clusterManager.insertBucket(bucketSetting);
         // Insert Bucket admin user
-        UserSettings userSettings = UserSettings.build()
-            .password(bucketSetting.password())
-            .roles(Collections.singletonList(new UserRole("bucket_admin", bucketSetting.name())));
         try {
             clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
         } catch (Exception e) {
@@ -254,8 +274,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!newBuckets.isEmpty()) {
-            for (BucketSettings bucketSetting : newBuckets) {
-                createBucket(bucketSetting, primaryIndex);
+            for (BucketAndUserSettings bucket : newBuckets) {
+                createBucket(bucket.getBucketSettings(), bucket.getUserSettings(), primaryIndex);
             }
         }
     }
