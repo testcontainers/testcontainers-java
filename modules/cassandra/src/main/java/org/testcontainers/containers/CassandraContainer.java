@@ -34,7 +34,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private String initScriptPath;
 
     public CassandraContainer() {
-        this(IMAGE + ":latest");
+        this(IMAGE + ":3.11.2");
     }
 
     public CassandraContainer(String dockerImageName) {
@@ -146,10 +146,14 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * Can be used to obtain connections to Cassandra in the container
      */
     public Cluster getCluster() {
+        return getCluster(this);
+    }
+
+    public static Cluster getCluster(ContainerState containerState) {
         return Cluster.builder()
-                .addContactPoint(this.getContainerIpAddress())
-                .withPort(this.getMappedPort(CQL_PORT))
-                .build();
+            .addContactPoint(containerState.getContainerIpAddress())
+            .withPort(containerState.getMappedPort(CQL_PORT))
+            .build();
     }
 
     private DatabaseDelegate getDatabaseDelegate() {

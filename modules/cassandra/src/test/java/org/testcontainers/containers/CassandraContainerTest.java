@@ -6,12 +6,9 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Eugeny Karpov
@@ -23,8 +20,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testSimple() {
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
@@ -35,8 +31,7 @@ public class CassandraContainerTest {
     @Test
     public void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:" + cassandraVersion)
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:" + cassandraVersion)) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
@@ -46,9 +41,10 @@ public class CassandraContainerTest {
 
     @Test
     public void testConfigurationOverride() {
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withConfigurationOverride("cassandra-test-configuration-example")
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT cluster_name FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
@@ -58,18 +54,20 @@ public class CassandraContainerTest {
 
     @Test(expected = ContainerLaunchException.class)
     public void testEmptyConfigurationOverride() {
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withConfigurationOverride("cassandra-empty-configuration")
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        ) {
             cassandraContainer.start();
         }
     }
 
     @Test
     public void testInitScript() {
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .withInitScript("initial.cql")
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        ) {
             cassandraContainer.start();
             testInitScript(cassandraContainer);
         }
@@ -77,9 +75,10 @@ public class CassandraContainerTest {
 
     @Test
     public void testInitScriptWithLegacyCassandra() {
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:2.2.11")
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:2.2.11")
                 .withInitScript("initial.cql")
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        ) {
             cassandraContainer.start();
             testInitScript(cassandraContainer);
         }
@@ -87,9 +86,10 @@ public class CassandraContainerTest {
 
     @Test
     public void testCassandraQueryWaitStrategy() {
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>()
                 .waitingFor(new CassandraQueryWaitStrategy())
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
@@ -98,8 +98,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testCassandraGetCluster() {
-        try (CassandraContainer cassandraContainer = new CassandraContainer<>()
-                .withLogConsumer(new Slf4jLogConsumer(log))) {
+        try (CassandraContainer cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
@@ -117,9 +116,9 @@ public class CassandraContainerTest {
 
     private ResultSet performQuery(CassandraContainer cassandraContainer, String cql) {
         Cluster explicitCluster = Cluster.builder()
-                .addContactPoint(cassandraContainer.getContainerIpAddress())
-                .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
-                .build();
+            .addContactPoint(cassandraContainer.getContainerIpAddress())
+            .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
+            .build();
         return performQuery(explicitCluster, cql);
     }
 
