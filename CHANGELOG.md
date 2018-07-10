@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Make JdbcDatabaseContainer#getDriverClassName public [\#743](https://github.com/testcontainers/testcontainers-java/pull/743).
 - enable `copyFileToContainer` feature during container startup [\#742](https://github.com/testcontainers/testcontainers-java/pull/742).
 - avoid using file mounting in KafkaContainer [\#775](https://github.com/testcontainers/testcontainers-java/pull/775).
+- Added Apache Cassandra module [\#776](https://github.com/testcontainers/testcontainers-java/pull/776).
 
 ## [1.8.0] - 2018-06-14
 
