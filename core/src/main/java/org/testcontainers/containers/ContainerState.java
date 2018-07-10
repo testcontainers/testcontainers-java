@@ -44,6 +44,22 @@ public interface ContainerState {
     }
 
     /**
+     * @return is the container created?
+     */
+    default boolean isCreated() {
+        if (getContainerId() == null) {
+            return false;
+        }
+
+        try {
+            String status = getCurrentContainerInfo().getState().getStatus();
+            return "created".equalsIgnoreCase(status) || isRunning();
+        } catch (DockerException e) {
+            return false;
+        }
+    }
+
+    /**
      * @return has the container health state 'healthy'?
      */
     default boolean isHealthy() {
