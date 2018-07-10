@@ -20,7 +20,7 @@ public class ContainerLessJdbcDelegate extends JdbcDatabaseDelegate {
     private Connection connection;
 
     public ContainerLessJdbcDelegate(Connection connection) {
-        super(null);
+        super(null, "");
         this.connection = connection;
     }
 
