@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Update Apache Pulsar module to 2.0.1 [\#760](https://github.com/testcontainers/testcontainers-java/issues/760).
 - Make JdbcDatabaseContainer#getDriverClassName public [\#743](https://github.com/testcontainers/testcontainers-java/pull/743).
 - enable `copyFileToContainer` feature during container startup [\#742](https://github.com/testcontainers/testcontainers-java/pull/742).
+- avoid using file mounting in KafkaContainer [\#775](https://github.com/testcontainers/testcontainers-java/pull/775).
 
 ## [1.8.0] - 2018-06-14
 
