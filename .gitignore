@@ -43,3 +43,15 @@ dependency-reduced-pom.xml
 # Gitbook
 _book/
 node_modules/
+
+.gradle/
+build/
+out/
+*.class
+
+# Eclipse IDE files
+**/.project
+**/.classpath
+**/.settings
+**/bin/
+**/out/

@@ -4,10 +4,109 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
-- Fixed extraneous insertion of `useSSL=false` in all JDBC URL strings, even for DBs that do not understand it. Usage is now restricted to MySQL by default and can be overridden by authors of `JdbcDatabaseContainer` subclasses ([\#568](https://github.com/testcontainers/testcontainers-java/issues/568))
 
 ### Changed
+
+## [1.8.1] - 2018-07-10
+
+### Fixed
+- Linux/Mac: Added support for docker credential helpers so that images may be pulled from private registries. See [\#729](https://github.com/testcontainers/testcontainers-java/issues/729), [\#647](https://github.com/testcontainers/testcontainers-java/issues/647) and [\#567](https://github.com/testcontainers/testcontainers-java/issues/567).
+- Ensure that the `COMPOSE_FILE` environment variable is populated with all relevant compose file names when running docker-compose in local mode [\#755](https://github.com/testcontainers/testcontainers-java/issues/755).
+- Fixed issue whereby specified command in MariaDB image was not being applied. ([\#534](https://github.com/testcontainers/testcontainers-java/issues/534))
+- Changed Oracle thin URL to support both Oracle 11 and 12 XE ([\#769](https://github.com/testcontainers/testcontainers-java/issues/769))
+- Ensure that full JDBC URL query string is passed to JdbcDatabaseDelegate during initscript invocation ([\#741](https://github.com/testcontainers/testcontainers-java/issues/741); fixes [\#727](https://github.com/testcontainers/testcontainers-java/issues/727))
+- Ensure that necessary transitive dependency inclusions are applied to generated project POMs ([\#772](https://github.com/testcontainers/testcontainers-java/issues/772); fixes [\#753](https://github.com/testcontainers/testcontainers-java/issues/753) and [\#652](https://github.com/testcontainers/testcontainers-java/issues/652))
+
+### Changed
+- Update Apache Pulsar module to 2.0.1 [\#760](https://github.com/testcontainers/testcontainers-java/issues/760).
+- Make JdbcDatabaseContainer#getDriverClassName public [\#743](https://github.com/testcontainers/testcontainers-java/pull/743).
+- enable `copyFileToContainer` feature during container startup [\#742](https://github.com/testcontainers/testcontainers-java/pull/742).
+- avoid using file mounting in KafkaContainer [\#775](https://github.com/testcontainers/testcontainers-java/pull/775).
+- Added Apache Cassandra module [\#776](https://github.com/testcontainers/testcontainers-java/pull/776).
+
+## [1.8.0] - 2018-06-14
+
+### Fixed
+- Fixed JDBC URL Regex Pattern to ensure all supported Database URL's are accepted ([\#596](https://github.com/testcontainers/testcontainers-java/issues/596))
+- Filtered out TestContainer parameters (TC_*) from query string before passing to database ([\#345](https://github.com/testcontainers/testcontainers-java/issues/345))
+- Use `latest` tag as default image tag ([\#676](https://github.com/testcontainers/testcontainers-java/issues/676))
+
+### Changed
+- Allow `HttpWaitStrategy` to wait for a specific port ([\#703](https://github.com/testcontainers/testcontainers-java/pull/703))
+- New module: Apache Pulsar ([\#713](https://github.com/testcontainers/testcontainers-java/pull/713))
+- Add support for defining container labels ([\#725](https://github.com/testcontainers/testcontainers-java/pull/725))
+- Use `quay.io/testcontainers/ryuk` instead of `bsideup/ryuk` ([\#721](https://github.com/testcontainers/testcontainers-java/pull/721))
+- Added Couchbase module ([\#688](https://github.com/testcontainers/testcontainers-java/pull/688))
+- Enhancements and Fixes for JDBC URL usage to create Containers ([\#594](https://github.com/testcontainers/testcontainers-java/pull/594))
+    - Extracted JDBC URL manipulations to a separate class - `ConnectionUrl`. 
+    - Added an overloaded method `JdbcDatabaseContainerProvider.newInstance(ConnectionUrl)`, with default implementation delegating to the existing `newInstance(tag)` method. (Relates to [\#566](https://github.com/testcontainers/testcontainers-java/issues/566))
+    - Added an implementation of `MySQLContainerProvider.newInstance(ConnectionUrl)` that uses Database Name, User, and Password from JDBC URL while creating new MySQL Container. ([\#566](https://github.com/testcontainers/testcontainers-java/issues/566) for MySQL Container)
+- Changed **internal** port of KafkaContainer back to 9092 ([\#733](https://github.com/testcontainers/testcontainers-java/pull/733))
+- Add support for Dockerfile based images to OracleContainer ([\#734](https://github.com/testcontainers/testcontainers-java/pull/734))
+- Read from both `/proc/net/tcp` and `/proc/net/tcp6` in `InternalCommandPortListeningCheck` ([\#750](https://github.com/testcontainers/testcontainers-java/pull/750))
+- Added builder methods for timeouts in `JdbcDatabaseContainer` ([\#748](https://github.com/testcontainers/testcontainers-java/pull/748))
+- Added an alternative experimental transport based on OkHttp. Enable it with `transport.type=okhttp` property ([\#710](https://github.com/testcontainers/testcontainers-java/pull/710))
+- Framework-agnostic container & test lifecycle ([\#702](https://github.com/testcontainers/testcontainers-java/pull/702))
+
+## [1.7.3] - 2018-05-16
+
+### Fixed
+- Fix for setting `ryuk.container.timeout` causes a `ClassCastException` ([\#684](https://github.com/testcontainers/testcontainers-java/issues/684))
+- Fixed provided but shaded dependencies in modules ([\#693](https://github.com/testcontainers/testcontainers-java/issues/693))
+
+### Changed
+- Added InfluxDB module ([\#686](https://github.com/testcontainers/testcontainers-java/pull/686))
+- Added MockServer module ([\#696](https://github.com/testcontainers/testcontainers-java/pull/696))
+- Changed LocalStackContainer to extend GenericContainer ([\#695](https://github.com/testcontainers/testcontainers-java/pull/695))
+
+## [1.7.2] - 2018-04-30
+
+- Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
+
+### Fixed
+- Add support for private repositories using docker credential stores/helpers (fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
+- Retry any exceptions (not just `DockerClientException`) on image pull ([\#662](https://github.com/testcontainers/testcontainers-java/issues/662))
+- Fixed handling of the paths with `+` in them ([\#664](https://github.com/testcontainers/testcontainers-java/issues/664))
+
+### Changed
+- Database container images are now pinned to a specific version rather than using `latest`. The tags selected are the most recent as of the time of this change. If a JDBC URL is used with no tag specified, a WARN level log message is output, pending a future change to make tags mandatory in the JDBC URL. ([\#671](https://github.com/testcontainers/testcontainers-java/issues/671))
+- Updated docker-java to 3.1.0-rc-3, enforced `org.jetbrains:annotations:15.0`. ([\#672](https://github.com/testcontainers/testcontainers-java/issues/672))
+
+## [1.7.1] - 2018-04-20
+
+### Fixed
+- Fixed missing `commons-codec` dependency ([\#642](https://github.com/testcontainers/testcontainers-java/issues/642))
+- Fixed `HostPortWaitStrategy` throws `NumberFormatException` when port is exposed but not mapped ([\#640](https://github.com/testcontainers/testcontainers-java/issues/640))
+- Fixed log processing: multibyte unicode, linebreaks and ASCII color codes. Color codes can be turned on with `withRemoveAnsiCodes(false)` ([\#643](https://github.com/testcontainers/testcontainers-java/pull/643))
+- Fixed Docker host IP detection within docker container (detect only if not explicitly set) ([\#648](https://github.com/testcontainers/testcontainers-java/pull/648))
+- Add support for private repositories using docker credential stores/helpers ([PR \#647](https://github.com/testcontainers/testcontainers-java/pull/647), fixes [\#567](https://github.com/testcontainers/testcontainers-java/issues/567))
+
+### Changed
+- Support multiple HTTP status codes for HttpWaitStrategy ([\#630](https://github.com/testcontainers/testcontainers-java/issues/630))
+- Mark all long-living threads started by Testcontainers as daemons and group them. ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
+- Remove noisy `DEBUG` logging of Netty packets ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
+- Updated docker-java to 3.1.0-rc-2 ([\#646](https://github.com/testcontainers/testcontainers-java/issues/646))
+
+## [1.7.0] - 2018-04-07
+
+### Fixed
+- Fixed extraneous insertion of `useSSL=false` in all JDBC URL strings, even for DBs that do not understand it. Usage is now restricted to MySQL by default and can be overridden by authors of `JdbcDatabaseContainer` subclasses ([\#568](https://github.com/testcontainers/testcontainers-java/issues/568))
+- Fixed `getServicePort` on `DockerComposeContainer` throws NullPointerException if service instance number in not used. ([\#619](https://github.com/testcontainers/testcontainers-java/issues/619))
+- Increase Ryuk's timeout and make it configurable with `ryuk.container.timeout`. ([\#621](https://github.com/testcontainers/testcontainers-java/issues/621)[\#635](https://github.com/testcontainers/testcontainers-java/issues/635))
+
+### Changed
+- Added compatibility with selenium greater than 3.X ([\#611](https://github.com/testcontainers/testcontainers-java/issues/611))
 - Abstracted and changed database init script functionality to support use of SQL-like scripts with non-JDBC connections. ([\#551](https://github.com/testcontainers/testcontainers-java/pull/551))
+- Added `JdbcDatabaseContainer(Future)` constructor. ([\#543](https://github.com/testcontainers/testcontainers-java/issues/543))
+- Mark DockerMachineClientProviderStrategy as not persistable ([\#593](https://github.com/testcontainers/testcontainers-java/pull/593))
+- Added `waitingFor(String serviceName, WaitStrategy waitStrategy)` and overloaded `withExposedService()` methods to `DockerComposeContainer` to allow user to define `WaitStrategy` for compose containers. ([\#174](https://github.com/testcontainers/testcontainers-java/issues/174), [\#515](https://github.com/testcontainers/testcontainers-java/issues/515) and ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600)))
+- Deprecated `WaitStrategy` and implementations in favour of classes with same names in `org.testcontainers.containers.strategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
+- Added `ContainerState` interface representing the state of a started container ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
+- Added `WaitStrategyTarget` interface which is the target of the new `WaitStrategy` ([\#600](https://github.com/testcontainers/testcontainers-java/pull/600))
+- *Breaking:* Removed hard-coded `wnameless` Oracle database image name. Users should instead place a file on the classpath named `testcontainers.properties` containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag/SHA hash. For information, the approach recommended by Oracle for creating an Oracle XE docker image is described [here](https://blogs.oracle.com/oraclewebcentersuite/implement-oracle-database-xe-as-docker-containers).
+- Added `DockerHealthcheckWaitStrategy` that is based on Docker's built-in [healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) ([\#618](https://github.com/testcontainers/testcontainers-java/pull/618)).
+- Added `withLogConsumer(String serviceName, Consumer<OutputFrame> consumer)` method to `DockerComposeContainer` ([\#605](https://github.com/testcontainers/testcontainers-java/issues/605))
+- Added `withFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol)` method to `FixedHostPortGenericContainer` and `addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol)` to `GenericContainer` ([\#586](https://github.com/testcontainers/testcontainers-java/pull/586))
 
 ## [1.6.0] - 2018-01-28
 
@@ -48,7 +147,7 @@ All notable changes to this project will be documented in this file.
 - Stopping creation of temporary directory prior to creating temporary file ([\#443](https://github.com/testcontainers/testcontainers-java/issues/443))
 - Ensure that temp files are created in a temp directory ([\#423](https://github.com/testcontainers/testcontainers-java/issues/423))
 - Added `WaitAllStrategy` as a mechanism for composing multiple startup `WaitStrategy` objects together
-- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes [\#466](https://github.com/testcontainers/testcontainers-java/issues/466)). 
+- Changed `BrowserWebDriverContainer` to use improved wait strategies, to eliminate race conditions when starting VNC recording containers. This should lead to far fewer 'error' messages logged when starting up selenium containers, and less exposure to race related bugs (fixes [\#466](https://github.com/testcontainers/testcontainers-java/issues/466)).
 
 ### Changed
 - Make Network instances reusable (i.e. work with `@ClassRule`) ([\#469](https://github.com/testcontainers/testcontainers-java/issues/469))

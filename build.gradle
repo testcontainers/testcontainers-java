@@ -1,0 +1,94 @@
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+    id 'nebula.provided-base' version '3.0.3'
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id "com.jfrog.bintray" version "1.8.0" apply false
+}
+
+subprojects {
+    apply plugin: 'nebula.provided-base'
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'io.franzbecker.gradle-lombok'
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply from: "$rootDir/gradle/publishing.gradle"
+    apply from: "$rootDir/gradle/bintray.gradle"
+
+    group = "org.testcontainers"
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    compileJava.options.encoding = 'UTF-8'
+
+    lombok {
+	    version = '1.16.20'
+    }
+
+    task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
+        def outputDir = file("$buildDir/delombok")
+        outputs.dir(outputDir)
+        for (srcDir in project.sourceSets.main.java.srcDirs) {
+            inputs.dir(srcDir)
+            args(srcDir, "-d", outputDir)
+        }
+    }
+
+    project.tasks.sourceJar.from(delombok)
+
+    task release(dependsOn: bintrayUpload)
+
+    test {
+        testLogging {
+            displayGranularity 1
+            showStackTraces = true
+            exceptionFormat = 'full'
+            events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
+    }
+
+    repositories {
+        jcenter()
+    }
+
+    shadowJar {
+        configurations = []
+        classifier = null
+
+        relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
+
+        [
+            "org.apache.http",
+            "org.apache.commons.lang",
+            "org.apache.commons.io",
+            "org.apache.commons.codec",
+            "org.glassfish",
+            "org.aopalliance",
+            "org.jvnet",
+            "javax.annotation",
+            "javax.inject",
+            "javax.ws.rs",
+            "com.fasterxml.jackson",
+            "jersey.repackaged",
+            "com.google",
+            "io.netty",
+            "org.bouncycastle",
+            "org.zeroturnaround",
+            "okhttp3",
+            "okio",
+            "org.scalasbt.ipcsocket",
+        ].each { relocate(it, "org.testcontainers.shaded.$it") }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) { publication ->
+                artifacts.removeAll { it.classifier == null }
+                artifact project.tasks.shadowJar
+            }
+        }
+    }
+
+    dependencies {
+        testCompile 'ch.qos.logback:logback-classic:1.2.3'
+    }
+}

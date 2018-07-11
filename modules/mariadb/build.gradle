@@ -1,0 +1,11 @@
+description = "Testcontainers :: JDBC :: MariaDB"
+
+dependencies {
+    compile project(':jdbc')
+
+    testCompile 'org.mariadb.jdbc:mariadb-java-client:1.5.9'
+    testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
+    testCompile 'commons-dbutils:commons-dbutils:1.6'
+    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
+    testCompile 'org.vibur:vibur-dbcp:9.0'
+}

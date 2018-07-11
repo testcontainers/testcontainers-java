@@ -10,7 +10,10 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Wait strategy that waits for a number of other strategies to pass in series.
+ *
+ * @deprecated Use {@link org.testcontainers.containers.wait.strategy.WaitAllStrategy}
  */
+@Deprecated
 public class WaitAllStrategy implements WaitStrategy {
 
     private final List<WaitStrategy> strategies = new ArrayList<>();

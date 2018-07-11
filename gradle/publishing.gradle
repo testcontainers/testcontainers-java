@@ -1,0 +1,79 @@
+apply plugin: 'maven-publish'
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) { publication ->
+            artifactId = project.name
+
+            artifact project.tasks.jar
+            artifact sourceJar
+            artifact javadocJar
+
+            pom.withXml {
+                def rootNode = asNode()
+                rootNode.children().last() + {
+                    resolveStrategy = Closure.DELEGATE_FIRST
+
+                    name project.description
+                    description 'Isolated container management for Java code testing'
+                    url 'https://testcontainers.org'
+                    issueManagement {
+                        system 'GitHub'
+                        url 'https://github.com/testcontainers/testcontainers-java/issues'
+                    }
+                    licenses {
+                        license {
+                            name 'MIT'
+                            url 'http://opensource.org/licenses/MIT'
+                        }
+                    }
+                    scm {
+                        url 'https://github.com/testcontainers/testcontainers-java/'
+                        connection 'scm:git:git://github.com/testcontainers/testcontainers-java.git'
+                        developerConnection 'scm:git:ssh://git@github.com/testcontainers/testcontainers-java.git'
+                    }
+                    developers {
+                        developer {
+                            id 'rnorth'
+                            name 'Richard North'
+                            email 'rich.north@gmail.com'
+                        }
+                    }
+                }
+
+                def dependenciesNode = rootNode.appendNode('dependencies')
+
+                def addDependency = { dependency, scope ->
+                    dependenciesNode.appendNode('dependency').with {
+                        appendNode('groupId', dependency.group)
+                        appendNode('artifactId', dependency.name)
+                        appendNode('version', dependency.version)
+                        appendNode('scope', scope)
+
+                        if (dependency instanceof ModuleDependency && !dependency.excludeRules.empty) {
+                            def excludesNode = appendNode('exclusions')
+                            for (rule in dependency.excludeRules) {
+                                excludesNode.appendNode('exclusion').with {
+                                    appendNode('groupId', rule.group)
+                                    appendNode('artifactId', rule.module)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                project.configurations.compile.dependencies.each { addDependency(it, 'compile') }
+                project.configurations.provided.dependencies.each { addDependency(it, 'provided') }
+            }
+        }
+    }
+}

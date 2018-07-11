@@ -1,0 +1,5 @@
+description = "Testcontainers :: Nginx"
+
+dependencies {
+    compile project(':testcontainers')
+}

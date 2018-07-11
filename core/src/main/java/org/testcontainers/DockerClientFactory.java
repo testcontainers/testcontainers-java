@@ -39,6 +39,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class DockerClientFactory {
 
+    public static final ThreadGroup TESTCONTAINERS_THREAD_GROUP = new ThreadGroup("testcontainers");
     public static final String TESTCONTAINERS_LABEL = DockerClientFactory.class.getPackage().getName();
     public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
 
@@ -113,14 +114,16 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            String ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
+
+            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, checksEnabled);
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
 
             VisibleAssertions.info("Checking the system...");
 
             checkDockerVersion(version.getVersion());
 
-            if (!TestcontainersConfiguration.getInstance().isDisableChecks()) {
+            if (checksEnabled) {
                 checkDiskSpace(client, ryukContainerId);
                 checkMountableFile(client, ryukContainerId);
             }

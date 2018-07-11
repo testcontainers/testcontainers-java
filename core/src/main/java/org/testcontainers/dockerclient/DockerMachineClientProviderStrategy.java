@@ -25,6 +25,11 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
     }
 
     @Override
+    protected boolean isPersistable() {
+        return false;
+    }
+
+    @Override
     protected int getPriority() {
         return ProxiedUnixSocketClientProviderStrategy.PRIORITY - 10;
     }
