@@ -126,15 +126,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     protected void configure() {
         // Configurable ports
-        addExposedPorts(11210, 11207, 8091, 18091);
-
-        // Non configurable ports
-        addFixedExposedPort(8092, 8092);
-        addFixedExposedPort(8093, 8093);
-        addFixedExposedPort(8094, 8094);
-        addFixedExposedPort(8095, 8095);
-        addFixedExposedPort(18092, 18092);
-        addFixedExposedPort(18093, 18093);
+        addExposedPort(8091);
+        addExposedPort(8092);
+        addExposedPort(8093);
+        addExposedPort(8094);
+        addExposedPort(11207);
+        addExposedPort(11210);
+        addExposedPort(11214);
+        addExposedPort(18091);
+        addExposedPort(18092);
+        addExposedPort(18093);
+        addExposedPort(18094);
         setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html#/"));
     }
 
@@ -267,10 +269,13 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private DefaultCouchbaseEnvironment createCouchbaseEnvironment() {
         initCluster();
         return DefaultCouchbaseEnvironment.builder()
+            // must be disabled so that the CouchbaseInstrumentationHook can see all requests while bootstrapping
+            .bootstrapCarrierEnabled(false)
             .bootstrapCarrierDirectPort(getMappedPort(11210))
             .bootstrapCarrierSslPort(getMappedPort(11207))
             .bootstrapHttpDirectPort(getMappedPort(8091))
             .bootstrapHttpSslPort(getMappedPort(18091))
+            .couchbaseCoreSendHook(new CouchbaseInstrumentationHook(this))
             .build();
     }
 }
