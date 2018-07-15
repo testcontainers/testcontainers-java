@@ -556,7 +556,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @see #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)
      */
     protected void waitUntilContainerStarted() {
-        getWaitStrategy().waitUntilReady(this);
+        org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = getWaitStrategy();
+        if (waitStrategy != null) {
+            waitStrategy.waitUntilReady(this);
+        }
     }
 
     /**
