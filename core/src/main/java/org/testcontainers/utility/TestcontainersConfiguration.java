@@ -74,6 +74,11 @@ public class TestcontainersConfiguration {
         return properties.getProperty("transport.type", "netty");
     }
 
+    public boolean isReusingEnabledWhenReusable() {
+        return Boolean.parseBoolean((String)
+            properties.getOrDefault("containers.is.reusing.enabled.when.reusable", "true"));
+    }
+
     @Synchronized
     public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
         try {

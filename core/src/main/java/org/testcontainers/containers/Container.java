@@ -503,4 +503,28 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setWaitStrategy(WaitStrategy waitStrategy);
+
+    /**
+     * Allow TC reuse previously created container
+     * <p>
+     * With this mode all <strong>TC container settings will be applied only once</strong> - at the time of container creation.
+     * After JVM destruction created container continues to live unaffected.
+     * Subsequent starts of TC container will find previously created container by specified container name
+     * and reinitialize it. If container isn't found then new one will be created. If container is found but stopped,
+     * TC will start it and continue to use started container.
+     * <p>
+     * Previously created container should have exactly the same image and version as specified in TC container configuration.
+     * Otherwise {@link ContainerLaunchException} will be raised.
+     * <p>
+     * Reusing existing container allows to seriously reduce time consumed by container creation and starting
+     * although it should be used carefully.
+     * <p>
+     * For CI environments reusable mode can be disabled globally or at container's level:
+     * - by setting testcontainers.properties containers.is.reusing.enabled.when.reusable value to false
+     * - by setting ReusableContainerConfiguration.builder().isEnabled(false)
+     *
+     * @param configuration reusable configuration containing Docker container name
+     * @return this
+     */
+    SELF withReuseExistingContainerStrategy(ReusableContainerConfiguration configuration);
 }

@@ -42,12 +42,19 @@ public class DockerClientFactory {
     public static final ThreadGroup TESTCONTAINERS_THREAD_GROUP = new ThreadGroup("testcontainers");
     public static final String TESTCONTAINERS_LABEL = DockerClientFactory.class.getPackage().getName();
     public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
+    public static final String TESTCONTAINERS_REUSABLE_LABLE = TESTCONTAINERS_LABEL + ".dontkillme";
 
     public static final String SESSION_ID = UUID.randomUUID().toString();
+    public static final String MAGIC_WORD = "please";
 
     public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
             TESTCONTAINERS_LABEL, "true",
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
+    );
+
+    public static final Map<String, String> REUSABLE_LABELS = ImmutableMap.of(
+        TESTCONTAINERS_LABEL, "true",
+        TESTCONTAINERS_REUSABLE_LABLE, MAGIC_WORD
     );
 
     private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
