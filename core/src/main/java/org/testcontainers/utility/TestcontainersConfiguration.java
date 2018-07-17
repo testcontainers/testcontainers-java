@@ -54,6 +54,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt((String) properties.getOrDefault("ryuk.container.timeout", "30"));
     }
 
+    public String getRyukClientVersion() {
+        return (String) properties.get("ryuk.container.client.version");
+    }
+
     public String getKafkaImage() {
         return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
     }
@@ -105,30 +109,30 @@ public class TestcontainersConfiguration {
     @SneakyThrows(MalformedURLException.class)
     private static TestcontainersConfiguration loadConfiguration() {
         final TestcontainersConfiguration config = new TestcontainersConfiguration(
-                Stream
-                        .of(
-                                TestcontainersConfiguration.class.getClassLoader().getResource(PROPERTIES_FILE_NAME),
-                                Thread.currentThread().getContextClassLoader().getResource(PROPERTIES_FILE_NAME),
-                                GLOBAL_CONFIG_FILE.toURI().toURL()
-                        )
-                        .filter(Objects::nonNull)
-                        .map(it -> {
-                            log.debug("Testcontainers configuration overrides will be loaded from {}", it);
+            Stream
+                .of(
+                    TestcontainersConfiguration.class.getClassLoader().getResource(PROPERTIES_FILE_NAME),
+                    Thread.currentThread().getContextClassLoader().getResource(PROPERTIES_FILE_NAME),
+                    GLOBAL_CONFIG_FILE.toURI().toURL()
+                )
+                .filter(Objects::nonNull)
+                .map(it -> {
+                    log.debug("Testcontainers configuration overrides will be loaded from {}", it);
 
-                            final Properties subProperties = new Properties();
-                            try (final InputStream inputStream = it.openStream()) {
-                                subProperties.load(inputStream);
-                            } catch (FileNotFoundException e) {
-                                log.trace("Testcontainers config override was found on " + it + " but the file was not found", e);
-                            } catch (IOException e) {
-                                log.warn("Testcontainers config override was found on " + it + " but could not be loaded", e);
-                            }
-                            return subProperties;
-                        })
-                        .reduce(new Properties(), (a, b) -> {
-                            a.putAll(b);
-                            return a;
-                        })
+                    final Properties subProperties = new Properties();
+                    try (final InputStream inputStream = it.openStream()) {
+                        subProperties.load(inputStream);
+                    } catch (FileNotFoundException e) {
+                        log.trace("Testcontainers config override was found on " + it + " but the file was not found", e);
+                    } catch (IOException e) {
+                        log.warn("Testcontainers config override was found on " + it + " but could not be loaded", e);
+                    }
+                    return subProperties;
+                })
+                .reduce(new Properties(), (a, b) -> {
+                    a.putAll(b);
+                    return a;
+                })
         );
 
         if (!config.getProperties().isEmpty()) {
