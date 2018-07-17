@@ -54,6 +54,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt((String) properties.getOrDefault("ryuk.container.timeout", "30"));
     }
 
+    public String getRyukClientVersion() {
+        return (String) properties.get("ryuk.container.client.version");
+    }
+
     public String getKafkaImage() {
         return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
     }
