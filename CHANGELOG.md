@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Update Visible Assertions to 2.1.1 ([\#779](https://github.com/testcontainers/testcontainers-java/pull/779)).
+
 ## [1.8.1] - 2018-07-10
 
 ### Fixed
