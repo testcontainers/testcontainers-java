@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Add support for transparently using local images with docker-compose ([\#798](https://github.com/testcontainers/testcontainers-java/pull/798), fixes [\#674](https://github.com/testcontainers/testcontainers-java/issues/674))
+
 ### Changed
 
 - Update Visible Assertions to 2.1.1 ([\#779](https://github.com/testcontainers/testcontainers-java/pull/779)).
