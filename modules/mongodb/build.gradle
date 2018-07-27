@@ -1,0 +1,5 @@
+description = "Testcontainers :: MongoDB"
+
+dependencies {
+    compile project(':testcontainers')
+}
