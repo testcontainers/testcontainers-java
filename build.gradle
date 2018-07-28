@@ -76,6 +76,7 @@ subprojects {
             "okhttp3",
             "okio",
             "org.scalasbt.ipcsocket",
+            "com.trilead.ssh2",
         ].each { relocate(it, "org.testcontainers.shaded.$it") }
     }
 
