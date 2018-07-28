@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.trilead.ssh2.Connection;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -19,7 +20,7 @@ public enum PortForwardingContainer {
 
     private final Set<Integer> exposedPorts = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    @Getter(lazy = true)
+    @Getter(value = AccessLevel.PRIVATE, lazy = true)
     private final Connection sshConnection = createSSHSession();
 
     @SneakyThrows
