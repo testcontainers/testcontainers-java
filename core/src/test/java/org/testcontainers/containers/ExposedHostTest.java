@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.sun.net.httpserver.HttpServer;
+import lombok.SneakyThrows;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,23 +39,26 @@ public class ExposedHostTest {
 
     @Test
     public void testExposedHost() throws Exception {
-        try (GenericContainer container = new GenericContainer<>().withCommand("top")) {
-            container.start();
-
-            String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + server.getAddress().getPort()).getStdout();
-
-            assertEquals("received response", "Hello World!", response);
-        }
+        assertResponse(new GenericContainer().withCommand("top"));
     }
 
     @Test
     public void testExposedHostWithNetwork() throws Exception {
-        try (GenericContainer container = new GenericContainer<>().withNetwork(Network.newNetwork()).withCommand("top")) {
+        try (Network network = Network.newNetwork()) {
+            assertResponse(new GenericContainer().withNetwork(network).withCommand("top"));
+        }
+    }
+
+    @SneakyThrows
+    protected void assertResponse(GenericContainer container) {
+        try {
             container.start();
 
             String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + server.getAddress().getPort()).getStdout();
 
             assertEquals("received response", "Hello World!", response);
+        } finally {
+            container.stop();
         }
     }
 }
