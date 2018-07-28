@@ -250,7 +250,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerId = createCommand.exec().getId();
 
             PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
-                if (!networkId.equals(createCommand.getNetworkMode())) {
+                if (!Arrays.asList(networkId, "none", "host").contains(createCommand.getNetworkMode())) {
                     dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
                 }
             });
@@ -483,6 +483,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         createCommand.withPublishAllPorts(true);
 
+        PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
+            withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
+        });
+
         String[] extraHostsArray = extraHosts.stream()
                 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
@@ -501,10 +505,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (privilegedMode) {
             createCommand.withPrivileged(privilegedMode);
         }
-
-        PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
-            createCommand.withExtraHosts(INTERNAL_HOST_HOSTNAME + ":" + it.getIpAddress());
-        });
 
         createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
