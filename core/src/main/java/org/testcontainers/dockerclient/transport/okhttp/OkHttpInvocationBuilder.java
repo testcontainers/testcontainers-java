@@ -113,7 +113,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
     @SneakyThrows
     public InputStream post(Object entity) {
         Request request = requestBuilder
-            .post(RequestBody.create(null, objectMapper.writeValueAsBytes(entity)))
+            .post(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsBytes(entity)))
             .build();
 
         return execute(request).body().byteStream();
