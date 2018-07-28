@@ -39,7 +39,6 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         addEnv("MYSQL_USER", MARIADB_USER);
         addEnv("MYSQL_PASSWORD", MARIADB_PASSWORD);
         addEnv("MYSQL_ROOT_PASSWORD", MARIADB_PASSWORD);
-        setCommand("mysqld");
         setStartupAttempts(3);
     }
 

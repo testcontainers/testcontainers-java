@@ -82,7 +82,7 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    compile 'org.rnorth.visible-assertions:visible-assertions:2.1.0'
+    compile 'org.rnorth.visible-assertions:visible-assertions:2.1.1'
 
     compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
         exclude(group: "log4j", module: "log4j")

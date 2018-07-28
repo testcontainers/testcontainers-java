@@ -142,6 +142,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private String workingDirectory = null;
 
+    private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -243,6 +245,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             applyConfiguration(createCommand);
 
             containerId = createCommand.exec().getId();
+            copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
@@ -895,6 +898,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
+        copyToFileContainerPathMap.put(mountableFile, containerPath);
+        return self();
+    }
+
+    /**
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address
@@ -999,8 +1011,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) {
 
-        if (!isRunning()) {
-            throw new IllegalStateException("copyFileToContainer can only be used while the Container is running");
+        if (!isCreated()) {
+            throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
         this.dockerClient

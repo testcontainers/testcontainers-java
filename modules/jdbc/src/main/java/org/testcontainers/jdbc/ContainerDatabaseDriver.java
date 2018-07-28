@@ -126,7 +126,7 @@ public class ContainerDatabaseDriver implements Driver {
               an init script or function has been specified, use it
              */
             if (!initializedContainers.contains(container.getContainerId())) {
-                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container);
+                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container, queryString);
                 runInitScriptIfRequired(connectionUrl, databaseDelegate);
                 runInitFunctionIfRequired(connectionUrl, connection);
                 initializedContainers.add(container.getContainerId());
@@ -151,12 +151,7 @@ public class ContainerDatabaseDriver implements Driver {
 
         final boolean isDaemon = connectionUrl.isInDaemonMode();
 
-        Set<Connection> connections = containerConnections.get(container.getContainerId());
-
-        if (connections == null) {
-            connections = new HashSet<>();
-            containerConnections.put(container.getContainerId(), connections);
-        }
+        Set<Connection> connections = containerConnections.computeIfAbsent(container.getContainerId(), k -> new HashSet<>());
 
         connections.add(connection);
 

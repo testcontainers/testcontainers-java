@@ -44,14 +44,14 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, true},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false, true},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, true},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false, false},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", false, true, false, false},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false, false},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", false, false, false, false},
                 {"jdbc:tc:postgresql:9.6.8://hostname/databasename", false, false, false, false},
                 {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true, false},
                 {"jdbc:tc:mariadb://hostname/databasename", false, false, false, false},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename", false, false, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?useUnicode=yes&characterEncoding=utf8", false, true, false, false},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", false, true, false, false},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", true, false, false, false},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, false},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", false, false, true, false}});
@@ -89,6 +89,8 @@ public class JDBCDriverTest {
             //connections are created from cached containers.
             performSimpleTestWithCharacterSet(jdbcUrl);
             performSimpleTestWithCharacterSet(jdbcUrl);
+
+            performTestForCharacterEncodingForInitialScriptConnection(jdbcUrl);
         }
 
         if (performTestForCustomIniFile) {
@@ -129,6 +131,8 @@ public class JDBCDriverTest {
                 return true;
             });
 
+            assertTrue("The database returned a record as expected", result);
+
             result = new QueryRunner(dataSource).query("SELECT DATABASE()", rs -> {
                 rs.next();
                 String resultDB = rs.getString(1);
@@ -137,7 +141,19 @@ public class JDBCDriverTest {
             });
 
             assertTrue("The database returned a record as expected", result);
+        }
+    }
 
+    private void performTestForCharacterEncodingForInitialScriptConnection(String jdbcUrl) throws SQLException {
+        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
+            boolean result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%мир'", rs -> {
+                rs.next();
+                String resultSetString = rs.getString(1);
+                assertEquals("A SELECT query succeed and the correct charset has been applied for the init script", "привет мир", resultSetString);
+                return true;
+            });
+
+            assertTrue("The database returned a record as expected", result);
         }
     }
 
