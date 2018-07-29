@@ -1,5 +1,6 @@
 package org.testcontainers.utility;
 
+import lombok.Cleanup;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -109,7 +110,7 @@ public class MountableFileTest {
     public void noTrailingSlashesInTarEntryNames() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt");
 
-        final TarArchiveInputStream tais = intoTarArchive((taos) -> {
+        @Cleanup final TarArchiveInputStream tais = intoTarArchive((taos) -> {
             mountableFile.transferTo(taos, "/some/path.txt");
             mountableFile.transferTo(taos, "/path.txt");
             mountableFile.transferTo(taos, "path.txt");
@@ -122,8 +123,8 @@ public class MountableFileTest {
     }
 
     private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);
+        @Cleanup final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        @Cleanup final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);
         consumer.accept(taos);
         taos.close();
 
