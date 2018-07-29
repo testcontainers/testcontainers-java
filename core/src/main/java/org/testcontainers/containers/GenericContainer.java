@@ -247,6 +247,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerId = createCommand.exec().getId();
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
+            containerIsCreated(containerId);
+
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
             dockerClient.startContainerCmd(containerId).exec();
@@ -354,6 +356,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void configure() {
 
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsCreated(String containerId) {
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -1031,8 +1037,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException {
 
-        if (!isRunning()) {
-            throw new IllegalStateException("copyFileToContainer can only be used while the Container is running");
+        if (!isCreated()) {
+            throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
         try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(this.dockerClient
