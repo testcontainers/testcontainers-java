@@ -1,11 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## UNRELEASED
+## [1.8.2] - UNRELEASED
 
 ### Fixed
 
 - Add support for transparently using local images with docker-compose ([\#798](https://github.com/testcontainers/testcontainers-java/pull/798), fixes [\#674](https://github.com/testcontainers/testcontainers-java/issues/674))
+- Fix bug with Dockerfile image creation with Docker for Mac 18.06-ce ([\#808](https://github.com/testcontainers/testcontainers-java/pull/808), fixes [\#680](https://github.com/testcontainers/testcontainers-java/issues/680))
 
 ### Changed
 
