@@ -55,7 +55,6 @@ shadowJar {
         include(dependency('com.squareup.okhttp3:.*'))
         include(dependency('com.squareup.okio:.*'))
         include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
-        include(dependency('com.google.code.findbugs:jsr305'))
     }
 }
 
@@ -114,7 +113,6 @@ dependencies {
         // SslConfigurator doesn't use classes from dependencies
         exclude(module: '*')
     }
-    shaded 'com.google.code.findbugs:jsr305:3.0.2'
 
     testCompile 'redis.clients:jedis:2.8.0'
     testCompile 'com.rabbitmq:amqp-client:3.5.3'
