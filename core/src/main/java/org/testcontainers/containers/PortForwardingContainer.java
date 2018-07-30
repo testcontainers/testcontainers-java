@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public enum PortForwardingContainer {
@@ -25,16 +26,15 @@ public enum PortForwardingContainer {
 
     @SneakyThrows
     private Connection createSSHSession() {
+        String password = UUID.randomUUID().toString();
         container = new GenericContainer<>(TestcontainersConfiguration.getInstance().getSSHdImage())
             .withExposedPorts(22)
+            .withEnv("PASSWORD", password)
             .withCommand(
-                "/usr/sbin/sshd",
-                "-D",
-                "-o", "PermitRootLogin=yes",
-                // Disable ipv6
-                "-o", "AddressFamily=inet",
-                // Make it listen on all interfaces, not just localhost
-                "-o", "GatewayPorts=yes"
+                "sh",
+                "-c",
+                // Disable ipv6 & Make it listen on all interfaces, not just localhost
+                "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes -o AddressFamily=inet -o GatewayPorts=yes"
             );
         container.start();
 
@@ -47,7 +47,7 @@ public enum PortForwardingContainer {
             (int) Duration.ofSeconds(30).toMillis()
         );
 
-        if (!connection.authenticateWithPassword("root", "root")) {
+        if (!connection.authenticateWithPassword("root", password)) {
             throw new IllegalStateException("Authentication failed.");
         }
 
