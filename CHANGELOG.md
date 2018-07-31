@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.8.2] - UNRELEASED
+## [1.8.2] - 2018-07-31
 
 ### Fixed
 
