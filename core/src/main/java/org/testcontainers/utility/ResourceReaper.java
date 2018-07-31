@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
@@ -38,6 +39,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Objects.nonNull;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -77,18 +80,21 @@ public final class ResourceReaper {
             binds.add(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro));
         }
 
-        String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig() {
-                    @JsonProperty("AutoRemove")
-                    boolean autoRemove = true;
-                })
-                .withExposedPorts(new ExposedPort(8080))
-                .withPublishAllPorts(true)
-                .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
-                .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-                .withBinds(binds)
-                .exec()
-                .getId();
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(ryukImage)
+            .withHostConfig(new HostConfig() {
+                @JsonProperty("AutoRemove")
+                boolean autoRemove = true;
+            })
+            .withExposedPorts(new ExposedPort(8080))
+            .withPublishAllPorts(true)
+            .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
+            .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
+            .withBinds(binds);
+        String ryukClientVersion = TestcontainersConfiguration.getInstance().getRyukClientVersion();
+        if (nonNull(ryukClientVersion)) {
+            createContainerCmd.withEnv("DOCKER_API_VERSION=" + ryukClientVersion);
+        }
+        String ryukContainerId = createContainerCmd.exec().getId();
 
         client.startContainerCmd(ryukContainerId).exec();
 
