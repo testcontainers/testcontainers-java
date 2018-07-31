@@ -154,7 +154,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         synchronized (MUTEX) {
             registerContainersForShutdown();
             if (pull) {
-                pullImages();
+                try {
+                    pullImages();
+                } catch (ContainerLaunchException e) {
+                    logger().warn("Exception while pulling images, using local images if available", e);
+                }
             }
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();

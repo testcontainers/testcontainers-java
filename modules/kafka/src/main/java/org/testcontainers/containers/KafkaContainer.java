@@ -40,6 +40,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
+        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
@@ -72,8 +73,14 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         } else {
             addExposedPort(ZOOKEEPER_PORT);
             withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:2181");
-            withClasspathResourceMapping("tc-zookeeper.properties", "/zookeeper.properties", BindMode.READ_ONLY);
-            withCommand("sh", "-c", "zookeeper-server-start /zookeeper.properties & /etc/confluent/docker/run");
+            withCommand(
+                "sh",
+                "-c",
+                // Use command to create the file to avoid file mounting (useful when you run your tests against a remote Docker daemon)
+                "printf 'clientPort=2181\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties" +
+                    " && zookeeper-server-start /zookeeper.properties" +
+                    " & /etc/confluent/docker/run"
+            );
         }
 
         super.doStart();

@@ -176,6 +176,15 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withExposedPorts(Integer... ports);
 
     /**
+     * Set the file to be copied before starting a created container
+     *
+     * @param mountableFile a Mountable file with path of source file / folder on host machine
+     * @param containerPath a destination path on conatiner to which the files / folders to be copied
+     * @return this
+     */
+    SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
+
+    /**
      * Add an environment variable to be passed to the container.
      *
      * @param key   environment variable key

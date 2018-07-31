@@ -56,7 +56,7 @@ public class SimpleMariaDBTest {
     public void testMariaDBWithCustomIniFile() throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
         MariaDBContainer mariadbCustomConfig = new MariaDBContainer("mariadb:10.1.16")
-                                                .withConfigurationOverride("somepath/mariadb_conf_override");
+            .withConfigurationOverride("somepath/mariadb_conf_override");
         mariadbCustomConfig.start();
 
         try {
@@ -64,6 +64,23 @@ public class SimpleMariaDBTest {
             String result = resultSet.getString(1);
 
             assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+        } finally {
+            mariadbCustomConfig.stop();
+        }
+    }
+
+    @Test
+    public void testMariaDBWithCommandOverride() throws SQLException {
+
+        MariaDBContainer mariadbCustomConfig = (MariaDBContainer) new MariaDBContainer("mariadb:10.1.16")
+            .withCommand("mysqld --auto_increment_increment=10");
+        mariadbCustomConfig.start();
+
+        try {
+            ResultSet resultSet = performQuery(mariadbCustomConfig, "show variables like 'auto_increment_increment'");
+            String result = resultSet.getString("Value");
+
+            assertEquals("Auto increment increment should be overriden by command line", "10", result);
         } finally {
             mariadbCustomConfig.stop();
         }
