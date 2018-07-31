@@ -24,16 +24,18 @@ import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import lombok.AllArgsConstructor;
-import lombok.Cleanup;
-import lombok.Getter;
-import lombok.SneakyThrows;
+import com.github.dockerjava.core.command.ExecStartResultCallback;
+import lombok.*;
 import lombok.experimental.Wither;
 import org.apache.commons.compress.utils.Sets;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.Base58;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -41,6 +43,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -105,37 +108,79 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private String urlBase;
 
+    private GenericContainer proxy;
+
     public CouchbaseContainer() {
-        super("couchbase/server:" + VERSION);
+        this("couchbase/server:" + VERSION);
     }
 
     public CouchbaseContainer(String containerName) {
         super(containerName);
-    }
 
-    @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(8091);
+        withNetwork(Network.SHARED);
+        withNetworkAliases("couchbase-" + Base58.randomString(6));
+        setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html"));
     }
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(getLivenessCheckPort());
+        return Sets.newHashSet(getMappedPort(8091));
     }
 
     @Override
-    protected void configure() {
-        // Configurable ports
-        addExposedPorts(11210, 11207, 8091, 18091);
+    @SneakyThrows
+    protected void doStart() {
+        String networkAlias = getNetworkAliases().get(0);
+        proxy = new SocatContainer()
+            .withNetwork(getNetwork())
+            .withTarget(8091, networkAlias);
 
-        // Non configurable ports
-        addFixedExposedPort(8092, 8092);
-        addFixedExposedPort(8093, 8093);
-        addFixedExposedPort(8094, 8094);
-        addFixedExposedPort(8095, 8095);
-        addFixedExposedPort(18092, 18092);
-        addFixedExposedPort(18093, 18093);
-        setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html#/"));
+        for (Ports port : Ports.values()) {
+            proxy.addExposedPort(port.getOriginalPort());
+        }
+
+        proxy.setWaitStrategy(null);
+        proxy.start();
+
+        for (Ports port : Ports.values()) {
+            int originalPort = port.getOriginalPort();
+            int mappedPort = proxy.getMappedPort(originalPort);
+
+            ExecCreateCmdResponse createCmdResponse = dockerClient.execCreateCmd(proxy.getContainerId())
+                .withCmd("/usr/bin/socat", "TCP-LISTEN:" + originalPort + ",fork,reuseaddr", "TCP:" + networkAlias + ":" + mappedPort)
+                .exec();
+
+            dockerClient.execStartCmd(createCmdResponse.getId())
+                .exec(new ExecStartResultCallback());
+
+            withEnv(port.getEnvVarName(), mappedPort + "");
+        }
+        super.doStart();
+    }
+
+    @Override
+    public List<Integer> getExposedPorts() {
+        return proxy.getExposedPorts();
+    }
+
+    @Override
+    public String getContainerIpAddress() {
+        return proxy.getContainerIpAddress();
+    }
+
+    @Override
+    public Integer getMappedPort(int originalPort) {
+        return proxy.getMappedPort(originalPort);
+    }
+
+    @Override
+    public List<Integer> getBoundPortNumbers() {
+        return proxy.getBoundPortNumbers();
+    }
+
+    @Override
+    public void stop() {
+        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
     }
 
     public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
@@ -268,9 +313,21 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         initCluster();
         return DefaultCouchbaseEnvironment.builder()
             .bootstrapCarrierDirectPort(getMappedPort(11210))
-            .bootstrapCarrierSslPort(getMappedPort(11207))
             .bootstrapHttpDirectPort(getMappedPort(8091))
-            .bootstrapHttpSslPort(getMappedPort(18091))
             .build();
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    protected enum Ports {
+        CAPI("CAPI_PORT", 8092),
+        QUERY("QUERY_PORT", 8093),
+        FTS("FTS_HTTP_PORT", 8094),
+        MEMCACHED("MEMCACHED_PORT", 11210),
+        ;
+
+        final String envVarName;
+
+        final int originalPort;
     }
 }
