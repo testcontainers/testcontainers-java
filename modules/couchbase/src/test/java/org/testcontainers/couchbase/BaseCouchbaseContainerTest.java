@@ -34,12 +34,4 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
         Assert.assertEquals(1, n1qlQueryRows.size());
         Assert.assertEquals(DOCUMENT, n1qlQueryRows.get(0).value().get(TEST_BUCKET).toString());
     }
-
-    @Test
-    public void shouldUseCorrectDockerImage() {
-        CouchbaseContainer couchbaseContainer = new CouchbaseContainer().withBeerSample(true);
-
-        Assert.assertEquals(CouchbaseContainer.DOCKER_IMAGE_NAME + CouchbaseContainer.VERSION,
-                            couchbaseContainer.getDockerImageName());
-    }
 }
