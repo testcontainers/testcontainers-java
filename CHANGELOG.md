@@ -5,7 +5,21 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed `with*` methods of `CouchbaseContainer` ([\#810](https://github.com/testcontainers/testcontainers-java/pull/810))
+
 ### Changed
+
+## [1.8.2] - 2018-07-31
+
+### Fixed
+
+- Add support for transparently using local images with docker-compose ([\#798](https://github.com/testcontainers/testcontainers-java/pull/798), fixes [\#674](https://github.com/testcontainers/testcontainers-java/issues/674))
+- Fix bug with Dockerfile image creation with Docker for Mac 18.06-ce ([\#808](https://github.com/testcontainers/testcontainers-java/pull/808), fixes [\#680](https://github.com/testcontainers/testcontainers-java/issues/680))
+
+### Changed
+
+- Update Visible Assertions to 2.1.1 ([\#779](https://github.com/testcontainers/testcontainers-java/pull/779)).
+- KafkaContainer optimization (`group.initial.rebalance.delay.ms=0`) ([\#782](https://github.com/testcontainers/testcontainers-java/pull/782)).
 
 ## [1.8.1] - 2018-07-10
 

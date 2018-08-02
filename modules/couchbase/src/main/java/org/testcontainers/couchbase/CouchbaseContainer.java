@@ -29,7 +29,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.collect.Lists;
 import lombok.*;
-import lombok.experimental.Wither;
 import org.apache.commons.compress.utils.Sets;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
@@ -65,49 +64,38 @@ import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.*;
 public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     public static final String VERSION = "5.1.0";
+    public static final String DOCKER_IMAGE_NAME = "couchbase/server:";
     public static final ObjectMapper MAPPER = new ObjectMapper();
     public static final String STATIC_CONFIG_NAME = "static_config";
     public static final String STATIC_CONFIG_PATH = "/opt/couchbase/etc/couchbase/";
     public static final String STATIC_CONFIG_LOCATION = STATIC_CONFIG_PATH + STATIC_CONFIG_NAME;
 
-    @Wither
     private String memoryQuota = "300";
 
-    @Wither
     private String indexMemoryQuota = "300";
 
-    @Wither
     private String clusterUsername = "Administrator";
 
-    @Wither
     private String clusterPassword = "password";
 
-    @Wither
     private boolean keyValue = true;
 
     @Getter
-    @Wither
     private boolean query = true;
 
     @Getter
-    @Wither
     private boolean index = true;
 
     @Getter
-    @Wither
     private boolean primaryIndex = true;
 
     @Getter
-    @Wither
     private boolean fts = false;
 
-    @Wither
     private boolean beerSample = false;
 
-    @Wither
     private boolean travelSample = false;
 
-    @Wither
     private boolean gamesIMSample = false;
 
     @Getter(lazy = true)
@@ -123,7 +111,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private SocatContainer proxy;
 
     public CouchbaseContainer() {
-        this("couchbase/server:" + VERSION);
+        this(DOCKER_IMAGE_NAME + VERSION);
     }
 
     public CouchbaseContainer(String containerName) {
@@ -387,6 +375,61 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             .bootstrapHttpDirectPort(getMappedPort(REST))
             .bootstrapHttpSslPort(getMappedPort(REST_SSL))
             .build();
+    }
+
+    public CouchbaseContainer withMemoryQuota(String memoryQuota) {
+        this.memoryQuota = memoryQuota;
+        return self();
+    }
+
+    public CouchbaseContainer withIndexMemoryQuota(String indexMemoryQuota) {
+        this.indexMemoryQuota = indexMemoryQuota;
+        return self();
+    }
+
+    public CouchbaseContainer withClusterPassword(String clusterPassword) {
+        this.clusterPassword = clusterPassword;
+        return self();
+    }
+
+    public CouchbaseContainer withKeyValue(boolean keyValue) {
+        this.keyValue = keyValue;
+        return self();
+    }
+
+    public CouchbaseContainer withQuery(boolean query) {
+        this.query = query;
+        return self();
+    }
+
+    public CouchbaseContainer withIndex(boolean index) {
+        this.index = index;
+        return self();
+    }
+
+    public CouchbaseContainer withPrimaryIndex(boolean primaryIndex) {
+        this.primaryIndex = primaryIndex;
+        return self();
+    }
+
+    public CouchbaseContainer withFts(boolean fts) {
+        this.fts = fts;
+        return self();
+    }
+
+    public CouchbaseContainer withBeerSample(boolean beerSample) {
+        this.beerSample = beerSample;
+        return self();
+    }
+
+    public CouchbaseContainer withTravelSample(boolean travelSample) {
+        this.travelSample = travelSample;
+        return self();
+    }
+
+    public CouchbaseContainer withGamesIMSample(boolean gamesIMSample) {
+        this.gamesIMSample = gamesIMSample;
+        return self();
     }
 
     @Getter
