@@ -53,7 +53,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.*;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.CAPI;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED_SSL;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST_SSL;
 
 /**
  * Based on Laurent Doguin version,
@@ -137,7 +141,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
 
             // CAPI port has a special configuration file which is set via env
-            if (port == CouchbasePort.CAPI) {
+            if (port == CAPI) {
                 withEnv(port.getName(), getMappedPort(port) + "");
             }
         }
@@ -370,6 +374,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private DefaultCouchbaseEnvironment createCouchbaseEnvironment() {
         initCluster();
         return DefaultCouchbaseEnvironment.builder()
+            .kvTimeout(10000)
             .bootstrapCarrierDirectPort(getMappedPort(MEMCACHED))
             .bootstrapCarrierSslPort(getMappedPort(MEMCACHED_SSL))
             .bootstrapHttpDirectPort(getMappedPort(REST))
