@@ -4,20 +4,22 @@ import com.couchbase.client.java.document.RawJsonDocument;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
-/**
- * @author ctayeb
- *         created on 18/06/2017
- */
-public class CouchbaseContainerTest extends AbstractCouchbaseTest {
+public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
 
     private static final String ID = "toto";
 
     private static final String DOCUMENT = "{\"name\":\"toto\"}";
+
+    @AfterClass
+    public static void tearDown() {
+        tearDownContext();
+    }
 
     @Test
     public void shouldInsertDocument() {

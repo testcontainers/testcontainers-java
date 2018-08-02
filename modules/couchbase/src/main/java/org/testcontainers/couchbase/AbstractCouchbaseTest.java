@@ -7,11 +7,10 @@ import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.query.N1qlParams;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.consistency.ScanConsistency;
-import lombok.Getter;
 import org.junit.After;
 
 /**
- * @author ctayeb
+ * Basic class that can be used for couchbase tests. It will clear the database after every test.
  */
 public abstract class AbstractCouchbaseTest {
 
@@ -19,11 +18,28 @@ public abstract class AbstractCouchbaseTest {
 
     public static final String DEFAULT_PASSWORD = "password";
 
-    @Getter(lazy = true)
-    private final static CouchbaseContainer couchbaseContainer = initCouchbaseContainer();
+    /**
+     * You can overwrite this in subclasses of this test to change the image.
+     * This is necessary to be able to reuse the couchbaseContainer.
+     */
+    protected static String imageName = "couchbase/server:5.1.0";
 
-    @Getter(lazy = true)
-    private final static Bucket bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
+    private static CouchbaseContainer couchbaseContainer;
+
+    private static Bucket bucket;
+
+    protected synchronized static void tearDownContext() {
+        if (bucket != null) {
+            bucket.close();
+            bucket = null;
+        }
+        if (couchbaseContainer != null) {
+            couchbaseContainer.getCouchbaseCluster().disconnect();
+            couchbaseContainer.getCouchbaseEnvironment().shutdown();
+            couchbaseContainer.stop();
+            couchbaseContainer = null;
+        }
+    }
 
     @After
     public void clear() {
@@ -36,18 +52,32 @@ public abstract class AbstractCouchbaseTest {
         }
     }
 
+    protected static synchronized CouchbaseContainer getCouchbaseContainer() {
+        if (couchbaseContainer == null) {
+            couchbaseContainer = initCouchbaseContainer();
+        }
+        return couchbaseContainer;
+    }
+
     private static CouchbaseContainer initCouchbaseContainer() {
-        CouchbaseContainer couchbaseContainer = new CouchbaseContainer()
-            .withNewBucket(DefaultBucketSettings.builder()
-                .enableFlush(true)
-                .name(TEST_BUCKET)
-                .password(DEFAULT_PASSWORD)
-                .quota(100)
-                .replicas(0)
-                .type(BucketType.COUCHBASE)
-                .build());
+        CouchbaseContainer couchbaseContainer = (imageName == null) ? new CouchbaseContainer() : new CouchbaseContainer(imageName);
+        couchbaseContainer.withNewBucket(DefaultBucketSettings.builder()
+            .enableFlush(true)
+            .name(TEST_BUCKET)
+            .password(DEFAULT_PASSWORD)
+            .quota(100)
+            .replicas(0)
+            .type(BucketType.COUCHBASE)
+            .build());
         couchbaseContainer.start();
         return couchbaseContainer;
+    }
+
+    protected static synchronized Bucket getBucket() {
+        if (bucket == null) {
+            bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
+        }
+        return bucket;
     }
 
     private static Bucket openBucket(String bucketName, String password) {

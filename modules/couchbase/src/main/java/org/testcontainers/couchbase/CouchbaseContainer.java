@@ -190,7 +190,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     protected Integer getMappedPort(CouchbasePort port) {
-        return getMappedPort(port.originalPort);
+        return getMappedPort(port.getOriginalPort());
     }
 
     @Override
