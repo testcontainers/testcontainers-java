@@ -18,28 +18,7 @@ public abstract class AbstractCouchbaseTest {
 
     public static final String DEFAULT_PASSWORD = "password";
 
-    /**
-     * You can overwrite this in subclasses of this test to change the image.
-     * This is necessary to be able to reuse the couchbaseContainer.
-     */
-    protected static String imageName = "couchbase/server:5.1.0";
-
-    private static CouchbaseContainer couchbaseContainer;
-
-    private static Bucket bucket;
-
-    protected synchronized static void tearDownContext() {
-        if (bucket != null) {
-            bucket.close();
-            bucket = null;
-        }
-        if (couchbaseContainer != null) {
-            couchbaseContainer.getCouchbaseCluster().disconnect();
-            couchbaseContainer.getCouchbaseEnvironment().shutdown();
-            couchbaseContainer.stop();
-            couchbaseContainer = null;
-        }
-    }
+    private Bucket bucket;
 
     @After
     public void clear() {
@@ -52,14 +31,9 @@ public abstract class AbstractCouchbaseTest {
         }
     }
 
-    protected static synchronized CouchbaseContainer getCouchbaseContainer() {
-        if (couchbaseContainer == null) {
-            couchbaseContainer = initCouchbaseContainer();
-        }
-        return couchbaseContainer;
-    }
+    protected abstract CouchbaseContainer getCouchbaseContainer();
 
-    private static CouchbaseContainer initCouchbaseContainer() {
+    protected static CouchbaseContainer initCouchbaseContainer(String imageName) {
         CouchbaseContainer couchbaseContainer = (imageName == null) ? new CouchbaseContainer() : new CouchbaseContainer(imageName);
         couchbaseContainer.withNewBucket(DefaultBucketSettings.builder()
             .enableFlush(true)
@@ -73,17 +47,15 @@ public abstract class AbstractCouchbaseTest {
         return couchbaseContainer;
     }
 
-    protected static synchronized Bucket getBucket() {
+    protected synchronized Bucket getBucket() {
         if (bucket == null) {
             bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
         }
         return bucket;
     }
 
-    private static Bucket openBucket(String bucketName, String password) {
+    private Bucket openBucket(String bucketName, String password) {
         CouchbaseCluster cluster = getCouchbaseContainer().getCouchbaseCluster();
-        Bucket bucket = cluster.openBucket(bucketName, password);
-        Runtime.getRuntime().addShutdownHook(new Thread(bucket::close));
-        return bucket;
+        return cluster.openBucket(bucketName, password);
     }
 }

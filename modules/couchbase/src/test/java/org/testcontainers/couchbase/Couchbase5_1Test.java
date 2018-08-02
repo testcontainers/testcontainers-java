@@ -1,7 +1,13 @@
 package org.testcontainers.couchbase;
 
+import org.junit.ClassRule;
+
 public class Couchbase5_1Test extends BaseCouchbaseContainerTest {
-    static {
-        imageName = "couchbase/server:5.1.0";
+    @ClassRule
+    public static CouchbaseContainer container = initCouchbaseContainer("couchbase/server:5.1.0");
+
+    @Override
+    public CouchbaseContainer getCouchbaseContainer() {
+        return container;
     }
 }

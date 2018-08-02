@@ -47,12 +47,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.*;
 
 /**
  * Based on Laurent Doguin version,
@@ -118,7 +120,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private String urlBase;
 
-    private GenericContainer proxy;
+    private SocatContainer proxy;
 
     public CouchbaseContainer() {
         this("couchbase/server:" + VERSION);
@@ -141,17 +143,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @SneakyThrows
     protected void doStart() {
         String networkAlias = getNetworkAliases().get(0);
-        proxy = new SocatContainer()
-            .withNetwork(getNetwork())
-            // a (random and unused) target port is needed so that the container starts and stays active
-            .withTarget(4711, networkAlias);
-
-        for (CouchbasePort port : CouchbasePort.values()) {
-            proxy.addExposedPort(port.getOriginalPort());
-        }
-
-        proxy.setWaitStrategy(null);
-        proxy.start();
+        startProxy(networkAlias);
 
         for (CouchbasePort port : CouchbasePort.values()) {
             exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
@@ -162,6 +154,20 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             }
         }
         super.doStart();
+    }
+
+    private void startProxy(String networkAlias) {
+        proxy = new SocatContainer().withNetwork(getNetwork());
+
+        for (CouchbasePort port : CouchbasePort.values()) {
+            if (port.isBootstrap()) {
+                proxy.withTarget(port.getOriginalPort(), networkAlias);
+            } else {
+                proxy.addExposedPort(port.getOriginalPort());
+            }
+        }
+        proxy.setWaitStrategy(null);
+        proxy.start();
     }
 
     private void exposePortThroughProxy(String networkAlias, int originalPort, int mappedPort) {
@@ -200,7 +206,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     public void stop() {
-        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
+        Stream.<Runnable>of(super::stop, proxy::stop, this::stopCluster).parallel().forEach(Runnable::run);
+    }
+
+    private void stopCluster() {
+        getCouchbaseCluster().disconnect();
+        getCouchbaseEnvironment().shutdown();
     }
 
     public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
@@ -348,8 +359,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private void appendPortsToConfig(File tempFile) throws IOException {
         for(CouchbasePort port: CouchbasePort.values()) {
-            String config = String.format("{%s, %d}.\n", port.name, getMappedPort(port));
-            FileUtils.writeStringToFile(tempFile, config, "UTF-8", true);
+            if (! port.isBootstrap()) {
+                String config = String.format("{%s, %d}.\n", port.name, getMappedPort(port));
+                FileUtils.writeStringToFile(tempFile, config, "UTF-8", true);
+            }
         }
     }
 
@@ -370,30 +383,35 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         initCluster();
         return DefaultCouchbaseEnvironment.builder()
             .bootstrapCarrierDirectPort(getMappedPort(MEMCACHED))
+            .bootstrapCarrierSslPort(getMappedPort(MEMCACHED_SSL))
             .bootstrapHttpDirectPort(getMappedPort(REST))
+            .bootstrapHttpSslPort(getMappedPort(REST_SSL))
             .build();
     }
 
     @Getter
     @RequiredArgsConstructor
     protected enum CouchbasePort {
-        REST("rest_port", 8091),
-        CAPI("capi_port", 8092),
-        QUERY("query_port", 8093),
-        FTS("fts_http_port", 8094),
-        CBAS("cbas_http_port", 8095),
-        EVENTING("eventing_http_port", 8096),
-        MEMCACHED("memcached_port", 11210),
-        REST_SSL("ssl_rest_port", 18091),
-        CAPI_SSL("ssl_capi_port", 18092),
-        QUERY_SSL("ssl_query_port", 18093),
-        FTS_SSL("fts_ssl_port", 18094),
-        CBAS_SSL("cbas_ssl_port", 18095),
-        EVENTING_SSL("eventing_ssl_port", 18096),
+        REST("rest_port", 8091, true),
+        CAPI("capi_port", 8092, false),
+        QUERY("query_port", 8093, false),
+        FTS("fts_http_port", 8094, false),
+        CBAS("cbas_http_port", 8095, false),
+        EVENTING("eventing_http_port", 8096, false),
+        MEMCACHED_SSL("memcached_ssl_port", 11207, false),
+        MEMCACHED("memcached_port", 11210, false),
+        REST_SSL("ssl_rest_port", 18091, true),
+        CAPI_SSL("ssl_capi_port", 18092, false),
+        QUERY_SSL("ssl_query_port", 18093, false),
+        FTS_SSL("fts_ssl_port", 18094, false),
+        CBAS_SSL("cbas_ssl_port", 18095, false),
+        EVENTING_SSL("eventing_ssl_port", 18096, false),
         ;
 
         final String name;
 
         final int originalPort;
+
+        final boolean isBootstrap;
     }
 }
