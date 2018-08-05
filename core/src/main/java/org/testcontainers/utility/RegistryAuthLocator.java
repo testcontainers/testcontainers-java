@@ -22,6 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class RegistryAuthLocator {
 
     private static final Logger log = getLogger(RegistryAuthLocator.class);
+    private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
 
     private final AuthConfig defaultAuthConfig;
     private final File configFile;
@@ -80,21 +81,26 @@ public class RegistryAuthLocator {
         try {
             final JsonNode config = OBJECT_MAPPER.readTree(configFile);
             final String reposName = dockerImageName.getRegistry();
+            log.debug("reposName [{}] for dockerImageName [{}]", reposName, dockerImageName);
 
             final AuthConfig existingAuthConfig = findExistingAuthConfig(config, reposName);
             if (existingAuthConfig != null) {
+                log.debug("found existing auth config [{}]", existingAuthConfig);
                 return existingAuthConfig;
             }
             // auths is empty, using helper:
             final AuthConfig helperAuthConfig = authConfigUsingHelper(config, reposName);
             if (helperAuthConfig != null) {
+                log.debug("found helper auth config [{}]", helperAuthConfig);
                 return helperAuthConfig;
             }
             // no credsHelper to use, using credsStore:
             final AuthConfig storeAuthConfig = authConfigUsingStore(config, reposName);
             if (storeAuthConfig != null) {
+                log.debug("found creds store auth config [{}]", storeAuthConfig);
                 return storeAuthConfig;
             }
+            log.info("no matching Auth Configs - falling back to defaultAuthConfig [{}]", defaultAuthConfig);
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
             log.error("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. " +
@@ -107,7 +113,16 @@ public class RegistryAuthLocator {
     }
 
     private AuthConfig findExistingAuthConfig(final JsonNode config, final String reposName) throws Exception {
-        final Map.Entry<String, JsonNode> entry = findAuthNode(config, reposName);
+
+        final Map.Entry<String, JsonNode> entry;
+        if (reposName.isEmpty()) {
+            log.debug("no reposName, so using default registry name {}", DEFAULT_REGISTRY_NAME);
+            entry = findAuthNode(config, DEFAULT_REGISTRY_NAME);
+            log.debug("found auth node {}", entry);
+        } else {
+            entry = findAuthNode(config, reposName);
+        }
+
         if (entry != null && entry.getValue() != null && entry.getValue().size() > 0) {
             return OBJECT_MAPPER
                 .treeToValue(entry.getValue(), AuthConfig.class)
@@ -143,7 +158,7 @@ public class RegistryAuthLocator {
             final Iterator<Map.Entry<String, JsonNode>> fields = auths.fields();
             while (fields.hasNext()) {
                 final Map.Entry<String, JsonNode> entry = fields.next();
-                if (entry.getKey().endsWith("://" + reposName)) {
+                if (entry.getKey().contains("://" + reposName + "/")) {
                     return entry;
                 }
             }

@@ -97,6 +97,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 try {
                     final RegistryAuthLocator authLocator = new RegistryAuthLocator(dockerClient.authConfig());
                     final AuthConfig effectiveAuthConfig = authLocator.lookupAuthConfig(imageName);
+                    logger.debug("effective auth config [{}]", effectiveAuthConfig);
 
                     final PullImageResultCallback callback = new PullImageResultCallback();
                     dockerClient
