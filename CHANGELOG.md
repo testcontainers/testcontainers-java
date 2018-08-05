@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Fixed `with*` methods of `CouchbaseContainer` ([\#810](https://github.com/testcontainers/testcontainers-java/pull/810))
-
 ### Changed
+
+
+## [1.8.3] - 2018-08-05
+
+### Fixed
+
+- Fixed `with*` methods of `CouchbaseContainer` ([\#810](https://github.com/testcontainers/testcontainers-java/pull/810))
+- Fix problem with gzip encoded streams (e.g. copy file from container), by adding decompression support to netty exec factory (#817, fixes #681, relates to docker-java/docker-java#1079)
 
 ## [1.8.2] - 2018-07-31
 
