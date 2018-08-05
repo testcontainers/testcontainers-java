@@ -152,7 +152,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         proxy = new SocatContainer().withNetwork(getNetwork());
 
         for (CouchbasePort port : CouchbasePort.values()) {
-            if (port.isBootstrap()) {
+            if (port.isDynamic()) {
                 proxy.withTarget(port.getOriginalPort(), networkAlias);
             } else {
                 proxy.addExposedPort(port.getOriginalPort());
@@ -350,8 +350,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     private void appendPortsToConfig(File tempFile) throws IOException {
-        for(CouchbasePort port: CouchbasePort.values()) {
-            if (! port.isBootstrap()) {
+        for (CouchbasePort port : CouchbasePort.values()) {
+            if (!port.isDynamic()) {
                 String config = String.format("{%s, %d}.\n", port.name, getMappedPort(port));
                 FileUtils.writeStringToFile(tempFile, config, "UTF-8", true);
             }
@@ -460,6 +460,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         final int originalPort;
 
-        final boolean isBootstrap;
+        final boolean dynamic;
     }
 }
