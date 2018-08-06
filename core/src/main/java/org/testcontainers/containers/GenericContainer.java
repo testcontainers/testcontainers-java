@@ -18,6 +18,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -71,6 +72,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
+import static org.testcontainers.utility.DockerUtils.isContainerNameEqual;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -168,6 +170,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
 
+    @Setter(AccessLevel.NONE)
+    private ContainerStrategyType strategyType = ContainerStrategyType.DISPOSABLE;
+
+    @Setter(AccessLevel.NONE)
+    private boolean isReusingEnabledWhenReusable = false;
+
     /**
      * The approach to determine if the container is ready.
      */
@@ -237,19 +245,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void tryStart(Profiler profiler) {
         try {
             String dockerImageName = image.get();
-            logger().debug("Starting container: {}", dockerImageName);
 
-            logger().info("Creating container for image: {}", dockerImageName);
-            profiler.start("Create container");
-            CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
-            applyConfiguration(createCommand);
-
-            containerId = createCommand.exec().getId();
-            copyToFileContainerPathMap.forEach(this::copyFileToContainer);
-
-            logger().info("Starting container with ID: {}", containerId);
-            profiler.start("Start container");
-            dockerClient.startContainerCmd(containerId).exec();
+            if (isReusingEnabledWhenReusable) {
+                tryUseReusableContainer(profiler, dockerImageName);
+            } else {
+                tryStartDisposableContainer(profiler, dockerImageName);
+            }
 
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
@@ -298,6 +299,53 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } finally {
             profiler.stop();
         }
+    }
+
+    /**
+     * Try using reusable container with current container name
+     */
+    private void tryUseReusableContainer(Profiler profiler, String dockerImageName) {
+        logger().debug("Using reusable container: {} with name: {}", dockerImageName, containerName);
+
+        if (StringUtils.isBlank(containerName)) {
+            logger().error("Container name cannot be blank when using REUSABLE strategy");
+            throw new ContainerLaunchException("Blank container name");
+        }
+
+        // find container with the specified name or create new one if none found
+        InspectContainerResponse createdContainer = dockerClient.listContainersCmd()
+            .withNameFilter(Collections.singletonList(containerName))
+            .withShowAll(true)
+            .exec()
+            .stream()
+            .filter(container -> isContainerNameEqual(container, containerName))
+            .map(container -> dockerClient.inspectContainerCmd(container.getId()).exec())
+            .findFirst()
+            .orElseGet(() -> createContainer(profiler, dockerImageName));
+
+        // check that found image is using exactly the same image
+        String createdContainerImage = createdContainer.getConfig().getImage();
+        if (!dockerImageName.equals(createdContainerImage)) {
+            logger().error("Found existing container with name {} has unexpected image {}",
+                createdContainer.getName(), createdContainerImage);
+            throw new ContainerLaunchException("Unexpected image");
+        }
+
+        containerId = createdContainer.getId();
+
+        // if container is stopped then start it
+        Boolean isRunning = createdContainer.getState().getRunning();
+        if (Boolean.FALSE.equals(isRunning)) {
+            startContainer(profiler);
+        }
+    }
+
+    private void tryStartDisposableContainer(Profiler profiler, String dockerImageName) {
+        logger().debug("Starting container: {}", dockerImageName);
+
+        createContainer(profiler, dockerImageName);
+
+        startContainer(profiler);
     }
 
     /**
@@ -403,7 +451,28 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return this.getLivenessCheckPorts();
     }
 
+    private InspectContainerResponse createContainer(Profiler profiler, String dockerImageName) {
+        logger().info("Creating container for image: {}", dockerImageName);
+        profiler.start("Create container");
+
+        CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
+        applyConfiguration(createCommand);
+
+        containerId = createCommand.exec().getId();
+        copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+
+        return dockerClient.inspectContainerCmd(containerId).exec();
+    }
+
     private void applyConfiguration(CreateContainerCmd createCommand) {
+        /*in reusable mode container should only start with specified name -
+        to prevent uncontrolled creation of unnamed containers*/
+        if (isReusingEnabledWhenReusable) {
+            if (StringUtils.isBlank(containerName)) {
+                throw new ContainerLaunchException("Container name must be specified when using REUSABLE strategy");
+            }
+            createCommand.withName(containerName);
+        }
 
         // Set up exposed ports (where there are no host port bindings defined)
         ExposedPort[] portArray = exposedPorts.stream()
@@ -499,9 +568,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (createCommand.getLabels() != null) {
             combinedLabels.putAll(createCommand.getLabels());
         }
-        combinedLabels.putAll(DockerClientFactory.DEFAULT_LABELS);
+
+        if (isReusingEnabledWhenReusable) {
+            combinedLabels.putAll(DockerClientFactory.REUSABLE_LABELS);
+        } else {
+            combinedLabels.putAll(DockerClientFactory.DEFAULT_LABELS);
+        }
 
         createCommand.withLabels(combinedLabels);
+    }
+
+    private void startContainer(Profiler profiler) {
+        logger().info("Starting container with ID: {}", containerId);
+        profiler.start("Start container");
+        dockerClient.startContainerCmd(containerId).exec();
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
@@ -1070,6 +1150,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
         createContainerCmdModifiers.add(modifier);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withReuseExistingContainerStrategy(ReusableContainerConfiguration configuration) {
+        containerName = configuration.getContainerName();
+        strategyType = ContainerStrategyType.REUSABLE;
+        isReusingEnabledWhenReusable =
+            TestcontainersConfiguration.getInstance().isReusingEnabledWhenReusable() // check global configuration
+            && configuration.isEnabled(); // check container configuration
         return self();
     }
 
