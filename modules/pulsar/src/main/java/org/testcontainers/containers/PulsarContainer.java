@@ -11,7 +11,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     public static final int PULSAR_PORT = 6850;
 
     public PulsarContainer() {
-        this("2.0.1-incubating");
+        this("2.1.0-incubating");
     }
 
     public PulsarContainer(String pulsarVersion) {
