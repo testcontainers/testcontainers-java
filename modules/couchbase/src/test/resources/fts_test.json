@@ -1,0 +1,35 @@
+{
+    "name": "fts_test",
+    "type": "fulltext-index",
+    "params": {
+        "mapping": {
+            "default_mapping": {
+                "enabled": true,
+                "dynamic": true
+            },
+            "default_type": "_default",
+            "default_analyzer": "standard",
+            "default_datetime_parser": "dateTimeOptional",
+            "default_field": "_all",
+            "store_dynamic": false,
+            "index_dynamic": true
+        },
+        "store": {
+            "kvStoreName": "mossStore"
+        },
+        "doc_config": {
+            "mode": "type_field",
+            "type_field": "type",
+            "docid_prefix_delim": "",
+            "docid_regexp": null
+        }
+    },
+    "sourceType": "couchbase",
+    "sourceName": "test",
+    "sourceParams": {},
+    "planParams": {
+        "maxPartitionsPerPIndex": 171,
+        "numReplicas": 0
+    },
+    "uuid": ""
+}

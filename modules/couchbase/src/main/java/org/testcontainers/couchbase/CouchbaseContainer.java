@@ -46,6 +46,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -113,6 +115,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private String urlBase;
 
     private SocatContainer proxy;
+
+    private String ftsName;
 
     public CouchbaseContainer() {
         this(DOCKER_IMAGE_NAME + VERSION);
@@ -314,14 +318,36 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         );
     }
 
+    private void createFullTextIndex() {
+        String urlBaseFts = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(8094));
+        String fullTextIndexURL = urlBaseFts + "/api/index/" + ftsName;
+        StringBuilder fullTextIndex = new StringBuilder();
+        try {
+            Path path = Paths.get(CouchbaseContainer.class.getClassLoader()
+                .getResource(ftsName + ".json").toURI());
+            Stream<String> lines = Files.lines(path);
+            lines.forEach(line -> fullTextIndex.append(line));
+            lines.close();
+
+            callCouchbaseRestAPI(fullTextIndexURL, fullTextIndex.toString(),
+                "PUT", "application/json");
+        } catch (Exception e) {
+            logger().error("Could not create fullTextIndex", e);
+        }
+
+    }
+
     public void callCouchbaseRestAPI(String url, String payload) throws IOException {
         String fullUrl = urlBase + url;
+        callCouchbaseRestAPI(fullUrl, payload, "POST", "application/x-www-form-urlencoded");
+    }
+
+    public void callCouchbaseRestAPI(String fullUrl, String payload, String requestMethod, String contentType) throws IOException {
         @Cleanup("disconnect")
         HttpURLConnection httpConnection = (HttpURLConnection) ((new URL(fullUrl).openConnection()));
         httpConnection.setDoOutput(true);
-        httpConnection.setRequestMethod("POST");
-        httpConnection.setRequestProperty("Content-Type",
-            "application/x-www-form-urlencoded");
+        httpConnection.setRequestMethod(requestMethod);
+        httpConnection.setRequestProperty("Content-Type", contentType);
         String encoded = Base64.encode((clusterUsername + ":" + clusterPassword).getBytes("UTF-8"));
         httpConnection.setRequestProperty("Authorization", "Basic " + encoded);
         @Cleanup
@@ -364,6 +390,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             for (BucketSettings bucketSetting : newBuckets) {
                 createBucket(bucketSetting, primaryIndex);
             }
+        }
+        if (fts && ftsName != null && !ftsName.isEmpty()) {
+            createFullTextIndex();
         }
     }
 
@@ -422,6 +451,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return self();
     }
 
+    public CouchbaseContainer withNewFts(String newFts) {
+        this.fts = true;
+        this.ftsName = newFts;
+        return self();
+    }
+
     public CouchbaseContainer withBeerSample(boolean beerSample) {
         this.beerSample = beerSample;
         return self();
@@ -453,8 +488,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         QUERY_SSL("ssl_query_port", 18093, false),
         FTS_SSL("fts_ssl_port", 18094, false),
         CBAS_SSL("cbas_ssl_port", 18095, false),
-        EVENTING_SSL("eventing_ssl_port", 18096, false),
-        ;
+        EVENTING_SSL("eventing_ssl_port", 18096, false);
 
         final String name;
 
