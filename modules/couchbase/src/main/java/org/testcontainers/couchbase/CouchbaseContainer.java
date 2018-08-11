@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.CAPI;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.FTS;
 import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED;
 import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED_SSL;
 import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST;
@@ -319,7 +320,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     private void createFullTextIndex() {
-        String urlBaseFts = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(8094));
+        String urlBaseFts = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(FTS));
         String fullTextIndexURL = urlBaseFts + "/api/index/" + ftsName;
         StringBuilder fullTextIndex = new StringBuilder();
         try {
