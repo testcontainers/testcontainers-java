@@ -1081,6 +1081,33 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    @Override
+    @SneakyThrows(IOException.class)
+    public void copyFileToContainer(Transferable transferable, String containerPath) {
+        if (!isCreated()) {
+            throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
+        }
+
+        try (
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
+        ) {
+            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+
+            File containerPathFile = new File(containerPath);
+            String remotePath = containerPathFile.getParent();
+            String destination = containerPathFile.getName();
+            transferable.transferTo(tarArchive, destination);
+            tarArchive.finish();
+
+            dockerClient
+                .copyArchiveToContainerCmd(containerId)
+                .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
+                .withRemotePath(remotePath)
+                .exec();
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
