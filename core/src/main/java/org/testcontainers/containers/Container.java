@@ -9,10 +9,13 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ThrowingFunction;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
@@ -429,14 +432,23 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      *
-     * Copies a file which resides inside the classpath to the container.
+     * Copies a file or directory to the container.
      *
-     * @param mountableLocalFile file which is copied into the container
+     * @param mountableFile file or directory which is copied into the container
      * @param containerPath destination path inside the container
      * @throws IOException if there's an issue communicating with Docker
      * @throws InterruptedException if the thread waiting for the response is interrupted
      */
-    void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) throws IOException, InterruptedException;
+    void copyFileToContainer(MountableFile mountableFile, String containerPath) throws IOException, InterruptedException;
+
+    /**
+     *
+     * Copies a file to the container.
+     *
+     * @param transferable file which is copied into the container
+     * @param containerPath destination path inside the container
+     */
+    void copyFileToContainer(Transferable transferable, String containerPath);
 
     /**
      * Copies a file which resides inside the container to user defined directory
@@ -447,6 +459,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @throws InterruptedException if the thread waiting for the response is interrupted
      */
     void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
+
+    /**
+     * Copies a file which resides inside the container to user defined directory
+     *
+     * @param containerPath path to file which is copied from container
+     * @param function function that takes InputStream of the copied file
+     */
+    <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function);
 
     List<String> getPortBindings();
 
