@@ -1024,39 +1024,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    @SneakyThrows(IOException.class)
     public void copyFileToContainer(MountableFile mountableFile, String containerPath) {
-        if (!isCreated()) {
-            throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
-        }
+        File sourceFile = new File(mountableFile.getFilesystemPath());
 
-        try (
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
-        ) {
-            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-
-            File sourceFile = new File(mountableFile.getFilesystemPath());
-
-            final String destination;
-            String remotePath;
-            if (containerPath.endsWith("/") && sourceFile.isFile()) {
-                logger().warn("folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path");
-                remotePath = containerPath;
-                destination = sourceFile.getName();
-            } else {
-                File containerPathFile = new File(containerPath);
-                remotePath = containerPathFile.getParent();
-                destination = containerPathFile.getName();
-            }
-            mountableFile.transferTo(tarArchive, destination);
-            tarArchive.finish();
-
-            dockerClient
-                .copyArchiveToContainerCmd(containerId)
-                .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath(remotePath)
-                .exec();
+        if (containerPath.endsWith("/") && sourceFile.isFile()) {
+            logger().warn("folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path");
+            copyFileToContainer((Transferable) mountableFile, containerPath + sourceFile.getName());
+        } else {
+            copyFileToContainer((Transferable) mountableFile, containerPath);
         }
     }
 
