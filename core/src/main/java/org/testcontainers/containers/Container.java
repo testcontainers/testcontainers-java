@@ -461,7 +461,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
 
     /**
-     * Copies a file which resides inside the container to user defined directory
+     * Streams a file which resides inside the container
      *
      * @param containerPath path to file which is copied from container
      * @param function function that takes InputStream of the copied file
