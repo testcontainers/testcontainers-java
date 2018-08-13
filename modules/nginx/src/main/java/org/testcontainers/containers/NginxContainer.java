@@ -5,7 +5,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -22,7 +22,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(80));
+        return Collections.singleton(getMappedPort(80));
     }
 
     @Override
