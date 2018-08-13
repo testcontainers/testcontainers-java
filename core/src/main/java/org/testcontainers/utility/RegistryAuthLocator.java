@@ -10,10 +10,12 @@ import org.zeroturnaround.exec.ProcessExecutor;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -124,9 +126,24 @@ public class RegistryAuthLocator {
         }
 
         if (entry != null && entry.getValue() != null && entry.getValue().size() > 0) {
-            return OBJECT_MAPPER
+            final AuthConfig deserializedAuth = OBJECT_MAPPER
                 .treeToValue(entry.getValue(), AuthConfig.class)
                 .withRegistryAddress(entry.getKey());
+
+            if (isBlank(deserializedAuth.getUsername()) &&
+                isBlank(deserializedAuth.getPassword()) &&
+                !isBlank(deserializedAuth.getAuth())) {
+
+                final String rawAuth = new String(Base64.getDecoder().decode(deserializedAuth.getAuth()));
+                final String[] splitRawAuth = rawAuth.split(":");
+
+                if (splitRawAuth.length == 2) {
+                    deserializedAuth.withUsername(splitRawAuth[0]);
+                    deserializedAuth.withPassword(splitRawAuth[1]);
+                }
+            }
+
+            return deserializedAuth;
         }
         return null;
     }

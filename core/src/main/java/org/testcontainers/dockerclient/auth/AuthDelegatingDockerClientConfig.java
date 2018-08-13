@@ -25,7 +25,7 @@ public class AuthDelegatingDockerClientConfig implements DockerClientConfig {
         final AuthConfig fallbackAuthConfig = delegate.effectiveAuthConfig(imageName);
 
         // try and obtain more accurate auth config using our resolution
-        DockerImageName parsed = new DockerImageName(imageName);
+        final DockerImageName parsed = new DockerImageName(imageName);
         final RegistryAuthLocator authLocator = new RegistryAuthLocator(fallbackAuthConfig);
         final AuthConfig effectiveAuthConfig = authLocator.lookupAuthConfig(parsed);
 
