@@ -20,6 +20,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -1048,9 +1049,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
-            File containerPathFile = new File(containerPath);
-            String remotePath = containerPathFile.getParent();
-            String destination = containerPathFile.getName();
+            int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
+            String remotePath = containerPath.substring(0, lastSlashIndex);
+            String destination = containerPath.substring(lastSlashIndex + 1);
             transferable.transferTo(tarArchive, destination);
             tarArchive.finish();
 
