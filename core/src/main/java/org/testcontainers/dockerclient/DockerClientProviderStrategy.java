@@ -12,6 +12,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
 import org.testcontainers.dockerclient.transport.TestcontainersDockerCmdExecFactory;
 import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -166,7 +167,7 @@ public abstract class DockerClientProviderStrategy {
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
         DockerClientBuilder clientBuilder = DockerClientBuilder
-            .getInstance(config);
+            .getInstance(new AuthDelegatingDockerClientConfig(config));
 
         String transportType = TestcontainersConfiguration.getInstance().getTransportType();
         if ("okhttp".equals(transportType)) {

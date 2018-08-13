@@ -34,7 +34,7 @@ public final class DockerImageName {
             (!name.substring(0, slashIndex).contains(".") &&
                 !name.substring(0, slashIndex).contains(":") &&
                 !name.substring(0, slashIndex).equals("localhost"))) {
-            registry = ""; // Just using "index.docker.io" does not work, docker-java explicitly errors out if this is the registry
+            registry = "https://index.docker.io/v1/"; // Just using "index.docker.io" does not work, docker-java explicitly errors out if this is the registry
             remoteName = name;
         } else {
             registry = name.substring(0, slashIndex);
