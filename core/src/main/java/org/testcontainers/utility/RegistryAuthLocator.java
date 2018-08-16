@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class RegistryAuthLocator {
 
     private static final Logger log = getLogger(RegistryAuthLocator.class);
+    private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
 
     private final File configFile;
     private final String commandPathPrefix;
@@ -124,7 +125,14 @@ public class RegistryAuthLocator {
 
     private AuthConfig findExistingAuthConfig(final JsonNode config, final String reposName) throws Exception {
 
-        final Map.Entry<String, JsonNode> entry = findAuthNode(config, reposName);
+        final Map.Entry<String, JsonNode> entry;
+        if (reposName.isEmpty()) {
+            log.debug("no reposName, so using default registry name {}", DEFAULT_REGISTRY_NAME);
+            entry = findAuthNode(config, DEFAULT_REGISTRY_NAME);
+            log.debug("found auth node");
+        } else {
+            entry = findAuthNode(config, reposName);
+        }
 
         if (entry != null && entry.getValue() != null && entry.getValue().size() > 0) {
             final AuthConfig deserializedAuth = OBJECT_MAPPER
