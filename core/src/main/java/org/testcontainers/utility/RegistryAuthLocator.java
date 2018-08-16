@@ -90,16 +90,16 @@ public class RegistryAuthLocator {
             // auths is empty, using helper:
             final AuthConfig helperAuthConfig = authConfigUsingHelper(config, reposName);
             if (helperAuthConfig != null) {
-                log.debug("found helper auth config [{}]", helperAuthConfig);
+                log.debug("found helper auth config [{}]", logSafe(helperAuthConfig));
                 return helperAuthConfig;
             }
             // no credsHelper to use, using credsStore:
             final AuthConfig storeAuthConfig = authConfigUsingStore(config, reposName);
             if (storeAuthConfig != null) {
-                log.debug("found creds store auth config [{}]", storeAuthConfig);
+                log.debug("found creds store auth config [{}]", logSafe(storeAuthConfig));
                 return storeAuthConfig;
             }
-            log.info("no matching Auth Configs - falling back to defaultAuthConfig [{}]", defaultAuthConfig);
+            log.info("no matching Auth Configs - falling back to defaultAuthConfig [{}]", logSafe(defaultAuthConfig));
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
             log.debug("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. " +
@@ -202,7 +202,7 @@ public class RegistryAuthLocator {
                 .outputUTF8()
                 .trim();
         } catch (Exception e) {
-            log.error("Failure running docker credential helper ({})", credentialHelperName);
+            log.debug("Failure running docker credential helper ({})", credentialHelperName);
             throw e;
         }
 
