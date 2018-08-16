@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -15,6 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -24,26 +26,20 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class RegistryAuthLocator {
 
     private static final Logger log = getLogger(RegistryAuthLocator.class);
-    private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
 
-    private final AuthConfig defaultAuthConfig;
     private final File configFile;
     private final String commandPathPrefix;
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @VisibleForTesting
-    RegistryAuthLocator(AuthConfig defaultAuthConfig, File configFile, String commandPathPrefix) {
-        this.defaultAuthConfig = defaultAuthConfig;
+    RegistryAuthLocator(File configFile, String commandPathPrefix) {
         this.configFile = configFile;
         this.commandPathPrefix = commandPathPrefix;
     }
 
     /**
-     * @param defaultAuthConfig an AuthConfig object that should be returned if there is no overriding authentication
-     *                          available for images that are looked up
      */
-    public RegistryAuthLocator(AuthConfig defaultAuthConfig) {
-        this.defaultAuthConfig = defaultAuthConfig;
+    public RegistryAuthLocator() {
         final String dockerConfigLocation = System.getenv().getOrDefault("DOCKER_CONFIG",
             System.getProperty("user.home") + "/.docker");
         this.configFile = new File(dockerConfigLocation + "/config.json");
@@ -62,10 +58,11 @@ public class RegistryAuthLocator {
      * </ol>
      *
      * @param dockerImageName image name to be looked up (potentially including a registry URL part)
+     * @param defaultAuthConfig an AuthConfig object that should be returned if there is no overriding authentication available for images that are looked up
      * @return an AuthConfig that is applicable to this specific image OR the defaultAuthConfig that has been set for
      * this {@link RegistryAuthLocator}.
      */
-    public AuthConfig lookupAuthConfig(DockerImageName dockerImageName) {
+    public AuthConfig lookupAuthConfig(DockerImageName dockerImageName, AuthConfig defaultAuthConfig) {
 
         if (SystemUtils.IS_OS_WINDOWS) {
             log.debug("RegistryAuthLocator is not supported on Windows. Please help test or improve it and update " +
@@ -87,7 +84,7 @@ public class RegistryAuthLocator {
 
             final AuthConfig existingAuthConfig = findExistingAuthConfig(config, reposName);
             if (existingAuthConfig != null) {
-                log.debug("found existing auth config [{}]", existingAuthConfig);
+                log.debug("found existing auth config [{}]", logSafe(existingAuthConfig));
                 return existingAuthConfig;
             }
             // auths is empty, using helper:
@@ -105,7 +102,7 @@ public class RegistryAuthLocator {
             log.info("no matching Auth Configs - falling back to defaultAuthConfig [{}]", defaultAuthConfig);
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
-            log.error("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. " +
+            log.debug("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. " +
                 "Falling back to docker-java default behaviour",
                 dockerImageName,
                 configFile,
@@ -114,16 +111,20 @@ public class RegistryAuthLocator {
         return defaultAuthConfig;
     }
 
+    private String logSafe(AuthConfig authConfig) {
+        return MoreObjects.toStringHelper(authConfig)
+            .add("username", authConfig.getUsername())
+            .add("password", isNullOrEmpty(authConfig.getPassword()) ? "blank" : "hidden non-blank value")
+            .add("auth", isNullOrEmpty(authConfig.getAuth()) ? "blank" : "hidden non-blank value")
+            .add("email", authConfig.getEmail())
+            .add("registryAddress", authConfig.getRegistryAddress())
+            .add("registryToken", authConfig.getRegistrytoken())
+            .toString();
+    }
+
     private AuthConfig findExistingAuthConfig(final JsonNode config, final String reposName) throws Exception {
 
-        final Map.Entry<String, JsonNode> entry;
-        if (reposName.isEmpty()) {
-            log.debug("no reposName, so using default registry name {}", DEFAULT_REGISTRY_NAME);
-            entry = findAuthNode(config, DEFAULT_REGISTRY_NAME);
-            log.debug("found auth node {}", entry);
-        } else {
-            entry = findAuthNode(config, reposName);
-        }
+        final Map.Entry<String, JsonNode> entry = findAuthNode(config, reposName);
 
         if (entry != null && entry.getValue() != null && entry.getValue().size() > 0) {
             final AuthConfig deserializedAuth = OBJECT_MAPPER
@@ -169,13 +170,13 @@ public class RegistryAuthLocator {
         return null;
     }
 
-    private Map.Entry<String, JsonNode> findAuthNode(final JsonNode config, final String reposName) throws Exception {
+    private Map.Entry<String, JsonNode> findAuthNode(final JsonNode config, final String reposName) {
         final JsonNode auths = config.get("auths");
         if (auths != null && auths.size() > 0) {
             final Iterator<Map.Entry<String, JsonNode>> fields = auths.fields();
             while (fields.hasNext()) {
                 final Map.Entry<String, JsonNode> entry = fields.next();
-                if (entry.getKey().contains("://" + reposName + "/")) {
+                if (entry.getKey().contains("://" + reposName) || entry.getKey().equals(reposName)) {
                     return entry;
                 }
             }

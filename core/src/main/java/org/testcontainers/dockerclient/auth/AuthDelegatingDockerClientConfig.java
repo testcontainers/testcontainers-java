@@ -13,21 +13,28 @@ import org.testcontainers.utility.RegistryAuthLocator;
 @Slf4j
 public class AuthDelegatingDockerClientConfig implements DockerClientConfig {
 
+    private final RegistryAuthLocator authLocator;
+
     @Delegate(excludes = DelegateExclusions.class)
     private DockerClientConfig delegate;
 
     public AuthDelegatingDockerClientConfig(DockerClientConfig delegate) {
         this.delegate = delegate;
+        this.authLocator = new RegistryAuthLocator();
     }
 
     public AuthConfig effectiveAuthConfig(String imageName) {
         // allow docker-java auth config to be used as a fallback
-        final AuthConfig fallbackAuthConfig = delegate.effectiveAuthConfig(imageName);
+        AuthConfig fallbackAuthConfig;
+        try {
+            fallbackAuthConfig = delegate.effectiveAuthConfig(imageName);
+        } catch (Exception e) {
+            fallbackAuthConfig = new AuthConfig();
+        }
 
         // try and obtain more accurate auth config using our resolution
         final DockerImageName parsed = new DockerImageName(imageName);
-        final RegistryAuthLocator authLocator = new RegistryAuthLocator(fallbackAuthConfig);
-        final AuthConfig effectiveAuthConfig = authLocator.lookupAuthConfig(parsed);
+        final AuthConfig effectiveAuthConfig = authLocator.lookupAuthConfig(parsed, fallbackAuthConfig);
 
         log.debug("effective auth config [{}]", effectiveAuthConfig);
         return effectiveAuthConfig;

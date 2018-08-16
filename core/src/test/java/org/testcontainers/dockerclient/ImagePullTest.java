@@ -1,10 +1,15 @@
 package org.testcontainers.dockerclient;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 @RunWith(Parameterized.class)
 public class ImagePullTest {
@@ -28,12 +33,18 @@ public class ImagePullTest {
         };
     }
 
+    // uncomment as appropriate for local testing with auth credentials
+//    private static final List<String> IGNORED_TESTS = asList("richnorth/dummy-private-repo");
+    private static final List<String> IGNORED_TESTS = asList();
+
     public ImagePullTest(String image) {
         this.image = image;
     }
 
     @Test
     public void test() {
+        Assume.assumeFalse(IGNORED_TESTS.contains(image));
+
         try (final GenericContainer container = new GenericContainer<>(image)
             .withCommand("/bin/sh", "-c", "sleep 0")
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {
