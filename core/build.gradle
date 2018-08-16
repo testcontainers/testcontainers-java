@@ -55,6 +55,7 @@ shadowJar {
         include(dependency('com.squareup.okhttp3:.*'))
         include(dependency('com.squareup.okio:.*'))
         include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
+        include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
     }
 }
 
@@ -102,6 +103,8 @@ dependencies {
         exclude(group: 'com.kohlschutter.junixsocket')
     }
     shaded 'com.squareup.okhttp3:okhttp:3.10.0'
+
+    shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.10'
