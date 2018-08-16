@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
@@ -84,6 +85,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
+
+    public static final String INTERNAL_HOST_HOSTNAME = "host.testcontainers.internal";
 
     /*
      * Default settings
@@ -245,6 +248,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             applyConfiguration(createCommand);
 
             containerId = createCommand.exec().getId();
+
+            connectToPortForwardingNetwork(createCommand.getNetworkMode());
+
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
             containerIsCreated(containerId);
@@ -300,6 +306,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } finally {
             profiler.stop();
         }
+    }
+
+    private void connectToPortForwardingNetwork(String networkMode) {
+        PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
+            if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
+                dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+            }
+        });
     }
 
     /**
@@ -478,6 +492,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         createCommand.withPublishAllPorts(true);
+
+        PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
+            withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
+        });
 
         String[] extraHostsArray = extraHosts.stream()
                 .toArray(String[]::new);
