@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -19,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.testcontainers.utility.LogUtils.logSafe;
 
 /**
  * Utility to look up registry authentication information for an image.
@@ -80,23 +80,23 @@ public class RegistryAuthLocator {
 
         try {
             final JsonNode config = OBJECT_MAPPER.readTree(configFile);
-            final String reposName = dockerImageName.getRegistry();
-            log.debug("reposName [{}] for dockerImageName [{}]", reposName, dockerImageName);
+            final String registryName = effectiveRegistryName(dockerImageName);
+            log.debug("registryName [{}] for dockerImageName [{}]", registryName, dockerImageName);
 
             // use helper preferentially (per https://docs.docker.com/engine/reference/commandline/cli/)
-            final AuthConfig helperAuthConfig = authConfigUsingHelper(config, reposName);
+            final AuthConfig helperAuthConfig = authConfigUsingHelper(config, registryName);
             if (helperAuthConfig != null) {
                 log.debug("found helper auth config [{}]", logSafe(helperAuthConfig));
                 return helperAuthConfig;
             }
             // no credsHelper to use, using credsStore:
-            final AuthConfig storeAuthConfig = authConfigUsingStore(config, reposName);
+            final AuthConfig storeAuthConfig = authConfigUsingStore(config, registryName);
             if (storeAuthConfig != null) {
                 log.debug("found creds store auth config [{}]", logSafe(storeAuthConfig));
                 return storeAuthConfig;
             }
             // fall back to base64 encoded auth hardcoded in config file
-            final AuthConfig existingAuthConfig = findExistingAuthConfig(config, reposName);
+            final AuthConfig existingAuthConfig = findExistingAuthConfig(config, registryName);
             if (existingAuthConfig != null) {
                 log.debug("found existing auth config [{}]", logSafe(existingAuthConfig));
                 return existingAuthConfig;
@@ -114,27 +114,9 @@ public class RegistryAuthLocator {
         return defaultAuthConfig;
     }
 
-    private String logSafe(AuthConfig authConfig) {
-        return MoreObjects.toStringHelper(authConfig)
-            .add("username", authConfig.getUsername())
-            .add("password", isNullOrEmpty(authConfig.getPassword()) ? "blank" : "hidden non-blank value")
-            .add("auth", isNullOrEmpty(authConfig.getAuth()) ? "blank" : "hidden non-blank value")
-            .add("email", authConfig.getEmail())
-            .add("registryAddress", authConfig.getRegistryAddress())
-            .add("registryToken", authConfig.getRegistrytoken())
-            .toString();
-    }
-
     private AuthConfig findExistingAuthConfig(final JsonNode config, final String reposName) throws Exception {
 
-        final Map.Entry<String, JsonNode> entry;
-        if (reposName.isEmpty()) {
-            log.debug("no reposName, so using default registry name {}", DEFAULT_REGISTRY_NAME);
-            entry = findAuthNode(config, DEFAULT_REGISTRY_NAME);
-            log.debug("found auth node");
-        } else {
-            entry = findAuthNode(config, reposName);
-        }
+        final Map.Entry<String, JsonNode> entry = findAuthNode(config, reposName);
 
         if (entry != null && entry.getValue() != null && entry.getValue().size() > 0) {
             final AuthConfig deserializedAuth = OBJECT_MAPPER
@@ -223,5 +205,13 @@ public class RegistryAuthLocator {
             .withRegistryAddress(helperResponse.at("/ServerURL").asText())
             .withUsername(helperResponse.at("/Username").asText())
             .withPassword(helperResponse.at("/Secret").asText());
+    }
+
+    private String effectiveRegistryName(DockerImageName dockerImageName) {
+        if (isNullOrEmpty(dockerImageName.getRegistry())) {
+            return DEFAULT_REGISTRY_NAME;
+        } else {
+            return dockerImageName.getRegistry();
+        }
     }
 }

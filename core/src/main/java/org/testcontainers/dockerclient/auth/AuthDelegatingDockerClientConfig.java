@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.RegistryAuthLocator;
 
+import static org.testcontainers.utility.LogUtils.logSafe;
+
 /**
  * TODO: Javadocs
  */
@@ -36,7 +38,7 @@ public class AuthDelegatingDockerClientConfig implements DockerClientConfig {
         final DockerImageName parsed = new DockerImageName(imageName);
         final AuthConfig effectiveAuthConfig = authLocator.lookupAuthConfig(parsed, fallbackAuthConfig);
 
-        log.debug("effective auth config [{}]", effectiveAuthConfig);
+        log.debug("effective auth config [{}]", logSafe(effectiveAuthConfig));
         return effectiveAuthConfig;
     }
 
