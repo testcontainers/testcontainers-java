@@ -83,12 +83,7 @@ public class RegistryAuthLocator {
             final String reposName = dockerImageName.getRegistry();
             log.debug("reposName [{}] for dockerImageName [{}]", reposName, dockerImageName);
 
-            final AuthConfig existingAuthConfig = findExistingAuthConfig(config, reposName);
-            if (existingAuthConfig != null) {
-                log.debug("found existing auth config [{}]", logSafe(existingAuthConfig));
-                return existingAuthConfig;
-            }
-            // auths is empty, using helper:
+            // use helper preferentially (per https://docs.docker.com/engine/reference/commandline/cli/)
             final AuthConfig helperAuthConfig = authConfigUsingHelper(config, reposName);
             if (helperAuthConfig != null) {
                 log.debug("found helper auth config [{}]", logSafe(helperAuthConfig));
@@ -100,6 +95,13 @@ public class RegistryAuthLocator {
                 log.debug("found creds store auth config [{}]", logSafe(storeAuthConfig));
                 return storeAuthConfig;
             }
+            // fall back to base64 encoded auth hardcoded in config file
+            final AuthConfig existingAuthConfig = findExistingAuthConfig(config, reposName);
+            if (existingAuthConfig != null) {
+                log.debug("found existing auth config [{}]", logSafe(existingAuthConfig));
+                return existingAuthConfig;
+            }
+
             log.info("no matching Auth Configs - falling back to defaultAuthConfig [{}]", logSafe(defaultAuthConfig));
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {

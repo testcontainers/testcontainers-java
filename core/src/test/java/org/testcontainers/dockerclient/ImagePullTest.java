@@ -34,8 +34,8 @@ public class ImagePullTest {
     }
 
     // uncomment as appropriate for local testing with auth credentials
-//    private static final List<String> IGNORED_TESTS = asList("richnorth/dummy-private-repo");
-    private static final List<String> IGNORED_TESTS = asList();
+    private static final List<String> IGNORED_TESTS = asList("richnorth/dummy-private-repo");
+//    private static final List<String> IGNORED_TESTS = asList();
 
     public ImagePullTest(String image) {
         this.image = image;

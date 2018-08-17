@@ -38,6 +38,7 @@ public class RegistryAuthLocatorTest {
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
 
+        assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
         assertEquals("Username is set", "user", authConfig.getUsername());
         assertEquals("Password is set", "pass", authConfig.getPassword());
     }
@@ -81,10 +82,9 @@ public class RegistryAuthLocatorTest {
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
 
-        assertEquals("Correct server URL is obtained from a credential store", "https://registry.example.com", authConfig.getRegistryAddress());
-        assertNull("No username is set", authConfig.getUsername());
-        assertEquals("Correct email is obtained from a credential store", "not@val.id", authConfig.getEmail());
-        assertEquals("Correct auth is obtained from a credential store", "encoded auth token", authConfig.getAuth());
+        assertEquals("Correct server URL is obtained from a credential helper", "url", authConfig.getRegistryAddress());
+        assertEquals("Correct username is obtained from a credential helper", "username", authConfig.getUsername());
+        assertEquals("Correct password is obtained from a credential helper", "secret", authConfig.getPassword());
     }
 
     @NotNull
