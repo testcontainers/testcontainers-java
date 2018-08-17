@@ -102,14 +102,13 @@ public class RegistryAuthLocator {
                 return existingAuthConfig;
             }
 
-            log.info("no matching Auth Configs - falling back to defaultAuthConfig [{}]", logSafe(defaultAuthConfig));
+            log.debug("no matching Auth Configs - falling back to defaultAuthConfig [{}]", logSafe(defaultAuthConfig));
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
-            log.debug("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. " +
-                "Falling back to docker-java default behaviour",
+            log.debug("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. Falling back to docker-java default behaviour. Exception message: {}",
                 dockerImageName,
                 configFile,
-                e);
+                e.getMessage());
         }
         return defaultAuthConfig;
     }
