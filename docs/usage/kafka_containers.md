@@ -1,7 +1,7 @@
 # Kafka Containers
 
-Test Containers can be used to automatically instantiate and manage [Kafka](https://kafka.apache.org) containers.
-More precisely Test Containers use official Docker images for [Confluent OSS Platform](https://hub.docker.com/r/confluentinc/cp-kafka/)
+Testcontainers can be used to automatically instantiate and manage [Apache Kafka](https://kafka.apache.org) containers.
+More precisely Testcontainers uses official Docker images for [Confluent OSS Platform](https://hub.docker.com/r/confluentinc/cp-kafka/)
 
 ## Benefits
 
@@ -10,7 +10,7 @@ More precisely Test Containers use official Docker images for [Confluent OSS Pla
 
 ## Example
 
-The following field in your JUnit UI test class will prepare a container running Kafka:
+The following field in your JUnit test class will prepare a container running Kafka:
 ```java
 @Rule
 public KafkaContainer kafka = new KafkaContainer();
@@ -20,15 +20,6 @@ Now your tests or any other process running on your machine can get access to ru
 ```java
 kafka.getBootstrapServers()
 ```
-
-If your test needs to run some other docker container which needs access to the Kafka, do the following:
-
-* Run you other container on the same network as Kafka container. E.g. as following:
-```java
-new GenericContainer("myImage").withNetwork(kafka.getNetwork())
-```
-* Use `kafka.getNetworkAliases().get(0)+":9092"` as bootstrap server location. 
-Or just give your Kafka container a network alias of your liking.
 
 ## Options
 
@@ -46,3 +37,15 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 ```java
 new KafkaContainer().withExternalZookeeper("localhost:2181")
 ```
+
+## Multi-container usage
+
+If your test needs to run some other docker container which needs access to the Kafka, do the following:
+
+* Run you other container on the same network as Kafka container. E.g. as following:
+```java
+new GenericContainer("myImage").withNetwork(kafka.getNetwork())
+```
+* Use `kafka.getNetworkAliases().get(0)+":9092"` as bootstrap server location. 
+Or just give your Kafka container a network alias of your liking.
+
