@@ -1,10 +1,15 @@
 package org.testcontainers.dockerclient;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 @RunWith(Parameterized.class)
 public class ImagePullTest {
@@ -24,8 +29,13 @@ public class ImagePullTest {
             "quay.io/testcontainers/ryuk:latest",
             "quay.io/testcontainers/ryuk:0.2.2",
             "quay.io/testcontainers/ryuk@sha256:4b606e54c4bba1af4fd814019d342e4664d51e28d3ba2d18d24406edbefd66da",
+            "richnorth/dummy-private-repo", // requires auth
         };
     }
+
+    // uncomment as appropriate for local testing with auth credentials
+    private static final List<String> IGNORED_TESTS = asList("richnorth/dummy-private-repo");
+//    private static final List<String> IGNORED_TESTS = asList();
 
     public ImagePullTest(String image) {
         this.image = image;
@@ -33,6 +43,8 @@ public class ImagePullTest {
 
     @Test
     public void test() {
+        Assume.assumeFalse(IGNORED_TESTS.contains(image));
+
         try (final GenericContainer container = new GenericContainer<>(image)
             .withCommand("/bin/sh", "-c", "sleep 0")
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {

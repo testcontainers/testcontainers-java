@@ -4,12 +4,16 @@ package org.testcontainers.utility;
 import com.google.common.net.HostAndPort;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.slf4j.Logger;
 
 import java.util.regex.Pattern;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 @EqualsAndHashCode
 public final class DockerImageName {
 
+    private static final Logger log = getLogger(DockerImageName.class);
     /* Regex patterns used for validation */
     private static final String ALPHA_NUMERIC = "[a-z0-9]+";
     private static final String SEPARATOR = "([\\.]{1}|_{1,2}|-+)";
@@ -36,6 +40,7 @@ public final class DockerImageName {
             registry = name.substring(0, slashIndex);
             remoteName = name.substring(slashIndex + 1);
         }
+        log.info("registry [{}] remoteName [{}]", registry, remoteName);
 
         if (remoteName.contains("@sha256:")) {
             repo = remoteName.split("@sha256:")[0];
@@ -47,6 +52,7 @@ public final class DockerImageName {
             repo = remoteName;
             versioning = new TagVersioning("latest");
         }
+        log.info("repo [{}] versioning [{}]", repo, versioning);
     }
 
     public DockerImageName(String name, String tag) {

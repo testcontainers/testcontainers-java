@@ -2,7 +2,7 @@
     "auths": {
         "https://registry.example.com": {
             "email": "not@val.id",
-            "auth": "encoded auth token"
+            "auth": "dXNlcjpwYXNz"
         }
     },
     "HttpHeaders": {
