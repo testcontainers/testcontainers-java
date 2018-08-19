@@ -1,11 +1,11 @@
 # Kafka Containers
 
 Testcontainers can be used to automatically instantiate and manage [Apache Kafka](https://kafka.apache.org) containers.
-More precisely Testcontainers uses official Docker images for [Confluent OSS Platform](https://hub.docker.com/r/confluentinc/cp-kafka/)
+More precisely Testcontainers uses the official Docker images for [Confluent OSS Platform](https://hub.docker.com/r/confluentinc/cp-kafka/)
 
 ## Benefits
 
-* Running single node Kafka installation with just one line of code
+* Running a single node Kafka installation with just one line of code
 * No need to manage external Zookeeper installation, required by Kafka. But see [below](#zookeeper)
 
 ## Example
@@ -25,7 +25,7 @@ kafka.getBootstrapServers()
 
 ### Selecting Kafka version
 
-You can select a version of Confluent Platform by passing it to container's constructor:
+You can select a version of Confluent Platform by passing it to the container's constructor:
 ```java
 new KafkaContainer("4.1.2")
 ```
@@ -40,7 +40,7 @@ new KafkaContainer().withExternalZookeeper("localhost:2181")
 
 ## Multi-container usage
 
-If your test needs to run some other docker container which needs access to the Kafka, do the following:
+If your test needs to run some other Docker container which needs access to the Kafka, do the following:
 
 * Run you other container on the same network as Kafka container. E.g. as following:
 ```java
