@@ -48,6 +48,7 @@ public final class ResourceReaper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
     private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
+    private static final String ACKNOWLEDGMENT = "ACK";
 
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
@@ -144,11 +145,14 @@ public final class ResourceReaper {
                                     out.write('\n');
                                     out.flush();
 
-                                    while (!"ACK".equalsIgnoreCase(in.readLine())) {
+                                    boolean isAcknowledged = waitForAcknowledgment(in);
+                                    if (isAcknowledged) {
+                                        log.debug("Received 'ACK' from Ryuk");
+                                        ryukScheduledLatch.countDown();
+                                        index++;
+                                    } else {
+                                        log.debug("Didn't receive 'ACK' from Ryuk. Will retry to send filters.");
                                     }
-
-                                    ryukScheduledLatch.countDown();
-                                    index++;
                                 }
                             }
                         } catch (IOException e) {
@@ -167,6 +171,14 @@ public final class ResourceReaper {
         }
 
         return ryukContainerId;
+    }
+
+    private static boolean waitForAcknowledgment(BufferedReader in) throws IOException {
+        String line = in.readLine();
+        while (line != null && !ACKNOWLEDGMENT.equalsIgnoreCase(line)) {
+            line = in.readLine();
+        }
+        return ACKNOWLEDGMENT.equalsIgnoreCase(line);
     }
 
     public synchronized static ResourceReaper instance() {

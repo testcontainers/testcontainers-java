@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## UNRELEASED
 
 ### Fixed
+- Fixed deadlock when registering filters with ryuk container ([\#843](https://github.com/testcontainers/testcontainers-java/pull/843))
 
 ### Changed
 
