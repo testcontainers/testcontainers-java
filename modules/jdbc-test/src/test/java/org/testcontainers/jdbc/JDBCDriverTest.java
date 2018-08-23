@@ -79,7 +79,7 @@ public class JDBCDriverTest {
 
     @Test
     public void test() throws SQLException {
-        performSimpleTest(jdbcUrl, options.contains(Options.PmdKnownBroken));
+        performSimpleTest(jdbcUrl);
 
         if (options.contains(Options.ScriptedSchema)) {
             performTestForScriptedSchema(jdbcUrl);
@@ -103,9 +103,9 @@ public class JDBCDriverTest {
         }
     }
 
-    private void performSimpleTest(String jdbcUrl, boolean pmdKnownBroken) throws SQLException {
+    private void performSimpleTest(String jdbcUrl) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource, pmdKnownBroken).query("SELECT 1", rs -> {
+            boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query("SELECT 1", rs -> {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
                 assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
