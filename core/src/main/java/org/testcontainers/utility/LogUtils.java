@@ -2,12 +2,15 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.LogContainerCmd;
+import com.github.dockerjava.api.model.AuthConfig;
+import com.google.common.base.MoreObjects;
 import lombok.experimental.UtilityClass;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 
 import java.util.function.Consumer;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 
@@ -38,5 +41,21 @@ public class LogUtils {
 
     public void followOutput(DockerClient dockerClient, String containerId, Consumer<OutputFrame> consumer) {
         followOutput(dockerClient, containerId, consumer, STDOUT, STDERR);
+    }
+
+    public static String logSafe(AuthConfig authConfig) {
+
+        if (authConfig == null) {
+            return "null";
+        }
+
+        return MoreObjects.toStringHelper(authConfig)
+            .add("username", authConfig.getUsername())
+            .add("password", isNullOrEmpty(authConfig.getPassword()) ? "blank" : "hidden non-blank value")
+            .add("auth", isNullOrEmpty(authConfig.getAuth()) ? "blank" : "hidden non-blank value")
+            .add("email", authConfig.getEmail())
+            .add("registryAddress", authConfig.getRegistryAddress())
+            .add("registryToken", isNullOrEmpty(authConfig.getRegistrytoken()) ? "blank" : "hidden non-blank value")
+            .toString();
     }
 }

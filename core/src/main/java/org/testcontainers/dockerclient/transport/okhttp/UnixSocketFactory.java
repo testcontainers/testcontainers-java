@@ -1,5 +1,6 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
+import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.Value;
 import org.scalasbt.ipcsocket.UnixDomainSocket;
@@ -15,6 +16,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 @Value
+@EqualsAndHashCode(callSuper = false)
 public class UnixSocketFactory extends SocketFactory {
 
     String socketPath;
