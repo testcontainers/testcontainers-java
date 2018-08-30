@@ -1050,7 +1050,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
             int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
-            String remotePath = containerPath.substring(0, lastSlashIndex);
+            String remotePath = containerPath.substring(0, lastSlashIndex + 1);
             String destination = containerPath.substring(lastSlashIndex + 1);
             transferable.transferTo(tarArchive, destination);
             tarArchive.finish();

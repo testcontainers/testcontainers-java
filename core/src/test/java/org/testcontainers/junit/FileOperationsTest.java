@@ -26,10 +26,10 @@ public class FileOperationsTest {
         ) {
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/test.txt");
+            alpineCopyToContainer.copyFileToContainer(mountableFile, "/test.txt");
 
             File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test.txt", actualFile.getPath());
+            alpineCopyToContainer.copyFileFromContainer("/test.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
             assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
