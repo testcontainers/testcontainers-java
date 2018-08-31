@@ -1026,7 +1026,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void copyFileToContainer(MountableFile mountableFile, String containerPath) {
-        File sourceFile = new File(mountableFile.getFilesystemPath());
+        File sourceFile = new File(mountableFile.getResolvedPath());
 
         if (containerPath.endsWith("/") && sourceFile.isFile()) {
             logger().warn("folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path");
@@ -1050,15 +1050,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
             int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
-            String remotePath = containerPath.substring(0, lastSlashIndex + 1);
-            String destination = containerPath.substring(lastSlashIndex + 1);
-            transferable.transferTo(tarArchive, destination);
+            String extractArchiveTo = containerPath.substring(0, lastSlashIndex + 1);
+            String pathInArchive = containerPath.substring(lastSlashIndex + 1);
+            transferable.transferTo(tarArchive, pathInArchive);
             tarArchive.finish();
 
             dockerClient
                 .copyArchiveToContainerCmd(containerId)
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath(remotePath)
+                .withRemotePath(extractArchiveTo)
                 .exec();
         }
     }
