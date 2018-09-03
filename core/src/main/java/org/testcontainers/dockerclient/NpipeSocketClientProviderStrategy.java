@@ -7,6 +7,7 @@ import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.URI;
 
@@ -23,7 +24,7 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_WINDOWS;
+        return SystemUtils.IS_OS_WINDOWS && TestcontainersConfiguration.getInstance().isNpipeForced();
     }
 
     @Override
