@@ -75,7 +75,11 @@ public class TestcontainersConfiguration {
     }
 
     public String getTransportType() {
-        return properties.getProperty("transport.type", "netty");
+        return properties.getProperty("transport.type", "okhttp");
+    }
+
+    public boolean isNpipeForced() {
+        return Boolean.parseBoolean(properties.getProperty("transport.npipe.forced", "false"));
     }
 
     @Synchronized
