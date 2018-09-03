@@ -21,7 +21,7 @@ public class MockServerContainerTest {
 
     @Test
     public void testBasicScenario() throws Exception {
-        new MockServerClient(mockServer.getContainerIpAddress(), mockServer.getMappedPort(MockServerContainer.PORT))
+        new MockServerClient(mockServer.getContainerIpAddress(), mockServer.getServerPort())
             .when(request("/hello"))
             .respond(response("Hello World!"));
 
