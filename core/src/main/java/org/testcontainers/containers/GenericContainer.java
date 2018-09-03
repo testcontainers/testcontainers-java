@@ -17,8 +17,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -40,14 +43,18 @@ import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
-import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -1036,34 +1043,70 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) {
+    public void copyFileToContainer(MountableFile mountableFile, String containerPath) {
+        File sourceFile = new File(mountableFile.getResolvedPath());
 
+        if (containerPath.endsWith("/") && sourceFile.isFile()) {
+            logger().warn("folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path");
+            copyFileToContainer((Transferable) mountableFile, containerPath + sourceFile.getName());
+        } else {
+            copyFileToContainer((Transferable) mountableFile, containerPath);
+        }
+    }
+
+    @Override
+    @SneakyThrows(IOException.class)
+    public void copyFileToContainer(Transferable transferable, String containerPath) {
         if (!isCreated()) {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
-        this.dockerClient
-                .copyArchiveToContainerCmd(this.containerId)
-                .withHostResource(mountableLocalFile.getResolvedPath())
-                .withRemotePath(containerPath)
+        try (
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
+        ) {
+            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+
+            int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
+            String extractArchiveTo = containerPath.substring(0, lastSlashIndex + 1);
+            String pathInArchive = containerPath.substring(lastSlashIndex + 1);
+            transferable.transferTo(tarArchive, pathInArchive);
+            tarArchive.finish();
+
+            dockerClient
+                .copyArchiveToContainerCmd(containerId)
+                .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
+                .withRemotePath(extractArchiveTo)
                 .exec();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException {
+    public void copyFileFromContainer(String containerPath, String destinationPath) {
+        copyFileFromContainer(containerPath, inputStream -> {
+            try(FileOutputStream output = new FileOutputStream(destinationPath)) {
+                IOUtils.copy(inputStream, output);
+                return null;
+            }
+        });
+    }
 
+    @Override
+    @SneakyThrows(Exception.class)
+    public <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> consumer) {
         if (!isCreated()) {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
-        try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(this.dockerClient
-                .copyArchiveFromContainerCmd(this.containerId, containerPath)
-                .exec())) {
+        try (
+            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(containerId, containerPath).exec();
+            TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
+        ) {
             tarInputStream.getNextTarEntry();
-            IOUtils.copy(tarInputStream, new FileOutputStream(destinationPath));
+            return consumer.apply(tarInputStream);
         }
     }
 

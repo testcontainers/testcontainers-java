@@ -30,26 +30,26 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.collect.Lists;
 import lombok.*;
 import org.apache.commons.compress.utils.Sets;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.MountableFile;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -332,30 +332,19 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     @Override
-    @SneakyThrows
     protected void containerIsCreated(String containerId) {
-        File tempFile = copyConfigFromContainer(containerId);
-        appendPortsToConfig(tempFile);
-        copyFileToContainer(MountableFile.forHostPath(tempFile.toPath()), STATIC_CONFIG_PATH);
+        String originalConfig = copyFileFromContainer(STATIC_CONFIG_LOCATION, inputStream -> IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+
+        byte[] configBytes = (originalConfig + "\n" + generateConfig()).getBytes(StandardCharsets.UTF_8);
+
+        copyFileToContainer(Transferable.of(configBytes), STATIC_CONFIG_LOCATION);
     }
 
-    private File copyConfigFromContainer(String containerId) throws IOException {
-        File tempDirectory = Files.createTempDirectory("testcontainer_" + containerId + "_").toFile();
-        tempDirectory.deleteOnExit();
-        File tempFile = new File(tempDirectory, STATIC_CONFIG_NAME);
-        tempFile.deleteOnExit();
-        logger().debug("Storing static_config in [{}].", tempFile.getAbsolutePath());
-        copyFileFromContainer(STATIC_CONFIG_LOCATION, tempFile.getPath());
-        return tempFile;
-    }
-
-    private void appendPortsToConfig(File tempFile) throws IOException {
-        for (CouchbasePort port : CouchbasePort.values()) {
-            if (!port.isDynamic()) {
-                String config = String.format("{%s, %d}.\n", port.name, getMappedPort(port));
-                FileUtils.writeStringToFile(tempFile, config, "UTF-8", true);
-            }
-        }
+    private String generateConfig() {
+        return Stream.of(CouchbasePort.values())
+            .filter(port -> !port.isDynamic())
+            .map(port -> String.format("{%s, %d}.", port.name, getMappedPort(port)))
+            .collect(Collectors.joining("\n"));
     }
 
     @Override
