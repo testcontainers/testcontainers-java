@@ -10,16 +10,19 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractWaitStrategy implements WaitStrategy {
 
-    protected WaitStrategyTarget waitStrategyTarget;
-
-    @NonNull
-    protected Duration startupTimeout = Duration.ofSeconds(60);
-
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
         .newBuilder()
         .withRate(1, TimeUnit.SECONDS)
         .withConstantThroughput()
         .build();
+
+    protected WaitStrategyTarget waitStrategyTarget;
+
+    @NonNull
+    protected Duration startupTimeout = Duration.ofSeconds(60);
+
+    @NonNull
+    private RateLimiter rateLimiter = DOCKER_CLIENT_RATE_LIMITER;
 
     /**
      * Wait until the target has started.
@@ -60,6 +63,17 @@ public abstract class AbstractWaitStrategy implements WaitStrategy {
      * @return the rate limiter to use
      */
     protected RateLimiter getRateLimiter() {
-        return DOCKER_CLIENT_RATE_LIMITER;
+        return rateLimiter;
+    }
+
+    /**
+     * Set the rate limiter being used
+     *
+     * @param rateLimiter rateLimiter
+     * @return this
+     */
+    public WaitStrategy withRateLimiter(RateLimiter rateLimiter) {
+        this.rateLimiter = rateLimiter;
+        return this;
     }
 }
