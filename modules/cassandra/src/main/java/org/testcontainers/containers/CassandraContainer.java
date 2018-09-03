@@ -88,7 +88,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     protected void optionallyMapResourceParameterAsVolume(String pathNameInContainer, String resourceLocation) {
         Optional.ofNullable(resourceLocation)
                 .map(MountableFile::forClasspathResource)
-                .ifPresent(mountableFile -> addFileSystemBind(mountableFile.getResolvedPath(), pathNameInContainer, BindMode.READ_WRITE));
+                .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
     }
 
     /**
