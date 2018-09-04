@@ -13,6 +13,7 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -23,6 +24,7 @@ import org.testcontainers.DockerClientFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -48,7 +50,6 @@ public final class ResourceReaper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
     private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
-    private static final String ACKNOWLEDGMENT = "ACK";
 
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
@@ -118,8 +119,7 @@ public final class ResourceReaper {
                     while (true) {
                         int index = 0;
                         try(Socket clientSocket = new Socket(hostIpAddress, ryukPort)) {
-                            OutputStream out = clientSocket.getOutputStream();
-                            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                            FilterRegistry registry = new FilterRegistry(clientSocket.getInputStream(), clientSocket.getOutputStream());
 
                             synchronized (DEATH_NOTE) {
                                 while (true) {
@@ -132,20 +132,7 @@ public final class ResourceReaper {
                                         }
                                     }
                                     List<Map.Entry<String, String>> filters = DEATH_NOTE.get(index);
-
-                                    String query = URLEncodedUtils.format(
-                                            filters.stream()
-                                                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
-                                                    .collect(Collectors.toList()),
-                                            (String) null
-                                    );
-
-                                    log.debug("Sending '{}' to Ryuk", query);
-                                    out.write(query.getBytes());
-                                    out.write('\n');
-                                    out.flush();
-
-                                    boolean isAcknowledged = waitForAcknowledgment(in);
+                                    boolean isAcknowledged = registry.register(filters);
                                     if (isAcknowledged) {
                                         log.debug("Received 'ACK' from Ryuk");
                                         ryukScheduledLatch.countDown();
@@ -173,14 +160,6 @@ public final class ResourceReaper {
         return ryukContainerId;
     }
 
-    private static boolean waitForAcknowledgment(BufferedReader in) throws IOException {
-        String line = in.readLine();
-        while (line != null && !ACKNOWLEDGMENT.equalsIgnoreCase(line)) {
-            line = in.readLine();
-        }
-        return ACKNOWLEDGMENT.equalsIgnoreCase(line);
-    }
-
     public synchronized static ResourceReaper instance() {
         if (instance == null) {
             instance = new ResourceReaper();
@@ -191,7 +170,6 @@ public final class ResourceReaper {
 
     /**
      * Perform a cleanup.
-     *
      */
     public synchronized void performCleanup() {
         registeredContainers.forEach(this::stopContainer);
@@ -373,5 +351,51 @@ public final class ResourceReaper {
             // If the JVM stops without containers being stopped, try and stop the container.
             Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
+    }
+
+    static class FilterRegistry {
+
+        @VisibleForTesting
+        static final String ACKNOWLEDGMENT = "ACK";
+
+        private final BufferedReader in;
+        private final OutputStream out;
+
+        FilterRegistry(InputStream ryukInputStream, OutputStream ryukOutputStream) {
+            this.in = new BufferedReader(new InputStreamReader(ryukInputStream));
+            this.out = ryukOutputStream;
+        }
+
+        /**
+         * Registers the given filters with Ryuk
+         *
+         * @param filters the filter to register
+         * @return true if the filters have been registered successfuly, false otherwise
+         * @throws IOException if communication with Ryuk fails
+         */
+        boolean register(List<Map.Entry<String, String>> filters) throws IOException {
+            String query = URLEncodedUtils.format(
+                filters.stream()
+                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
+                    .collect(Collectors.toList()),
+                (String) null
+            );
+
+            log.debug("Sending '{}' to Ryuk", query);
+            out.write(query.getBytes());
+            out.write('\n');
+            out.flush();
+
+            return waitForAcknowledgment(in);
+        }
+
+        private static boolean waitForAcknowledgment(BufferedReader in) throws IOException {
+            String line = in.readLine();
+            while (line != null && !ACKNOWLEDGMENT.equalsIgnoreCase(line)) {
+                line = in.readLine();
+            }
+            return ACKNOWLEDGMENT.equalsIgnoreCase(line);
+        }
+
     }
 }
