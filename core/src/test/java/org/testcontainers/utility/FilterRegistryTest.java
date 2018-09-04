@@ -31,14 +31,18 @@ public class FilterRegistryTest {
     public void registerReturnsTrueIfAcknowledgementIsReadFromInputStream() throws IOException {
         FilterRegistry registry = new FilterRegistry(inputStream(ACKNOWLEDGEMENT), anyOutputStream());
 
-        assertTrue(registry.register(FILTERS));
+        boolean successful = registry.register(FILTERS);
+
+        assertTrue(successful);
     }
 
     @Test
     public void registerReturnsFalseIfNoAcknowledgementIsReadFromInputStream() throws IOException {
         FilterRegistry registry = new FilterRegistry(inputStream(NO_ACKNOWLEDGEMENT), anyOutputStream());
 
-        assertFalse(registry.register(FILTERS));
+        boolean successful = registry.register(FILTERS);
+
+        assertFalse(successful);
     }
 
     @Test
