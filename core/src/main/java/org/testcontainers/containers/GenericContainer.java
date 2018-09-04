@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
@@ -84,6 +85,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
+
+    public static final String INTERNAL_HOST_HOSTNAME = "host.testcontainers.internal";
 
     /*
      * Default settings
@@ -245,7 +248,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             applyConfiguration(createCommand);
 
             containerId = createCommand.exec().getId();
+
+            connectToPortForwardingNetwork(createCommand.getNetworkMode());
+
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+
+            containerIsCreated(containerId);
 
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
@@ -298,6 +306,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } finally {
             profiler.stop();
         }
+    }
+
+    private void connectToPortForwardingNetwork(String networkMode) {
+        PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
+            if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
+                dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+            }
+        });
     }
 
     /**
@@ -354,6 +370,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void configure() {
 
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsCreated(String containerId) {
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -473,6 +493,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         createCommand.withPublishAllPorts(true);
 
+        PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
+            withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
+        });
+
         String[] extraHostsArray = extraHosts.stream()
                 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
@@ -556,7 +580,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @see #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)
      */
     protected void waitUntilContainerStarted() {
-        getWaitStrategy().waitUntilReady(this);
+        org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = getWaitStrategy();
+        if (waitStrategy != null) {
+            waitStrategy.waitUntilReady(this);
+        }
     }
 
     /**
@@ -1028,8 +1055,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException {
 
-        if (!isRunning()) {
-            throw new IllegalStateException("copyFileToContainer can only be used while the Container is running");
+        if (!isCreated()) {
+            throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
         try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(this.dockerClient

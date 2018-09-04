@@ -24,24 +24,40 @@ import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.client.java.query.Index;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import lombok.AllArgsConstructor;
-import lombok.Cleanup;
-import lombok.Getter;
-import lombok.SneakyThrows;
+import com.github.dockerjava.core.command.ExecStartResultCallback;
+import com.google.common.collect.Lists;
+import lombok.*;
 import org.apache.commons.compress.utils.Sets;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.*;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.CAPI;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED_SSL;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST_SSL;
 
 /**
  * Based on Laurent Doguin version,
@@ -54,6 +70,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     public static final String VERSION = "5.1.0";
     public static final String DOCKER_IMAGE_NAME = "couchbase/server:";
     public static final ObjectMapper MAPPER = new ObjectMapper();
+    public static final String STATIC_CONFIG_NAME = "static_config";
+    public static final String STATIC_CONFIG_PATH = "/opt/couchbase/etc/couchbase/";
+    public static final String STATIC_CONFIG_LOCATION = STATIC_CONFIG_PATH + STATIC_CONFIG_NAME;
 
     private String memoryQuota = "300";
 
@@ -93,37 +112,98 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private String urlBase;
 
+    private SocatContainer proxy;
+
     public CouchbaseContainer() {
-        super(DOCKER_IMAGE_NAME + VERSION);
+        this(DOCKER_IMAGE_NAME + VERSION);
     }
 
     public CouchbaseContainer(String containerName) {
         super(containerName);
-    }
 
-    @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(8091);
+        withNetwork(Network.SHARED);
+        withNetworkAliases("couchbase-" + Base58.randomString(6));
+        setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html"));
     }
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(getLivenessCheckPort());
+        return Sets.newHashSet(getMappedPort(REST));
     }
 
     @Override
-    protected void configure() {
-        // Configurable ports
-        addExposedPorts(11210, 11207, 8091, 18091);
+    @SneakyThrows
+    protected void doStart() {
+        String networkAlias = getNetworkAliases().get(0);
+        startProxy(networkAlias);
 
-        // Non configurable ports
-        addFixedExposedPort(8092, 8092);
-        addFixedExposedPort(8093, 8093);
-        addFixedExposedPort(8094, 8094);
-        addFixedExposedPort(8095, 8095);
-        addFixedExposedPort(18092, 18092);
-        addFixedExposedPort(18093, 18093);
-        setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html#/"));
+        for (CouchbasePort port : CouchbasePort.values()) {
+            exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
+
+            // CAPI port has a special configuration file which is set via env
+            if (port == CAPI) {
+                withEnv(port.getName(), getMappedPort(port) + "");
+            }
+        }
+        super.doStart();
+    }
+
+    private void startProxy(String networkAlias) {
+        proxy = new SocatContainer().withNetwork(getNetwork());
+
+        for (CouchbasePort port : CouchbasePort.values()) {
+            if (port.isDynamic()) {
+                proxy.withTarget(port.getOriginalPort(), networkAlias);
+            } else {
+                proxy.addExposedPort(port.getOriginalPort());
+            }
+        }
+        proxy.setWaitStrategy(null);
+        proxy.start();
+    }
+
+    private void exposePortThroughProxy(String networkAlias, int originalPort, int mappedPort) {
+        ExecCreateCmdResponse createCmdResponse = dockerClient
+            .execCreateCmd(proxy.getContainerId())
+            .withCmd("/usr/bin/socat", "TCP-LISTEN:" + originalPort + ",fork,reuseaddr", "TCP:" + networkAlias + ":" + mappedPort)
+            .exec();
+
+        dockerClient.execStartCmd(createCmdResponse.getId())
+            .exec(new ExecStartResultCallback());
+    }
+
+    @Override
+    public List<Integer> getExposedPorts() {
+        return proxy.getExposedPorts();
+    }
+
+    @Override
+    public String getContainerIpAddress() {
+        return proxy.getContainerIpAddress();
+    }
+
+    @Override
+    public Integer getMappedPort(int originalPort) {
+        return proxy.getMappedPort(originalPort);
+    }
+
+    protected Integer getMappedPort(CouchbasePort port) {
+        return getMappedPort(port.getOriginalPort());
+    }
+
+    @Override
+    public List<Integer> getBoundPortNumbers() {
+        return proxy.getBoundPortNumbers();
+    }
+
+    @Override
+    public void stop() {
+        Stream.<Runnable>of(super::stop, proxy::stop, this::stopCluster).parallel().forEach(Runnable::run);
+    }
+
+    private void stopCluster() {
+        getCouchbaseCluster().disconnect();
+        getCouchbaseEnvironment().shutdown();
     }
 
     public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
@@ -133,7 +213,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @SneakyThrows
     public void initCluster() {
-        urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(8091));
+        urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(REST));
         String poolURL = "/pools/default";
         String poolPayload = "memoryQuota=" + URLEncoder.encode(memoryQuota, "UTF-8") + "&indexMemoryQuota=" + URLEncoder.encode(indexMemoryQuota, "UTF-8");
 
@@ -207,7 +287,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         // Insert Bucket admin user
         UserSettings userSettings = UserSettings.build()
             .password(bucketSetting.password())
-            .roles(Collections.singletonList(new UserRole("bucket_admin", bucketSetting.name())));
+            .roles(getAdminRoles(bucketSetting.name()));
         try {
             clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
         } catch (Exception e) {
@@ -220,6 +300,18 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 bucket.query(Index.createPrimaryIndex().on(bucketSetting.name()));
             }
         }
+    }
+
+    private List<UserRole> getAdminRoles(String bucketName) {
+        return Lists.newArrayList(
+            new UserRole("bucket_admin", bucketName),
+            new UserRole("views_admin", bucketName),
+            new UserRole("query_manage_index", bucketName),
+            new UserRole("query_update", bucketName),
+            new UserRole("query_select", bucketName),
+            new UserRole("query_insert", bucketName),
+            new UserRole("query_delete", bucketName)
+        );
     }
 
     public void callCouchbaseRestAPI(String url, String payload) throws IOException {
@@ -240,6 +332,33 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     @Override
+    @SneakyThrows
+    protected void containerIsCreated(String containerId) {
+        File tempFile = copyConfigFromContainer(containerId);
+        appendPortsToConfig(tempFile);
+        copyFileToContainer(MountableFile.forHostPath(tempFile.toPath()), STATIC_CONFIG_PATH);
+    }
+
+    private File copyConfigFromContainer(String containerId) throws IOException {
+        File tempDirectory = Files.createTempDirectory("testcontainer_" + containerId + "_").toFile();
+        tempDirectory.deleteOnExit();
+        File tempFile = new File(tempDirectory, STATIC_CONFIG_NAME);
+        tempFile.deleteOnExit();
+        logger().debug("Storing static_config in [{}].", tempFile.getAbsolutePath());
+        copyFileFromContainer(STATIC_CONFIG_LOCATION, tempFile.getPath());
+        return tempFile;
+    }
+
+    private void appendPortsToConfig(File tempFile) throws IOException {
+        for (CouchbasePort port : CouchbasePort.values()) {
+            if (!port.isDynamic()) {
+                String config = String.format("{%s, %d}.\n", port.name, getMappedPort(port));
+                FileUtils.writeStringToFile(tempFile, config, "UTF-8", true);
+            }
+        }
+    }
+
+    @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!newBuckets.isEmpty()) {
             for (BucketSettings bucketSetting : newBuckets) {
@@ -255,10 +374,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private DefaultCouchbaseEnvironment createCouchbaseEnvironment() {
         initCluster();
         return DefaultCouchbaseEnvironment.builder()
-            .bootstrapCarrierDirectPort(getMappedPort(11210))
-            .bootstrapCarrierSslPort(getMappedPort(11207))
-            .bootstrapHttpDirectPort(getMappedPort(8091))
-            .bootstrapHttpSslPort(getMappedPort(18091))
+            .kvTimeout(10000)
+            .bootstrapCarrierDirectPort(getMappedPort(MEMCACHED))
+            .bootstrapCarrierSslPort(getMappedPort(MEMCACHED_SSL))
+            .bootstrapHttpDirectPort(getMappedPort(REST))
+            .bootstrapHttpSslPort(getMappedPort(REST_SSL))
             .build();
     }
 
@@ -315,5 +435,31 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     public CouchbaseContainer withGamesIMSample(boolean gamesIMSample) {
         this.gamesIMSample = gamesIMSample;
         return self();
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    protected enum CouchbasePort {
+        REST("rest_port", 8091, true),
+        CAPI("capi_port", 8092, false),
+        QUERY("query_port", 8093, false),
+        FTS("fts_http_port", 8094, false),
+        CBAS("cbas_http_port", 8095, false),
+        EVENTING("eventing_http_port", 8096, false),
+        MEMCACHED_SSL("memcached_ssl_port", 11207, false),
+        MEMCACHED("memcached_port", 11210, false),
+        REST_SSL("ssl_rest_port", 18091, true),
+        CAPI_SSL("ssl_capi_port", 18092, false),
+        QUERY_SSL("ssl_query_port", 18093, false),
+        FTS_SSL("fts_ssl_port", 18094, false),
+        CBAS_SSL("cbas_ssl_port", 18095, false),
+        EVENTING_SSL("eventing_ssl_port", 18096, false),
+        ;
+
+        final String name;
+
+        final int originalPort;
+
+        final boolean dynamic;
     }
 }
