@@ -373,7 +373,7 @@ public final class ResourceReaper {
          * @return true if the filters have been registered successfuly, false otherwise
          * @throws IOException if communication with Ryuk fails
          */
-        boolean register(List<Map.Entry<String, String>> filters) throws IOException {
+        protected boolean register(List<Map.Entry<String, String>> filters) throws IOException {
             String query = URLEncodedUtils.format(
                 filters.stream()
                     .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
