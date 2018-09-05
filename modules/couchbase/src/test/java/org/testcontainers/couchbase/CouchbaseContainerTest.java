@@ -7,7 +7,7 @@ public class CouchbaseContainerTest {
 
     @Test
     public void shouldUseCorrectDockerImage() {
-        CouchbaseContainer couchbaseContainer = new CouchbaseContainer().withBeerSample(true);
+        CouchbaseContainer couchbaseContainer = new CouchbaseContainer().withClusterAdmin("admin", "foobar");
 
         Assert.assertEquals(CouchbaseContainer.DOCKER_IMAGE_NAME + CouchbaseContainer.VERSION,
             couchbaseContainer.getDockerImageName());
