@@ -159,7 +159,8 @@ public class TestcontainersDockerCmdExecFactory extends AbstractDockerCmdExecFac
 
         @Override
         public DuplexChannel connect(Bootstrap bootstrap) throws InterruptedException {
-            return (DuplexChannel) bootstrap.connect(new DomainSocketAddress("/var/run/docker.sock")).sync().channel();
+            String socketPath = getDockerClientConfig().getDockerHost().getPath();
+            return (DuplexChannel) bootstrap.connect(new DomainSocketAddress(socketPath)).sync().channel();
         }
     }
 
