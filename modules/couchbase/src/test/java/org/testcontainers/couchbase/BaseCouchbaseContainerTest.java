@@ -4,12 +4,22 @@ import com.couchbase.client.java.document.RawJsonDocument;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
+import com.couchbase.client.java.view.DefaultView;
+import com.couchbase.client.java.view.DesignDocument;
+import com.couchbase.client.java.view.View;
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
 public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
+
+    private static final String VIEW_NAME = "testview";
+    private static final String VIEW_FUNCTION = "function (doc, meta) {\n" +
+        "  emit(meta.id, null);\n" +
+        "}";
+
 
     private static final String ID = "toto";
 
@@ -33,5 +43,16 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
         List<N1qlQueryRow> n1qlQueryRows = query.allRows();
         Assert.assertEquals(1, n1qlQueryRows.size());
         Assert.assertEquals(DOCUMENT, n1qlQueryRows.get(0).value().get(TEST_BUCKET).toString());
+    }
+
+    @Test
+    public void shouldCreateView() {
+        View view = DefaultView.create(VIEW_NAME, VIEW_FUNCTION);
+        DesignDocument document = DesignDocument.create(VIEW_NAME, Lists.newArrayList(view));
+        getBucket().bucketManager().insertDesignDocument(document);
+        DesignDocument result = getBucket().bucketManager().getDesignDocument(VIEW_NAME);
+        Assert.assertEquals(1, result.views().size());
+        View resultView = result.views().get(0);
+        Assert.assertEquals(VIEW_NAME, resultView.name());
     }
 }

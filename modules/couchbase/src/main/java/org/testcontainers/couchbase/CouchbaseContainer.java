@@ -38,6 +38,7 @@ import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.ThrowingFunction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -45,19 +46,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.CAPI;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED_SSL;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST_SSL;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.*;
 
 /**
  * Based on Laurent Doguin version,
@@ -67,12 +61,11 @@ import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST
 @AllArgsConstructor
 public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
-    public static final String VERSION = "5.1.0";
+    public static final String VERSION = "5.5.1";
     public static final String DOCKER_IMAGE_NAME = "couchbase/server:";
     public static final ObjectMapper MAPPER = new ObjectMapper();
-    public static final String STATIC_CONFIG_NAME = "static_config";
-    public static final String STATIC_CONFIG_PATH = "/opt/couchbase/etc/couchbase/";
-    public static final String STATIC_CONFIG_LOCATION = STATIC_CONFIG_PATH + STATIC_CONFIG_NAME;
+    public static final String STATIC_CONFIG = "/opt/couchbase/etc/couchbase/static_config";
+    public static final String CAPI_CONFIG = "/opt/couchbase/etc/couchdb/default.d/capi.ini";
 
     private String memoryQuota = "300";
 
@@ -95,12 +88,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Getter
     private boolean fts = false;
-
-    private boolean beerSample = false;
-
-    private boolean travelSample = false;
-
-    private boolean gamesIMSample = false;
 
     @Getter(lazy = true)
     private final CouchbaseEnvironment couchbaseEnvironment = createCouchbaseEnvironment();
@@ -139,11 +126,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         for (CouchbasePort port : CouchbasePort.values()) {
             exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
-
-            // CAPI port has a special configuration file which is set via env
-            if (port == CAPI) {
-                withEnv(port.getName(), getMappedPort(port) + "");
-            }
         }
         super.doStart();
     }
@@ -236,25 +218,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         String webSettingsURL = "/settings/web";
         String webSettingsContent = "username=" + URLEncoder.encode(clusterUsername, "UTF-8") + "&password=" + URLEncoder.encode(clusterPassword, "UTF-8") + "&port=8091";
 
-        String bucketURL = "/sampleBuckets/install";
-
-        StringBuilder sampleBucketPayloadBuilder = new StringBuilder();
-        sampleBucketPayloadBuilder.append('[');
-        if (travelSample) {
-            sampleBucketPayloadBuilder.append("\"travel-sample\",");
-        }
-        if (beerSample) {
-            sampleBucketPayloadBuilder.append("\"beer-sample\",");
-        }
-        if (gamesIMSample) {
-            sampleBucketPayloadBuilder.append("\"gamesim-sample\",");
-        }
-        sampleBucketPayloadBuilder.append(']');
-
         callCouchbaseRestAPI(poolURL, poolPayload);
         callCouchbaseRestAPI(setupServicesURL, setupServiceContent);
         callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
-        callCouchbaseRestAPI(bucketURL, sampleBucketPayloadBuilder.toString());
 
         createNodeWaitStrategy().waitUntilReady(this);
         callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
@@ -333,17 +299,28 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     protected void containerIsCreated(String containerId) {
-        String originalConfig = copyFileFromContainer(STATIC_CONFIG_LOCATION, inputStream -> IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-
-        byte[] configBytes = (originalConfig + "\n" + generateConfig()).getBytes(StandardCharsets.UTF_8);
-
-        copyFileToContainer(Transferable.of(configBytes), STATIC_CONFIG_LOCATION);
+        patchConfig(STATIC_CONFIG, this::addMappedPorts);
+        // capi needs a special configuration, see https://developer.couchbase.com/documentation/server/current/install/install-ports.html
+        patchConfig(CAPI_CONFIG, this::replaceCapiPort);
     }
 
-    private String generateConfig() {
-        return Stream.of(CouchbasePort.values())
+    private void patchConfig(String configLocation, ThrowingFunction<String, String> patchFunction) {
+        String patchedConfig = copyFileFromContainer(configLocation,
+            inputStream -> patchFunction.apply(IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
+        copyFileToContainer(Transferable.of(patchedConfig.getBytes(StandardCharsets.UTF_8)), configLocation);
+    }
+
+    private String addMappedPorts(String originalConfig) {
+        String portConfig = Stream.of(CouchbasePort.values())
             .filter(port -> !port.isDynamic())
             .map(port -> String.format("{%s, %d}.", port.name, getMappedPort(port)))
+            .collect(Collectors.joining("\n"));
+        return String.format("%s\n%s", originalConfig, portConfig);
+    }
+
+    private String replaceCapiPort(String originalConfig) {
+        return Arrays.stream(originalConfig.split("\n"))
+            .map(s -> (s.matches("port\\s*=\\s*" + CAPI.getOriginalPort())) ? "port = " + getMappedPort(CAPI) : s)
             .collect(Collectors.joining("\n"));
     }
 
@@ -381,8 +358,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return self();
     }
 
-    public CouchbaseContainer withClusterPassword(String clusterPassword) {
-        this.clusterPassword = clusterPassword;
+    public CouchbaseContainer withClusterAdmin(String username, String password) {
+        this.clusterUsername = username;
+        this.clusterPassword = password;
         return self();
     }
 
@@ -411,21 +389,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return self();
     }
 
-    public CouchbaseContainer withBeerSample(boolean beerSample) {
-        this.beerSample = beerSample;
-        return self();
-    }
-
-    public CouchbaseContainer withTravelSample(boolean travelSample) {
-        this.travelSample = travelSample;
-        return self();
-    }
-
-    public CouchbaseContainer withGamesIMSample(boolean gamesIMSample) {
-        this.gamesIMSample = gamesIMSample;
-        return self();
-    }
-
     @Getter
     @RequiredArgsConstructor
     protected enum CouchbasePort {
@@ -442,8 +405,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         QUERY_SSL("ssl_query_port", 18093, false),
         FTS_SSL("fts_ssl_port", 18094, false),
         CBAS_SSL("cbas_ssl_port", 18095, false),
-        EVENTING_SSL("eventing_ssl_port", 18096, false),
-        ;
+        EVENTING_SSL("eventing_ssl_port", 18096, false);
 
         final String name;
 
