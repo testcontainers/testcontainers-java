@@ -4,7 +4,7 @@ import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.time.Duration;
 
-public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class ClickHouseContainer extends JdbcDatabaseContainer {
     public static final String NAME = "clickhouse";
     public static final String IMAGE = "yandex/clickhouse-server";
     public static final String DEFAULT_TAG = "18.10.3";
