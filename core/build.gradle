@@ -35,6 +35,7 @@ shadowJar {
         'META-INF/services/org.glassfish.hk2.extension.*',
         'META-INF/services/org.jvnet.hk2.external.generator.*',
         'META-INF/services/org.glassfish.jersey.internal.spi.*',
+        'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
     ].each { exclude(it) }
 
