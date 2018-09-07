@@ -12,4 +12,11 @@ public class CouchbaseContainerTest {
         Assert.assertEquals(CouchbaseContainer.DOCKER_IMAGE_NAME + CouchbaseContainer.VERSION,
             couchbaseContainer.getDockerImageName());
     }
+
+    @Test
+    public void shouldStopWithoutThrowingException() {
+        CouchbaseContainer couchbaseContainer = new CouchbaseContainer();
+        couchbaseContainer.start();
+        couchbaseContainer.stop();
+    }
 }
