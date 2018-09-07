@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -15,10 +16,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.testcontainers.utility.LogUtils.logSafe;
+import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
 
 /**
  * Utility to look up registry authentication information for an image.
@@ -100,23 +100,23 @@ public class RegistryAuthLocator {
             // use helper preferentially (per https://docs.docker.com/engine/reference/commandline/cli/)
             final AuthConfig helperAuthConfig = authConfigUsingHelper(config, registryName);
             if (helperAuthConfig != null) {
-                log.debug("found helper auth config [{}]", logSafe(helperAuthConfig));
+                log.debug("found helper auth config [{}]", toSafeString(helperAuthConfig));
                 return helperAuthConfig;
             }
             // no credsHelper to use, using credsStore:
             final AuthConfig storeAuthConfig = authConfigUsingStore(config, registryName);
             if (storeAuthConfig != null) {
-                log.debug("found creds store auth config [{}]", logSafe(storeAuthConfig));
+                log.debug("found creds store auth config [{}]", toSafeString(storeAuthConfig));
                 return storeAuthConfig;
             }
             // fall back to base64 encoded auth hardcoded in config file
             final AuthConfig existingAuthConfig = findExistingAuthConfig(config, registryName);
             if (existingAuthConfig != null) {
-                log.debug("found existing auth config [{}]", logSafe(existingAuthConfig));
+                log.debug("found existing auth config [{}]", toSafeString(existingAuthConfig));
                 return existingAuthConfig;
             }
 
-            log.debug("no matching Auth Configs - falling back to defaultAuthConfig [{}]", logSafe(defaultAuthConfig));
+            log.debug("no matching Auth Configs - falling back to defaultAuthConfig [{}]", toSafeString(defaultAuthConfig));
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
             log.debug("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. Falling back to docker-java default behaviour. Exception message: {}",
@@ -221,10 +221,6 @@ public class RegistryAuthLocator {
     }
 
     private String effectiveRegistryName(DockerImageName dockerImageName) {
-        if (isNullOrEmpty(dockerImageName.getRegistry())) {
-            return DEFAULT_REGISTRY_NAME;
-        } else {
-            return dockerImageName.getRegistry();
-        }
+        return StringUtils.defaultIfEmpty(dockerImageName.getRegistry(), DEFAULT_REGISTRY_NAME);
     }
 }

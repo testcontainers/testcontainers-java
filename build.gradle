@@ -44,7 +44,6 @@ subprojects {
             exceptionFormat = 'full'
             events "STARTED", "PASSED", "FAILED", "SKIPPED"
         }
-        failFast = true
     }
 
     repositories {

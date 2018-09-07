@@ -43,19 +43,4 @@ public class LogUtils {
         followOutput(dockerClient, containerId, consumer, STDOUT, STDERR);
     }
 
-    public static String logSafe(AuthConfig authConfig) {
-
-        if (authConfig == null) {
-            return "null";
-        }
-
-        return MoreObjects.toStringHelper(authConfig)
-            .add("username", authConfig.getUsername())
-            .add("password", isNullOrEmpty(authConfig.getPassword()) ? "blank" : "hidden non-blank value")
-            .add("auth", isNullOrEmpty(authConfig.getAuth()) ? "blank" : "hidden non-blank value")
-            .add("email", authConfig.getEmail())
-            .add("registryAddress", authConfig.getRegistryAddress())
-            .add("registryToken", isNullOrEmpty(authConfig.getRegistrytoken()) ? "blank" : "hidden non-blank value")
-            .toString();
-    }
 }

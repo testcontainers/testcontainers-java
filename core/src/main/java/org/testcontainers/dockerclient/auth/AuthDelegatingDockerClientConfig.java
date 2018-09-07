@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.RegistryAuthLocator;
 
-import static org.testcontainers.utility.LogUtils.logSafe;
+import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
 
 /**
  * Facade implementation for {@link DockerClientConfig} which overrides how authentication
@@ -42,7 +42,7 @@ public class AuthDelegatingDockerClientConfig implements DockerClientConfig {
         final AuthConfig effectiveAuthConfig = RegistryAuthLocator.instance()
             .lookupAuthConfig(parsed, fallbackAuthConfig);
 
-        log.debug("Effective auth config [{}]", logSafe(effectiveAuthConfig));
+        log.debug("Effective auth config [{}]", toSafeString(effectiveAuthConfig));
         return effectiveAuthConfig;
     }
 

@@ -94,14 +94,15 @@ public class AuthenticatedImagePullTest {
     }
 
     private void putImageInRegistry() throws InterruptedException {
-        client.pullImageCmd("alpine:latest")
+        // It doesn't matter which image we use for this test, but use one that's likely to have been pulled already
+        final String dummySourceImage = TestcontainersConfiguration.getInstance().getRyukImage();
+
+        client.pullImageCmd(dummySourceImage)
             .exec(new PullImageResultCallback())
             .awaitCompletion(1, TimeUnit.MINUTES);
 
-        final String id = client.listImagesCmd()
-            .withImageNameFilter("alpine:latest")
+        final String id = client.inspectImageCmd(dummySourceImage)
             .exec()
-            .get(0)
             .getId();
 
         // push the image to the registry
