@@ -44,6 +44,7 @@ Examples/Tests:
  * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/jdbc-test/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
  * [Oracle-XE](https://github.com/testcontainers/testcontainers-java-module-oracle-xe/blob/master/src/test/java/org/testcontainers/junit/SimpleOracleTest.java)
  * [Virtuoso](https://github.com/testcontainers/testcontainers-java/blob/master/modules/virtuoso/src/test/java/org/testcontainers/junit/SimpleVirtuosoTest.java)
+ * [DB2](https://github.com/testcontainers/testcontainers-java/blob/master/modules/db2/src/test/java/org/testcontainers/junit/SimpleDb2Test.java)
 
 ### JDBC URL
 

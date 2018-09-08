@@ -2,6 +2,11 @@ repositories {
     maven {
         url "https://maven.atlassian.com/3rdparty/"
     }
+
+    // for db2jcc4
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/repositories/public/"
+    }
 }
 
 dependencies {
@@ -11,6 +16,7 @@ dependencies {
     compile project(':oracle-xe')
     compile project(':mssqlserver')
     compile project(':clickhouse')
+    compile project(':db2')
 
     testCompile 'com.google.guava:guava:18.0'
     testCompile 'org.postgresql:postgresql:42.0.0'
@@ -19,6 +25,7 @@ dependencies {
     testCompile 'com.oracle:ojdbc6:12.1.0.1-atlassian-hosted'
     testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     testCompile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.41'
+    testCompile 'com.ibm.db2.jcc:db2jcc4:10.1'
 
     testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
     testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
