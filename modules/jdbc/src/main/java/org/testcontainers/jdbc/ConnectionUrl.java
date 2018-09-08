@@ -203,7 +203,7 @@ public class ConnectionUrl {
      * @author manikmagar
      */
     public interface Patterns {
-        Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^:]+))?://([^\\?]+)(\\?.*)?");
+        Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+2?)(:([^:]+))?://([^\\?]+)(\\?.*)?");
 
         Pattern ORACLE_URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^(thin:)]+))?:thin:@([^\\?]+)(\\?.*)?");
 
