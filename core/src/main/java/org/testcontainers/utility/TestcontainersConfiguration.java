@@ -50,6 +50,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.2");
     }
 
+    public String getSSHdImage() {
+        return (String) properties.getOrDefault("sshd.container.image", "quay.io/testcontainers/sshd@sha256:18aa929c653284189fc9cefa45b731021857b6047a0a1757e909f958f258f088");
+    }
+
     public Integer getRyukTimeout() {
         return Integer.parseInt((String) properties.getOrDefault("ryuk.container.timeout", "30"));
     }
@@ -71,7 +75,11 @@ public class TestcontainersConfiguration {
     }
 
     public String getTransportType() {
-        return properties.getProperty("transport.type", "netty");
+        return properties.getProperty("transport.type", "okhttp");
+    }
+
+    public boolean isNpipeForced() {
+        return Boolean.parseBoolean(properties.getProperty("transport.npipe.forced", "false"));
     }
 
     @Synchronized

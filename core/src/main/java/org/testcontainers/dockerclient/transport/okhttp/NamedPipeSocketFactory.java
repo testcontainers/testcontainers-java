@@ -1,20 +1,18 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
+import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.Value;
 import org.scalasbt.ipcsocket.Win32NamedPipeSocket;
 
 import javax.net.SocketFactory;
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
 @Value
+@EqualsAndHashCode(callSuper = false)
 public class NamedPipeSocketFactory extends SocketFactory {
 
     String socketPath;

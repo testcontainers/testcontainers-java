@@ -11,6 +11,29 @@ public interface Transferable {
     int DEFAULT_FILE_MODE = 0100644;
     int DEFAULT_DIR_MODE = 040755;
 
+    static Transferable of(byte[] bytes) {
+        return of(bytes, DEFAULT_FILE_MODE);
+    }
+
+    static Transferable of(byte[] bytes, int fileMode) {
+        return new Transferable() {
+            @Override
+            public long getSize() {
+                return bytes.length;
+            }
+
+            @Override
+            public byte[] getBytes() {
+                return bytes;
+            }
+
+            @Override
+            public int getFileMode() {
+                return fileMode;
+            }
+        };
+    }
+
     /**
      * Get file mode. Default is 0100644.
      *
@@ -52,5 +75,7 @@ public interface Transferable {
         return new byte[0];
     }
 
-    String getDescription();
+    default String getDescription() {
+        return "";
+    }
 }

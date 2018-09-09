@@ -7,7 +7,7 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 
 public class CopyFileToContainerTest {
-    private static String containerPath = "/tmp";
+    private static String containerPath = "/tmp/mappable-resource/";
     private static String fileName = "test-resource.txt";
 
     @Test
