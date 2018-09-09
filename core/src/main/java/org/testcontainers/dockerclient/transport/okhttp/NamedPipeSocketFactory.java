@@ -3,7 +3,7 @@ package org.testcontainers.dockerclient.transport.okhttp;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.Value;
-import org.scalasbt.ipcsocket.Win32NamedPipeSocket;
+import org.scalasbt.ipcsocket.AsyncWin32NamedPipeSocket;
 
 import javax.net.SocketFactory;
 import java.io.*;
@@ -20,7 +20,7 @@ public class NamedPipeSocketFactory extends SocketFactory {
     @Override
     @SneakyThrows
     public Socket createSocket() {
-        return new Win32NamedPipeSocket(socketPath.replace("/", "\\")) {
+        return new AsyncWin32NamedPipeSocket(socketPath.replace("/", "\\")) {
 
             @Override
             public void connect(SocketAddress endpoint, int timeout) throws IOException {
