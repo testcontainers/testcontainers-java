@@ -42,8 +42,8 @@ public class JarFileShadingTest extends AbstractJarFileTest {
         );
 
         assertThatFileList(root.resolve("META-INF").resolve("native")).containsOnly(
-                "liborg-testcontainers-shaded-netty-transport-native-epoll.so",
-                "liborg-testcontainers-shaded-netty-transport-native-kqueue.jnilib"
+                "liborg-testcontainers-shaded-netty_transport_native_epoll_x86_64.so",
+                "liborg-testcontainers-shaded-netty_transport_native_kqueue_x86_64.jnilib"
         );
     }
 

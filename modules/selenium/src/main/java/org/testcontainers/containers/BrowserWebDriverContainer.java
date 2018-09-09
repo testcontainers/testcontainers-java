@@ -206,7 +206,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     public void afterTest(TestDescription description, Optional<Throwable> throwable) {
-        retainRecordingIfNeeded(description.getFilesystemFriendlyName(), throwable.isPresent());
+        retainRecordingIfNeeded(description.getFilesystemFriendlyName(), !throwable.isPresent());
     }
 
     @Override
