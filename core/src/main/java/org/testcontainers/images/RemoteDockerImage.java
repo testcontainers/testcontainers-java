@@ -3,7 +3,6 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
-import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
@@ -15,7 +14,6 @@ import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
-import org.testcontainers.utility.RegistryAuthLocator;
 
 import java.util.HashSet;
 import java.util.List;
@@ -95,14 +93,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
                 // The image is not available locally - pull it
                 try {
-                    final RegistryAuthLocator authLocator = new RegistryAuthLocator(dockerClient.authConfig());
-                    final AuthConfig effectiveAuthConfig = authLocator.lookupAuthConfig(imageName);
-
                     final PullImageResultCallback callback = new PullImageResultCallback();
                     dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())
                         .withTag(imageName.getVersionPart())
-                        .withAuthConfig(effectiveAuthConfig)
                         .exec(callback);
                     callback.awaitCompletion();
                     AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
