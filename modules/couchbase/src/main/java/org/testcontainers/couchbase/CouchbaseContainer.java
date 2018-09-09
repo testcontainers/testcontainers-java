@@ -180,7 +180,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     public void stop() {
-        Stream.<Runnable>of(super::stop, proxy::stop, this::stopCluster).parallel().forEach(Runnable::run);
+        stopCluster();
+        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
     }
 
     private void stopCluster() {
