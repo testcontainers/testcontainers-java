@@ -107,6 +107,8 @@ dependencies {
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
+    shaded 'de.gesellix:docker-filesocket:2018-02-17T21-56-51'
+
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.10'
     shaded 'commons-lang:commons-lang:2.6'

@@ -1,13 +1,15 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
+import de.gesellix.docker.client.filesocket.HostnameEncoder;
+import de.gesellix.docker.client.filesocket.NamedPipeSocket;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.Value;
-import org.scalasbt.ipcsocket.AsyncWin32NamedPipeSocket;
 
 import javax.net.SocketFactory;
-import java.io.*;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
@@ -20,37 +22,16 @@ public class NamedPipeSocketFactory extends SocketFactory {
     @Override
     @SneakyThrows
     public Socket createSocket() {
-        return new AsyncWin32NamedPipeSocket(socketPath.replace("/", "\\")) {
-
+        return new NamedPipeSocket() {
             @Override
             public void connect(SocketAddress endpoint, int timeout) throws IOException {
-                // Do nothing since it's not "connectable"
-            }
-
-            @Override
-            public InputStream getInputStream() {
-                return new FilterInputStream(super.getInputStream()) {
-                    @Override
-                    public void close() throws IOException {
-                        shutdownInput();
-                    }
-                };
-            }
-
-            @Override
-            public OutputStream getOutputStream() {
-                return new FilterOutputStream(super.getOutputStream()) {
-
-                    @Override
-                    public void write(byte[] b, int off, int len) throws IOException {
-                        out.write(b, off, len);
-                    }
-
-                    @Override
-                    public void close() throws IOException {
-                        shutdownOutput();
-                    }
-                };
+                super.connect(
+                    new InetSocketAddress(
+                        new HostnameEncoder().encode(socketPath),
+                        0
+                    ),
+                    timeout
+                );
             }
         };
     }
