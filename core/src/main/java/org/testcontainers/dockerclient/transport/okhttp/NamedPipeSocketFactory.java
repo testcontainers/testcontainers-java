@@ -1,5 +1,6 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
+import de.gesellix.docker.client.filesocket.FileSocket;
 import de.gesellix.docker.client.filesocket.HostnameEncoder;
 import de.gesellix.docker.client.filesocket.NamedPipeSocket;
 import lombok.EqualsAndHashCode;
@@ -27,7 +28,7 @@ public class NamedPipeSocketFactory extends SocketFactory {
             public void connect(SocketAddress endpoint, int timeout) throws IOException {
                 super.connect(
                     new InetSocketAddress(
-                        InetAddress.getByAddress(new HostnameEncoder().encode(socketPath), new byte[] { 0, 0, 0, 0}),
+                        InetAddress.getByAddress(encodeHostname(socketPath), new byte[] { 0, 0, 0, 0}),
                         0
                     ),
                     timeout
