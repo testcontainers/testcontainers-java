@@ -27,7 +27,7 @@ public class NamedPipeSocketFactory extends SocketFactory {
             public void connect(SocketAddress endpoint, int timeout) throws IOException {
                 super.connect(
                     new InetSocketAddress(
-                        new HostnameEncoder().encode(socketPath),
+                        InetAddress.getByAddress(new HostnameEncoder().encode(socketPath), new byte[] { 0, 0, 0, 0}),
                         0
                     ),
                     timeout
