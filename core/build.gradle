@@ -36,7 +36,9 @@ shadowJar {
         'META-INF/services/org.jvnet.hk2.external.generator.*',
         'META-INF/services/org.glassfish.jersey.internal.spi.*',
         'META-INF/services/java.security.Provider',
+        'META-INF/services/java.sql.Driver',
         'mozilla/public-suffix-list.txt',
+        'Version.java.template',
     ].each { exclude(it) }
 
     dependencies {
@@ -57,7 +59,10 @@ shadowJar {
         include(dependency('com.squareup.okio:.*'))
         include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
         include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
+        include(dependency('org.mariadb.jdbc:.*'))
     }
+
+    relocate("org.mariadb", "org.testcontainers.shaded.org.mariadb")
 }
 
 task jarFileTest(type: Test) {
@@ -106,6 +111,10 @@ dependencies {
     shaded 'com.squareup.okhttp3:okhttp:3.10.0'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
+
+    shaded 'org.mariadb.jdbc:mariadb-java-client:2.3.0', {
+        exclude(group: "*")
+    }
 
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.10'

@@ -3,6 +3,7 @@ package org.testcontainers.dockerclient.transport.okhttp;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.Value;
+import org.mariadb.jdbc.internal.io.socket.NamedPipeSocket;
 
 import javax.net.SocketFactory;
 import java.net.InetAddress;
