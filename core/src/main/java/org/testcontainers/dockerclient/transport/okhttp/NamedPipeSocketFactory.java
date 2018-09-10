@@ -1,18 +1,12 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
-import de.gesellix.docker.client.filesocket.FileSocket;
-import de.gesellix.docker.client.filesocket.HostnameEncoder;
-import de.gesellix.docker.client.filesocket.NamedPipeSocket;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.Value;
 
 import javax.net.SocketFactory;
-import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -23,18 +17,8 @@ public class NamedPipeSocketFactory extends SocketFactory {
     @Override
     @SneakyThrows
     public Socket createSocket() {
-        return new NamedPipeSocket() {
-            @Override
-            public void connect(SocketAddress endpoint, int timeout) throws IOException {
-                super.connect(
-                    new InetSocketAddress(
-                        InetAddress.getByAddress(encodeHostname(socketPath), new byte[] { 0, 0, 0, 0}),
-                        0
-                    ),
-                    timeout
-                );
-            }
-        };
+        String pipeName = socketPath.substring("//./pipe/".length()).replace("/", "\\");
+        return new NamedPipeSocket("localhost", pipeName);
     }
 
     @Override
