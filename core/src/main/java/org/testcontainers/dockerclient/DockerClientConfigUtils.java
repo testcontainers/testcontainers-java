@@ -61,4 +61,9 @@ public class DockerClientConfigUtils {
                 return null;
         }
     }
+
+    public static String getDockerHostPath(DockerClientConfig config) {
+        return config.getDockerHost().getPath();
+    }
+
 }

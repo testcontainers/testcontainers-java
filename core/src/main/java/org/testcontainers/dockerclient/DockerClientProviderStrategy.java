@@ -202,4 +202,9 @@ public abstract class DockerClientProviderStrategy {
     public String getDockerHostIpAddress() {
         return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
     }
+
+    public String getDockerHostPath() {
+        return DockerClientConfigUtils.getDockerHostPath(this.config);
+    }
+
 }

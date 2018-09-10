@@ -100,6 +100,7 @@ public class DockerClientFactory {
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
+        String dockerHostPath = strategy.getDockerHostPath();
         log.info("Docker host IP address is {}", hostIpAddress);
         DockerClient client = strategy.getClient();
 
@@ -116,7 +117,7 @@ public class DockerClientFactory {
 
             boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
 
-            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, checksEnabled);
+            String ryukContainerId = ResourceReaper.start(dockerHostPath, hostIpAddress, client, checksEnabled);
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
 
             VisibleAssertions.info("Checking the system...");
