@@ -51,6 +51,8 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:postgresql:9.6.8://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:postgis://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:postgis:9.6://hostname/databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:mariadb://hostname/databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename", EnumSet.noneOf(Options.class)},

@@ -73,6 +73,9 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:postgresql:9.6.8://hostname/databasename`
 
+### Using PostGIS
+
+`jdbc:tc:postgis:9.6://hostname/databasename`
 
 ## Using an init script
 
