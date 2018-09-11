@@ -2,15 +2,47 @@
 All notable changes to this project will be documented in this file.
 
 ## UNRELEASED
+
+### Fixed
+
+### Changed
+
+
+## [1.8.3] - 2018-08-05
+
+### Fixed
+
+- Fixed `with*` methods of `CouchbaseContainer` ([\#810](https://github.com/testcontainers/testcontainers-java/pull/810))
+- Fix problem with gzip encoded streams (e.g. copy file from container), by adding decompression support to netty exec factory (#817, fixes #681, relates to docker-java/docker-java#1079)
+
+## [1.8.2] - 2018-07-31
+
+### Fixed
+
+- Add support for transparently using local images with docker-compose ([\#798](https://github.com/testcontainers/testcontainers-java/pull/798), fixes [\#674](https://github.com/testcontainers/testcontainers-java/issues/674))
+- Fix bug with Dockerfile image creation with Docker for Mac 18.06-ce ([\#808](https://github.com/testcontainers/testcontainers-java/pull/808), fixes [\#680](https://github.com/testcontainers/testcontainers-java/issues/680))
+
+### Changed
+
+- Update Visible Assertions to 2.1.1 ([\#779](https://github.com/testcontainers/testcontainers-java/pull/779)).
+- KafkaContainer optimization (`group.initial.rebalance.delay.ms=0`) ([\#782](https://github.com/testcontainers/testcontainers-java/pull/782)).
+
+## [1.8.1] - 2018-07-10
+
 ### Fixed
 - Linux/Mac: Added support for docker credential helpers so that images may be pulled from private registries. See [\#729](https://github.com/testcontainers/testcontainers-java/issues/729), [\#647](https://github.com/testcontainers/testcontainers-java/issues/647) and [\#567](https://github.com/testcontainers/testcontainers-java/issues/567).
 - Ensure that the `COMPOSE_FILE` environment variable is populated with all relevant compose file names when running docker-compose in local mode [\#755](https://github.com/testcontainers/testcontainers-java/issues/755).
 - Fixed issue whereby specified command in MariaDB image was not being applied. ([\#534](https://github.com/testcontainers/testcontainers-java/issues/534))
+- Changed Oracle thin URL to support both Oracle 11 and 12 XE ([\#769](https://github.com/testcontainers/testcontainers-java/issues/769))
+- Ensure that full JDBC URL query string is passed to JdbcDatabaseDelegate during initscript invocation ([\#741](https://github.com/testcontainers/testcontainers-java/issues/741); fixes [\#727](https://github.com/testcontainers/testcontainers-java/issues/727))
+- Ensure that necessary transitive dependency inclusions are applied to generated project POMs ([\#772](https://github.com/testcontainers/testcontainers-java/issues/772); fixes [\#753](https://github.com/testcontainers/testcontainers-java/issues/753) and [\#652](https://github.com/testcontainers/testcontainers-java/issues/652))
 
 ### Changed
 - Update Apache Pulsar module to 2.0.1 [\#760](https://github.com/testcontainers/testcontainers-java/issues/760).
 - Make JdbcDatabaseContainer#getDriverClassName public [\#743](https://github.com/testcontainers/testcontainers-java/pull/743).
 - enable `copyFileToContainer` feature during container startup [\#742](https://github.com/testcontainers/testcontainers-java/pull/742).
+- avoid using file mounting in KafkaContainer [\#775](https://github.com/testcontainers/testcontainers-java/pull/775).
+- Added Apache Cassandra module [\#776](https://github.com/testcontainers/testcontainers-java/pull/776).
 
 ## [1.8.0] - 2018-06-14
 

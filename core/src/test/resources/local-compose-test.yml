@@ -1,0 +1,6 @@
+version: '2'
+services:
+  redis:
+    image: redis-local:latest
+    ports:
+      - 6379

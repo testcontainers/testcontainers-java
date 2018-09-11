@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 
 import java.util.regex.Pattern;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "rawName")
 public final class DockerImageName {
 
     /* Regex patterns used for validation */

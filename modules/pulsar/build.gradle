@@ -3,6 +3,6 @@ description = "Testcontainers :: Pulsar"
 dependencies {
     compile project(':testcontainers')
 
-    testCompile group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.0.1-incubating'
+    testCompile group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.1.0-incubating'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.10.0'
 }

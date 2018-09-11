@@ -17,6 +17,9 @@ public class OracleContainer extends JdbcDatabaseContainer {
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
 
+    private String username = "system";
+    private String password = "oracle";
+
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()
             .getProperties().getProperty("oracle.container.image");
@@ -62,17 +65,29 @@ public class OracleContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@//" + getContainerIpAddress() + ":" + getOraclePort() + "/" + getSid();
+        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + ":" + getSid();
     }
 
     @Override
     public String getUsername() {
-        return "system";
+        return username;
     }
 
     @Override
     public String getPassword() {
-        return "oracle";
+        return password;
+    }
+
+    @Override
+    public OracleContainer withUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    @Override
+    public OracleContainer withPassword(String password) {
+        this.password = password;
+        return this;
     }
 
     @SuppressWarnings("SameReturnValue")

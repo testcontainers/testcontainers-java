@@ -35,6 +35,7 @@ shadowJar {
         'META-INF/services/org.glassfish.hk2.extension.*',
         'META-INF/services/org.jvnet.hk2.external.generator.*',
         'META-INF/services/org.glassfish.jersey.internal.spi.*',
+        'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
     ].each { exclude(it) }
 
@@ -55,6 +56,7 @@ shadowJar {
         include(dependency('com.squareup.okhttp3:.*'))
         include(dependency('com.squareup.okio:.*'))
         include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
+        include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
     }
 }
 
@@ -82,7 +84,7 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    compile 'org.rnorth.visible-assertions:visible-assertions:2.1.0'
+    compile 'org.rnorth.visible-assertions:visible-assertions:2.1.1'
 
     compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
         exclude(group: "log4j", module: "log4j")
@@ -94,7 +96,7 @@ dependencies {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java:docker-java:3.1.0-rc-3') {
+    shaded ('com.github.docker-java:docker-java:3.1.0-rc-4') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
         exclude(group: 'log4j')
@@ -102,6 +104,8 @@ dependencies {
         exclude(group: 'com.kohlschutter.junixsocket')
     }
     shaded 'com.squareup.okhttp3:okhttp:3.10.0'
+
+    shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.10'
