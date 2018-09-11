@@ -71,7 +71,7 @@ public final class ResourceReaper {
         MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
 
         List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind(dockerHostPort, new Volume(dockerHostPort)));
+        binds.add(new Bind(dockerHostPort, new Volume("/var/run/docker.sock")));
         if (withDummyMount) {
             // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
             binds.add(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro));
