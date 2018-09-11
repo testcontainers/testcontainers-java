@@ -101,23 +101,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private SocatContainer proxy;
 
-    @Value
-    @AllArgsConstructor
-    private class BucketAndUserSettings {
-
-        private final static String DEFAULT_ROLE = "bucket_admin";
-
-        private final BucketSettings bucketSettings;
-        private final UserSettings userSettings;
-
-        public BucketAndUserSettings(final BucketSettings bucketSettings) {
-            this.bucketSettings = bucketSettings;
-            this.userSettings = UserSettings.build()
-                .password(bucketSettings.password())
-                .roles(Collections.singletonList(new UserRole(DEFAULT_ROLE, bucketSettings.name())));
-        }
-    }
-
     public CouchbaseContainer() {
         this(DOCKER_IMAGE_NAME + VERSION);
     }
@@ -273,8 +256,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         ClusterManager clusterManager = getCouchbaseCluster().clusterManager(clusterUsername, clusterPassword);
         // Insert Bucket
         BucketSettings bucketSettings = clusterManager.insertBucket(bucketSetting);
-        // Insert Bucket admin user
         try {
+            // Insert Bucket user
             clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
         } catch (Exception e) {
             logger().warn("Unable to insert user '" + bucketSetting.name() + "', maybe you are using older version");
@@ -286,18 +269,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 bucket.query(Index.createPrimaryIndex().on(bucketSetting.name()));
             }
         }
-    }
-
-    private List<UserRole> getAdminRoles(String bucketName) {
-        return Lists.newArrayList(
-            new UserRole("bucket_admin", bucketName),
-            new UserRole("views_admin", bucketName),
-            new UserRole("query_manage_index", bucketName),
-            new UserRole("query_update", bucketName),
-            new UserRole("query_select", bucketName),
-            new UserRole("query_insert", bucketName),
-            new UserRole("query_delete", bucketName)
-        );
     }
 
     public void callCouchbaseRestAPI(String url, String payload) throws IOException {
@@ -432,5 +403,33 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         final int originalPort;
 
         final boolean dynamic;
+    }
+
+    @Value
+    @AllArgsConstructor
+    private class BucketAndUserSettings {
+
+        private final BucketSettings bucketSettings;
+        private final UserSettings userSettings;
+
+        public BucketAndUserSettings(final BucketSettings bucketSettings) {
+            this.bucketSettings = bucketSettings;
+            this.userSettings = UserSettings.build()
+                .password(bucketSettings.password())
+                .roles(getDefaultAdminRoles(bucketSettings.name()));
+        }
+
+        private List<UserRole> getDefaultAdminRoles(String bucketName) {
+            return Lists.newArrayList(
+                new UserRole("bucket_admin", bucketName),
+                new UserRole("views_admin", bucketName),
+                new UserRole("query_manage_index", bucketName),
+                new UserRole("query_update", bucketName),
+                new UserRole("query_select", bucketName),
+                new UserRole("query_insert", bucketName),
+                new UserRole("query_delete", bucketName)
+            );
+        }
+
     }
 }
