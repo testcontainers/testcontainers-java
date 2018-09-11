@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 /**
- * Factory for PostGIS containers, which are a special flavour os PostgreSQL.
+ * Factory for PostGIS containers, which are a special flavour of PostgreSQL.
  */
 public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
