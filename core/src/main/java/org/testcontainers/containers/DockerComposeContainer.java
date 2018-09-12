@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -622,13 +623,12 @@ class LocalDockerCompose implements DockerCompose {
         environment.put(ENV_PROJECT_NAME, identifier);
 
 
-        final List<String> absoluteDockerComposeFiles = composeFiles.stream()
+        final Stream<String> absoluteDockerComposeFilePaths = composeFiles.stream()
             .map(File::getAbsolutePath)
-            .map(Objects::toString)
-            .collect(toList());
+            .map(Objects::toString);
 
-        final String composeFileEnvVariableValue = absoluteDockerComposeFiles.stream()
-            .collect(joining(File.pathSeparator + ""));
+        final String composeFileEnvVariableValue = absoluteDockerComposeFilePaths.collect(
+            joining(File.pathSeparator + ""));
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
 
         final File pwd = composeFiles.get(0).getAbsoluteFile().getParentFile().getAbsoluteFile();
