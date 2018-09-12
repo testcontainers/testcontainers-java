@@ -110,10 +110,6 @@ dependencies {
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.mariadb.jdbc:mariadb-java-client:2.3.0', {
-        exclude(group: "*")
-    }
-
     shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.10'
     shaded 'commons-lang:commons-lang:2.6'
