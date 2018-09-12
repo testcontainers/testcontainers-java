@@ -59,10 +59,8 @@ shadowJar {
         include(dependency('com.squareup.okio:.*'))
         include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
         include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
-        include(dependency('org.mariadb.jdbc:.*'))
     }
 
-    relocate("org.mariadb", "org.testcontainers.shaded.org.mariadb")
 }
 
 task jarFileTest(type: Test) {
