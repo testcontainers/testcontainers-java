@@ -311,7 +311,13 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                     while (!(shouldStop.get() || source.exhausted())) {
                         int bytesReceived = inputStream.read(buffer);
 
-                        handler.channelRead(null, Unpooled.wrappedBuffer(buffer, 0, bytesReceived));
+                        int offset = 0;
+                        for (int i = 0; i < bytesReceived; i++) {
+                            if (buffer[i] == '\n' || i == bytesReceived - 1) {
+                                handler.channelRead(null, Unpooled.wrappedBuffer(buffer, offset, i - offset + 1));
+                                offset = i + 1;
+                            }
+                        }
                     }
                     callback.onComplete();
                 } catch (Exception e) {
