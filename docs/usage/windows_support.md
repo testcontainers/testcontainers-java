@@ -3,7 +3,7 @@
 ## Prerequisites
 * [Docker for Windows](https://docs.docker.com/docker-for-windows/) needs to be installed
   * Docker version 17.06 is confirmed to work on Windows 10 with Hyper-V.
-  * On the General page in Settings, "Expose daemon on tcp://localhost:2375 without TLS" must be checked.
+  * Testcontainers supports communication with Docker on Docker for Windows using named pipes.
 
 ## Limitations
 The following features are not available or do not work correctly so make sure you do not use them or use them with 
@@ -11,7 +11,7 @@ caution. The list may not be complete.
 
 ### Testing
 
-Testcontainers is not regularly tested on Windows, so please consider it to be at an alpha level of readiness.
+Testcontainers is not regularly tested on Windows, so please consider it to be at an beta level of readiness.
 
 If you wish to use Testcontainers on Windows, please confirm that it works correctly for you before investing significant
 effort.
