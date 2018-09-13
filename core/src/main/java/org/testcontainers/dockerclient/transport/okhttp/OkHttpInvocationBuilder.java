@@ -313,7 +313,10 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
 
                         int offset = 0;
                         for (int i = 0; i < bytesReceived; i++) {
-                            if (buffer[i] == '\n' || i == bytesReceived - 1) {
+                            // some handlers like JsonResponseCallbackHandler do not work with multi-line buffers
+                            boolean isLineBreak = buffer[i] == '\n';
+                            boolean isEndOfBuffer = i == bytesReceived - 1;
+                            if (isLineBreak || isEndOfBuffer) {
                                 handler.channelRead(null, Unpooled.wrappedBuffer(buffer, offset, i - offset + 1));
                                 offset = i + 1;
                             }
