@@ -36,9 +36,7 @@ shadowJar {
         'META-INF/services/org.jvnet.hk2.external.generator.*',
         'META-INF/services/org.glassfish.jersey.internal.spi.*',
         'META-INF/services/java.security.Provider',
-        'META-INF/services/java.sql.Driver',
         'mozilla/public-suffix-list.txt',
-        'Version.java.template',
     ].each { exclude(it) }
 
     dependencies {
@@ -60,7 +58,6 @@ shadowJar {
         include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
         include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
     }
-
 }
 
 task jarFileTest(type: Test) {

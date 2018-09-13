@@ -41,6 +41,7 @@ public class NamedPipeSocketFactory extends SocketFactory {
                 connect(endpoint, 0);
             }
 
+            @Override
             public void connect(SocketAddress endpoint, int timeout) {
                 file = Unreliables.retryUntilSuccess(Math.max(timeout, 10_000), TimeUnit.MILLISECONDS, () -> {
                     try {
@@ -86,37 +87,14 @@ public class NamedPipeSocketFactory extends SocketFactory {
                 };
             }
 
+            @Override
             public InputStream getInputStream() {
                 return is;
             }
 
+            @Override
             public OutputStream getOutputStream() {
                 return os;
-            }
-
-            public void setTcpNoDelay(boolean bool) {
-            }
-
-            public void setKeepAlive(boolean bool) {
-            }
-
-            public void setReceiveBufferSize(int size) {
-            }
-
-            public void setSendBufferSize(int size) {
-            }
-
-            public void setSoLinger(boolean bool, int value) {
-            }
-
-            @Override
-            public void setSoTimeout(int timeout) {
-            }
-
-            public void shutdownInput() {
-            }
-
-            public void shutdownOutput() {
             }
         };
     }
