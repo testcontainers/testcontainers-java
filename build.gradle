@@ -38,6 +38,7 @@ subprojects {
     task release(dependsOn: bintrayUpload)
 
     test {
+        defaultCharacterEncoding = "UTF-8"
         testLogging {
             displayGranularity 1
             showStackTraces = true
