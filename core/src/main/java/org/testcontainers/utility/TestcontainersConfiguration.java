@@ -78,10 +78,6 @@ public class TestcontainersConfiguration {
         return properties.getProperty("transport.type", "okhttp");
     }
 
-    public boolean isNpipeForced() {
-        return Boolean.parseBoolean(properties.getProperty("transport.npipe.forced", "false"));
-    }
-
     @Synchronized
     public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
         try {
