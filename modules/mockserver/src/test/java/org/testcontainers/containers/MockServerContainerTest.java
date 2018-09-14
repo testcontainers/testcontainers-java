@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import lombok.Cleanup;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockserver.client.MockServerClient;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -20,7 +21,7 @@ public class MockServerContainerTest {
 
     @Test
     public void testBasicScenario() throws Exception {
-        mockServer.getClient()
+        new MockServerClient(mockServer.getContainerIpAddress(), mockServer.getServerPort())
             .when(request("/hello"))
             .respond(response("Hello World!"));
 
