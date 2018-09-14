@@ -36,9 +36,11 @@ import okio.Source;
 import org.testcontainers.DockerClientFactory;
 
 import javax.annotation.Nullable;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -322,10 +324,17 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
 
         @Override
         public void accept(BufferedSource source) {
-            try (InputStream src = source.inputStream()) {
-                MappingIterator<T> iterator = objectMapper.readerFor(typeReference).readValues(src);
-                while (iterator.hasNextValue() && !source.exhausted()) {
-                    resultCallback.onNext(iterator.nextValue());
+            try (
+                InputStream src = source.inputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(src))
+            ) {
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+
+                    resultCallback.onNext(objectMapper.readValue(line, typeReference));
                 }
             } catch (Exception e) {
                 resultCallback.onError(e);
