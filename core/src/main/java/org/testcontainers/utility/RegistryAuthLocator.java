@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -187,6 +186,12 @@ public class RegistryAuthLocator {
     }
 
     private AuthConfig runCredentialProvider(String hostName, String credHelper) throws Exception {
+
+        if (StringUtils.isBlank(hostName)) {
+            log.debug("There is no point to locate AuthConfig for blank hostName, return null to allow fallback");
+            return null;
+        }
+
         final String credentialHelperName = getCredentialHelperName(credHelper);
         String data;
 
