@@ -188,7 +188,7 @@ public class RegistryAuthLocator {
 
     private AuthConfig runCredentialProvider(String hostName, String credHelper) throws Exception {
 
-        if (StringUtils.isBlank(hostName)) {
+        if (isBlank(hostName)) {
             log.debug("There is no point to locate AuthConfig for blank hostName, return null to allow fallback");
             return null;
         }
