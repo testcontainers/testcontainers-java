@@ -30,12 +30,14 @@ public class RegistryAuthLocator {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static RegistryAuthLocator instance;
     private final String commandPathPrefix;
+    private final String commandExtension;
     private final File configFile;
 
     @VisibleForTesting
-    RegistryAuthLocator(File configFile, String commandPathPrefix) {
+    RegistryAuthLocator(File configFile, String commandPathPrefix, String commandExtension) {
         this.configFile = configFile;
         this.commandPathPrefix = commandPathPrefix;
+        this.commandExtension = commandExtension;
     }
 
     /**
@@ -45,6 +47,7 @@ public class RegistryAuthLocator {
             System.getProperty("user.home") + "/.docker");
         this.configFile = new File(dockerConfigLocation + "/config.json");
         this.commandPathPrefix = "";
+        this.commandExtension = "";
     }
 
     public synchronized static RegistryAuthLocator instance() {
@@ -78,12 +81,6 @@ public class RegistryAuthLocator {
      * @return an AuthConfig that is applicable to this specific image OR the defaultAuthConfig.
      */
     public AuthConfig lookupAuthConfig(DockerImageName dockerImageName, AuthConfig defaultAuthConfig) {
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            log.debug("RegistryAuthLocator is not supported on Windows. Please help test or improve it and update " +
-                "https://github.com/testcontainers/testcontainers-java/issues/756");
-            return defaultAuthConfig;
-        }
 
         log.debug("Looking up auth config for image: {}", dockerImageName);
 
@@ -190,7 +187,7 @@ public class RegistryAuthLocator {
     }
 
     private AuthConfig runCredentialProvider(String hostName, String credHelper) throws Exception {
-        final String credentialHelperName = commandPathPrefix + "docker-credential-" + credHelper;
+        final String credentialHelperName = getCredentialHelperName(credHelper);
         String data;
 
         log.debug("Executing docker credential helper: {} to locate auth config for: {}",
@@ -218,6 +215,10 @@ public class RegistryAuthLocator {
             .withRegistryAddress(helperResponse.at("/ServerURL").asText())
             .withUsername(helperResponse.at("/Username").asText())
             .withPassword(helperResponse.at("/Secret").asText());
+    }
+
+    private String getCredentialHelperName(String credHelper) {
+        return commandPathPrefix + "docker-credential-" + credHelper + commandExtension;
     }
 
     private String effectiveRegistryName(DockerImageName dockerImageName) {

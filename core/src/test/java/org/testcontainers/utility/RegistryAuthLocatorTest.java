@@ -4,8 +4,6 @@ import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.io.Resources;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -15,12 +13,6 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
 
 public class RegistryAuthLocatorTest {
-
-    @BeforeClass
-    public static void nonWindowsTest() throws Exception {
-        Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
-    }
-
     @Test
     public void lookupAuthConfigWithoutCredentials() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty.json");
@@ -90,7 +82,19 @@ public class RegistryAuthLocatorTest {
     @NotNull
     private RegistryAuthLocator createTestAuthLocator(String configName) throws URISyntaxException {
         final File configFile = new File(Resources.getResource("auth-config/" + configName).toURI());
-        return new RegistryAuthLocator(configFile, configFile.getParentFile().getAbsolutePath() + "/");
+
+        String commandPathPrefix = configFile.getParentFile().getAbsolutePath() + "/";
+        String commandExtension = "";
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            commandPathPrefix += "win/";
+
+            // need to provide executable extension otherwise won't run it
+            // with real docker wincredential exe there is no problem
+            commandExtension = ".bat";
+        }
+
+        return new RegistryAuthLocator(configFile, commandPathPrefix, commandExtension);
     }
 
 }
