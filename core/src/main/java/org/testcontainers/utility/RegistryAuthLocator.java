@@ -6,6 +6,7 @@ import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
+import org.zeroturnaround.exec.InvalidResultException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import java.io.ByteArrayInputStream;
@@ -208,7 +209,26 @@ public class RegistryAuthLocator {
                 .execute()
                 .outputUTF8()
                 .trim();
-        } catch (Exception e) {
+        }
+        catch (InvalidResultException e) {
+            if(e.getResult() != null && e.getResult().hasOutput()) {
+                // ErrCredentialsNotFound standardizes the not found error, so every helper returns the same message
+                // We can handle it properly with fallback to other resources.
+                // https://github.com/docker/docker-credential-helpers/blob/19b711cc92fbaa47533646fa8adb457d199c99e1/credentials/error.go#L4-L6
+                if ("credentials not found in native keychain".equals(e.getResult().outputString().trim())) {
+                    log.debug("Credentials not found in native keychain, credential helper ({}), return null to allow fallback", credentialHelperName);
+                    return null;
+                }
+                log.debug("Failure running docker credential helper ({}) with output '{}'",
+                    credentialHelperName, e.getResult().outputString());
+            }
+            else {
+                log.debug("Failure running docker credential helper ({})", credentialHelperName);
+            }
+
+            throw e;
+        }
+        catch (Exception e) {
             log.debug("Failure running docker credential helper ({})", credentialHelperName);
             throw e;
         }
