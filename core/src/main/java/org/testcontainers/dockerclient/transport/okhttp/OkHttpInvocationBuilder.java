@@ -2,7 +2,9 @@ package org.testcontainers.dockerclient.transport.okhttp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.exception.BadRequestException;
 import com.github.dockerjava.api.exception.ConflictException;
@@ -13,13 +15,10 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.exception.UnauthorizedException;
 import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.StreamType;
 import com.github.dockerjava.core.InvocationBuilder;
-import com.github.dockerjava.netty.handler.FramedResponseStreamHandler;
-import com.github.dockerjava.netty.handler.JsonResponseCallbackHandler;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -34,13 +33,15 @@ import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
+import org.testcontainers.DockerClientFactory;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -91,7 +92,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         executeAndStream(
             request,
             resultCallback,
-            new FramedResponseStreamHandler(resultCallback)
+            new FramedSink(resultCallback)
         );
     }
 
@@ -187,7 +188,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             okHttpClient,
             request,
             resultCallback,
-            new FramedResponseStreamHandler(resultCallback)
+            new FramedSink(resultCallback)
         );
     }
 
@@ -200,7 +201,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         executeAndStream(
             request,
             resultCallback,
-            new JsonResponseCallbackHandler<>(typeReference, resultCallback)
+            new JsonSink<>(typeReference, resultCallback)
         );
     }
 
@@ -247,7 +248,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
 
             @Override
             public void writeTo(BufferedSink sink) throws IOException {
-                try(Source source = Okio.source(body)) {
+                try (Source source = Okio.source(body)) {
                     sink.writeAll(source);
                 }
             }
@@ -286,49 +287,95 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         }
     }
 
-    protected <T> void executeAndStream(Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
-        executeAndStream(okHttpClient, request, callback, handler);
+    protected <T> void executeAndStream(Request request, ResultCallback<T> callback, Consumer<BufferedSource> sourceConsumer) {
+        executeAndStream(okHttpClient, request, callback, sourceConsumer);
     }
 
-    protected <T> void executeAndStream(OkHttpClient okHttpClient, Request request, ResultCallback<T> callback, SimpleChannelInboundHandler<ByteBuf> handler) {
-        // TODO proper thread management
-        Thread thread = new Thread() {
-            @Override
-            @SneakyThrows
-            public void run() {
-                try (
-                    Response response = execute(okHttpClient, request.newBuilder().tag("streaming").build());
-                    BufferedSource source = response.body().source();
-                    InputStream inputStream = source.inputStream();
-                ) {
-                    AtomicBoolean shouldStop = new AtomicBoolean();
-                    callback.onStart(() -> {
-                        shouldStop.set(true);
-                        response.close();
-                    });
-
-                    byte[] buffer = new byte[4 * 1024];
-                    while (!(shouldStop.get() || source.exhausted())) {
-                        int bytesReceived = inputStream.read(buffer);
-
-                        int offset = 0;
-                        for (int i = 0; i < bytesReceived; i++) {
-                            // some handlers like JsonResponseCallbackHandler do not work with multi-line buffers
-                            boolean isLineBreak = buffer[i] == '\n';
-                            boolean isEndOfBuffer = i == bytesReceived - 1;
-                            if (isLineBreak || isEndOfBuffer) {
-                                handler.channelRead(null, Unpooled.wrappedBuffer(buffer, offset, i - offset + 1));
-                                offset = i + 1;
-                            }
-                        }
-                    }
-                    callback.onComplete();
-                } catch (Exception e) {
-                    callback.onError(e);
-                }
+    protected <T> void executeAndStream(OkHttpClient okHttpClient, Request request, ResultCallback<T> callback, Consumer<BufferedSource> sourceConsumer) {
+        Thread thread = new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
+            try (
+                Response response = execute(okHttpClient, request.newBuilder().tag("streaming").build());
+                BufferedSource source = response.body().source();
+            ) {
+                callback.onStart(response);
+                sourceConsumer.accept(source);
+                callback.onComplete();
+            } catch (Exception e) {
+                callback.onError(e);
             }
-        };
+        }, "tc-okhttp-stream-" + Objects.hashCode(request));
+        thread.setDaemon(true);
 
         thread.start();
+    }
+
+    @RequiredArgsConstructor
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    private static class JsonSink<T> implements Consumer<BufferedSource> {
+
+        private static ObjectMapper objectMapper = new ObjectMapper()
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+        TypeReference<T> typeReference;
+
+        ResultCallback<T> resultCallback;
+
+        @Override
+        public void accept(BufferedSource source) {
+            try (InputStream src = source.inputStream()) {
+                MappingIterator<T> iterator = objectMapper.readerFor(typeReference).readValues(src);
+                while (iterator.hasNextValue() && !source.exhausted()) {
+                    resultCallback.onNext(iterator.nextValue());
+                }
+            } catch (Exception e) {
+                resultCallback.onError(e);
+            }
+        }
+    }
+
+    @RequiredArgsConstructor
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    private static class FramedSink implements Consumer<BufferedSource> {
+
+        private static final int HEADER_SIZE = 8;
+
+        private final ResultCallback<Frame> resultCallback;
+
+        @Override
+        public void accept(BufferedSource source) {
+            try {
+                while (!source.exhausted()) {
+                    // See https://docs.docker.com/engine/api/v1.37/#operation/ContainerAttach
+                    if(!source.request(HEADER_SIZE)) {
+                        return;
+                    }
+                    StreamType streamType = streamType(source.readByte());
+                    source.skip(3);
+                    int payloadSize = source.readInt();
+
+                    if(!source.request(payloadSize)) {
+                        return;
+                    }
+                    byte[] payload = source.readByteArray(payloadSize);
+
+                    resultCallback.onNext(new Frame(streamType, payload));
+                }
+            } catch (Exception e) {
+                resultCallback.onError(e);
+            }
+        }
+
+        private static StreamType streamType(byte streamType) {
+            switch (streamType) {
+                case 0:
+                    return StreamType.STDIN;
+                case 1:
+                    return StreamType.STDOUT;
+                case 2:
+                    return StreamType.STDERR;
+                default:
+                    return StreamType.RAW;
+            }
+        }
     }
 }
