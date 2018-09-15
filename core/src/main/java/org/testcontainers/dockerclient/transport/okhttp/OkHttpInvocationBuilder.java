@@ -2,7 +2,6 @@ package org.testcontainers.dockerclient.transport.okhttp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.async.ResultCallback;
@@ -36,11 +35,9 @@ import okio.Source;
 import org.testcontainers.DockerClientFactory;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -324,12 +321,9 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
 
         @Override
         public void accept(BufferedSource source) {
-            try (
-                InputStream src = source.inputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(src))
-            ) {
+            try {
                 while (true) {
-                    String line = reader.readLine();
+                    String line = source.readUtf8Line();
                     if (line == null) {
                         break;
                     }
