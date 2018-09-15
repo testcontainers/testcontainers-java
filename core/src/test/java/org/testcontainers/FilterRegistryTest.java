@@ -1,7 +1,7 @@
-package org.testcontainers.utility;
+package org.testcontainers;
 
 import org.junit.Test;
-import org.testcontainers.utility.ResourceReaper.FilterRegistry;
+import org.testcontainers.RyakResourceManager.FilterRegistry;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

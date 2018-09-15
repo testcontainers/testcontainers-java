@@ -5,9 +5,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.*;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -17,15 +15,11 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.utility.ComparableVersion;
-import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -58,6 +52,7 @@ public class DockerClientFactory {
     private boolean initialized = false;
     private String activeApiVersion;
     private String activeExecutionDriver;
+    private ResourceManager resourceManager;
 
     static {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
@@ -114,19 +109,17 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
-
-            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, checksEnabled);
-            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
+            // For Windows and LCOW containers used windowsfilter storage driver
+            String driver = dockerInfo.getDriver();
+            if (driver != null && driver.contains("windowsfilter")) {
+                resourceManager = new InProcessResourceManager(strategy);
+            } else {
+                resourceManager = new RyakResourceManager(strategy);
+            }
 
             VisibleAssertions.info("Checking the system...");
 
             checkDockerVersion(version.getVersion());
-
-            if (checksEnabled) {
-                checkDiskSpace(client, ryukContainerId);
-                checkMountableFile(client, ryukContainerId);
-            }
 
             initialized = true;
         }
@@ -148,34 +141,7 @@ public class DockerClientFactory {
         });
     }
 
-    private void checkDiskSpace(DockerClient dockerClient, String id) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        try {
-            dockerClient
-                    .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
-                    .exec(new ExecStartResultCallback(outputStream, null))
-                    .awaitCompletion();
-        } catch (Exception e) {
-            log.debug("Can't exec disk checking command", e);
-        }
-
-        DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
-
-        VisibleAssertions.assertTrue(
-                "Docker environment should have more than 2GB free disk space",
-                df.availableMB.map(it -> it >= 2048).orElse(true)
-        );
-    }
-
-    private void checkMountableFile(DockerClient dockerClient, String id) {
-        try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(id, "/dummy").exec()) {
-            stream.read();
-            VisibleAssertions.pass("File should be mountable");
-        } catch (Exception e) {
-            VisibleAssertions.fail("File should be mountable but fails with " + e.getMessage());
-        }
-    }
 
     /**
    * Check whether the image is available locally and pull it otherwise
@@ -221,28 +187,6 @@ public class DockerClientFactory {
         }
     }
 
-    @VisibleForTesting
-    static class DiskSpaceUsage {
-        Optional<Long> availableMB = Optional.empty();
-        Optional<Integer> usedPercent = Optional.empty();
-    }
-
-    @VisibleForTesting
-    DiskSpaceUsage parseAvailableDiskSpace(String dfOutput) {
-        DiskSpaceUsage df = new DiskSpaceUsage();
-        String[] lines = dfOutput.split("\n");
-        for (String line : lines) {
-            String[] fields = line.split("\\s+");
-            if (fields.length > 5 && fields[5].equals("/")) {
-                long availableKB = Long.valueOf(fields[3]);
-                df.availableMB = Optional.of(availableKB / 1024L);
-                df.usedPercent = Optional.of(Integer.valueOf(fields[4].replace("%", "")));
-                break;
-            }
-        }
-        return df;
-    }
-
     /**
      * @return the docker API version of the daemon that we have connected to
      */
@@ -261,6 +205,17 @@ public class DockerClientFactory {
             client();
         }
         return activeExecutionDriver;
+    }
+
+    /**
+     * @return docker resource manager.
+     */
+    public ResourceManager getResourceManager() {
+        if (!initialized) {
+            client();
+        }
+
+        return resourceManager;
     }
 
     /**

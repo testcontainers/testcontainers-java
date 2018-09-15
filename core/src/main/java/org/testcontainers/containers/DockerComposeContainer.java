@@ -22,6 +22,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.ResourceManager;
 import org.testcontainers.utility.*;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -61,6 +62,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final Set<String> spawnedNetworkIds = new HashSet<>();
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
+    private ResourceManager resourceManager;
     private boolean localCompose;
     private boolean pull = true;
     private boolean tailChildContainers;
@@ -108,6 +110,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         project = randomProjectId();
 
         this.dockerClient = DockerClientFactory.instance().client();
+        this.resourceManager = DockerClientFactory.instance().getResourceManager();
     }
 
     @Override
@@ -229,7 +232,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void registerContainersForShutdown() {
-        ResourceReaper.instance().registerFilterForCleanup(Arrays.asList(
+        resourceManager.registerFilterForCleanup(Arrays.asList(
                 new SimpleEntry<>("label", "com.docker.compose.project=" + project)
         ));
     }
@@ -266,16 +269,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
                     // If we reach here then docker-compose down has cleared networks and containers;
                     //  we can unregister from ResourceReaper
-                    spawnedContainerIds.forEach(ResourceReaper.instance()::unregisterContainer);
-                    spawnedNetworkIds.forEach(ResourceReaper.instance()::unregisterNetwork);
+                    spawnedContainerIds.forEach(resourceManager::unregisterContainer);
+                    spawnedNetworkIds.forEach(resourceManager::unregisterNetwork);
                 } catch (Exception e) {
                     // docker-compose down failed; use ResourceReaper to ensure cleanup
 
                     // kill the spawned service containers
-                    spawnedContainerIds.forEach(ResourceReaper.instance()::stopAndRemoveContainer);
+                    spawnedContainerIds.forEach(resourceManager::stopAndRemoveContainer);
 
                     // remove the networks after removing the containers
-                    spawnedNetworkIds.forEach(ResourceReaper.instance()::removeNetworkById);
+                    spawnedNetworkIds.forEach(resourceManager::removeNetworkById);
                 }
 
                 spawnedContainerIds.clear();

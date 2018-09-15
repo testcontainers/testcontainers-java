@@ -7,7 +7,6 @@ import lombok.Singular;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.utility.ResourceReaper;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -96,7 +95,7 @@ public interface Network extends AutoCloseable, TestRule {
         @Override
         public void close() {
             if (initialized.getAndSet(false)) {
-                ResourceReaper.instance().removeNetworkById(id);
+                DockerClientFactory.instance().getResourceManager().removeNetworkById(id);
             }
         }
     }

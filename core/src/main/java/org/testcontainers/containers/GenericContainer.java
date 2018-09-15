@@ -47,6 +47,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.ResourceManager;
 import org.testcontainers.utility.*;
 
 import java.io.ByteArrayInputStream;
@@ -159,6 +160,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Setter(AccessLevel.NONE)
     protected DockerClient dockerClient = DockerClientFactory.instance().client();
+
+    private ResourceManager resourceManager = DockerClientFactory.instance().getResourceManager();
 
     /*
      * Info about the Docker server; lazily fetched.
@@ -342,7 +345,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 imageName = "<unknown>";
             }
 
-            ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            resourceManager.stopAndRemoveContainer(containerId, imageName);
         } finally {
             containerId = null;
             containerInfo = null;
