@@ -3,7 +3,6 @@ package org.testcontainers.dockerclient.transport.okhttp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.exception.BadRequestException;
 import com.github.dockerjava.api.exception.ConflictException;
@@ -200,7 +199,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         executeAndStream(
             request,
             resultCallback,
-            new JsonSink<>(typeReference, resultCallback)
+            new JsonSink<>(objectMapper, typeReference, resultCallback)
         );
     }
 
@@ -312,8 +311,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     private static class JsonSink<T> implements Consumer<BufferedSource> {
 
-        private static ObjectMapper objectMapper = new ObjectMapper()
-            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        ObjectMapper objectMapper;
 
         TypeReference<T> typeReference;
 
@@ -342,7 +340,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
 
         private static final int HEADER_SIZE = 8;
 
-        private final ResultCallback<Frame> resultCallback;
+        ResultCallback<Frame> resultCallback;
 
         @Override
         public void accept(BufferedSource source) {
