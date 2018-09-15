@@ -181,7 +181,7 @@ final class RyakResourceManager extends ResourceManagerBase {
 
         VisibleAssertions.assertTrue(
             "Docker environment should have more than 2GB free disk space",
-            df.availableMB.map(it -> it >= 2048).orElse(true)
+            df.getAvailableMB().map(it -> it >= 2048).orElse(true)
         );
     }
 
