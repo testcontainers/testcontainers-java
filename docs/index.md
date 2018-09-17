@@ -30,6 +30,7 @@ Testcontainers makes it easy to launch useful Docker containers for the duration
  * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
  * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
  * [Instana](https://www.instana.com) - Testing agents and stream processing backends
+ * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 
 ## License
 
