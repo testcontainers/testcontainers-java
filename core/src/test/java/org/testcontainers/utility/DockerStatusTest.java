@@ -65,6 +65,14 @@ public class DockerStatusTest {
         assertFalse(DockerStatus.isContainerStopped(paused));
     }
 
+    @Test
+    public void testTimestampsWithZoneOffset() {
+        assertTrue(DockerStatus.isContainerStopped(buildState(false, false,
+            "2018-09-18T08:56:35.1556366Z",
+            "2018-09-18T10:56:35.7102779+02:00")
+        ));
+    }
+
     private static String buildTimestamp(Instant instant) {
         return DateTimeFormatter.ISO_INSTANT.format(instant);
     }

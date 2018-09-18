@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * Utility functions for dealing with docker status based on the information available to us, and trying to be
@@ -40,8 +41,7 @@ public class DockerStatus {
             if (minimumRunningDuration == null) {
                 return true;
             }
-            Instant startedAt = DateTimeFormatter.ISO_INSTANT.parse(
-                state.getStartedAt(), Instant::from);
+            Instant startedAt = getInstant(state.getStartedAt());
 
             if (startedAt.isBefore(now.minus(minimumRunningDuration))) {
                 return true;
@@ -75,12 +75,22 @@ public class DockerStatus {
         return dockerTimestamp != null
                 && !dockerTimestamp.isEmpty()
                 && !dockerTimestamp.equals(DOCKER_TIMESTAMP_ZERO)
-                && DateTimeFormatter.ISO_INSTANT.parse(dockerTimestamp, Instant::from).getEpochSecond() >= 0L;
+                && getInstant(dockerTimestamp).getEpochSecond() >= 0L;
     }
 
     public static boolean isContainerExitCodeSuccess(InspectContainerResponse.ContainerState state) {
         int exitCode = state.getExitCode();
         // 0 is the only exit code we can consider as success
         return exitCode == 0;
+    }
+
+    private static Instant getInstant(String dockerTimestamp) {
+        try {
+            return DateTimeFormatter.ISO_INSTANT.parse(dockerTimestamp, Instant::from);
+        } catch (DateTimeParseException ignored) {
+        }
+
+        // Timestamp could contains offset
+        return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dockerTimestamp, Instant::from);
     }
 }
