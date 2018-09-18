@@ -11,10 +11,13 @@ import org.zeroturnaround.exec.ProcessExecutor;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -28,16 +31,27 @@ public class RegistryAuthLocator {
     private static final Logger log = getLogger(RegistryAuthLocator.class);
     private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private static RegistryAuthLocator instance;
+
     private final String commandPathPrefix;
     private final String commandExtension;
     private final File configFile;
 
+    /**
+     * key - credential helper's name
+     * value - helper's response for "credentials not found" use case
+     */
+    private final Map<String, String> CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE;
+
     @VisibleForTesting
-    RegistryAuthLocator(File configFile, String commandPathPrefix, String commandExtension) {
+    RegistryAuthLocator(File configFile, String commandPathPrefix, String commandExtension,
+                        Map<String, String> notFoundMessageHolderReference) {
         this.configFile = configFile;
         this.commandPathPrefix = commandPathPrefix;
         this.commandExtension = commandExtension;
+
+        this.CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE = notFoundMessageHolderReference;
     }
 
     /**
@@ -48,6 +62,8 @@ public class RegistryAuthLocator {
         this.configFile = new File(dockerConfigLocation + "/config.json");
         this.commandPathPrefix = "";
         this.commandExtension = "";
+
+        this.CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE = new HashMap<>();
     }
 
     public synchronized static RegistryAuthLocator instance() {
@@ -200,22 +216,13 @@ public class RegistryAuthLocator {
             credentialHelperName, hostName);
 
         try {
-            data = new ProcessExecutor()
-                .command(credentialHelperName, "get")
-                .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
-                .readOutput(true)
-                .exitValueNormal()
-                .timeout(30, TimeUnit.SECONDS)
-                .execute()
-                .outputUTF8()
-                .trim();
+            data = runCredentialsHelperGETCommand(hostName, credentialHelperName);
         }
         catch (InvalidResultException e) {
-            if(e.getResult() != null && e.getResult().hasOutput()) {
-                // ErrCredentialsNotFound standardizes the not found error, so every helper returns the same message
-                // We can handle it properly with fallback to other resources.
-                // https://github.com/docker/docker-credential-helpers/blob/19b711cc92fbaa47533646fa8adb457d199c99e1/credentials/error.go#L4-L6
-                if ("credentials not found in native keychain".equals(e.getResult().outputString().trim())) {
+            String responseErrorMsg = extractCredentialsHelpersErrorMessage(e);
+            if(!isBlank(responseErrorMsg)) {
+                String credentialsNotFoundMsg = getCredentialsNotFoundMsg(credentialHelperName);
+                if (credentialsNotFoundMsg != null && credentialsNotFoundMsg.equals(responseErrorMsg)) {
                     log.info("Credentials not found in native keychain for host ({}), credential helper ({})",
                         hostName,
                         credentialHelperName);
@@ -223,7 +230,7 @@ public class RegistryAuthLocator {
                     return null;
                 }
                 log.debug("Failure running docker credential helper ({}) with output '{}'",
-                    credentialHelperName, e.getResult().outputString());
+                    credentialHelperName, responseErrorMsg);
             }
             else {
                 log.debug("Failure running docker credential helper ({})", credentialHelperName);
@@ -251,5 +258,69 @@ public class RegistryAuthLocator {
 
     private String effectiveRegistryName(DockerImageName dockerImageName) {
         return StringUtils.defaultIfEmpty(dockerImageName.getRegistry(), DEFAULT_REGISTRY_NAME);
+    }
+
+    private String getCredentialsNotFoundMsg(String credentialHelperName) {
+        if (!CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.containsKey(credentialHelperName)) {
+            String credentialsNotFoundMsg = discoverCredentialsHelperNotFoundMessage(credentialHelperName);
+            if (!isBlank(credentialsNotFoundMsg)) {
+                CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.put(credentialHelperName, credentialsNotFoundMsg);
+            }
+        }
+
+        return CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.get(credentialHelperName);
+    }
+
+    private String discoverCredentialsHelperNotFoundMessage(String credentialHelperName) {
+        // will do fake call to given credential helper to find out with which message
+        // it response when there are no credentials for given hostName
+
+        // hostName should be valid, but most probably not existing
+        // IF its not enough, then should probably run 'list' command first to be sure...
+        final String notExistFakeHostName = "https://adsfasdf.wrewerwer.com/asdfsdddd";
+
+        String credentialsNotFoundMsg = null;
+        try {
+            runCredentialsHelperGETCommand(notExistFakeHostName, credentialHelperName);
+            log.warn("Failure running docker credential helper ({}) with fake call, expected 'credentials not found' response",
+                credentialHelperName);
+        }
+        catch(Exception e) {
+            if (e instanceof InvalidResultException) {
+                credentialsNotFoundMsg = extractCredentialsHelpersErrorMessage((InvalidResultException)e);
+            }
+
+            if (isBlank(credentialsNotFoundMsg)) {
+                log.warn("Failure running docker credential helper ({}) with fake call, expected 'credentials not found' response. Exception message: {}",
+                    credentialHelperName,
+                    e.getMessage());
+            }
+            else {
+                log.debug("Got credentials not found error message from docker credential helper - {}", credentialsNotFoundMsg);
+            }
+        }
+
+        return credentialsNotFoundMsg;
+    }
+
+    private String extractCredentialsHelpersErrorMessage(InvalidResultException invalidResultEx) {
+        if(invalidResultEx.getResult() != null && invalidResultEx.getResult().hasOutput()) {
+            return invalidResultEx.getResult().outputString().trim();
+        }
+        return null;
+    }
+
+    private String runCredentialsHelperGETCommand(String hostName, String credentialHelperName)
+        throws InvalidResultException, InterruptedException, TimeoutException, IOException
+    {
+        return new ProcessExecutor()
+                        .command(credentialHelperName, "get")
+                        .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
+                        .readOutput(true)
+                        .exitValueNormal()
+                        .timeout(30, TimeUnit.SECONDS)
+                        .execute()
+                        .outputUTF8()
+                        .trim();
     }
 }
