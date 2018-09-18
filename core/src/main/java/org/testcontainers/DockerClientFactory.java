@@ -53,6 +53,8 @@ public class DockerClientFactory {
     private String activeApiVersion;
     private String activeExecutionDriver;
     private ResourceManager resourceManager;
+    private final Object resourceManagerLock = new Object();
+    private boolean initializedResourceManager = false;
 
     static {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
@@ -109,17 +111,17 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            // For Windows and LCOW containers used windowsfilter storage driver
-            String driver = dockerInfo.getDriver();
-            if (driver != null && driver.contains("windowsfilter")) {
-                resourceManager = new InProcessResourceManager(strategy);
-            } else {
-                resourceManager = new RyakResourceManager(strategy);
-            }
-
             VisibleAssertions.info("Checking the system...");
 
             checkDockerVersion(version.getVersion());
+
+            // For Windows and LCOW containers used windowsfilter storage driver
+            String driver = dockerInfo.getDriver();
+            if (driver != null && driver.contains("windowsfilter")) {
+                resourceManager = new SideProcessResourceManager(client);
+            } else {
+                resourceManager = new RyakResourceManager(client, hostIpAddress);
+            }
 
             initialized = true;
         }
@@ -140,8 +142,6 @@ public class DockerClientFactory {
             }
         });
     }
-
-
 
     /**
    * Check whether the image is available locally and pull it otherwise
@@ -213,6 +213,15 @@ public class DockerClientFactory {
     public ResourceManager getResourceManager() {
         if (!initialized) {
             client();
+        }
+
+        if (!initializedResourceManager) {
+            synchronized (resourceManagerLock) {
+                if (!initializedResourceManager) {
+                    resourceManager.initialize();
+                    initializedResourceManager = true;
+                }
+            }
         }
 
         return resourceManager;

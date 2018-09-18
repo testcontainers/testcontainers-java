@@ -9,6 +9,11 @@ import java.util.Map;
 public interface ResourceManager {
 
     /**
+     * Executes initialization process.
+     */
+    void initialize();
+
+    /**
      * Perform a cleanup.
      */
     void performCleanup();

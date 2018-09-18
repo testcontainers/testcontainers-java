@@ -10,15 +10,11 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
-import com.google.common.annotations.VisibleForTesting;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -44,12 +40,17 @@ final class RyakResourceManager extends ResourceManagerBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RyakResourceManager.class);
     private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
+    private final String hostIpAddress;
 
-    RyakResourceManager(DockerClientProviderStrategy strategy) {
-        super(strategy.getClient());
+    RyakResourceManager(DockerClient dockerClient, String hostIpAddress) {
+        super(dockerClient);
+        this.hostIpAddress = hostIpAddress;
+    }
 
+    @Override
+    public void initialize() {
         boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
-        String ryukContainerId = start(strategy.getDockerHostIpAddress(), dockerClient, checksEnabled);
+        String ryukContainerId = start(hostIpAddress, dockerClient, checksEnabled);
         LOGGER.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
 
         if (checksEnabled) {
@@ -192,51 +193,5 @@ final class RyakResourceManager extends ResourceManagerBase {
         } catch (Exception e) {
             VisibleAssertions.fail("File should be mountable but fails with " + e.getMessage());
         }
-    }
-
-    static class FilterRegistry {
-
-        @VisibleForTesting
-        static final String ACKNOWLEDGMENT = "ACK";
-
-        private final BufferedReader in;
-        private final OutputStream out;
-
-        FilterRegistry(InputStream ryukInputStream, OutputStream ryukOutputStream) {
-            this.in = new BufferedReader(new InputStreamReader(ryukInputStream));
-            this.out = ryukOutputStream;
-        }
-
-        /**
-         * Registers the given filters with Ryuk
-         *
-         * @param filters the filter to register
-         * @return true if the filters have been registered successfuly, false otherwise
-         * @throws IOException if communication with Ryuk fails
-         */
-        protected boolean register(List<Map.Entry<String, String>> filters) throws IOException {
-            String query = URLEncodedUtils.format(
-                filters.stream()
-                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
-                    .collect(Collectors.toList()),
-                (String) null
-            );
-
-            log.debug("Sending '{}' to Ryuk", query);
-            out.write(query.getBytes());
-            out.write('\n');
-            out.flush();
-
-            return waitForAcknowledgment(in);
-        }
-
-        private static boolean waitForAcknowledgment(BufferedReader in) throws IOException {
-            String line = in.readLine();
-            while (line != null && !ACKNOWLEDGMENT.equalsIgnoreCase(line)) {
-                line = in.readLine();
-            }
-            return ACKNOWLEDGMENT.equalsIgnoreCase(line);
-        }
-
     }
 }

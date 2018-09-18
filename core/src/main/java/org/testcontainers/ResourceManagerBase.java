@@ -6,15 +6,20 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Network;
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 abstract class ResourceManagerBase implements ResourceManager {
 
@@ -85,15 +90,11 @@ abstract class ResourceManagerBase implements ResourceManager {
         registeredContainers.remove(identifier);
     }
 
-    protected void setHook() {
+    private void setHook() {
         if (hookIsSet.compareAndSet(false, true)) {
             // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, getCleanupMethod()));
+            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
-    }
-
-    protected Runnable getCleanupMethod(){
-        return this::performCleanup;
     }
 
     private void stopContainer(String containerId, String imageName) {
@@ -164,6 +165,54 @@ abstract class ResourceManagerBase implements ResourceManager {
             }
         } finally {
             registeredNetworks.remove(id);
+        }
+    }
+
+    static class FilterRegistry {
+
+        @VisibleForTesting
+        static final String ACKNOWLEDGMENT = "ACK";
+
+        private final BufferedReader in;
+        private final OutputStream out;
+
+        FilterRegistry(InputStream ryukInputStream, OutputStream ryukOutputStream) {
+            this.in = new BufferedReader(new InputStreamReader(ryukInputStream));
+            this.out = ryukOutputStream;
+        }
+
+        /**
+         * Registers the given filters with Ryuk
+         *
+         * @param filters the filter to register
+         * @return true if the filters have been registered successfuly, false otherwise
+         * @throws IOException if communication with Ryuk fails
+         */
+        boolean register(List<Map.Entry<String, String>> filters) throws IOException {
+            String query = URLEncodedUtils.format(
+                filters.stream()
+                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
+                    .collect(Collectors.toList()),
+                (String) null
+            );
+
+            LOGGER.debug("Sending: {}", query);
+            out.write(query.getBytes());
+            out.write('\n');
+            out.flush();
+
+            return waitForAcknowledgment(in);
+        }
+
+        private static boolean waitForAcknowledgment(BufferedReader in) throws IOException {
+            String line = in.readLine();
+            while (line != null && !ACKNOWLEDGMENT.equalsIgnoreCase(line)) {
+                line = in.readLine();
+                if (line != null && line.length() > 0) {
+                    LOGGER.debug("Received: {}", line);
+                }
+            }
+            return ACKNOWLEDGMENT.equalsIgnoreCase(line);
         }
     }
 }
