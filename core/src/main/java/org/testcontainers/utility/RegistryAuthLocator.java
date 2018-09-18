@@ -116,7 +116,7 @@ public class RegistryAuthLocator {
             log.debug("no matching Auth Configs - falling back to defaultAuthConfig [{}]", toSafeString(defaultAuthConfig));
             // otherwise, defaultAuthConfig should already contain any credentials available
         } catch (Exception e) {
-            log.debug("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. Falling back to docker-java default behaviour. Exception message: {}",
+            log.warn("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. Falling back to docker-java default behaviour. Exception message: {}",
                 dockerImageName,
                 configFile,
                 e.getMessage());
@@ -189,7 +189,7 @@ public class RegistryAuthLocator {
     private AuthConfig runCredentialProvider(String hostName, String credHelper) throws Exception {
 
         if (isBlank(hostName)) {
-            log.debug("There is no point to locate AuthConfig for blank hostName, return null to allow fallback");
+            log.debug("There is no point to locate AuthConfig for blank hostName. Return NULL to allow fallback");
             return null;
         }
 
@@ -216,7 +216,10 @@ public class RegistryAuthLocator {
                 // We can handle it properly with fallback to other resources.
                 // https://github.com/docker/docker-credential-helpers/blob/19b711cc92fbaa47533646fa8adb457d199c99e1/credentials/error.go#L4-L6
                 if ("credentials not found in native keychain".equals(e.getResult().outputString().trim())) {
-                    log.debug("Credentials not found in native keychain, credential helper ({}), return null to allow fallback", credentialHelperName);
+                    log.info("Credentials not found in native keychain for host ({}), credential helper ({})",
+                        hostName,
+                        credentialHelperName);
+
                     return null;
                 }
                 log.debug("Failure running docker credential helper ({}) with output '{}'",
