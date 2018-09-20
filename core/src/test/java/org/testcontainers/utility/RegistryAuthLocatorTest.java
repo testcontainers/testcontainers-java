@@ -97,7 +97,7 @@ public class RegistryAuthLocatorTest {
 
         assertEquals(
             "Not correct message discovered",
-            "Fake credentials not found on credentials store 'https://adsfasdf.wrewerwer.com/asdfsdddd'",
+            "Fake credentials not found on credentials store 'https://not.a.real.registry/url'",
             discoveredMessage);
     }
 

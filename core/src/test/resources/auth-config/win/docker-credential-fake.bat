@@ -9,7 +9,7 @@ if "%inputLine%" == "registry2.example.com" (
      echo Fake credentials not found on credentials store '%inputLine%' 1>&2
      exit 1
 )
-if "%inputLine%" == "https://adsfasdf.wrewerwer.com/asdfsdddd" (
+if "%inputLine%" == "https://not.a.real.registry/url" (
      echo Fake credentials not found on credentials store '%inputLine%' 1>&2
      exit 1
 )
