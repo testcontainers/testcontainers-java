@@ -29,6 +29,7 @@ import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -454,6 +455,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
+
+        boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
+        if (shouldCheckFileMountingSupport) {
+            if (!DockerClientFactory.instance().isFileMountingSupported()) {
+                VisibleAssertions.warn(
+                    "Unable to mount a file from test host into a running container. " +
+                        "This may be a misconfiguration or limitation of your Docker environment. " +
+                        "Some features might not work."
+                );
+            }
+        }
 
         Bind[] bindsArray = binds.stream()
                 .toArray(Bind[]::new);
