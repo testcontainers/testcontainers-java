@@ -456,9 +456,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
 
-        if (binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks()) {
+        boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
+        if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isSupportsFileMounting()) {
-                VisibleAssertions.warn("Misconfigured file mounting. Some features might not work.");
+                VisibleAssertions.warn(
+                    "Unable to mount a file from test host into a running container. " +
+                        "This may be a misconfiguration or limitation of your Docker environment. " +
+                        "Some features might not work."
+                );
             }
         }
 
