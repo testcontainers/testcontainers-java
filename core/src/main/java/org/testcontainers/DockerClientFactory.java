@@ -191,7 +191,7 @@ public class DockerClientFactory {
                 }
             );
         } catch (Exception e) {
-            log.debug("Failed to check mountable file", e);
+            log.debug("Failure while checking for mountable file support", e);
             return false;
         }
     }
