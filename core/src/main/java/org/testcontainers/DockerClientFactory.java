@@ -62,7 +62,7 @@ public class DockerClientFactory {
     private String activeExecutionDriver;
 
     @Getter(lazy = true)
-    private final boolean supportsFileMounting = checkMountableFile();
+    private final boolean fileMountingSupported = checkMountableFile();
 
     static {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
