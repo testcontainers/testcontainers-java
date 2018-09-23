@@ -29,6 +29,7 @@ import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -454,6 +455,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
+
+        if (binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks()) {
+            if (!DockerClientFactory.instance().isSupportsFileMounting()) {
+                VisibleAssertions.warn("Misconfigured file mounting. Some features might not work.");
+            }
+        }
 
         Bind[] bindsArray = binds.stream()
                 .toArray(Bind[]::new);
