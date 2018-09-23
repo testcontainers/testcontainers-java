@@ -296,18 +296,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } catch (Exception e) {
             logger().error("Could not start container", e);
 
-            // Log output if startup failed, either due to a container failure or exception (including timeout)
-            logger().error("Container log output (if any) will follow:");
-            FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
-            resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
-            resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
-            dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
+            if (containerId != null) {
+                // Log output if startup failed, either due to a container failure or exception (including timeout)
+                logger().error("Container log output (if any) will follow:");
+                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
+                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
+                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
+                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
 
-            // Try to ensure that container log output is shown before proceeding
-            try {
-                resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
-            } catch (InterruptedException ignored) {
-                // Cannot do anything at this point
+                // Try to ensure that container log output is shown before proceeding
+                try {
+                    resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
+                } catch (InterruptedException ignored) {
+                    // Cannot do anything at this point
+                }
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
