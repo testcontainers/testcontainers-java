@@ -37,7 +37,6 @@ public abstract class AbstractCouchbaseTest {
     protected static CouchbaseContainer initCouchbaseContainer(String imageName) {
         CouchbaseContainer couchbaseContainer = (imageName == null) ? new CouchbaseContainer() : new CouchbaseContainer(imageName);
         couchbaseContainer.withNewBucket(getDefaultBucketSettings());
-        couchbaseContainer.start();
         return couchbaseContainer;
     }
 
