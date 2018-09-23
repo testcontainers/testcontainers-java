@@ -3,6 +3,7 @@ package org.testcontainers.couchbase;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.bucket.BucketType;
+import com.couchbase.client.java.cluster.BucketSettings;
 import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.query.N1qlParams;
 import com.couchbase.client.java.query.N1qlQuery;
@@ -35,16 +36,20 @@ public abstract class AbstractCouchbaseTest {
 
     protected static CouchbaseContainer initCouchbaseContainer(String imageName) {
         CouchbaseContainer couchbaseContainer = (imageName == null) ? new CouchbaseContainer() : new CouchbaseContainer(imageName);
-        couchbaseContainer.withNewBucket(DefaultBucketSettings.builder()
+        couchbaseContainer.withNewBucket(getDefaultBucketSettings());
+        couchbaseContainer.start();
+        return couchbaseContainer;
+    }
+
+    protected static BucketSettings getDefaultBucketSettings() {
+        return DefaultBucketSettings.builder()
             .enableFlush(true)
             .name(TEST_BUCKET)
             .password(DEFAULT_PASSWORD)
             .quota(100)
             .replicas(0)
             .type(BucketType.COUCHBASE)
-            .build());
-        couchbaseContainer.start();
-        return couchbaseContainer;
+            .build();
     }
 
     protected synchronized Bucket getBucket() {
