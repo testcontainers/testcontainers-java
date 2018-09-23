@@ -12,7 +12,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     public static final int BROKER_HTTP_PORT = 8080;
     public static final String METRICS_ENDPOINT = "/metrics";
 
-    private static final String PULSAR_VERSION = "2.1.0-incubating";
+    private static final String PULSAR_VERSION = "2.1.1-incubating";
 
     public PulsarContainer() {
         this(PULSAR_VERSION);
