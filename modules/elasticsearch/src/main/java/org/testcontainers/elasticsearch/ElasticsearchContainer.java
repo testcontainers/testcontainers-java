@@ -47,7 +47,7 @@ public class ElasticsearchContainer extends GenericContainer {
     /**
      * Elasticsearch Default version
      */
-    private static final String ELASTICSEARCH_DEFAULT_VERSION = "6.3.2";
+    private static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
 
     private String baseUrl = ELASTICSEARCH_DEFAULT_BASE_URL;
     private String version = ELASTICSEARCH_DEFAULT_VERSION;
@@ -67,7 +67,7 @@ public class ElasticsearchContainer extends GenericContainer {
 
     /**
      * Define the elasticsearch version to start
-     * @param version  Elasticsearch Version like 5.6.10 or 6.3.2
+     * @param version  Elasticsearch Version like 5.6.12 or 6.4.1
      * @return this
      */
     public ElasticsearchContainer withVersion(String version) {

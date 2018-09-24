@@ -75,12 +75,12 @@ public class ElasticsearchContainerTest {
     @Test
     public void elasticsearchVersion() throws IOException {
         container = new ElasticsearchContainer();
-        container.withVersion("5.6.10");
+        container.withVersion("5.6.12");
         container.start();
         Response response = getClient(container).performRequest("GET", "/");
         assertThat(response.getStatusLine().getStatusCode(), is(200));
         String responseAsString = EntityUtils.toString(response.getEntity());
-        assertThat(responseAsString, containsString("5.6.10"));
+        assertThat(responseAsString, containsString("5.6.12"));
     }
 
     @Test
