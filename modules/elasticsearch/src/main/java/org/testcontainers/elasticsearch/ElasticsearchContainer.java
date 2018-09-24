@@ -21,7 +21,6 @@ package org.testcontainers.elasticsearch;
 
 import org.apache.http.HttpHost;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
@@ -52,6 +51,19 @@ public class ElasticsearchContainer extends GenericContainer {
 
     private String baseUrl = ELASTICSEARCH_DEFAULT_BASE_URL;
     private String version = ELASTICSEARCH_DEFAULT_VERSION;
+    private String dockerImageName = null;
+
+    public ElasticsearchContainer() {
+
+    }
+
+    /**
+     * Create an Elasticsearch Container by passing the full docker image name
+     * @param dockerImageName Full docker image name, like: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+     */
+    public ElasticsearchContainer(String dockerImageName) {
+        this.dockerImageName = dockerImageName;
+    }
 
     /**
      * Define the elasticsearch version to start
@@ -75,14 +87,14 @@ public class ElasticsearchContainer extends GenericContainer {
 
     @Override
     protected void configure() {
-        logger().info("Starting an elasticsearch container using version [{}] from [{}]", version, baseUrl);
-        ImageFromDockerfile dockerImage = new ImageFromDockerfile()
-                .withDockerfileFromBuilder(builder -> {
-                    builder.from(baseUrl + ":" + version);
-                    logger().debug("Image generated: {}", builder.build());
-                });
-
-        setImage(dockerImage);
+        String image;
+        if (dockerImageName == null) {
+            image = baseUrl + ":" + version;
+        } else {
+            image = dockerImageName;
+        }
+        logger().info("Starting an elasticsearch container using [{}]", image);
+        setDockerImageName(image);
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
     }
 
