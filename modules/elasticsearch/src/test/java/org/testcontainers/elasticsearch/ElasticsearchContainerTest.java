@@ -25,6 +25,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
@@ -39,6 +40,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class ElasticsearchContainerTest {
+
+    /**
+     * Elasticsearch default username, when secured with a license > basic
+     */
+    private static final String ELASTICSEARCH_USERNAME = "elastic";
+
+    /**
+     * Elasticsearch 5.x default password. In 6.x images, there's no security by default as shipped with a basic license.
+     */
+    private static final String ELASTICSEARCH_PASSWORD = "changeme";
 
     private ElasticsearchContainer container = null;
     private RestClient client = null;
@@ -62,11 +73,12 @@ public class ElasticsearchContainerTest {
     public void elasticsearchDefaultTest() throws IOException {
         container = new ElasticsearchContainer();
         container.start();
-        Response response = getClient(container).performRequest("GET", "/");
+        Response response = getClient(container).performRequest(new Request("GET", "/"));
         assertThat(response.getStatusLine().getStatusCode(), is(200));
+        assertThat(EntityUtils.toString(response.getEntity()), containsString("6.4.1"));
 
         // The default image is running with the features under Elastic License
-        response = getClient(container).performRequest("GET", "/_xpack/");
+        response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
         assertThat(response.getStatusLine().getStatusCode(), is(200));
         // For now we test that we have the monitoring feature available
         assertThat(EntityUtils.toString(response.getEntity()), containsString("monitoring"));
@@ -74,10 +86,9 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchVersion() throws IOException {
-        container = new ElasticsearchContainer();
-        container.withVersion("5.6.12");
+        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:5.6.12");
         container.start();
-        Response response = getClient(container).performRequest("GET", "/");
+        Response response = getClient(container).performRequest(new Request("GET", "/"));
         assertThat(response.getStatusLine().getStatusCode(), is(200));
         String responseAsString = EntityUtils.toString(response.getEntity());
         assertThat(responseAsString, containsString("5.6.12"));
@@ -85,22 +96,21 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchImage() throws IOException {
-        container = new ElasticsearchContainer();
-        container.withBaseUrl("docker.elastic.co/elasticsearch/elasticsearch-oss");
+        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.1");
         container.start();
-        Response response = getClient(container).performRequest("GET", "/");
+        Response response = getClient(container).performRequest(new Request("GET", "/"));
         assertThat(response.getStatusLine().getStatusCode(), is(200));
         // The OSS image does not have any feature under Elastic License
         assertThrows("We should not have /_xpack endpoint with an OSS License",
             ResponseException.class,
-            () -> getClient(container).performRequest("GET", "/_xpack/"));
+            () -> getClient(container).performRequest(new Request("GET", "/_xpack/")));
     }
 
     private RestClient getClient(ElasticsearchContainer container) {
         if (client == null) {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(AuthScope.ANY,
-                    new UsernamePasswordCredentials("elastic", "changeme"));
+                    new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
 
             client = RestClient.builder(container.getHost())
                     .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))

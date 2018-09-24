@@ -21,6 +21,12 @@ package org.testcontainers.elasticsearch;
 
 import org.apache.http.HttpHost;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.Base58;
+
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
@@ -49,53 +55,23 @@ public class ElasticsearchContainer extends GenericContainer {
      */
     private static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
 
-    private String baseUrl = ELASTICSEARCH_DEFAULT_BASE_URL;
-    private String version = ELASTICSEARCH_DEFAULT_VERSION;
-    private String dockerImageName = null;
-
     public ElasticsearchContainer() {
-
+        this(ELASTICSEARCH_DEFAULT_BASE_URL + ":" + ELASTICSEARCH_DEFAULT_VERSION);
     }
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name, like: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+     * @param dockerImageName Full docker image name, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
      */
     public ElasticsearchContainer(String dockerImageName) {
-        this.dockerImageName = dockerImageName;
-    }
-
-    /**
-     * Define the elasticsearch version to start
-     * @param version  Elasticsearch Version like 5.6.12 or 6.4.1
-     * @return this
-     */
-    public ElasticsearchContainer withVersion(String version) {
-        this.version = version;
-        return this;
-    }
-
-    /**
-     * Define the elasticsearch docker registry base url
-     * @param baseUrl  defaults to docker.elastic.co/elasticsearch/elasticsearch
-     * @return this
-     */
-    public ElasticsearchContainer withBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-        return this;
-    }
-
-    @Override
-    protected void configure() {
-        String image;
-        if (dockerImageName == null) {
-            image = baseUrl + ":" + version;
-        } else {
-            image = dockerImageName;
-        }
-        logger().info("Starting an elasticsearch container using [{}]", image);
-        setDockerImageName(image);
+        super(dockerImageName);
+        logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
+        withNetwork(Network.SHARED);
+        withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
+        setWaitStrategy(new HttpWaitStrategy()
+            .forPort(ELASTICSEARCH_DEFAULT_PORT)
+            .forStatusCodeMatching(response -> response == HTTP_OK || response == HTTP_UNAUTHORIZED));
     }
 
     public HttpHost getHost() {
