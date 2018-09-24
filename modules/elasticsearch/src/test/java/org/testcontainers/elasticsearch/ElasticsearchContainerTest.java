@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -60,7 +59,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchNoVersionTest() throws IOException {
+    public void elasticsearchDefaultTest() throws IOException {
         container = new ElasticsearchContainer();
         container.start();
         Response response = getClient(container).performRequest("GET", "/");
@@ -74,28 +73,14 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchDefaultTest() throws IOException {
-        container = new ElasticsearchContainer();
-        container.withVersion(ElasticsearchContainer.ELASTICSEARCH_DEFAULT_VERSION);
-        container.start();
-        Response response = getClient(container).performRequest("GET", "/");
-        assertThat(response.getStatusLine().getStatusCode(), is(200));
-    }
-
-    @Test
     public void elasticsearchVersion() throws IOException {
         container = new ElasticsearchContainer();
-        // We need to read the version from the gradle settings to make all that dynamic
-        Properties props = new Properties();
-        props.load(ElasticsearchContainerTest.class.getResourceAsStream("elasticsearch-version.properties"));
-        String version = props.getProperty("version");
-        container.withVersion(version);
-
+        container.withVersion("5.6.10");
         container.start();
         Response response = getClient(container).performRequest("GET", "/");
         assertThat(response.getStatusLine().getStatusCode(), is(200));
         String responseAsString = EntityUtils.toString(response.getEntity());
-        assertThat(responseAsString, containsString(version));
+        assertThat(responseAsString, containsString("5.6.10"));
     }
 
     @Test
@@ -109,18 +94,6 @@ public class ElasticsearchContainerTest {
         assertThrows("We should not have /_xpack endpoint with an OSS License",
             ResponseException.class,
             () -> getClient(container).performRequest("GET", "/_xpack/"));
-    }
-
-    @Test
-    public void elasticsearchFullTest() throws IOException {
-        container = new ElasticsearchContainer();
-        container.withVersion(ElasticsearchContainer.ELASTICSEARCH_DEFAULT_VERSION);
-        container.withBaseUrl(ElasticsearchContainer.ELASTICSEARCH_DEFAULT_BASE_URL);
-
-        container.start();
-
-        Response response = getClient(container).performRequest("GET", "/");
-        assertThat(response.getStatusLine().getStatusCode(), is(200));
     }
 
     private RestClient getClient(ElasticsearchContainer container) {

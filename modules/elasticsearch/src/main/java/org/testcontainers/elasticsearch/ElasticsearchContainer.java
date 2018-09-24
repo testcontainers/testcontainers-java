@@ -23,9 +23,6 @@ import org.apache.http.HttpHost;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
-import java.io.IOException;
-import java.util.Properties;
-
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
  * The docker image is by default fetch from docker.elastic.co/elasticsearch/elasticsearch
@@ -33,20 +30,25 @@ import java.util.Properties;
  */
 public class ElasticsearchContainer extends GenericContainer {
 
-    private static final String FALLBACK_RESOURCE_NAME = "elasticsearch-default.properties";
+    /**
+     * Elasticsearch Default HTTP port
+     */
     private static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
+
+    /**
+     * Elasticsearch Default Transport port
+     */
     private static final int ELASTICSEARCH_DEFAULT_TCP_PORT = 9300;
-    static final String ELASTICSEARCH_DEFAULT_BASE_URL;
-    static final String ELASTICSEARCH_DEFAULT_VERSION;
-    static {
-        Properties props = new Properties();
-        try {
-            props.load(ElasticsearchContainer.class.getResourceAsStream(ElasticsearchContainer.FALLBACK_RESOURCE_NAME));
-        } catch (IOException ignored) {
-        }
-        ELASTICSEARCH_DEFAULT_BASE_URL = props.getProperty("baseUrl");
-        ELASTICSEARCH_DEFAULT_VERSION = props.getProperty("version");
-    }
+
+    /**
+     * Elasticsearch Docker base URL
+     */
+    private static final String ELASTICSEARCH_DEFAULT_BASE_URL = "docker.elastic.co/elasticsearch/elasticsearch";
+
+    /**
+     * Elasticsearch Default version
+     */
+    private static final String ELASTICSEARCH_DEFAULT_VERSION = "6.3.2";
 
     private String baseUrl = ELASTICSEARCH_DEFAULT_BASE_URL;
     private String version = ELASTICSEARCH_DEFAULT_VERSION;
