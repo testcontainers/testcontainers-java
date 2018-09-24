@@ -29,6 +29,7 @@ import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -295,18 +296,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } catch (Exception e) {
             logger().error("Could not start container", e);
 
-            // Log output if startup failed, either due to a container failure or exception (including timeout)
-            logger().error("Container log output (if any) will follow:");
-            FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
-            resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
-            resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
-            dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
+            if (containerId != null) {
+                // Log output if startup failed, either due to a container failure or exception (including timeout)
+                logger().error("Container log output (if any) will follow:");
+                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
+                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
+                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
+                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
 
-            // Try to ensure that container log output is shown before proceeding
-            try {
-                resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
-            } catch (InterruptedException ignored) {
-                // Cannot do anything at this point
+                // Try to ensure that container log output is shown before proceeding
+                try {
+                    resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
+                } catch (InterruptedException ignored) {
+                    // Cannot do anything at this point
+                }
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
@@ -454,6 +457,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
+
+        boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
+        if (shouldCheckFileMountingSupport) {
+            if (!DockerClientFactory.instance().isFileMountingSupported()) {
+                VisibleAssertions.warn(
+                    "Unable to mount a file from test host into a running container. " +
+                        "This may be a misconfiguration or limitation of your Docker environment. " +
+                        "Some features might not work."
+                );
+            }
+        }
 
         Bind[] bindsArray = binds.stream()
                 .toArray(Bind[]::new);

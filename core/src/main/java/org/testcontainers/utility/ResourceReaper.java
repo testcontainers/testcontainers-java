@@ -6,7 +6,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
@@ -61,23 +60,18 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    public static String start(String hostIpAddress, DockerClient client) {
-        return start(hostIpAddress, client, false);
+    @Deprecated
+    public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
+        return start(hostIpAddress, client);
     }
 
     @SneakyThrows(InterruptedException.class)
-    public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
+    public static String start(String hostIpAddress, DockerClient client) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
-        MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
-
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
-        if (withDummyMount) {
-            // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
-            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro));
-        }
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig() {
