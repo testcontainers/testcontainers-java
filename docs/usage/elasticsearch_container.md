@@ -1,7 +1,7 @@
 # Elasticsearch container
 
 This module helps running [elasticsearch](https://www.elastic.co/products/elasticsearch) using
-TestContainers.
+Testcontainers.
 
 Note that it's based on the [official Docker image](https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docker.html) provided by elastic.
 

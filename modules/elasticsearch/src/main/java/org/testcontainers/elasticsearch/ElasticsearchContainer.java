@@ -31,7 +31,7 @@ import java.util.Properties;
  * The docker image is by default fetch from docker.elastic.co/elasticsearch/elasticsearch
  * @author dadoonet
  */
-public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> extends GenericContainer<SELF> {
+public class ElasticsearchContainer extends GenericContainer {
 
     private static final String FALLBACK_RESOURCE_NAME = "elasticsearch-default.properties";
     private static final int ELASTICSEARCH_DEFAULT_PORT = 9200;

@@ -6,7 +6,7 @@
     * [Prerequisites](usage.md#prerequisites)
     * [Docker environment discovery](usage.md#docker-environment-discovery)
     * [Usage modes](usage.md#usage-modes)
-    * [Gradle/Maven dependencies](usage.md#gradle-maven-dependencies)
+    * [Gradle/Maven dependencies](usage.md#gradlemaven-dependencies)
     * [Logging](usage.md#logging)
     * [Properties](usage/properties.md)
     * [Running inside Docker](usage/inside_docker.md)
