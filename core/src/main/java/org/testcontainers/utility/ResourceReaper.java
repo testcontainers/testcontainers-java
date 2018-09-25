@@ -74,10 +74,7 @@ public final class ResourceReaper {
         binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig() {
-                    @JsonProperty("AutoRemove")
-                    boolean autoRemove = true;
-                })
+                .withHostConfig(new HostConfig().withAutoRemove(true))
                 .withExposedPorts(new ExposedPort(8080))
                 .withPublishAllPorts(true)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
