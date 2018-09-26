@@ -20,8 +20,11 @@ subprojects {
     targetCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
 
+    ext {
+        lombokVersion = '1.18.2'
+    }
     lombok {
-	    version = '1.18.2'
+	    version = lombokVersion
     }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
