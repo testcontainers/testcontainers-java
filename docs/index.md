@@ -31,6 +31,7 @@ Testcontainers makes it easy to launch useful Docker containers for the duration
  * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
  * [Instana](https://www.instana.com) - Testing agents and stream processing backends
  * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
+ * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
 
 ## License
 
