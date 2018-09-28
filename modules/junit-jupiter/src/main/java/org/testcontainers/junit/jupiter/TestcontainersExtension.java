@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.Preconditions;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.lifecycle.Startable;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -35,13 +35,13 @@ class TestcontainersExtension implements BeforeAllCallback, BeforeEachCallback, 
     @Override
     public void beforeEach(final ExtensionContext context) throws Exception {
         Object testInstance = context.getRequiredTestInstance();
-        Set<GenericContainer<?>> containers = new HashSet<>();
-        Set<GenericContainer<?>> sharedContainers = (Set<GenericContainer<?>>) context.getStore(NAMESPACE).get(SHARED_CONTAINERS);
+        Set<Startable> containers = new HashSet<>();
+        Set<Startable> sharedContainers = (Set<Startable>) context.getStore(NAMESPACE).get(SHARED_CONTAINERS);
         if(context.getStore(NAMESPACE).get(CALLED_FIRST_TIME, Boolean.class) == null) {
             for (Field field : testInstance.getClass().getDeclaredFields()) {
-                if (GenericContainer.class.isAssignableFrom(field.getType())) {
+                if (Startable.class.isAssignableFrom(field.getType())) {
                     field.setAccessible(true);
-                    GenericContainer<?> container = (GenericContainer<?>) field.get(testInstance);
+                    Startable container = (Startable) field.get(testInstance);
                     Preconditions.notNull(container, "Container " + field.getName() + " needs to be initialized!");
                     if (AnnotationSupport.isAnnotated(field, Shared.class)) {
                         sharedContainers.add(container);
@@ -56,23 +56,23 @@ class TestcontainersExtension implements BeforeAllCallback, BeforeEachCallback, 
         }
 
         if (context.getStore(NAMESPACE).get(SHARED_CONTAINERS_STARTED_KEY, Boolean.class) == null) {
-            sharedContainers = (Set<GenericContainer<?>>) context.getStore(NAMESPACE).get(SHARED_CONTAINERS);
-            sharedContainers.forEach(GenericContainer::start);
+            sharedContainers = (Set<Startable>) context.getStore(NAMESPACE).get(SHARED_CONTAINERS);
+            sharedContainers.forEach(Startable::start);
         }
-        containers = (Set<GenericContainer<?>>) context.getStore(NAMESPACE).get(CONTAINERS);
-        containers.forEach(GenericContainer::start);
+        containers = (Set<Startable>) context.getStore(NAMESPACE).get(CONTAINERS);
+        containers.forEach(Startable::start);
     }
 
     @Override
     public void afterEach(final ExtensionContext context) throws Exception {
-        Set<GenericContainer<?>> containers = (Set<GenericContainer<?>>) context.getStore(NAMESPACE).get(CONTAINERS);
-        containers.forEach(GenericContainer::stop);
+        Set<Startable> containers = (Set<Startable>) context.getStore(NAMESPACE).get(CONTAINERS);
+        containers.forEach(Startable::stop);
     }
 
     @Override
     public void afterAll(final ExtensionContext context) throws Exception {
-        Set<GenericContainer<?>> sharedContainers = (Set<GenericContainer<?>>) context.getStore(NAMESPACE).get(SHARED_CONTAINERS);
-        sharedContainers.forEach(GenericContainer::stop);
+        Set<Startable> sharedContainers = (Set<Startable>) context.getStore(NAMESPACE).get(SHARED_CONTAINERS);
+        sharedContainers.forEach(Startable::stop);
     }
 
 }
