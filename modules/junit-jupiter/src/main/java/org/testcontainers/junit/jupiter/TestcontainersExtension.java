@@ -14,51 +14,63 @@ import java.lang.reflect.Modifier;
 class TestcontainersExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback, AfterEachCallback {
 
     @Override
-    public void beforeAll(final ExtensionContext context) throws Exception {
+    public void beforeAll(final ExtensionContext context) throws IllegalAccessException {
         Class<?> testClass = context.getRequiredTestClass();
         for (final Field field : testClass.getDeclaredFields()) {
-            if (Startable.class.isAssignableFrom(field.getType()) && Modifier.isStatic(field.getModifiers())) {
-                field.setAccessible(true);
-                Startable container = Preconditions.notNull((Startable) field.get(testClass), "Container " + field.getName() + " needs to be initialized!");
-                container.start();
+            if (isSharedContainer(field)) {
+                startContainer(testClass, field);
             }
         }
     }
 
     @Override
-    public void beforeEach(final ExtensionContext context) throws Exception {
+    public void beforeEach(final ExtensionContext context) throws IllegalAccessException {
         Object testInstance = context.getRequiredTestInstance();
         for (Field field : testInstance.getClass().getDeclaredFields()) {
-            if (Startable.class.isAssignableFrom(field.getType()) && !Modifier.isStatic(field.getModifiers())) {
-                field.setAccessible(true);
-                Startable container = Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized!");
-                container.start();
+            if (isRestartContainer(field)) {
+                startContainer(testInstance, field);
             }
         }
     }
 
     @Override
-    public void afterEach(final ExtensionContext context) throws Exception {
+    public void afterEach(final ExtensionContext context) throws IllegalAccessException {
         Object testInstance = context.getRequiredTestInstance();
         for (Field field : testInstance.getClass().getDeclaredFields()) {
-            if (Startable.class.isAssignableFrom(field.getType()) && !Modifier.isStatic(field.getModifiers())) {
-                field.setAccessible(true);
-                Startable container = Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized!");
-                container.stop();
+            if (isRestartContainer(field)) {
+                stopContainer(testInstance, field);
             }
         }
     }
 
     @Override
-    public void afterAll(final ExtensionContext context) throws Exception {
+    public void afterAll(final ExtensionContext context) throws IllegalAccessException {
         Class<?> testClass = context.getRequiredTestClass();
         for (final Field field : testClass.getDeclaredFields()) {
-            if (Startable.class.isAssignableFrom(field.getType()) && Modifier.isStatic(field.getModifiers())) {
-                field.setAccessible(true);
-                Startable container = Preconditions.notNull((Startable) field.get(testClass), "Container " + field.getName() + " needs to be initialized!");
-                container.stop();
+            if (isSharedContainer(field)) {
+                stopContainer(testClass, field);
             }
         }
+    }
+
+    private static boolean isSharedContainer(final Field field) {
+        return Startable.class.isAssignableFrom(field.getType()) && Modifier.isStatic(field.getModifiers());
+    }
+
+    private static boolean isRestartContainer(final Field field) {
+        return Startable.class.isAssignableFrom(field.getType()) && !Modifier.isStatic(field.getModifiers());
+    }
+
+    private static void startContainer(final Object fieldOwner, final Field field) throws IllegalAccessException {
+        field.setAccessible(true);
+        Startable container = Preconditions.notNull((Startable) field.get(fieldOwner), "Container " + field.getName() + " needs to be initialized!");
+        container.start();
+    }
+
+    private static void stopContainer(final Object fieldOwner, final Field field) throws IllegalAccessException {
+        field.setAccessible(true);
+        Startable container = Preconditions.notNull((Startable) field.get(fieldOwner), "Container " + field.getName() + " needs to be initialized!");
+        container.stop();
     }
 
 }
