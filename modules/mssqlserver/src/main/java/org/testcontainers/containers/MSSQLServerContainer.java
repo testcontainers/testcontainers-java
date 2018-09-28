@@ -66,4 +66,10 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     public String getTestQueryString() {
         return "SELECT 1";
     }
+
+    @Override
+    public SELF withPassword(final String password) {
+        this.password = password;
+        return self();
+    }
 }
