@@ -1,76 +1,91 @@
 package org.testcontainers.junit.jupiter;
 
-import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
+import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.Preconditions;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.lifecycle.Startable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
-class TestcontainersExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback, AfterEachCallback {
+import static java.util.stream.Collectors.toList;
 
-    @Override
-    public void beforeAll(final ExtensionContext context) throws IllegalAccessException {
-        Class<?> testClass = context.getRequiredTestClass();
-        for (final Field field : testClass.getDeclaredFields()) {
-            if (isSharedContainer(field)) {
-                startContainer(testClass, field);
-            }
-        }
-    }
+class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCallback, AfterEachCallback {
+
+    private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
     @Override
-    public void beforeEach(final ExtensionContext context) throws IllegalAccessException {
-        Object testInstance = context.getRequiredTestInstance();
-        for (Field field : testInstance.getClass().getDeclaredFields()) {
-            if (isRestartContainer(field)) {
-                startContainer(testInstance, field);
-            }
-        }
+    public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
+        ExtensionContext.Store store = context.getStore(NAMESPACE);
+        findSharedContainers(testInstance).forEach(container -> store.getOrComputeIfAbsent(container.fieldName, k ->
+            container.start()
+        ));
     }
 
     @Override
-    public void afterEach(final ExtensionContext context) throws IllegalAccessException {
-        Object testInstance = context.getRequiredTestInstance();
-        for (Field field : testInstance.getClass().getDeclaredFields()) {
-            if (isRestartContainer(field)) {
-                stopContainer(testInstance, field);
-            }
-        }
+    public void beforeEach(final ExtensionContext context) {
+        findRestartedContainers(context.getRequiredTestInstance()).forEach(Startable::start);
     }
 
     @Override
-    public void afterAll(final ExtensionContext context) throws IllegalAccessException {
-        Class<?> testClass = context.getRequiredTestClass();
-        for (final Field field : testClass.getDeclaredFields()) {
-            if (isSharedContainer(field)) {
-                stopContainer(testClass, field);
-            }
+    public void afterEach(final ExtensionContext context) {
+        findRestartedContainers(context.getRequiredTestInstance()).forEach(Startable::stop);
+    }
+
+    private List<StartableCloseableResourceAdapter> findSharedContainers(Object testInstance) {
+        return findAnnotatedContainers(testInstance, Shared.class).collect(toList());
+    }
+
+    private List<Startable> findRestartedContainers(Object testInstance) {
+        return findAnnotatedContainers(testInstance, Restarted.class).map(s -> s.container).collect(toList());
+    }
+
+    private Stream<StartableCloseableResourceAdapter> findAnnotatedContainers(Object testInstance, Class<? extends Annotation> annotation) {
+        return Arrays.stream(testInstance.getClass().getDeclaredFields())
+            .filter(f -> GenericContainer.class.isAssignableFrom(f.getType()))
+            .filter(f -> AnnotationSupport.isAnnotated(f, annotation))
+            .map(f -> getContainerInstance(testInstance, f));
+    }
+
+    private static StartableCloseableResourceAdapter getContainerInstance(final Object testInstance, final Field field) {
+        try {
+            field.setAccessible(true);
+            GenericContainer containerInstance = Preconditions.notNull((GenericContainer) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
+            return new StartableCloseableResourceAdapter(testInstance.getClass().getName() + "." + field.getName(), containerInstance);
+        } catch (IllegalAccessException e) {
+            throw new ExtensionConfigurationException("Can not access container defined in field " + field.getName());
         }
     }
 
-    private static boolean isSharedContainer(final Field field) {
-        return Startable.class.isAssignableFrom(field.getType()) && Modifier.isStatic(field.getModifiers());
-    }
+    private static class StartableCloseableResourceAdapter implements CloseableResource {
 
-    private static boolean isRestartContainer(final Field field) {
-        return Startable.class.isAssignableFrom(field.getType()) && !Modifier.isStatic(field.getModifiers());
-    }
+        private String fieldName;
 
-    private static void startContainer(final Object fieldOwner, final Field field) throws IllegalAccessException {
-        field.setAccessible(true);
-        Startable container = Preconditions.notNull((Startable) field.get(fieldOwner), "Container " + field.getName() + " needs to be initialized!");
-        container.start();
-    }
+        private Startable container;
 
-    private static void stopContainer(final Object fieldOwner, final Field field) throws IllegalAccessException {
-        field.setAccessible(true);
-        Startable container = Preconditions.notNull((Startable) field.get(fieldOwner), "Container " + field.getName() + " needs to be initialized!");
-        container.stop();
-    }
+        private StartableCloseableResourceAdapter(String fieldName, Startable container) {
+            this.fieldName = fieldName;
+            this.container = container;
+        }
 
+        private StartableCloseableResourceAdapter start() {
+            container.start();
+            return this;
+        }
+
+        @Override
+        public void close() throws Throwable {
+            container.stop();
+        }
+    }
 }

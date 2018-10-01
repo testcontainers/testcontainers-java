@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers
 class ComposeContainerIT {
 
+    @Restarted
     private DockerComposeContainer composeContainer = new DockerComposeContainer(
         new File("src/test/resources/docker-compose.yml"))
         .withExposedService("whoami_1", 80, Wait.forHttp("/"));
