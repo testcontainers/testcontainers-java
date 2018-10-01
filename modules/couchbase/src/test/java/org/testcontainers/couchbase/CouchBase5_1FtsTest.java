@@ -10,7 +10,7 @@ import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.search.SearchQuery;
 import com.couchbase.client.java.search.result.SearchQueryResult;
 
-public class CouchBaseFtsTest extends AbstractCouchbaseTest {
+public class CouchBase5_1FtsTest extends AbstractCouchbaseTest {
 
     private static final String ID = "city";
     private static final String DOCUMENT_VALUE = "Rio de Janeiro"
@@ -23,7 +23,7 @@ public class CouchBaseFtsTest extends AbstractCouchbaseTest {
 
     @BeforeClass
     public static void initContainer() {
-        couchbaseContainer = new CouchbaseContainer()
+        couchbaseContainer = new CouchbaseContainer("couchbase/server:5.1.1")
             .withNewBucket(DefaultBucketSettings.builder()
                 .enableFlush(true)
                 .name(TEST_BUCKET)
@@ -33,15 +33,16 @@ public class CouchBaseFtsTest extends AbstractCouchbaseTest {
                 .type(BucketType.COUCHBASE)
                 .build())
             .withNewFts("fts_test");
+
         couchbaseContainer.start();
     }
 
     @Test
     public void shouldExecuteN1ql() throws Exception {
         getBucket().query(N1qlQuery.simple("INSERT INTO " + TEST_BUCKET + " (KEY, VALUE) VALUES ('" + ID + "', " + DOCUMENT + ")"));
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         SearchQueryResult result = getBucket().query(
-            new SearchQuery("fts_test", SearchQuery.match("Corcovado")).fields("name"));
+            new SearchQuery("fts_test", SearchQuery.match("Corcovado")).fields("city"));
         Assert.assertEquals(1, result.hits().size());
         Assert.assertEquals(DOCUMENT_VALUE, getBucket().get(result.hits().get(0).id()).content().get("name"));
     }
