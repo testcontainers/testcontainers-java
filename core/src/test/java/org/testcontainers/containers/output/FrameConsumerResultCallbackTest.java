@@ -5,6 +5,7 @@ import com.github.dockerjava.api.model.StreamType;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -142,11 +143,11 @@ public class FrameConsumerResultCallbackTest {
     @Test
     public void reconstructBreakedUnicode() throws IOException {
         String payload = "Тест";
-        byte[] payloadBytes = payload.getBytes();
-        byte[] bytes1 = new byte[5];
-        byte[] bytes2 = new byte[3];
-        System.arraycopy(payloadBytes, 0, bytes1, 0, 5);
-        System.arraycopy(payloadBytes, 5, bytes2, 0, 3);
+        byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes1 = new byte[(int) (payloadBytes.length * 0.6)];
+        byte[] bytes2 = new byte[payloadBytes.length - bytes1.length];
+        System.arraycopy(payloadBytes, 0, bytes1, 0, bytes1.length);
+        System.arraycopy(payloadBytes, bytes1.length, bytes2, 0, bytes2.length);
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputType.STDOUT, consumer);

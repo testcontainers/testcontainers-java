@@ -2,6 +2,7 @@ package org.testcontainers.dockerclient.transport.okhttp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.core.InvocationBuilder;
 import com.github.dockerjava.core.WebTarget;
 import com.google.common.collect.HashMultimap;
@@ -24,7 +25,8 @@ import java.util.stream.Collectors;
 @Value
 class OkHttpWebTarget implements WebTarget {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+        .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     OkHttpClient okHttpClient;
 

@@ -42,7 +42,8 @@
     * [Example](usage/webdriver_containers.md#example)
     * [Other browsers](usage/webdriver_containers.md#other-browsers)
     * [Recording videos](usage/webdriver_containers.md#recording-videos)
-
+    
+* [Kafka containers](usage/kafka_containers.md)
 * [Docker Compose](usage/docker_compose.md)
 * [Dockerfile containers](usage/dockerfile.md)
 * [Windows support](usage/windows_support.md)

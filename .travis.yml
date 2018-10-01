@@ -17,7 +17,7 @@ jobs:
 
     - stage: test
       env: [ NAME=core ]
-      jdk: oraclejdk9
+      jdk: openjdk11
       script: ./gradlew testcontainers:check
 
     - env: [ NAME=selenium ]

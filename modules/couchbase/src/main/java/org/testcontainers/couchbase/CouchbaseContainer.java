@@ -30,37 +30,28 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.collect.Lists;
 import lombok.*;
 import org.apache.commons.compress.utils.Sets;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ThrowingFunction;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.CAPI;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.FTS;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.MEMCACHED_SSL;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST_SSL;
+import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.*;
 
 /**
  * Based on Laurent Doguin version,
@@ -70,12 +61,11 @@ import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.REST
 @AllArgsConstructor
 public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
-    public static final String VERSION = "5.1.0";
+    public static final String VERSION = "5.5.1";
     public static final String DOCKER_IMAGE_NAME = "couchbase/server:";
     public static final ObjectMapper MAPPER = new ObjectMapper();
-    public static final String STATIC_CONFIG_NAME = "static_config";
-    public static final String STATIC_CONFIG_PATH = "/opt/couchbase/etc/couchbase/";
-    public static final String STATIC_CONFIG_LOCATION = STATIC_CONFIG_PATH + STATIC_CONFIG_NAME;
+    public static final String STATIC_CONFIG = "/opt/couchbase/etc/couchbase/static_config";
+    public static final String CAPI_CONFIG = "/opt/couchbase/etc/couchdb/default.d/capi.ini";
 
     private String memoryQuota = "300";
 
@@ -99,25 +89,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Getter
     private boolean fts = false;
 
-    private boolean beerSample = false;
-
-    private boolean travelSample = false;
-
-    private boolean gamesIMSample = false;
-
     @Getter(lazy = true)
     private final CouchbaseEnvironment couchbaseEnvironment = createCouchbaseEnvironment();
 
     @Getter(lazy = true)
     private final CouchbaseCluster couchbaseCluster = createCouchbaseCluster();
 
-    private List<BucketSettings> newBuckets = new ArrayList<>();
+    private List<BucketAndUserSettings> newBuckets = new ArrayList<>();
 
     private String urlBase;
 
     private SocatContainer proxy;
-
-    private String ftsName;
 
     public CouchbaseContainer() {
         this(DOCKER_IMAGE_NAME + VERSION);
@@ -144,11 +126,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         for (CouchbasePort port : CouchbasePort.values()) {
             exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
-
-            // CAPI port has a special configuration file which is set via env
-            if (port == CAPI) {
-                withEnv(port.getName(), getMappedPort(port) + "");
-            }
         }
         super.doStart();
     }
@@ -203,7 +180,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     public void stop() {
-        Stream.<Runnable>of(super::stop, proxy::stop, this::stopCluster).parallel().forEach(Runnable::run);
+        stopCluster();
+        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
     }
 
     private void stopCluster() {
@@ -212,7 +190,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
-        newBuckets.add(bucketSettings);
+        newBuckets.add(new BucketAndUserSettings(bucketSettings));
+        return self();
+    }
+
+    public CouchbaseContainer withNewBucket(BucketSettings bucketSettings, UserSettings userSettings) {
+        newBuckets.add(new BucketAndUserSettings(bucketSettings, userSettings));
         return self();
     }
 
@@ -241,25 +224,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         String webSettingsURL = "/settings/web";
         String webSettingsContent = "username=" + URLEncoder.encode(clusterUsername, "UTF-8") + "&password=" + URLEncoder.encode(clusterPassword, "UTF-8") + "&port=8091";
 
-        String bucketURL = "/sampleBuckets/install";
-
-        StringBuilder sampleBucketPayloadBuilder = new StringBuilder();
-        sampleBucketPayloadBuilder.append('[');
-        if (travelSample) {
-            sampleBucketPayloadBuilder.append("\"travel-sample\",");
-        }
-        if (beerSample) {
-            sampleBucketPayloadBuilder.append("\"beer-sample\",");
-        }
-        if (gamesIMSample) {
-            sampleBucketPayloadBuilder.append("\"gamesim-sample\",");
-        }
-        sampleBucketPayloadBuilder.append(']');
-
         callCouchbaseRestAPI(poolURL, poolPayload);
         callCouchbaseRestAPI(setupServicesURL, setupServiceContent);
         callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
-        callCouchbaseRestAPI(bucketURL, sampleBucketPayloadBuilder.toString());
 
         createNodeWaitStrategy().waitUntilReady(this);
         callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
@@ -285,15 +252,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             });
     }
 
-    public void createBucket(BucketSettings bucketSetting, boolean primaryIndex) {
+    public void createBucket(BucketSettings bucketSetting, UserSettings userSettings, boolean primaryIndex) {
         ClusterManager clusterManager = getCouchbaseCluster().clusterManager(clusterUsername, clusterPassword);
         // Insert Bucket
         BucketSettings bucketSettings = clusterManager.insertBucket(bucketSetting);
-        // Insert Bucket admin user
-        UserSettings userSettings = UserSettings.build()
-            .password(bucketSetting.password())
-            .roles(getAdminRoles(bucketSetting.name()));
         try {
+            // Insert Bucket user
             clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
         } catch (Exception e) {
             logger().warn("Unable to insert user '" + bucketSetting.name() + "', maybe you are using older version");
@@ -307,48 +271,14 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         }
     }
 
-    private List<UserRole> getAdminRoles(String bucketName) {
-        return Lists.newArrayList(
-            new UserRole("bucket_admin", bucketName),
-            new UserRole("views_admin", bucketName),
-            new UserRole("query_manage_index", bucketName),
-            new UserRole("query_update", bucketName),
-            new UserRole("query_select", bucketName),
-            new UserRole("query_insert", bucketName),
-            new UserRole("query_delete", bucketName)
-        );
-    }
-
-    private void createFullTextIndex() {
-        String urlBaseFts = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(FTS));
-        String fullTextIndexURL = urlBaseFts + "/api/index/" + ftsName;
-        StringBuilder fullTextIndex = new StringBuilder();
-        try {
-            Path path = Paths.get(CouchbaseContainer.class.getClassLoader()
-                .getResource(ftsName + ".json").toURI());
-            Stream<String> lines = Files.lines(path);
-            lines.forEach(line -> fullTextIndex.append(line));
-            lines.close();
-
-            callCouchbaseRestAPI(fullTextIndexURL, fullTextIndex.toString(),
-                "PUT", "application/json");
-        } catch (Exception e) {
-            logger().error("Could not create fullTextIndex", e);
-        }
-
-    }
-
     public void callCouchbaseRestAPI(String url, String payload) throws IOException {
         String fullUrl = urlBase + url;
-        callCouchbaseRestAPI(fullUrl, payload, "POST", "application/x-www-form-urlencoded");
-    }
-
-    public void callCouchbaseRestAPI(String fullUrl, String payload, String requestMethod, String contentType) throws IOException {
         @Cleanup("disconnect")
         HttpURLConnection httpConnection = (HttpURLConnection) ((new URL(fullUrl).openConnection()));
         httpConnection.setDoOutput(true);
-        httpConnection.setRequestMethod(requestMethod);
-        httpConnection.setRequestProperty("Content-Type", contentType);
+        httpConnection.setRequestMethod("POST");
+        httpConnection.setRequestProperty("Content-Type",
+            "application/x-www-form-urlencoded");
         String encoded = Base64.encode((clusterUsername + ":" + clusterPassword).getBytes("UTF-8"));
         httpConnection.setRequestProperty("Authorization", "Basic " + encoded);
         @Cleanup
@@ -359,41 +289,38 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     @Override
-    @SneakyThrows
     protected void containerIsCreated(String containerId) {
-        File tempFile = copyConfigFromContainer(containerId);
-        appendPortsToConfig(tempFile);
-        copyFileToContainer(MountableFile.forHostPath(tempFile.toPath()), STATIC_CONFIG_PATH);
+        patchConfig(STATIC_CONFIG, this::addMappedPorts);
+        // capi needs a special configuration, see https://developer.couchbase.com/documentation/server/current/install/install-ports.html
+        patchConfig(CAPI_CONFIG, this::replaceCapiPort);
     }
 
-    private File copyConfigFromContainer(String containerId) throws IOException {
-        File tempDirectory = Files.createTempDirectory("testcontainer_" + containerId + "_").toFile();
-        tempDirectory.deleteOnExit();
-        File tempFile = new File(tempDirectory, STATIC_CONFIG_NAME);
-        tempFile.deleteOnExit();
-        logger().debug("Storing static_config in [{}].", tempFile.getAbsolutePath());
-        copyFileFromContainer(STATIC_CONFIG_LOCATION, tempFile.getPath());
-        return tempFile;
+    private void patchConfig(String configLocation, ThrowingFunction<String, String> patchFunction) {
+        String patchedConfig = copyFileFromContainer(configLocation,
+            inputStream -> patchFunction.apply(IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
+        copyFileToContainer(Transferable.of(patchedConfig.getBytes(StandardCharsets.UTF_8)), configLocation);
     }
 
-    private void appendPortsToConfig(File tempFile) throws IOException {
-        for (CouchbasePort port : CouchbasePort.values()) {
-            if (!port.isDynamic()) {
-                String config = String.format("{%s, %d}.\n", port.name, getMappedPort(port));
-                FileUtils.writeStringToFile(tempFile, config, "UTF-8", true);
-            }
-        }
+    private String addMappedPorts(String originalConfig) {
+        String portConfig = Stream.of(CouchbasePort.values())
+            .filter(port -> !port.isDynamic())
+            .map(port -> String.format("{%s, %d}.", port.name, getMappedPort(port)))
+            .collect(Collectors.joining("\n"));
+        return String.format("%s\n%s", originalConfig, portConfig);
+    }
+
+    private String replaceCapiPort(String originalConfig) {
+        return Arrays.stream(originalConfig.split("\n"))
+            .map(s -> (s.matches("port\\s*=\\s*" + CAPI.getOriginalPort())) ? "port = " + getMappedPort(CAPI) : s)
+            .collect(Collectors.joining("\n"));
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!newBuckets.isEmpty()) {
-            for (BucketSettings bucketSetting : newBuckets) {
-                createBucket(bucketSetting, primaryIndex);
+            for (BucketAndUserSettings bucket : newBuckets) {
+                createBucket(bucket.getBucketSettings(), bucket.getUserSettings(), primaryIndex);
             }
-        }
-        if (fts && ftsName != null && !ftsName.isEmpty()) {
-            createFullTextIndex();
         }
     }
 
@@ -422,8 +349,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return self();
     }
 
-    public CouchbaseContainer withClusterPassword(String clusterPassword) {
-        this.clusterPassword = clusterPassword;
+    public CouchbaseContainer withClusterAdmin(String username, String password) {
+        this.clusterUsername = username;
+        this.clusterPassword = password;
         return self();
     }
 
@@ -452,27 +380,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return self();
     }
 
-    public CouchbaseContainer withNewFts(String newFts) {
-        this.fts = true;
-        this.ftsName = newFts;
-        return self();
-    }
-
-    public CouchbaseContainer withBeerSample(boolean beerSample) {
-        this.beerSample = beerSample;
-        return self();
-    }
-
-    public CouchbaseContainer withTravelSample(boolean travelSample) {
-        this.travelSample = travelSample;
-        return self();
-    }
-
-    public CouchbaseContainer withGamesIMSample(boolean gamesIMSample) {
-        this.gamesIMSample = gamesIMSample;
-        return self();
-    }
-
     @Getter
     @RequiredArgsConstructor
     protected enum CouchbasePort {
@@ -496,5 +403,33 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         final int originalPort;
 
         final boolean dynamic;
+    }
+
+    @Value
+    @AllArgsConstructor
+    private class BucketAndUserSettings {
+
+        private final BucketSettings bucketSettings;
+        private final UserSettings userSettings;
+
+        public BucketAndUserSettings(final BucketSettings bucketSettings) {
+            this.bucketSettings = bucketSettings;
+            this.userSettings = UserSettings.build()
+                .password(bucketSettings.password())
+                .roles(getDefaultAdminRoles(bucketSettings.name()));
+        }
+
+        private List<UserRole> getDefaultAdminRoles(String bucketName) {
+            return Lists.newArrayList(
+                new UserRole("bucket_admin", bucketName),
+                new UserRole("views_admin", bucketName),
+                new UserRole("query_manage_index", bucketName),
+                new UserRole("query_update", bucketName),
+                new UserRole("query_select", bucketName),
+                new UserRole("query_insert", bucketName),
+                new UserRole("query_delete", bucketName)
+            );
+        }
+
     }
 }
