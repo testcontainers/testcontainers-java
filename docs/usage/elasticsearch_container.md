@@ -11,13 +11,7 @@ You can start an elasticsearch container instance from any Java application by u
 
 ```java
 // Create the elasticsearch container.
-ElasticsearchContainer container = new ElasticsearchContainer();
-
-// Optional but highly recommended: Specify the version you need.
-container.withVersion("6.3.2");
-
-// Optional: you can also set what is the Docker registry you want to use with.
-container.withBaseUrl("docker.elastic.co/elasticsearch/elasticsearch");
+ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:6.4.1");
 
 // Start the container. This step might take some time...
 container.start();
@@ -41,5 +35,9 @@ or set `client.transport.ignore_cluster_name` to `true`.
 ## Choose your Elasticsearch license
 
 If you prefer to start a Docker image with the pure OSS version (which means with no security or
-other advanced features), you can use this baseUrl instead: `docker.elastic.co/elasticsearch/elasticsearch-oss`.
+other advanced features), you can use this instead:
 
+```java
+// Create the elasticsearch container.
+ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.1");
+```
