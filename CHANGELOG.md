@@ -1,11 +1,9 @@
 # Change Log
-All notable changes to this project will be documented in this file.
+~All notable changes to this project will be documented in this file.~
 
-## UNRELEASED
+# MOVED
 
-### Fixed
-
-### Changed
+**After version 1.8.3 all future releases will _only_ be documented in the [Releases](https://github.com/testcontainers/testcontainers-java/releases) section of the GitHub repository. This changelog file will eventually be removed.**
 
 
 ## [1.8.3] - 2018-08-05

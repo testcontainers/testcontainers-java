@@ -4,23 +4,17 @@ import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.io.Resources;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
 
 public class RegistryAuthLocatorTest {
-
-    @BeforeClass
-    public static void nonWindowsTest() throws Exception {
-        Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
-    }
-
     @Test
     public void lookupAuthConfigWithoutCredentials() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty.json");
@@ -87,10 +81,46 @@ public class RegistryAuthLocatorTest {
         assertEquals("Correct password is obtained from a credential helper", "secret", authConfig.getPassword());
     }
 
-    @NotNull
-    private RegistryAuthLocator createTestAuthLocator(String configName) throws URISyntaxException {
-        final File configFile = new File(Resources.getResource("auth-config/" + configName).toURI());
-        return new RegistryAuthLocator(configFile, configFile.getParentFile().getAbsolutePath() + "/");
+    @Test
+    public void lookupAuthConfigWithCredentialsNotFound() throws URISyntaxException {
+        Map<String, String> notFoundMessagesReference = new HashMap<>();
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store.json", notFoundMessagesReference);
+
+        DockerImageName dockerImageName = new DockerImageName("registry2.example.com/org/repo");
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
+
+        assertNull("No username should have been obtained from a credential store", authConfig.getUsername());
+        assertNull("No secret should have been obtained from a credential store", authConfig.getPassword());
+        assertEquals("Should have one 'credentials not found' message discovered", 1, notFoundMessagesReference.size());
+
+        String discoveredMessage = notFoundMessagesReference.values().iterator().next();
+
+        assertEquals(
+            "Not correct message discovered",
+            "Fake credentials not found on credentials store 'https://not.a.real.registry/url'",
+            discoveredMessage);
     }
 
+    @NotNull
+    private RegistryAuthLocator createTestAuthLocator(String configName) throws URISyntaxException {
+        return createTestAuthLocator(configName, new HashMap<>());
+    }
+
+    @NotNull
+    private RegistryAuthLocator createTestAuthLocator(String configName, Map<String, String> notFoundMessagesReference) throws URISyntaxException {
+        final File configFile = new File(Resources.getResource("auth-config/" + configName).toURI());
+
+        String commandPathPrefix = configFile.getParentFile().getAbsolutePath() + "/";
+        String commandExtension = "";
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            commandPathPrefix += "win/";
+
+            // need to provide executable extension otherwise won't run it
+            // with real docker wincredential exe there is no problem
+            commandExtension = ".bat";
+        }
+
+        return new RegistryAuthLocator(configFile, commandPathPrefix, commandExtension, notFoundMessagesReference);
+    }
 }

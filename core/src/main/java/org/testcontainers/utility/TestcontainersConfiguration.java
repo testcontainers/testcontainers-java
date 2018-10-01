@@ -35,7 +35,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getVncRecordedContainerImage() {
-        return (String) properties.getOrDefault("vncrecorder.container.image", "richnorth/vnc-recorder:latest");
+        return (String) properties.getOrDefault("vncrecorder.container.image", "quay.io/testcontainers/vnc-recorder:1.1.0");
     }
 
     public String getDockerComposeContainerImage() {
@@ -76,10 +76,6 @@ public class TestcontainersConfiguration {
 
     public String getTransportType() {
         return properties.getProperty("transport.type", "okhttp");
-    }
-
-    public boolean isNpipeForced() {
-        return Boolean.parseBoolean(properties.getProperty("transport.npipe.forced", "false"));
     }
 
     @Synchronized
