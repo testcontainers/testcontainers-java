@@ -6,6 +6,8 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
 
+import java.time.Duration;
+
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
@@ -52,7 +54,8 @@ public class ElasticsearchContainer extends GenericContainer {
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         setWaitStrategy(new HttpWaitStrategy()
             .forPort(ELASTICSEARCH_DEFAULT_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK || response == HTTP_UNAUTHORIZED));
+            .forStatusCodeMatching(response -> response == HTTP_OK || response == HTTP_UNAUTHORIZED)
+            .withStartupTimeout(Duration.ofMinutes(2)));
     }
 
     public HttpHost getHost() {

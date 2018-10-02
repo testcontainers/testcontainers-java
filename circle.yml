@@ -104,7 +104,7 @@ workflows:
     jobs:
       - core
       - okhttp
-      - modules-no-jdbc-test-no-selenium
+      - modules-no-jdbc-test-no-selenium-no-elasticsearch
       - modules-jdbc-test
       - selenium
       - elasticsearch
