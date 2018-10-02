@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.Preconditions;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.lifecycle.Startable;
 
 import java.lang.annotation.Annotation;
@@ -27,9 +26,21 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     @Override
     public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
         ExtensionContext.Store store = context.getStore(NAMESPACE);
-        findSharedContainers(testInstance).forEach(container -> store.getOrComputeIfAbsent(container.fieldName, k ->
-            container.start()
-        ));
+        findSharedContainers(testInstance).forEach(container -> {
+            StartableCloseableResourceAdapter started = store.getOrComputeIfAbsent(container.key, k ->
+                container.start(), StartableCloseableResourceAdapter.class);
+            setSharedContainerToField(testInstance, started.fieldName, started.container);
+        });
+    }
+
+    private static void setSharedContainerToField(Object testInstance, String fieldName, Startable container) {
+        try {
+            Field sharedContainerField = testInstance.getClass().getDeclaredField(fieldName);
+            sharedContainerField.setAccessible(true);
+            sharedContainerField.set(testInstance, container);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new ExtensionConfigurationException("Can not set shared container instance to field " + fieldName);
+        }
     }
 
     @Override
@@ -52,7 +63,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
 
     private Stream<StartableCloseableResourceAdapter> findAnnotatedContainers(Object testInstance, Class<? extends Annotation> annotation) {
         return Arrays.stream(testInstance.getClass().getDeclaredFields())
-            .filter(f -> GenericContainer.class.isAssignableFrom(f.getType()))
+            .filter(f -> Startable.class.isAssignableFrom(f.getType()))
             .filter(f -> AnnotationSupport.isAnnotated(f, annotation))
             .map(f -> getContainerInstance(testInstance, f));
     }
@@ -60,8 +71,8 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     private static StartableCloseableResourceAdapter getContainerInstance(final Object testInstance, final Field field) {
         try {
             field.setAccessible(true);
-            GenericContainer containerInstance = Preconditions.notNull((GenericContainer) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
-            return new StartableCloseableResourceAdapter(testInstance.getClass().getName() + "." + field.getName(), containerInstance);
+            Startable containerInstance = Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
+            return new StartableCloseableResourceAdapter(testInstance.getClass().getName(), field.getName(), containerInstance);
         } catch (IllegalAccessException e) {
             throw new ExtensionConfigurationException("Can not access container defined in field " + field.getName());
         }
@@ -69,11 +80,14 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
 
     private static class StartableCloseableResourceAdapter implements CloseableResource {
 
+        private String key;
+
         private String fieldName;
 
         private Startable container;
 
-        private StartableCloseableResourceAdapter(String fieldName, Startable container) {
+        private StartableCloseableResourceAdapter(String className, String fieldName, Startable container) {
+            this.key = className + "." + fieldName;
             this.fieldName = fieldName;
             this.container = container;
         }

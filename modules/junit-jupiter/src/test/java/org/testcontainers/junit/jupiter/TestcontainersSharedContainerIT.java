@@ -1,13 +1,11 @@
 package org.testcontainers.junit.jupiter;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TestcontainersSharedContainerIT {
 
     @Shared
