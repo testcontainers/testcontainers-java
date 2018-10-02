@@ -45,7 +45,7 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Contributing
 
-See [CONTRIBUTING](../CONTRIBUTING.md).
+See [CONTRIBUTING](https://github.com/testcontainers/testcontainers-java/blob/master/CONTRIBUTING.md).
 
 ## Copyright
 
