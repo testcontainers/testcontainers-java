@@ -37,5 +37,11 @@ It takes a couple of seconds, but if you want to speed up your tests, you can di
 > **kafka.container.image = confluentinc/cp-kafka**  
 > Used by KafkaContainer 
 
+## Customizing ryuk resource reaper
+> **ryuk.container.image = quay.io/testcontainers/ryuk:0.2.2**
+> The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
+> **ryuk.container.privileged = false**
+> In some environments ryuk must be started in privileged mode to work properly (--privileged flag)
+
 Testcontainers uses public Docker images to perform different actions like startup checks, VNC recording and others.  
 Some companies disallow the usage of Docker Hub, but you can override `*.image` properties with your own images from your private registry to workaround that.
