@@ -30,7 +30,7 @@ public class SeleniumContainerTest {
         searchInput.sendKeys("Rick Astley");
         searchInput.submit();
 
-        WebElement otherPage = driver.findElementByLinkText("Rickrolling");
+        WebElement otherPage = driver.findElementByPartialLinkText("Rickrolling");
         otherPage.click();
 
         boolean expectedTextFound = driver.findElementsByCssSelector("p")
