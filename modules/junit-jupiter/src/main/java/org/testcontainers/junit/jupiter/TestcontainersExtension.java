@@ -46,8 +46,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
 
     @Override
     public void beforeEach(final ExtensionContext context) {
-        Set<Object> testInstances = new LinkedHashSet<>();
-        collectParentTestInstances(context, testInstances);
+        Set<Object> testInstances = collectParentTestInstances(context);
 
         testInstances.stream()
             .flatMap(this::findRestartedContainers)
@@ -55,9 +54,9 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
                 .getOrComputeIfAbsent(container.key, k -> container.start()));
     }
 
-    private void collectParentTestInstances(final ExtensionContext context, final Set<Object> testInstances) {
+    private Set<Object> collectParentTestInstances(final ExtensionContext context) {
+        Set<Object> testInstances = new LinkedHashSet<>();
         Optional<ExtensionContext> current = Optional.of(context);
-
         while(current.isPresent()) {
             ExtensionContext ctx = current.get();
             Object testInstance = ctx.getStore(NAMESPACE).remove(TEST_INSTANCE);
@@ -66,6 +65,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
             }
             current = ctx.getParent();
         }
+        return testInstances;
     }
 
     private Stream<StoreAdapter> findSharedContainers(Object testInstance) {
