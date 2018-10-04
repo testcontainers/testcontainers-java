@@ -30,8 +30,8 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         store.put(TEST_INSTANCE, testInstance);
 
         findSharedContainers(testInstance)
-            .map(container -> store.getOrComputeIfAbsent(container.key, k -> container.start(), StoreAdapter.class))
-            .forEach(container -> setSharedContainerToField(testInstance, container.fieldName, container.container));
+            .map(adapter -> store.getOrComputeIfAbsent(adapter.key, k -> adapter.start(), StoreAdapter.class))
+            .forEach(adapter -> setSharedContainerToField(testInstance, adapter.fieldName, adapter.container));
     }
 
     private static void setSharedContainerToField(Object testInstance, String fieldName, Startable container) {
@@ -49,8 +49,8 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         collectParentTestInstances(context)
             .stream()
             .flatMap(this::findRestartedContainers)
-            .forEach(container -> context.getStore(NAMESPACE)
-                .getOrComputeIfAbsent(container.key, k -> container.start()));
+            .forEach(adapter -> context.getStore(NAMESPACE)
+                .getOrComputeIfAbsent(adapter.key, k -> adapter.start()));
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {
