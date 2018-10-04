@@ -86,7 +86,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: mvn -f examples/pom.xml test
+          command: mvn -B -f examples/pom.xml test
       - run:
           name: Save test results
           command: |
