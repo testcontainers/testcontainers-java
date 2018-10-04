@@ -29,11 +29,9 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         ExtensionContext.Store store = context.getStore(NAMESPACE);
         store.put(TEST_INSTANCE, testInstance);
 
-        findSharedContainers(testInstance).forEach(container -> {
-            StartableCloseableResourceAdapter started = store.getOrComputeIfAbsent(container.key, k ->
-                container.start(), StartableCloseableResourceAdapter.class);
-            setSharedContainerToField(testInstance, started.fieldName, started.container);
-        });
+        findSharedContainers(testInstance)
+            .map(container -> store.getOrComputeIfAbsent(container.key, k -> container.start(), StoreAdapter.class))
+            .forEach(container -> setSharedContainerToField(testInstance, container.fieldName, container.container));
     }
 
     private static void setSharedContainerToField(Object testInstance, String fieldName, Startable container) {
@@ -70,32 +68,37 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         }
     }
 
-    private Stream<StartableCloseableResourceAdapter> findSharedContainers(Object testInstance) {
+    private Stream<StoreAdapter> findSharedContainers(Object testInstance) {
         return findAnnotatedContainers(testInstance, Shared.class);
     }
 
-    private Stream<StartableCloseableResourceAdapter> findRestartedContainers(Object testInstance) {
+    private Stream<StoreAdapter> findRestartedContainers(Object testInstance) {
         return findAnnotatedContainers(testInstance, Restarted.class);
     }
 
-    private Stream<StartableCloseableResourceAdapter> findAnnotatedContainers(Object testInstance, Class<? extends Annotation> annotation) {
+    private Stream<StoreAdapter> findAnnotatedContainers(Object testInstance, Class<? extends Annotation> annotation) {
         return Arrays.stream(testInstance.getClass().getDeclaredFields())
             .filter(f -> Startable.class.isAssignableFrom(f.getType()))
             .filter(f -> AnnotationSupport.isAnnotated(f, annotation))
             .map(f -> getContainerInstance(testInstance, f));
     }
 
-    private static StartableCloseableResourceAdapter getContainerInstance(final Object testInstance, final Field field) {
+    private static StoreAdapter getContainerInstance(final Object testInstance, final Field field) {
         try {
             field.setAccessible(true);
             Startable containerInstance = Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
-            return new StartableCloseableResourceAdapter(testInstance.getClass().getName(), field.getName(), containerInstance);
+            return new StoreAdapter(testInstance.getClass().getName(), field.getName(), containerInstance);
         } catch (IllegalAccessException e) {
             throw new ExtensionConfigurationException("Can not access container defined in field " + field.getName());
         }
     }
 
-    private static class StartableCloseableResourceAdapter implements CloseableResource {
+    /**
+     * An adapter for {@link Startable} that implement {@link CloseableResource}
+     * thereby letting the JUnit automatically stop containers once the current
+     * {@link ExtensionContext} is closed.
+     */
+    private static class StoreAdapter implements CloseableResource {
 
         private String key;
 
@@ -103,13 +106,13 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
 
         private Startable container;
 
-        private StartableCloseableResourceAdapter(String className, String fieldName, Startable container) {
+        private StoreAdapter(String className, String fieldName, Startable container) {
             this.key = className + "." + fieldName;
             this.fieldName = fieldName;
             this.container = container;
         }
 
-        private StartableCloseableResourceAdapter start() {
+        private StoreAdapter start() {
             container.start();
             return this;
         }
