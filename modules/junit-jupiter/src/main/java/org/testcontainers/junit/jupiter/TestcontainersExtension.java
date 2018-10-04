@@ -1,6 +1,5 @@
 package org.testcontainers.junit.jupiter;
 
-import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -14,18 +13,22 @@ import org.testcontainers.lifecycle.Startable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-
-class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCallback, AfterEachCallback {
+class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCallback {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
+
+    private static final String TEST_INSTANCE = "testInstance";
 
     @Override
     public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
         ExtensionContext.Store store = context.getStore(NAMESPACE);
+        store.put(TEST_INSTANCE, testInstance);
+
         findSharedContainers(testInstance).forEach(container -> {
             StartableCloseableResourceAdapter started = store.getOrComputeIfAbsent(container.key, k ->
                 container.start(), StartableCloseableResourceAdapter.class);
@@ -45,20 +48,34 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
 
     @Override
     public void beforeEach(final ExtensionContext context) {
-        findRestartedContainers(context.getRequiredTestInstance()).forEach(Startable::start);
+        Set<Object> testInstances = new LinkedHashSet<>();
+        collectParentTestInstances(context, testInstances);
+
+        testInstances.stream()
+            .flatMap(this::findRestartedContainers)
+            .forEach(container -> context.getStore(NAMESPACE)
+                .getOrComputeIfAbsent(container.key, k -> container.start()));
     }
 
-    @Override
-    public void afterEach(final ExtensionContext context) {
-        findRestartedContainers(context.getRequiredTestInstance()).forEach(Startable::stop);
+    private void collectParentTestInstances(final ExtensionContext context, final Set<Object> testInstances) {
+        Optional<ExtensionContext> current = Optional.of(context);
+
+        while(current.isPresent()) {
+            ExtensionContext ctx = current.get();
+            Object testInstance = ctx.getStore(NAMESPACE).remove(TEST_INSTANCE);
+            if (testInstance != null) {
+                testInstances.add(testInstance);
+            }
+            current = ctx.getParent();
+        }
     }
 
-    private List<StartableCloseableResourceAdapter> findSharedContainers(Object testInstance) {
-        return findAnnotatedContainers(testInstance, Shared.class).collect(toList());
+    private Stream<StartableCloseableResourceAdapter> findSharedContainers(Object testInstance) {
+        return findAnnotatedContainers(testInstance, Shared.class);
     }
 
-    private List<Startable> findRestartedContainers(Object testInstance) {
-        return findAnnotatedContainers(testInstance, Restarted.class).map(s -> s.container).collect(toList());
+    private Stream<StartableCloseableResourceAdapter> findRestartedContainers(Object testInstance) {
+        return findAnnotatedContainers(testInstance, Restarted.class);
     }
 
     private Stream<StartableCloseableResourceAdapter> findAnnotatedContainers(Object testInstance, Class<? extends Annotation> annotation) {
