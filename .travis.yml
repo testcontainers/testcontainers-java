@@ -38,6 +38,9 @@ jobs:
                 openjdk:8-jdk-alpine \
                 ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest'
 
+    - env: [ NAME="examples"]
+      script: mvn -f examples/pom.xml test
+
     - stage: deploy
       sudo: false
       services: []
