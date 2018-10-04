@@ -41,8 +41,12 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         addExposedPort(MYSQL_PORT);
         addEnv("MYSQL_DATABASE", databaseName);
         addEnv("MYSQL_USER", username);
-        addEnv("MYSQL_PASSWORD", password);
-        addEnv("MYSQL_ROOT_PASSWORD", password);
+        if(password != null && !password.isEmpty()){
+          addEnv("MYSQL_PASSWORD", password);
+          addEnv("MYSQL_ROOT_PASSWORD", password);
+        } else {
+          addEnv("MYSQL_ALLOW_EMPTY_PASSWORD", "yes");
+        }
         setStartupAttempts(3);
     }
 
