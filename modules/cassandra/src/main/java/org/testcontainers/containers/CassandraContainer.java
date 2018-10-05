@@ -151,6 +151,11 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     public static Cluster getCluster(ContainerState containerState) {
         return Cluster.builder()
+            // Disable jmx reporting because it is dependant on the version of dropwizard-metrics that the
+            // consuming application uses.
+            // See https://docs.datastax.com/en/developer/java-driver/3.5/manual/metrics/#metrics-4-compatibility
+            // for instructions on how to enable jmx metrics
+            .withoutJMXReporting()
             .addContactPoint(containerState.getContainerIpAddress())
             .withPort(containerState.getMappedPort(CQL_PORT))
             .build();
