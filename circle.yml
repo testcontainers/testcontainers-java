@@ -85,6 +85,8 @@ jobs:
   examples:
     steps:
       - checkout
+      - restore_cache:
+          key: examples-maven
       - run:
           name: Publish JARs to Maven Local
           command: ./gradlew --no-daemon publishToMavenLocal
@@ -100,6 +102,10 @@ jobs:
             path: ~/junit
       - store_artifacts:
             path: ~/junit
+      - save_cache:
+            paths:
+              - ~/.m2
+            key: examples-maven
 
 workflows:
   version: 2
