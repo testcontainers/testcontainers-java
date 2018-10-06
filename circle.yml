@@ -86,7 +86,10 @@ jobs:
     steps:
       - checkout
       - run:
-          command: mvn -B -f examples/pom.xml test
+          name: Publish JARs to Maven Local
+          command: ./gradlew publishToMavenLocal
+      - run:
+          command: mvn -B -f examples/pom.xml -Dtestcontainers.version=unspecified test
       - run:
           name: Save test results
           command: |
