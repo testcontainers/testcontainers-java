@@ -8,6 +8,7 @@ import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 
 import javax.script.ScriptException;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -177,8 +178,21 @@ public class ContainerDatabaseDriver implements Driver {
         if (connectionUrl.getInitScriptPath().isPresent()) {
             String initScriptPath = connectionUrl.getInitScriptPath().get();
             try {
-                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-
+                URL resource;
+                if (initScriptPath.startsWith("root:")) {
+                    //relative root path
+                    String relativePath = System.getProperty("user.dir") + "/" + initScriptPath.substring(5);
+                    resource = new File(relativePath).toURI().toURL();
+                } else {
+                    File file = new File(initScriptPath);
+                    if (file.isAbsolute()) {
+                        //absolute path
+                        resource = file.toURI().toURL();
+                    } else {
+                        //classpath resource
+                        resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+                    }
+                }
                 if (resource == null) {
                     LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                     throw new SQLException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
