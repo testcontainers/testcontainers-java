@@ -4,7 +4,9 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.NonNull;
 import org.apache.commons.lang.SystemUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
@@ -42,6 +44,9 @@ public class SimpleMySQLTest {
     public static MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
                                                             .withConfigurationOverride("somepath/mysql_conf_override");
     */
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testSimple() throws SQLException {
@@ -126,6 +131,20 @@ public class SimpleMySQLTest {
         finally {
             container.stop();
         }
+    }
+
+    @Test
+    public void testEmptyPasswordWithNonRootUser() {
+      thrown.expect(RuntimeException.class);
+
+      MySQLContainer container = (MySQLContainer) new MySQLContainer("mysql:5.5")
+      .withDatabaseName("TEST")
+      .withUsername("test")
+      .withPassword("")
+      .withEnv("MYSQL_ROOT_HOST", "%");
+
+      container.start();
+      container.stop();
     }
 
     @NonNull

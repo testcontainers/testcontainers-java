@@ -45,7 +45,11 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
           addEnv("MYSQL_PASSWORD", password);
           addEnv("MYSQL_ROOT_PASSWORD", password);
         } else {
-          addEnv("MYSQL_ALLOW_EMPTY_PASSWORD", "yes");
+          if("root".equalsIgnoreCase(username)){
+            addEnv("MYSQL_ALLOW_EMPTY_PASSWORD", "yes");
+          } else {
+            throw new RuntimeException("Empty password can be used only with the root user");
+          }
         }
         setStartupAttempts(3);
     }
