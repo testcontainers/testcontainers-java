@@ -8,14 +8,15 @@ import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.Preconditions;
+import org.junit.platform.commons.util.ReflectionUtils;
 import org.testcontainers.lifecycle.Startable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCallback {
@@ -76,10 +77,13 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     }
 
     private Stream<StoreAdapter> findAnnotatedContainers(Object testInstance, Class<? extends Annotation> annotation) {
-        return Arrays.stream(testInstance.getClass().getDeclaredFields())
-            .filter(f -> Startable.class.isAssignableFrom(f.getType()))
-            .filter(f -> AnnotationSupport.isAnnotated(f, annotation))
+        return ReflectionUtils.findFields(testInstance.getClass(), annotatedContainers(annotation), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+            .stream()
             .map(f -> getContainerInstance(testInstance, f));
+    }
+
+    private static Predicate<Field> annotatedContainers(Class<? extends Annotation> annotation) {
+        return field -> Startable.class.isAssignableFrom(field.getType()) && AnnotationSupport.isAnnotated(field, annotation);
     }
 
     private static StoreAdapter getContainerInstance(final Object testInstance, final Field field) {
