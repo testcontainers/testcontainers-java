@@ -97,6 +97,21 @@ jobs:
           path: ~/junit
       - store_artifacts:
           path: ~/junit
+  examples:
+    steps:
+      - checkout
+      - run:
+          command: mvn -B -f examples/pom.xml test
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find examples -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+            path: ~/junit
+      - store_artifacts:
+            path: ~/junit
 
 workflows:
   version: 2
@@ -107,4 +122,5 @@ workflows:
       - modules-no-jdbc-test-no-selenium-no-elasticsearch
       - modules-jdbc-test
       - selenium
+      - examples
       - elasticsearch

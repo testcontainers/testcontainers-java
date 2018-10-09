@@ -1,6 +1,5 @@
 package org.testcontainers.utility;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
@@ -74,10 +73,7 @@ public final class ResourceReaper {
         binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig() {
-                    @JsonProperty("AutoRemove")
-                    boolean autoRemove = true;
-                })
+                .withHostConfig(new HostConfig().withAutoRemove(true))
                 .withExposedPorts(new ExposedPort(8080))
                 .withPublishAllPorts(true)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
@@ -222,7 +218,7 @@ public final class ResourceReaper {
             InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             running = containerInfo.getState().getRunning();
         } catch (NotFoundException e) {
-            LOGGER.trace("Was going to stop container but it apparently no longer exists: {}");
+            LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
             return;
         } catch (DockerException e) {
             LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
@@ -242,7 +238,7 @@ public final class ResourceReaper {
         try {
             dockerClient.inspectContainerCmd(containerId).exec();
         } catch (NotFoundException e) {
-            LOGGER.trace("Was going to remove container but it apparently no longer exists: {}");
+            LOGGER.trace("Was going to remove container but it apparently no longer exists: {}", containerId);
             return;
         }
 
