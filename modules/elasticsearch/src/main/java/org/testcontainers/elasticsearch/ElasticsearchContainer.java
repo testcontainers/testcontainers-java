@@ -51,6 +51,7 @@ public class ElasticsearchContainer extends GenericContainer {
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetwork(Network.SHARED);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
+        withEnv("discovery.type", "single-node");
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         setWaitStrategy(new HttpWaitStrategy()
             .forPort(ELASTICSEARCH_DEFAULT_PORT)
