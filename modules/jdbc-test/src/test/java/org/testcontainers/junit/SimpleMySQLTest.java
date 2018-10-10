@@ -1,24 +1,26 @@
 package org.testcontainers.junit;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import lombok.NonNull;
-import org.apache.commons.lang.SystemUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.junit.Assume.assumeFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import org.apache.commons.lang.SystemUtils;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+
+import lombok.NonNull;
 
 
 /**
@@ -44,9 +46,6 @@ public class SimpleMySQLTest {
     public static MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
                                                             .withConfigurationOverride("somepath/mysql_conf_override");
     */
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testSimple() throws SQLException {
@@ -135,16 +134,17 @@ public class SimpleMySQLTest {
 
     @Test
     public void testEmptyPasswordWithNonRootUser() {
-      thrown.expect(RuntimeException.class);
 
-      MySQLContainer container = (MySQLContainer) new MySQLContainer("mysql:5.5")
-      .withDatabaseName("TEST")
-      .withUsername("test")
-      .withPassword("")
-      .withEnv("MYSQL_ROOT_HOST", "%");
+        MySQLContainer container = (MySQLContainer) new MySQLContainer("mysql:5.5").withDatabaseName("TEST")
+                .withUsername("test").withPassword("").withEnv("MYSQL_ROOT_HOST", "%");
 
-      container.start();
-      container.stop();
+        try {
+            container.start();
+            fail("ContainerLaunchException expected to be thrown");
+        } catch (ContainerLaunchException e) {
+        } finally {
+            container.stop();
+        }
     }
 
     @NonNull
