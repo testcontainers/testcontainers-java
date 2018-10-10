@@ -179,19 +179,13 @@ public class ContainerDatabaseDriver implements Driver {
             String initScriptPath = connectionUrl.getInitScriptPath().get();
             try {
                 URL resource;
-                if (initScriptPath.startsWith("root:")) {
-                    //relative root path
+                if (initScriptPath.startsWith("file:")) {
+                    //relative project path
                     String relativePath = System.getProperty("user.dir") + "/" + initScriptPath.substring(5);
                     resource = new File(relativePath).toURI().toURL();
                 } else {
-                    File file = new File(initScriptPath);
-                    if (file.isAbsolute()) {
-                        //absolute path
-                        resource = file.toURI().toURL();
-                    } else {
-                        //classpath resource
-                        resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-                    }
+                    //classpath resource
+                    resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
                 }
                 if (resource == null) {
                     LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
