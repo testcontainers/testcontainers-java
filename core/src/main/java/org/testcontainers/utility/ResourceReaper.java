@@ -79,6 +79,7 @@ public final class ResourceReaper {
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(binds)
+                .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
                 .exec()
                 .getId();
 

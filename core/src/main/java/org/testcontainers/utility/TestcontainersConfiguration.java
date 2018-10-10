@@ -46,6 +46,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
     }
 
+    public boolean isRyukPrivileged() {
+        return Boolean.parseBoolean((String) properties.getOrDefault("ryuk.container.privileged", "false"));
+    }
+
     public String getRyukImage() {
         return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.2");
     }
