@@ -119,3 +119,34 @@ ambassador.container.image=replacement image name here
 vncrecorder.container.image=replacement image name here
 tinyimage.container.image=replacement image name here
 ```
+
+## JUnit
+
+### Junit 4
+ 
+**JUnit4 @Rule/@ClassRule**: this mode starts container before your tests and tears it down afterwards.
+
+Add a @Rule or @ClassRule to your test class, e.g.:
+
+```java
+public class SimpleMySQLTest {
+    @Rule
+    public MySQLContainer mysql = new MySQLContainer();
+```
+
+### JUnit 5
+
+**JUnit5**: you need to manually start container in *@BeforeAll* annotated method in test (tear down happens automatically on test end)
+
+Start container in @BeforeAll method:
+
+```java
+public class SimpleMySQLTest {
+    static MySQLContainer mysql = new MySQLContainer();
+    @BeforeAll
+    static void before() {
+            mysql.start();
+        }
+
+```
+
