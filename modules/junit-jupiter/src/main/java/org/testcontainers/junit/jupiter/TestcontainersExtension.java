@@ -32,12 +32,12 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
 
         findSharedContainers(testInstance)
             .map(adapter -> store.getOrComputeIfAbsent(adapter.key, k -> adapter.start(), StoreAdapter.class))
-            .forEach(adapter -> setSharedContainerToField(testInstance, adapter.fieldName, adapter.container));
+            .forEach(adapter -> setSharedContainerToField(testInstance, adapter.fieldName, adapter.container, adapter.declaringClass));
     }
 
-    private static void setSharedContainerToField(Object testInstance, String fieldName, Startable container) {
+    private static void setSharedContainerToField(Object testInstance, String fieldName, Startable container, Class<?> declaringClass) {
         try {
-            Field sharedContainerField = testInstance.getClass().getDeclaredField(fieldName);
+            Field sharedContainerField = declaringClass.getDeclaredField(fieldName);
             sharedContainerField.setAccessible(true);
             sharedContainerField.set(testInstance, container);
         } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -90,7 +90,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         try {
             field.setAccessible(true);
             Startable containerInstance = Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
-            return new StoreAdapter(testInstance.getClass().getName(), field.getName(), containerInstance);
+            return new StoreAdapter(field.getDeclaringClass(), field.getName(), containerInstance);
         } catch (IllegalAccessException e) {
             throw new ExtensionConfigurationException("Can not access container defined in field " + field.getName());
         }
@@ -103,14 +103,17 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
      */
     private static class StoreAdapter implements CloseableResource {
 
+        private Class<?> declaringClass;
+
         private String key;
 
         private String fieldName;
 
         private Startable container;
 
-        private StoreAdapter(String className, String fieldName, Startable container) {
-            this.key = className + "." + fieldName;
+        private StoreAdapter(Class<?> declaringClass, String fieldName, Startable container) {
+            this.declaringClass = declaringClass;
+            this.key = declaringClass.getName() + "." + fieldName;
             this.fieldName = fieldName;
             this.container = container;
         }
