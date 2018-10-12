@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  * declared as instance fields will be started and stopped for every test
  * method.</p>
  *
- * <p>Example:
+ * <p>Example:</p>
  *
  * <pre>
  * &#64;Testcontainers
@@ -41,7 +41,6 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
- * </p>
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
