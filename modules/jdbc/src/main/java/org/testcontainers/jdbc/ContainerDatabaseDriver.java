@@ -42,6 +42,7 @@ public class ContainerDatabaseDriver implements Driver {
     private static final Map<String, Set<Connection>> containerConnections = new HashMap<>();
     private static final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
     private static final Set<String> initializedContainers = new HashSet<>();
+    private static final String FILE_PATH_PREFIX = "file:";
 
     static {
         load();
@@ -179,9 +180,9 @@ public class ContainerDatabaseDriver implements Driver {
             String initScriptPath = connectionUrl.getInitScriptPath().get();
             try {
                 URL resource;
-                if (initScriptPath.startsWith("file:")) {
+                if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
                     //relative project path
-                    String relativePath = System.getProperty("user.dir") + "/" + initScriptPath.substring(5);
+                    String relativePath = System.getProperty("user.dir") + "/" + initScriptPath.substring(FILE_PATH_PREFIX.length());
                     resource = new File(relativePath).toURI().toURL();
                 } else {
                     //classpath resource
