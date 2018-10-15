@@ -149,12 +149,12 @@ public class SimpleMySQLTest {
     
     @BeforeEach
     void before() {
-            mysql.start();
+        mysql.start();
     }
     
     @AfterEach
     void after() {
-            mysql.stop();
+        mysql.stop();
     }
     
     // [...]
