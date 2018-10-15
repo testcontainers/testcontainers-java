@@ -144,8 +144,8 @@ public class SimpleMySQLTest {
 Example of starting a container in a `@BeforeEach` annotated method:
 
 ```java
-public class SimpleMySQLTest {
-    public MySQLContainer mysql = new MySQLContainer();
+class SimpleMySQLTest {
+    private MySQLContainer mysql = new MySQLContainer();
     
     @BeforeEach
     void before() {
