@@ -124,29 +124,40 @@ tinyimage.container.image=replacement image name here
 
 ### Junit 4
  
-**JUnit4 @Rule/@ClassRule**: This mode starts container before your tests and tears it down afterwards.
+**JUnit4 `@Rule`/`@ClassRule`**: This mode starts the container before your tests and tears it down afterwards.
 
-Add a @Rule or @ClassRule to your test class, e.g.:
+Add a `@Rule` or `@ClassRule` annotated field to your test class, e.g.:
 
 ```java
 public class SimpleMySQLTest {
     @Rule
     public MySQLContainer mysql = new MySQLContainer();
+    
+    // [...]
+}
 ```
 
 ### JUnit 5
 
-**JUnit5**: You need to manually start container in **@BeforeAll/@BeforeEach** annotated method in test (on JVM exit tear down  will be done automatically ).
+**JUnit5**: As of now, you need to manually start the container in a `@BeforeAll`/`@BeforeEach` annotated method in your tests. Tear down will be done automatically on JVM exit, but you can of course also use an `@AfterAll`/`@AfterEach` annotated method to manually call the `close()` method on your container.
 
-Start container in method annotated @BeforeAll/@BeforeEach:
+Example of starting a container in a `@BeforeEach` annotated method:
 
 ```java
 public class SimpleMySQLTest {
     public MySQLContainer mysql = new MySQLContainer();
+    
     @BeforeEach
     void before() {
             mysql.start();
-        }
-
+    }
+    
+    @AfterEach
+    void after() {
+            mysql.stop();
+    }
+    
+    // [...]
+}
 ```
 
