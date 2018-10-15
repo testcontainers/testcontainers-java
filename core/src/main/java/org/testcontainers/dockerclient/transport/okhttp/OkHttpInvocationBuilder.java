@@ -33,7 +33,6 @@ import okio.Okio;
 import okio.Source;
 import org.testcontainers.DockerClientFactory;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -233,9 +232,8 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         execute(request).close();
     }
 
-    protected RequestBody toRequestBody(InputStream body, @Nullable String mediaType) {
+    protected RequestBody toRequestBody(InputStream body, String mediaType) {
         return new RequestBody() {
-            @Nullable
             @Override
             public MediaType contentType() {
                 if (mediaType == null) {
