@@ -63,7 +63,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private DockerClient dockerClient;
     private boolean localCompose;
     private boolean pull = true;
+    private boolean build = false;
     private boolean tailChildContainers;
+    private RemoveImages removeImages;
 
     private String project;
 
@@ -167,7 +169,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServices() {
         // Run the docker-compose container, which starts up the services
-        runWithCompose("up -d");
+        String cmd = "up -d";
+        if (build) {
+            cmd += " --build";
+        }
+        runWithCompose(cmd);
     }
 
     private void waitUntilServiceStarted() {
@@ -262,7 +268,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
                 // Kill the services using docker-compose
                 try {
-                    runWithCompose("down -v");
+                    String cmd = "down -v";
+                    if (removeImages != null) {
+                        cmd += " --rmi " + removeImages.name();
+                    }
+                    runWithCompose(cmd);
 
                     // If we reach here then docker-compose down has cleared networks and containers;
                     //  we can unregister from ResourceReaper
@@ -423,12 +433,32 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     /**
+     * Whether to always build images before starting containers.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withBuild(boolean build) {
+        this.build = build;
+        return self();
+    }
+
+    /**
      * Whether to tail child container logs.
      *
      * @return this instance, for chaining
      */
     public SELF withTailChildContainers(boolean tailChildContainers) {
         this.tailChildContainers = tailChildContainers;
+        return self();
+    }
+
+    /**
+     * Remove images after containers shutdown.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withRemoveImages(RemoveImages removeImages) {
+        this.removeImages = removeImages;
         return self();
     }
 
@@ -459,6 +489,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private String randomProjectId() {
         return identifier + Base58.randomString(6).toLowerCase();
+    }
+
+    public enum RemoveImages {
+        /**
+         * Remove all images used by any service.
+         */
+        all,
+
+        /**
+         * Remove only images that don't have a custom tag set by the `image` field.
+         */
+        local
     }
 }
 
