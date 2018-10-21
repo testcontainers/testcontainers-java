@@ -25,13 +25,14 @@ public class MSSQLServerContainerTest {
     @Test
     public void testSqlServerConnection() throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:sqlserver://localhost:" + mssqlServerContainer.getMappedPort(1433));
+        hikariConfig.setJdbcUrl("jdbc:sqlserver://localhost:" +
+            mssqlServerContainer.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT));
         hikariConfig.setUsername("SA");
         hikariConfig.setPassword(STRONG_PASSWORD);
 
         HikariDataSource ds = new HikariDataSource(hikariConfig);
         Statement statement = ds.getConnection().createStatement();
-        statement.execute("SELECT 1");
+        statement.execute(mssqlServerContainer.getTestQueryString());
         ResultSet resultSet = statement.getResultSet();
 
         resultSet.next();
