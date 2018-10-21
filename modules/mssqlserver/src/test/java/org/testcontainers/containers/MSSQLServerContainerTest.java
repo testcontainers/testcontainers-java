@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.fail;
 
 /**
  * @author Enrico Costanzi
@@ -34,10 +35,12 @@ public class MSSQLServerContainerTest {
         Statement statement = ds.getConnection().createStatement();
         statement.execute(mssqlServerContainer.getTestQueryString());
         ResultSet resultSet = statement.getResultSet();
+        if(resultSet.next()){
+            int resultSetInt = resultSet.getInt(1);
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        } else {
+            fail("No results returned from query");
+        }
 
-        resultSet.next();
-        int resultSetInt = resultSet.getInt(1);
-        assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-        
     }
 }

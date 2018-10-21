@@ -1,13 +1,14 @@
 package org.testcontainers.containers;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.Collection;
+
+import static org.rnorth.visibleassertions.VisibleAssertions.fail;
 
 /**
  * Tests if the password passed to the container satisfied the password policy described at
@@ -22,6 +23,14 @@ public class MSSQLServerContainerPasswordTest {
     private static String LOWER_CASE_LETTERS = "abcde";
     private static String NUMBERS = "12345";
     private static String SPECIAL_CHARS = "_(!)_";
+
+    private String password;
+    private Boolean valid;
+
+    public MSSQLServerContainerPasswordTest(String password, Boolean valid){
+        this.password = password;
+        this.valid = valid;
+    }
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -53,21 +62,13 @@ public class MSSQLServerContainerPasswordTest {
         });
     }
 
-    private String password;
-    private Boolean valid;
-
-    public MSSQLServerContainerPasswordTest(String password, Boolean valid){
-        this.password = password;
-        this.valid = valid;
-    }
-
     @Test
     public void runPasswordTests() {
         try {
             new MSSQLServerContainer().withPassword(this.password);
-            if(!valid)  Assert.fail("Password " + this.password + " is not valid. Expected exception");
+            if(!valid)  fail("Password " + this.password + " is not valid. Expected exception");
         } catch (IllegalArgumentException e){
-            if(valid) Assert.fail("Password " + this.password + " should have been validated");
+            if(valid) fail("Password " + this.password + " should have been validated");
         }
     }
 
