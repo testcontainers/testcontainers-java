@@ -35,7 +35,7 @@ public class MSSQLServerContainerTest {
         Statement statement = ds.getConnection().createStatement();
         statement.execute(mssqlServerContainer.getTestQueryString());
         ResultSet resultSet = statement.getResultSet();
-        if(resultSet.next()){
+        if (resultSet.next()) {
             int resultSetInt = resultSet.getInt(1);
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         } else {

@@ -20,7 +20,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
 
-    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[] {
+    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[]{
         Pattern.compile("[A-Z]+"),
         Pattern.compile("[a-z]+"),
         Pattern.compile("[0-9]+"),
@@ -84,17 +84,17 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         return self();
     }
 
-    private void checkPasswordStrength(String password){
+    private void checkPasswordStrength(String password) {
 
-        if(password == null){
+        if (password == null) {
             throw new IllegalArgumentException("Null password is not allowed");
         }
 
-        if(password.length() < 8){
+        if (password.length() < 8) {
             throw new IllegalArgumentException("Password should be at least 8 characters long");
         }
 
-        if(password.length() > 128){
+        if (password.length() > 128) {
             throw new IllegalArgumentException("Password can be up to 128 characters long");
         }
 
@@ -102,13 +102,13 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
             .filter(p -> p.matcher(password).find())
             .count();
 
-        if(satisfiedCategories < 3){
+        if (satisfiedCategories < 3) {
             throw new IllegalArgumentException(
                 "Password must contains characters from three of the following four categories:\n" +
-                " - Latin uppercase letters (A through Z)\n" +
-                " - Latin lowercase letters (a through z)\n" +
-                " - Base 10 digits (0 through 9)\n" +
-                " - Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), " +
+                    " - Latin uppercase letters (A through Z)\n" +
+                    " - Latin lowercase letters (a through z)\n" +
+                    " - Base 10 digits (0 through 9)\n" +
+                    " - Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), " +
                     "or percent (%)."
             );
         }

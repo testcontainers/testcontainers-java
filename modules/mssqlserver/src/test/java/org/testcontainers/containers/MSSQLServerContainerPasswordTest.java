@@ -27,36 +27,36 @@ public class MSSQLServerContainerPasswordTest {
     private String password;
     private Boolean valid;
 
-    public MSSQLServerContainerPasswordTest(String password, Boolean valid){
+    public MSSQLServerContainerPasswordTest(String password, Boolean valid) {
         this.password = password;
         this.valid = valid;
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            { null, false },
-            //to short
-            { "abc123", false },
+        return Arrays.asList(new Object[][]{
+            {null, false},
+            // too short
+            {"abc123", false},
 
-            //too long
-            { RandomStringUtils.randomAlphabetic(129), false},
+            // too long
+            {RandomStringUtils.randomAlphabetic(129), false},
 
-            //only 2 categories
-            { UPPER_CASE_LETTERS + NUMBERS, false },
-            { UPPER_CASE_LETTERS + SPECIAL_CHARS, false },
-            { LOWER_CASE_LETTERS + NUMBERS, false },
-            { LOWER_CASE_LETTERS + SPECIAL_CHARS, false },
-            { NUMBERS + SPECIAL_CHARS, false },
+            // only 2 categories
+            {UPPER_CASE_LETTERS + NUMBERS, false},
+            {UPPER_CASE_LETTERS + SPECIAL_CHARS, false},
+            {LOWER_CASE_LETTERS + NUMBERS, false},
+            {LOWER_CASE_LETTERS + SPECIAL_CHARS, false},
+            {NUMBERS + SPECIAL_CHARS, false},
 
-            //3 categories
-            { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS, true},
-            { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + SPECIAL_CHARS, true},
-            { UPPER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
-            { LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
+            // 3 categories
+            {UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS, true},
+            {UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + SPECIAL_CHARS, true},
+            {UPPER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
+            {LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
 
-            //4 categories
-            { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
+            // 4 categories
+            {UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
 
 
         });
@@ -66,9 +66,11 @@ public class MSSQLServerContainerPasswordTest {
     public void runPasswordTests() {
         try {
             new MSSQLServerContainer().withPassword(this.password);
-            if(!valid)  fail("Password " + this.password + " is not valid. Expected exception");
-        } catch (IllegalArgumentException e){
-            if(valid) fail("Password " + this.password + " should have been validated");
+            if (!valid)
+                fail("Password " + this.password + " is not valid. Expected exception");
+        } catch (IllegalArgumentException e) {
+            if (valid)
+                fail("Password " + this.password + " should have been validated");
         }
     }
 
