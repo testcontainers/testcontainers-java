@@ -31,18 +31,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         store.put(TEST_INSTANCE, testInstance);
 
         findSharedContainers(testInstance)
-            .map(adapter -> store.getOrComputeIfAbsent(adapter.key, k -> adapter.start(), StoreAdapter.class))
-            .forEach(adapter -> setSharedContainerToField(testInstance, adapter.fieldName, adapter.container, adapter.declaringClass));
-    }
-
-    private static void setSharedContainerToField(Object testInstance, String fieldName, Startable container, Class<?> declaringClass) {
-        try {
-            Field sharedContainerField = declaringClass.getDeclaredField(fieldName);
-            sharedContainerField.setAccessible(true);
-            sharedContainerField.set(testInstance, container);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new ExtensionConfigurationException("Can not set shared container instance to field " + fieldName);
-        }
+            .forEach(adapter -> store.getOrComputeIfAbsent(adapter.key, k -> adapter.start()));
     }
 
     @Override
@@ -69,17 +58,29 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     }
 
     private Stream<StoreAdapter> findSharedContainers(Object testInstance) {
-        return findAnnotatedContainers(testInstance, Shared.class);
+        return ReflectionUtils.findFields(
+                testInstance.getClass(),
+                isSharedContainer(),
+                ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+            .stream()
+            .map(f -> getContainerInstance(testInstance, f));
+    }
+
+    private Predicate<Field> isSharedContainer() {
+        return annotatedContainers(Shared.class).and(ReflectionUtils::isStatic);
     }
 
     private Stream<StoreAdapter> findRestartedContainers(Object testInstance) {
-        return findAnnotatedContainers(testInstance, Restarted.class);
-    }
-
-    private Stream<StoreAdapter> findAnnotatedContainers(Object testInstance, Class<? extends Annotation> annotation) {
-        return ReflectionUtils.findFields(testInstance.getClass(), annotatedContainers(annotation), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+        return ReflectionUtils.findFields(
+                testInstance.getClass(),
+                isRestartContainer(),
+                ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
             .stream()
             .map(f -> getContainerInstance(testInstance, f));
+    }
+
+    private Predicate<Field> isRestartContainer() {
+        return annotatedContainers(Restarted.class).and(((Predicate<Field>) ReflectionUtils::isStatic).negate());
     }
 
     private static Predicate<Field> annotatedContainers(Class<? extends Annotation> annotation) {
@@ -103,18 +104,12 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
      */
     private static class StoreAdapter implements CloseableResource {
 
-        private Class<?> declaringClass;
-
         private String key;
-
-        private String fieldName;
 
         private Startable container;
 
         private StoreAdapter(Class<?> declaringClass, String fieldName, Startable container) {
-            this.declaringClass = declaringClass;
             this.key = declaringClass.getName() + "." + fieldName;
-            this.fieldName = fieldName;
             this.container = container;
         }
 
@@ -124,7 +119,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         }
 
         @Override
-        public void close() throws Throwable {
+        public void close() {
             container.stop();
         }
     }

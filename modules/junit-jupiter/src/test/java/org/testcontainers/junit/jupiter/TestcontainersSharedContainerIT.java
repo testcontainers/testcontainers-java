@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TestcontainersSharedContainerIT {
 
     @Shared
-    private final GenericContainer genericContainer = new GenericContainer("httpd:2.4-alpine")
+    private static final GenericContainer GENERIC_CONTAINER = new GenericContainer("httpd:2.4-alpine")
         .withExposedPorts(80);
 
     private static String LAST_CONTAINER_ID;
@@ -17,18 +17,18 @@ class TestcontainersSharedContainerIT {
     @Test
     void first_test() {
         if (LAST_CONTAINER_ID == null) {
-            LAST_CONTAINER_ID = genericContainer.getContainerId();
+            LAST_CONTAINER_ID = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(LAST_CONTAINER_ID, genericContainer.getContainerId());
+            assertEquals(LAST_CONTAINER_ID, GENERIC_CONTAINER.getContainerId());
         }
     }
 
     @Test
     void second_test() {
         if (LAST_CONTAINER_ID == null) {
-            LAST_CONTAINER_ID = genericContainer.getContainerId();
+            LAST_CONTAINER_ID = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(LAST_CONTAINER_ID, genericContainer.getContainerId());
+            assertEquals(LAST_CONTAINER_ID, GENERIC_CONTAINER.getContainerId());
         }
     }
 

@@ -15,7 +15,7 @@ class InheritedTest1 extends AbstractTest {
     @Test
     void step1() {
         //assertEquals(globalCounter.incrementAndGet(), redisSingleton.getJedis().incr("key").longValue());
-        assertEquals(1, redisPerClass.getJedis().incr("key").longValue());
+        assertEquals(1, REDIS_PER_CLASS.getJedis().incr("key").longValue());
         assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
         assertEquals(1, myRedis.getJedis().incr("key").longValue());
     }
@@ -23,7 +23,7 @@ class InheritedTest1 extends AbstractTest {
     @Test
     void step2() {
         //assertEquals(globalCounter.incrementAndGet(), redisSingleton.getJedis().incr("key").longValue());
-        assertEquals(2, redisPerClass.getJedis().incr("key").longValue());
+        assertEquals(2, REDIS_PER_CLASS.getJedis().incr("key").longValue());
         assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
         assertEquals(1, myRedis.getJedis().incr("key").longValue());
     }

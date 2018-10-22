@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SharedComposeContainerIT {
 
     @Shared
-    private final DockerComposeContainer composeContainer = new DockerComposeContainer(
+    private static final DockerComposeContainer COMPOSE_CONTAINER = new DockerComposeContainer(
             new File("src/test/resources/docker-compose.yml"))
             .withExposedService("whoami_1", 80, Wait.forHttp("/"));
 
@@ -27,8 +27,8 @@ class SharedComposeContainerIT {
 
     @BeforeEach
     void setup() {
-        host = composeContainer.getServiceHost("whoami_1", 80);
-        port = composeContainer.getServicePort("whoami_1", 80);
+        host = COMPOSE_CONTAINER.getServiceHost("whoami_1", 80);
+        port = COMPOSE_CONTAINER.getServicePort("whoami_1", 80);
     }
 
     @Test

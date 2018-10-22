@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 class PostgresContainerIT {
 
     @Shared
-    private final PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer()
+    private static final PostgreSQLContainer POSTGRE_SQL_CONTAINER = new PostgreSQLContainer()
             .withDatabaseName("foo")
             .withUsername("foo")
             .withPassword("secret");
@@ -22,7 +22,7 @@ class PostgresContainerIT {
     @Test
     void waits_until_postgres_accepts_jdbc_connections() throws Exception {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(postgreSQLContainer.getJdbcUrl());
+        hikariConfig.setJdbcUrl(POSTGRE_SQL_CONTAINER.getJdbcUrl());
         hikariConfig.setUsername("foo");
         hikariConfig.setPassword("secret");
 

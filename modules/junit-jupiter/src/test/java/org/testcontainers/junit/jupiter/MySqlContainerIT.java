@@ -16,10 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MySqlContainerIT {
 
     @Shared
-    private final MySQLContainer mySQLContainer = new MySQLContainer();
+    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
 
     @Test
     void dummy_test() {
-        assertTrue(mySQLContainer.isRunning());
+        assertTrue(MY_SQL_CONTAINER.isRunning());
     }
 }

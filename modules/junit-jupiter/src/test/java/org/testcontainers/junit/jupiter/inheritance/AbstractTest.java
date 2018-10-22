@@ -12,7 +12,7 @@ abstract class AbstractTest {
     static AtomicLong globalCounter = new AtomicLong(0);
 
     @Shared
-    RedisContainer redisPerClass = new RedisContainer();
+    static RedisContainer REDIS_PER_CLASS = new RedisContainer();
 
     @Restarted
     RedisContainer redisPerTest = new RedisContainer();
