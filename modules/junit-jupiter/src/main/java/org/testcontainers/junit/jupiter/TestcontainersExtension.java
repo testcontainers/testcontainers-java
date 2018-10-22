@@ -79,8 +79,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     }
 
     private Predicate<Field> isRestartContainer() {
-        Predicate<Field> isStatic = ReflectionUtils::isStatic;
-        return isContainer().and(isStatic.negate());
+        return isContainer().and(ReflectionUtils::isNotStatic);
     }
 
     private static Predicate<Field> isContainer() {
