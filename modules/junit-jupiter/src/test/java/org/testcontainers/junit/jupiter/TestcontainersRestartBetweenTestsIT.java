@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 @Testcontainers
 class TestcontainersRestartBetweenTestsIT {
 
-    @Restarted
+    @Container
     private GenericContainer genericContainer = new GenericContainer("httpd:2.4-alpine")
             .withExposedPorts(80);
 

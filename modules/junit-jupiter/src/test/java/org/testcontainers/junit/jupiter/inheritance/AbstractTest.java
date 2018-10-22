@@ -1,7 +1,6 @@
 package org.testcontainers.junit.jupiter.inheritance;
 
-import org.testcontainers.junit.jupiter.Restarted;
-import org.testcontainers.junit.jupiter.Shared;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -11,10 +10,10 @@ abstract class AbstractTest {
 
     static AtomicLong globalCounter = new AtomicLong(0);
 
-    @Shared
+    @Container
     static RedisContainer REDIS_PER_CLASS = new RedisContainer();
 
-    @Restarted
+    @Container
     RedisContainer redisPerTest = new RedisContainer();
 
 }

@@ -5,13 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 class TestcontainersNestedSharedContainerIT {
 
-    @Shared
+    @Container
     private static final GenericContainer TOP_LEVEL_CONTAINER = new GenericContainer("httpd:2.4-alpine")
         .withExposedPorts(80);
 

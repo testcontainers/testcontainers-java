@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 @Testcontainers
 class PostgresContainerIT {
 
-    @Shared
+    @Container
     private static final PostgreSQLContainer POSTGRE_SQL_CONTAINER = new PostgreSQLContainer()
             .withDatabaseName("foo")
             .withUsername("foo")

@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Testcontainers
 class MySqlContainerIT {
 
-    @Shared
+    @Container
     private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
 
     @Test

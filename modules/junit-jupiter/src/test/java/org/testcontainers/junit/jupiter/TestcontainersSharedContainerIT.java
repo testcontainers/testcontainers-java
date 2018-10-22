@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers
 class TestcontainersSharedContainerIT {
 
-    @Shared
+    @Container
     private static final GenericContainer GENERIC_CONTAINER = new GenericContainer("httpd:2.4-alpine")
         .withExposedPorts(80);
 

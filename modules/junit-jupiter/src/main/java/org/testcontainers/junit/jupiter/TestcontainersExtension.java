@@ -11,7 +11,6 @@ import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.testcontainers.lifecycle.Startable;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -67,7 +66,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     }
 
     private Predicate<Field> isSharedContainer() {
-        return annotatedContainers(Shared.class).and(ReflectionUtils::isStatic);
+        return isContainer().and(ReflectionUtils::isStatic);
     }
 
     private Stream<StoreAdapter> findRestartedContainers(Object testInstance) {
@@ -80,11 +79,12 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     }
 
     private Predicate<Field> isRestartContainer() {
-        return annotatedContainers(Restarted.class).and(((Predicate<Field>) ReflectionUtils::isStatic).negate());
+        Predicate<Field> isStatic = ReflectionUtils::isStatic;
+        return isContainer().and(isStatic.negate());
     }
 
-    private static Predicate<Field> annotatedContainers(Class<? extends Annotation> annotation) {
-        return field -> Startable.class.isAssignableFrom(field.getType()) && AnnotationSupport.isAnnotated(field, annotation);
+    private static Predicate<Field> isContainer() {
+        return field -> Startable.class.isAssignableFrom(field.getType()) && AnnotationSupport.isAnnotated(field, Container.class);
     }
 
     private static StoreAdapter getContainerInstance(final Object testInstance, final Field field) {

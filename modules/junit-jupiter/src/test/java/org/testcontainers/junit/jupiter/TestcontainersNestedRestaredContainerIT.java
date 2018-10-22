@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Testcontainers
 class TestcontainersNestedRestaredContainerIT {
 
-    @Restarted
+    @Container
     private final GenericContainer topLevelContainer = new GenericContainer("httpd:2.4-alpine")
         .withExposedPorts(80);
 
@@ -28,7 +28,7 @@ class TestcontainersNestedRestaredContainerIT {
     @Nested
     class NestedTestCase {
 
-        @Restarted
+        @Container
         private final GenericContainer nestedContainer = new GenericContainer("httpd:2.4-alpine")
             .withExposedPorts(80);
 
