@@ -12,12 +12,12 @@ import java.lang.annotation.Target;
  * startup and stop of containers used in a test case.
  *
  * <p>The test containers extension finds all fields of type
- * {@link org.testcontainers.lifecycle.Startable} and calls their container
- * lifecylce methods. Containers declared as static fields will be shared
- * between test methods. They will be started only once before any test method
- * is executed and stopped after the last test method has executed. Containers
- * declared as instance fields will be started and stopped for every test
- * method.</p>
+ * {@link org.testcontainers.lifecycle.Startable} that are annotated with
+ * {@link Container} and calls their container lifecylce methods. Containers
+ * declared as static fields will be shared between test methods. They will be
+ * started only once before any test method is executed and stopped after the
+ * last test method has executed. Containers declared as instance fields will
+ * be started and stopped for every test method.</p>
  *
  * <p>Example:</p>
  *
@@ -26,9 +26,11 @@ import java.lang.annotation.Target;
  * class MyTestcontainersTests {
  *
  *     // will be shared between test methods
+ *     &#64;Container
  *     private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
  *
  *     // will be started before and stopped after each test method
+ *     &#64;Container
  *     private PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer()
  *             .withDatabaseName("foo")
  *             .withUsername("foo")
@@ -41,6 +43,9 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
+ *
+ * @see Container
+ * @since 1.10.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
