@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  *
  * <p>The test containers extension finds all fields of type
  * {@link org.testcontainers.lifecycle.Startable} that are annotated with
- * {@link Container} and calls their container lifecylce methods. Containers
+ * {@link Container} and calls their container lifecycle methods. Containers
  * declared as static fields will be shared between test methods. They will be
  * started only once before any test method is executed and stopped after the
  * last test method has executed. Containers declared as instance fields will
