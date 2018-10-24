@@ -36,7 +36,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     @Override
     public void beforeEach(final ExtensionContext context) {
         collectParentTestInstances(context)
-            .stream()
+            .parallelStream()
             .flatMap(this::findRestartedContainers)
             .forEach(adapter -> context.getStore(NAMESPACE)
                 .getOrComputeIfAbsent(adapter.key, k -> adapter.start()));
