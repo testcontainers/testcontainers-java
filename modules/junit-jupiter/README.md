@@ -14,7 +14,7 @@ and JUnit 4.x in the test classpath.
 
 ## Examples
 
-To use the Testcontainers extension annotate your test with `@Testcontainers`.
+To use the Testcontainers extension annotate your test class with `@Testcontainers`.
 
 ### Restarted containers
 
