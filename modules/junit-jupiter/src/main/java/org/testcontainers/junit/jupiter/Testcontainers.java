@@ -45,7 +45,6 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * @see Container
- * @since 1.10.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

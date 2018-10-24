@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
  * to mark containers that should be managed by the Testcontainers extension.
  *
  * @see Testcontainers
- * @since 1.10.0
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
