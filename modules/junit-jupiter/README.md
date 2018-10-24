@@ -9,7 +9,7 @@ The extension supports two modes:
 - containers that are shared between all methods of a test class
 
 **Note:** Since this module has a dependency onto JUnit Jupiter and on Testcontainers core, which
-has a dependency onto JUnit 4.x projects using this module will end up with both, JUnit Jupiter
+has a dependency onto JUnit 4.x, projects using this module will end up with both, JUnit Jupiter
 and JUnit 4.x in the test classpath.
 
 ## Examples
