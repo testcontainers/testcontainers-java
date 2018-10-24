@@ -37,7 +37,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     public void beforeEach(final ExtensionContext context) {
         collectParentTestInstances(context)
             .parallelStream()
-            .flatMap(this::findRestartedContainers)
+            .flatMap(this::findRestartContainers)
             .forEach(adapter -> context.getStore(NAMESPACE)
                 .getOrComputeIfAbsent(adapter.key, k -> adapter.start()));
     }
@@ -69,7 +69,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         return isContainer().and(ReflectionUtils::isStatic);
     }
 
-    private Stream<StoreAdapter> findRestartedContainers(Object testInstance) {
+    private Stream<StoreAdapter> findRestartContainers(Object testInstance) {
         return ReflectionUtils.findFields(
                 testInstance.getClass(),
                 isRestartContainer(),
