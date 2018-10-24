@@ -1,8 +1,4 @@
-plugins {
-    id 'java'
-}
-
-description = "Testcontainers :: JUnit Jupiter-Extension"
+description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
     compile project(':testcontainers')
