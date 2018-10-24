@@ -109,7 +109,7 @@ that is started by Testcontainers core will take care of stopping the singleton 
 
 ## Dependency information
 
-Replace `VERSION` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
+Replace `VERSION` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22) or use the Testcontainers BOM.
 
 ### Maven
 
