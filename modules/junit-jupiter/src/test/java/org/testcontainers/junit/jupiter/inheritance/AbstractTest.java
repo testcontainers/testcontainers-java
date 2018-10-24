@@ -8,8 +8,6 @@ import java.util.concurrent.atomic.AtomicLong;
 @Testcontainers
 abstract class AbstractTest {
 
-    static AtomicLong globalCounter = new AtomicLong(0);
-
     @Container
     static RedisContainer redisPerClass = new RedisContainer();
 
