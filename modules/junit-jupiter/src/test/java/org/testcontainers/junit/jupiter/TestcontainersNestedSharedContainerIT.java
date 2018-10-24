@@ -14,12 +14,12 @@ class TestcontainersNestedSharedContainerIT {
     private static final GenericContainer TOP_LEVEL_CONTAINER = new GenericContainer("httpd:2.4-alpine")
         .withExposedPorts(80);
 
-    private static String TOP_LEVEL_CONTAINER_ID;
+    private static String topLevelContainerId;
 
     @Test
     void top_level_container_should_be_running() {
         assertTrue(TOP_LEVEL_CONTAINER.isRunning());
-        TOP_LEVEL_CONTAINER_ID = TOP_LEVEL_CONTAINER.getContainerId();
+        topLevelContainerId = TOP_LEVEL_CONTAINER.getContainerId();
     }
 
     @Nested
@@ -32,7 +32,7 @@ class TestcontainersNestedSharedContainerIT {
 
         @Test
         void ids_should_not_change() {
-            assertEquals(TOP_LEVEL_CONTAINER_ID, TOP_LEVEL_CONTAINER.getContainerId());
+            assertEquals(topLevelContainerId, TOP_LEVEL_CONTAINER.getContainerId());
         }
     }
 }
