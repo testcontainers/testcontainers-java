@@ -19,6 +19,10 @@ import java.lang.annotation.Target;
  * last test method has executed. Containers declared as instance fields will
  * be started and stopped for every test method.</p>
  *
+ * <p><strong>Note:</strong> This extension has only be tested with sequential
+ * test execution. Using it with parallel test execution is unsupported and
+ * may have unintended side effects.</p>
+ *
  * <p>Example:</p>
  *
  * <pre>

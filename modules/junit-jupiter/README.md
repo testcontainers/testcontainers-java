@@ -8,10 +8,6 @@ The extension supports two modes:
 - containers that are restarted for every test method
 - containers that are shared between all methods of a test class
 
-**Note:** Since this module has a dependency onto JUnit Jupiter and on Testcontainers core, which
-has a dependency onto JUnit 4.x, projects using this module will end up with both, JUnit Jupiter
-and JUnit 4.x in the test classpath.
-
 ## Examples
 
 To use the Testcontainers extension annotate your test class with `@Testcontainers`.
@@ -126,3 +122,11 @@ Replace `VERSION` with the [latest version available on Maven Central](https://s
 ```
 compile group: 'org.testcontainers', name: 'junit-jupiter', version: 'VERSION'
 ```
+
+## Limitations
+
+Since this module has a dependency onto JUnit Jupiter and on Testcontainers core, which
+has a dependency onto JUnit 4.x, projects using this module will end up with both, JUnit Jupiter
+and JUnit 4.x in the test classpath.
+
+This extension has only be tested with sequential test execution. Using it with parallel test execution is unsupported and may have unintended side effects.
