@@ -67,6 +67,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     public static final String STATIC_CONFIG = "/opt/couchbase/etc/couchbase/static_config";
     public static final String CAPI_CONFIG = "/opt/couchbase/etc/couchdb/default.d/capi.ini";
 
+    private static final int REQUIRED_DEFAULT_PASSWORD_LENGTH = 6;
+
     private String memoryQuota = "300";
 
     private String indexMemoryQuota = "300";
@@ -116,6 +118,14 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
         return Sets.newHashSet(getMappedPort(REST));
+    }
+
+    @Override
+    protected void configure() {
+        if (clusterPassword.length() < REQUIRED_DEFAULT_PASSWORD_LENGTH) {
+            logger().warn("The provided cluster admin password length is less then the default password policy length. " +
+                "Cluster start will fail if configured password policy is offended.");
+        }
     }
 
     @Override
