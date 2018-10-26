@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.testcontainers.elasticsearch.ElasticsearchContainer.ELASTICSEARCH_DEFAULT_VERSION;
 
 public class ElasticsearchContainerTest {
 
@@ -32,7 +33,6 @@ public class ElasticsearchContainerTest {
      */
     private static final String ELASTICSEARCH_PASSWORD = "changeme";
 
-    private ElasticsearchContainer container = null;
     private RestClient client = null;
 
     @After
@@ -43,48 +43,45 @@ public class ElasticsearchContainerTest {
         }
     }
 
-    @After
-    public void stopContainer() {
-        if (container != null) {
-            container.stop();
+    @Test
+    public void elasticsearchDefaultTest() throws IOException {
+        try (ElasticsearchContainer container = new ElasticsearchContainer()){
+            container.start();
+            Response response = getClient(container).performRequest(new Request("GET", "/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_DEFAULT_VERSION));
+
+            // The default image is running with the features under Elastic License
+            response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            // For now we test that we have the monitoring feature available
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("monitoring"));
         }
     }
 
     @Test
-    public void elasticsearchDefaultTest() throws IOException {
-        container = new ElasticsearchContainer();
-        container.start();
-        Response response = getClient(container).performRequest(new Request("GET", "/"));
-        assertThat(response.getStatusLine().getStatusCode(), is(200));
-        assertThat(EntityUtils.toString(response.getEntity()), containsString("6.4.1"));
-
-        // The default image is running with the features under Elastic License
-        response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
-        assertThat(response.getStatusLine().getStatusCode(), is(200));
-        // For now we test that we have the monitoring feature available
-        assertThat(EntityUtils.toString(response.getEntity()), containsString("monitoring"));
-    }
-
-    @Test
     public void elasticsearchVersion() throws IOException {
-        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:5.6.12");
-        container.start();
-        Response response = getClient(container).performRequest(new Request("GET", "/"));
-        assertThat(response.getStatusLine().getStatusCode(), is(200));
-        String responseAsString = EntityUtils.toString(response.getEntity());
-        assertThat(responseAsString, containsString("5.6.12"));
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:5.6.12")) {
+            container.start();
+            Response response = getClient(container).performRequest(new Request("GET", "/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            String responseAsString = EntityUtils.toString(response.getEntity());
+            assertThat(responseAsString, containsString("5.6.12"));
+        }
     }
 
     @Test
-    public void elasticsearchImage() throws IOException {
-        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.1");
-        container.start();
-        Response response = getClient(container).performRequest(new Request("GET", "/"));
-        assertThat(response.getStatusLine().getStatusCode(), is(200));
-        // The OSS image does not have any feature under Elastic License
-        assertThrows("We should not have /_xpack endpoint with an OSS License",
-            ResponseException.class,
-            () -> getClient(container).performRequest(new Request("GET", "/_xpack/")));
+    public void elasticsearchOssImage() throws IOException {
+        try (ElasticsearchContainer container =
+                 new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:" + ELASTICSEARCH_DEFAULT_VERSION)) {
+            container.start();
+            Response response = getClient(container).performRequest(new Request("GET", "/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            // The OSS image does not have any feature under Elastic License
+            assertThrows("We should not have /_xpack endpoint with an OSS License",
+                ResponseException.class,
+                () -> getClient(container).performRequest(new Request("GET", "/_xpack/")));
+        }
     }
 
     private RestClient getClient(ElasticsearchContainer container) {

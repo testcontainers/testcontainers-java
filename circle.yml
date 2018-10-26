@@ -31,11 +31,11 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
-  modules-no-jdbc-test-no-selenium-no-elasticsearch:
+  modules-no-jdbc-test-no-selenium:
     steps:
       - checkout
       - run:
-          command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check -x elasticsearch:check
+          command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check
           environment:
             # Oracle JDBC drivers require a timezone to be set
             TZ: "/usr/share/zoneinfo/ETC/UTC"
@@ -57,21 +57,6 @@ jobs:
           environment:
             # Oracle JDBC drivers require a timezone to be set
             TZ: "/usr/share/zoneinfo/ETC/UTC"
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/junit
-      - store_artifacts:
-          path: ~/junit
-  elasticsearch:
-    steps:
-      - checkout
-      - run:
-          command: ./gradlew elasticsearch:check
       - run:
           name: Save test results
           command: |
@@ -119,8 +104,7 @@ workflows:
     jobs:
       - core
       - okhttp
-      - modules-no-jdbc-test-no-selenium-no-elasticsearch
+      - modules-no-jdbc-test-no-selenium
       - modules-jdbc-test
       - selenium
       - examples
-      - elasticsearch

@@ -13,8 +13,7 @@ import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
- * The docker image is by default fetch from docker.elastic.co/elasticsearch/elasticsearch
- * @author dadoonet
+ * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
  */
 public class ElasticsearchContainer extends GenericContainer {
 
@@ -31,15 +30,15 @@ public class ElasticsearchContainer extends GenericContainer {
     /**
      * Elasticsearch Docker base URL
      */
-    private static final String ELASTICSEARCH_DEFAULT_BASE_URL = "docker.elastic.co/elasticsearch/elasticsearch";
+    private static final String ELASTICSEARCH_DEFAULT_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch";
 
     /**
      * Elasticsearch Default version
      */
-    private static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
+    static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
 
     public ElasticsearchContainer() {
-        this(ELASTICSEARCH_DEFAULT_BASE_URL + ":" + ELASTICSEARCH_DEFAULT_VERSION);
+        this(ELASTICSEARCH_DEFAULT_IMAGE + ":" + ELASTICSEARCH_DEFAULT_VERSION);
     }
 
     /**
@@ -49,7 +48,6 @@ public class ElasticsearchContainer extends GenericContainer {
     public ElasticsearchContainer(String dockerImageName) {
         super(dockerImageName);
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
-        withNetwork(Network.SHARED);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
