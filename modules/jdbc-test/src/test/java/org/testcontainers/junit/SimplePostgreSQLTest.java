@@ -3,7 +3,6 @@ package org.testcontainers.junit;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.NonNull;
-import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -17,26 +16,36 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
  * @author richardnorth
  */
 public class SimplePostgreSQLTest {
-
-    @Rule
-    public PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c max_connections=42");
-
     @Test
     public void testSimple() throws SQLException {
-        ResultSet resultSet = performQuery("SELECT 1");
-        int resultSetInt = resultSet.getInt(1);
-        assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        PostgreSQLContainer postgres = new PostgreSQLContainer();
+        postgres.start();
+
+        try {
+            ResultSet resultSet = performQuery(postgres,"SELECT 1");
+            int resultSetInt = resultSet.getInt(1);
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        } finally {
+            postgres.stop();
+        }
     }
 
     @Test
     public void testCommandOverride() throws SQLException {
-        ResultSet resultSet = performQuery("SELECT current_setting('max_connections')");
-        String result = resultSet.getString(1);
-        assertEquals("max_connections should be overriden", "42", result);
+        PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c max_connections=42");
+        postgres.start();
+
+        try {
+            ResultSet resultSet = performQuery(postgres,"SELECT current_setting('max_connections')");
+            String result = resultSet.getString(1);
+            assertEquals("max_connections should be overriden", "42", result);
+        } finally {
+            postgres.stop();
+        }
     }
 
     @NonNull
-    protected ResultSet performQuery(String sql) throws SQLException {
+    protected ResultSet performQuery(PostgreSQLContainer postgres, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setDriverClassName(postgres.getDriverClassName());
         hikariConfig.setJdbcUrl(postgres.getJdbcUrl());
