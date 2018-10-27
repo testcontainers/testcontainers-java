@@ -2,7 +2,6 @@ package org.testcontainers.elasticsearch;
 
 import org.apache.http.HttpHost;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
 
@@ -35,7 +34,7 @@ public class ElasticsearchContainer extends GenericContainer {
     /**
      * Elasticsearch Default version
      */
-    static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
+    protected static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
 
     public ElasticsearchContainer() {
         this(ELASTICSEARCH_DEFAULT_IMAGE + ":" + ELASTICSEARCH_DEFAULT_VERSION);
