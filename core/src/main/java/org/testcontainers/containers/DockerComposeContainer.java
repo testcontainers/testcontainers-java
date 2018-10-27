@@ -286,6 +286,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         }
     }
 
+    @Override
+    public void restart(){
+
+    }
+
     public SELF withExposedService(String serviceName, int servicePort) {
         return withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
     }

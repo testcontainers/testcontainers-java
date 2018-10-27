@@ -233,8 +233,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
-                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
-                tryStart(profiler.startNested("Container startup attempt"));
+                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(),
+                        startupAttempts);
+                createContainer(profiler.startNested("Container creation attempt"));
+                startContainer(profiler.startNested("Container startup attempt"));
                 return true;
             });
 
@@ -245,10 +247,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
-    private void tryStart(Profiler profiler) {
+    private void createContainer(Profiler profiler) {
         try {
             String dockerImageName = image.get();
-            logger().debug("Starting container: {}", dockerImageName);
+            logger().debug("Creating container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
@@ -262,12 +264,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
             containerIsCreated(containerId);
+        } catch (Exception e) {
+            logger().error("Could not start container", e);
 
+            throw new ContainerLaunchException("Could not create container", e);
+        } finally {
+            profiler.stop();
+        }
+    }
+
+    private void startContainer(Profiler profiler) {
+        try {
+            String dockerImageName = image.get();
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
             dockerClient.startContainerCmd(containerId).exec();
 
-            // For all registered output consumers, start following as close to container startup as possible
+            // For all registered output consumers, start following as close to container
+            // startup as possible
             this.logConsumers.forEach(this::followOutput);
 
             logger().info("Container {} is starting: {}", dockerImageName, containerId);
@@ -294,22 +308,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Container {} started", dockerImageName);
             containerIsStarted(containerInfo);
         } catch (Exception e) {
-            logger().error("Could not start container", e);
+            // Log output if startup failed, either due to a container failure or exception
+            // (including timeout)
+            logger().error("Container log output (if any) will follow:");
+            FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
+            resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
+            resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
+            dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
 
-            if (containerId != null) {
-                // Log output if startup failed, either due to a container failure or exception (including timeout)
-                logger().error("Container log output (if any) will follow:");
-                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
-                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
-                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
-                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
-
-                // Try to ensure that container log output is shown before proceeding
-                try {
-                    resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
-                } catch (InterruptedException ignored) {
-                    // Cannot do anything at this point
-                }
+            // Try to ensure that container log output is shown before proceeding
+            try {
+                resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
+            } catch (InterruptedException ignored) {
+                // Cannot do anything at this point
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
@@ -324,6 +335,34 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
             }
         });
+    }
+
+    /**
+     * Restarts the container.
+     */
+    @Override
+    public void restart() {
+
+        if (containerId == null) {
+            return;
+        }
+
+        Profiler profiler = new Profiler("Container restart");
+        profiler.setLogger(logger());
+        try {
+            AtomicInteger attempt = new AtomicInteger(0);
+            Unreliables.retryUntilSuccess(startupAttempts, () -> {
+                logger().debug("Trying to restart container: {} (attempt {}/{})", image.get(),
+                        attempt.incrementAndGet(), startupAttempts);
+                ResourceReaper.instance().stopContainer(containerId);
+                startContainer(profiler);
+                return true;
+            });
+        } catch (Exception e) {
+            throw new ContainerLaunchException("Container startup failed", e);
+        } finally {
+            profiler.stop().log();
+        }
     }
 
     /**

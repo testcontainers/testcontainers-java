@@ -6,6 +6,8 @@ public interface Startable extends AutoCloseable {
 
     void stop();
 
+    void restart();
+
     @Override
     default void close() {
         stop();
