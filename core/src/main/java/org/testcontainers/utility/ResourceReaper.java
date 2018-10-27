@@ -197,6 +197,7 @@ public final class ResourceReaper {
      */
     public void stopAndRemoveContainer(String containerId) {
         stopContainer(containerId, registeredContainers.get(containerId));
+        removeContainer(containerId, registeredContainers.get(containerId));
 
         registeredContainers.remove(containerId);
     }
@@ -209,8 +210,18 @@ public final class ResourceReaper {
      */
     public void stopAndRemoveContainer(String containerId, String imageName) {
         stopContainer(containerId, imageName);
+        removeContainer(containerId, imageName);
 
         registeredContainers.remove(containerId);
+    }
+
+    /**
+     * Stop a potentially running container .
+     *
+     * @param containerId the ID of the container
+     */
+    public void stopContainer(String containerId){
+        stopContainer(containerId, registeredContainers.get(containerId));
     }
 
     private void stopContainer(String containerId, String imageName) {
@@ -222,20 +233,26 @@ public final class ResourceReaper {
             LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
             return;
         } catch (DockerException e) {
-            LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            LOGGER.trace(
+                    "Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped: {}",
+                    containerId, e.getMessage());
             return;
         }
 
         if (running) {
             try {
                 LOGGER.trace("Stopping container: {}", containerId);
-                dockerClient.killContainerCmd(containerId).exec();
+                dockerClient.stopContainerCmd(containerId).exec();
                 LOGGER.trace("Stopped container: {}", imageName);
             } catch (DockerException e) {
-                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+                LOGGER.trace(
+                        "Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}",
+                        containerId, e.getMessage());
             }
         }
+    }
 
+    private void removeContainer(String containerId, String imageName) {
         try {
             dockerClient.inspectContainerCmd(containerId).exec();
         } catch (NotFoundException e) {
@@ -249,10 +266,13 @@ public final class ResourceReaper {
                 dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
                 LOGGER.debug("Removed container and associated volume(s): {}", imageName);
             } catch (InternalServerErrorException e) {
-                LOGGER.trace("Exception when removing container with associated volume(s): {} (due to {})", imageName, e.getMessage());
+                LOGGER.trace("Exception when removing container with associated volume(s): {} (due to {})", imageName,
+                        e.getMessage());
             }
         } catch (DockerException e) {
-            LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            LOGGER.trace(
+                    "Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}",
+                    containerId, e.getMessage());
         }
     }
 

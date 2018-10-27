@@ -208,8 +208,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
-                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
-                tryStart();
+                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(),
+                        startupAttempts);
+                createContainer();
+                startContainer();
                 return true;
             });
 
@@ -218,10 +220,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
-    private void tryStart() {
+    private void createContainer() {
         try {
             String dockerImageName = image.get();
-            logger().debug("Starting container: {}", dockerImageName);
+            logger().debug("Creating container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
@@ -234,7 +236,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
             containerIsCreated(containerId);
+        } catch (Exception e) {
+            logger().error("Could not start container", e);
 
+            throw new ContainerLaunchException("Could not create container", e);
+        }
+    }
+
+    private void startContainer() {
+        try {
+            String dockerImageName = image.get();
             logger().info("Starting container with ID: {}", containerId);
             dockerClient.startContainerCmd(containerId).exec();
 
@@ -298,6 +309,32 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
             }
         });
+    }
+
+    /**
+     * Restarts the container.
+     */
+    @Override
+    public void restart() {
+
+        if (containerId == null) {
+            return;
+        }
+
+        try {
+            AtomicInteger attempt = new AtomicInteger(0);
+            Unreliables.retryUntilSuccess(startupAttempts, () -> {
+                logger().debug("Trying to restart container: {} (attempt {}/{})", image.get(),
+                        attempt.incrementAndGet(), startupAttempts);
+                ResourceReaper.instance().stopContainer(containerId);
+                startContainer();
+                return true;
+            });
+        } catch (Exception e) {
+            throw new ContainerLaunchException("Container startup failed", e);
+        } finally {
+            profiler.stop().log();
+        }
     }
 
     /**
