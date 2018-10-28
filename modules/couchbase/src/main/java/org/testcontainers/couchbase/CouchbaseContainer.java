@@ -124,7 +124,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     protected void configure() {
         if (clusterPassword.length() < REQUIRED_DEFAULT_PASSWORD_LENGTH) {
             logger().warn("The provided cluster admin password length is less then the default password policy length. " +
-                "Cluster start will fail if configured password policy is offended.");
+                "Cluster start will fail if configured password requirements are not met.");
         }
     }
 
