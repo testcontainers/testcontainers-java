@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-class TestcontainersNestedRestaredContainerIT {
+class TestcontainersNestedRestartedContainerIT {
 
     @Container
     private final GenericContainer topLevelContainer = new GenericContainer("httpd:2.4-alpine")
