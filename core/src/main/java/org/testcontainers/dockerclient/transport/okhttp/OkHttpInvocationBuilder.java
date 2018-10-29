@@ -31,6 +31,7 @@ import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.DockerClientFactory;
 
 import java.io.ByteArrayInputStream;
@@ -232,8 +233,9 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         execute(request).close();
     }
 
-    protected RequestBody toRequestBody(InputStream body, String mediaType) {
+    protected RequestBody toRequestBody(InputStream body, @Nullable String mediaType) {
         return new RequestBody() {
+            @Nullable
             @Override
             public MediaType contentType() {
                 if (mediaType == null) {
