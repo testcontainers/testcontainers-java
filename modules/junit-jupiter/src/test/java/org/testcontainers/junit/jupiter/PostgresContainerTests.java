@@ -11,7 +11,7 @@ import java.sql.Statement;
 import static org.junit.Assert.assertEquals;
 
 @Testcontainers
-class PostgresContainerIT {
+class PostgresContainerTests {
 
     @Container
     private static final PostgreSQLContainer POSTGRE_SQL_CONTAINER = new PostgreSQLContainer()

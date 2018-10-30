@@ -6,7 +6,7 @@ import org.testcontainers.containers.GenericContainer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
-class TestcontainersSharedContainerIT {
+class TestcontainersSharedContainerTests {
 
     @Container
     private static final GenericContainer GENERIC_CONTAINER = new GenericContainer("httpd:2.4-alpine")

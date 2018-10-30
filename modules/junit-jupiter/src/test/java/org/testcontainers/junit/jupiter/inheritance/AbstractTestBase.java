@@ -6,7 +6,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Testcontainers
-abstract class AbstractTest {
+abstract class AbstractTestBase {
 
     @Container
     static RedisContainer redisPerClass = new RedisContainer();

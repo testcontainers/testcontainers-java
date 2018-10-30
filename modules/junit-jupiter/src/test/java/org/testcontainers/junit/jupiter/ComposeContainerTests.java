@@ -14,7 +14,7 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
-class ComposeContainerIT {
+class ComposeContainerTests {
 
     @Container
     private DockerComposeContainer composeContainer = new DockerComposeContainer(
