@@ -59,7 +59,7 @@ This is because nested test classes have to be defined non-static and can't ther
 class SomeTest {
 
     @Container
-    private static MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
+    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
 
     @Test
     void someTestMethod() {
