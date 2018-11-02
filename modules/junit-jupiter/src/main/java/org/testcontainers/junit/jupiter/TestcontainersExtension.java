@@ -1,5 +1,6 @@
 package org.testcontainers.junit.jupiter;
 
+import lombok.Getter;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -30,7 +31,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         store.put(TEST_INSTANCE, testInstance);
 
         findSharedContainers(testInstance)
-            .forEach(adapter -> store.getOrComputeIfAbsent(adapter.key, k -> adapter.start()));
+            .forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
     }
 
     @Override
@@ -39,13 +40,13 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
             .parallelStream()
             .flatMap(this::findRestartContainers)
             .forEach(adapter -> context.getStore(NAMESPACE)
-                .getOrComputeIfAbsent(adapter.key, k -> adapter.start()));
+                .getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {
         Set<Object> testInstances = new LinkedHashSet<>();
         Optional<ExtensionContext> current = Optional.of(context);
-        while(current.isPresent()) {
+        while (current.isPresent()) {
             ExtensionContext ctx = current.get();
             Object testInstance = ctx.getStore(NAMESPACE).remove(TEST_INSTANCE);
             if (testInstance != null) {
@@ -83,7 +84,13 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     }
 
     private static Predicate<Field> isContainer() {
-        return field -> Startable.class.isAssignableFrom(field.getType()) && AnnotationSupport.isAnnotated(field, Container.class);
+        return field -> {
+            boolean isStartable = Startable.class.isAssignableFrom(field.getType());
+            if (!isStartable) {
+                throw new ExtensionConfigurationException("Annotation is only supported for Startable types");
+            }
+            return AnnotationSupport.isAnnotated(field, Container.class);
+        };
     }
 
     private static StoreAdapter getContainerInstance(final Object testInstance, final Field field) {
@@ -103,6 +110,7 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
      */
     private static class StoreAdapter implements CloseableResource {
 
+        @Getter
         private String key;
 
         private Startable container;
