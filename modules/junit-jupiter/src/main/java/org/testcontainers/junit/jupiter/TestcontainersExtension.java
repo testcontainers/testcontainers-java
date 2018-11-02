@@ -85,11 +85,16 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
 
     private static Predicate<Field> isContainer() {
         return field -> {
-            boolean isStartable = Startable.class.isAssignableFrom(field.getType());
-            if (!isStartable) {
-                throw new ExtensionConfigurationException("Annotation is only supported for Startable types");
+            boolean isAnnotatedWithContainer = AnnotationSupport.isAnnotated(field, Container.class);
+            if (isAnnotatedWithContainer) {
+                boolean isStartable = Startable.class.isAssignableFrom(field.getType());
+
+                if (!isStartable) {
+                    throw new ExtensionConfigurationException("Annotation is only supported for Startable types");
+                }
+                return true;
             }
-            return AnnotationSupport.isAnnotated(field, Container.class);
+            return false;
         };
     }
 
