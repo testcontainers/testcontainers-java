@@ -1,5 +1,9 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.jdbc.ConnectionUrl;
+
+import java.util.Objects;
+
 /**
  * Factory for MariaDB org.testcontainers.containers.
  */
