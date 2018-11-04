@@ -33,7 +33,7 @@ public class SimplePostgreSQLTest {
 
     @Test
     public void testCommandOverride() throws SQLException {
-        PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c max_connections=42");
+        PostgreSQLContainer postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42");
         postgres.start();
 
         try {
