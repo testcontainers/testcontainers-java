@@ -6,6 +6,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
@@ -21,6 +22,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -153,6 +155,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private String workingDirectory = null;
 
+    /**
+     * The shared memory size to use when starting the container.
+     * This value is in megabytes.
+     */
+    @Nullable
+    private Integer shmSize;
+
     private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
 
     /*
@@ -252,7 +261,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
-            CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
+
+            HostConfig hostConfig = new HostConfig();
+            if (shmSize != null) {
+                hostConfig.withShmSize(shmSize * FileUtils.ONE_MB);
+            }
+            CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName)
+                .withHostConfig(hostConfig);
+
             applyConfiguration(createCommand);
 
             containerId = createCommand.exec().getId();
@@ -1154,6 +1170,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
         createContainerCmdModifiers.add(modifier);
+        return self();
+    }
+
+    /**
+     * Size of /dev/shm
+     * @param megabytes The number of megabytes to assign the shared memory. Null to not set any.
+     * @return this
+     */
+    public SELF withSharedMemorySize(Integer megabytes) {
+        this.shmSize = megabytes;
         return self();
     }
 

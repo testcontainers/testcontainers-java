@@ -1,5 +1,6 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.model.HostConfig;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
@@ -123,6 +124,13 @@ public class GenericContainerRuleTest {
             .withExposedPorts(80)
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
+
+    /**
+     * Redis with shared memory
+     */
+    @ClassRule
+    public static GenericContainer redisWithSharedMemory = new GenericContainer("redis:3.0.2")
+        .withExposedPorts(REDIS_PORT).withSharedMemorySize(1024);
 
 //    @Test
 //    public void simpleRedisTest() {
@@ -374,5 +382,14 @@ public class GenericContainerRuleTest {
         assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
         assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
         assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
+    public void sharedMemorySetTest() {
+        assertEquals("Shared memory is not set", redisWithSharedMemory.getShmSize(), 1024);
+        HostConfig hostConfig =
+            redisWithSharedMemory.getDockerClient().inspectContainerCmd(redisWithSharedMemory.getContainerId())
+                .exec().getHostConfig();
+        assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024);
     }
 }
