@@ -31,9 +31,9 @@ import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.DockerClientFactory;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
