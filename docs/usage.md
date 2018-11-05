@@ -157,7 +157,7 @@ public class SimpleMySQLTest {
 Jupiter integration is provided by means of the `@Testcontainers` annotation.
   
 The extension finds all fields that are annotated with `@Container` and calls their container lifecycle 
-methods (only `@Startable` fields are supported). Containers declared as static fields will be shared between test 
+methods (methods on the `Startable` interface). Containers declared as static fields will be shared between test 
 methods. They will be started only once before any test method is executed and stopped after the last test method has 
 executed. Containers declared as instance fields will be started and stopped for every test method.
   
