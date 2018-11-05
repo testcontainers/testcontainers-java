@@ -157,10 +157,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * The shared memory size to use when starting the container.
-     * This value is in megabytes.
+     * This value is in bytes.
      */
     @Nullable
-    private Integer shmSize;
+    private Long shmSize;
 
     private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
 
@@ -264,7 +264,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             HostConfig hostConfig = new HostConfig();
             if (shmSize != null) {
-                hostConfig.withShmSize(shmSize * FileUtils.ONE_MB);
+                hostConfig.withShmSize(shmSize);
             }
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName)
                 .withHostConfig(hostConfig);
@@ -1175,11 +1175,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Size of /dev/shm
-     * @param megabytes The number of megabytes to assign the shared memory. Null to not set any.
+     * @param bytes The number of megabybytestes to assign the shared memory. Null to not set any.
      * @return this
      */
-    public SELF withSharedMemorySize(Integer megabytes) {
-        this.shmSize = megabytes;
+    public SELF withSharedMemorySize(Long bytes) {
+        this.shmSize = bytes;
         return self();
     }
 

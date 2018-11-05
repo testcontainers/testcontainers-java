@@ -131,7 +131,7 @@ public class GenericContainerRuleTest {
      */
     @ClassRule
     public static GenericContainer redisWithSharedMemory = new GenericContainer("redis:3.0.2")
-        .withExposedPorts(REDIS_PORT).withSharedMemorySize(1024);
+        .withExposedPorts(REDIS_PORT).withSharedMemorySize(1024L);
 
 //    @Test
 //    public void simpleRedisTest() {
@@ -387,7 +387,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void sharedMemorySetTest() {
-        assertEquals("Shared memory is not set", redisWithSharedMemory.getShmSize(), 1024);
+        assertEquals("Shared memory is not set", redisWithSharedMemory.getShmSize(), 1024 * FileUtils.ONE_MB);
         HostConfig hostConfig =
             redisWithSharedMemory.getDockerClient().inspectContainerCmd(redisWithSharedMemory.getContainerId())
                 .exec().getHostConfig();
