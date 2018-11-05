@@ -1,7 +1,7 @@
 <img src="https://cdn.worldvectorlogo.com/logos/couchbase.svg" width="300" />
 
-# TestContainers Couchbase Module
-Testcontainers module for Couchbase. [Couchbase](https://www.couchbase.com/) is a Document oriented NoSQL database.
+# Testcontainers Couchbase Module
+Testcontainers module for Couchbase. [Couchbase](https://www.couchbase.com/) is a document oriented NoSQL database.
 
 ## Usage example
 
@@ -14,18 +14,22 @@ public class SomeTest {
 
     @Rule
     public CouchbaseContainer couchbase = new CouchbaseContainer()
+             .withClusterAdmin("admin", "secret")
              .withNewBucket(DefaultBucketSettings.builder()
                         .enableFlush(true)
-                        .name('bucket-name')
+                        .name("bucket-name")
+                        .password("secret")
                         .quota(100)
                         .type(BucketType.COUCHBASE)
                         .build());
     
     @Test
     public void someTestMethod() {
-        Bucket bucket = couchbase.getCouchbaseCluster().openBucket('bucket-name')
+        Bucket bucket = couchbase.getCouchbaseCluster().openBucket("bucket-name");
         
-        ... interact with client as if using Couchbase normally
+        // ... interact with client as if using Couchbase normally
+    }
+}
 ```
 
 ### Use preconfigured default bucket
@@ -39,7 +43,9 @@ public class SomeTest extends AbstractCouchbaseTest {
     public void someTestMethod() {
         Bucket bucket = getBucket();
         
-        ... interact with client as if using Couchbase normally
+        // ... interact with client as if using Couchbase normally
+    }
+}
 ```
 
 ### Special consideration
