@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
  * {@code @Testcontainers} is a JUnit Jupiter extension to activate automatic
  * startup and stop of containers used in a test case.
  *
- * <p>The test containers extension finds all fields of type
- * {@link org.testcontainers.lifecycle.Startable} that are annotated with
+ * <p>The test containers extension finds all fields that are annotated with
  * {@link Container} and calls their container lifecycle methods. Containers
  * declared as static fields will be shared between test methods. They will be
  * started only once before any test method is executed and stopped after the
