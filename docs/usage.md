@@ -36,10 +36,11 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 Testcontainers is distributed in a handful of Gradle/Maven modules:
 
 * **testcontainers** for just core functionality, generic containers and docker-compose support
-* **mysql**, **postgresql** or **oracle-xe** for database container support
+* **mysql**, **mariadb**, **postgresql**, **mssqlserver** or **oracle-xe** for database container support
 * **elasticsearch** for elasticsearch container support
 * **selenium** for selenium/webdriver support
 * **nginx** for nginx container support
+* and many more!
 
 In the dependency description below, replace `--artifact name--` as appropriate and `--latest version--` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22):
 
