@@ -131,7 +131,7 @@ public class GenericContainerRuleTest {
      */
     @ClassRule
     public static GenericContainer redisWithSharedMemory = new GenericContainer("redis:3.0.2")
-        .withExposedPorts(REDIS_PORT).withSharedMemorySize(1024L);
+        .withExposedPorts(REDIS_PORT).withSharedMemorySize(1024L * FileUtils.ONE_MB);
 
 //    @Test
 //    public void simpleRedisTest() {
