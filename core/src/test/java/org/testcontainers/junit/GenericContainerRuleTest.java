@@ -7,6 +7,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
@@ -390,6 +391,6 @@ public class GenericContainerRuleTest {
         HostConfig hostConfig =
             redisWithSharedMemory.getDockerClient().inspectContainerCmd(redisWithSharedMemory.getContainerId())
                 .exec().getHostConfig();
-        assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024);
+        assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
     }
 }
