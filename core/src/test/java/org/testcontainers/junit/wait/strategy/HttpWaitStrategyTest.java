@@ -85,6 +85,21 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     }
 
     /**
+     * Expects that the WaitStrategy throws a {@link RetryCountExceededException} after not receiving any of the
+     * error code defined with {@link HttpWaitStrategy#forStatusCode(int)}
+     * and {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}. Note that a 200 status code should not
+     * be considered as a successful return as not explicitly set.
+     * Test case for: https://github.com/testcontainers/testcontainers-java/issues/880
+     */
+    @Test
+    public void testWaitUntilReadyWithTimeoutAndWithLambdaShouldNotMatchOk() {
+        waitUntilReadyAndTimeout(startContainerWithCommand(createShellCommand("200 OK", GOOD_RESPONSE_BODY),
+            createHttpWaitStrategy(ready)
+                .forStatusCodeMatching(it -> it >= 300)
+        ));
+    }
+
+    /**
      * Expects that the WaitStrategy throws a {@link RetryCountExceededException} after not receiving an HTTP 200
      * response from the container within the timeout period.
      */

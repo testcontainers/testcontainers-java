@@ -213,7 +213,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         if (resourceName != null) {
             final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName);
-            addFileSystemBind(mountableFile.getResolvedPath(), pathNameInContainer, BindMode.READ_ONLY);
+            withCopyFileToContainer(mountableFile, pathNameInContainer);
         }
     }
 

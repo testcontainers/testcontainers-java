@@ -33,18 +33,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -52,7 +46,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
-import static org.testcontainers.containers.ContainerisedDockerCompose.UNIX_PATH_SEPERATOR;
 
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
@@ -154,7 +147,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         synchronized (MUTEX) {
             registerContainersForShutdown();
             if (pull) {
-                pullImages();
+                try {
+                    pullImages();
+                } catch (ContainerLaunchException e) {
+                    logger().warn("Exception while pulling images, using local images if available", e);
+                }
             }
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();
@@ -626,13 +623,14 @@ class LocalDockerCompose implements DockerCompose {
         environment.put(ENV_PROJECT_NAME, identifier);
 
 
-        final List<String> absoluteDockerComposeFiles = composeFiles.stream()
+        final Stream<String> absoluteDockerComposeFilePaths = composeFiles.stream()
             .map(File::getAbsolutePath)
-            .map(MountableFile::forHostPath)
-            .map(MountableFile::getFilesystemPath)
-            .collect(toList());
-        final String composeFileEnvVariableValue = absoluteDockerComposeFiles.stream().collect(joining(UNIX_PATH_SEPERATOR + "")); // we always need the UNIX path separator
+            .map(Objects::toString);
+
+        final String composeFileEnvVariableValue = absoluteDockerComposeFilePaths.collect(
+            joining(File.pathSeparator + ""));
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
+
         final File pwd = composeFiles.get(0).getAbsoluteFile().getParentFile().getAbsoluteFile();
         environment.put(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
 

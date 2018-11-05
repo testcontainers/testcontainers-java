@@ -21,7 +21,7 @@ subprojects {
     compileJava.options.encoding = 'UTF-8'
 
     lombok {
-	    version = '1.16.20'
+	    version = '1.18.2'
     }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
@@ -38,6 +38,7 @@ subprojects {
     task release(dependsOn: bintrayUpload)
 
     test {
+        defaultCharacterEncoding = "UTF-8"
         testLogging {
             displayGranularity 1
             showStackTraces = true
@@ -76,6 +77,7 @@ subprojects {
             "okhttp3",
             "okio",
             "org.scalasbt.ipcsocket",
+            "com.trilead.ssh2",
         ].each { relocate(it, "org.testcontainers.shaded.$it") }
     }
 

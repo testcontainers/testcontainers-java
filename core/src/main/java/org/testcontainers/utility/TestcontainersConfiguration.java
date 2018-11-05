@@ -35,7 +35,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getVncRecordedContainerImage() {
-        return (String) properties.getOrDefault("vncrecorder.container.image", "richnorth/vnc-recorder:latest");
+        return (String) properties.getOrDefault("vncrecorder.container.image", "quay.io/testcontainers/vnc-recorder:1.1.0");
     }
 
     public String getDockerComposeContainerImage() {
@@ -46,8 +46,16 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
     }
 
+    public boolean isRyukPrivileged() {
+        return Boolean.parseBoolean((String) properties.getOrDefault("ryuk.container.privileged", "false"));
+    }
+
     public String getRyukImage() {
         return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.2");
+    }
+
+    public String getSSHdImage() {
+        return (String) properties.getOrDefault("sshd.container.image", "quay.io/testcontainers/sshd@sha256:18aa929c653284189fc9cefa45b731021857b6047a0a1757e909f958f258f088");
     }
 
     public Integer getRyukTimeout() {
@@ -71,7 +79,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getTransportType() {
-        return properties.getProperty("transport.type", "netty");
+        return properties.getProperty("transport.type", "okhttp");
     }
 
     @Synchronized

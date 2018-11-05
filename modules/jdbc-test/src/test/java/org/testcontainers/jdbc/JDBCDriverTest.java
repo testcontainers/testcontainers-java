@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.EnumSet;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assume.assumeFalse;
@@ -24,37 +25,43 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @RunWith(ParallelParameterized.class)
 public class JDBCDriverTest {
 
+    private enum Options {
+        ScriptedSchema,
+        CharacterSet,
+        CustomIniFile,
+        JDBCParams,
+        PmdKnownBroken
+    }
+
     @Parameter
     public String jdbcUrl;
     @Parameter(1)
-    public boolean performTestForScriptedSchema;
-    @Parameter(2)
-    public boolean performTestForCharacterSet;
-    @Parameter(3)
-    public boolean performTestForCustomIniFile;
-    @Parameter(4)
-    public boolean performTestForJDBCParams;
+    public EnumSet<Options> options;
 
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return asList(
             new Object[][]{
-                {"jdbc:tc:mysql://hostname/databasename", false, false, false, false},
-                {"jdbc:tc:mysql://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false, true},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, true},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", true, false, false, true},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, true},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", false, true, false, false},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename", false, false, false, false},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", false, false, false, false},
-                {"jdbc:tc:postgresql:9.6.8://hostname/databasename", false, false, false, false},
-                {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", false, false, true, false},
-                {"jdbc:tc:mariadb://hostname/databasename", false, false, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename", false, false, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", false, true, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", true, false, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", true, false, false, false},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", false, false, true, false}});
+                {"jdbc:tc:mysql://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:mysql://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:postgresql:9.6.8://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:postgis://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:postgis:9.6://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", EnumSet.of(Options.CustomIniFile)},
+                {"jdbc:tc:mariadb://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
+                {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
+            });
     }
 
     public static void sampleInitFunction(Connection connection) throws SQLException {
@@ -76,15 +83,15 @@ public class JDBCDriverTest {
     public void test() throws SQLException {
         performSimpleTest(jdbcUrl);
 
-        if (performTestForScriptedSchema) {
+        if (options.contains(Options.ScriptedSchema)) {
             performTestForScriptedSchema(jdbcUrl);
         }
 
-        if (performTestForJDBCParams) {
+        if (options.contains(Options.JDBCParams)) {
             performTestForJDBCParamUsage(jdbcUrl);
         }
 
-        if (performTestForCharacterSet) {
+        if (options.contains(Options.CharacterSet)) {
             //Called twice to ensure that the query string parameters are used when
             //connections are created from cached containers.
             performSimpleTestWithCharacterSet(jdbcUrl);
@@ -93,14 +100,14 @@ public class JDBCDriverTest {
             performTestForCharacterEncodingForInitialScriptConnection(jdbcUrl);
         }
 
-        if (performTestForCustomIniFile) {
+        if (options.contains(Options.CustomIniFile)) {
             performTestForCustomIniFile(jdbcUrl);
         }
     }
 
     private void performSimpleTest(String jdbcUrl) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("SELECT 1", rs -> {
+            boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query("SELECT 1", rs -> {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
                 assertEquals("A basic SELECT query succeeds", 1, resultSetInt);

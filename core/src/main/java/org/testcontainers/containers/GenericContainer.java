@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
@@ -16,8 +17,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -25,6 +29,7 @@ import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
@@ -39,14 +44,18 @@ import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
-import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -84,6 +93,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
+
+    public static final String INTERNAL_HOST_HOSTNAME = "host.testcontainers.internal";
 
     /*
      * Default settings
@@ -245,7 +256,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             applyConfiguration(createCommand);
 
             containerId = createCommand.exec().getId();
+
+            connectToPortForwardingNetwork(createCommand.getNetworkMode());
+
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+
+            containerIsCreated(containerId);
 
             logger().info("Starting container with ID: {}", containerId);
             profiler.start("Start container");
@@ -280,24 +296,34 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } catch (Exception e) {
             logger().error("Could not start container", e);
 
-            // Log output if startup failed, either due to a container failure or exception (including timeout)
-            logger().error("Container log output (if any) will follow:");
-            FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
-            resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
-            resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
-            dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
+            if (containerId != null) {
+                // Log output if startup failed, either due to a container failure or exception (including timeout)
+                logger().error("Container log output (if any) will follow:");
+                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
+                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
+                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
+                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
 
-            // Try to ensure that container log output is shown before proceeding
-            try {
-                resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
-            } catch (InterruptedException ignored) {
-                // Cannot do anything at this point
+                // Try to ensure that container log output is shown before proceeding
+                try {
+                    resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
+                } catch (InterruptedException ignored) {
+                    // Cannot do anything at this point
+                }
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
         } finally {
             profiler.stop();
         }
+    }
+
+    private void connectToPortForwardingNetwork(String networkMode) {
+        PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
+            if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
+                dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+            }
+        });
     }
 
     /**
@@ -354,6 +380,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void configure() {
 
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsCreated(String containerId) {
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -428,6 +458,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
 
+        boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
+        if (shouldCheckFileMountingSupport) {
+            if (!DockerClientFactory.instance().isFileMountingSupported()) {
+                VisibleAssertions.warn(
+                    "Unable to mount a file from test host into a running container. " +
+                        "This may be a misconfiguration or limitation of your Docker environment. " +
+                        "Some features might not work."
+                );
+            }
+        }
+
         Bind[] bindsArray = binds.stream()
                 .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
@@ -472,6 +513,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         createCommand.withPublishAllPorts(true);
+
+        PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
+            withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
+        });
 
         String[] extraHostsArray = extraHosts.stream()
                 .toArray(String[]::new);
@@ -556,7 +601,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @see #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)
      */
     protected void waitUntilContainerStarted() {
-        getWaitStrategy().waitUntilReady(this);
+        org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = getWaitStrategy();
+        if (waitStrategy != null) {
+            waitStrategy.waitUntilReady(this);
+        }
     }
 
     /**
@@ -1009,34 +1057,70 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public void copyFileToContainer(MountableFile mountableLocalFile, String containerPath) {
+    public void copyFileToContainer(MountableFile mountableFile, String containerPath) {
+        File sourceFile = new File(mountableFile.getResolvedPath());
 
+        if (containerPath.endsWith("/") && sourceFile.isFile()) {
+            logger().warn("folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path");
+            copyFileToContainer((Transferable) mountableFile, containerPath + sourceFile.getName());
+        } else {
+            copyFileToContainer((Transferable) mountableFile, containerPath);
+        }
+    }
+
+    @Override
+    @SneakyThrows(IOException.class)
+    public void copyFileToContainer(Transferable transferable, String containerPath) {
         if (!isCreated()) {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
-        this.dockerClient
-                .copyArchiveToContainerCmd(this.containerId)
-                .withHostResource(mountableLocalFile.getResolvedPath())
-                .withRemotePath(containerPath)
+        try (
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
+        ) {
+            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+
+            int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
+            String extractArchiveTo = containerPath.substring(0, lastSlashIndex + 1);
+            String pathInArchive = containerPath.substring(lastSlashIndex + 1);
+            transferable.transferTo(tarArchive, pathInArchive);
+            tarArchive.finish();
+
+            dockerClient
+                .copyArchiveToContainerCmd(containerId)
+                .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
+                .withRemotePath(extractArchiveTo)
                 .exec();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void copyFileFromContainer(String containerPath, String destinationPath) throws IOException {
+    public void copyFileFromContainer(String containerPath, String destinationPath) {
+        copyFileFromContainer(containerPath, inputStream -> {
+            try(FileOutputStream output = new FileOutputStream(destinationPath)) {
+                IOUtils.copy(inputStream, output);
+                return null;
+            }
+        });
+    }
 
-        if (!isRunning()) {
-            throw new IllegalStateException("copyFileToContainer can only be used while the Container is running");
+    @Override
+    @SneakyThrows(Exception.class)
+    public <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> consumer) {
+        if (!isCreated()) {
+            throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
-        try (final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(this.dockerClient
-                .copyArchiveFromContainerCmd(this.containerId, containerPath)
-                .exec())) {
+        try (
+            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(containerId, containerPath).exec();
+            TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
+        ) {
             tarInputStream.getNextTarEntry();
-            IOUtils.copy(tarInputStream, new FileOutputStream(destinationPath));
+            return consumer.apply(tarInputStream);
         }
     }
 

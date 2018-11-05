@@ -3,15 +3,15 @@ package org.testcontainers.couchbase;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.bucket.BucketType;
+import com.couchbase.client.java.cluster.BucketSettings;
 import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.query.N1qlParams;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.consistency.ScanConsistency;
-import lombok.Getter;
 import org.junit.After;
 
 /**
- * @author ctayeb
+ * Basic class that can be used for couchbase tests. It will clear the database after every test.
  */
 public abstract class AbstractCouchbaseTest {
 
@@ -19,11 +19,7 @@ public abstract class AbstractCouchbaseTest {
 
     public static final String DEFAULT_PASSWORD = "password";
 
-    @Getter(lazy = true)
-    private final static CouchbaseContainer couchbaseContainer = initCouchbaseContainer();
-
-    @Getter(lazy = true)
-    private final static Bucket bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
+    private Bucket bucket;
 
     @After
     public void clear() {
@@ -36,24 +32,34 @@ public abstract class AbstractCouchbaseTest {
         }
     }
 
-    private static CouchbaseContainer initCouchbaseContainer() {
-        CouchbaseContainer couchbaseContainer = new CouchbaseContainer()
-            .withNewBucket(DefaultBucketSettings.builder()
-                .enableFlush(true)
-                .name(TEST_BUCKET)
-                .password(DEFAULT_PASSWORD)
-                .quota(100)
-                .replicas(0)
-                .type(BucketType.COUCHBASE)
-                .build());
-        couchbaseContainer.start();
+    protected abstract CouchbaseContainer getCouchbaseContainer();
+
+    protected static CouchbaseContainer initCouchbaseContainer(String imageName) {
+        CouchbaseContainer couchbaseContainer = (imageName == null) ? new CouchbaseContainer() : new CouchbaseContainer(imageName);
+        couchbaseContainer.withNewBucket(getDefaultBucketSettings());
         return couchbaseContainer;
     }
 
-    private static Bucket openBucket(String bucketName, String password) {
-        CouchbaseCluster cluster = getCouchbaseContainer().getCouchbaseCluster();
-        Bucket bucket = cluster.openBucket(bucketName, password);
-        Runtime.getRuntime().addShutdownHook(new Thread(bucket::close));
+    protected static BucketSettings getDefaultBucketSettings() {
+        return DefaultBucketSettings.builder()
+            .enableFlush(true)
+            .name(TEST_BUCKET)
+            .password(DEFAULT_PASSWORD)
+            .quota(100)
+            .replicas(0)
+            .type(BucketType.COUCHBASE)
+            .build();
+    }
+
+    protected synchronized Bucket getBucket() {
+        if (bucket == null) {
+            bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
+        }
         return bucket;
+    }
+
+    private Bucket openBucket(String bucketName, String password) {
+        CouchbaseCluster cluster = getCouchbaseContainer().getCouchbaseCluster();
+        return cluster.openBucket(bucketName, password);
     }
 }

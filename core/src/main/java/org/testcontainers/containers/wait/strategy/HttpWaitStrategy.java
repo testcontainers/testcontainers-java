@@ -39,11 +39,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private String username;
     private String password;
     private Predicate<String> responsePredicate;
-    private Predicate<Integer> statusCodePredicate = responseCode -> {
-        // If we did not provide any status code, we assume by default HttpURLConnection.HTTP_OK
-        if (statusCodes.isEmpty() && HttpURLConnection.HTTP_OK == responseCode) return true;
-        return statusCodes.contains(responseCode);
-    };
+    private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
 
     /**
@@ -63,7 +59,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      * @return this
      */
     public HttpWaitStrategy forStatusCodeMatching(Predicate<Integer> statusCodePredicate) {
-        this.statusCodePredicate = this.statusCodePredicate.or(statusCodePredicate);
+        this.statusCodePredicate = statusCodePredicate;
         return this;
     }
 
@@ -159,7 +155,22 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
                         log.trace("Get response code {}", connection.getResponseCode());
 
-                        if (!statusCodePredicate.test(connection.getResponseCode())) {
+                        // Choose the statusCodePredicate strategy depending on what we defined.
+                        Predicate<Integer> predicate;
+                        if (statusCodes.isEmpty() && statusCodePredicate == null) {
+                            // We have no status code and no predicate so we expect a 200 OK response code
+                            predicate = responseCode -> HttpURLConnection.HTTP_OK == responseCode;
+                        } else if (!statusCodes.isEmpty() && statusCodePredicate == null) {
+                            // We use the default status predicate checker when we only have status codes
+                            predicate = responseCode -> statusCodes.contains(responseCode);
+                        } else if (statusCodes.isEmpty()) {
+                            // We only have a predicate
+                            predicate = statusCodePredicate;
+                        } else {
+                            // We have both predicate and status code
+                            predicate = statusCodePredicate.or(responseCode -> statusCodes.contains(responseCode));
+                        }
+                        if (!predicate.test(connection.getResponseCode())) {
                             throw new RuntimeException(String.format("HTTP response code was: %s",
                                 connection.getResponseCode()));
                         }

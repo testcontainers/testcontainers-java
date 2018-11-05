@@ -4,6 +4,7 @@ import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static java.util.Collections.emptyMap;
 
@@ -13,7 +14,9 @@ public abstract class AbstractJarFileTest {
 
     static {
         try {
-            FileSystem fileSystem = FileSystems.newFileSystem(URI.create("jar:file://" + System.getProperty("jarFile")), emptyMap());
+            Path jarFilePath = Paths.get(System.getProperty("jarFile"));
+            URI jarFileUri = new URI("jar", jarFilePath.toUri().toString(), null);
+            FileSystem fileSystem = FileSystems.newFileSystem(jarFileUri, emptyMap());
             root = fileSystem.getPath("/");
         } catch (Exception e) {
             throw new RuntimeException(e);

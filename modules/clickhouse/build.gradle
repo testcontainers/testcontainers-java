@@ -1,0 +1,6 @@
+description = "Testcontainers :: JDBC :: ClickHouse"
+
+dependencies {
+    compile project(':testcontainers')
+    compile project(':jdbc')
+}

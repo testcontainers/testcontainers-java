@@ -1,11 +1,29 @@
 # Change Log
-All notable changes to this project will be documented in this file.
+~All notable changes to this project will be documented in this file.~
 
-## UNRELEASED
+# MOVED
+
+**After version 1.8.3 all future releases will _only_ be documented in the [Releases](https://github.com/testcontainers/testcontainers-java/releases) section of the GitHub repository. This changelog file will eventually be removed.**
+
+
+## [1.8.3] - 2018-08-05
 
 ### Fixed
 
+- Fixed `with*` methods of `CouchbaseContainer` ([\#810](https://github.com/testcontainers/testcontainers-java/pull/810))
+- Fix problem with gzip encoded streams (e.g. copy file from container), by adding decompression support to netty exec factory (#817, fixes #681, relates to docker-java/docker-java#1079)
+
+## [1.8.2] - 2018-07-31
+
+### Fixed
+
+- Add support for transparently using local images with docker-compose ([\#798](https://github.com/testcontainers/testcontainers-java/pull/798), fixes [\#674](https://github.com/testcontainers/testcontainers-java/issues/674))
+- Fix bug with Dockerfile image creation with Docker for Mac 18.06-ce ([\#808](https://github.com/testcontainers/testcontainers-java/pull/808), fixes [\#680](https://github.com/testcontainers/testcontainers-java/issues/680))
+
 ### Changed
+
+- Update Visible Assertions to 2.1.1 ([\#779](https://github.com/testcontainers/testcontainers-java/pull/779)).
+- KafkaContainer optimization (`group.initial.rebalance.delay.ms=0`) ([\#782](https://github.com/testcontainers/testcontainers-java/pull/782)).
 
 ## [1.8.1] - 2018-07-10
 

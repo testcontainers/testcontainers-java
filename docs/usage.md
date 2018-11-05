@@ -24,27 +24,41 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 ### Usage modes
 
 * [Temporary database containers](usage/database_containers.md) - specialized Microsoft SQL Server, MariaDB, MySQL, PostgreSQL, Oracle XE and Virtuoso container support
-* [Webdriver containers](usage/webdriver_containers.md) - run a Dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
+* [Elasticsearch container](usage/elasticsearch_container.md) - Elasticsearch container support
+* [Webdriver containers](usage/webdriver_containers.md) - run a dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
+* [Kafka containers](usage/kafka_containers.md) - run a dockerized Kafka, a distributed streaming platform
 * [Generic containers](usage/generic_containers.md) - run any Docker container as a test dependency
 * [Docker compose](usage/docker_compose.md) - reuse services defined in a Docker Compose YAML file
 * [Dockerfile containers](usage/dockerfile.md) - run a container that is built on-the-fly from a Dockerfile
 
-## Maven dependencies
+## Gradle/Maven dependencies
 
-Testcontainers is distributed in a handful of Maven modules:
+Testcontainers is distributed in a handful of Gradle/Maven modules:
 
 * **testcontainers** for just core functionality, generic containers and docker-compose support
 * **mysql**, **postgresql** or **oracle-xe** for database container support
+* **elasticsearch** for elasticsearch container support
 * **selenium** for selenium/webdriver support
 * **nginx** for nginx container support
 
 In the dependency description below, replace `--artifact name--` as appropriate and `--latest version--` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22):
 
-    <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>--artifact name--</artifactId>
-        <version>--latest version--</version>
-    </dependency>
+Maven style:
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>--artifact name--</artifactId>
+    <version>--latest version--</version>
+</dependency>
+```
+
+Gradle style:
+
+```
+compile group: 'org.testcontainers', name: '--artifact name--', version: '--latest version--'
+```
+
 
 ### JitPack (unreleased versions)
 
@@ -118,3 +132,45 @@ ambassador.container.image=replacement image name here
 vncrecorder.container.image=replacement image name here
 tinyimage.container.image=replacement image name here
 ```
+
+## JUnit
+
+### Junit 4
+ 
+**JUnit4 `@Rule`/`@ClassRule`**: This mode starts the container before your tests and tears it down afterwards.
+
+Add a `@Rule` or `@ClassRule` annotated field to your test class, e.g.:
+
+```java
+public class SimpleMySQLTest {
+    @Rule
+    public MySQLContainer mysql = new MySQLContainer();
+    
+    // [...]
+}
+```
+
+### JUnit 5
+
+**JUnit5**: As of now, you need to manually start the container in a `@BeforeAll`/`@BeforeEach` annotated method in your tests. Tear down will be done automatically on JVM exit, but you can of course also use an `@AfterAll`/`@AfterEach` annotated method to manually call the `close()` method on your container.
+
+Example of starting a container in a `@BeforeEach` annotated method:
+
+```java
+class SimpleMySQLTest {
+    private MySQLContainer mysql = new MySQLContainer();
+    
+    @BeforeEach
+    void before() {
+        mysql.start();
+    }
+    
+    @AfterEach
+    void after() {
+        mysql.stop();
+    }
+    
+    // [...]
+}
+```
+
