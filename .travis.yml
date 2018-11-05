@@ -7,24 +7,24 @@ services:
   - docker
 
 install:
-  - ./gradlew build -x check
+  - ./gradlew build -x check --scan
 
 jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./gradlew testcontainers:check javadoc
+      script: ./gradlew testcontainers:check javadoc --scan
 
     - stage: test
       env: [ NAME=core ]
       jdk: openjdk11
-      script: ./gradlew testcontainers:check
+      script: ./gradlew testcontainers:check --scan
 
     - env: [ NAME=selenium ]
-      script: ./gradlew selenium:check
+      script: ./gradlew selenium:check --scan
 
     - env: [ NAME=modules ]
-      script: ./gradlew check -x testcontainers:check -x selenium:check
+      script: ./gradlew check -x testcontainers:check -x selenium:check --scan
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]
@@ -36,7 +36,7 @@ jobs:
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest'
+                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan
 
     - stage: deploy
       sudo: false
@@ -45,7 +45,7 @@ jobs:
       script: skip
       deploy:
         provider: script
-        script: ./gradlew -Pversion=$TRAVIS_TAG release
+        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan
         on:
           tags: true
           branch: master
