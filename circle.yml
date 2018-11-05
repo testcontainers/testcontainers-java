@@ -5,7 +5,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: ./gradlew testcontainers:check
+          command: ./gradlew testcontainers:check --scan
       - run:
           name: Save test results
           command: |
@@ -22,7 +22,7 @@ jobs:
       - run:
           command: |
             echo "transport.type=okhttp" >> core/src/test/resources/testcontainers.properties
-            ./gradlew testcontainers:check
+            ./gradlew testcontainers:check --scan
       - run:
           name: Save test results
           command: |
@@ -35,7 +35,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check
+          command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check --scan
           environment:
             # Oracle JDBC drivers require a timezone to be set
             TZ: "/usr/share/zoneinfo/ETC/UTC"
@@ -53,7 +53,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: ./gradlew jdbc-test:check
+          command: ./gradlew jdbc-test:check --scan
           environment:
             # Oracle JDBC drivers require a timezone to be set
             TZ: "/usr/share/zoneinfo/ETC/UTC"
@@ -71,7 +71,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: ./gradlew selenium:check
+          command: ./gradlew selenium:check --scan
       - run:
           name: Save test results
           command: |
