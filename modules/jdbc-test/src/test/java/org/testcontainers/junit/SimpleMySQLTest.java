@@ -133,6 +133,20 @@ public class SimpleMySQLTest {
     }
 
     @Test
+    public void testExplicitInitScript() throws SQLException {
+        try (MySQLContainer container = (MySQLContainer) new MySQLContainer()
+            .withInitScript("somepath/init_mysql.sql")
+            .withLogConsumer(new Slf4jLogConsumer(logger))) {
+            container.start();
+
+            ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
+            String firstColumnValue = resultSet.getString(1);
+
+            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+     }
+
+    @Test
     public void testEmptyPasswordWithNonRootUser() {
 
         MySQLContainer container = (MySQLContainer) new MySQLContainer("mysql:5.5").withDatabaseName("TEST")
