@@ -1183,7 +1183,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Size of /dev/shm
-     * @param bytes The number of megabytes to assign the shared memory. Null to not set any.
+     * @param bytes The number of megabytes to assign the shared memory. If null, it will apply the Docker default which is 64 KB.
      * @return this
      */
     public SELF withSharedMemorySize(Long bytes) {
