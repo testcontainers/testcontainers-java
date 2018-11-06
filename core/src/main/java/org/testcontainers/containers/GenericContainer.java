@@ -22,7 +22,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,7 +49,14 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ThrowingFunction;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -262,10 +268,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
 
-            HostConfig hostConfig = new HostConfig();
-            if (shmSize != null) {
-                hostConfig.withShmSize(shmSize);
-            }
+            HostConfig hostConfig = buildHostConfig();
+
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName)
                 .withHostConfig(hostConfig);
 
@@ -332,6 +336,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } finally {
             profiler.stop();
         }
+    }
+
+    /**
+     * Set any custom settings for the create command such as shared memory size.
+     */
+    private HostConfig buildHostConfig() {
+        HostConfig config = new HostConfig();
+        if (shmSize != null) {
+            config.withShmSize(shmSize);
+        }
+        return config;
     }
 
     private void connectToPortForwardingNetwork(String networkMode) {

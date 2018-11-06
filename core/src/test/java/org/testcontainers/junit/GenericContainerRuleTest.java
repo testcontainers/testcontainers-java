@@ -126,13 +126,6 @@ public class GenericContainerRuleTest {
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
 
-    /**
-     * Redis with shared memory
-     */
-    @ClassRule
-    public static GenericContainer redisWithSharedMemory = new GenericContainer("redis:3.0.2")
-        .withExposedPorts(REDIS_PORT).withSharedMemorySize(1024L * FileUtils.ONE_MB);
-
 //    @Test
 //    public void simpleRedisTest() {
 //        String ipAddress = redis.getContainerIpAddress();
@@ -387,10 +380,15 @@ public class GenericContainerRuleTest {
 
     @Test
     public void sharedMemorySetTest() {
-        assertEquals("Shared memory is not set", redisWithSharedMemory.getShmSize(), 1024 * FileUtils.ONE_MB);
-        HostConfig hostConfig =
-            redisWithSharedMemory.getDockerClient().inspectContainerCmd(redisWithSharedMemory.getContainerId())
-                .exec().getHostConfig();
-        assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+        try (GenericContainer containerWithSharedMemory = new GenericContainer("busybox:1.29")
+            .withSharedMemorySize(1024L * FileUtils.ONE_MB)) {
+
+            containerWithSharedMemory.start();
+
+            HostConfig hostConfig =
+                containerWithSharedMemory.getDockerClient().inspectContainerCmd(containerWithSharedMemory.getContainerId())
+                    .exec().getHostConfig();
+            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+        }
     }
 }
