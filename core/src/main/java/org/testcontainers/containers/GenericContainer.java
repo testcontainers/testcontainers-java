@@ -1183,7 +1183,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Size of /dev/shm
-     * @param bytes The number of megabybytestes to assign the shared memory. Null to not set any.
+     * @param bytes The number of megabytes to assign the shared memory. Null to not set any.
      * @return this
      */
     public SELF withSharedMemorySize(Long bytes) {
