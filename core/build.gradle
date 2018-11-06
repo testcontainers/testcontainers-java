@@ -19,6 +19,7 @@ shadowJar {
     mergeServiceFiles()
 
     exclude 'org/newsclub/**'
+    exclude 'org/apache/http/**'
 
     [
         'META-INF/io.netty.versions.properties',
@@ -40,7 +41,6 @@ shadowJar {
     ].each { exclude(it) }
 
     dependencies {
-        include(dependency('org.apache.httpcomponents:.*'))
         include(dependency('org.glassfish.*:.*'))
         include(dependency('org.aopalliance.*:.*'))
         include(dependency('javax.ws.rs:.*'))
