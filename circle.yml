@@ -5,6 +5,8 @@ jobs:
     steps:
       - checkout
       - run:
+          command: ./gradlew testcontainers:build -x test -x check
+      - run:
           command: ./gradlew testcontainers:check --scan
       - run:
           name: Save test results
