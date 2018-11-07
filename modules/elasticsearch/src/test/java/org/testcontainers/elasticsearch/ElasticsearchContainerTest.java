@@ -1,6 +1,7 @@
 package org.testcontainers.elasticsearch;
 
 
+import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -90,7 +91,7 @@ public class ElasticsearchContainerTest {
             credentialsProvider.setCredentials(AuthScope.ANY,
                     new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
 
-            client = RestClient.builder(container.getHost())
+            client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
                     .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
                     .build();
         }

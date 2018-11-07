@@ -59,6 +59,7 @@ subprojects {
         relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
 
         [
+            "org.apache.http",
             "org.apache.commons.lang",
             "org.apache.commons.io",
             "org.apache.commons.codec",

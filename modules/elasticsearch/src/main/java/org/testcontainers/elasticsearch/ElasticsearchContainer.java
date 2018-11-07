@@ -1,6 +1,5 @@
 package org.testcontainers.elasticsearch;
 
-import org.apache.http.HttpHost;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
@@ -56,7 +55,7 @@ public class ElasticsearchContainer extends GenericContainer {
             .withStartupTimeout(Duration.ofMinutes(2)));
     }
 
-    public HttpHost getHost() {
-        return new HttpHost(getContainerIpAddress(), getMappedPort(ELASTICSEARCH_DEFAULT_PORT));
+    public String getHttpHostAddress() {
+        return getContainerIpAddress() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 }
