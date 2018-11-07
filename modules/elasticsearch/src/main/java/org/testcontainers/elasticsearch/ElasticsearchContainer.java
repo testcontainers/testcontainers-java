@@ -13,7 +13,7 @@ import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
  * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
  */
-public class ElasticsearchContainer extends GenericContainer {
+public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {
 
     /**
      * Elasticsearch Default HTTP port
