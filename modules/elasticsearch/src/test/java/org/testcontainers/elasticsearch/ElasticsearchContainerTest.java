@@ -46,7 +46,9 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchDefaultTest() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer()){
+        try (ElasticsearchContainer container = new ElasticsearchContainer()
+            .withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
+        ){
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
