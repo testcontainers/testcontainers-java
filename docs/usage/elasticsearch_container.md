@@ -19,7 +19,7 @@ container.start();
 // Do whatever you want here.
 final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("elastic", "changeme"));
-RestClient client = RestClient.builder(container.getHost())
+RestClient client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
         .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
         .build();
 Response response = client.performRequest("GET", "/");
