@@ -51,13 +51,14 @@ Maven style:
     <groupId>org.testcontainers</groupId>
     <artifactId>--artifact name--</artifactId>
     <version>--latest version--</version>
+    <scope>test</scope>
 </dependency>
 ```
 
 Gradle style:
 
 ```
-compile group: 'org.testcontainers', name: '--artifact name--', version: '--latest version--'
+testImplementation group: 'org.testcontainers', name: '--artifact name--', version: '--latest version--'
 ```
 
 
@@ -70,6 +71,7 @@ Use the following dependency description instead:
 	    <groupId>com.github.testcontainers.testcontainers-java</groupId>
 	    <artifactId>--artifact name--</artifactId>
 	    <version>-SNAPSHOT</version>
+	    <scope>test</scope>
 	</dependency>
 
 A specific git revision (such as `093a3a4628`) can be used as a fixed version instead. The JitPack maven repository must also be declared, e.g.:
