@@ -1,6 +1,6 @@
 # Contributing
 
-* Star the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
+* Start the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
 * Join our Slack: http://slack.testcontainers.org
 * See [ROADMAP](docs/ROADMAP.md) to understand the approach behind the project and what may/may not be in store for the future.
 * [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
