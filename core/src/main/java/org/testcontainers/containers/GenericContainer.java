@@ -455,7 +455,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
-
+        HostConfig hostConfig = buildHostConfig();
+        createCommand.withHostConfig(hostConfig);
+        
         // Set up exposed ports (where there are no host port bindings defined)
         ExposedPort[] portArray = exposedPorts.stream()
                 .map(ExposedPort::new)
@@ -568,9 +570,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         combinedLabels.putAll(DockerClientFactory.DEFAULT_LABELS);
 
         createCommand.withLabels(combinedLabels);
-
-        HostConfig hostConfig = buildHostConfig();
-        createCommand.withHostConfig(hostConfig);
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
