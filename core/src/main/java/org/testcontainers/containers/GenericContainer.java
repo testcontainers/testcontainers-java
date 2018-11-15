@@ -261,10 +261,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
 
-            HostConfig hostConfig = buildHostConfig();
-
-            CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName)
-                .withHostConfig(hostConfig);
+            CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
 
             applyConfiguration(createCommand);
 
@@ -571,6 +568,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         combinedLabels.putAll(DockerClientFactory.DEFAULT_LABELS);
 
         createCommand.withLabels(combinedLabels);
+
+        HostConfig hostConfig = buildHostConfig();
+        createCommand.withHostConfig(hostConfig);
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
