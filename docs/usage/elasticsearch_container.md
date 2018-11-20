@@ -16,13 +16,20 @@ ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co
 // Start the container. This step might take some time...
 container.start();
 
-// Do whatever you want here.
+// Do whatever you want with the rest client ...
 final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("elastic", "changeme"));
-RestClient client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
+RestClient restClient = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
         .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
         .build();
-Response response = client.performRequest("GET", "/");
+Response response = restClient.performRequest("GET", "/");
+
+// ... or the transport client
+TransportAddress transportAddress = new TransportAddress(container.getTcpHost());
+Settings settings = Settings.builder().put("cluster.name", "docker-cluster").build();
+TransportClient transportClient = new PreBuiltTransportClient(settings)
+    .addTransportAddress(transportAddress);
+ClusterHealthResponse healths = transportClient.admin().cluster().prepareHealth().get();
 
 // Stop the container.
 container.stop();

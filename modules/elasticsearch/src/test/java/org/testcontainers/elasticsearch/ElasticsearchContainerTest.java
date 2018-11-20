@@ -7,10 +7,15 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 
@@ -48,7 +53,7 @@ public class ElasticsearchContainerTest {
     public void elasticsearchDefaultTest() throws IOException {
         try (ElasticsearchContainer container = new ElasticsearchContainer()
             .withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
-        ){
+        ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
@@ -87,17 +92,35 @@ public class ElasticsearchContainerTest {
         }
     }
 
+    @Test
+    public void transportClientClusterHealth() {
+        try (ElasticsearchContainer container = new ElasticsearchContainer()) {
+            container.start();
+
+            TransportAddress transportAddress = new TransportAddress(container.getTcpHost());
+            String expectedClusterName = "docker-cluster";
+            Settings settings = Settings.builder().put("cluster.name", expectedClusterName).build();
+            try (TransportClient transportClient = new PreBuiltTransportClient(settings)
+                .addTransportAddress(transportAddress)) {
+                ClusterHealthResponse healths = transportClient.admin().cluster().prepareHealth().get();
+                String clusterName = healths.getClusterName();
+                assertThat(clusterName, is(expectedClusterName));
+            }
+        }
+    }
+
     private RestClient getClient(ElasticsearchContainer container) {
         if (client == null) {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(AuthScope.ANY,
-                    new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
 
             client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
-                    .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-                    .build();
+                .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
+                .build();
         }
 
         return client;
     }
+
 }
