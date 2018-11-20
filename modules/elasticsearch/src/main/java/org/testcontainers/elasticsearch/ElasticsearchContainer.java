@@ -4,6 +4,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
 
+import java.net.InetSocketAddress;
 import java.time.Duration;
 
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -57,5 +58,9 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     public String getHttpHostAddress() {
         return getContainerIpAddress() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
+    }
+
+    public InetSocketAddress getTcpHost() {
+        return new InetSocketAddress(getContainerIpAddress(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }
 }
