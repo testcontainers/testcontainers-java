@@ -2,4 +2,8 @@ description = "Testcontainers :: MS SQL Server"
 
 dependencies {
     compile project(':jdbc')
+
+    testCompile 'com.microsoft.sqlserver:mssql-jdbc:7.0.0.jre8'
+    testCompile 'com.zaxxer:HikariCP:3.2.0'
+    testCompile 'commons-dbutils:commons-dbutils:1.7'
 }
