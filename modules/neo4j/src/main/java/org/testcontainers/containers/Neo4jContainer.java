@@ -13,7 +13,7 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 /**
- * Test container for Neo4j.
+ * Testcontainer for Neo4j.
  *
  * @author Michael J. Simons
  */
@@ -58,7 +58,7 @@ public final class Neo4jContainer<SELF extends Neo4jContainer<SELF>> extends Gen
     private boolean defaultImage = false;
 
     /**
-     * Creates a testcontainer using the official Neo4j docker image.
+     * Creates a Testcontainer using the official Neo4j docker image.
      */
     public Neo4jContainer() {
         this(DOCKER_IMAGE_NAME);
@@ -67,7 +67,7 @@ public final class Neo4jContainer<SELF extends Neo4jContainer<SELF>> extends Gen
     }
 
     /**
-     * Creates a testcontainer using a specific docker image.
+     * Creates a Testcontainer using a specific docker image.
      *
      * @param dockerImageName The docker image to use.
      */
