@@ -47,6 +47,7 @@
     * [Recording videos](usage/webdriver_containers.md#recording-videos)
     
 * [Kafka containers](usage/kafka_containers.md)
+* [Neo4j containers](usage/neo4j_container.md)
 * [Docker Compose](usage/docker_compose.md)
 * [Dockerfile containers](usage/dockerfile.md)
 * [Windows support](usage/windows_support.md)
