@@ -126,7 +126,8 @@ public final class Neo4jContainer<SELF extends Neo4jContainer<SELF>> extends Gen
     }
 
     /**
-     * Configures the container to use the enterprise edition of the default docker image.<br />
+     * Configures the container to use the enterprise edition of the default docker image.
+     * <br><br>
      * Please use the {@link AcceptableLicense#acceptLicense()} to explicitly accept Neo4j's enterprise license and to
      * get the configured container back.
      *
