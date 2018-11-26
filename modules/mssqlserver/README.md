@@ -19,7 +19,7 @@ public class SomeTest {
         ... create a connection and run test as normal
 ```
 
-> *Note:* Due to licencing restrictions you are required to accept an EULA for this container image. To indicate that you accept the MS SQL Server image EULA, Please place a file at the root of the classpath named `container-license-acceptance.txt`, e.g. at `src/test/resources/container-license-acceptance.txt`. This file should contain the line: `microsoft/mssql-server-linux:latest`
+> *Note:* Due to licencing restrictions you are required to accept an EULA for this container image. To indicate that you accept the MS SQL Server image EULA, Please place a file at the root of the classpath named `container-license-acceptance.txt`, e.g. at `src/test/resources/container-license-acceptance.txt`. This file should contain the line: `mcr.microsoft.com/mssql/server:latest`
 
 ## Dependency information
 
