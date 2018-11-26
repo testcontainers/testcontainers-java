@@ -7,8 +7,8 @@ import org.testcontainers.utility.LicenseAcceptance;
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "mssqlserver";
-    public static final String IMAGE = "microsoft/mssql-server-linux";
-    public static final String DEFAULT_TAG = "2017-CU6";
+    public static final String IMAGE = "mcr.microsoft.com/mssql/server";
+    public static final String DEFAULT_TAG = "2017-CU12";
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
     private String username = "SA";
