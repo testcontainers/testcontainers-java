@@ -1,0 +1,7 @@
+description = "TestContainers :: Neo4j"
+
+dependencies {
+    compile project(":testcontainers")
+
+    testCompile "org.neo4j.driver:neo4j-java-driver:1.7.1"
+}
