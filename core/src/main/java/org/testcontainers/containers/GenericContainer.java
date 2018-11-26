@@ -260,7 +260,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Creating container for image: {}", dockerImageName);
             profiler.start("Create container");
-
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
