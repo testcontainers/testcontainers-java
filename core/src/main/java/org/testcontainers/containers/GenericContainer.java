@@ -6,6 +6,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
@@ -152,6 +153,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Nullable
     private String workingDirectory = null;
+
+    /**
+     * The shared memory size to use when starting the container.
+     * This value is in bytes.
+     */
+    @Nullable
+    private Long shmSize;
 
     private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
 
@@ -318,6 +326,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    /**
+     * Set any custom settings for the create command such as shared memory size.
+     */
+    private HostConfig buildHostConfig() {
+        HostConfig config = new HostConfig();
+        if (shmSize != null) {
+            config.withShmSize(shmSize);
+        }
+        return config;
+    }
+
     private void connectToPortForwardingNetwork(String networkMode) {
         PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
             if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
@@ -434,7 +453,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
-
+        HostConfig hostConfig = buildHostConfig();
+        createCommand.withHostConfig(hostConfig);
+        
         // Set up exposed ports (where there are no host port bindings defined)
         ExposedPort[] portArray = exposedPorts.stream()
                 .map(ExposedPort::new)
@@ -1154,6 +1175,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
         createContainerCmdModifiers.add(modifier);
+        return self();
+    }
+
+    /**
+     * Size of /dev/shm
+     * @param bytes The number of megabytes to assign the shared memory. If null, it will apply the Docker default which is 64 MB.
+     * @return this
+     */
+    public SELF withSharedMemorySize(Long bytes) {
+        this.shmSize = bytes;
         return self();
     }
 
