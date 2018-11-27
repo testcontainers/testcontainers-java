@@ -15,9 +15,10 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 /**
  * Testcontainer for Neo4j.
  *
+ * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
  * @author Michael J. Simons
  */
-public final class Neo4jContainer<SELF extends Neo4jContainer<SELF>> extends GenericContainer<SELF> {
+public final class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
 
     /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
@@ -151,10 +152,17 @@ public final class Neo4jContainer<SELF extends Neo4jContainer<SELF>> extends Gen
      * @param adminPassword The admin password for the default database account.
      * @return This container.
      */
-    public SELF withAdminPassword(final String adminPassword) {
+    public S withAdminPassword(final String adminPassword) {
 
         this.adminPassword = adminPassword;
         return self();
+    }
+
+    /**
+     * @return The admin password for the <code>neo4j</code> account or literal <code>null</code> if auth is disabled.
+     */
+    public String getAdminPassword() {
+        return adminPassword;
     }
 
     /**

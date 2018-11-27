@@ -5,48 +5,64 @@ import static org.junit.Assert.*;
 
 import java.util.Collections;
 
-import org.junit.ClassRule;
 import org.junit.Test;
+import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
 import org.neo4j.driver.v1.Session;
 
+/**
+ * Tests of functionality special to the Neo4jContainer.
+ *
+ * @author Michael J. Simons
+ */
 public class Neo4jContainerTest {
 
-    @ClassRule
-    public static Neo4jContainer neo4jContainer = new Neo4jContainer();
-
     @Test
-    public void shouldStart() {
-        boolean actual = neo4jContainer.isRunning();
+    public void shouldDisableAuthentication() {
 
-        assertThat(actual, is(true));
-
-        try (Driver driver = GraphDatabase
-            .driver(neo4jContainer.getBoltUrl(), AuthTokens.basic("neo4j", "password"));
-            Session session = driver.session()
+        try (
+            Neo4jContainer neo4jContainer = new Neo4jContainer().withAdminPassword(null);
         ) {
-            long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
-            assertThat(one, is(1L));
-        } catch (Exception e) {
-            fail(e.getMessage());
+            neo4jContainer.start();
+            try (Driver driver = getDriver(neo4jContainer);
+                Session session = driver.session()
+            ) {
+                long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
+                assertThat(one, is(1L));
+            }
         }
     }
 
     @Test
-    public void shouldReturnBoltUrl() {
-        String actual = neo4jContainer.getBoltUrl();
+    public void shouldRunEnterprise() {
 
-        assertThat(actual, notNullValue());
-        assertThat(actual, startsWith("bolt://"));
+        try (
+            Neo4jContainer neo4jContainer = new Neo4jContainer()
+                .withEnterpriseEdition()
+                .acceptLicense()
+                .withAdminPassword("Picard123")
+        ) {
+            neo4jContainer.start();
+            try (
+                Driver driver = getDriver(neo4jContainer);
+                Session session = driver.session()
+            ) {
+                String edition = session
+                    .run("CALL dbms.components() YIELD edition RETURN edition", Collections.emptyMap())
+                    .next().get(0).asString();
+                assertThat(edition, is("enterprise"));
+            }
+        }
     }
 
-    @Test
-    public void shouldReturnHttpUrl() {
-        String actual = neo4jContainer.getHttpUrl();
+    private static Driver getDriver(Neo4jContainer container) {
 
-        assertThat(actual, notNullValue());
-        assertThat(actual, startsWith("http://"));
+        AuthToken authToken = AuthTokens.none();
+        if (container.getAdminPassword() != null) {
+            authToken = AuthTokens.basic("neo4j", container.getAdminPassword());
+        }
+        return GraphDatabase.driver(container.getBoltUrl(), authToken);
     }
 }
