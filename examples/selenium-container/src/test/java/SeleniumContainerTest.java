@@ -1,7 +1,6 @@
 import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
@@ -17,7 +16,7 @@ public class SeleniumContainerTest {
 
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-                                                    .withDesiredCapabilities(DesiredCapabilities.chrome())
+                                                    .withCapabilities(new ChromeOptions)
                                                     .withRecordingMode(RECORD_ALL, new File("target"));
 
     @Test
