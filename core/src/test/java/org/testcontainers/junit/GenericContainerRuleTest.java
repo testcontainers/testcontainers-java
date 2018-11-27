@@ -1,11 +1,13 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.model.HostConfig;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
@@ -374,5 +376,19 @@ public class GenericContainerRuleTest {
         assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
         assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
         assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
+    public void sharedMemorySetTest() {
+        try (GenericContainer containerWithSharedMemory = new GenericContainer("busybox:1.29")
+            .withSharedMemorySize(1024L * FileUtils.ONE_MB)) {
+
+            containerWithSharedMemory.start();
+
+            HostConfig hostConfig =
+                containerWithSharedMemory.getDockerClient().inspectContainerCmd(containerWithSharedMemory.getContainerId())
+                    .exec().getHostConfig();
+            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+        }
     }
 }
