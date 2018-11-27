@@ -17,7 +17,7 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Before
     public void checkBrowserIsIndeedChrome() {
-        assertBrowserNameIs(chrome,"chrome");
+        assertBrowserNameIs(chrome, "chrome");
     }
 
     @Test

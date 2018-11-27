@@ -11,7 +11,7 @@ public class ContainerWithoutCapabilitiesTest extends BaseWebDriverContainerTest
 
     @Test
     public void chromeIsStartedIfNoCapabilitiesProvided() {
-        assertBrowserNameIs(chrome,"chrome");
+        assertBrowserNameIs(chrome, "chrome");
     }
 
     @Test
