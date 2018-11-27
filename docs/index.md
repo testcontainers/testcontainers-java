@@ -32,6 +32,7 @@ Testcontainers makes it easy to launch useful Docker containers for the duration
  * [Instana](https://www.instana.com) - Testing agents and stream processing backends
  * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
  * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
+ * [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing new, reactive client implementations
 
 ## License
 
