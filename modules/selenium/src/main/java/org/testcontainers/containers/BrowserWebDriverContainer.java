@@ -96,7 +96,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     /**
-     * Deprecated. Use withCapabilities(Capabilities capabilities) instead:
+     * @Deprecated Use withCapabilities(Capabilities capabilities) instead:
      * withCapabilities(new FirefoxOptions())
      * */
     @Deprecated
