@@ -79,7 +79,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     /**
      * Constructor taking a specific webdriver container name and tag
-     * @param dockerImageName
+     * @param dockerImageName Name of the docker image to pull
      */
     public BrowserWebDriverContainer(String dockerImageName) {
         this();
@@ -96,8 +96,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     /**
-     * Deprecated. Use withCapabilities(Capabilities capabilities) instead:
+     * @deprecated Use withCapabilities(Capabilities capabilities) instead:
      * withCapabilities(new FirefoxOptions())
+     *
+     * @param capabilities DesiredCapabilities
+     * @return SELF
      * */
     @Deprecated
     public SELF withDesiredCapabilities(DesiredCapabilities capabilities) {
