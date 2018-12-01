@@ -10,14 +10,9 @@ import lombok.ToString;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.DockerLoggerFactory;
-import org.testcontainers.utility.LazyFuture;
+import org.testcontainers.utility.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
