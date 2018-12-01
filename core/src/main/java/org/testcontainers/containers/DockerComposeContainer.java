@@ -13,14 +13,11 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.*;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.*;
 import org.zeroturnaround.exec.InvalidExitValueException;
@@ -28,9 +25,7 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -140,10 +135,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     @Override
     public void start() {
-        final Profiler profiler = new Profiler("Docker Compose container rule");
-        profiler.setLogger(logger());
-        profiler.start("Docker Compose container startup");
-
         synchronized (MUTEX) {
             registerContainersForShutdown();
             if (pull) {
@@ -155,7 +146,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             }
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();
-            startAmbassadorContainers(profiler);
+            startAmbassadorContainers();
             waitUntilServiceStarted();
         }
     }
@@ -243,10 +234,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 .collect(toList());
     }
 
-    private void startAmbassadorContainers(Profiler profiler) {
-        profiler.start("Ambassador container startup");
+    private void startAmbassadorContainers() {
         ambassadorContainer.start();
-        profiler.stop().log();
     }
 
     private Logger logger() {
