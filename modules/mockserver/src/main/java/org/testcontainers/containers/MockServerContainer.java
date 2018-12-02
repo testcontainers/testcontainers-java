@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
-    public static final String VERSION = "5.4.1";
+    public static final String VERSION = "5.5.0";
 
     public static final int PORT = 80;
 
