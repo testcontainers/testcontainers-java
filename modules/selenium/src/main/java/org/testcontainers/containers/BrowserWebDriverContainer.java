@@ -122,9 +122,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void configure() {
 
+        String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
+
         if (capabilities == null) {
-            logger().info("No capabilities provided, falling back to ChromeOptions");
-            capabilities = new ChromeOptions();
+            if (seleniumVersion.startsWith("2.")) {
+                logger().info("No capabilities provided, falling back to DesiredCapabilities.chrome()");
+                capabilities = DesiredCapabilities.chrome();
+            } else {
+                logger().info("No capabilities provided, falling back to ChromeOptions");
+                capabilities = new ChromeOptions();
+            }
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
@@ -138,7 +145,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (!customImageNameIsSet) {
-            super.setDockerImageName(getImageForCapabilities(capabilities));
+            super.setDockerImageName(getImageForCapabilities(capabilities, seleniumVersion));
         }
 
         String timeZone = System.getProperty("user.timezone");
@@ -158,9 +165,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setStartupAttempts(3);
     }
 
-    public static String getImageForCapabilities(Capabilities capabilities) {
-
-        String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
+    public static String getImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
 
         String browserName = capabilities.getBrowserName();
         switch (browserName) {
@@ -300,6 +305,4 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     public enum VncRecordingMode {
         SKIP, RECORD_ALL, RECORD_FAILING
     }
-
-
 }
