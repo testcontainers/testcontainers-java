@@ -99,3 +99,4 @@ public class ExampleTest {
 This creates a Testcontainer based on the Docker image build with the Enterprise version of Neo4j. 
 The call to `withEnterpriseEdition` adds the required environment variable that you accepted the terms and condition of the enterprise version.
 You accept those by adding a file named `container-license-acceptance.txt` to the root of your classpath containing the text `neo4j:3.5.0-enterprise` in one line.
+You'll find more information about licensing Neo4j here: [About Neo4j Licenses](https://neo4j.com/licensing/).
