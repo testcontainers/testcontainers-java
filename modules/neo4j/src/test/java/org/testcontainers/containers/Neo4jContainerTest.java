@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assumptions.*;
 
 import java.util.Collections;
 
@@ -19,6 +19,9 @@ import org.neo4j.driver.v1.Session;
  */
 public class Neo4jContainerTest {
 
+    // See org.testcontainers.utility.LicenseAcceptance#ACCEPTANCE_FILE_NAME
+    private static final String ACCEPTANCE_FILE_LOCATION = "/container-license-acceptance.txt";
+
     @Test
     public void shouldDisableAuthentication() {
 
@@ -30,18 +33,29 @@ public class Neo4jContainerTest {
                 Session session = driver.session()
             ) {
                 long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
-                assertThat(one, is(1L));
+                assertThat(one).isEqualTo(1L);
             }
         }
     }
 
     @Test
+    public void shouldCheckEnterpriseLicense() {
+        assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNull();
+
+        String expectedImageName = "neo4j:3.4.10-enterprise";
+
+        assertThatExceptionOfType(IllegalStateException.class)
+            .isThrownBy(() -> new Neo4jContainer().withEnterpriseEdition())
+            .withMessageContaining("The image " + expectedImageName + " requires you to accept a license agreement.");
+    }
+
+    @Test
     public void shouldRunEnterprise() {
+        assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNotNull();
 
         try (
             Neo4jContainer neo4jContainer = new Neo4jContainer()
                 .withEnterpriseEdition()
-                .acceptLicense()
                 .withAdminPassword("Picard123")
         ) {
             neo4jContainer.start();
@@ -52,7 +66,7 @@ public class Neo4jContainerTest {
                 String edition = session
                     .run("CALL dbms.components() YIELD edition RETURN edition", Collections.emptyMap())
                     .next().get(0).asString();
-                assertThat(edition, is("enterprise"));
+                assertThat(edition).isEqualTo("enterprise");
             }
         }
     }

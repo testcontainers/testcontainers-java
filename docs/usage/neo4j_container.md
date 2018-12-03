@@ -92,11 +92,10 @@ If you need the Neo4j enterprise license, you can declare your Neo4j container l
 public class ExampleTest { 
     @ClassRule
     public static Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withEnterpriseEdition()
-        .acceptLicense();
-    }
+        .withEnterpriseEdition();        
 }
 ```
 
 This creates a Testcontainer based on the Docker image build with the Enterprise version of Neo4j. 
-The call to  `acceptLicense` adds the required environment variable that you accepted the terms and condition of the enterprise version. 
+The call to `withEnterpriseEdition` adds the required environment variable that you accepted the terms and condition of the enterprise version.
+You accept those by adding a file named `container-license-acceptance.txt` to the root of your classpath containing the text `neo4j:3.4.10-enterprise` in one line.

@@ -11,6 +11,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.LicenseAcceptance;
 
 /**
  * Testcontainer for Neo4j.
@@ -129,12 +130,13 @@ public final class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericCo
     /**
      * Configures the container to use the enterprise edition of the default docker image.
      * <br><br>
-     * Please use the {@link AcceptableLicense#acceptLicense()} to explicitly accept Neo4j's enterprise license and to
-     * get the configured container back.
+     * Please have a look at the <a href="https://neo4j.com/licensing/">Neo4j Licensing page</a>. While the Neo4j
+     * Community Edition can be used for free in your projects under the GPL v3 license, Neo4j Enterprise edition
+     * needs either a commercial, education or evaluation license.
      *
-     * @return An acceptable license for the enterprise edition of Neo4j.
+     * @return This container.
      */
-    public AcceptableLicense withEnterpriseEdition() {
+    public S withEnterpriseEdition() {
 
         if (!defaultImage) {
             throw new IllegalStateException(
@@ -142,7 +144,11 @@ public final class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericCo
         }
 
         setDockerImageName(DOCKER_IMAGE_NAME + "-enterprise");
-        return new AcceptableLicense(self());
+        LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
+
+        addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
+
+        return self();
     }
 
     /**
@@ -163,21 +169,5 @@ public final class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericCo
      */
     public String getAdminPassword() {
         return adminPassword;
-    }
-
-    /**
-     * Representation of the enterprise license as an intermediate before being able to use the container.
-     */
-    public final static class AcceptableLicense {
-        private final Neo4jContainer neo4jContainer;
-
-        public AcceptableLicense(final Neo4jContainer neo4jContainer) {
-            this.neo4jContainer = neo4jContainer;
-        }
-
-        public Neo4jContainer acceptLicense() {
-            this.neo4jContainer.addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
-            return this.neo4jContainer;
-        }
     }
 }
