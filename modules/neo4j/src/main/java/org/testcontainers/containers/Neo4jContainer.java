@@ -29,7 +29,7 @@ public final class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericCo
     /**
      * The default tag (version) to use.
      */
-    private static final String DEFAULT_TAG = "3.4.10";
+    private static final String DEFAULT_TAG = "3.5.0";
 
     private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
 

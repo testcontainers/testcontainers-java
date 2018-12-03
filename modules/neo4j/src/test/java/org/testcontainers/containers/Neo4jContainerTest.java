@@ -42,7 +42,7 @@ public class Neo4jContainerTest {
     public void shouldCheckEnterpriseLicense() {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNull();
 
-        String expectedImageName = "neo4j:3.4.10-enterprise";
+        String expectedImageName = "neo4j:3.5.0-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(() -> new Neo4jContainer().withEnterpriseEdition())
