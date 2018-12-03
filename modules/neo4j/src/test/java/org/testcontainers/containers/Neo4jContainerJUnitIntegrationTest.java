@@ -1,10 +1,10 @@
 package org.testcontainers.containers;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 
+import org.assertj.core.api.Assertions;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.neo4j.driver.v1.AuthTokens;
@@ -26,14 +26,14 @@ public class Neo4jContainerJUnitIntegrationTest {
     public void shouldStart() {
 
         boolean actual = neo4jContainer.isRunning();
-        assertThat(actual, is(true));
+        assertThat(actual).isTrue();
 
         try (Driver driver = GraphDatabase
             .driver(neo4jContainer.getBoltUrl(), AuthTokens.basic("neo4j", "password"));
             Session session = driver.session()
         ) {
             long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
-            assertThat(one, is(1L));
+            assertThat(one).isEqualTo(1L);
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -43,15 +43,15 @@ public class Neo4jContainerJUnitIntegrationTest {
     public void shouldReturnBoltUrl() {
         String actual = neo4jContainer.getBoltUrl();
 
-        assertThat(actual, notNullValue());
-        assertThat(actual, startsWith("bolt://"));
+        assertThat(actual).isNotNull();
+        assertThat(actual).startsWith("bolt://");
     }
 
     @Test
     public void shouldReturnHttpUrl() {
         String actual = neo4jContainer.getHttpUrl();
 
-        assertThat(actual, notNullValue());
-        assertThat(actual, startsWith("http://"));
+        assertThat(actual).isNotNull();
+        assertThat(actual).startsWith("http://");
     }
 }
