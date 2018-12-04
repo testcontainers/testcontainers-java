@@ -2,10 +2,9 @@ package org.testcontainers.junit;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
-import java.io.IOException;
 import java.time.Duration;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -17,11 +16,11 @@ public class CustomWaitTimeoutWebDriverContainerTest extends BaseWebDriverContai
 
     @Rule
     public BrowserWebDriverContainer chromeWithCustomTimeout = new BrowserWebDriverContainer<>()
-            .withDesiredCapabilities(DesiredCapabilities.chrome())
+            .withCapabilities(new ChromeOptions())
             .withStartupTimeout(Duration.of(30, SECONDS));
 
     @Test
-    public void simpleTest() throws IOException {
+    public void simpleTest() {
         doSimpleWebdriverTest(chromeWithCustomTimeout);
     }
 }

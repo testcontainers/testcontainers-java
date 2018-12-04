@@ -1,11 +1,10 @@
 package org.testcontainers.junit;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
-
-import java.io.IOException;
 
 /**
  *
@@ -14,15 +13,20 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-            .withDesiredCapabilities(DesiredCapabilities.chrome());
+        .withCapabilities(new ChromeOptions());
+
+    @Before
+    public void checkBrowserIsIndeedChrome() {
+        assertBrowserNameIs(chrome, "chrome");
+    }
 
     @Test
-    public void simpleTest() throws IOException {
+    public void simpleTest() {
         doSimpleWebdriverTest(chrome);
     }
 
     @Test
-    public void simpleExploreTest() throws IOException {
+    public void simpleExploreTest() {
         doSimpleExplore(chrome);
     }
 }
