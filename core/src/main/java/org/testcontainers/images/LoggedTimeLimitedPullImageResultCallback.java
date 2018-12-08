@@ -27,7 +27,7 @@ public class LoggedTimeLimitedPullImageResultCallback extends PullImageResultCal
     private static final ScheduledExecutorService PROGRESS_WATCHDOG_EXECUTOR =
         Executors.newScheduledThreadPool(0, runnable -> {
             Thread t = new Thread(runnable);
-            t.setDaemon(false);
+            t.setDaemon(true);
             t.setName("testcontainers-pull-watchdog");
             return t;
         });
