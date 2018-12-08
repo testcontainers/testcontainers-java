@@ -67,7 +67,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             // The image is not available locally - pull it
             try {
-                final LoggedPullImageResultCallback callback = new LoggedPullImageResultCallback(logger);
+                final LoggedTimeLimitedPullImageResultCallback callback = new LoggedTimeLimitedPullImageResultCallback(logger);
                 dockerClient
                     .pullImageCmd(imageName.getUnversionedPart())
                     .withTag(imageName.getVersionPart())
