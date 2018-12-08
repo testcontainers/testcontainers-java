@@ -27,6 +27,7 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 * [Elasticsearch container](usage/elasticsearch_container.md) - Elasticsearch container support
 * [Webdriver containers](usage/webdriver_containers.md) - run a dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
 * [Kafka containers](usage/kafka_containers.md) - run a dockerized Kafka, a distributed streaming platform
+* [Neo4j container](usage/neo4j_container.md) - Neo4j container support
 * [Generic containers](usage/generic_containers.md) - run any Docker container as a test dependency
 * [Docker compose](usage/docker_compose.md) - reuse services defined in a Docker Compose YAML file
 * [Dockerfile containers](usage/dockerfile.md) - run a container that is built on-the-fly from a Dockerfile
