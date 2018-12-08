@@ -38,7 +38,7 @@ public class LoggedTimeLimitedPullImageResultCallback extends PullImageResultCal
     private Set<String> pulledLayers = new HashSet<>();
     private Map<String, Long> totalSizes = new HashMap<>();
     private Map<String, Long> currentSizes = new HashMap<>();
-    private Thread thread;
+    private Set<Thread> waitingThreads = new HashSet<>();
 
     LoggedTimeLimitedPullImageResultCallback(final Logger logger) {
         this.logger = logger;
@@ -118,7 +118,7 @@ public class LoggedTimeLimitedPullImageResultCallback extends PullImageResultCal
 
     @Override
     public PullImageResultCallback awaitCompletion() throws InterruptedException {
-        thread = Thread.currentThread();
+        waitingThreads.add(Thread.currentThread());
         return super.awaitCompletion();
     }
 
@@ -131,7 +131,7 @@ public class LoggedTimeLimitedPullImageResultCallback extends PullImageResultCal
     }
 
     /*
-     * This method schedules a future task which will interrupt the waiting thread if ever fired.
+     * This method schedules a future task which will interrupt the waiting waiting threads if ever fired.
      * Every time this method is called (from onStart or onNext), the task is recreated 30s in the future,
      * ensuring that it will only fire if the method stops being called regularly (e.g. if the pull has hung).
      */
@@ -142,7 +142,7 @@ public class LoggedTimeLimitedPullImageResultCallback extends PullImageResultCal
         if (!isFinished) {
             nextCheckForProgress = PROGRESS_WATCHDOG_EXECUTOR.schedule(() -> {
                 logger.error("Docker image pull has not made progress in 30s - aborting pull");
-                thread.interrupt();
+                waitingThreads.forEach(Thread::interrupt);
             }, 30, TimeUnit.SECONDS);
         }
     }
