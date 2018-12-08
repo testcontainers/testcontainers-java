@@ -3,22 +3,9 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ContainerNetwork;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Info;
-import com.github.dockerjava.api.model.Link;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.api.model.VolumesFrom;
+import com.github.dockerjava.api.model.*;
 import com.google.common.base.Strings;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.SneakyThrows;
+import lombok.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -32,7 +19,6 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
-import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
@@ -51,25 +37,11 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -229,11 +201,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void doStart() {
-        Profiler profiler = new Profiler("Container startup");
-        profiler.setLogger(logger());
-
         try {
-            profiler.start("Prepare container configuration and host configuration");
             configure();
 
             logger().debug("Starting container: {}", getDockerImageName());
@@ -242,24 +210,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
                 logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
-                tryStart(profiler.startNested("Container startup attempt"));
+                tryStart();
                 return true;
             });
 
         } catch (Exception e) {
             throw new ContainerLaunchException("Container startup failed", e);
-        } finally {
-            profiler.stop().log();
         }
     }
 
-    private void tryStart(Profiler profiler) {
+    private void tryStart() {
         try {
             String dockerImageName = image.get();
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
-            profiler.start("Create container");
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
@@ -272,7 +237,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerIsCreated(containerId);
 
             logger().info("Starting container with ID: {}", containerId);
-            profiler.start("Start container");
             dockerClient.startContainerCmd(containerId).exec();
 
             // For all registered output consumers, start following as close to container startup as possible
@@ -281,14 +245,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // Tell subclasses that we're starting
-            profiler.start("Inspecting container");
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
-            profiler.start("Call containerIsStarting on subclasses");
             containerIsStarting(containerInfo);
 
             // Wait until the container is running (may not be fully started)
-            profiler.start("Wait until container has started properly, or there's evidence it failed to start.");
 
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
                 // Bail out, don't wait for the port to start listening.
@@ -296,7 +257,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 throw new IllegalStateException("Container did not start correctly.");
             }
 
-            profiler.start("Wait until container started properly");
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
@@ -321,8 +281,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
-        } finally {
-            profiler.stop();
         }
     }
 
@@ -455,7 +413,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void applyConfiguration(CreateContainerCmd createCommand) {
         HostConfig hostConfig = buildHostConfig();
         createCommand.withHostConfig(hostConfig);
-        
+
         // Set up exposed ports (where there are no host port bindings defined)
         ExposedPort[] portArray = exposedPorts.stream()
                 .map(ExposedPort::new)
@@ -1166,7 +1124,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart(Profiler)}.
+     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart()}.
      * Invocation happens eagerly on a moment when container is created.
      * Warning: this does expose the underlying docker-java API so might change outside of our control.
      *
