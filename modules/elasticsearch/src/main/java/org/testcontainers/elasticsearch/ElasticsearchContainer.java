@@ -63,4 +63,17 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     public InetSocketAddress getTcpHost() {
         return new InetSocketAddress(getContainerIpAddress(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }
+
+    /**
+     * If your Elasticsearch container has shards, wait until the shards are started
+     *
+     */
+    public ElasticsearchContainer waitingForShards() {
+        waitingFor((new HttpWaitStrategy())
+            .forPath("/_cat/shards")
+            .forPort(ELASTICSEARCH_DEFAULT_PORT)
+            .forResponsePredicate(response -> response.contains("STARTED") && !response.contains("INITIALIZING"))
+            .withStartupTimeout(Duration.ofMinutes(2)));
+        return self();
+    }
 }

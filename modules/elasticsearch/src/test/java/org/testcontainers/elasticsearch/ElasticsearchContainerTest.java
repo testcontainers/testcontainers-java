@@ -109,6 +109,16 @@ public class ElasticsearchContainerTest {
         }
     }
 
+    @Test
+    public void waitingForShards() throws IOException{
+        try (ElasticsearchContainer container = new ElasticsearchContainer("jonvallet/elasticsearch").waitingForShards()) {
+            container.start();
+            Response response = getClient(container).performRequest(new Request("GET", "/_cat/shards"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("STARTED"));
+        }
+    }
+
     private RestClient getClient(ElasticsearchContainer container) {
         if (client == null) {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
