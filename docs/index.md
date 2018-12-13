@@ -34,6 +34,13 @@ Testcontainers makes it easy to launch useful Docker containers for the duration
  * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
  * [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing new, reactive client implementations
 
+## Getting help
+
+You can:
+
+* Join our Slack: http://slack.testcontainers.org
+* [Search our issues tracker](https://github.com/testcontainers/testcontainers-java/issues), or raise a new issue if you find any bugs or have suggested improvements
+
 ## License
 
 See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
