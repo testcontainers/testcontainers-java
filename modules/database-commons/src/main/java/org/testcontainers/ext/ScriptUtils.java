@@ -138,10 +138,10 @@ public abstract class ScriptUtils {
 			if (c == '\'') {
 				inLiteral = !inLiteral;
 			}
-			if (!inLiteral && contentMatches(content, i, "BEGIN")) {
+			if (!inLiteral && contentMatches(script, i, "BEGIN")) {
 				compoundStatementDepth++;
 			}
-			if (!inLiteral && contentMatches(content, i, "END")) {
+			if (!inLiteral && contentMatches(script, i, "END")) {
 				compoundStatementDepth--;
 			}
 			final boolean inCompoundStatement = compoundStatementDepth != 0;
@@ -198,19 +198,11 @@ public abstract class ScriptUtils {
 		}
 	}
 
-	private static boolean contentMatches(char[] stringChars, int offset, String substring) {
-		final char[] substringChars = substring.toCharArray();
-		final int end = offset + substringChars.length;
-		if (stringChars.length < end) {
-			return false;
-		}
+	private static boolean contentMatches(String string, int offset, String substring) {
+		String lowercaseString = string.toLowerCase();
+		String lowercaseSubstring = substring.toLowerCase();
 
-		for (int i = 0; i < substringChars.length; i++) {
-			if (Character.toLowerCase(stringChars[offset + i]) != Character.toLowerCase(substringChars[i])) {
-				return false;
-			}
-		}
-		return true;
+		return lowercaseString.startsWith(lowercaseSubstring, offset);
 	}
 
 	private static void checkArgument(boolean expression, String errorMessage) {
