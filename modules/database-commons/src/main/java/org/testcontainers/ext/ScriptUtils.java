@@ -118,8 +118,11 @@ public abstract class ScriptUtils {
 		checkArgument(StringUtils.isNotEmpty(blockCommentEndDelimiter), "blockCommentEndDelimiter must not be null or empty");
 
 		StringBuilder sb = new StringBuilder();
-		boolean inLiteral = false;
 		boolean inEscape = false;
+		boolean inLineComment = false;
+		boolean inBlockComment = false;
+		Character currentLiteralDelimiter = null;
+
 		int compoundStatementDepth = 0;
 		char[] content = script.toCharArray();
 		for (int i = 0; i < script.length(); i++) {
@@ -135,13 +138,34 @@ public abstract class ScriptUtils {
 				sb.append(c);
 				continue;
 			}
-			if (c == '\'') {
-				inLiteral = !inLiteral;
+			// Determine whether we're entering/leaving a string literal
+			if (!inBlockComment && !inLineComment && (c == '\'' || c == '"' || c == '`')) {
+				if (currentLiteralDelimiter == null) { // ignore delimiters within an existing string literal
+					currentLiteralDelimiter = c;
+				} else if (currentLiteralDelimiter == c) { // find end of string literal
+					currentLiteralDelimiter = null;
+				}
 			}
-			if (!inLiteral && contentMatches(script, i, "BEGIN")) {
+			final boolean inLiteral = currentLiteralDelimiter != null;
+
+			if (!inLiteral && containsSubstringAtOffset(script, commentPrefix, i)) {
+				inLineComment = true;
+			}
+			if (inLineComment && c=='\n') {
+				inLineComment = false;
+			}
+			if (!inLiteral && containsSubstringAtOffset(script, blockCommentStartDelimiter, i)) {
+				inBlockComment = true;
+			}
+			if (!inLiteral && inBlockComment && containsSubstringAtOffset(script, blockCommentEndDelimiter, i)) {
+				inBlockComment = false;
+			}
+			final boolean inComment = inLineComment || inBlockComment;
+
+			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "BEGIN", i)) {
 				compoundStatementDepth++;
 			}
-			if (!inLiteral && contentMatches(script, i, "END")) {
+			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "END", i)) {
 				compoundStatementDepth--;
 			}
 			final boolean inCompoundStatement = compoundStatementDepth != 0;
@@ -198,7 +222,7 @@ public abstract class ScriptUtils {
 		}
 	}
 
-	private static boolean contentMatches(String string, int offset, String substring) {
+	private static boolean containsSubstringAtOffset(String string, String substring, int offset) {
 		String lowercaseString = string.toLowerCase();
 		String lowercaseSubstring = substring.toLowerCase();
 
