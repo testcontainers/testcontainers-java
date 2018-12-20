@@ -172,7 +172,7 @@ public class GenericContainerRuleTest {
             String path = "/testtmpfs/test.file";
             Container.ExecResult execResult = container.execInContainer("ls", path);
             assertEquals("tmpfs inside container works fine", execResult.getStderr(),
-                "ls: /tmp/test.filf: No such file or directory\n");
+                "ls: /testtmpfs/test.file: No such file or directory\n");
             // touch && check file does exist
             container.execInContainer("touch", path);
             execResult = container.execInContainer("ls", path);
