@@ -176,6 +176,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .withConstantThroughput()
             .build();
 
+    @Nullable
+    private Map<String, String> tmpFsMapping;
+
 
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
@@ -291,6 +294,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         HostConfig config = new HostConfig();
         if (shmSize != null) {
             config.withShmSize(shmSize);
+        }
+        if (tmpFsMapping != null) {
+            config.withTmpFs(tmpFsMapping);
         }
         return config;
     }
@@ -1143,6 +1149,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withSharedMemorySize(Long bytes) {
         this.shmSize = bytes;
+        return self();
+    }
+
+    public SELF withTmpFs(Map<String, String> mapping) {
+        this.tmpFsMapping = mapping;
         return self();
     }
 
