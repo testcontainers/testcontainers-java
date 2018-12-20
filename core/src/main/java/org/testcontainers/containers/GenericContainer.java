@@ -1152,6 +1152,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    /**
+     * First class support for configuring tmpfs
+     * @param mapping path and params of tmpfs/mount flag for container
+     * @return this
+     */
     public SELF withTmpFs(Map<String, String> mapping) {
         this.tmpFsMapping = mapping;
         return self();
