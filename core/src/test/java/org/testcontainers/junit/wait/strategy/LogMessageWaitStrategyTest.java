@@ -1,10 +1,10 @@
 package org.testcontainers.junit.wait.strategy;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tests for {@link LogMessageWaitStrategy}.
