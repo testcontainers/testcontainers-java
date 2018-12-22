@@ -6,6 +6,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import java.io.File;
+import java.util.List;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
@@ -25,18 +26,8 @@ public class SeleniumContainerTest {
         RemoteWebDriver driver = chrome.getWebDriver();
 
         driver.get("https://wikipedia.org");
-        WebElement searchInput = driver.findElementByName("search");
+        List<WebElement> searchInput = driver.findElementsByName("search");
 
-        searchInput.sendKeys("Rick Astley");
-        searchInput.submit();
-
-        WebElement otherPage = driver.findElementByPartialLinkText("Rickrolling");
-        otherPage.click();
-
-        boolean expectedTextFound = driver.findElementsByCssSelector("p")
-                .stream()
-                .anyMatch(element -> element.getText().contains("meme"));
-
-        assertTrue("The word 'meme' is found on a page about rickrolling", expectedTextFound);
+        assertTrue("The search input box is found", searchInput != null && searchInput.size() > 0);
     }
 }
