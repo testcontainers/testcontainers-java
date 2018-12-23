@@ -14,7 +14,7 @@
         <dependency>
             <groupId>biz.paluch.redis</groupId>
             <artifactId>spinach</artifactId>
-            <version>0.2</version>
+            <version>0.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
