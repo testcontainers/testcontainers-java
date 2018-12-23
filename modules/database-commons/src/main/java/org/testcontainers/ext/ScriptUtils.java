@@ -151,7 +151,7 @@ public abstract class ScriptUtils {
 			if (!inLiteral && containsSubstringAtOffset(script, commentPrefix, i)) {
 				inLineComment = true;
 			}
-			if (inLineComment && c=='\n') {
+ 			if (inLineComment && c == '\n') {
 				inLineComment = false;
 			}
 			if (!inLiteral && containsSubstringAtOffset(script, blockCommentStartDelimiter, i)) {
