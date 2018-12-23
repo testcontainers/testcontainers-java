@@ -12,6 +12,7 @@ import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
@@ -157,6 +159,27 @@ public class GenericContainerRuleTest {
             assertTrue("Container is started and running", container.isRunning());
         }
     }
+
+    @Test
+    public void withTmpFsTest() throws Exception {
+        try (
+            GenericContainer container = new GenericContainer()
+                .withCommand("top")
+                .withTmpFs(singletonMap("/testtmpfs", "rw"))
+        ) {
+            container.start();
+            // check file doesn't exist
+            String path = "/testtmpfs/test.file";
+            Container.ExecResult execResult = container.execInContainer("ls", path);
+            assertEquals("tmpfs inside container works fine", execResult.getStderr(),
+                "ls: /testtmpfs/test.file: No such file or directory\n");
+            // touch && check file does exist
+            container.execInContainer("touch", path);
+            execResult = container.execInContainer("ls", path);
+            assertEquals("tmpfs inside container works fine", execResult.getStdout(), path + "\n");
+        }
+    }
+
 
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
