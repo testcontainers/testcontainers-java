@@ -4,3 +4,10 @@ template: |
     ## What's Changed
 
     $CHANGES
+categories:
+  - title: 🚀 Features
+    label: type/feature
+  - title: 🐛 Bug Fixes
+    label: type/bug
+  - title: 📦 Dependency updates
+    label: type/dependency update
