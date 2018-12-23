@@ -1,0 +1,6 @@
+# See https://github.com/dependabot/feedback/issues/70 for current (beta) configurability
+version: 1
+update_configs:
+  - package_manager: "java:gradle"
+    directory: "/core"
+    update_schedule: "daily"
