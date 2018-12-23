@@ -4,6 +4,6 @@ dependencies {
     compile project(':jdbc')
 
     testCompile 'org.postgresql:postgresql:9.3-1101-jdbc41'
+    testCompile 'commons-dbutils:commons-dbutils:1.7'
     testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
-    testCompile 'commons-dbutils:commons-dbutils:1.6'
 }
