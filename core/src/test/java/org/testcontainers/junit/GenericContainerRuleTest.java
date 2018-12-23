@@ -161,12 +161,13 @@ public class GenericContainerRuleTest {
     }
 
     @Test
-    public void withTmpFsTest(){
-        try(GenericContainer container = new GenericContainer().withCommand("top")
-            .withTmpFs(singletonMap("/testtmpfs", "rw"))) {
-            assertFalse("Container is not started and not running", container.isRunning());
+    public void withTmpFsTest() throws Exception {
+        try (
+            GenericContainer container = new GenericContainer()
+                .withCommand("top")
+                .withTmpFs(singletonMap("/testtmpfs", "rw"))
+        ) {
             container.start();
-            assertTrue("Container is started and running", container.isRunning());
             // check file doesn't exist
             String path = "/testtmpfs/test.file";
             Container.ExecResult execResult = container.execInContainer("ls", path);
@@ -176,8 +177,6 @@ public class GenericContainerRuleTest {
             container.execInContainer("touch", path);
             execResult = container.execInContainer("ls", path);
             assertEquals("tmpfs inside container works fine", execResult.getStdout(), path + "\n");
-        } catch (InterruptedException | IOException ignored) {
-            assertNull("Exception shouldn't be at all.", ignored);
         }
     }
 
