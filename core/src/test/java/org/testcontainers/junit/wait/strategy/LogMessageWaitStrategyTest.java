@@ -2,6 +2,8 @@ package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -9,7 +11,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Tests for {@link LogMessageWaitStrategy}.
  */
+@RunWith(Parameterized.class)
 public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMessageWaitStrategy> {
+
+    private final String pattern;
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Object[] parameters() {
+        return new String[] {
+            ".*ready.*\\s",     // previous recommended style (explicit line ending)
+            ".*ready!\\s",      // explicit line ending without wildcard after expected text
+            ".*ready.*"         // new style (line ending matched by wildcard)
+        };
+    }
+
+    public LogMessageWaitStrategyTest(String pattern) {
+        this.pattern = pattern;
+    }
 
     private static final String READY_MESSAGE = "I'm ready!";
 
@@ -38,6 +56,6 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
                 super.waitUntilReady();
                 ready.set(true);
             }
-        }.withRegEx(".*ready.*\\s").withTimes(2);
+        }.withRegEx(pattern).withTimes(2);
     }
 }
