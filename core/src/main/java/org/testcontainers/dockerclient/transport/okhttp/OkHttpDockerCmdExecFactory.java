@@ -14,7 +14,6 @@ import okhttp3.ConnectionPool;
 import okhttp3.Dns;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
-import okhttp3.internal.Internal;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
@@ -98,7 +97,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                     .port(dockerHost.getPort());
                 break;
             default:
-                baseUrlBuilder = Internal.instance.getHttpUrlChecked(dockerHost.toString()).newBuilder();
+                baseUrlBuilder = HttpUrl.get(dockerHost.toString()).newBuilder();
         }
         baseUrl = baseUrlBuilder.build();
     }
