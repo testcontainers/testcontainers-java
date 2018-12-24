@@ -10,4 +10,4 @@ categories:
   - title: 🐛 Bug Fixes
     label: type/bug
   - title: 📦 Dependency updates
-    label: type/dependency update
+    label: dependencies
