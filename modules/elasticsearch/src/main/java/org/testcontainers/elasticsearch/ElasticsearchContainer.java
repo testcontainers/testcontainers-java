@@ -69,7 +69,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      *
      */
     public ElasticsearchContainer waitingForShards() {
-        waitingFor((new HttpWaitStrategy())
+        waitingFor(new HttpWaitStrategy()
             .forPath("/_cat/shards")
             .forPort(ELASTICSEARCH_DEFAULT_PORT)
             .forResponsePredicate(response -> response.contains("STARTED") && !response.contains("INITIALIZING"))
