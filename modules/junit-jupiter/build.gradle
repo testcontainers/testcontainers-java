@@ -10,7 +10,7 @@ dependencies {
     testCompile 'redis.clients:jedis:2.8.0'
 
     testRuntime 'org.postgresql:postgresql:42.2.5'
-    testRuntime 'mysql:mysql-connector-java:6.0.6'
+    testRuntime 'mysql:mysql-connector-java:8.0.13'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
 
