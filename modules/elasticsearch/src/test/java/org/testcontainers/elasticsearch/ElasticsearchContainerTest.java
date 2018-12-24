@@ -18,6 +18,7 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
 
@@ -111,7 +112,10 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void waitingForShards() throws IOException{
-        try (ElasticsearchContainer container = new ElasticsearchContainer("jonvallet/elasticsearch").waitingForShards()) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(new ImageFromDockerfile()
+            .withFileFromClasspath("data.zip", "elasticsearch-preload/data.zip")
+            .withFileFromClasspath("Dockerfile", "elasticsearch-preload/Dockerfile")
+        ).waitingForShards()) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/_cat/shards"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));

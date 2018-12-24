@@ -2,6 +2,7 @@ package org.testcontainers.elasticsearch;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.Base58;
 
 import java.net.InetSocketAddress;
@@ -47,6 +48,19 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     public ElasticsearchContainer(String dockerImageName) {
         super(dockerImageName);
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
+        elasticSearchDefaultSetUp();
+    }
+
+    /**
+     * Create an Elasticsearch Container by passing a custom dockerfile
+     * @param dockerfile Custom Dockerfile
+     */
+    public ElasticsearchContainer(ImageFromDockerfile dockerfile) {
+        super(dockerfile);
+        elasticSearchDefaultSetUp();
+    }
+
+    private void elasticSearchDefaultSetUp() {
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
