@@ -28,6 +28,7 @@ shadowJar {
         'META-INF/LICENSE.txt',
         'META-INF/DEPENDENCIES',
         'META-INF/maven/',
+        'META-INF/proguard/',
         'META-INF/services/README.md',
         'META-INF/services/com.fasterxml.jackson.core.*',
         'META-INF/services/com.github.dockerjava.api.command.*',
@@ -101,7 +102,7 @@ dependencies {
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'com.kohlschutter.junixsocket')
     }
-    shaded 'com.squareup.okhttp3:okhttp:3.10.0'
+    shaded 'com.squareup.okhttp3:okhttp:3.12.1'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
