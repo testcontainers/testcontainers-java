@@ -1,9 +1,11 @@
 package org.testcontainers.junit.jupiter;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 class TestcontainersSharedContainerTests {
@@ -13,6 +15,11 @@ class TestcontainersSharedContainerTests {
         .withExposedPorts(80);
 
     private static String lastContainerId;
+
+    @BeforeAll
+    static void doSomethingWithAContainer() {
+        assertTrue(GENERIC_CONTAINER.isRunning());
+    }
 
     @Test
     void first_test() {
