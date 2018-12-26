@@ -1,12 +1,9 @@
 package org.testcontainers.junit.jupiter;
 
 import lombok.Getter;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionConfigurationException;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
-import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
@@ -19,7 +16,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCallback {
+class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
@@ -29,8 +26,16 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
     public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
         ExtensionContext.Store store = context.getStore(NAMESPACE);
         store.put(TEST_INSTANCE, testInstance);
+    }
 
-        findSharedContainers(testInstance)
+    @Override
+    public void beforeAll(ExtensionContext context) {
+        Class<?> testClass = context.getTestClass()
+            .orElseThrow(() -> new ExtensionConfigurationException("TestcontainersExtension is only supported for classes."));
+
+        ExtensionContext.Store store = context.getStore(NAMESPACE);
+
+        findSharedContainers(testClass)
             .forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
     }
 
@@ -57,13 +62,13 @@ class TestcontainersExtension implements TestInstancePostProcessor, BeforeEachCa
         return testInstances;
     }
 
-    private Stream<StoreAdapter> findSharedContainers(Object testInstance) {
+    private Stream<StoreAdapter> findSharedContainers(Class<?> testClass) {
         return ReflectionUtils.findFields(
-                testInstance.getClass(),
+                testClass,
                 isSharedContainer(),
                 ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
             .stream()
-            .map(f -> getContainerInstance(testInstance, f));
+            .map(f -> getContainerInstance(null, f));
     }
 
     private Predicate<Field> isSharedContainer() {
