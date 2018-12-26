@@ -27,10 +27,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.internal.connection.RealConnection;
-import okio.BufferedSink;
-import okio.BufferedSource;
-import okio.Okio;
-import okio.Source;
+import okio.*;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.DockerClientFactory;
 
@@ -38,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -354,12 +352,16 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                     source.skip(3);
                     int payloadSize = source.readInt();
 
-                    if(!source.request(payloadSize)) {
-                        return;
-                    }
-                    byte[] payload = source.readByteArray(payloadSize);
+                    if (streamType != StreamType.RAW) {
+                        if (!source.request(payloadSize)) {
+                            return;
+                        }
+                        byte[] payload = source.readByteArray(payloadSize);
 
-                    resultCallback.onNext(new Frame(streamType, payload));
+                        resultCallback.onNext(new Frame(streamType, payload));
+                    } else {
+                        resultCallback.onNext(new Frame(streamType, source.readByteArray()));
+                    }
                 }
             } catch (Exception e) {
                 resultCallback.onError(e);
