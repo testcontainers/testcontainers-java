@@ -22,10 +22,10 @@ import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT
 public class OutputStreamWithTTYTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer("alpine:3.2")
+    public GenericContainer container = new GenericContainer<>("alpine:3.2")
         .withCommand("ls -1")
         .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
-        .withCreateContainerCmdModifier(command -> ((CreateContainerCmd)command).withTty(Boolean.TRUE));
+        .withCreateContainerCmdModifier(command -> command.withTty(Boolean.TRUE));
 
     @Test
     public void testFetchStdout() throws TimeoutException {
