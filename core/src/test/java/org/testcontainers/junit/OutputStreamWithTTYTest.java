@@ -1,6 +1,5 @@
 package org.testcontainers.junit;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Rule;
 import org.junit.Test;
