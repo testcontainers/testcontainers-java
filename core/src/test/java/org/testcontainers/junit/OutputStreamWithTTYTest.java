@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -24,7 +25,10 @@ public class OutputStreamWithTTYTest {
     public GenericContainer container = new GenericContainer<>("alpine:3.2")
         .withCommand("ls -1")
         .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
-        .withCreateContainerCmdModifier(command -> command.withTty(Boolean.TRUE));
+        .withCreateContainerCmdModifier(command -> command.withTty(true));
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
 
     @Test
     public void testFetchStdout() throws TimeoutException {
