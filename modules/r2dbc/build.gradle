@@ -1,0 +1,14 @@
+description = "Testcontainers :: r2dbc"
+
+dependencies {
+    compile project(':testcontainers')
+    compile 'io.r2dbc:r2dbc-client:1.0.0.M6'
+    compile 'io.r2dbc:r2dbc-spi:1.0.0.M6'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
