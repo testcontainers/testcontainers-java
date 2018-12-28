@@ -18,7 +18,7 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
-import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.containers.BindMode;
 
 import java.io.IOException;
 
@@ -112,14 +112,14 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void waitingForShards() throws IOException{
-        try (ElasticsearchContainer container = new ElasticsearchContainer(new ImageFromDockerfile()
-            .withFileFromClasspath("data.zip", "elasticsearch-preload/data.zip")
-            .withFileFromClasspath("Dockerfile", "elasticsearch-preload/Dockerfile")
-        ).waitingForShards()) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer()
+            .withClasspathResourceMapping("elasticsearch-preload/6.4.1/data", "/usr/share/elasticsearch/data", BindMode.READ_WRITE)
+            .waitingForShards()
+        ) {
             container.start();
-            Response response = getClient(container).performRequest(new Request("GET", "/_cat/shards"));
+            Response response = getClient(container).performRequest(new Request("GET", "/index/_doc/1"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("STARTED"));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("testcontainer"));
         }
     }
 
