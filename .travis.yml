@@ -45,7 +45,7 @@ jobs:
       script: skip
       deploy:
         provider: script
-        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon
+        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon --info
         on:
           tags: true
           branch: master
