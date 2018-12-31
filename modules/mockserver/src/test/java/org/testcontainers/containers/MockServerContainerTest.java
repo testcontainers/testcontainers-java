@@ -1,9 +1,11 @@
 package org.testcontainers.containers;
 
 import lombok.Cleanup;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockserver.client.MockServerClient;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,10 +16,12 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
+@Slf4j
 public class MockServerContainerTest {
 
     @ClassRule
-    public static MockServerContainer mockServer = new MockServerContainer();
+    public static MockServerContainer mockServer = new MockServerContainer(MockServerClient.class.getPackage().getImplementationVersion())
+        .withLogConsumer(new Slf4jLogConsumer(log));
 
     @Test
     public void testBasicScenario() throws Exception {
