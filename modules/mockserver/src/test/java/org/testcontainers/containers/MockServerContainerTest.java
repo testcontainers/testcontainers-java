@@ -29,7 +29,7 @@ public class MockServerContainerTest {
         String expectedBody = "Hello World!";
 
         assertThat("MockServer returns correct result",
-            responseFromMockserver(mockServerDefault, expectedBody, "/hello"),
+            responseFromMockserver(mockServer, expectedBody, "/hello"),
             containsString(expectedBody)
         );
     }
