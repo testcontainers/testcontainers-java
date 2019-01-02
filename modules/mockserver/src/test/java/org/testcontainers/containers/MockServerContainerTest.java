@@ -18,14 +18,11 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
 public class MockServerContainerTest {
 
-    @ClassRule
-    public static MockServerContainer mockServer = new MockServerContainer(MockServerClient.class.getPackage().getImplementationVersion());
-
-    @ClassRule
-    public static MockServerContainer mockServerDefault = new MockServerContainer();
-
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
+        @Cleanup MockServerContainer mockServer = new MockServerContainer(MockServerClient.class.getPackage().getImplementationVersion());
+        mockServer.start();
+
         String expectedBody = "Hello World!";
 
         assertThat("MockServer returns correct result",
@@ -36,6 +33,8 @@ public class MockServerContainerTest {
 
     @Test
     public void shouldCallDefaultMockserverVersion() throws Exception {
+        @Cleanup MockServerContainer mockServerDefault = new MockServerContainer();
+        mockServerDefault.start();
         String expectedBody = "Hello Default World!";
 
         assertThat("MockServer returns correct result for default constructor",
