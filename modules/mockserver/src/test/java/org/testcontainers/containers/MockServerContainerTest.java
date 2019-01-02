@@ -50,10 +50,6 @@ public class MockServerContainerTest {
 
         URLConnection urlConnection = new URL(mockServer.getEndpoint() + path).openConnection();
         @Cleanup BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-        String line = reader.readLine();
-        System.out.println(line);
-        return line;
-
-
+        return reader.readLine();
     }
 }
