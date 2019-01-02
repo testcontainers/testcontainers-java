@@ -26,15 +26,25 @@ public class MockServerContainerTest {
 
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
-        shouldCallMockserver(mockServer, "Hello World!", "/hello");
+        String expectedBody = "Hello World!";
+
+        assertThat("MockServer returns correct result",
+            responseFromMockserver(mockServerDefault, expectedBody, "/hello"),
+            containsString(expectedBody)
+        );
     }
 
     @Test
     public void shouldCallDefaultMockserverVersion() throws Exception {
-        shouldCallMockserver(mockServerDefault, "Hello Default World!", "/hellodefault");
+        String expectedBody = "Hello Default World!";
+
+        assertThat("MockServer returns correct result for default constructor",
+            responseFromMockserver(mockServerDefault, expectedBody, "/hellodefault"),
+            containsString(expectedBody)
+        );
     }
 
-    private static void shouldCallMockserver(MockServerContainer mockServer, String expectedBody, String path) throws IOException {
+    private static String responseFromMockserver(MockServerContainer mockServer, String expectedBody, String path) throws IOException {
         new MockServerClient(mockServer.getContainerIpAddress(), mockServer.getServerPort())
             .when(request(path))
             .respond(response(expectedBody));
@@ -43,7 +53,8 @@ public class MockServerContainerTest {
         @Cleanup BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         String line = reader.readLine();
         System.out.println(line);
+        return line;
 
-        assertThat("MockServer returns correct result", line, containsString(expectedBody));
+
     }
 }
