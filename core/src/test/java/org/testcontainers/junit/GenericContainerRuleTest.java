@@ -14,6 +14,7 @@ import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
@@ -61,21 +62,21 @@ public class GenericContainerRuleTest {
      */
     @ClassRule
     public static GenericContainer redis = new GenericContainer("redis:3.0.2")
-            .withExposedPorts(REDIS_PORT);
+        .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
     @ClassRule
     public static GenericContainer rabbitMq = new GenericContainer("rabbitmq:3.5.3")
-            .withExposedPorts(RABBITMQ_PORT);
+        .withExposedPorts(RABBITMQ_PORT);
 
     /**
      * MongoDB
      */
     @ClassRule
     public static GenericContainer mongo = new GenericContainer("mongo:3.1.5")
-            .withExposedPorts(MONGO_PORT);
+        .withExposedPorts(MONGO_PORT);
 
     /**
      * Pass an environment variable to the container, then run a shell script that exposes the variable in a quick and
@@ -83,10 +84,10 @@ public class GenericContainerRuleTest {
      */
     @ClassRule
     public static GenericContainer alpineEnvVar = new GenericContainer<>("alpine:3.2")
-            .withExposedPorts(80)
-            .withEnv("MAGIC_NUMBER", "4")
-            .withEnv("MAGIC_NUMBER", oldValue -> oldValue.orElse("") + "2")
-            .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
+        .withExposedPorts(80)
+        .withEnv("MAGIC_NUMBER", "4")
+        .withEnv("MAGIC_NUMBER", oldValue -> oldValue.orElse("") + "2")
+        .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
 
     /**
      * Pass environment variables to the container, then run a shell script that exposes the variables in a quick and
@@ -94,39 +95,39 @@ public class GenericContainerRuleTest {
      */
     @ClassRule
     public static GenericContainer alpineEnvVarFromMap = new GenericContainer("alpine:3.2")
-            .withExposedPorts(80)
-            .withEnv(ImmutableMap.of(
-                    "FIRST", "42",
-                    "SECOND", "50"
-            ))
-            .withCommand("/bin/sh", "-c", "while true; do echo \"$FIRST and $SECOND\" | nc -l -p 80; done");
+        .withExposedPorts(80)
+        .withEnv(ImmutableMap.of(
+            "FIRST", "42",
+            "SECOND", "50"
+        ))
+        .withCommand("/bin/sh", "-c", "while true; do echo \"$FIRST and $SECOND\" | nc -l -p 80; done");
 
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
     public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
-            .withExposedPorts(80)
-            .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
-            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+        .withExposedPorts(80)
+        .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
+        .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
     public static GenericContainer alpineClasspathResourceSelinux = new GenericContainer("alpine:3.2")
-            .withExposedPorts(80)
-            .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_WRITE, SHARED)
-            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+        .withExposedPorts(80)
+        .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_WRITE, SHARED)
+        .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
 
     /**
      * Create a container with an extra host entry and expose the content of /etc/hosts for testing.
      */
     @ClassRule
     public static GenericContainer alpineExtrahost = new GenericContainer("alpine:3.2")
-            .withExposedPorts(80)
-            .withExtraHost("somehost", "192.168.1.10")
-            .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
+        .withExposedPorts(80)
+        .withExtraHost("somehost", "192.168.1.10")
+        .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
 
 //    @Test
 //    public void simpleRedisTest() {
@@ -221,7 +222,7 @@ public class GenericContainerRuleTest {
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
         Document doc = new Document("name", "foo")
-                .append("value", 1);
+            .append("value", 1);
         collection.insertOne(doc);
 
         Document doc2 = collection.find(new Document("name", "foo")).first();
@@ -286,10 +287,10 @@ public class GenericContainerRuleTest {
     @Test
     public void exceptionThrownWhenMappedPortNotFound() throws IOException {
         assertThrows("When the requested port is not mapped, getMappedPort() throws an exception",
-                IllegalArgumentException.class,
-                () -> {
-                    return redis.getMappedPort(666);
-                });
+            IllegalArgumentException.class,
+            () -> {
+                return redis.getMappedPort(666);
+            });
     }
 
     protected static void writeStringToFile(File contentFolder, String filename, String string) throws FileNotFoundException {
@@ -300,22 +301,23 @@ public class GenericContainerRuleTest {
         printStream.close();
     }
 
-    @Test @Ignore //TODO investigate intermittent failures
+    @Test
+    @Ignore //TODO investigate intermittent failures
     public void failFastWhenContainerHaltsImmediately() throws Exception {
 
         long startingTimeMs = System.currentTimeMillis();
         final GenericContainer failsImmediately = new GenericContainer("alpine:3.2")
-              .withCommand("/bin/sh", "-c", "return false")
-              .withMinimumRunningDuration(Duration.ofMillis(100));
+            .withCommand("/bin/sh", "-c", "return false")
+            .withMinimumRunningDuration(Duration.ofMillis(100));
 
         try {
             assertThrows(
-                  "When we start a container that halts immediately, an exception is thrown",
-                  RetryCountExceededException.class,
-                  () -> {
-                      failsImmediately.start();
-                      return null;
-                  });
+                "When we start a container that halts immediately, an exception is thrown",
+                RetryCountExceededException.class,
+                () -> {
+                    failsImmediately.start();
+                    return null;
+                });
 
             // Check how long it took, to verify that we ARE bailing out early.
             // Want to strike a balance here; too short and this test will fail intermittently
@@ -325,7 +327,7 @@ public class GenericContainerRuleTest {
                 GenericContainer.CONTAINER_RUNNING_TIMEOUT_SEC / 2;
             long completedTimeMs = System.currentTimeMillis();
             assertTrue("container should not take long to start up",
-                  completedTimeMs - startingTimeMs < 1000L * allowedSecondsToFailure);
+                completedTimeMs - startingTimeMs < 1000L * allowedSecondsToFailure);
         } finally {
             failsImmediately.stop();
         }
@@ -367,14 +369,14 @@ public class GenericContainerRuleTest {
     public void createContainerCmdHookTest() {
         // Use random name to avoid the conflicts between the tests
         String randomName = Base58.randomString(5);
-        try(
-                GenericContainer container = new GenericContainer<>("redis:3.0.2")
-                        .withCommand("redis-server", "--help")
-                        .withCreateContainerCmdModifier(cmd -> cmd.withName("overrideMe"))
-                        // Preserves the order
-                        .withCreateContainerCmdModifier(cmd -> cmd.withName(randomName))
-                        // Allows to override pre-configured values by GenericContainer
-                        .withCreateContainerCmdModifier(cmd -> cmd.withCmd("redis-server", "--port", "6379"))
+        try (
+            GenericContainer container = new GenericContainer<>("redis:3.0.2")
+                .withCommand("redis-server", "--help")
+                .withCreateContainerCmdModifier(cmd -> cmd.withName("overrideMe"))
+                // Preserves the order
+                .withCreateContainerCmdModifier(cmd -> cmd.withName(randomName))
+                // Allows to override pre-configured values by GenericContainer
+                .withCreateContainerCmdModifier(cmd -> cmd.withCmd("redis-server", "--port", "6379"))
         ) {
             container.start();
 
@@ -403,15 +405,17 @@ public class GenericContainerRuleTest {
 
     @Test
     public void sharedMemorySetTest() {
-        try (GenericContainer containerWithSharedMemory = new GenericContainer("busybox:1.29")
-            .withSharedMemorySize(1024L * FileUtils.ONE_MB)) {
+        try (GenericContainer containerWithSharedMemory = new GenericContainer("alpine:3.2")
+            .withSharedMemorySize(1024L * FileUtils.ONE_MB)
+            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+            .withCommand("true")) {
 
             containerWithSharedMemory.start();
 
             HostConfig hostConfig =
                 containerWithSharedMemory.getDockerClient().inspectContainerCmd(containerWithSharedMemory.getContainerId())
                     .exec().getHostConfig();
-            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+            assertEquals("Shared memory is set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
         }
     }
 }
