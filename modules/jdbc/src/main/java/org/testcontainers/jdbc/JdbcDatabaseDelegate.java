@@ -18,15 +18,17 @@ import java.sql.Statement;
 public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<Statement> {
 
     private JdbcDatabaseContainer container;
+    private String queryString;
 
-    public JdbcDatabaseDelegate(JdbcDatabaseContainer container) {
+    public JdbcDatabaseDelegate(JdbcDatabaseContainer container, String queryString) {
         this.container = container;
+        this.queryString = queryString;
     }
 
     @Override
     protected Statement createNewConnection() {
         try {
-            return container.createConnection("").createStatement();
+            return container.createConnection(queryString).createStatement();
         } catch (SQLException e) {
             log.error("Could not obtain JDBC connection");
             throw new ConnectionCreationException("Could not obtain JDBC connection", e);

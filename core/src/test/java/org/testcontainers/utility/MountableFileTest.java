@@ -1,16 +1,21 @@
 package org.testcontainers.utility;
 
+import lombok.Cleanup;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class MountableFileTest {
 
@@ -66,9 +71,20 @@ public class MountableFileTest {
     }
 
     @Test
+    public void forHostPathWithPlus() throws Exception {
+        final Path file = createTempFile("some+path");
+        final MountableFile mountableFile = MountableFile.forHostPath(file.toString());
+
+        performChecks(mountableFile);
+
+        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains("+"));
+        assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains(" "));
+    }
+
+    @Test
     public void forClasspathResourceWithPermission() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt",
-                TEST_FILE_MODE);
+            TEST_FILE_MODE);
 
         performChecks(mountableFile);
         assertEquals("Valid file mode.", BASE_FILE_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
@@ -88,6 +104,31 @@ public class MountableFileTest {
         final MountableFile mountableFile = MountableFile.forHostPath(dir.toString(), TEST_FILE_MODE);
         performChecks(mountableFile);
         assertEquals("Valid dir mode.", BASE_DIR_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
+    }
+
+    @Test
+    public void noTrailingSlashesInTarEntryNames() throws Exception {
+        final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt");
+
+        @Cleanup final TarArchiveInputStream tais = intoTarArchive((taos) -> {
+            mountableFile.transferTo(taos, "/some/path.txt");
+            mountableFile.transferTo(taos, "/path.txt");
+            mountableFile.transferTo(taos, "path.txt");
+        });
+
+        ArchiveEntry entry;
+        while ((entry = tais.getNextEntry()) != null) {
+            assertFalse("no entries should have a trailing slash", entry.getName().endsWith("/"));
+        }
+    }
+
+    private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
+        @Cleanup final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        @Cleanup final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);
+        consumer.accept(taos);
+        taos.close();
+
+        return new TarArchiveInputStream(new ByteArrayInputStream(baos.toByteArray()));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

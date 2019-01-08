@@ -5,7 +5,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
-import org.testcontainers.containers.Container;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.net.ServerSocket;
 
@@ -18,7 +18,7 @@ public class ExternalPortListeningCheckTest {
     private ServerSocket listeningSocket1;
     private ServerSocket listeningSocket2;
     private ServerSocket nonListeningSocket;
-    private Container mockContainer;
+    private WaitStrategyTarget mockContainer;
 
     @Before
     public void setUp() throws Exception {
@@ -28,7 +28,7 @@ public class ExternalPortListeningCheckTest {
         nonListeningSocket = new ServerSocket(0);
         nonListeningSocket.close();
 
-        mockContainer = mock(Container.class);
+        mockContainer = mock(WaitStrategyTarget.class);
         when(mockContainer.getContainerIpAddress()).thenReturn("127.0.0.1");
     }
 

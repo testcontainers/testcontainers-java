@@ -1,6 +1,6 @@
 # Webdriver Containers
 
-Test Containers can be used to automatically instantiate and manage containers that include web browsers, such as those
+Testcontainers can be used to automatically instantiate and manage containers that include web browsers, such as those
 from SeleniumHQ's [docker-selenium](https://github.com/SeleniumHQ/docker-selenium) project.
 
 ## Benefits
@@ -13,7 +13,7 @@ from SeleniumHQ's [docker-selenium](https://github.com/SeleniumHQ/docker-seleniu
 * Compatibility between browser version and the Selenium API is assured: a compatible version of the browser docker
   images will be automatically selected to match the version of `selenium-api-*.jar` on the classpath
 * Additionally the use of a clean browser prevents leakage of cookies, cached data or other state between tests.
-* **VNC screen recording**: Test Containers can automatically record video of test runs (optionally capturing just
+* **VNC screen recording**: Testcontainers can automatically record video of test runs (optionally capturing just
   failing tests)
 
 Creation of browser containers is fast, so it's actually quite feasible to have a totally fresh browser instance for
@@ -39,9 +39,9 @@ You can then use this driver instance like a regular WebDriver.
 
 Note that, if you want to test a **web application running on the host machine** (the machine the JUnit tests are
 running on - which is quite likely), you'll need to replace any references to `localhost` with an IP address that the
-Docker container can reach. Use the `getHostIpAddress()` method, e.g.:
+Docker container can reach. Use the `getTestHostIpAddress()` method, e.g.:
 ```java
-driver.get("http://" + chrome.getHostIpAddress() + ":8080/");
+driver.get("http://" + chrome.getTestHostIpAddress() + ":8080/");
 ```
 
 ## Options
@@ -62,7 +62,7 @@ new BrowserWebDriverContainer()
 
 ### Recording videos
 
-By default, no videos will be recorded. However, you can instruct Test Containers to capture videos for all tests or
+By default, no videos will be recorded. However, you can instruct Testcontainers to capture videos for all tests or
 just for failing tests.
 
 To do this, simply add extra parameters to the rule constructor:

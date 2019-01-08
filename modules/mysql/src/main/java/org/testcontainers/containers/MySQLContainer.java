@@ -12,14 +12,17 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     public static final String NAME = "mysql";
     public static final String IMAGE = "mysql";
+    public static final String DEFAULT_TAG = "5.7.22";
+
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
     public static final Integer MYSQL_PORT = 3306;
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
+    private static final String MYSQL_ROOT_USER = "root";
 
     public MySQLContainer() {
-        super(IMAGE + ":latest");
+        super(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public MySQLContainer(String dockerImageName) {
@@ -34,13 +37,20 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     @Override
     protected void configure() {
-        optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d", "mysql-default-conf");
+        optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d",
+                "mysql-default-conf");
 
         addExposedPort(MYSQL_PORT);
         addEnv("MYSQL_DATABASE", databaseName);
         addEnv("MYSQL_USER", username);
-        addEnv("MYSQL_PASSWORD", password);
-        addEnv("MYSQL_ROOT_PASSWORD", "test");
+        if (password != null && !password.isEmpty()) {
+            addEnv("MYSQL_PASSWORD", password);
+            addEnv("MYSQL_ROOT_PASSWORD", password);
+        } else if (MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
+            addEnv("MYSQL_ALLOW_EMPTY_PASSWORD", "yes");
+        } else {
+            throw new ContainerLaunchException("Empty password can be used only with the root user");
+        }
         setStartupAttempts(3);
     }
 

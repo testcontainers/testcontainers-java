@@ -24,6 +24,7 @@ publishing {
                     resolveStrategy = Closure.DELEGATE_FIRST
 
                     name project.description
+                    description 'Isolated container management for Java code testing'
                     url 'https://testcontainers.org'
                     issueManagement {
                         system 'GitHub'
@@ -40,6 +41,13 @@ publishing {
                         connection 'scm:git:git://github.com/testcontainers/testcontainers-java.git'
                         developerConnection 'scm:git:ssh://git@github.com/testcontainers/testcontainers-java.git'
                     }
+                    developers {
+                        developer {
+                            id 'rnorth'
+                            name 'Richard North'
+                            email 'rich.north@gmail.com'
+                        }
+                    }
                 }
 
                 def dependenciesNode = rootNode.appendNode('dependencies')
@@ -50,6 +58,16 @@ publishing {
                         appendNode('artifactId', dependency.name)
                         appendNode('version', dependency.version)
                         appendNode('scope', scope)
+
+                        if (dependency instanceof ModuleDependency && !dependency.excludeRules.empty) {
+                            def excludesNode = appendNode('exclusions')
+                            for (rule in dependency.excludeRules) {
+                                excludesNode.appendNode('exclusion').with {
+                                    appendNode('groupId', rule.group)
+                                    appendNode('artifactId', rule.module)
+                                }
+                            }
+                        }
                     }
                 }
 

@@ -9,6 +9,7 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import lombok.Getter;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.BaseMatcher;
@@ -17,6 +18,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -39,6 +41,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class DockerClientFactory {
 
+    public static final ThreadGroup TESTCONTAINERS_THREAD_GROUP = new ThreadGroup("testcontainers");
     public static final String TESTCONTAINERS_LABEL = DockerClientFactory.class.getPackage().getName();
     public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
 
@@ -57,6 +60,9 @@ public class DockerClientFactory {
     private boolean initialized = false;
     private String activeApiVersion;
     private String activeExecutionDriver;
+
+    @Getter(lazy = true)
+    private final boolean fileMountingSupported = checkMountableFile();
 
     static {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
@@ -113,16 +119,17 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            String ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
+
+            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, checksEnabled);
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
 
             VisibleAssertions.info("Checking the system...");
 
             checkDockerVersion(version.getVersion());
 
-            if (!TestcontainersConfiguration.getInstance().isDisableChecks()) {
+            if (checksEnabled) {
                 checkDiskSpace(client, ryukContainerId);
-                checkMountableFile(client, ryukContainerId);
             }
 
             initialized = true;
@@ -165,12 +172,27 @@ public class DockerClientFactory {
         );
     }
 
-    private void checkMountableFile(DockerClient dockerClient, String id) {
-        try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(id, "/dummy").exec()) {
-            stream.read();
-            VisibleAssertions.pass("File should be mountable");
+    private boolean checkMountableFile() {
+        DockerClient dockerClient = client();
+
+        MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
+
+        Volume volume = new Volume("/dummy");
+        try {
+            return runInsideDocker(
+                createContainerCmd -> createContainerCmd.withBinds(new Bind(mountableFile.getResolvedPath(), volume, AccessMode.ro)),
+                (__, containerId) -> {
+                    try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(containerId, volume.getPath()).exec()) {
+                        stream.read();
+                        return true;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+            );
         } catch (Exception e) {
-            VisibleAssertions.fail("File should be mountable but fails with " + e.getMessage());
+            log.debug("Failure while checking for mountable file support", e);
+            return false;
         }
     }
 

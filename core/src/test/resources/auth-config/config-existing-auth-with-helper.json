@@ -1,0 +1,14 @@
+{
+    "auths": {
+        "https://registry.example.com": {
+            "email": "not@val.id",
+            "auth": "dXNlcjpwYXNz"
+        }
+    },
+    "HttpHeaders": {
+        "User-Agent": "Docker-Client/18.03.0-ce (darwin)"
+    },
+    "credHelpers": {
+        "registry.example.com": "fake"
+    }
+}

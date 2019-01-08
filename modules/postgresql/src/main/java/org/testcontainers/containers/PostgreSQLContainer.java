@@ -13,15 +13,17 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * @author richardnorth
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-    static final String NAME = "postgresql";
-    static final String IMAGE = "postgres";
+    public static final String NAME = "postgresql";
+    public static final String IMAGE = "postgres";
+    public static final String DEFAULT_TAG = "9.6.8";
+
     public static final Integer POSTGRESQL_PORT = 5432;
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
 
     public PostgreSQLContainer() {
-        this(IMAGE + ":latest");
+        this(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public PostgreSQLContainer(final String dockerImageName) {

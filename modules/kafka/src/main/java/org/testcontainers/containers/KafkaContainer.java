@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
-    public static final int KAFKA_PORT = 9092;
+    public static final int KAFKA_PORT = 9093;
 
     public static final int ZOOKEEPER_PORT = 2181;
 
@@ -27,13 +27,12 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
         withNetwork(Network.newNetwork());
-        String networkAlias = "kafka-" + Base58.randomString(6);
-        withNetworkAliases(networkAlias);
+        withNetworkAliases("kafka-" + Base58.randomString(6));
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
         // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9092,BROKER://" + networkAlias + ":9093");
+        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
         withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
@@ -41,6 +40,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
+        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
@@ -58,26 +58,32 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     @Override
-    public void start() {
+    protected void doStart() {
         String networkAlias = getNetworkAliases().get(0);
         proxy = new SocatContainer()
                 .withNetwork(getNetwork())
-                .withTarget(9092, networkAlias)
-                .withTarget(2181, networkAlias);
+                .withTarget(KAFKA_PORT, networkAlias)
+                .withTarget(ZOOKEEPER_PORT, networkAlias);
 
         proxy.start();
-        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":9093,PLAINTEXT://" + proxy.getContainerIpAddress() + ":" + proxy.getFirstMappedPort());
+        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":9092" + "," + getBootstrapServers());
 
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
         } else {
             addExposedPort(ZOOKEEPER_PORT);
             withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:2181");
-            withClasspathResourceMapping("tc-zookeeper.properties", "/zookeeper.properties", BindMode.READ_ONLY);
-            withCommand("sh", "-c", "zookeeper-server-start /zookeeper.properties & /etc/confluent/docker/run");
+            withCommand(
+                "sh",
+                "-c",
+                // Use command to create the file to avoid file mounting (useful when you run your tests against a remote Docker daemon)
+                "printf 'clientPort=2181\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties" +
+                    " && zookeeper-server-start /zookeeper.properties" +
+                    " & /etc/confluent/docker/run"
+            );
         }
 
-        super.start();
+        super.doStart();
     }
 
     @Override

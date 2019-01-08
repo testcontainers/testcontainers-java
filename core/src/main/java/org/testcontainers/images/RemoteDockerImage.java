@@ -6,52 +6,48 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
+import lombok.ToString;
 import org.slf4j.Logger;
-import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@ToString
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    public static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
+    public static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
 
-    private final String dockerImageName;
+    private DockerImageName imageName;
 
     public RemoteDockerImage(String dockerImageName) {
-        DockerImageName.validate(dockerImageName);
-        this.dockerImageName = dockerImageName;
+        imageName = new DockerImageName(dockerImageName);
     }
 
     public RemoteDockerImage(@NonNull String repository, @NonNull String tag) {
-        this.dockerImageName = repository + ":" + tag;
+        imageName = new DockerImageName(repository, tag);
     }
 
     @Override
     protected final String resolve() {
-        Profiler profiler = new Profiler("Rule creation - prefetch image");
-        Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
-        profiler.setLogger(logger);
+        Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
 
-        Profiler nested = profiler.startNested("Obtaining client");
         DockerClient dockerClient = DockerClientFactory.instance().client();
         try {
-            nested.stop();
-
-            profiler.start("Check local images");
-
             int attempts = 0;
+            Exception lastException = null;
             while (true) {
                 // Does our cache already know the image?
-                if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
-                    logger.trace("{} is already in image name cache", dockerImageName);
+                if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
+                    logger.trace("{} is already in image name cache", imageName);
                     break;
                 }
 
@@ -59,49 +55,51 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
 
                 if (Boolean.parseBoolean(System.getProperty("useFilter"))) {
-                    listImagesCmd = listImagesCmd.withImageNameFilter(dockerImageName);
+                    listImagesCmd = listImagesCmd.withImageNameFilter(imageName.toString());
                 }
 
                 List<Image> updatedImages = listImagesCmd.exec();
-                for (Image image : updatedImages) {
-                    if (image.getRepoTags() != null) {
-                        Collections.addAll(AVAILABLE_IMAGE_NAME_CACHE, image.getRepoTags());
-                    }
-                }
+                updatedImages.stream()
+                    .map(Image::getRepoTags)
+                    .filter(Objects::nonNull)
+                    .flatMap(Stream::of)
+                    .map(DockerImageName::new)
+                    .collect(Collectors.toCollection(() -> AVAILABLE_IMAGE_NAME_CACHE));
 
                 // And now?
-                if (AVAILABLE_IMAGE_NAME_CACHE.contains(dockerImageName)) {
-                    logger.trace("{} is in image name cache following listing of images", dockerImageName);
+                if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
+                    logger.trace("{} is in image name cache following listing of images", imageName);
                     break;
                 }
 
                 // Log only on first attempt
                 if (attempts == 0) {
-                    logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", dockerImageName);
-                    profiler.start("Pull image");
+                    logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
                 }
 
                 if (attempts++ >= 3) {
-                    logger.error("Retry limit reached while trying to pull image: " + dockerImageName + ". Please check output of `docker pull " + dockerImageName + "`");
-                    throw new ContainerFetchException("Retry limit reached while trying to pull image: " + dockerImageName);
+                    logger.error("Retry limit reached while trying to pull image: {}. Please check output of `docker pull {}`", imageName, imageName);
+                    throw new ContainerFetchException("Retry limit reached while trying to pull image: " + imageName, lastException);
                 }
 
                 // The image is not available locally - pull it
                 try {
-                    dockerClient.pullImageCmd(dockerImageName).exec(new PullImageResultCallback()).awaitCompletion();
-                } catch (InterruptedException e) {
-                    throw new ContainerFetchException("Failed to fetch container image for " + dockerImageName, e);
+                    final PullImageResultCallback callback = new PullImageResultCallback();
+                    dockerClient
+                        .pullImageCmd(imageName.getUnversionedPart())
+                        .withTag(imageName.getVersionPart())
+                        .exec(callback);
+                    callback.awaitCompletion();
+                    AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
+                    break;
+                } catch (Exception e) {
+                    lastException = e;
                 }
-
-                // Do not break here, but step into the next iteration, where it will be verified with listImagesCmd().
-                // see https://github.com/docker/docker/issues/10708
             }
 
-            return dockerImageName;
+            return imageName.toString();
         } catch (DockerClientException e) {
-            throw new ContainerFetchException("Failed to get Docker client for " + dockerImageName, e);
-        } finally {
-            profiler.stop().log();
+            throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
         }
     }
 }

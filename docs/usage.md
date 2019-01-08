@@ -23,28 +23,45 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 
 ### Usage modes
 
-* [Temporary database containers](usage/database_containers.md) - specialized MySQL, PostgreSQL, Oracle XE and Virtuoso container support
-* [Webdriver containers](usage/webdriver_containers.md) - run a Dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
+* [Temporary database containers](usage/database_containers.md) - specialized Microsoft SQL Server, MariaDB, MySQL, PostgreSQL, Oracle XE and Virtuoso container support
+* [Elasticsearch container](usage/elasticsearch_container.md) - Elasticsearch container support
+* [Webdriver containers](usage/webdriver_containers.md) - run a dockerized Chrome or Firefox browser ready for Selenium/Webdriver operations - complete with automatic video recording
+* [Kafka containers](usage/kafka_containers.md) - run a dockerized Kafka, a distributed streaming platform
+* [Neo4j container](usage/neo4j_container.md) - Neo4j container support
 * [Generic containers](usage/generic_containers.md) - run any Docker container as a test dependency
 * [Docker compose](usage/docker_compose.md) - reuse services defined in a Docker Compose YAML file
 * [Dockerfile containers](usage/dockerfile.md) - run a container that is built on-the-fly from a Dockerfile
 
-## Maven dependencies
+## Gradle/Maven dependencies
 
-Testcontainers is distributed in a handful of Maven modules:
+Testcontainers is distributed in a handful of Gradle/Maven modules:
 
 * **testcontainers** for just core functionality, generic containers and docker-compose support
-* **mysql**, **postgresql** or **oracle-xe** for database container support
+* **mysql**, **mariadb**, **postgresql**, **mssqlserver** or **oracle-xe** for database container support
+* **elasticsearch** for elasticsearch container support
 * **selenium** for selenium/webdriver support
 * **nginx** for nginx container support
+* and many more!
 
 In the dependency description below, replace `--artifact name--` as appropriate and `--latest version--` with the [latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22):
 
-    <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>--artifact name--</artifactId>
-        <version>--latest version--</version>
-    </dependency>
+Maven style:
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>--artifact name--</artifactId>
+    <version>--latest version--</version>
+    <scope>test</scope>
+</dependency>
+```
+
+Gradle style:
+
+```
+testImplementation group: 'org.testcontainers', name: '--artifact name--', version: '--latest version--'
+```
+
 
 ### JitPack (unreleased versions)
 
@@ -55,6 +72,7 @@ Use the following dependency description instead:
 	    <groupId>com.github.testcontainers.testcontainers-java</groupId>
 	    <artifactId>--artifact name--</artifactId>
 	    <version>-SNAPSHOT</version>
+	    <scope>test</scope>
 	</dependency>
 
 A specific git revision (such as `093a3a4628`) can be used as a fixed version instead. The JitPack maven repository must also be declared, e.g.:
@@ -118,3 +136,82 @@ ambassador.container.image=replacement image name here
 vncrecorder.container.image=replacement image name here
 tinyimage.container.image=replacement image name here
 ```
+
+## JUnit
+
+### Junit 4
+ 
+**JUnit4 `@Rule`/`@ClassRule`**: This mode starts the container before your tests and tears it down afterwards.
+
+Add a `@Rule` or `@ClassRule` annotated field to your test class, e.g.:
+
+```java
+public class SimpleMySQLTest {
+    @Rule
+    public MySQLContainer mysql = new MySQLContainer();
+    
+    // [...]
+}
+```
+
+### Jupiter / JUnit 5
+
+#### Extension
+
+Jupiter integration is provided by means of the `@Testcontainers` annotation.
+  
+The extension finds all fields that are annotated with `@Container` and calls their container lifecycle 
+methods (methods on the `Startable` interface). Containers declared as static fields will be shared between test 
+methods. They will be started only once before any test method is executed and stopped after the last test method has 
+executed. Containers declared as instance fields will be started and stopped for every test method.
+  
+**Note:** This extension has only be tested with sequential test execution. Using it with parallel test execution is 
+unsupported and may have unintended side effects.
+  
+*Example:*
+```java
+@Testcontainers
+class MyTestcontainersTests {
+   
+     // will be shared between test methods
+    @Container
+    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
+    
+     // will be started before and stopped after each test method
+    @Container
+    private PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer()
+            .withDatabaseName("foo")
+            .withUsername("foo")
+            .withPassword("secret");
+    @Test
+    void test() {
+        assertTrue(MY_SQL_CONTAINER.isRunning());
+        assertTrue(postgresqlContainer.isRunning());
+    }
+}
+```
+
+#### Vanilla Integration
+
+As an alternative, you can manually start the container in a `@BeforeAll`/`@BeforeEach` annotated method in your tests. Tear down will be done automatically on JVM exit, but you can of course also use an `@AfterAll`/`@AfterEach` annotated method to manually call the `close()` method on your container.
+
+*Example of starting a container in a `@BeforeEach` annotated method:*
+
+```java
+class SimpleMySQLTest {
+    private MySQLContainer mysql = new MySQLContainer();
+    
+    @BeforeEach
+    void before() {
+        mysql.start();
+    }
+    
+    @AfterEach
+    void after() {
+        mysql.stop();
+    }
+    
+    // [...]
+}
+```
+

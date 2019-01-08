@@ -1,10 +1,13 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.collect.ImmutableSet;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.runner.Description;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -18,11 +21,14 @@ import org.testcontainers.containers.wait.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.WaitAllStrategy;
 import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +39,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * <p>
  * The container should expose Selenium remote control protocol and VNC.
  */
-public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer {
+public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer, TestLifecycleAware {
 
     private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
     private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
@@ -43,7 +49,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final int VNC_PORT = 5900;
 
     @Nullable
-    private DesiredCapabilities desiredCapabilities;
+    private Capabilities capabilities;
     private boolean customImageNameIsSet = false;
 
     @Nullable
@@ -73,7 +79,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     /**
      * Constructor taking a specific webdriver container name and tag
-     * @param dockerImageName
+     * @param dockerImageName Name of the docker image to pull
      */
     public BrowserWebDriverContainer(String dockerImageName) {
         this();
@@ -84,8 +90,21 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
 
-    public SELF withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
-        this.desiredCapabilities = desiredCapabilities;
+    public SELF withCapabilities(Capabilities capabilities) {
+        this.capabilities = capabilities;
+        return self();
+    }
+
+    /**
+     * @deprecated Use withCapabilities(Capabilities capabilities) instead:
+     * withCapabilities(new FirefoxOptions())
+     *
+     * @param capabilities DesiredCapabilities
+     * @return SELF
+     * */
+    @Deprecated
+    public SELF withDesiredCapabilities(DesiredCapabilities capabilities) {
+        this.capabilities = capabilities;
         return self();
     }
 
@@ -103,8 +122,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void configure() {
 
-        if (desiredCapabilities == null) {
-            throw new IllegalStateException();
+        String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
+
+        if (capabilities == null) {
+            if (seleniumVersion.startsWith("2.")) {
+                logger().info("No capabilities provided, falling back to DesiredCapabilities.chrome()");
+                capabilities = DesiredCapabilities.chrome();
+            } else {
+                logger().info("No capabilities provided, falling back to ChromeOptions");
+                capabilities = new ChromeOptions();
+            }
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
@@ -118,7 +145,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (!customImageNameIsSet) {
-            super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
+            super.setDockerImageName(getImageForCapabilities(capabilities, seleniumVersion));
         }
 
         String timeZone = System.getProperty("user.timezone");
@@ -138,11 +165,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setStartupAttempts(3);
     }
 
-    public static String getImageForCapabilities(DesiredCapabilities desiredCapabilities) {
+    public static String getImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
 
-        String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
-
-        String browserName = desiredCapabilities.getBrowserName();
+        String browserName = capabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
                 return String.format(CHROME_IMAGE, seleniumVersion);
@@ -182,7 +207,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
                 Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
                         () ->
-                                () -> new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities)));
+                            () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
 
         if (vncRecordingContainer != null) {
             LOGGER.debug("Starting VNC recording");
@@ -203,13 +228,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     @Override
-    protected void failed(Throwable e, Description description) {
-        stopAndRetainRecordingForDescriptionAndSuccessState(description, false);
-    }
-
-    @Override
-    protected void succeeded(Description description) {
-        stopAndRetainRecordingForDescriptionAndSuccessState(description, true);
+    public void afterTest(TestDescription description, Optional<Throwable> throwable) {
+        retainRecordingIfNeeded(description.getFilesystemFriendlyName(), !throwable.isPresent());
     }
 
     @Override
@@ -233,7 +253,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         super.stop();
     }
 
-    private void stopAndRetainRecordingForDescriptionAndSuccessState(Description description, boolean succeeded) {
+    private void retainRecordingIfNeeded(String prefix, boolean succeeded) {
         final boolean shouldRecord;
         switch (recordingMode) {
             case RECORD_ALL:
@@ -248,8 +268,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (shouldRecord) {
-            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, description, succeeded);
-            LOGGER.info("Screen recordings for test {} will be stored at: {}", description.getDisplayName(), recordingFile);
+            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, prefix, succeeded);
+            LOGGER.info("Screen recordings for test {} will be stored at: {}", prefix, recordingFile);
 
             vncRecordingContainer.saveRecordingToFile(recordingFile);
         }
@@ -285,6 +305,4 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     public enum VncRecordingMode {
         SKIP, RECORD_ALL, RECORD_FAILING
     }
-
-
 }

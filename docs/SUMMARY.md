@@ -6,8 +6,9 @@
     * [Prerequisites](usage.md#prerequisites)
     * [Docker environment discovery](usage.md#docker-environment-discovery)
     * [Usage modes](usage.md#usage-modes)
-    * [Maven dependencies](usage.md#maven-dependencies)
+    * [Gradle/Maven dependencies](usage.md#gradlemaven-dependencies)
     * [Logging](usage.md#logging)
+    * [JUnit](usage.md#junit)
     * [Properties](usage/properties.md)
     * [Running inside Docker](usage/inside_docker.md)
 
@@ -37,12 +38,16 @@
     * [JDBC URL](usage/database_containers.md#jdbc-url)
     * [Using an init script](usage/database_containers.md#using-an-init-script)
 
+* [Elasticsearch containers](usage/elasticsearch_container.md)
+
 * [Selenium WebDriver containers](usage/webdriver_containers.md)
     * [Benefits](usage/webdriver_containers.md#benefits)
     * [Example](usage/webdriver_containers.md#example)
     * [Other browsers](usage/webdriver_containers.md#other-browsers)
     * [Recording videos](usage/webdriver_containers.md#recording-videos)
-
+    
+* [Kafka containers](usage/kafka_containers.md)
+* [Neo4j containers](usage/neo4j_container.md)
 * [Docker Compose](usage/docker_compose.md)
 * [Dockerfile containers](usage/dockerfile.md)
 * [Windows support](usage/windows_support.md)
@@ -50,6 +55,7 @@
 ## Continuous Integration
 
 * [GitLab CI](ci/ci.md#gitlab)
+* [Circle CI](ci/ci.md#circleci-20)
 
 ## Examples
 * [Selenium](https://github.com/testcontainers/testcontainers-java-examples/blob/master/selenium-container/src/test/java/SeleniumContainerTest.java)

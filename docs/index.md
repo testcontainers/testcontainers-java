@@ -26,6 +26,20 @@ Testcontainers makes it easy to launch useful Docker containers for the duration
  * [Playtika](https://github.com/Playtika/testcontainers-spring-boot) - Kafka, Couchbase, MariaDB, Redis, Neo4j, Aerospike, MemSQL
  * [JetBrains](https://www.jetbrains.com/) - Testing of the TeamCity plugin for HashiCorp Vault
  * [Plumbr](https://plumbr.io) - Integration testing of data processing pipeline micro-services
+ * [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Puslar, Apache Bookeeper and Apache Heron.
+ * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
+ * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
+ * [Instana](https://www.instana.com) - Testing agents and stream processing backends
+ * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
+ * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
+ * [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing new, reactive client implementations
+
+## Getting help
+
+You can:
+
+* Join our Slack: http://slack.testcontainers.org
+* [Search our issues tracker](https://github.com/testcontainers/testcontainers-java/issues), or raise a new issue if you find any bugs or have suggested improvements
 
 ## License
 
@@ -39,16 +53,7 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Contributing
 
-* Star the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
-* Join our Slack: http://slack.testcontainers.org
-* See [ROADMAP](ROADMAP.md) to understand the approach behind the project and what may/may not be in store for the future.
-* [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
-* Contribute improvements or fixes using a [Pull Request](https://github.com/testcontainers/testcontainers-java/pulls). If you're going to contribute, thank you! Please just be sure to:
-	* discuss with the authors on an issue ticket prior to doing anything big
-	* follow the style, naming and structure conventions of the rest of the project
-	* make commits atomic and easy to merge
-	* verify all tests are passing. Build the project with `./gradlew check` to do this.
-	**N.B.** Gradle's Build Cache is enabled by default, but you can add `--no-build-cache` flag to disable it.
+See [CONTRIBUTING](https://github.com/testcontainers/testcontainers-java/blob/master/CONTRIBUTING.md).
 
 ## Copyright
 

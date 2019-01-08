@@ -3,7 +3,6 @@ package org.testcontainers.dockerclient;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +12,9 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
+import org.testcontainers.dockerclient.transport.TestcontainersDockerCmdExecFactory;
+import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
@@ -38,6 +40,8 @@ public abstract class DockerClientProviderStrategy {
 
     private static final AtomicBoolean FAIL_FAST_ALWAYS = new AtomicBoolean(false);
 
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DockerClientProviderStrategy.class);
+
     /**
      * @throws InvalidConfigurationException if this strategy fails
      */
@@ -62,8 +66,6 @@ public abstract class DockerClientProviderStrategy {
     protected int getPriority() {
         return 0;
     }
-
-    protected static final Logger LOGGER = LoggerFactory.getLogger(DockerClientProviderStrategy.class);
 
     /**
      * Determine the right DockerClientConfig to use for building clients by trial-and-error.
@@ -164,10 +166,23 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
-        return DockerClientBuilder
-                    .getInstance(config)
-                    .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
-                    .build();
+        DockerClientBuilder clientBuilder = DockerClientBuilder
+            .getInstance(new AuthDelegatingDockerClientConfig(config));
+
+        String transportType = TestcontainersConfiguration.getInstance().getTransportType();
+        if ("okhttp".equals(transportType)) {
+            clientBuilder
+                .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory());
+        } else if ("netty".equals(transportType)) {
+            clientBuilder
+                .withDockerCmdExecFactory(new TestcontainersDockerCmdExecFactory());
+        } else {
+            throw new IllegalArgumentException("Unknown transport type: " + transportType);
+        }
+
+        LOGGER.info("Will use '{}' transport", transportType);
+
+        return clientBuilder.build();
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
