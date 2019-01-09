@@ -6,7 +6,7 @@ dependencies {
 
     testCompile project(':mysql')
     testCompile project(':postgresql')
-    testCompile 'com.zaxxer:HikariCP:3.2.0'
+    testCompile 'com.zaxxer:HikariCP:3.3.0'
     testCompile 'redis.clients:jedis:3.0.1'
 
     testRuntime 'org.postgresql:postgresql:42.2.5'
