@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
 import lombok.Cleanup;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockserver.client.MockServerClient;
 
@@ -20,27 +19,30 @@ public class MockServerContainerTest {
 
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
-        @Cleanup MockServerContainer mockServer = new MockServerContainer(MockServerClient.class.getPackage().getImplementationVersion());
-        mockServer.start();
+        String actualVersion = MockServerClient.class.getPackage().getImplementationVersion();
+        try (MockServerContainer mockServer = new MockServerContainer(actualVersion)) {
+            mockServer.start();
 
-        String expectedBody = "Hello World!";
+            String expectedBody = "Hello World!";
 
-        assertThat("MockServer returns correct result",
-            responseFromMockserver(mockServer, expectedBody, "/hello"),
-            containsString(expectedBody)
-        );
+            assertThat("MockServer returns correct result",
+                responseFromMockserver(mockServer, expectedBody, "/hello"),
+                containsString(expectedBody)
+            );
+        }
     }
 
     @Test
     public void shouldCallDefaultMockserverVersion() throws Exception {
-        @Cleanup MockServerContainer mockServerDefault = new MockServerContainer();
-        mockServerDefault.start();
-        String expectedBody = "Hello Default World!";
+        try (MockServerContainer mockServerDefault = new MockServerContainer()) {
+            mockServerDefault.start();
+            String expectedBody = "Hello Default World!";
 
-        assertThat("MockServer returns correct result for default constructor",
-            responseFromMockserver(mockServerDefault, expectedBody, "/hellodefault"),
-            containsString(expectedBody)
-        );
+            assertThat("MockServer returns correct result for default constructor",
+                responseFromMockserver(mockServerDefault, expectedBody, "/hellodefault"),
+                containsString(expectedBody)
+            );
+        }
     }
 
     private static String responseFromMockserver(MockServerContainer mockServer, String expectedBody, String path) throws IOException {
