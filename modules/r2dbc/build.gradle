@@ -1,9 +1,8 @@
 description = "Testcontainers :: r2dbc"
 
 dependencies {
-    compile project(':database-commons')
+    compile project(':testcontainers')
     compile 'io.r2dbc:r2dbc-client:1.0.0.M6'
-    compile 'io.r2dbc:r2dbc-postgresql:1.0.0.M6'
     compile 'io.r2dbc:r2dbc-spi:1.0.0.M6'
 }
 
