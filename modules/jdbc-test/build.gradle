@@ -2,6 +2,9 @@ repositories {
     maven {
         url "https://maven.atlassian.com/3rdparty/"
     }
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
 }
 
 dependencies {
@@ -19,6 +22,10 @@ dependencies {
     testCompile 'com.oracle:ojdbc6:12.1.0.1-atlassian-hosted'
     testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     testCompile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.41'
+
+    testCompile 'io.r2dbc:r2dbc-client:1.0.0.M6'
+    testCompile 'io.r2dbc:r2dbc-mssql:1.0.0.M6'
+    testCompile 'io.r2dbc:r2dbc-postgresql:1.0.0.M6'
 
     testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
     testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'

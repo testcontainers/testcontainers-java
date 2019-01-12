@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactory;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -62,6 +64,11 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     @Override
     public String getJdbcUrl() {
         return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/" + databaseName;
+    }
+
+    @Override
+    public ConnectionFactory getR2dbcConnectionFactory() {
+        throw new NotImplementedException("MySQL is not yet supported by R2DBC");
     }
 
     @Override

@@ -1,5 +1,11 @@
 description = "Testcontainers :: JDBC"
 
+repositories{
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
+
 dependencies {
     compile project(':database-commons')
 }

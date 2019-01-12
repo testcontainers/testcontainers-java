@@ -4,6 +4,9 @@ repositories {
     maven {
         url "https://maven.atlassian.com/3rdparty/"
     }
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
 }
 
 dependencies {

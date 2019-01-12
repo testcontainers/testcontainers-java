@@ -1,5 +1,8 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactory;
+import org.apache.commons.lang.NotImplementedException;
+
 /**
  * Container implementation for the MariaDB project.
  *
@@ -57,6 +60,11 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     @Override
     public String getJdbcUrl() {
         return "jdbc:mariadb://" + getContainerIpAddress() + ":" + getMappedPort(MARIADB_PORT) + "/" + databaseName;
+    }
+
+    @Override
+    public ConnectionFactory getR2dbcConnectionFactory() {
+        throw new NotImplementedException("MariaDB is not yet supported by R2DBC");
     }
 
     @Override

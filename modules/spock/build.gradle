@@ -4,6 +4,12 @@ plugins {
 
 description = "Testcontainers :: Spock-Extension"
 
+repositories{
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
+
 dependencies {
     compile project(':testcontainers')
     compile 'org.spockframework:spock-core:1.0-groovy-2.4'

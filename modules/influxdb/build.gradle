@@ -1,5 +1,11 @@
 description = "Testcontainers :: InfluxDB"
 
+repositories{
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
+
 dependencies {
     compile project(':testcontainers')
 

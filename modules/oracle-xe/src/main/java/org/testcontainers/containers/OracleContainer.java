@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactory;
+import org.apache.commons.lang.NotImplementedException;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.concurrent.Future;
@@ -66,6 +68,11 @@ public class OracleContainer extends JdbcDatabaseContainer {
     @Override
     public String getJdbcUrl() {
         return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + ":" + getSid();
+    }
+
+    @Override
+    public ConnectionFactory getR2dbcConnectionFactory() {
+        throw new NotImplementedException("Oracle is not yet supported by R2DBC");
     }
 
     @Override
