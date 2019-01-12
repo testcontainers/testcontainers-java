@@ -1,0 +1,25 @@
+repositories {
+    maven {
+        url "https://maven.atlassian.com/3rdparty/"
+    }
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
+
+dependencies {
+    compile project(':r2dbc')
+    compile project(':database-commons')
+    compile project(':postgresql')
+
+    testCompile 'com.google.guava:guava:18.0'
+    testCompile 'org.postgresql:postgresql:42.0.0'
+
+    testCompile 'commons-dbutils:commons-dbutils:1.6'
+
+    testCompile 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
+
+    testCompile 'io.r2dbc:r2dbc-client:1.0.0.M6'
+    testCompile 'io.r2dbc:r2dbc-postgresql:1.0.0.M6'
+    testCompile 'io.r2dbc:r2dbc-spi:1.0.0.M6'
+}
