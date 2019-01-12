@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactory;
+import org.apache.commons.lang.NotImplementedException;
 import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import java.time.Duration;
@@ -52,6 +54,11 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     @Override
     public String getJdbcUrl() {
         return JDBC_URL_PREFIX + getContainerIpAddress() + ":" + getMappedPort(HTTP_PORT) + "/" + databaseName;
+    }
+
+    @Override
+    public ConnectionFactory getR2dbcConnectionFactory() {
+        throw new NotImplementedException("ClickHouse is not yet supported by R2DBC");
     }
 
     @Override

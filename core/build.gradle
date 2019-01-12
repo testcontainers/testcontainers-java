@@ -2,6 +2,13 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 description = "Testcontainers Core"
 
+repositories {
+    mavenCentral()
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
+
 sourceSets {
     jarFileTest
 }
@@ -58,6 +65,8 @@ shadowJar {
         include(dependency('com.squareup.okio:.*'))
         include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
         include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
+        include(dependency('io.r2dbc:r2dbc-spi'))
+
     }
 }
 
@@ -72,6 +81,7 @@ task jarFileTest(type: Test) {
 project.tasks.check.dependsOn(jarFileTest)
 
 dependencies {
+    compile 'io.r2dbc:r2dbc-spi:1.0.0.M6'
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.25'
     compile 'org.jetbrains:annotations:16.0.3'
