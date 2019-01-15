@@ -1,8 +1,15 @@
+import com.example.DemoApplication;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import java.io.File;
@@ -14,20 +21,30 @@ import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordi
 /**
  * Simple example of plain Selenium usage.
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class SeleniumContainerTest {
+
+    @LocalServerPort
+    private int port;
 
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-                                                    .withCapabilities(new ChromeOptions())
-                                                    .withRecordingMode(RECORD_ALL, new File("target"));
+        .withCapabilities(new ChromeOptions())
+        .withRecordingMode(RECORD_ALL, new File("target"));
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        Testcontainers.exposeHostPorts(8080);
+    }
 
     @Test
     public void simplePlainSeleniumTest() {
         RemoteWebDriver driver = chrome.getWebDriver();
 
-        driver.get("https://wikipedia.org");
-        List<WebElement> searchInput = driver.findElementsByName("search");
+        driver.get("http://host.testcontainers.internal:" + 8080 + "/foo");
+        List<WebElement> hElement = driver.findElementsByTagName("h");
 
-        assertTrue("The search input box is found", searchInput != null && searchInput.size() > 0);
+        assertTrue("The h element is found", hElement != null && hElement.size() > 0);
     }
 }
