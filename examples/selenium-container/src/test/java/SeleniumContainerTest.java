@@ -42,7 +42,7 @@ public class SeleniumContainerTest {
     public void simplePlainSeleniumTest() {
         RemoteWebDriver driver = chrome.getWebDriver();
 
-        driver.get("http://host.testcontainers.internal:" + port + "/foo");
+        driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
         List<WebElement> hElement = driver.findElementsByTagName("h");
 
         assertTrue("The h element is found", hElement != null && hElement.size() > 0);
