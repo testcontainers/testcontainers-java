@@ -1,5 +1,4 @@
 import com.example.DemoApplication;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +10,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.lifecycle.TestDescription;
 
 import java.io.File;
 import java.util.List;
@@ -29,20 +29,20 @@ public class SeleniumContainerTest {
     private int port;
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-        .withCapabilities(new ChromeOptions())
-        .withRecordingMode(RECORD_ALL, new File("target"));
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        Testcontainers.exposeHostPorts(8080);
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer() {
+        @Override
+        public void beforeTest(TestDescription description) {
+            Testcontainers.exposeHostPorts(port);
+        }
     }
+                                                    .withCapabilities(new ChromeOptions())
+                                                    .withRecordingMode(RECORD_ALL, new File("target"));
 
     @Test
     public void simplePlainSeleniumTest() {
         RemoteWebDriver driver = chrome.getWebDriver();
 
-        driver.get("http://host.testcontainers.internal:" + 8080 + "/foo");
+        driver.get("http://host.testcontainers.internal:" + port + "/foo");
         List<WebElement> hElement = driver.findElementsByTagName("h");
 
         assertTrue("The h element is found", hElement != null && hElement.size() > 0);
