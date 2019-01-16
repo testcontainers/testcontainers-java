@@ -22,7 +22,7 @@ import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordi
  * Simple example of plain Selenium usage.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SeleniumContainerTest {
 
     @LocalServerPort
