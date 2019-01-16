@@ -6,11 +6,15 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
-import org.testcontainers.lifecycle.TestDescription;
 
 import java.io.File;
 import java.util.List;
@@ -23,18 +27,14 @@ import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordi
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = SeleniumContainerTest.Initializer.class)
 public class SeleniumContainerTest {
 
     @LocalServerPort
     private int port;
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer() {
-        @Override
-        public void beforeTest(TestDescription description) {
-            Testcontainers.exposeHostPorts(port);
-        }
-    }
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
                                                     .withCapabilities(new ChromeOptions())
                                                     .withRecordingMode(RECORD_ALL, new File("target"));
 
@@ -47,4 +47,14 @@ public class SeleniumContainerTest {
 
         assertTrue("The h element is found", hElement != null && hElement.size() > 0);
     }
+
+    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+        @Override
+        public void initialize(ConfigurableApplicationContext applicationContext) {
+            applicationContext.addApplicationListener((ApplicationListener<WebServerInitializedEvent>) event -> {
+                Testcontainers.exposeHostPorts(event.getWebServer().getPort());
+            });
+        }
+    }
+
 }
