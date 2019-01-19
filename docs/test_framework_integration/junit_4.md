@@ -1,5 +1,7 @@
 # JUnit 4
 
+## `@Rule`/`@ClassRule` integration
+
 **JUnit4 `@Rule`/`@ClassRule`**: This mode starts the container before your tests and tears it down afterwards.
 
 Add a `@Rule` or `@ClassRule` annotated field to your test class, e.g.:
@@ -13,7 +15,6 @@ public class SimpleMySQLTest {
 }
 ```
 
-## `@Rule`/`@ClassRule` integration
 
 ## Manually controlling container lifecycle
 
@@ -39,4 +40,3 @@ class SimpleMySQLTest {
 }
 ```
 
-## Common alternatives to using Rules
