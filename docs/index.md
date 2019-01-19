@@ -27,7 +27,7 @@ Testcontainers make the following kinds of tests easier:
 Testcontainers is distributed as separate JARs with a common version number:
 
 * A core JAR file for core functionality, generic containers and docker-compose support
-* A separate JAR file for each of the specialised [modules](modules). Each module's documentation describes the Maven/Gradle dependency to add to your project's build.
+* A separate JAR file for each of the specialised modules. Each module's documentation describes the Maven/Gradle dependency to add to your project's build.
 
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
