@@ -1,11 +1,5 @@
 description = "TestContainers :: elasticsearch"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
 dependencies {
     compile project(':testcontainers')
     testCompile "org.elasticsearch.client:elasticsearch-rest-client:6.5.4"

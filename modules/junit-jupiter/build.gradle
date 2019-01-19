@@ -1,12 +1,5 @@
 description = "Testcontainers :: JUnit Jupiter Extension"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
-
 dependencies {
     compile project(':testcontainers')
     compile 'org.junit.jupiter:junit-jupiter-api:5.3.2'

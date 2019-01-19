@@ -2,7 +2,6 @@ package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.r2dbc.client.R2dbc;
 import org.junit.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -40,20 +39,6 @@ public class SimplePostgreSQLTest {
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
-        }
-    }
-
-    @Test
-    public void testR2dbcConnectionSuccessful() {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>()
-            .withInitScript("somepath/init_postgresql.sql")) {
-            postgres.start();
-
-            R2dbc r2dbc = new R2dbc(postgres.getR2dbcConnectionFactory());
-            String queryResult = (String) r2dbc.inTransaction(handle ->
-                handle.createQuery("SELECT foo FROM bar").mapResult(result -> result.map((row, metadata) -> row.get("foo")))
-            ).blockFirst();
-            assertEquals("Value from init script should equal real value", "hello world", queryResult);
         }
     }
 

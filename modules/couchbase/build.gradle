@@ -1,11 +1,5 @@
 description = "Testcontainers :: Couchbase"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
 dependencies {
     compile project(':testcontainers')
     compile 'com.couchbase.client:java-client:2.7.2'

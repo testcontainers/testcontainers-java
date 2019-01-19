@@ -1,11 +1,5 @@
 description = "Testcontainers :: MockServer"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
 dependencies {
     compile project(':testcontainers')
 

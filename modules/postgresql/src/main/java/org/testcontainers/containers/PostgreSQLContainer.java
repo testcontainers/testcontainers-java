@@ -1,8 +1,5 @@
 package org.testcontainers.containers;
 
-import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
-import io.r2dbc.postgresql.PostgresqlConnectionFactory;
-import io.r2dbc.spi.ConnectionFactory;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 
@@ -61,17 +58,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName;
-    }
-
-    @Override
-    public ConnectionFactory getR2dbcConnectionFactory() {
-        return new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
-            .host(getContainerIpAddress())
-            .database(databaseName)
-            .password(password)
-            .username(username)
-            .port(getFirstMappedPort())
-            .build());
     }
 
     @Override

@@ -1,8 +1,5 @@
 package org.testcontainers.containers;
 
-import io.r2dbc.mssql.MssqlConnectionConfiguration;
-import io.r2dbc.mssql.MssqlConnectionFactory;
-import io.r2dbc.spi.ConnectionFactory;
 import org.testcontainers.utility.LicenseAcceptance;
 
 /**
@@ -53,16 +50,6 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     @Override
     public String getJdbcUrl() {
         return "jdbc:sqlserver://" + getContainerIpAddress() + ":" + getMappedPort(MS_SQL_SERVER_PORT);
-    }
-
-    @Override
-    public ConnectionFactory getR2dbcConnectionFactory() {
-        return new MssqlConnectionFactory(MssqlConnectionConfiguration.builder()
-            .host(getContainerIpAddress())
-            .password(password)
-            .username(username)
-            .port(getFirstMappedPort())
-            .build());
     }
 
     @Override

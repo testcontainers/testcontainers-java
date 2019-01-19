@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import io.r2dbc.spi.ConnectionFactory;
 import lombok.NonNull;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -59,11 +58,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return a JDBC URL that may be used to connect to the dockerized DB
      */
     public abstract String getJdbcUrl();
-
-    /**
-     * @return a R2DBC connection factory
-     */
-    public abstract ConnectionFactory getR2dbcConnectionFactory();
 
     /**
      * @return the database name

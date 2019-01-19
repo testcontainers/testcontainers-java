@@ -1,14 +1,7 @@
 description = "Testcontainers :: JDBC :: PostgreSQL"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
 dependencies {
     compile project(':jdbc')
-    compile 'io.r2dbc:r2dbc-postgresql:1.0.0.M6'
 
     testCompile 'org.postgresql:postgresql:42.2.5'
     testCompile 'commons-dbutils:commons-dbutils:1.7'

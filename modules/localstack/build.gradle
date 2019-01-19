@@ -1,11 +1,5 @@
 description = "Testcontainers :: Localstack"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
 dependencies {
     compile project(':testcontainers')
 

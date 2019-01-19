@@ -1,11 +1,5 @@
 description = "TestContainers :: Cassandra"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
 dependencies {
     compile project(":database-commons")
     compile "com.datastax.cassandra:cassandra-driver-core:3.5.1"

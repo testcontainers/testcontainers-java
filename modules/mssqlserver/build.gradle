@@ -1,12 +1,5 @@
 description = "Testcontainers :: MS SQL Server"
 
-repositories{
-    maven {
-        url("https://repo.spring.io/milestone")
-    }
-}
-
 dependencies {
     compile project(':jdbc')
-    compile 'io.r2dbc:r2dbc-mssql:1.0.0.M6'
 }
