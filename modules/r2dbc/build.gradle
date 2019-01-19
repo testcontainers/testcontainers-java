@@ -1,0 +1,21 @@
+description = "Testcontainers :: R2DBC"
+
+repositories {
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
+
+dependencies {
+    compile project(':jdbc')
+    compile project(':postgresql')
+    compile project(':mssqlserver')
+
+    compile 'io.r2dbc:r2dbc-client:1.0.0.M6'
+    compile 'io.r2dbc:r2dbc-spi:1.0.0.M6'
+    compile 'io.r2dbc:r2dbc-postgresql:1.0.0.M6'
+    compile 'io.r2dbc:r2dbc-mssql:1.0.0.M6'
+
+    testCompile 'org.postgresql:postgresql:42.0.0'
+    testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
+}
