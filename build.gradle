@@ -22,7 +22,7 @@ subprojects {
     compileJava.options.encoding = 'UTF-8'
 
     lombok {
-	    version = '1.18.2'
+        version = '1.18.2'
     }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
