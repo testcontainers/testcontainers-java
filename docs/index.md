@@ -56,7 +56,7 @@ You can also [check the latest version available on Maven Central](https://searc
 ## Who is using Testcontainers?
 
 * [ZeroTurnaround](https://zeroturnaround.com) - Testing of the Java Agents, micro-services, Selenium browser automation
-* [Zipkin](http://zipkin.io) - MySQL and Cassandra testing
+* [Zipkin](https://zipkin.io) - MySQL and Cassandra testing
 * [Apache Gora](https://gora.apache.org) - CouchDB testing
 * [Apache James](https://james.apache.org) - LDAP and Cassandra integration testing
 * [StreamSets](https://github.com/streamsets/datacollector) - LDAP, MySQL Vault, MongoDB, Redis integration testing
