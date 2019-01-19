@@ -1,6 +1,6 @@
 # Spock
 
-[Spock](https://github.com/spockframework/spock) extension for [TestContainers](https://github.com/testcontainers/testcontainers-java) library, which allows to use Docker containers inside of Spock tests.
+[Spock](https://github.com/spockframework/spock) extension for [Testcontainers](https://github.com/testcontainers/testcontainers-java) library, which allows to use Docker containers inside of Spock tests.
 
 ## Usage
 
