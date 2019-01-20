@@ -41,5 +41,23 @@ class DatabaseTest extends Specification {
 }
 ```
 
+## Adding Testcontainers Spock support to your project dependencies
+
+Add the following dependency to your `pom.xml`/`build.gradle` file:
+
+```groovy tab='Gradle'
+testCompile "org.testcontainers:spock:{{latest_version}}"
+```
+
+```xml tab='Maven'
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>spock</artifactId>
+    <version>{{latest_version}}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+
 ## Attributions
 The initial version of this project was heavily inspired by the excellent [JUnit5 docker extension](https://github.com/FaustXVI/junit5-docker) by [FaustXVI](https://github.com/FaustXVI).
