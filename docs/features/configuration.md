@@ -43,8 +43,10 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > Used by KafkaContainer 
 
 ## Customizing ryuk resource reaper
+
 > **ryuk.container.image = quay.io/testcontainers/ryuk:0.2.2**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
+
 > **ryuk.container.privileged = false**
 > In some environments ryuk must be started in privileged mode to work properly (--privileged flag)
 
