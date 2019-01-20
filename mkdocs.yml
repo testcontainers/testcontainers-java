@@ -72,5 +72,8 @@ nav:
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
     - Getting help: getting_help.md
+    - Contributing:
+          - contributing.md
+          - contributing_docs.md
 extra:
     latest_version: 1.10.5
