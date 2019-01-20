@@ -5,9 +5,6 @@ import io.r2dbc.mssql.MssqlConnectionFactory;
 import io.r2dbc.spi.ConnectionFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-/**
- * @author humblehound
- */
 public class R2dbcMSSQLServerContainer extends MSSQLServerContainer implements R2dbcSupport {
 
     @Override

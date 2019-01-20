@@ -1,0 +1,12 @@
+repositories {
+    maven {
+        url("https://repo.spring.io/milestone")
+    }
+}
+
+dependencies {
+    compile project(':r2dbc')
+
+    testCompile 'org.postgresql:postgresql:42.0.0'
+    testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
+}

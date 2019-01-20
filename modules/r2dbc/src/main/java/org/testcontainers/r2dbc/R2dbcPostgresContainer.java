@@ -6,9 +6,6 @@ import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.spi.ConnectionFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-/**
- * @author humblehound
- */
 public class R2dbcPostgresContainer extends PostgreSQLContainer implements R2dbcSupport {
 
     @Override

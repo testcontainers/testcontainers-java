@@ -1,13 +1,11 @@
+package org.testcontainers.r2dbc;
+
 import io.r2dbc.client.R2dbc;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.r2dbc.R2dbcMSSQLServerContainer;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
-/**
- * @author humblehound
- */
 public class SimpleR2dbcMSSQLServerTest {
 
     @Rule
