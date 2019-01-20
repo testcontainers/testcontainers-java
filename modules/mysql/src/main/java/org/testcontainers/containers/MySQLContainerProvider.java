@@ -8,9 +8,12 @@ import java.util.Objects;
  * Factory for MySQL containers.
  */
 public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
+
     private static final String USER_PARAM = "user";
+
     private static final String PASSWORD_PARAM = "password";
-    private static final int MIN_MYSQL_VERSION = 8;
+    
+    private static final int MIN_VERSION_REQUIRES_TRADITIONAL_AUTH = 8;
 
     @Override
     public boolean supports(String databaseType) {
@@ -45,31 +48,28 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
         } else {
             instance = newInstance();
         }
-        
-        if (mySqlNativePasswordIsNeeded(connectionUrl)) {
+
+        if (mySqlTraditionalAuthIsNeeded(instance.getDockerImageName().split(":")[1])) {
             instance.withCommand("mysqld --default-authentication-plugin=mysql_native_password");
         }
-        
+
         return instance
             .withDatabaseName(databaseName)
             .withUsername(user)
             .withPassword(password);
     }
-    
-    public boolean mySqlNativePasswordIsNeeded(ConnectionUrl connectionUrl) {
-        String tag  = connectionUrl.getImageTag().get();
-        int version = 0;
-        
-        if(Objects.isNull(tag) || Objects.equals(tag, "latest") || tag.isEmpty()) {
+
+    public boolean mySqlTraditionalAuthIsNeeded(String tag) {
+        if(Objects.equals(tag, "latest")) {
             return true;
         }
+
         try {
-            version = Integer.parseInt(tag.split("\\.")[0]);
+            int version = Integer.parseInt(tag.split("\\.")[0]);
+            if (version >= MIN_VERSION_REQUIRES_TRADITIONAL_AUTH) {
+                return true;
+            }
         } catch (NumberFormatException e) {
-            return false;
-        }
-        if (version >= MIN_MYSQL_VERSION) {
-            return true;
         }
         return false;
     }
