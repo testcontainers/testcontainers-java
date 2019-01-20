@@ -108,6 +108,11 @@ public static DockerComposeContainer environment =
             .waitingFor("db_1", Wait.forLogMessage("started", 1));
 ```
 
+## 'Local compose' mode
+
+You can override Testcontainers' default behaviour and make it use a `docker-compose` binary installed on the local machine. 
+This will generally yield an experience that is closer to running docker-compose locally, with the caveat that Docker Compose needs to be present on dev and CI machines.
+
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
 By default, those setting are located in `$HOME/.docker/config.json`. 
@@ -156,7 +161,9 @@ There are 3 ways to specify location of the `config.json` for Docker Compose:
     and specify the location to Testcontainers using any of the two first methods from above.
     
     ##### Using 'local compose' mode
-    You can override Testcontainers' default behaviour and make it use a `docker-compose` binary installed on the local machine. While this means that Docker Compose needs to be present on dev and CI machines, it will allow it to directly access the Docker auth system (to the same extent that running the `docker-compose` CLI manually works).
+    
+    [Local Compose mode](#local-compose-mode), mentioned above, will allow compose to directly access the Docker auth system (to the same extent that running the `docker-compose` CLI manually works).
+    
 
 ## Adding this module to your project dependencies
 
