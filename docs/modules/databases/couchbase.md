@@ -51,13 +51,15 @@ public class SomeTest extends AbstractCouchbaseTest {
 
 ### Special consideration
 
-Couchbase container is configured to use random available [ports](https://developer.couchbase.com/documentation/server/current/install/install-ports.html) for some ports only, as [Couchbase Java SDK](https://developer.couchbase.com/documentation/server/current/sdk/java/start-using-sdk.html) permit to configure only some ports : 
+Couchbase container is configured to use random available [ports](https://developer.couchbase.com/documentation/server/current/install/install-ports.html) for some ports only, as [Couchbase Java SDK](https://developer.couchbase.com/documentation/server/current/sdk/java/start-using-sdk.html) permit to configure only some ports: 
+
 - **8091** : REST/HTTP traffic ([bootstrapHttpDirectPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierDirectPort-int-))
 - **18091** : REST/HTTP traffic with SSL ([bootstrapHttpSslPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierSslPort-int-))
 - **11210** : memcached ([bootstrapCarrierDirectPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierDirectPort-int-))
 - **11207** : memcached SSL ([bootstrapCarrierSslPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierSslPort-int-))
 
-All other ports cannot be changed by Java SDK, there are sadly fixed :
+All other ports cannot be changed by Java SDK, there are sadly fixed:
+
 - **8092** : Queries, views, XDCR
 - **8093** : REST/HTTP Query service
 - **8094** : REST/HTTP Search Service
