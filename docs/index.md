@@ -85,7 +85,7 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 ## Contributing
 
 * Star the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
-* Join our Slack: http://slack.testcontainers.org
+* Join our [Slack group](http://slack.testcontainers.org)
 * [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
 * Contribute improvements or fixes using a [Pull Request](https://github.com/testcontainers/testcontainers-java/pulls). If you're going to contribute, thank you! Please just be sure to:
     * discuss with the authors on an issue ticket prior to doing anything big
