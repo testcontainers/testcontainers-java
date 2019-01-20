@@ -65,6 +65,12 @@ We can do this in our test `setUp` method, to set up our component under test:
 [Obtaining a mapped port](../examples/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:setUp
 <!--/codeinclude-->
 
+!!! tip
+    Notice that we also ask Testcontainers for the container's actual address with `redis.getContainerIpAddress();`, 
+    rather than hard-coding `localhost`. `localhost` may work in some environments but not others - for example it may
+    not work on your current or future CI environment. As such, **avoid hard-coding** the address, and use 
+    `getContainerIpAddress()` instead.
+
 ## 4. Run the tests!
 
 That's it!
