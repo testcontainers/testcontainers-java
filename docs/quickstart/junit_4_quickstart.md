@@ -3,14 +3,13 @@
 It's easy to add Testcontainers to your project - let's walk through a quick example to see how.
 
 Let's imagine we have a simple program that has a dependency on Redis, and we want to add some tests for it.
+In our imaginary program, there is a `RedisBackedCache` class which stores data in Redis.
  
-You can see the implementation code and the corresponding test before we've added Testcontainers below:
+You can see an example test that could have been written for it (without using Testcontainers):
 
-!!! example "Scenario code"
-    <!--codeinclude-->
-    [Implementation](../examples/src/main/java/quickstart/RedisBackedCache.java) block:RedisBackedCache
-    [Pre-Testcontainers test code](../examples/src/test/java/quickstart/RedisBackedCacheIntTestStep0.java) block:RedisBackedCacheIntTestStep0
-    <!--/codeinclude-->
+<!--codeinclude-->
+[Pre-Testcontainers test code](../examples/src/test/java/quickstart/RedisBackedCacheIntTestStep0.java) block:RedisBackedCacheIntTestStep0
+<!--/codeinclude-->
 
 Notice that the existing test has a problem - it's relying on a local installation of Redis, which is a red flag for test reliability.
 This may work if we were sure that every developer and CI machine had Redis installed, but would fail otherwise.
