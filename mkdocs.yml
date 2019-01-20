@@ -1,0 +1,79 @@
+site_name: Testcontainers
+plugins:
+    - search
+    - codeinclude
+    - markdownextradata
+theme:
+    name: 'material'
+    palette:
+        primary: 'blue'
+        accent: 'teal'
+    font: false
+    logo: 'logo.svg'
+    favicon: 'favicon.ico'
+extra_css:
+    - 'css/extra.css'
+repo_name: 'testcontainers-java'
+repo_url: 'https://github.com/testcontainers/testcontainers-java'
+markdown_extensions:
+    - admonition
+    - codehilite:
+          linenums: False
+    - pymdownx.superfences
+    - pymdownx.snippets
+nav:
+    - Home: index.md
+    - Quickstart:
+          - quickstart/junit_4_quickstart.md
+    - Features:
+          - features/creating_container.md
+          - features/networking.md
+          - features/commands.md
+          - features/files.md
+          - features/startup_and_waits.md
+          - features/container_logs.md
+          - features/creating_images.md
+          - features/configuration.md
+          - features/advanced_options.md
+    - Modules:
+          - Databases:
+                - modules/databases/index.md
+                - modules/databases/mysql.md
+                - modules/databases/mariadb.md
+                - modules/databases/postgres.md
+                - modules/databases/oraclexe.md
+                - modules/databases/mssqlserver.md
+                - modules/databases/cassandra.md
+                - modules/databases/couchbase.md
+                - modules/databases/clickhouse.md
+                - modules/databases/influxdb.md
+                - modules/databases/dynalite.md
+                - modules/databases/neo4j.md
+          - modules/webdriver_containers.md
+          - modules/docker_compose.md
+          - modules/elasticsearch.md
+          - modules/kafka.md
+          - modules/pulsar.md
+          - modules/localstack.md
+          - modules/mockserver.md
+          - modules/nginx.md
+          - modules/vault.md
+    - Test framework integration:
+          - test_framework_integration/junit_4.md
+          - test_framework_integration/junit_5.md
+          - test_framework_integration/spock.md
+          - test_framework_integration/manual_lifecycle_control.md
+    - System Requirements:
+          - supported_docker_environment/index.md
+          - Continuous Integration:
+                - supported_docker_environment/continuous_integration/dind_patterns.md
+                - supported_docker_environment/continuous_integration/circle_ci.md
+                - supported_docker_environment/continuous_integration/gitlab_ci.md
+          - supported_docker_environment/windows.md
+          - supported_docker_environment/logging_config.md
+    - Getting help: getting_help.md
+    - Contributing:
+          - contributing.md
+          - contributing_docs.md
+extra:
+    latest_version: 1.10.5
