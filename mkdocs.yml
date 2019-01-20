@@ -68,8 +68,6 @@ nav:
           - Continuous Integration:
                 - supported_docker_environment/continuous_integration/dind_patterns.md
                 - supported_docker_environment/continuous_integration/circle_ci.md
-                - supported_docker_environment/continuous_integration/drone.md
-                - supported_docker_environment/continuous_integration/travis.md
                 - supported_docker_environment/continuous_integration/gitlab_ci.md
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
