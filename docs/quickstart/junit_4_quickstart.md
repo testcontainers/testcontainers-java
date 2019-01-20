@@ -44,7 +44,7 @@ Simply add the following to the body of our test class:
 <!--/codeinclude-->
 
 The `@Rule` annotation tells JUnit to notify this field about various events in the test lifecycle.
-In this case, our rule object is a Testcontainers `GenericContainer`, configured to use a recent Redis image from Docker Hub, and configured to expose a port.
+In this case, our rule object is a Testcontainers `GenericContainer`, configured to use a specific Redis image from Docker Hub, and configured to expose a port.
 
 If we run our test as-is, then regardless of the actual test outcome, we'll see logs showing us that Testcontainers:
 

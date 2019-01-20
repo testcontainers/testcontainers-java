@@ -14,7 +14,7 @@ public class RedisBackedCacheIntTest {
 
     // rule {
     @Rule
-    public GenericContainer redis = new GenericContainer<>("redis:4.0.11")
+    public GenericContainer redis = new GenericContainer<>("redis:5.0.3-alpine")
                                             .withExposedPorts(6379);
     // }
 
