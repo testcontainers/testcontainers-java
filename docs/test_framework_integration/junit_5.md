@@ -108,38 +108,10 @@ class SomeTest {
 }
 ```
 
-### Singleton containers
+## Singleton containers
 
-Sometimes it might be useful to define a container that is only started once for several test classes.
-There is no special support for this use case provided by the Testcontainers extension.
-Instead this can be implemented using the following pattern:
-
-```java
-abstract class AbstractContainerBaseTest {
-
-    static final MySQLContainer MY_SQL_CONTAINER;
-
-    static {
-        MY_SQL_CONTAINER = new MySQLContainer();
-        MY_SQL_CONTAINER.start();
-    }
-}
-
-class FirstTest extends AbstractContainerBaseTest {
-
-    @Test
-    void someTestMethod() {
-        String url = MY_SQL_CONTAINER.getJdbcUrl();
-
-        // create a connection and run test as normal
-    }
-}
-```
-
-The singleton container is started only once when the base class is loaded.
-The container can then be used by all inheriting test classes.
-At the end of the test suite the [Ryuk container](https://github.com/testcontainers/moby-ryuk)
-that is started by Testcontainers core will take care of stopping the singleton container.
+Note that the [singleton container pattern](manual_lifecycle_control.md#singleton-containers) is also an option when
+using JUnit 5.
 
 ## Limitations
 

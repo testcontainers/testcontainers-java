@@ -39,3 +39,8 @@ class SimpleMySQLTest {
     // [...]
 }
 ```
+
+## Singleton containers
+
+Note that the [singleton container pattern](manual_lifecycle_control.md#singleton-containers) is also an option when
+using JUnit 4.
