@@ -4,6 +4,10 @@
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
+```groovy tab='Gradle'
+testRuntime "org.testcontainers:mockserver:{{latest_version}}"
+```
+
 ```xml tab='Maven'
 <dependency>
     <groupId>org.testcontainers</groupId>
@@ -12,8 +16,3 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
     <scope>test</scope>
 </dependency>
 ```
-
-```groovy tab='Gradle'
-testRuntime "org.testcontainers:mockserver:{{latest_version}}"
-```
-

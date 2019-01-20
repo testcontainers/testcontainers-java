@@ -22,6 +22,10 @@ public class SomeTest {
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
+```groovy tab='Gradle'
+testRuntime "org.testcontainers:influxdb:{{latest_version}}"
+```
+
 ```xml tab='Maven'
 <dependency>
     <groupId>org.testcontainers</groupId>
@@ -29,10 +33,6 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>
-```
-
-```groovy tab='Gradle'
-testRuntime "org.testcontainers:influxdb:{{latest_version}}"
 ```
 
 !!! hint

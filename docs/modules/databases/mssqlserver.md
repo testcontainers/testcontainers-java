@@ -26,6 +26,10 @@ public class SomeTest {
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
+```groovy tab='Gradle'
+testRuntime "org.testcontainers:mssqlserver:{{latest_version}}"
+```
+
 ```xml tab='Maven'
 <dependency>
     <groupId>org.testcontainers</groupId>
@@ -35,9 +39,6 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 </dependency>
 ```
 
-```groovy tab='Gradle'
-testRuntime "org.testcontainers:mssqlserver:{{latest_version}}"
-```
 
 !!! hint
     Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency.

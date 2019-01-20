@@ -31,6 +31,10 @@ Testcontainers is distributed as separate JARs with a common version number:
 
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
+```groovy tab='Gradle'
+testRuntime "org.testcontainers:testcontainers:{{latest_version}}"
+```
+
 ```xml tab='Maven'
 <dependency>
     <groupId>org.testcontainers</groupId>
@@ -40,9 +44,6 @@ For the core library, the latest Maven/Gradle dependency is as follows:
 </dependency>
 ```
 
-```groovy tab='Gradle'
-testRuntime "org.testcontainers:testcontainers:{{latest_version}}"
-```
 
 You can also [check the latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
 

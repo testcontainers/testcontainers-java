@@ -92,6 +92,10 @@ You'll find more information about licensing Neo4j here: [About Neo4j Licenses](
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
+```groovy tab='Gradle'
+testRuntime "org.testcontainers:neo4j:{{latest_version}}"
+```
+
 ```xml tab='Maven'
 <dependency>
     <groupId>org.testcontainers</groupId>
@@ -101,12 +105,12 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 </dependency>
 ```
 
-```groovy tab='Gradle'
-testRuntime "org.testcontainers:neo4j:{{latest_version}}"
-```
-
 !!! hint
     Add the Neo4j Java driver if you plan to access the Testcontainer via Bolt:
+    
+    ```groovy tab='Gradle'
+    compile "org.neo4j.driver:neo4j-java-driver:1.7.1"
+    ```
     
     ```xml tab='Maven'
     <dependency>
@@ -116,9 +120,6 @@ testRuntime "org.testcontainers:neo4j:{{latest_version}}"
     </dependency>
     ```
     
-    ```groovy tab='Gradle'
-    compile "org.neo4j.driver:neo4j-java-driver:1.7.1"
-    ```
 
 
 
