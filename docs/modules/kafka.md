@@ -54,7 +54,7 @@ Or just give your Kafka container a network alias of your liking.
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:kafka:{{latest_version}}"
+testCompile "org.testcontainers:kafka:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

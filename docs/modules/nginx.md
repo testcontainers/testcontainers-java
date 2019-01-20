@@ -5,7 +5,7 @@
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:nginx:{{latest_version}}"
+testCompile "org.testcontainers:nginx:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

@@ -23,7 +23,7 @@ Let's start from here, and see how to improve the test with Testcontainers:
 First, add Testcontainers as a dependency as follows:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:testcontainers:{{latest_version}}"
+testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

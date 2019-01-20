@@ -93,7 +93,7 @@ You'll find more information about licensing Neo4j here: [About Neo4j Licenses](
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:neo4j:{{latest_version}}"
+testCompile "org.testcontainers:neo4j:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

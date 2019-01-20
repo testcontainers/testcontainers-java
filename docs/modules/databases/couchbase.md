@@ -71,7 +71,7 @@ So if you disable Query, Search and Analytic service, you can run multiple insta
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:couchbase:{{latest_version}}"
+testCompile "org.testcontainers:couchbase:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

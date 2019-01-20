@@ -30,7 +30,7 @@ public class SomeTest {
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:localstack:{{latest_version}}"
+testCompile "org.testcontainers:localstack:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

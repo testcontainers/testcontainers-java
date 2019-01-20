@@ -24,7 +24,7 @@ public class SomeTest {
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:mariadb:{{latest_version}}"
+testCompile "org.testcontainers:mariadb:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

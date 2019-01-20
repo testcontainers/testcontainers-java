@@ -54,7 +54,7 @@ ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:elasticsearch:{{latest_version}}"
+testCompile "org.testcontainers:elasticsearch:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

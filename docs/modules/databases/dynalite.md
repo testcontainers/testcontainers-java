@@ -30,7 +30,7 @@ In part, because it's light and quick to run. Also, please see the [reasons give
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:dynalite:{{latest_version}}"
+testCompile "org.testcontainers:dynalite:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

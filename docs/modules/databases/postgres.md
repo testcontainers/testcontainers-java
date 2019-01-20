@@ -7,7 +7,7 @@ See [Database containers](./index.md) for documentation and usage that is common
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:postgres:{{latest_version}}"
+testCompile "org.testcontainers:postgres:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

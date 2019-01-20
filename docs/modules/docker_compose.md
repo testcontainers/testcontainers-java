@@ -165,7 +165,7 @@ There are 3 ways to specify location of the `config.json` for Docker Compose:
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testRuntime "org.testcontainers:testcontainers:{{latest_version}}"
+testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
