@@ -23,7 +23,7 @@ A generic container rule can be used with any public docker image; for example:
 [Creating a Redis container (JUnit 4)](../examples/src/test/java/generic/ContainerCreationTest.java) inside_block:simple
 <!--/codeinclude-->
 
-Further options may be specified, for example:
+Further options may be specified:
 
 <!--codeinclude--> 
 [Creating a container with more options (JUnit 4)](../examples/src/test/java/generic/ContainerCreationTest.java) inside_block:withOptions
