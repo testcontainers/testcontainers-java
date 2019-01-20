@@ -1,6 +1,5 @@
 # Jupiter / JUnit 5
 
-
 While Testcontainers is tightly coupled with the JUnit 4.x rule API, this module provides
 an API that is based on the [JUnit Jupiter](https://junit.org/junit5/) extension model.
 
@@ -9,6 +8,7 @@ The extension supports two modes:
 - containers that are restarted for every test method
 - containers that are shared between all methods of a test class
 
+Note that Jupiter/JUnit 5 integration is packaged as a separate library JAR; see [below](#adding-testcontainers-junit-5-support-to-your-project-dependencies) for details.
 
 ## Extension
 
@@ -148,3 +148,20 @@ has a dependency onto JUnit 4.x, projects using this module will end up with bot
 and JUnit 4.x in the test classpath.
 
 This extension has only be tested with sequential test execution. Using it with parallel test execution is unsupported and may have unintended side effects.
+
+## Adding Testcontainers JUnit 5 support to your project dependencies
+
+Add the following dependency to your `pom.xml`/`build.gradle` file:
+
+```groovy tab='Gradle'
+testCompile "org.testcontainers:junit-jupiter:{{latest_version}}"
+```
+
+```xml tab='Maven'
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>{{latest_version}}</version>
+    <scope>test</scope>
+</dependency>
+```
