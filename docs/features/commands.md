@@ -22,10 +22,7 @@ This can be useful for software that has a command line administration tool. You
 [Executing a command inside a running container and reading the result](../examples/src/test/java/generic/ExecTest.java) inside_block:execReadingStdout
 <!--/codeinclude-->
 
-There are two limitations:
-
-* There's no way to get the return code of the executed command
-* This isn't supported if your docker daemon uses the older "lxc" execution engine.
+Note that there is no way to get the return code of the executed command, only stdout/stderr.
 
 ## Environment variables
 
