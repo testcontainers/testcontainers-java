@@ -44,7 +44,6 @@ testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 </dependency>
 ```
 
-
 You can also [check the latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
 
 [JitPack](jitpack_dependencies.md) builds are available for pre-release versions.
