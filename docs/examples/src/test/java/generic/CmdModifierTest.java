@@ -1,5 +1,6 @@
 package generic;
 
+import com.github.dockerjava.api.model.HostConfig;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.Container;
@@ -20,8 +21,8 @@ public class CmdModifierTest {
     // memory {
     @Rule
     public GenericContainer memoryLimitedRedis = new GenericContainer<>("redis:3.0.2")
-            .withCreateContainerCmdModifier(cmd -> cmd.withMemory((long) 4 * 1024 * 1024))
-            .withCreateContainerCmdModifier(cmd -> cmd.withMemorySwap((long) 4 * 1024 * 1024));
+            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(new HostConfig().withMemory((long) 4 * 1024 * 1024)))
+            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(new HostConfig().withMemorySwap((long) 4 * 1024 * 1024)));
     // }
 
 
