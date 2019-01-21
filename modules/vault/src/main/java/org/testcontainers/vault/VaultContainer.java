@@ -1,6 +1,7 @@
 package org.testcontainers.vault;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.HostConfig;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.traits.LinkableContainer;
 
@@ -41,7 +42,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     @Override
     protected void configure() {
         setStartupAttempts(3);
-        withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(IPC_LOCK));
+        withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(new HostConfig().withCapAdd(IPC_LOCK)));
         if(!isVaultPortRequested()){
             withEnv("VAULT_ADDR", "http://0.0.0.0:" + VAULT_PORT);
         }
