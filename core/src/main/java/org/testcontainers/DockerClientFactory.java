@@ -48,8 +48,8 @@ public class DockerClientFactory {
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
     public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
-            TESTCONTAINERS_LABEL, "true",
-            TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
+        TESTCONTAINERS_LABEL, "true",
+        TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
     private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
@@ -89,7 +89,6 @@ public class DockerClientFactory {
     }
 
     /**
-     *
      * @return a new initialized Docker client
      */
     @Synchronized
@@ -100,7 +99,7 @@ public class DockerClientFactory {
         }
 
         List<DockerClientProviderStrategy> configurationStrategies = new ArrayList<DockerClientProviderStrategy>();
-        ServiceLoader.load(DockerClientProviderStrategy.class).forEach( cs -> configurationStrategies.add( cs ) );
+        ServiceLoader.load(DockerClientProviderStrategy.class).forEach(cs -> configurationStrategies.add(cs));
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
 
@@ -114,10 +113,10 @@ public class DockerClientFactory {
             activeApiVersion = version.getApiVersion();
             activeExecutionDriver = dockerInfo.getExecutionDriver();
             log.info("Connected to docker: \n" +
-                    "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
-                    "  API Version: " + activeApiVersion + "\n" +
-                    "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
-                    "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
+                "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
+                "  API Version: " + activeApiVersion + "\n" +
+                "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
+                "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
             boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
 
@@ -157,9 +156,9 @@ public class DockerClientFactory {
 
         try {
             dockerClient
-                    .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
-                    .exec(new ExecStartResultCallback(outputStream, null))
-                    .awaitCompletion();
+                .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
+                .exec(new ExecStartResultCallback(outputStream, null))
+                .awaitCompletion();
         } catch (Exception e) {
             log.debug("Can't exec disk checking command", e);
         }
@@ -167,8 +166,8 @@ public class DockerClientFactory {
         DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
 
         VisibleAssertions.assertTrue(
-                "Docker environment should have more than 2GB free disk space",
-                df.availableMB.map(it -> it >= 2048).orElse(true)
+            "Docker environment should have more than 2GB free disk space",
+            df.availableMB.map(it -> it >= 2048).orElse(true)
         );
     }
 
@@ -180,7 +179,9 @@ public class DockerClientFactory {
         Volume volume = new Volume("/dummy");
         try {
             return runInsideDocker(
-                createContainerCmd -> createContainerCmd.withBinds(new Bind(mountableFile.getResolvedPath(), volume, AccessMode.ro)),
+                createContainerCmd -> createContainerCmd.withHostConfig(
+                    new HostConfig()
+                        .withBinds(new Bind(mountableFile.getResolvedPath(), volume, AccessMode.ro))),
                 (__, containerId) -> {
                     try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(containerId, volume.getPath()).exec()) {
                         stream.read();
@@ -197,8 +198,8 @@ public class DockerClientFactory {
     }
 
     /**
-   * Check whether the image is available locally and pull it otherwise
-   */
+     * Check whether the image is available locally and pull it otherwise
+     */
     public void checkAndPullImage(DockerClient client, String image) {
         List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
         if (images.isEmpty()) {
@@ -224,7 +225,7 @@ public class DockerClientFactory {
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
         checkAndPullImage(client, TINY_IMAGE);
         CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE)
-                .withLabels(DEFAULT_LABELS);
+            .withLabels(DEFAULT_LABELS);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
 
