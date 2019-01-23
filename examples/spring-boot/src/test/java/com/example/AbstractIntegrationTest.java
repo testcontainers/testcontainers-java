@@ -5,12 +5,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
-
-import java.time.Duration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = DemoApplication.class, webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = DemoApplication.class, webEnvironment = WebEnvironment.RANDOM_PORT,
+properties = {
+    "spring.datasource.url=jdbc:tc:postgresql:11-alpine://localhost/databasename"
+})
 public abstract class AbstractIntegrationTest {
 
     static {
@@ -18,16 +18,9 @@ public abstract class AbstractIntegrationTest {
             .withExposedPorts(6379);
         redis.start();
 
-        PostgreSQLContainer postgreSQLContainer = (PostgreSQLContainer) new PostgreSQLContainer("postgres:11-alpine")
-            .withDatabaseName("demo")
-            .withUsername("demouser")
-            .withPassword("demopass")
-            .withStartupTimeout(Duration.ofSeconds(600));
-        postgreSQLContainer.start();
 
         System.setProperty("spring.redis.host", redis.getContainerIpAddress());
         System.setProperty("spring.redis.port", redis.getFirstMappedPort() + "");
-        System.setProperty("spring.datasource.url", postgreSQLContainer.getJdbcUrl());
 
     }
 }
