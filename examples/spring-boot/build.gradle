@@ -1,0 +1,6 @@
+dependencies {
+    compile 'org.springframework.boot:spring-boot-starter-data-redis:2.1.2.RELEASE'
+    compile 'org.springframework.boot:spring-boot-starter-web:2.1.2.RELEASE'
+    testCompile 'org.springframework.boot:spring-boot-starter-test:2.1.2.RELEASE'
+    testCompile project(':testcontainers')
+}
