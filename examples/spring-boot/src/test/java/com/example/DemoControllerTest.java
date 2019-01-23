@@ -33,7 +33,7 @@ public class DemoControllerTest extends AbstractIntegrationTest {
 
         DemoEntity result = restTemplate.getForObject("/" + demoEntity.getId(), DemoEntity.class);
 
-        assertEquals("Demo entity have right value", "Some value", result.getValue());
+        assertEquals("Demo entity have correct value", "Some value", result.getValue());
     }
 
 }

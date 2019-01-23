@@ -1,14 +1,8 @@
 spring:
     main:
         banner-mode: 'OFF'
-    datasource:
-        driver-class-name: org.postgresql.Driver
-        url: jdbc:postgresql://localhost:5432/demo
-        username: demouser
-        password: demopass
     jpa:
         hibernate:
-            dialect:  org.hibernate.dialect.PostgreSQLDialect
             ddl-auto: create
         show-sql: true
         properties:
