@@ -8,9 +8,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.GenericContainer;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = DemoApplication.class, webEnvironment = WebEnvironment.RANDOM_PORT,
-properties = {
-    "spring.datasource.url=jdbc:tc:postgresql:11-alpine://localhost/databasename"
+@SpringBootTest(classes = DemoApplication.class, webEnvironment = WebEnvironment.RANDOM_PORT, properties = {
+    "spring.datasource.url=jdbc:tc:postgresql:11-alpine://localhost/databasename",
+    "spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver"
 })
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {

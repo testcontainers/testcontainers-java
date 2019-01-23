@@ -1,9 +1,6 @@
 spring:
     main:
         banner-mode: 'OFF'
-    jackson:
-        serialization:
-            WRITE_DATES_AS_TIMESTAMPS: false
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:5432/demo
@@ -14,4 +11,9 @@ spring:
             dialect:  org.hibernate.dialect.PostgreSQLDialect
             ddl-auto: create
         show-sql: true
+        properties:
+            hibernate:
+                jdbc:
+                    lob:
+                        non_contextual_creation: true
 
