@@ -1,6 +1,4 @@
 spring:
-    main:
-        banner-mode: 'OFF'
     jpa:
         hibernate:
             ddl-auto: create
