@@ -46,7 +46,7 @@ public class Stepdefs {
                 public String getFilesystemFriendlyName() {
                     return scenario.getName();
                 }
-            }, Optional.of(RuntimeException.class));
+            }, Optional.of(new RuntimeException()));
         }
         container.stop();
     }
