@@ -1,5 +1,6 @@
 package org.testcontainsers.examples;
 
+import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
@@ -9,9 +10,11 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.lifecycle.TestDescription;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
@@ -31,7 +34,20 @@ public class Stepdefs {
     }
 
     @After
-    public void afterScenario() {
+    public void afterScenario(Scenario scenario) {
+        if (scenario.isFailed()) {
+            container.afterTest(new TestDescription() {
+                @Override
+                public String getTestId() {
+                    return scenario.getId();
+                }
+
+                @Override
+                public String getFilesystemFriendlyName() {
+                    return scenario.getName();
+                }
+            }, Optional.of(RuntimeException.class));
+        }
         container.stop();
     }
 
