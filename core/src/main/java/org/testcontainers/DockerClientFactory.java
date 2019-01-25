@@ -119,17 +119,35 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
-
-            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, checksEnabled);
-            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
+            String ryukContainerId = null;
+            boolean useRyuk = !"false".equals(System.getenv("TESTCONTAINERS_RYUK_ENABLED"));
+            if (useRyuk) {
+                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+                log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
+            }
 
             VisibleAssertions.info("Checking the system...");
 
             checkDockerVersion(version.getVersion());
 
+            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
             if (checksEnabled) {
-                checkDiskSpace(client, ryukContainerId);
+                if (ryukContainerId != null) {
+                    checkDiskSpace(client, ryukContainerId);
+                } else {
+                    runInsideDocker(
+                        client,
+                        createContainerCmd -> {
+                            createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
+                            createContainerCmd.getHostConfig().withAutoRemove(true);
+                            createContainerCmd.withCmd("tail", "-f", "/dev/null");
+                        },
+                        (__, containerId) -> {
+                            checkDiskSpace(client, containerId);
+                            return "";
+                        }
+                    );
+                }
             }
 
             initialized = true;
