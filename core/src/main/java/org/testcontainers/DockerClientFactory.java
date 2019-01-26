@@ -120,7 +120,7 @@ public class DockerClientFactory {
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
             String ryukContainerId = null;
-            boolean useRyuk = !"false".equals(System.getenv("TESTCONTAINERS_RYUK_ENABLED"));
+            boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
             if (useRyuk) {
                 ryukContainerId = ResourceReaper.start(hostIpAddress, client);
                 log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
