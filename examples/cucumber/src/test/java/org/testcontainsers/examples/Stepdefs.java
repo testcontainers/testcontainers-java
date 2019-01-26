@@ -21,7 +21,7 @@ import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordi
 
 public class Stepdefs {
 
-    BrowserWebDriverContainer container = new BrowserWebDriverContainer()
+    private BrowserWebDriverContainer container = new BrowserWebDriverContainer()
             .withCapabilities(new ChromeOptions())
             .withRecordingMode(RECORD_ALL, new File("target"));
 
@@ -35,29 +35,26 @@ public class Stepdefs {
 
     @After
     public void afterScenario(Scenario scenario) {
-        if (scenario.isFailed()) {
-            container.afterTest(new TestDescription() {
-                @Override
-                public String getTestId() {
-                    return scenario.getId();
-                }
+        container.afterTest(new TestDescription() {
+            @Override
+            public String getTestId() {
+                return scenario.getId();
+            }
 
-                @Override
-                public String getFilesystemFriendlyName() {
-                    return scenario.getName();
-                }
-            }, Optional.of(new RuntimeException()));
-        }
-        container.stop();
+            @Override
+            public String getFilesystemFriendlyName() {
+                return scenario.getName();
+            }
+        }, Optional.of(scenario).filter(Scenario::isFailed).map(__ -> new RuntimeException()));
     }
 
     @Given("^location is \"([^\"]*)\"$")
-    public void location_is(String location) throws Exception {
+    public void locationIs(String location) throws Exception {
         this.location = location;
     }
 
     @When("^I ask is it possible to search here$")
-    public void i_ask_is_it_possible_to_search_here() throws Exception {
+    public void iAskIsItPossibleToSearchHere() throws Exception {
         RemoteWebDriver driver = container.getWebDriver();
         driver.get(location);
         List<WebElement> searchInputs = driver.findElementsByTagName("input");
@@ -65,7 +62,7 @@ public class Stepdefs {
     }
 
     @Then("^I should be told \"([^\"]*)\"$")
-    public void i_should_be_told(String expected) throws Exception {
+    public void iShouldBeTold(String expected) throws Exception {
         assertEquals(expected, answer);
     }
 
