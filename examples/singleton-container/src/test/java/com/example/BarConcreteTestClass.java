@@ -27,8 +27,8 @@ public class BarConcreteTestClass extends AbstractIntegrationTest {
 		cache.put("bar", "BAR");
 		Optional<String> foundObject = cache.get("bar", String.class);
 
-		assertTrue("When inserted a object in the cache, it can be found", foundObject.isPresent());
-		assertEquals("When we get value of an inserted object, the value must be the same", "BAR", foundObject.get());
+		assertTrue("When inserting an object into the cache, it can be retrieved", foundObject.isPresent());
+		assertEquals("When accessing the value of a retrieved object, the value must be the same", "BAR", foundObject.get());
 	}
 
 }
