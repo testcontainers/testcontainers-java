@@ -1,8 +1,9 @@
-package testcontainer.singleton_container;
+package com.example;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-
+import com.example.cache.Cache;
+import com.example.cache.RedisBackedCache;
 import java.util.Optional;
 
 import org.junit.Before;

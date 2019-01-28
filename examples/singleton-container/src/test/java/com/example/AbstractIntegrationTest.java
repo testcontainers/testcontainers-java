@@ -1,4 +1,4 @@
-package testcontainer.singleton_container;
+package com.example;
 
 import org.testcontainers.containers.GenericContainer;
 

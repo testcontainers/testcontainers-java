@@ -1,4 +1,4 @@
-package testcontainer.singleton_container;
+package com.example.cache;
 
 import com.google.gson.Gson;
 import redis.clients.jedis.Jedis;
