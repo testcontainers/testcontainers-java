@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-public class FooConcreteTestClass extends AbstractIntegrationTest{
+public class FooConcreteTestClass extends AbstractIntegrationTest {
 
     private Cache cache;
 
