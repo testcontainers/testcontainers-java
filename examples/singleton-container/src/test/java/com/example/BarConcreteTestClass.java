@@ -1,15 +1,15 @@
 package com.example;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import com.example.cache.Cache;
 import com.example.cache.RedisBackedCache;
-import java.util.Optional;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.Jedis;
+
+import java.util.Optional;
+
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class BarConcreteTestClass extends AbstractIntegrationTest {
 
