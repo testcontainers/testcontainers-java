@@ -10,7 +10,7 @@ public class SimpleR2dbcPostgreSQLTest {
 
     @Test
     public void testR2dbcConnectionSuccessful() {
-        try (R2dbcPostgresContainer postgres = (R2dbcPostgresContainer) new R2dbcPostgresContainer()
+        try (R2dbcPostgresContainer postgres = new R2dbcPostgresContainer()
             .withInitScript("init_postgresql.sql")) {
             postgres.start();
 
