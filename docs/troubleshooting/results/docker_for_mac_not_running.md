@@ -1,4 +1,4 @@
-# Docker for Mac not running
+# Docker for Mac is not running
 
 Please properly install and start Docker for Mac first:
 
