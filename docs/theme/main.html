@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+{% if page.url.startswith('troubleshooting/') %}
+<link rel="stylesheet" href="{{ base_url }}/css/troubleshooting.css">
+{% endif %}
+{% endblock %}

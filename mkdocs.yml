@@ -5,6 +5,7 @@ plugins:
     - markdownextradata
 theme:
     name: 'material'
+    custom_dir: docs/theme/
     palette:
         primary: 'blue'
         accent: 'teal'
@@ -72,6 +73,7 @@ nav:
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
     - Getting help: getting_help.md
+    - Troubleshooting: troubleshooting/index.md
     - Contributing:
           - contributing.md
           - contributing_docs.md
