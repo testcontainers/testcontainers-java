@@ -4,5 +4,5 @@ Select your problem:
 
 | |
 |-|
-|[Unable connect to my running container](past_checks/connection_issues.md)|
+|[Unable to connect to my running container](past_checks/connection_issues.md)|
 |[Other](todo.md)|
