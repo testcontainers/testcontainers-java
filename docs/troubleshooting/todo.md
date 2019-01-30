@@ -1,6 +1,6 @@
 This page is under construction.
 
-Consider [getting help from the community](../../../getting_help.md).
+Consider [getting help from the community](../getting_help.md).
 
 !!!tip
     don't forget to share your logs (if you have any)
