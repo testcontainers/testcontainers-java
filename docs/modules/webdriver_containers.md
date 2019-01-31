@@ -26,7 +26,7 @@ The following field in your JUnit UI test class will prepare a container running
 @Rule
 public BrowserWebDriverContainer chrome =
     new BrowserWebDriverContainer()
-            .withDesiredCapabilities(DesiredCapabilities.chrome());
+            .withCapabilities(new ChromeOptions());
 ```
         
 Now, instead of instantiating an instance of WebDriver directly, use the following to obtain an instance inside your
@@ -51,13 +51,13 @@ driver.get("http://" + chrome.getTestHostIpAddress() + ":8080/");
 At the moment, Chrome and Firefox are supported. To switch, simply change the first parameter to the rule constructor:
 ```java
 new BrowserWebDriverContainer()
-                .withDesiredCapabilities(DesiredCapabilities.chrome());
+        .withCapabilities(new ChromeOptions());
 ```
         
 or
 ```java
 new BrowserWebDriverContainer()
-                .withDesiredCapabilities(DesiredCapabilities.firefox());
+        .withCapabilities(new FirefoxOptions());
 ```
 
 ### Recording videos
@@ -68,23 +68,23 @@ just for failing tests.
 To do this, simply add extra parameters to the rule constructor:
 ```java
 new BrowserWebDriverContainer()
-                .withDesiredCapabilities(DesiredCapabilities.chrome())
-                .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("./target/"))
+        .withCapabilities(new ChromeOptions())
+        .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("./target/"))
 ```
 
 or if you only want videos for test failures:
 ```java
 new BrowserWebDriverContainer()
-                .withDesiredCapabilities(DesiredCapabilities.chrome())
-                .withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
+        .withCapabilities(new ChromeOptions())
+        .withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
 ```
 Note that the seconds parameter to `withRecordingMode` should be a directory where recordings can be saved.
 
 If you would like to customise the file name of the recording, or provide a different directory at runtime based on the description of the test and/or its success or failure, you may provide a custom recording file factory as follows:
 ```java
 new BrowserWebDriverContainer()
-                //...
-                .withRecordingFileFactory(new CustomRecordingFileFactory())
+        //...
+        .withRecordingFileFactory(new CustomRecordingFileFactory())
 ```
 
 Note the factory must implement `org.testcontainers.containers.RecordingFileFactory`.
