@@ -19,7 +19,7 @@ import org.testcontainers.utility.LicenseAcceptance;
  * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
  * @author Michael J. Simons
  */
-public final class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
+public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
 
     /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
