@@ -13,7 +13,7 @@ testCompile "org.testcontainers:postgresql:{{latest_version}}"
 ```xml tab='Maven'
 <dependency>
     <groupId>org.testcontainers</groupId>
-    <artifactId>postgres</artifactId>
+    <artifactId>postgresql</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>
