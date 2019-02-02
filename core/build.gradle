@@ -118,7 +118,7 @@ dependencies {
     }
 
     testCompile 'redis.clients:jedis:3.0.1'
-    testCompile 'com.rabbitmq:amqp-client:5.5.3'
+    testCompile 'com.rabbitmq:amqp-client:5.6.0'
     testCompile 'org.mongodb:mongo-java-driver:3.9.1'
     testCompile ('org.mockito:mockito-core:2.23.4') {
         exclude(module: 'hamcrest-core')
