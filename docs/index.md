@@ -20,7 +20,7 @@ Testcontainers make the following kinds of tests easier:
     * [JUnit 4](test_framework_integration/junit_4.md) - See the [JUnit 4 Quickstart Guide](quickstart/junit_4_quickstart.md)
     * [Jupiter/JUnit 5](test_framework_integration/junit_5.md)
     * [Spock](test_framework_integration/spock.md)
-    * *Or* manually add code to control the container/test lifecycle (See [hints for this approach](test_framework_integration/junit_4.md#manually-controlling-container-lifecycle)
+    * *Or* manually add code to control the container/test lifecycle (See [hints for this approach](test_framework_integration/junit_4.md#manually-controlling-container-lifecycle))
 
 ## Maven dependencies
 
