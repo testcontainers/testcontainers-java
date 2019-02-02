@@ -21,8 +21,9 @@ public class CmdModifierTest {
     // memory {
     @Rule
     public GenericContainer memoryLimitedRedis = new GenericContainer<>("redis:3.0.2")
-            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(new HostConfig().withMemory((long) 4 * 1024 * 1024)))
-            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(new HostConfig().withMemorySwap((long) 4 * 1024 * 1024)));
+            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(HostConfig.newHostConfig()
+                .withMemory((long) 4 * 1024 * 1024)
+                .withMemorySwap((long) 4 * 1024 * 1024)));
     // }
 
 

@@ -5,12 +5,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.Ports;
-import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.*;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,18 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -69,8 +56,7 @@ public final class ResourceReaper {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
-        List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
+        Binds binds = new Binds(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig()
