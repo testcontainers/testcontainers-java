@@ -242,9 +242,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Starting container with ID: {}", containerId);
             dockerClient.startContainerCmd(containerId).exec();
 
-            // For all registered output consumers, start following as close to container startup as possible
-            this.logConsumers.forEach(this::followOutput);
-
             logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // Tell subclasses that we're starting
@@ -252,14 +249,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerName = containerInfo.getName();
             containerIsStarting(containerInfo);
 
-            // Wait until the container is running (may not be fully started)
-
+            // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
             }
 
+            // For all registered output consumers, start following as close to container startup as possible
+            this.logConsumers.forEach(this::followOutput);
+
+            // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
