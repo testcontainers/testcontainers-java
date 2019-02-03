@@ -33,7 +33,7 @@ public class LogUtils {
                              Consumer<OutputFrame> consumer,
                              OutputFrame.OutputType... types) {
 
-        attachConsumer(dockerClient, containerId, consumer, true);
+        attachConsumer(dockerClient, containerId, consumer, true, types);
     }
 
     /**
