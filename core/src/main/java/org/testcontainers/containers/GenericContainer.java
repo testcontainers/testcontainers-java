@@ -1119,6 +1119,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * @return all log output from the container from start until the current instant (both stdout and stderr)
+     */
+    public String getLogs() {
+        return LogUtils.getOutput(dockerClient, containerId);
+    }
+
+    /**
+     * @param types log types to return
+     * @return all log output from the container from start until the current instant
+     */
+    public String getLogs(OutputFrame.OutputType... types) {
+        return LogUtils.getOutput(dockerClient, containerId, types);
+    }
+
+    /**
      * Allow container startup to be attempted more than once if an error occurs. To be if containers are
      * 'flaky' but this flakiness is not something that should affect test outcomes.
      *
