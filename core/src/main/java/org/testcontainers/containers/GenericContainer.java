@@ -244,6 +244,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
+            // For all registered output consumers, start following as close to container startup as possible
+            this.logConsumers.forEach(this::followOutput);
+
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
@@ -255,9 +258,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
             }
-
-            // For all registered output consumers, start following as close to container startup as possible
-            this.logConsumers.forEach(this::followOutput);
 
             // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
             waitUntilContainerStarted();
