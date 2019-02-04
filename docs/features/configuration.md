@@ -44,7 +44,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 
 ## Customizing Ryuk resource reaper
 
-> **ryuk.container.image = quay.io/testcontainers/ryuk:0.2.2**
+> **ryuk.container.image = quay.io/testcontainers/ryuk:0.2.3**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
 
 > **ryuk.container.privileged = false**
