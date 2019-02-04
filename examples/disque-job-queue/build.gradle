@@ -1,9 +1,17 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    jcenter()
+}
+
 dependencies {
     compile 'biz.paluch.redis:spinach:0.3'
     compile 'com.google.code.gson:gson:2.8.5'
     compile 'com.google.guava:guava:23.0'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
     testCompile 'org.mockito:mockito-all:1.10.19'
-    testCompile project(':testcontainers')
+    testCompile 'org.testcontainers:testcontainers'
     compileOnly 'org.slf4j:slf4j-api:1.7.25'
 }

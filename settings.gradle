@@ -42,8 +42,7 @@ file('examples').eachDir { dir ->
         return
     }
 
-    include "examples:${dir.name}"
-    project(":examples:${dir.name}").projectDir = dir
+    includeBuild "examples/${dir.name}"
 }
 
 include "docs-examples"

@@ -1,9 +1,17 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    jcenter()
+}
+
 dependencies {
-    compile 'redis.clients:jedis:3.0.1'
-    compile 'com.google.code.gson:gson:2.8.5'
-    compile 'com.google.guava:guava:23.0'
-    testCompile project(':testcontainers')
-    testCompile 'junit:junit:4.12'
-    testCompile 'ch.qos.logback:logback-classic:1.2.3'
+    implementation 'redis.clients:jedis:3.0.1'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.guava:guava:23.0'
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
     compileOnly 'org.slf4j:slf4j-api:1.7.25'
 }
