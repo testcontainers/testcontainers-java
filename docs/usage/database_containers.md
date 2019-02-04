@@ -117,3 +117,23 @@ is a directory on the classpath containing .cnf files, the following URL can be 
 
 Any .cnf files in this classpath directory will be mapped into the database container's /etc/mysql/conf.d directory,
 and will be able to override server settings when the container starts.
+
+#### R2DBC
+
+R2DBC connection support is currently only available for `PostgreSQL` and `MSSQL` Database containers. These containers expose an R2DBC `Connection` instance, they are located in the module `r2dbc`. The module contains both `R2dbcMSSQLServerContainer` and `R2dbcPostgresContainer`
+
+Please keep in mind that these modules still use JDBC for managing the connection to the DB internally, they only expose a convenient way to use R2DBC in tests. These containers can only be created progmatically, JDBC URI parsing does not work. Example:
+
+```java
+
+public class R2dbcExampleTest {
+
+    public R2dbcMSSQLServerContainer mssqlServer = new R2dbcMSSQLServerContainer();
+
+    @Test
+    public void testMethod() {
+        R2dbc r2dbc = new R2dbc(mssqlServer.getR2dbcConnectionFactory());
+    }
+}
+
+```
