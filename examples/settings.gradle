@@ -1,0 +1,8 @@
+rootProject.name = 'testcontainers-examples'
+
+includeBuild '..'
+
+file('.').eachDirMatch({it != '.gradle'}) { dir ->
+    include dir.name
+    project(":${dir.name}").projectDir = dir
+}

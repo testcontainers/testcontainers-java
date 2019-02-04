@@ -7,10 +7,10 @@ repositories {
 }
 
 dependencies {
-    compile 'org.seleniumhq.selenium:selenium-remote-driver:3.14.0'
-    compile 'org.seleniumhq.selenium:selenium-firefox-driver:3.14.0'
-    compile 'org.seleniumhq.selenium:selenium-chrome-driver:3.14.0'
-    compile 'org.springframework.boot:spring-boot-starter-web:2.1.2.RELEASE'
-    testCompile 'org.springframework.boot:spring-boot-starter-test:2.1.2.RELEASE'
-    testCompile 'org.testcontainers:selenium'
+    implementation 'org.seleniumhq.selenium:selenium-remote-driver:3.14.0'
+    implementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.14.0'
+    implementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.14.0'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.1.2.RELEASE'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.1.2.RELEASE'
+    testImplementation 'org.testcontainers:selenium'
 }

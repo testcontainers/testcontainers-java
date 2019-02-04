@@ -37,13 +37,5 @@ file('modules').eachDir { dir ->
     project(":${dir.name}").projectDir = dir
 }
 
-file('examples').eachDir { dir ->
-    if (dir.name == 'build') {
-        return
-    }
-
-    includeBuild "examples/${dir.name}"
-}
-
 include "docs-examples"
 project(":docs-examples").projectDir = file("docs/examples")
