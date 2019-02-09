@@ -8,6 +8,7 @@ include(
     'redis-backed-cache',
     'redis-backed-cache-testng',
     'selenium-container',
+    'singleton-container',
     'spring-boot'
 )
 
