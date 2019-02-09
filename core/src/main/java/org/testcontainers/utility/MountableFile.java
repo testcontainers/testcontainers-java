@@ -8,6 +8,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.images.builder.Transferable;
 
 import java.io.File;
@@ -147,7 +148,7 @@ public class MountableFile implements Transferable {
     private static String unencodeResourceURIToFilePath(@NotNull final String resource) {
         try {
             // Convert any url-encoded characters (e.g. spaces) back into unencoded form
-            return URLDecoder.decode(resource, Charsets.UTF_8.name())
+            return URLDecoder.decode(resource.replaceAll("\\+", "%2B"), Charsets.UTF_8.name())
                     .replaceFirst("jar:", "")
                     .replaceFirst("file:", "")
                     .replaceAll("!.*", "");
@@ -280,7 +281,7 @@ public class MountableFile implements Transferable {
     }
 
     private void deleteOnExit(final Path path) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> recursiveDeleteDir(path)));
+        Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> recursiveDeleteDir(path)));
     }
 
     /**
@@ -300,7 +301,14 @@ public class MountableFile implements Transferable {
             final File sourceRootFile = new File(rootPath).getCanonicalFile();     // e.g. /foo
             final String relativePathToSourceFile = sourceRootFile.toPath().relativize(sourceFile.toPath()).toFile().toString();    // e.g. /bar/baz
 
-            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, entryFilename + "/" + relativePathToSourceFile); // entry filename e.g. /xyz/bar/baz
+            final String tarEntryFilename;
+            if (relativePathToSourceFile.isEmpty()) {
+                tarEntryFilename = entryFilename; // entry filename e.g. xyz => xyz
+            } else {
+                tarEntryFilename = entryFilename + "/" + relativePathToSourceFile; // entry filename e.g. /xyz/bar/baz => /foo/bar/baz
+            }
+
+            final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, tarEntryFilename.replaceAll("^/", ""));
 
             // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)
             tarEntry.setMode(getUnixFileMode(itemPath));

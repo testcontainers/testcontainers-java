@@ -1,8 +1,7 @@
 package org.testcontainers.junit;
 
-import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.HostConfig;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -13,20 +12,22 @@ import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.*;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
@@ -160,6 +161,27 @@ public class GenericContainerRuleTest {
     }
 
     @Test
+    public void withTmpFsTest() throws Exception {
+        try (
+            GenericContainer container = new GenericContainer()
+                .withCommand("top")
+                .withTmpFs(singletonMap("/testtmpfs", "rw"))
+        ) {
+            container.start();
+            // check file doesn't exist
+            String path = "/testtmpfs/test.file";
+            Container.ExecResult execResult = container.execInContainer("ls", path);
+            assertEquals("tmpfs inside container works fine", execResult.getStderr(),
+                "ls: /testtmpfs/test.file: No such file or directory\n");
+            // touch && check file does exist
+            container.execInContainer("touch", path);
+            execResult = container.execInContainer("ls", path);
+            assertEquals("tmpfs inside container works fine", execResult.getStdout(), path + "\n");
+        }
+    }
+
+
+    @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(rabbitMq.getContainerIpAddress());
@@ -218,6 +240,32 @@ public class GenericContainerRuleTest {
         String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
 
         assertEquals("Environment variables can be passed into a command from a map", "42 and 50", line);
+    }
+
+    @Test
+    public void customLabelTest() {
+        try (final GenericContainer alpineCustomLabel = new GenericContainer("alpine:3.2")
+            .withLabel("our.custom", "label")
+            .withCommand("top")) {
+
+            alpineCustomLabel.start();
+
+            Map<String, String> labels = alpineCustomLabel.getCurrentContainerInfo().getConfig().getLabels();
+            assertTrue("org.testcontainers label is present", labels.containsKey("org.testcontainers"));
+            assertTrue("our.custom label is present", labels.containsKey("our.custom"));
+            assertEquals("our.custom label value is label", labels.get("our.custom"), "label");
+        }
+    }
+
+    @Test
+    public void exceptionThrownWhenTryingToOverrideTestcontainersLabels() {
+        assertThrows("When trying to overwrite an 'org.testcontainers' label, withLabel() throws an exception",
+            IllegalArgumentException.class,
+            () -> {
+                new GenericContainer("alpine:3.2")
+                    .withLabel("org.testcontainers.foo", "false");
+            }
+        );
     }
 
     @Test
@@ -335,54 +383,6 @@ public class GenericContainerRuleTest {
         }
     }
 
-    @Test
-    public void copyToContainerTest() throws Exception {
-        final File tempResultFolder = Files.createTempDir();
-
-        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
-                    .withCommand("top")){
-            
-            alpineCopyToContainer.start();
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
-                    tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
-
-            File expectedFile = new File(mountableFile.getResolvedPath());
-            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_to_container.txt");
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
-        }
-    }
-
-    @Test(expected = NotFoundException.class)
-    public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException, IOException, InterruptedException {
-
-        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
-                        .withCommand("top")) {
-            alpineCopyToContainer.start();
-            alpineCopyToContainer.copyFileFromContainer("/home/test.txt", "src/test/resources/copy-from/test.txt");
-        }
-    }
-
-    @Test
-    public void shouldCopyFileFromContainerTest() throws IOException, InterruptedException {
-        final File tempResultFolder = Files.createTempDir();
-
-        try (final GenericContainer alpineCopyToContainer = new GenericContainer("alpine:3.2")
-                .withCommand("top")) {
-
-            alpineCopyToContainer.start();
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt",
-                    tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
-
-            File expectedFile = new File(mountableFile.getResolvedPath());
-            File actualFile = new File(tempResultFolder.getAbsolutePath() + "/test_copy_from_container.txt");
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile,actualFile));
-        }
-    }
-
     private BufferedReader getReaderForContainerPort80(GenericContainer container) {
 
         return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
@@ -399,5 +399,19 @@ public class GenericContainerRuleTest {
         assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
         assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
         assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
+    public void sharedMemorySetTest() {
+        try (GenericContainer containerWithSharedMemory = new GenericContainer("busybox:1.29")
+            .withSharedMemorySize(1024L * FileUtils.ONE_MB)) {
+
+            containerWithSharedMemory.start();
+
+            HostConfig hostConfig =
+                containerWithSharedMemory.getDockerClient().inspectContainerCmd(containerWithSharedMemory.getContainerId())
+                    .exec().getHostConfig();
+            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+        }
     }
 }

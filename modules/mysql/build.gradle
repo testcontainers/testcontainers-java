@@ -3,9 +3,9 @@ description = "Testcontainers :: JDBC :: MySQL"
 dependencies {
     compile project(':jdbc')
 
-    testCompile 'mysql:mysql-connector-java:5.1.35'
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
-    testCompile 'commons-dbutils:commons-dbutils:1.6'
-    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
-    testCompile 'org.vibur:vibur-dbcp:9.0'
+    testCompile 'mysql:mysql-connector-java:8.0.14'
+    testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
+    testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.16'
+    testCompile 'commons-dbutils:commons-dbutils:1.7'
+    testCompile 'org.vibur:vibur-dbcp:22.2'
 }

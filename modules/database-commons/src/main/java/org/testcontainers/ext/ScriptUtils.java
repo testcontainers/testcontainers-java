@@ -16,12 +16,16 @@
 
 package org.testcontainers.ext;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.delegate.DatabaseDelegate;
 
 import javax.script.ScriptException;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -114,8 +118,12 @@ public abstract class ScriptUtils {
 		checkArgument(StringUtils.isNotEmpty(blockCommentEndDelimiter), "blockCommentEndDelimiter must not be null or empty");
 
 		StringBuilder sb = new StringBuilder();
-		boolean inLiteral = false;
 		boolean inEscape = false;
+		boolean inLineComment = false;
+		boolean inBlockComment = false;
+		Character currentLiteralDelimiter = null;
+
+		int compoundStatementDepth = 0;
 		char[] content = script.toCharArray();
 		for (int i = 0; i < script.length(); i++) {
 			char c = content[i];
@@ -130,10 +138,39 @@ public abstract class ScriptUtils {
 				sb.append(c);
 				continue;
 			}
-			if (c == '\'') {
-				inLiteral = !inLiteral;
+			// Determine whether we're entering/leaving a string literal
+			if (!inBlockComment && !inLineComment && (c == '\'' || c == '"' || c == '`')) {
+				if (currentLiteralDelimiter == null) { // ignore delimiters within an existing string literal
+					currentLiteralDelimiter = c;
+				} else if (currentLiteralDelimiter == c) { // find end of string literal
+					currentLiteralDelimiter = null;
+				}
 			}
-			if (!inLiteral) {
+			final boolean inLiteral = currentLiteralDelimiter != null;
+
+			if (!inLiteral && containsSubstringAtOffset(script, commentPrefix, i)) {
+				inLineComment = true;
+			}
+ 			if (inLineComment && c == '\n') {
+				inLineComment = false;
+			}
+			if (!inLiteral && containsSubstringAtOffset(script, blockCommentStartDelimiter, i)) {
+				inBlockComment = true;
+			}
+			if (!inLiteral && inBlockComment && containsSubstringAtOffset(script, blockCommentEndDelimiter, i)) {
+				inBlockComment = false;
+			}
+			final boolean inComment = inLineComment || inBlockComment;
+
+			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "BEGIN", i)) {
+				compoundStatementDepth++;
+			}
+			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "END", i)) {
+				compoundStatementDepth--;
+			}
+			final boolean inCompoundStatement = compoundStatementDepth != 0;
+
+			if (!inLiteral && !inCompoundStatement) {
 				if (script.startsWith(separator, i)) {
 					// we've reached the end of the current statement
 					if (sb.length() > 0) {
@@ -185,6 +222,13 @@ public abstract class ScriptUtils {
 		}
 	}
 
+	private static boolean containsSubstringAtOffset(String string, String substring, int offset) {
+		String lowercaseString = string.toLowerCase();
+		String lowercaseSubstring = substring.toLowerCase();
+
+		return lowercaseString.startsWith(lowercaseSubstring, offset);
+	}
+
 	private static void checkArgument(boolean expression, String errorMessage) {
 		if (!expression) {
 			throw new IllegalArgumentException(errorMessage);
@@ -208,6 +252,30 @@ public abstract class ScriptUtils {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Load script from classpath and apply it to the given database
+	 *
+	 * @param databaseDelegate database delegate for script execution
+	 * @param initScriptPath   the resource to load the init script from
+	 */
+	public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
+		try {
+			URL resource = ScriptUtils.class.getClassLoader().getResource(initScriptPath);
+			if (resource == null) {
+				LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
+			}
+			String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
+			executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+		} catch (IOException e) {
+			LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
+		} catch (ScriptException e) {
+			LOGGER.error("Error while executing init script: {}", initScriptPath, e);
+			throw new UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
+		}
 	}
 
     public static void executeDatabaseScript(DatabaseDelegate databaseDelegate, String scriptPath, String script) throws ScriptException {
@@ -278,19 +346,33 @@ public abstract class ScriptUtils {
 		}
 	}
 
-    private static class ScriptParseException extends RuntimeException {
-        public ScriptParseException(String format, String scriptPath) {
-            super(String.format(format, scriptPath));
-        }
-    }
+	public static class ScriptLoadException extends RuntimeException {
+		public ScriptLoadException(String message) {
+			super(message);
+		}
 
-    public static class ScriptStatementFailedException extends RuntimeException {
-        public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath, Exception ex) {
-            super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement), ex);
-        }
-    }
+		public ScriptLoadException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
 
-    private static class UncategorizedScriptException extends RuntimeException {
+	private static class ScriptParseException extends RuntimeException {
+		public ScriptParseException(String format, String scriptPath) {
+			super(String.format(format, scriptPath));
+		}
+	}
+
+	public static class ScriptStatementFailedException extends RuntimeException {
+		public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath) {
+			this(statement, lineNumber, scriptPath, null);
+		}
+
+		public ScriptStatementFailedException(String statement, int lineNumber, String scriptPath, Exception ex) {
+			super(String.format("Script execution failed (%s:%d): %s", scriptPath, lineNumber, statement), ex);
+		}
+	}
+
+    public static class UncategorizedScriptException extends RuntimeException {
         public UncategorizedScriptException(String s, Exception ex) {
             super(s, ex);
         }

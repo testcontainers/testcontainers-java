@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css?family=Inconsolata|Lato|Merriweather+Sans|Open+Sans|Source+Sans+Pro');
+body {
+    font-family: 'Lato', sans-serif;
+
+}
+
+.md-typeset pre {
+    font-family: 'Inconsolata', monospace;
+    font-size: 100%;
+}

@@ -1,18 +1,17 @@
 package org.testcontainers.utility;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -23,6 +22,7 @@ import org.testcontainers.DockerClientFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -59,27 +59,27 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
+    @Deprecated
+    public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
+        return start(hostIpAddress, client);
+    }
+
     @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
-        MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
+        List<Bind> binds = new ArrayList<>();
+        binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig() {
-                    @JsonProperty("AutoRemove")
-                    boolean autoRemove = true;
-                })
+                .withHostConfig(new HostConfig().withAutoRemove(true))
                 .withExposedPorts(new ExposedPort(8080))
                 .withPublishAllPorts(true)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-                .withBinds(
-                        new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")),
-                        // Not needed for Ryuk, but we perform pre-flight checks with it (micro optimization)
-                        new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro)
-                )
+                .withBinds(binds)
+                .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
                 .exec()
                 .getId();
 
@@ -105,12 +105,12 @@ public final class ResourceReaper {
         }
 
         Thread kiraThread = new Thread(
+                DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
                 () -> {
                     while (true) {
                         int index = 0;
                         try(Socket clientSocket = new Socket(hostIpAddress, ryukPort)) {
-                            OutputStream out = clientSocket.getOutputStream();
-                            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                            FilterRegistry registry = new FilterRegistry(clientSocket.getInputStream(), clientSocket.getOutputStream());
 
                             synchronized (DEATH_NOTE) {
                                 while (true) {
@@ -123,24 +123,14 @@ public final class ResourceReaper {
                                         }
                                     }
                                     List<Map.Entry<String, String>> filters = DEATH_NOTE.get(index);
-
-                                    String query = URLEncodedUtils.format(
-                                            filters.stream()
-                                                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
-                                                    .collect(Collectors.toList()),
-                                            (String) null
-                                    );
-
-                                    log.debug("Sending '{}' to Ryuk", query);
-                                    out.write(query.getBytes());
-                                    out.write('\n');
-                                    out.flush();
-
-                                    while (!"ACK".equalsIgnoreCase(in.readLine())) {
+                                    boolean isAcknowledged = registry.register(filters);
+                                    if (isAcknowledged) {
+                                        log.debug("Received 'ACK' from Ryuk");
+                                        ryukScheduledLatch.countDown();
+                                        index++;
+                                    } else {
+                                        log.debug("Didn't receive 'ACK' from Ryuk. Will retry to send filters.");
                                     }
-
-                                    ryukScheduledLatch.countDown();
-                                    index++;
                                 }
                             }
                         } catch (IOException e) {
@@ -154,7 +144,7 @@ public final class ResourceReaper {
         kiraThread.start();
 
         // We need to wait before we can start any containers to make sure that we delete them
-        if (!ryukScheduledLatch.await(5, TimeUnit.SECONDS)) {
+        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
             throw new IllegalStateException("Can not connect to Ryuk");
         }
 
@@ -171,7 +161,6 @@ public final class ResourceReaper {
 
     /**
      * Perform a cleanup.
-     *
      */
     public synchronized void performCleanup() {
         registeredContainers.forEach(this::stopContainer);
@@ -230,7 +219,7 @@ public final class ResourceReaper {
             InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             running = containerInfo.getState().getRunning();
         } catch (NotFoundException e) {
-            LOGGER.trace("Was going to stop container but it apparently no longer exists: {}");
+            LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
             return;
         } catch (DockerException e) {
             LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
@@ -250,7 +239,7 @@ public final class ResourceReaper {
         try {
             dockerClient.inspectContainerCmd(containerId).exec();
         } catch (NotFoundException e) {
-            LOGGER.trace("Was going to remove container but it apparently no longer exists: {}");
+            LOGGER.trace("Was going to remove container but it apparently no longer exists: {}", containerId);
             return;
         }
 
@@ -351,7 +340,53 @@ public final class ResourceReaper {
     private void setHook() {
         if (hookIsSet.compareAndSet(false, true)) {
             // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(new Thread(this::performCleanup));
+            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
+    }
+
+    static class FilterRegistry {
+
+        @VisibleForTesting
+        static final String ACKNOWLEDGMENT = "ACK";
+
+        private final BufferedReader in;
+        private final OutputStream out;
+
+        FilterRegistry(InputStream ryukInputStream, OutputStream ryukOutputStream) {
+            this.in = new BufferedReader(new InputStreamReader(ryukInputStream));
+            this.out = ryukOutputStream;
+        }
+
+        /**
+         * Registers the given filters with Ryuk
+         *
+         * @param filters the filter to register
+         * @return true if the filters have been registered successfuly, false otherwise
+         * @throws IOException if communication with Ryuk fails
+         */
+        protected boolean register(List<Map.Entry<String, String>> filters) throws IOException {
+            String query = URLEncodedUtils.format(
+                filters.stream()
+                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
+                    .collect(Collectors.toList()),
+                (String) null
+            );
+
+            log.debug("Sending '{}' to Ryuk", query);
+            out.write(query.getBytes());
+            out.write('\n');
+            out.flush();
+
+            return waitForAcknowledgment(in);
+        }
+
+        private static boolean waitForAcknowledgment(BufferedReader in) throws IOException {
+            String line = in.readLine();
+            while (line != null && !ACKNOWLEDGMENT.equalsIgnoreCase(line)) {
+                line = in.readLine();
+            }
+            return ACKNOWLEDGMENT.equalsIgnoreCase(line);
+        }
+
     }
 }

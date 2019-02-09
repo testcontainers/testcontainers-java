@@ -6,29 +6,25 @@ sudo: required
 services:
   - docker
 
-cache:
-  directories:
-    - '$HOME/.gradle'
-
 install:
-  - ./gradlew build -x check
+  - ./gradlew build -x check --scan --no-daemon
 
 jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./gradlew testcontainers:check
+      script: ./gradlew testcontainers:check javadoc --scan --no-daemon
 
     - stage: test
       env: [ NAME=core ]
-      jdk: oraclejdk9
-      script: ./gradlew testcontainers:check
+      jdk: openjdk11
+      script: ./gradlew testcontainers:check --scan --no-daemon
 
     - env: [ NAME=selenium ]
-      script: ./gradlew selenium:check
+      script: ./gradlew selenium:check --scan --no-daemon
 
     - env: [ NAME=modules ]
-      script: ./gradlew check -x testcontainers:check -x selenium:check
+      script: ./gradlew check -x testcontainers:check -x selenium:check --scan --no-daemon
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]
@@ -40,7 +36,7 @@ jobs:
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./gradlew testcontainers:test --tests '*GenericContainerRuleTest'
+                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan
 
     - stage: deploy
       sudo: false
@@ -49,7 +45,7 @@ jobs:
       script: skip
       deploy:
         provider: script
-        script: ./gradlew -Pversion=$TRAVIS_TAG release
+        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon
         on:
           tags: true
           branch: master

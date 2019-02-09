@@ -1,0 +1,8 @@
+{
+    "auths": {
+        "https://registry.example.com": {
+            "email": "user@example.com",
+            "auth": "dXNlcjpwYXNz"
+        }
+    }
+}
