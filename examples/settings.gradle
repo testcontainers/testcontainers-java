@@ -2,7 +2,12 @@ rootProject.name = 'testcontainers-examples'
 
 includeBuild '..'
 
-file('.').eachDirMatch({it != '.gradle'}) { dir ->
-    include dir.name
-    project(":${dir.name}").projectDir = dir
-}
+include(
+    'disque-job-queue',
+    'linked-container',
+    'redis-backed-cache',
+    'redis-backed-cache-testng',
+    'selenium-container',
+    'spring-boot'
+)
+
