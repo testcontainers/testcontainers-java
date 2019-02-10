@@ -31,6 +31,7 @@ public class RegistryAuthLocator {
     private static final Logger log = getLogger(RegistryAuthLocator.class);
     private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Map<DockerImageName, AuthConfig> CACHE = new HashMap<>();
 
     private static RegistryAuthLocator instance;
 
@@ -85,19 +86,29 @@ public class RegistryAuthLocator {
      * Lookup is performed in following order, as per
      * https://docs.docker.com/engine/reference/commandline/cli/:
      * <ol>
-     *     <li>{@code credHelpers}</li>
-     *     <li>{@code credsStore}</li>
-     *     <li>Hard-coded Base64 encoded auth in {@code auths}</li>
-     *     <li>otherwise, if no credentials have been found then behaviour falls back to docker-java's
-     *     implementation</li>
+     * <li>{@code credHelpers}</li>
+     * <li>{@code credsStore}</li>
+     * <li>Hard-coded Base64 encoded auth in {@code auths}</li>
+     * <li>otherwise, if no credentials have been found then behaviour falls back to docker-java's
+     * implementation</li>
      * </ol>
      *
-     * @param dockerImageName image name to be looked up (potentially including a registry URL part)
+     * @param dockerImageName   image name to be looked up (potentially including a registry URL part)
      * @param defaultAuthConfig an AuthConfig object that should be returned if there is no overriding authentication available for images that are looked up
      * @return an AuthConfig that is applicable to this specific image OR the defaultAuthConfig.
      */
     public AuthConfig lookupAuthConfig(DockerImageName dockerImageName, AuthConfig defaultAuthConfig) {
+        if (!CACHE.containsKey(dockerImageName)) {
+            synchronized (CACHE) {
+                if (!CACHE.containsKey(dockerImageName)) {
+                    CACHE.put(dockerImageName, doLookup(dockerImageName, defaultAuthConfig));
+                }
+            }
+        }
+        return CACHE.get(dockerImageName);
+    }
 
+    private AuthConfig doLookup(DockerImageName dockerImageName, AuthConfig defaultAuthConfig) {
         log.debug("Looking up auth config for image: {}", dockerImageName);
 
         log.debug("RegistryAuthLocator has configFile: {} ({}) and commandPathPrefix: {}",
@@ -287,9 +298,9 @@ public class RegistryAuthLocator {
             // should not reach here
             log.warn("Failure running docker credential helper ({}) with fake call, expected 'credentials not found' response",
                 credentialHelperName);
-        } catch(Exception e) {
+        } catch (Exception e) {
             if (e instanceof InvalidResultException) {
-                credentialsNotFoundMsg = extractCredentialProviderErrorMessage((InvalidResultException)e);
+                credentialsNotFoundMsg = extractCredentialProviderErrorMessage((InvalidResultException) e);
             }
 
             if (isBlank(credentialsNotFoundMsg)) {
@@ -315,13 +326,13 @@ public class RegistryAuthLocator {
         throws InvalidResultException, InterruptedException, TimeoutException, IOException {
 
         return new ProcessExecutor()
-                        .command(credentialHelperName, "get")
-                        .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
-                        .readOutput(true)
-                        .exitValueNormal()
-                        .timeout(30, TimeUnit.SECONDS)
-                        .execute()
-                        .outputUTF8()
-                        .trim();
+            .command(credentialHelperName, "get")
+            .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
+            .readOutput(true)
+            .exitValueNormal()
+            .timeout(30, TimeUnit.SECONDS)
+            .execute()
+            .outputUTF8()
+            .trim();
     }
 }
