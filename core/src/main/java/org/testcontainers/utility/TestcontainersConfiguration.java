@@ -51,7 +51,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getRyukImage() {
-        return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.2");
+        return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.3");
     }
 
     public String getSSHdImage() {

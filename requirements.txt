@@ -1,0 +1,4 @@
+mkdocs
+-e git+https://github.com/rnorth/mkdocs-codeinclude-plugin#egg=mkdocs_codeinclude_plugin
+mkdocs-material
+mkdocs-markdownextradata-plugin

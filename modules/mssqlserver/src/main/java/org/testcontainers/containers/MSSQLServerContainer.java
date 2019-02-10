@@ -6,7 +6,8 @@ import org.testcontainers.utility.LicenseAcceptance;
  * @author Stefan Hufschmidt
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-    public static final String NAME = "mssqlserver";
+
+    public static final String NAME = "sqlserver";
     public static final String IMAGE = "mcr.microsoft.com/mssql/server";
     public static final String DEFAULT_TAG = "2017-CU12";
 

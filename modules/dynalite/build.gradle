@@ -3,6 +3,6 @@ description = "Testcontainers :: Dynalite"
 dependencies {
     compile project(':testcontainers')
 
-    compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.11.475'
-    testCompile 'com.amazonaws:aws-java-sdk-dynamodb:1.11.126'
+    compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.11.479'
+    testCompile 'com.amazonaws:aws-java-sdk-dynamodb:1.11.479'
 }
