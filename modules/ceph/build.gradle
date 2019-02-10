@@ -1,7 +1,7 @@
-description = "Testcontainers :: JDBC :: Ceph"
+description = "Testcontainers :: Ceph"
 
 dependencies {
     compile project(':testcontainers')
 
-    provided 'com.amazonaws:aws-java-sdk-s3:1.11.231'
+    provided 'com.amazonaws:aws-java-sdk-s3:1.11.495'
 }

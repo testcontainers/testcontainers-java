@@ -6,15 +6,18 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.testcontainers.containers.wait.HttpWaitStrategy;
+import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.time.Duration;
 
+@Slf4j
 @Getter
-public class CephContainer<SELF extends CephContainer<SELF>> extends GenericContainer<SELF> {
+public class CephContainer extends GenericContainer<CephContainer> {
 
-    public static final String IMAGE = "ceph/demo";
-    public static final int S3_PORT = 80;
+    public static final String IMAGE = "ceph/daemon";
+    public static final int S3_PORT = 8080;
     public static final int REST_API_PORT = 5000;
 
     private String awsAccessKey = "ceph";
@@ -30,7 +33,7 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
     private NetworkAutoDetectMode networkAutoDetectMode = NetworkAutoDetectMode.IPV4_ONLY;
 
     public CephContainer() {
-        super(IMAGE + ":tag-stable-3.0-jewel-ubuntu-16.04");
+        super(IMAGE + ":v3.0.5-stable-3.0-luminous-centos-7");
     }
 
     public CephContainer(String dockerImageName) {
@@ -41,6 +44,7 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
     protected void configure() {
         withEnv("RGW_NAME", rgwName);
         withEnv("NETWORK_AUTO_DETECT", networkAutoDetectMode.value);
+        withEnv("CEPH_DAEMON", "demo");
         withEnv("CEPH_DEMO_UID", demoUid);
         withEnv("CEPH_DEMO_ACCESS_KEY", awsAccessKey);
         withEnv("CEPH_DEMO_SECRET_KEY", awsSecretKey);
@@ -49,14 +53,11 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
         waitingFor(
                 new HttpWaitStrategy()
                         .forPath("/api/v0.1/health")
+                        .forPort(REST_API_PORT)
                         .forStatusCode(200)
                         .withStartupTimeout(Duration.ofMinutes(5))
         );
-    }
-
-    @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(REST_API_PORT);
+        withLogConsumer(new Slf4jLogConsumer(log));
     }
 
     public AWSCredentialsProvider getAWSCredentialsProvider() {
@@ -72,33 +73,33 @@ public class CephContainer<SELF extends CephContainer<SELF>> extends GenericCont
         );
     }
 
-    public SELF withAwsAccessKey(String awsAccessKey) {
+    public CephContainer withAwsAccessKey(String awsAccessKey) {
         this.awsAccessKey = awsAccessKey;
         return self();
     }
 
-    public SELF withAwsSecretKey(String awsSecretKey) {
+    public CephContainer withAwsSecretKey(String awsSecretKey) {
         this.awsSecretKey = awsSecretKey;
         return self();
     }
 
-    public SELF withBucketName(String bucketName) {
+    public CephContainer withBucketName(String bucketName) {
         //because s3cmd transforming bucket name to uppercase
         this.bucketName = bucketName.toUpperCase();
         return self();
     }
 
-    public SELF withRgwName(String rgwName) {
+    public CephContainer withRgwName(String rgwName) {
         this.rgwName = rgwName;
         return self();
     }
 
-    public SELF withDemoUid(String demoUid) {
+    public CephContainer withDemoUid(String demoUid) {
         this.demoUid = demoUid;
         return self();
     }
 
-    public SELF withNetworkAutoDetectMode(NetworkAutoDetectMode networkAutoDetectMode) {
+    public CephContainer withNetworkAutoDetectMode(NetworkAutoDetectMode networkAutoDetectMode) {
         this.networkAutoDetectMode = networkAutoDetectMode;
         return self();
     }
