@@ -1,13 +1,13 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.wait.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.time.Duration;
 
-public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
     public static final String NAME = "cockroach";
     public static final String IMAGE = "cockroachdb/cockroach";
-    public static final String IMAGE_TAG = "v1.1.2";
+    public static final String IMAGE_TAG = "v2.1.4";
     public static final String JDBC_DRIVER_CLASS_NAME = "org.postgresql.Driver";
     public static final String JDBC_URL_PREFIX = "jdbc:postgresql";
     public static final String TEST_QUERY_STRING = "SELECT 1";
@@ -27,19 +27,14 @@ public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends J
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(REST_API_PORT);
-    }
-
-    @Override
     protected void configure() {
         withExposedPorts(REST_API_PORT, DB_PORT);
         withEnv("COCKROACH_USER", username);
         withEnv("COCKROACH_DATABASE", databaseName);
-        withExposedPorts(REST_API_PORT, DB_PORT);
         waitingFor(
             new HttpWaitStrategy()
                 .forPath("/health")
+                .forPort(REST_API_PORT)
                 .forStatusCode(200)
                 .withStartupTimeout(Duration.ofMinutes(1))
         );
@@ -62,7 +57,7 @@ public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends J
     }
 
     @Override
-    public SELF withPassword(String password) {
+    public CockroachContainer withPassword(String password) {
         throw new UnsupportedOperationException();
     }
 
@@ -77,19 +72,15 @@ public class CockroachContainer<SELF extends CockroachContainer<SELF>> extends J
     }
 
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public CockroachContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(String username) {
+    public CockroachContainer withUsername(String username) {
         this.username = username;
         return self();
     }
 
-    @Override
-    protected void waitUntilContainerStarted() {
-        getWaitStrategy().waitUntilReady(this);
-    }
 }
