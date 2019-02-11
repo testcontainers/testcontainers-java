@@ -12,12 +12,10 @@ import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
-import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.dockerclient.check.DependencyChecker;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -52,14 +50,17 @@ public class DockerClientFactory {
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
-    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
+    private static final TestcontainersConfiguration testcontainersConfiguration = TestcontainersConfiguration.getInstance();
+    private static final String TINY_IMAGE = testcontainersConfiguration.getTinyImage();
     private static DockerClientFactory instance;
+    private final DependencyChecker dependencyChecker = new DependencyChecker(testcontainersConfiguration);
 
     // Cached client configuration
     private DockerClientProviderStrategy strategy;
     private boolean initialized = false;
     private String activeApiVersion;
     private String activeExecutionDriver;
+
 
     @Getter(lazy = true)
     private final boolean fileMountingSupported = checkMountableFile();
@@ -128,9 +129,9 @@ public class DockerClientFactory {
 
             VisibleAssertions.info("Checking the system...");
 
-            checkDockerVersion(version.getVersion());
+            dependencyChecker.checkDockerVersion(version.getVersion());
 
-            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
+            boolean checksEnabled = !testcontainersConfiguration.isDisableChecks();
             if (checksEnabled) {
                 if (ryukContainerId != null) {
                     checkDiskSpace(client, ryukContainerId);
@@ -154,20 +155,6 @@ public class DockerClientFactory {
         }
 
         return client;
-    }
-
-    private void checkDockerVersion(String dockerVersion) {
-        VisibleAssertions.assertThat("Docker version", dockerVersion, new BaseMatcher<String>() {
-            @Override
-            public boolean matches(Object o) {
-                return new ComparableVersion(o.toString()).compareTo(new ComparableVersion("1.6.0")) >= 0;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("should be at least 1.6.0");
-            }
-        });
     }
 
     private void checkDiskSpace(DockerClient dockerClient, String id) {

@@ -74,6 +74,10 @@ public class TestcontainersConfiguration {
         return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
     }
 
+    public boolean isDisableDockerVersionChecks() {
+        return Boolean.parseBoolean(properties.getProperty("checks.docker.disable", "false"));
+    }
+
     public String getDockerClientStrategyClassName() {
         return (String) properties.get("docker.client.strategy");
     }
