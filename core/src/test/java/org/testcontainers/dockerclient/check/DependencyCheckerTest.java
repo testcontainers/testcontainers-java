@@ -37,12 +37,11 @@ public class DependencyCheckerTest {
                 if (!(item instanceof String)) {
                     fail("Exception message is not String. Oops.");
                 }
-                return "For input string: \"a\"".equals(item);
+                return item.equals("For input string: \"a\"");
             }
 
             @Override
             public void describeTo(Description description) {
-//               NO-OP
             }
         });
 
