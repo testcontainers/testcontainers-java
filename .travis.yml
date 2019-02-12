@@ -20,6 +20,11 @@ jobs:
       jdk: openjdk11
       script: ./gradlew testcontainers:check --scan --no-daemon
 
+    - stage: test
+      env: [ NAME=core ]
+      jdk: openjdk-ea
+      script: ./gradlew testcontainers:check --scan --no-daemon
+
     - env: [ NAME=selenium ]
       script: ./gradlew selenium:check --scan --no-daemon
 
