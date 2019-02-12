@@ -128,10 +128,9 @@ public class DockerClientFactory {
 
             VisibleAssertions.info("Checking the system...");
 
-            checkDockerVersion(version.getVersion());
-
             boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
             if (checksEnabled) {
+                checkDockerVersion(version.getVersion());
                 if (ryukContainerId != null) {
                     checkDiskSpace(client, ryukContainerId);
                 } else {
