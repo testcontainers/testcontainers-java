@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.4</version>
+            <version>1.18.6</version>
             <scope>provided</scope>
         </dependency>
 
@@ -50,6 +50,11 @@
             <artifactId>mockito-all</artifactId>
             <version>1.10.19</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.5</version>
         </dependency>
     </dependencies>
 
@@ -72,18 +77,6 @@
         <testcontainers.version>-SNAPSHOT</testcontainers.version>
     </properties>
 
-    <profiles>
-        <profile>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                </os>
-            </activation>
-            <properties>
-                <testcontainers.version>windows-support-SNAPSHOT</testcontainers.version>
-            </properties>
-        </profile>
-    </profiles>
 
     <repositories>
         <repository>

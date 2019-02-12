@@ -119,17 +119,33 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
+            String ryukContainerId = null;
+            boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+            if (useRyuk) {
+                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+                log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
+            }
+           
             boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
-
-            String ryukContainerId = ResourceReaper.start(hostIpAddress, client, checksEnabled);
-            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
-
-            VisibleAssertions.info("Checking the system...");
-
-            checkDockerVersion(version.getVersion());
-
             if (checksEnabled) {
-                checkDiskSpace(client, ryukContainerId);
+                VisibleAssertions.info("Checking the system...");
+                checkDockerVersion(version.getVersion());
+                if (ryukContainerId != null) {
+                    checkDiskSpace(client, ryukContainerId);
+                } else {
+                    runInsideDocker(
+                        client,
+                        createContainerCmd -> {
+                            createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
+                            createContainerCmd.getHostConfig().withAutoRemove(true);
+                            createContainerCmd.withCmd("tail", "-f", "/dev/null");
+                        },
+                        (__, containerId) -> {
+                            checkDiskSpace(client, containerId);
+                            return "";
+                        }
+                    );
+                }
             }
 
             initialized = true;

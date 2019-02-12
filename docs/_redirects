@@ -1,0 +1,21 @@
+# Each redirect rule must be listed on a separate line, with the original path followed by the new path or URL.
+
+/usage/docker_compose.html              /modules/docker_compose/
+/usage/generic_containers.html          /features/creating_container/
+/usage/windows_support.html             /supported_docker_environment/windows/
+/usage/dockerfile.html                  /features/creating_images/
+/usage/inside_docker.html               /supported_docker_environment/continuous_integration/dind_patterns/
+/usage/webdriver_containers.html        /modules/webdriver_containers/
+/usage/properties.html                  /features/configuration/
+/usage/kafka_containers.html            /modules/kafka/
+/usage/elasticsearch_container.html     /modules/elasticsearch/
+/usage/database_containers.html         /modules/databases/
+/usage/neo4j_container.html             /modules/databases/neo4j/
+/compatibility.html                     /supported_docker_environment/
+
+# No great 1:1 mapping exists for the following, so redirect to somewhere where at least a sensible sidebar will be shown
+
+/usage/options.html                     /features/creating_container/
+/ci/ci.html                             /supported_docker_environment/
+/usage.html                             /
+

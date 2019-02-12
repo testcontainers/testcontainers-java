@@ -55,3 +55,11 @@ out/
 **/.settings
 **/bin/
 **/out/
+
+# Generated docs
+site/
+.direnv/
+src/mkdocs-codeinclude-plugin
+src/pip-delete-this-directory.txt
+
+.DS_Store
