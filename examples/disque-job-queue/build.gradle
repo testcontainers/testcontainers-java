@@ -7,7 +7,6 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.slf4j:slf4j-api:1.7.25'
     compileOnly 'org.projectlombok:lombok:1.18.4'
     implementation 'biz.paluch.redis:spinach:0.3'
     implementation 'com.google.code.gson:gson:2.8.5'
