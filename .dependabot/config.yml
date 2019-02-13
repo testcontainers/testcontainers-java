@@ -83,6 +83,6 @@ update_configs:
   - package_manager: "java:gradle"
     directory: "/examples"
     update_schedule: "daily"
-    automerged_updates:	
-      - match: { dependency_type: "development", update_type: "all" }	
+    automerged_updates:
+      - match: { dependency_type: "development", update_type: "all" }
       - match: { dependency_type: "production", update_type: "all" }
