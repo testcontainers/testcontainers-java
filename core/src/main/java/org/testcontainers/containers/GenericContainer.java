@@ -242,24 +242,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Starting container with ID: {}", containerId);
             dockerClient.startContainerCmd(containerId).exec();
 
+            logger().info("Container {} is starting: {}", dockerImageName, containerId);
+
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
-
-            logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
             containerIsStarting(containerInfo);
 
-            // Wait until the container is running (may not be fully started)
-
+            // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
             }
 
+            // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
@@ -1116,6 +1116,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public ExecResult execInContainer(Charset outputCharset, String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
         return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, command);
+    }
+
+    /**
+     * @return all log output from the container from start until the current instant (both stdout and stderr)
+     */
+    public String getLogs() {
+        return LogUtils.getOutput(dockerClient, containerId);
+    }
+
+    /**
+     * @param types log types to return
+     * @return all log output from the container from start until the current instant
+     */
+    public String getLogs(OutputFrame.OutputType... types) {
+        return LogUtils.getOutput(dockerClient, containerId, types);
     }
 
     /**

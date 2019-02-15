@@ -113,8 +113,12 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
     /**
      * Wait until Docker closes the stream of output.
      */
-    public void waitUntilEnd() throws TimeoutException {
-        waitUntilEnd(Long.MAX_VALUE);
+    public void waitUntilEnd() {
+        try {
+            waitUntilEnd(Long.MAX_VALUE);
+        } catch (TimeoutException ignored) {
+            // timeout condition can never occur in a realistic timeframe
+        }
     }
 
     /**
