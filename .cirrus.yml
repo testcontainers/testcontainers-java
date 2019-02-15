@@ -2,4 +2,7 @@ macOS_task:
   osx_instance:
     image: mojave-docker
   open_docker_script: open /Applications/Docker.app 
-  check_script: docker info && docker run -it --rm hello-world && ./gradlew testcontainers:check --scan --no-daemon
+  check_script:
+    - until docker info; do sleep 1; done;
+    - docker run -it --rm hello-world
+    - ./gradlew testcontainers:check --scan --no-daemon
