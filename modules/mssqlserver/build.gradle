@@ -2,7 +2,4 @@ description = "Testcontainers :: MS SQL Server"
 
 dependencies {
     compile project(':jdbc')
-
-    testCompile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '7.0.0.jre8'
-    testCompile 'com.zaxxer:HikariCP:2.6.1'
 }

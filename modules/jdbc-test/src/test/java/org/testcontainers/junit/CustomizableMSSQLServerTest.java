@@ -1,9 +1,10 @@
-package org.testcontainers.containers;
+package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,10 +13,7 @@ import java.sql.Statement;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.fail;
 
-/**
- * @author Enrico Costanzi
- */
-public class MSSQLServerContainerTest {
+public class CustomizableMSSQLServerTest {
 
     private static final String STRONG_PASSWORD = "myStrong(!)Password";
 

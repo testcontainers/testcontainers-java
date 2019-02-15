@@ -104,7 +104,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
         if (satisfiedCategories < 3) {
             throw new IllegalArgumentException(
-                "Password must contains characters from three of the following four categories:\n" +
+                "Password must contain characters from three of the following four categories:\n" +
                     " - Latin uppercase letters (A through Z)\n" +
                     " - Latin lowercase letters (a through z)\n" +
                     " - Base 10 digits (0 through 9)\n" +

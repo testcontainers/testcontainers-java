@@ -1,9 +1,10 @@
-package org.testcontainers.containers;
+package org.testcontainers.junit;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,7 +18,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.fail;
  * @author Enrico Costanzi
  */
 @RunWith(Parameterized.class)
-public class MSSQLServerContainerPasswordTest {
+public class CustomPasswordMSSQLServerTest {
 
     private static String UPPER_CASE_LETTERS = "ABCDE";
     private static String LOWER_CASE_LETTERS = "abcde";
@@ -27,7 +28,7 @@ public class MSSQLServerContainerPasswordTest {
     private String password;
     private Boolean valid;
 
-    public MSSQLServerContainerPasswordTest(String password, Boolean valid) {
+    public CustomPasswordMSSQLServerTest(String password, Boolean valid) {
         this.password = password;
         this.valid = valid;
     }
@@ -35,7 +36,7 @@ public class MSSQLServerContainerPasswordTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-            {null, false},
+            new Object[]{null, false},
             // too short
             {"abc123", false},
 
