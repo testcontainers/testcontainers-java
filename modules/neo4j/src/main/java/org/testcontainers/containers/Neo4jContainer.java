@@ -12,6 +12,7 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.LicenseAcceptance;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Testcontainer for Neo4j.
@@ -165,9 +166,75 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     }
 
     /**
+     * Disables authentication.
+     *
+     * @return This container.
+     */
+    public S withoutAuthentication() {
+        return withAdminPassword(null);
+    }
+
+    /**
+     * Copies an existing {@code graph.db} folder into the container. This can either be a classpath resource or a
+     * host resource. Please have a look at the factory methods in {@link MountableFile}.
+     * <br>
+     * If you want to map your database into the container instead of copying them, please use {@code #withClasspathResourceMapping},
+     * but this will only work when your test does not run in a container itself.
+     * <br>
+     * Mapping would work like this:
+     * <pre>
+     *      &#64;Container
+     *      private static final Neo4jContainer databaseServer = new Neo4jContainer&lt;&gt;()
+     *          .withClasspathResourceMapping("/test-graph.db", "/data/databases/graph.db", BindMode.READ_WRITE);
+     * </pre>
+     *
+     * @param graphDb The graph.db folder to copy into the container
+     * @return This container.
+     */
+    public S withDatabase(MountableFile graphDb) {
+        return withCopyFileToContainer(graphDb, "/data/databases/graph.db");
+    }
+
+    /**
+     * Adds plugins to the given directory to the container. If {@code plugins} denotes a directory, than all of that
+     * directory is mapped to Neo4j's plugins. Otherwise, single resources are copied over.
+     * <br>
+     * If you want to map your plugins into the container instead of copying them, please use {@code #withClasspathResourceMapping},
+     * but this will only work when your test does not run in a container itself.
+     *
+     * @param plugins
+     * @return This container.
+     */
+    public S withPlugins(MountableFile plugins) {
+        return withCopyFileToContainer(plugins, "/var/lib/neo4j/plugins/");
+    }
+
+    /**
+     * Adds Neo4j configuration properties to the container. The properties can be added as in the official Neo4j
+     * configuration, the method automatically translate them into the format required by the Neo4j container.
+     *
+     * @param key   The key to configure, i.e. {@code dbms.security.procedures.unrestricted}
+     * @param value The value to set
+     * @return This container.
+     */
+    public S withNeo4jConfig(String key, String value) {
+
+        addEnv(formatConfigurationKey(key), value);
+        return self();
+    }
+
+    /**
      * @return The admin password for the <code>neo4j</code> account or literal <code>null</code> if auth is disabled.
      */
     public String getAdminPassword() {
         return adminPassword;
+    }
+
+    static String formatConfigurationKey(String plainConfigKey) {
+        final String prefix = "NEO4J_";
+
+        return String.format("%s%s", prefix, plainConfigKey
+            .replaceAll("_", "__")
+            .replaceAll("\\.", "_"));
     }
 }

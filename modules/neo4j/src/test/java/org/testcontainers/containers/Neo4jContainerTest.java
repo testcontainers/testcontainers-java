@@ -10,7 +10,10 @@ import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
+import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Tests of functionality special to the Neo4jContainer.
@@ -26,7 +29,7 @@ public class Neo4jContainerTest {
     public void shouldDisableAuthentication() {
 
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer().withAdminPassword(null);
+            Neo4jContainer neo4jContainer = new Neo4jContainer().withoutAuthentication();
         ) {
             neo4jContainer.start();
             try (Driver driver = getDriver(neo4jContainer);
@@ -36,6 +39,63 @@ public class Neo4jContainerTest {
                 assertThat(one).isEqualTo(1L);
             }
         }
+    }
+
+    @Test
+    public void shouldCopyDatabase() {
+        try (
+            Neo4jContainer neo4jContainer = new Neo4jContainer()
+                .withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+        ) {
+            neo4jContainer.start();
+            try (
+                Driver driver = getDriver(neo4jContainer);
+                Session session = driver.session()
+            ) {
+                StatementResult result = session.run("MATCH (t:Thing) RETURN t");
+                assertThat(result.list().stream().map(r -> r.get("t").get("name").asString()))
+                    .containsExactlyInAnyOrder("Thing", "Thing 2", "Thing 3", "A box");
+            }
+        }
+    }
+
+    @Test
+    public void shouldCopyPlugins() {
+        try (
+            Neo4jContainer neo4jContainer = new Neo4jContainer()
+                .withPlugins(MountableFile.forClasspathResource("/custom-plugins"));
+        ) {
+            neo4jContainer.start();
+            try (
+                Driver driver = getDriver(neo4jContainer);
+                Session session = driver.session()
+            ) {
+                assertThatCustomPluginWasCopied(session);
+            }
+        }
+    }
+
+    @Test
+    public void shouldCopyPlugin() {
+        try (
+            Neo4jContainer neo4jContainer = new Neo4jContainer()
+                .withPlugins(MountableFile.forClasspathResource("/custom-plugins/hello-world.jar"));
+        ) {
+            neo4jContainer.start();
+            try (
+                Driver driver = getDriver(neo4jContainer);
+                Session session = driver.session()
+            ) {
+                assertThatCustomPluginWasCopied(session);
+            }
+        }
+    }
+
+    private static void assertThatCustomPluginWasCopied(Session session) {
+        StatementResult result = session.run("RETURN ac.simons.helloWorld('Testcontainers') AS greeting");
+        Record singleRecord = result.single();
+        assertThat(singleRecord).isNotNull();
+        assertThat(singleRecord.get("greeting").asString()).isEqualTo("Hello, Testcontainers");
     }
 
     @Test
@@ -69,6 +129,23 @@ public class Neo4jContainerTest {
                 assertThat(edition).isEqualTo("enterprise");
             }
         }
+    }
+
+    @Test
+    public void shouldFormatPropertyKeys() {
+
+        assertThat(Neo4jContainer.formatConfigurationKey("dbms.tx_log.rotation.size"))
+            .isEqualTo("NEO4J_dbms_tx__log_rotation_size");
+    }
+
+    @Test
+    public void shouldAddConfigToEnvironment() {
+
+        Neo4jContainer neo4jContainer = new Neo4jContainer()
+            .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*");
+
+        assertThat(neo4jContainer.getEnvMap())
+            .containsEntry("NEO4J_dbms_security_procedures_unrestricted", "apoc.*,algo.*");
     }
 
     private static Driver getDriver(Neo4jContainer container) {
