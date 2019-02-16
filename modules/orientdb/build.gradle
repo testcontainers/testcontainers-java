@@ -1,0 +1,8 @@
+description = "TestContainers :: Neo4j"
+
+dependencies {
+    compile project(":testcontainers")
+
+    compile "com.orientechnologies:orientdb-client:3.0.15"
+    testCompile 'org.assertj:assertj-core:3.12.0'
+}
