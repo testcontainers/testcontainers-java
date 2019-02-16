@@ -132,20 +132,16 @@ public class Neo4jContainerTest {
     }
 
     @Test
-    public void shouldFormatPropertyKeys() {
-
-        assertThat(Neo4jContainer.formatConfigurationKey("dbms.tx_log.rotation.size"))
-            .isEqualTo("NEO4J_dbms_tx__log_rotation_size");
-    }
-
-    @Test
     public void shouldAddConfigToEnvironment() {
 
         Neo4jContainer neo4jContainer = new Neo4jContainer()
-            .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*");
+            .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*")
+            .withNeo4jConfig("dbms.tx_log.rotation.size", "42M");
 
         assertThat(neo4jContainer.getEnvMap())
             .containsEntry("NEO4J_dbms_security_procedures_unrestricted", "apoc.*,algo.*");
+        assertThat(neo4jContainer.getEnvMap())
+            .containsEntry("NEO4J_dbms_tx__log_rotation_size", "42M");
     }
 
     private static Driver getDriver(Neo4jContainer container) {

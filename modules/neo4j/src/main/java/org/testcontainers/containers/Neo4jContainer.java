@@ -230,7 +230,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         return adminPassword;
     }
 
-    static String formatConfigurationKey(String plainConfigKey) {
+    private static String formatConfigurationKey(String plainConfigKey) {
         final String prefix = "NEO4J_";
 
         return String.format("%s%s", prefix, plainConfigKey
