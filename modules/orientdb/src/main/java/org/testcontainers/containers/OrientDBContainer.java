@@ -7,7 +7,6 @@ import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -23,24 +22,39 @@ import java.util.Optional;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 
+/**
+ * @author robfrank
+ */
 public class OrientDBContainer<SELF extends OrientDBContainer<SELF>> extends GenericContainer<SELF> {
 
-    public static final String DEFAULT_IMAGE_NAME = "orientdb";
-    public static final String DEFAULT_TAG = "3.0.15";
-    public static final String DEFAULT_USERNAME = "admin";
-    public static final String DEFAULT_PASSWORD = "admin";
-    public static final String DEFAULT_DATABASE_NAME = "testcontainers";
+    private static final String DEFAULT_IMAGE_NAME = "orientdb";
 
-    public static final int DEFAULT_BINARY_PORT = 2424;
-    public static final int DEFAULT_HTTP_PORT = 2480;
+    private static final String DEFAULT_TAG = "3.0.15";
+
+    private static final String DEFAULT_USERNAME = "admin";
+
+    private static final String DEFAULT_PASSWORD = "admin";
+
+    private static final String DEFAULT_DATABASE_NAME = "testcontainers";
+
+    private static final int DEFAULT_BINARY_PORT = 2424;
+
+    private static final int DEFAULT_HTTP_PORT = 2480;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
+
     private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
+
     private String databaseName;
+
     private String username;
+
     private String password;
 
-    private ODatabaseSession session;
     private OrientDB orientDB;
+
+    private ODatabaseSession session;
+
     private Optional<String> scriptPath = Optional.empty();
 
 
@@ -104,14 +118,22 @@ public class OrientDBContainer<SELF extends OrientDBContainer<SELF>> extends Gen
         return self();
     }
 
-    @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    public SELF withScriptPath(String scriptPath) {
 
-        orientDB = new OrientDB(getServerUrl(), "root", "root", OrientDBConfig.defaultConfig());
-
+        this.scriptPath = Optional.of(scriptPath);
+        return self();
     }
 
-    @NotNull
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        orientDB = new OrientDB(getServerUrl(), "root", "root", OrientDBConfig.defaultConfig());
+    }
+
+    public OrientDB getOrientDB() {
+        return orientDB;
+    }
+
     public String getServerUrl() {
         return "remote:" + getContainerIpAddress() + ":" + getMappedPort(2424);
     }
@@ -124,11 +146,11 @@ public class OrientDBContainer<SELF extends OrientDBContainer<SELF>> extends Gen
 
         orientDB.createIfNotExists(databaseName, ODatabaseType.PLOCAL);
 
-        if (session == null)
+        if (session == null) {
             session = orientDB.open(databaseName, username, password);
 
-        scriptPath.ifPresent(path -> loadScript(path, session));
-
+            scriptPath.ifPresent(path -> loadScript(path, session));
+        }
         return session;
     }
 
@@ -155,13 +177,5 @@ public class OrientDBContainer<SELF extends OrientDBContainer<SELF>> extends Gen
 
     }
 
-    public OrientDB getOrientDB() {
-        return orientDB;
-    }
 
-    public SELF withScriptPath(String scriptPath) {
-
-        this.scriptPath = Optional.of(scriptPath);
-        return self();
-    }
 }
