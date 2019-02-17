@@ -25,7 +25,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 /**
  * @author robfrank
  */
-public class OrientDBContainer<SELF extends OrientDBContainer<SELF>> extends GenericContainer<SELF> {
+public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final String DEFAULT_IMAGE_NAME = "orientdb";
 
@@ -103,22 +103,22 @@ public class OrientDBContainer<SELF extends OrientDBContainer<SELF>> extends Gen
         return "SELECT FROM V";
     }
 
-    public SELF withDatabaseName(final String databaseName) {
+    public OrientDBContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
-    public SELF withUsername(final String username) {
+    public OrientDBContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
-    public SELF withPassword(final String password) {
+    public OrientDBContainer withPassword(final String password) {
         this.password = password;
         return self();
     }
 
-    public SELF withScriptPath(String scriptPath) {
+    public OrientDBContainer withScriptPath(String scriptPath) {
 
         this.scriptPath = Optional.of(scriptPath);
         return self();
