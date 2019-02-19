@@ -1,0 +1,14 @@
+rootProject.name = 'testcontainers-examples'
+
+includeBuild '..'
+
+include(
+    'disque-job-queue',
+    'linked-container',
+    'redis-backed-cache',
+    'redis-backed-cache-testng',
+    'selenium-container',
+    'singleton-container',
+    'spring-boot'
+)
+
