@@ -23,7 +23,7 @@ public class Stepdefs {
 
     private BrowserWebDriverContainer container = new BrowserWebDriverContainer()
             .withCapabilities(new ChromeOptions())
-            .withRecordingMode(RECORD_ALL, new File("target"));
+            .withRecordingMode(RECORD_ALL, new File("build"));
 
     private String location;
     private String answer;
