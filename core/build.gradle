@@ -21,7 +21,6 @@ shadowJar {
     exclude 'org/newsclub/**'
 
     [
-        'META-INF/io.netty.versions.properties',
         'META-INF/NOTICE',
         'META-INF/NOTICE.txt',
         'META-INF/LICENSE',
@@ -33,23 +32,16 @@ shadowJar {
         'META-INF/services/com.fasterxml.jackson.core.*',
         'META-INF/services/com.github.dockerjava.api.command.*',
         'META-INF/services/javax.ws.rs.ext.*',
-        'META-INF/services/org.glassfish.hk2.extension.*',
-        'META-INF/services/org.jvnet.hk2.external.generator.*',
-        'META-INF/services/org.glassfish.jersey.internal.spi.*',
-        'META-INF/services/java.security.Provider',
+        // 'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
     ].each { exclude(it) }
 
     dependencies {
         include(dependency('org.apache.httpcomponents:.*'))
-        include(dependency('org.glassfish.*:.*'))
-        include(dependency('org.aopalliance.*:.*'))
-        include(dependency('javax.ws.rs:.*'))
+        // include(dependency('javax.ws.rs:.*'))
         include(dependency('com.fasterxml.*:.*'))
         include(dependency('com.github.docker-java:.*'))
         include(dependency('com.google.guava:.*'))
-        include(dependency('io.netty:.*'))
-        include(dependency('org.bouncycastle:.*'))
         include(dependency('org.zeroturnaround:zt-exec'))
         include(dependency('commons-lang:commons-lang'))
         include(dependency('commons-io:commons-io'))
@@ -96,26 +88,22 @@ dependencies {
     }
 
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-4') {
-        exclude(group: 'org.glassfish.jersey.core')
-        exclude(group: 'org.glassfish.jersey.connectors')
-        exclude(group: 'log4j')
-        exclude(group: 'com.google.code.findbug')
-        exclude(group: 'com.kohlschutter.junixsocket')
+        exclude(group: '*', module: "*")
     }
+    shaded 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.6.7' // docker-java
+    shaded 'com.google.guava:guava:19.0' // docker-java
+    shaded 'org.apache.httpcomponents:httpclient:4.5.6' // docker-java
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.60' // docker-java
+
     shaded 'com.squareup.okhttp3:okhttp:3.12.1'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+    // shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.10'
     shaded 'commons-lang:commons-lang:2.6'
     shaded 'commons-io:commons-io:2.6'
     shaded 'commons-codec:commons-codec:1.11'
-    // docker-java uses SslConfigurator from jersey-common for TLS
-    shaded ('org.glassfish.jersey.core:jersey-common:2.27') {
-        // SslConfigurator doesn't use classes from dependencies
-        exclude(module: '*')
-    }
 
     testCompile 'redis.clients:jedis:3.0.1'
     testCompile 'com.rabbitmq:amqp-client:5.6.0'

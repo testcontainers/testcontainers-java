@@ -56,24 +56,17 @@ subprojects {
         configurations = []
         classifier = null
 
-        relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
-
         [
             "org.apache.http",
             "org.apache.commons.lang",
             "org.apache.commons.io",
             "org.apache.commons.codec",
-            "org.glassfish",
             "org.aopalliance",
-            "org.jvnet",
             "javax.annotation",
-            "javax.inject",
             "javax.ws.rs",
             "com.fasterxml.jackson",
-            "jersey.repackaged",
             "com.google",
             "io.netty",
-            "org.bouncycastle",
             "org.zeroturnaround",
             "okhttp3",
             "okio",
