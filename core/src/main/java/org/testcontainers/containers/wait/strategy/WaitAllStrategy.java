@@ -22,6 +22,7 @@ public class WaitAllStrategy implements WaitStrategy {
     }
 
     public WaitAllStrategy withStrategy(WaitStrategy strategy) {
+        applyStartupTimeout(strategy);
         this.strategies.add(strategy);
         return this;
     }
@@ -29,6 +30,11 @@ public class WaitAllStrategy implements WaitStrategy {
     @Override
     public WaitStrategy withStartupTimeout(Duration startupTimeout) {
         this.timeout = startupTimeout;
+        strategies.forEach(this::applyStartupTimeout);
         return this;
+    }
+
+    private void applyStartupTimeout(WaitStrategy childStrategy) {
+        childStrategy.withStartupTimeout(this.timeout);
     }
 }
