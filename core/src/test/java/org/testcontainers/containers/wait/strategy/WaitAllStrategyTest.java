@@ -50,37 +50,6 @@ public class WaitAllStrategyTest {
         inOrder.verify(strategy2).waitUntilReady(any());
     }
 
-    static class CaughtTimeoutException extends RuntimeException {
-
-        CaughtTimeoutException(String message) {
-            super(message);
-        }
-    }
-
-    static class SleepingStrategy extends AbstractWaitStrategy {
-
-        private final long sleepingDuration;
-
-        SleepingStrategy(Duration defaultInnerWait) {
-            super.startupTimeout = defaultInnerWait;
-            // Always oversleep by default
-            this.sleepingDuration = defaultInnerWait.multipliedBy(2).toMillis();
-        }
-
-        @Override
-        protected void waitUntilReady() {
-            try {
-                // Don't use ducttape, make sure we don't catch the wrong TimeoutException later on.
-                CompletableFuture.runAsync(
-                    () -> Uninterruptibles.sleepUninterruptibly(this.sleepingDuration, TimeUnit.MILLISECONDS)
-                ).get((int) startupTimeout.toMillis(), TimeUnit.MILLISECONDS);
-            } catch (InterruptedException | ExecutionException e) {
-            } catch (java.util.concurrent.TimeoutException e) {
-                throw new CaughtTimeoutException("Inner wait timed out, outer strategy didn't apply.");
-            }
-        }
-    }
-
     @Test
     public void appliesOuterTimeoutTooLittleTime() {
 
@@ -134,9 +103,9 @@ public class WaitAllStrategyTest {
         WaitStrategy child1 = new SleepingStrategy(defaultInnerWait);
         WaitStrategy child2 = new SleepingStrategy(defaultInnerWait);
 
-        final WaitStrategy underTest = ((WaitAllStrategy) new WaitAllStrategy()
+        final WaitStrategy underTest = new WaitAllStrategy()
             .withStrategy(child1)
-            .withStartupTimeout(outerWait))
+            .withStartupTimeout(outerWait)
             .withStrategy(child2);
 
         try {
@@ -146,6 +115,37 @@ public class WaitAllStrategyTest {
                 fail("The timeout wasn't applied to inner strategies.");
             else {
                 fail(e.getMessage());
+            }
+        }
+    }
+
+    static class CaughtTimeoutException extends RuntimeException {
+
+        CaughtTimeoutException(String message) {
+            super(message);
+        }
+    }
+
+    static class SleepingStrategy extends AbstractWaitStrategy {
+
+        private final long sleepingDuration;
+
+        SleepingStrategy(Duration defaultInnerWait) {
+            super.startupTimeout = defaultInnerWait;
+            // Always oversleep by default
+            this.sleepingDuration = defaultInnerWait.multipliedBy(2).toMillis();
+        }
+
+        @Override
+        protected void waitUntilReady() {
+            try {
+                // Don't use ducttape, make sure we don't catch the wrong TimeoutException later on.
+                CompletableFuture.runAsync(
+                    () -> Uninterruptibles.sleepUninterruptibly(this.sleepingDuration, TimeUnit.MILLISECONDS)
+                ).get((int) startupTimeout.toMillis(), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException e) {
+            } catch (java.util.concurrent.TimeoutException e) {
+                throw new CaughtTimeoutException("Inner wait timed out, outer strategy didn't apply.");
             }
         }
     }
