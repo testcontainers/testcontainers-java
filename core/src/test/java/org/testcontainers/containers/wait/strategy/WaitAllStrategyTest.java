@@ -1,4 +1,4 @@
-package org.testcontainers.containers.wait;
+package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Before;
@@ -12,8 +12,8 @@ import org.testcontainers.containers.GenericContainer;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
@@ -29,7 +29,7 @@ public class WaitAllStrategyTest {
     private WaitStrategy strategy2;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
