@@ -61,7 +61,7 @@ public final class DockerImageName {
             registry = "";
             remoteName = name;
         } else {
-            registry = name.substring(0, slashIndex - 1);
+            registry = name.substring(0, slashIndex);
             remoteName = name.substring(slashIndex + 1);
         }
 
