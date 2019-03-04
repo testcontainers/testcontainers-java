@@ -102,7 +102,7 @@ dependencies {
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'com.kohlschutter.junixsocket')
     }
-    shaded 'com.squareup.okhttp3:okhttp:3.12.1'
+    shaded 'com.squareup.okhttp3:okhttp:3.13.1'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
