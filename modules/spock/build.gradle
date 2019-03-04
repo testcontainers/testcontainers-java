@@ -6,7 +6,7 @@ description = "Testcontainers :: Spock-Extension"
 
 dependencies {
     compile project(':testcontainers')
-    compile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    compile 'org.spockframework:spock-core:1.2-groovy-2.5'
 
     testCompile project(':mysql')
     testCompile project(':postgresql')
