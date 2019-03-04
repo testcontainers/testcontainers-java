@@ -73,7 +73,7 @@ project.tasks.check.dependsOn(jarFileTest)
 
 dependencies {
     compile 'junit:junit:4.12'
-    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'org.slf4j:slf4j-api:1.7.26'
     compile 'org.jetbrains:annotations:17.0.0'
     compile 'javax.annotation:javax.annotation-api:1.3.2'
     compile 'org.apache.commons:commons-compress:1.18'
