@@ -87,27 +87,18 @@ jobs:
   examples:
     steps:
       - checkout
-      - restore_cache:
-          key: examples-maven
       - run:
-          name: Publish JARs to Maven Local
-          command: ./gradlew --no-daemon publishToMavenLocal
-      - run:
-          command: mvn -B -f examples/pom.xml -Dtestcontainers.group=org.testcontainers -Dtestcontainers.version=unspecified test
+          command: cd examples && ../gradlew check
       - run:
           name: Save test results
           command: |
             mkdir -p ~/junit/
-            find examples -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
           when: always
       - store_test_results:
             path: ~/junit
       - store_artifacts:
             path: ~/junit
-      - save_cache:
-            paths:
-              - ~/.m2
-            key: examples-maven
 
 workflows:
   version: 2

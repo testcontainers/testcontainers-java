@@ -125,13 +125,11 @@ public class DockerClientFactory {
                 ryukContainerId = ResourceReaper.start(hostIpAddress, client);
                 log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
             }
-
-            VisibleAssertions.info("Checking the system...");
-
-            checkDockerVersion(version.getVersion());
-
+           
             boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
             if (checksEnabled) {
+                VisibleAssertions.info("Checking the system...");
+                checkDockerVersion(version.getVersion());
                 if (ryukContainerId != null) {
                     checkDiskSpace(client, ryukContainerId);
                 } else {
