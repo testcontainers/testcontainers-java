@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,6 +43,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private Predicate<String> responsePredicate;
     private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
+    private HostnameVerifier hostnameVerifier;
 
     /**
      * Waits for the given status code.
@@ -109,6 +112,17 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     /**
+     * Use the given {@link HostnameVerifier} for SSL connections
+     *
+     * @param hostnameVerifier the {@link HostnameVerifier} to use
+     * @return this
+     */
+    public HttpWaitStrategy withHostnameVerifier(HostnameVerifier hostnameVerifier) {
+        this.hostnameVerifier = hostnameVerifier;
+        return this;
+    }
+
+    /**
      * Waits for the response to pass the given predicate
      * @param responsePredicate The predicate to test the response against
      * @return this
@@ -143,6 +157,10 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                 getRateLimiter().doWhenReady(() -> {
                     try {
                         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
+
+                        if (connection instanceof HttpsURLConnection && hostnameVerifier != null) {
+                            ((HttpsURLConnection) connection).setHostnameVerifier(hostnameVerifier);
+                        }
 
                         // authenticate
                         if (!Strings.isNullOrEmpty(username)) {
