@@ -139,7 +139,9 @@ public class JDBCDriverTest {
                 rs.next();
                 String resultUser = rs.getString(1);
                 // Not all databases (eg. Postgres) return @% at the end of user name. We just need to make sure the user name matches.
-                if(resultUser.endsWith("@%")) resultUser = resultUser.substring(0, resultUser.length() - 2);
+                if (resultUser.endsWith("@%")) {
+                    resultUser = resultUser.substring(0, resultUser.length() - 2);
+                }
                 assertEquals("User from query param is created.", "someuser", resultUser);
                 return true;
             });
@@ -149,8 +151,9 @@ public class JDBCDriverTest {
             String databaseQuery = "SELECT DATABASE()";
             // Postgres does not have Database() as a function
             String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
-            if(databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis"))
+            if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
                 databaseQuery = "SELECT CURRENT_DATABASE()";
+            }
 
             result = new QueryRunner(dataSource).query(databaseQuery, rs -> {
                 rs.next();
