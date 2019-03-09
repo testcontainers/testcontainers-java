@@ -10,4 +10,5 @@ include 'redis-backed-cache-testng'
 include 'selenium-container'
 include 'singleton-container'
 include 'spring-boot'
+include 'cucumber'
 
