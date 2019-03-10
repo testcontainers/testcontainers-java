@@ -20,9 +20,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -50,8 +48,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -269,17 +265,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (containerId != null) {
                 // Log output if startup failed, either due to a container failure or exception (including timeout)
-                logger().error("Container log output (if any) will follow:");
-                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
-                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
-                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
-                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
+                final String containerLogs = getLogs();
 
-                // Try to ensure that container log output is shown before proceeding
-                try {
-                    resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
-                } catch (InterruptedException ignored) {
-                    // Cannot do anything at this point
+                if (containerLogs.length() > 0) {
+                    logger().error("Log output from the failed container:\n{}", getLogs());
+                } else {
+                    logger().error("There are no stdout/stderr logs available for the failed container");
                 }
             }
 
@@ -1116,21 +1107,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public ExecResult execInContainer(Charset outputCharset, String... command)
             throws UnsupportedOperationException, IOException, InterruptedException {
         return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, command);
-    }
-
-    /**
-     * @return all log output from the container from start until the current instant (both stdout and stderr)
-     */
-    public String getLogs() {
-        return LogUtils.getOutput(dockerClient, containerId);
-    }
-
-    /**
-     * @param types log types to return
-     * @return all log output from the container from start until the current instant
-     */
-    public String getLogs(OutputFrame.OutputType... types) {
-        return LogUtils.getOutput(dockerClient, containerId, types);
     }
 
     /**

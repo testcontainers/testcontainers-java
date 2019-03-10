@@ -63,25 +63,20 @@ public class LogUtils {
                             String containerId,
                             OutputFrame.OutputType... types) {
 
+        if (containerId == null) {
+            return "";
+        }
+
+        if (types.length == 0) {
+            types = new OutputFrame.OutputType[] { STDOUT, STDERR };
+        }
+
         final ToStringConsumer consumer = new ToStringConsumer();
         final WaitingConsumer wait = new WaitingConsumer();
         attachConsumer(dockerClient, containerId, consumer.andThen(wait), false, types);
 
         wait.waitUntilEnd();
         return consumer.toUtf8String();
-    }
-
-    /**
-     * Retrieve all previous log outputs for a container (both stdout and stderr)
-     *
-     * @param dockerClient a Docker client
-     * @param containerId  container ID to attach to
-     * @return all previous output frames (stdout/stderr being separated by newline characters)
-     */
-    public String getOutput(DockerClient dockerClient,
-                            String containerId) {
-
-        return getOutput(dockerClient, containerId, STDOUT, STDERR);
     }
 
     private static void attachConsumer(DockerClient dockerClient,

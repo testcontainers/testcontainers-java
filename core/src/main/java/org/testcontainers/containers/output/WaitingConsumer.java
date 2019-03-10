@@ -116,8 +116,9 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
     public void waitUntilEnd() {
         try {
             waitUntilEnd(Long.MAX_VALUE);
-        } catch (TimeoutException ignored) {
+        } catch (TimeoutException e) {
             // timeout condition can never occur in a realistic timeframe
+            throw new IllegalStateException(e);
         }
     }
 
