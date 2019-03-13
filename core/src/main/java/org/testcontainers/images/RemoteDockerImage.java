@@ -4,14 +4,20 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.LazyFuture;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,7 +73,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             // The image is not available locally - pull it
             try {
-                final LoggedTimeLimitedPullImageResultCallback callback = new LoggedTimeLimitedPullImageResultCallback(logger);
+                final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
                 dockerClient
                     .pullImageCmd(imageName.getUnversionedPart())
                     .withTag(imageName.getVersionPart())
