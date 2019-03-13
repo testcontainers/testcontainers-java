@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.fail;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
 
@@ -99,6 +100,18 @@ public class RegistryAuthLocatorTest {
             "Not correct message discovered",
             "Fake credentials not found on credentials store 'https://not.a.real.registry/url'",
             discoveredMessage);
+    }
+
+    @Test
+    public void lookupAuthConfigWithCredStoreEmpty() throws URISyntaxException {
+        Map<String, String> emptyMap = new HashMap<>();
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store-empty.json", emptyMap);
+
+        DockerImageName dockerImageName = new DockerImageName("registry2.example.com/org/repo");
+        try {
+            authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
+            fail();
+        } catch (IllegalArgumentException e) { }
     }
 
     @NotNull
