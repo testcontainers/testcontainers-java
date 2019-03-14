@@ -183,7 +183,10 @@ public class RegistryAuthLocator {
         final JsonNode credsStoreNode = config.get("credsStore");
         if (credsStoreNode != null && !credsStoreNode.isMissingNode() && credsStoreNode.isTextual()) {
             final String credsStore = credsStoreNode.asText();
-            // todo: define behaviour on empty value
+            if (credsStore.isBlank()) {
+                log.warn("CredStore field will be ignored, because value is blank");
+                return null;
+            }
             return runCredentialProvider(reposName, credsStore);
         }
         return null;
