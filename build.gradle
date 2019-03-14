@@ -56,24 +56,16 @@ subprojects {
         configurations = []
         classifier = null
 
-        [
-            "org.apache.http",
-            "org.apache.commons.lang",
-            "org.apache.commons.io",
-            "org.apache.commons.codec",
-            "org.aopalliance",
-            "javax.annotation",
-            "javax.ws.rs",
-            "com.fasterxml.jackson",
-            "com.google",
-            "io.netty",
-            "org.zeroturnaround",
-            "okhttp3",
-            "okio",
-            "org.scalasbt.ipcsocket",
-            "com.trilead.ssh2",
-        ].each { relocate(it, "org.testcontainers.shaded.$it") }
+        // Keep docker-java's package inside the final jar
+        relocate("com.github.dockerjava", "com.github.dockerjava")
     }
+
+    task relocateShadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation) {
+        target = tasks.shadowJar
+        prefix = "org.testcontainers.shaded"
+    }
+
+    tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
     publishing {
         publications {

@@ -32,24 +32,16 @@ shadowJar {
         'META-INF/services/com.fasterxml.jackson.core.*',
         'META-INF/services/com.github.dockerjava.api.command.*',
         'META-INF/services/javax.ws.rs.ext.*',
-        // 'META-INF/services/java.security.Provider',
+        'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
     ].each { exclude(it) }
 
-    dependencies {
-        include(dependency('org.apache.httpcomponents:.*'))
-        // include(dependency('javax.ws.rs:.*'))
-        include(dependency('com.fasterxml.*:.*'))
-        include(dependency('com.github.docker-java:.*'))
-        include(dependency('com.google.guava:.*'))
-        include(dependency('org.zeroturnaround:zt-exec'))
-        include(dependency('commons-lang:commons-lang'))
-        include(dependency('commons-io:commons-io'))
-        include(dependency('commons-codec:commons-codec'))
-        include(dependency('com.squareup.okhttp3:.*'))
-        include(dependency('com.squareup.okio:.*'))
-        include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
-        include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
+    project.afterEvaluate {
+        dependencies {
+            for (id in project.configurations.compile.resolvedConfiguration.resolvedArtifacts*.moduleVersion*.id) {
+                exclude(dependency("${id.group}:${id.name}"))
+            }
+        }
     }
 }
 
@@ -88,23 +80,24 @@ dependencies {
     }
 
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-4') {
-        exclude(group: '*', module: "*")
+        exclude(group: 'org.glassfish.jersey.core')
+        exclude(group: 'org.glassfish.jersey.connectors')
+        exclude(group: 'org.glassfish.jersey.inject')
+        exclude(group: 'log4j')
+        exclude(group: 'com.google.code.findbug')
+        exclude(group: 'com.kohlschutter.junixsocket')
+        exclude(group: 'io.netty')
+        exclude(group: 'org.apache.httpcomponents')
+        exclude(group: 'org.slf4j')
     }
-    shaded 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.6.7' // docker-java
-    shaded 'com.google.guava:guava:19.0' // docker-java
-    shaded 'org.apache.httpcomponents:httpclient:4.5.6' // docker-java
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.60' // docker-java
 
     shaded 'com.squareup.okhttp3:okhttp:3.12.1'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    // shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     shaded 'org.zeroturnaround:zt-exec:1.10'
-    shaded 'commons-lang:commons-lang:2.6'
-    shaded 'commons-io:commons-io:2.6'
-    shaded 'commons-codec:commons-codec:1.11'
 
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.7'
     testCompile 'redis.clients:jedis:3.0.1'
     testCompile 'com.rabbitmq:amqp-client:5.6.0'
     testCompile 'org.mongodb:mongo-java-driver:3.9.1'
