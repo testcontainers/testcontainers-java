@@ -97,7 +97,6 @@ workflows:
   test_all:
     jobs:
     - core
-    - okhttp
     - modules-no-jdbc-test-no-selenium
     - modules-jdbc-test
     - selenium
