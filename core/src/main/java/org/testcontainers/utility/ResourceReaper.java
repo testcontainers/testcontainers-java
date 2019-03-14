@@ -368,7 +368,7 @@ public final class ResourceReaper {
             String query = filters.stream()
                 .map(it -> {
                     try {
-                        return it.getKey() + "=" + URLEncoder.encode(it.getValue(), "UTF-8");
+                        return URLEncoder.encode(it.getKey(), "UTF-8") + "=" + URLEncoder.encode(it.getValue(), "UTF-8");
                     } catch (UnsupportedEncodingException e) {
                         throw new RuntimeException(e);
                     }
