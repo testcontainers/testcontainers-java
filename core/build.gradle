@@ -89,13 +89,16 @@ dependencies {
         exclude(group: 'io.netty')
         exclude(group: 'org.apache.httpcomponents')
         exclude(group: 'org.slf4j')
+        exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
     shaded 'com.squareup.okhttp3:okhttp:3.12.1'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.zeroturnaround:zt-exec:1.10'
+    shaded 'org.zeroturnaround:zt-exec:1.10', {
+        exclude(group: 'org.slf4j')
+    }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.7'
     testCompile 'redis.clients:jedis:3.0.1'
