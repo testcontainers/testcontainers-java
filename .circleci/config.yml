@@ -19,23 +19,6 @@ jobs:
         path: ~/junit
     - store_artifacts:
         path: ~/junit
-  okhttp:
-    machine:
-      enabled: true
-    steps:
-    - checkout
-    - run:
-        command: |
-          echo "transport.type=okhttp" >> core/src/test/resources/testcontainers.properties
-          ./gradlew testcontainers:check --scan
-    - run:
-        name: Save test results
-        command: |
-          mkdir -p ~/junit/
-          find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-        when: always
-    - store_test_results:
-        path: ~/junit
   modules-no-jdbc-test-no-selenium:
     machine:
       enabled: true
@@ -114,7 +97,6 @@ workflows:
   test_all:
     jobs:
     - core
-    - okhttp
     - modules-no-jdbc-test-no-selenium
     - modules-jdbc-test
     - selenium
