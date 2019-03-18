@@ -39,8 +39,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     }
 
     /**
-     * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
-     * docker API, there's no easy way to get the result code from the process we ran.
+     * Class to hold results from a "docker exec" command
      */
     @Value
     @AllArgsConstructor(access = AccessLevel.MODULE)
