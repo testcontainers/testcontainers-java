@@ -21,6 +21,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
     private Set<String> pulledLayers = new HashSet<>();
     private Map<String, Long> totalSizes = new HashMap<>();
     private Map<String, Long> currentSizes = new HashMap<>();
+    private boolean completed;
 
     LoggedPullImageResultCallback(final Logger logger) {
         this.logger = logger;
@@ -84,6 +85,10 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
                 byteCountToDisplaySize(currentSize),
                 friendlyTotalSize);
         }
+
+        if (status != null && status.contains("complete")) {
+            completed = true;
+        }
     }
 
     @Override
@@ -91,7 +96,10 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
         super.onComplete();
 
         long totalSize = totalLayerSize();
-        logger.info("Pull complete ({} layers, {})", allLayers.size(), byteCountToDisplaySize(totalSize));
+
+        if (completed) {
+            logger.info("Pull complete ({} layers, {})", allLayers.size(), byteCountToDisplaySize(totalSize));
+        }
     }
 
     private long downloadedLayerSize() {

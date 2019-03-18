@@ -5,6 +5,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +21,7 @@ import static org.testcontainers.DockerClientFactory.TESTCONTAINERS_THREAD_GROUP
  * {@link PullImageResultCallback} with improved logging of pull progress and a 'watchdog' which will abort the pull
  * if progress is not being made, to prevent a hanging test
  */
-public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageResultCallback {
+class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageResultCallback {
 
     private static final AtomicInteger THREAD_ID = new AtomicInteger(0);
     private static final ScheduledExecutorService PROGRESS_WATCHDOG_EXECUTOR =
@@ -33,7 +34,10 @@ public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageRes
     private static final Duration PULL_PAUSE_TOLERANCE = Duration.ofSeconds(30);
     private final Logger logger;
 
+    // A future which, if it ever fires, will kill the pull
     private ScheduledFuture<?> nextCheckForProgress;
+
+    // All threads that are 'awaiting' this pull
     private Set<Thread> waitingThreads = new HashSet<>();
 
     TimeLimitedLoggedPullImageResultCallback(Logger logger) {
@@ -45,6 +49,12 @@ public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageRes
     public PullImageResultCallback awaitCompletion() throws InterruptedException {
         waitingThreads.add(Thread.currentThread());
         return super.awaitCompletion();
+    }
+
+    @Override
+    public boolean awaitCompletion(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        waitingThreads.add(Thread.currentThread());
+        return super.awaitCompletion(timeout, timeUnit);
     }
 
     @Override
@@ -81,13 +91,26 @@ public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageRes
      */
     private void resetProgressWatchdog(boolean isFinished) {
         if (nextCheckForProgress != null && ! nextCheckForProgress.isCancelled()) {
-            nextCheckForProgress.cancel(true);
+            nextCheckForProgress.cancel(false);
         }
         if (!isFinished) {
-            nextCheckForProgress = PROGRESS_WATCHDOG_EXECUTOR.schedule(() -> {
-                logger.error("Docker image pull has not made progress in {}s - aborting pull", PULL_PAUSE_TOLERANCE.getSeconds());
-                waitingThreads.forEach(Thread::interrupt);
-            }, PULL_PAUSE_TOLERANCE.getSeconds(), TimeUnit.SECONDS);
+            nextCheckForProgress = PROGRESS_WATCHDOG_EXECUTOR.schedule(
+                this::abortPull,
+                PULL_PAUSE_TOLERANCE.getSeconds(),
+                TimeUnit.SECONDS
+            );
+        }
+    }
+
+    private void abortPull() {
+        logger.error("Docker image pull has not made progress in {}s - aborting pull", PULL_PAUSE_TOLERANCE.getSeconds());
+        // Interrupt any threads that are waiting, before closing streams, because the stream can take
+        //  an indeterminate amount of time to close
+        waitingThreads.forEach(Thread::interrupt);
+        try {
+            close();
+        } catch (IOException ignored) {
+            // no action
         }
     }
 }
