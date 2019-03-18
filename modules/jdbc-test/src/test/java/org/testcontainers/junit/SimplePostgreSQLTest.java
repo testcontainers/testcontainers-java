@@ -13,57 +13,44 @@ import java.sql.Statement;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
 
-/**
- * @author richardnorth
- */
 public class SimplePostgreSQLTest {
 
     @Test
     public void testSimple() throws SQLException {
-        PostgreSQLContainer postgres = new PostgreSQLContainer();
-        postgres.start();
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer()) {
+            postgres.start();
 
-        try {
-            ResultSet resultSet = performQuery(postgres,"SELECT 1");
+            ResultSet resultSet = performQuery(postgres, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-        } finally {
-            postgres.stop();
         }
     }
 
     @Test
     public void testCommandOverride() throws SQLException {
-        PostgreSQLContainer postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42");
-        postgres.start();
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42")) {
+            postgres.start();
 
-        try {
-            ResultSet resultSet = performQuery(postgres,"SELECT current_setting('max_connections')");
+            ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
             String result = resultSet.getString(1);
             assertEquals("max_connections should be overriden", "42", result);
-        } finally {
-            postgres.stop();
         }
     }
 
     @Test
     public void testUnsetCommand() throws SQLException {
-        PostgreSQLContainer postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42").withCommand();
-        postgres.start();
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42").withCommand()) {
+            postgres.start();
 
-        try {
-            ResultSet resultSet = performQuery(postgres,"SELECT current_setting('max_connections')");
+            ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
             String result = resultSet.getString(1);
             assertNotEquals("max_connections should not be overriden", "42", result);
-        } finally {
-            postgres.stop();
         }
     }
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>()
-                .withInitScript("somepath/init_postgresql.sql")) {
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>().withInitScript("somepath/init_postgresql.sql")) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
