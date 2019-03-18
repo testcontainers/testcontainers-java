@@ -5,7 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.Network;
@@ -35,7 +35,7 @@ public class LinkedContainerTest {
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer<>()
             .withNetwork(network)
-            .withDesiredCapabilities(DesiredCapabilities.chrome());
+            .withCapabilities(new ChromeOptions());
 
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
@@ -55,7 +55,7 @@ public class LinkedContainerTest {
     }
 
     @Test
-    public void testWebDriverToNginxContainerAccessViaContainerLink() throws Exception {
+    public void testWebDriverToNginxContainerAccessViaContainerLink() {
         RemoteWebDriver driver = chrome.getWebDriver();
 
         driver.get("http://nginx/");

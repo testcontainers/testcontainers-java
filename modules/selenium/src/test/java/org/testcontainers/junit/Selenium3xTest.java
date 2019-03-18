@@ -3,7 +3,7 @@ package org.testcontainers.junit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
 /**
@@ -23,7 +23,7 @@ public class Selenium3xTest {
     @Test
     public void testAdditionalStartupString() {
         try (BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome-debug:" + tag)
-                .withDesiredCapabilities(DesiredCapabilities.chrome())) {
+                .withCapabilities(new ChromeOptions())) {
             chrome.start();
         }
     }

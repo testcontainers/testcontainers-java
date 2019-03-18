@@ -1,0 +1,34 @@
+description = "TestContainers :: Neo4j"
+
+def generatedResourcesDir = new File(project.buildDir, "generated-resources")
+def customNeo4jPluginDestinationDir = new File(generatedResourcesDir, "custom-plugins")
+
+sourceSets {
+    customNeo4jPlugin {
+        java {
+            srcDir 'src/custom-neo4j-plugin'
+        }
+    }
+    test {
+        resources {
+            srcDir generatedResourcesDir
+        }
+    }
+}
+
+task customNeo4jPluginJar(type: Jar) {
+    from sourceSets.customNeo4jPlugin.output
+    archiveName = "hello-world.jar"
+    destinationDir = customNeo4jPluginDestinationDir
+}
+
+test.dependsOn customNeo4jPluginJar
+
+dependencies {
+    customNeo4jPluginCompileOnly "org.neo4j:neo4j:3.5.3"
+
+    compile project(":testcontainers")
+
+    testCompile "org.neo4j.driver:neo4j-java-driver:1.7.3"
+    testCompile 'org.assertj:assertj-core:3.12.1'
+}

@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.ResultSet;
@@ -14,6 +15,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 /**
  * @author gusohal
  */
+@Ignore
 public class OracleJDBCDriverTest {
 
     @Test
