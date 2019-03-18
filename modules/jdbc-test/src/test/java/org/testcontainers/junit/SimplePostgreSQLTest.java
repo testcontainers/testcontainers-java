@@ -2,7 +2,6 @@ package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import lombok.NonNull;
 import org.junit.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -61,18 +60,6 @@ public class SimplePostgreSQLTest {
         }
     }
 
-    @NonNull
-    protected ResultSet performQuery(PostgreSQLContainer postgres, String sql) throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>()) {
-            postgres.start();
-
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-        }
-    }
-
     @Test
     public void testExplicitInitScript() throws SQLException {
         try (PostgreSQLContainer postgres = new PostgreSQLContainer<>()
@@ -88,7 +75,7 @@ public class SimplePostgreSQLTest {
 
     private ResultSet performQuery(JdbcDatabaseContainer container, String sql) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setDriverClassName(postgres.getDriverClassName());
+        hikariConfig.setDriverClassName(container.getDriverClassName());
         hikariConfig.setJdbcUrl(container.getJdbcUrl());
         hikariConfig.setUsername(container.getUsername());
         hikariConfig.setPassword(container.getPassword());
