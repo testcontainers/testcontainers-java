@@ -40,7 +40,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * docker API, there's no easy way to get the result code from the process we ran.
      */
     class ExecResult {
-        private final Integer exitCode;
+        private final int exitCode;
         private final String stdout;
         private final String stderr;
 
