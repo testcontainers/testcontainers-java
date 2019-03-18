@@ -17,7 +17,7 @@ public class SimplePostgreSQLTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer()) {
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>()) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT 1");
