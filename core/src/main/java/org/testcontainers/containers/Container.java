@@ -3,7 +3,10 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Info;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.Value;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -36,24 +39,21 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     }
 
     /**
-     * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
-     * docker API, there's no easy way to get the result code from the process we ran.
+     * Class to hold results from a "docker exec" command
      */
+    @Value
+    @AllArgsConstructor(access = AccessLevel.MODULE)
     class ExecResult {
-        private final String stdout;
-        private final String stderr;
+        int exitCode;
+        String stdout;
+        String stderr;
 
+        /**
+         * @deprecated should not be instantiated outside of the library, please migrate
+         */
+        @Deprecated
         public ExecResult(String stdout, String stderr) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-        }
-
-        public String getStdout() {
-            return stdout;
-        }
-
-        public String getStderr() {
-            return stderr;
+            this(-1, stdout, stderr);
         }
     }
 
