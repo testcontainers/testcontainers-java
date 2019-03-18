@@ -104,7 +104,7 @@ dependencies {
     testCompile 'redis.clients:jedis:3.0.1'
     testCompile 'com.rabbitmq:amqp-client:5.6.0'
     testCompile 'org.mongodb:mongo-java-driver:3.10.1'
-    testCompile ('org.mockito:mockito-core:2.24.5') {
+    testCompile ('org.mockito:mockito-core:2.25.1') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
@@ -113,6 +113,6 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.12.1'
+    jarFileTestCompile 'org.assertj:assertj-core:3.12.2'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }
