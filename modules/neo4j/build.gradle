@@ -30,5 +30,5 @@ dependencies {
     compile project(":testcontainers")
 
     testCompile "org.neo4j.driver:neo4j-java-driver:1.7.3"
-    testCompile 'org.assertj:assertj-core:3.12.1'
+    testCompile 'org.assertj:assertj-core:3.12.2'
 }
