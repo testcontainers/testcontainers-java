@@ -184,7 +184,7 @@ public class RegistryAuthLocator {
         if (credsStoreNode != null && !credsStoreNode.isMissingNode() && credsStoreNode.isTextual()) {
             final String credsStore = credsStoreNode.asText();
             if (isBlank(credsStore)) {
-                log.warn("CredStore field will be ignored, because value is blank");
+                log.warn("Docker auth config credsStore field will be ignored, because value is blank");
                 return null;
             }
             return runCredentialProvider(reposName, credsStore);
