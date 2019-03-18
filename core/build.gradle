@@ -129,6 +129,6 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.12.1'
+    jarFileTestCompile 'org.assertj:assertj-core:3.12.2'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }
