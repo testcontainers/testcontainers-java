@@ -50,7 +50,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
             this.stderr = stderr;
         }
 
-        public Integer getExitCode() {return  exitCode;}
+        public int getExitCode() {
+                return exitCode;
+        }
 
         public String getStdout() {
             return stdout;
