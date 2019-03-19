@@ -6,28 +6,23 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 /**
  * Container for Dynalite, a DynamoDB clone.
  */
-public class DynaliteContainer extends ExternalResource {
+public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DynaliteContainer.class);
-    private final GenericContainer delegate;
+    private static final String IMAGE_NAME = "quay.io/testcontainers/dynalite:v1.2.1-1";
+    private static final int MAPPED_PORT = 4567;
 
     public DynaliteContainer() {
-        this("quay.io/testcontainers/dynalite:v1.2.1-1");
+        this(IMAGE_NAME);
+        withExposedPorts(MAPPED_PORT);
     }
 
     public DynaliteContainer(String imageName) {
-        this.delegate = new GenericContainer(imageName)
-                .withExposedPorts(4567)
-                .withLogConsumer(new Slf4jLogConsumer(LOGGER));
+        super(imageName);
     }
 
     /**
@@ -51,8 +46,8 @@ public class DynaliteContainer extends ExternalResource {
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration() {
         return new AwsClientBuilder.EndpointConfiguration("http://" +
-                this.delegate.getContainerIpAddress() + ":" +
-                this.delegate.getMappedPort(4567), null);
+                this.getContainerIpAddress() + ":" +
+                this.getMappedPort(MAPPED_PORT), null);
     }
 
     /**
@@ -64,13 +59,5 @@ public class DynaliteContainer extends ExternalResource {
         return new AWSStaticCredentialsProvider(new BasicAWSCredentials("dummy", "dummy"));
     }
 
-    @Override
-    protected void before() throws Throwable {
-        delegate.start();
-    }
 
-    @Override
-    protected void after() {
-        delegate.stop();
-    }
 }

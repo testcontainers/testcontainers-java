@@ -13,7 +13,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -140,10 +139,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     @Override
     public void start() {
-        final Profiler profiler = new Profiler("Docker Compose container rule");
-        profiler.setLogger(logger());
-        profiler.start("Docker Compose container startup");
-
         synchronized (MUTEX) {
             registerContainersForShutdown();
             if (pull) {
@@ -155,7 +150,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             }
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();
-            startAmbassadorContainers(profiler);
+            startAmbassadorContainers();
             waitUntilServiceStarted();
         }
     }
@@ -243,10 +238,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 .collect(toList());
     }
 
-    private void startAmbassadorContainers(Profiler profiler) {
-        profiler.start("Ambassador container startup");
+    private void startAmbassadorContainers() {
         ambassadorContainer.start();
-        profiler.stop().log();
     }
 
     private Logger logger() {

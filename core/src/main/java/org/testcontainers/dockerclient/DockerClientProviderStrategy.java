@@ -13,7 +13,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
-import org.testcontainers.dockerclient.transport.TestcontainersDockerCmdExecFactory;
 import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -173,9 +172,6 @@ public abstract class DockerClientProviderStrategy {
         if ("okhttp".equals(transportType)) {
             clientBuilder
                 .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory());
-        } else if ("netty".equals(transportType)) {
-            clientBuilder
-                .withDockerCmdExecFactory(new TestcontainersDockerCmdExecFactory());
         } else {
             throw new IllegalArgumentException("Unknown transport type: " + transportType);
         }

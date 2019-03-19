@@ -1,9 +1,13 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.collect.ImmutableSet;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -44,8 +48,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
 
+    private static final String NO_PROXY_KEY = "no_proxy";
+
     @Nullable
-    private DesiredCapabilities desiredCapabilities;
+    private Capabilities capabilities;
     private boolean customImageNameIsSet = false;
 
     @Nullable
@@ -75,7 +81,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     /**
      * Constructor taking a specific webdriver container name and tag
-     * @param dockerImageName
+     * @param dockerImageName Name of the docker image to pull
      */
     public BrowserWebDriverContainer(String dockerImageName) {
         this();
@@ -86,8 +92,21 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
 
-    public SELF withDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
-        this.desiredCapabilities = desiredCapabilities;
+    public SELF withCapabilities(Capabilities capabilities) {
+        this.capabilities = capabilities;
+        return self();
+    }
+
+    /**
+     * @deprecated Use withCapabilities(Capabilities capabilities) instead:
+     * withCapabilities(new FirefoxOptions())
+     *
+     * @param capabilities DesiredCapabilities
+     * @return SELF
+     * */
+    @Deprecated
+    public SELF withDesiredCapabilities(DesiredCapabilities capabilities) {
+        this.capabilities = capabilities;
         return self();
     }
 
@@ -105,8 +124,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void configure() {
 
-        if (desiredCapabilities == null) {
-            throw new IllegalStateException();
+        String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
+
+        if (capabilities == null) {
+            if (seleniumVersion.startsWith("2.")) {
+                logger().info("No capabilities provided, falling back to DesiredCapabilities.chrome()");
+                capabilities = DesiredCapabilities.chrome();
+            } else {
+                logger().info("No capabilities provided, falling back to ChromeOptions");
+                capabilities = new ChromeOptions();
+            }
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
@@ -120,7 +147,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (!customImageNameIsSet) {
-            super.setDockerImageName(getImageForCapabilities(desiredCapabilities));
+            super.setDockerImageName(getImageForCapabilities(capabilities, seleniumVersion));
         }
 
         String timeZone = System.getProperty("user.timezone");
@@ -131,7 +158,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         addExposedPorts(SELENIUM_PORT, VNC_PORT);
         addEnv("TZ", timeZone);
-        addEnv("no_proxy", "localhost");
+
+        if (!getEnvMap().containsKey(NO_PROXY_KEY)) {
+            addEnv(NO_PROXY_KEY, "localhost");
+        }
+
         setCommand("/opt/bin/entry_point.sh");
 
         /*
@@ -140,11 +171,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setStartupAttempts(3);
     }
 
-    public static String getImageForCapabilities(DesiredCapabilities desiredCapabilities) {
+    public static String getImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
 
-        String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
-
-        String browserName = desiredCapabilities.getBrowserName();
+        String browserName = capabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
                 return String.format(CHROME_IMAGE, seleniumVersion);
@@ -184,7 +213,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
                 Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
                         () ->
-                                () -> new RemoteWebDriver(getSeleniumAddress(), desiredCapabilities)));
+                            () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
 
         if (vncRecordingContainer != null) {
             LOGGER.debug("Starting VNC recording");
@@ -282,6 +311,4 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     public enum VncRecordingMode {
         SKIP, RECORD_ALL, RECORD_FAILING
     }
-
-
 }

@@ -1,8 +1,9 @@
 plugins {
+    id 'com.gradle.build-scan' version '1.16'
     id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'nebula.provided-base' version '3.0.3'
     id 'com.github.johnrengelman.shadow' version '2.0.2'
-    id "com.jfrog.bintray" version "1.8.0" apply false
+    id "com.jfrog.bintray" version "1.8.4" apply false
 }
 
 subprojects {
@@ -21,7 +22,7 @@ subprojects {
     compileJava.options.encoding = 'UTF-8'
 
     lombok {
-	    version = '1.18.2'
+        version = '1.18.6'
     }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
@@ -55,31 +56,16 @@ subprojects {
         configurations = []
         classifier = null
 
-        relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
-
-        [
-            "org.apache.http",
-            "org.apache.commons.lang",
-            "org.apache.commons.io",
-            "org.apache.commons.codec",
-            "org.glassfish",
-            "org.aopalliance",
-            "org.jvnet",
-            "javax.annotation",
-            "javax.inject",
-            "javax.ws.rs",
-            "com.fasterxml.jackson",
-            "jersey.repackaged",
-            "com.google",
-            "io.netty",
-            "org.bouncycastle",
-            "org.zeroturnaround",
-            "okhttp3",
-            "okio",
-            "org.scalasbt.ipcsocket",
-            "com.trilead.ssh2",
-        ].each { relocate(it, "org.testcontainers.shaded.$it") }
+        // Keep docker-java's package inside the final jar
+        relocate("com.github.dockerjava", "com.github.dockerjava")
     }
+
+    task relocateShadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation) {
+        target = tasks.shadowJar
+        prefix = "org.testcontainers.shaded"
+    }
+
+    tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
     publishing {
         publications {
@@ -93,4 +79,9 @@ subprojects {
     dependencies {
         testCompile 'ch.qos.logback:logback-classic:1.2.3'
     }
+}
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }

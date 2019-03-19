@@ -1,15 +1,18 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.model.HostConfig;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.rabbitmq.client.*;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.junit.*;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
@@ -24,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
@@ -155,6 +159,27 @@ public class GenericContainerRuleTest {
             assertTrue("Container is started and running", container.isRunning());
         }
     }
+
+    @Test
+    public void withTmpFsTest() throws Exception {
+        try (
+            GenericContainer container = new GenericContainer()
+                .withCommand("top")
+                .withTmpFs(singletonMap("/testtmpfs", "rw"))
+        ) {
+            container.start();
+            // check file doesn't exist
+            String path = "/testtmpfs/test.file";
+            Container.ExecResult execResult = container.execInContainer("ls", path);
+            assertEquals("tmpfs inside container works fine", execResult.getStderr(),
+                "ls: /testtmpfs/test.file: No such file or directory\n");
+            // touch && check file does exist
+            container.execInContainer("touch", path);
+            execResult = container.execInContainer("ls", path);
+            assertEquals("tmpfs inside container works fine", execResult.getStdout(), path + "\n");
+        }
+    }
+
 
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
@@ -374,5 +399,19 @@ public class GenericContainerRuleTest {
         assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
         assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
         assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
+    public void sharedMemorySetTest() {
+        try (GenericContainer containerWithSharedMemory = new GenericContainer("busybox:1.29")
+            .withSharedMemorySize(1024L * FileUtils.ONE_MB)) {
+
+            containerWithSharedMemory.start();
+
+            HostConfig hostConfig =
+                containerWithSharedMemory.getDockerClient().inspectContainerCmd(containerWithSharedMemory.getContainerId())
+                    .exec().getHostConfig();
+            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+        }
     }
 }

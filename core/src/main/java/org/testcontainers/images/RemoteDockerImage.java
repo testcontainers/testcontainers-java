@@ -8,7 +8,6 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
 import lombok.ToString;
 import org.slf4j.Logger;
-import org.slf4j.profiler.Profiler;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.utility.DockerImageName;
@@ -39,17 +38,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     @Override
     protected final String resolve() {
-        Profiler profiler = new Profiler("Rule creation - prefetch image");
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
-        profiler.setLogger(logger);
 
-        Profiler nested = profiler.startNested("Obtaining client");
         DockerClient dockerClient = DockerClientFactory.instance().client();
         try {
-            nested.stop();
-
-            profiler.start("Check local images");
-
             int attempts = 0;
             Exception lastException = null;
             while (true) {
@@ -83,7 +75,6 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 // Log only on first attempt
                 if (attempts == 0) {
                     logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
-                    profiler.start("Pull image");
                 }
 
                 if (attempts++ >= 3) {
@@ -109,8 +100,6 @@ public class RemoteDockerImage extends LazyFuture<String> {
             return imageName.toString();
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
-        } finally {
-            profiler.stop().log();
         }
     }
 }
