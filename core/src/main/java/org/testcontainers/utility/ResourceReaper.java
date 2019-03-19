@@ -14,8 +14,6 @@ import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -25,7 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.URLEncoder;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -365,12 +365,15 @@ public final class ResourceReaper {
          * @throws IOException if communication with Ryuk fails
          */
         protected boolean register(List<Map.Entry<String, String>> filters) throws IOException {
-            String query = URLEncodedUtils.format(
-                filters.stream()
-                    .map(it -> new BasicNameValuePair(it.getKey(), it.getValue()))
-                    .collect(Collectors.toList()),
-                (String) null
-            );
+            String query = filters.stream()
+                .map(it -> {
+                    try {
+                        return URLEncoder.encode(it.getKey(), "UTF-8") + "=" + URLEncoder.encode(it.getValue(), "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.joining("&"));
 
             log.debug("Sending '{}' to Ryuk", query);
             out.write(query.getBytes());

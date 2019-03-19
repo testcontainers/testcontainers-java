@@ -37,13 +37,7 @@ public class JarFileShadingTest extends AbstractJarFileTest {
     public void testMetaInf() throws Exception {
         assertThatFileList(root.resolve("META-INF")).containsOnly(
                 "MANIFEST.MF",
-                "services",
-                "native"
-        );
-
-        assertThatFileList(root.resolve("META-INF").resolve("native")).containsOnly(
-                "liborg-testcontainers-shaded-netty_transport_native_epoll_x86_64.so",
-                "liborg-testcontainers-shaded-netty_transport_native_kqueue_x86_64.jnilib"
+                "services"
         );
     }
 
