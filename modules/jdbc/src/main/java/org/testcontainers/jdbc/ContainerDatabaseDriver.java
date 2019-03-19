@@ -8,7 +8,6 @@ import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 
 import javax.script.ScriptException;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -182,8 +181,7 @@ public class ContainerDatabaseDriver implements Driver {
                 URL resource;
                 if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
                     //relative project path
-                    String relativePath = System.getProperty("user.dir") + "/" + initScriptPath.substring(FILE_PATH_PREFIX.length());
-                    resource = new File(relativePath).toURI().toURL();
+                    resource = new URL(initScriptPath);
                 } else {
                     //classpath resource
                     resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
