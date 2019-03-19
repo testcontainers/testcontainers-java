@@ -101,6 +101,16 @@ public class RegistryAuthLocatorTest {
             discoveredMessage);
     }
 
+    @Test
+    public void lookupAuthConfigWithCredStoreEmpty() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store-empty.json");
+
+        DockerImageName dockerImageName = new DockerImageName("registry2.example.com/org/repo");
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
+
+        assertNull("CredStore field will be ignored, because value is blank", authConfig.getAuth());
+    }
+
     @NotNull
     private RegistryAuthLocator createTestAuthLocator(String configName) throws URISyntaxException {
         return createTestAuthLocator(configName, new HashMap<>());
