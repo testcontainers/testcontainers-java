@@ -1,22 +1,26 @@
 package org.testcontainers.junit;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import lombok.NonNull;
-import org.apache.commons.lang.SystemUtils;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.junit.Assume.assumeFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import org.apache.commons.lang.SystemUtils;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+
+import lombok.NonNull;
 
 
 /**
@@ -124,6 +128,35 @@ public class SimpleMySQLTest {
             assertTrue("The database version can be set using a container rule parameter", "8.0.11".equals(resultSetString));
         }
         finally {
+            container.stop();
+        }
+    }
+
+    @Test
+    public void testExplicitInitScript() throws SQLException {
+        try (MySQLContainer container = (MySQLContainer) new MySQLContainer()
+            .withInitScript("somepath/init_mysql.sql")
+            .withLogConsumer(new Slf4jLogConsumer(logger))) {
+            container.start();
+
+            ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
+            String firstColumnValue = resultSet.getString(1);
+
+            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+     }
+
+    @Test
+    public void testEmptyPasswordWithNonRootUser() {
+
+        MySQLContainer container = (MySQLContainer) new MySQLContainer("mysql:5.5").withDatabaseName("TEST")
+                .withUsername("test").withPassword("").withEnv("MYSQL_ROOT_HOST", "%");
+
+        try {
+            container.start();
+            fail("ContainerLaunchException expected to be thrown");
+        } catch (ContainerLaunchException e) {
+        } finally {
             container.stop();
         }
     }

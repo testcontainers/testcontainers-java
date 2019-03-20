@@ -10,8 +10,9 @@ dependencies {
 
     testCompile project(':mysql')
     testCompile project(':postgresql')
-    testCompile 'com.zaxxer:HikariCP:2.6.1'
+    testCompile 'com.zaxxer:HikariCP:3.3.1'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.7'
 
-    testRuntime 'org.postgresql:postgresql:42.0.0'
-    testRuntime 'mysql:mysql-connector-java:6.0.6'
+    testRuntime 'org.postgresql:postgresql:42.2.5'
+    testRuntime 'mysql:mysql-connector-java:8.0.15'
 }

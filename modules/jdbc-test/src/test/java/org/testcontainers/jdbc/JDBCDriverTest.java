@@ -46,21 +46,26 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mysql://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=file:sql/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:postgresql:9.6.8://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:postgis://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:postgis:9.6://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:postgresql:9.6.8://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
+                {"jdbc:tc:postgis://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
+                {"jdbc:tc:postgis:9.6://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:mariadb://hostname/databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:mariadb://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
+                {"jdbc:tc:sqlserver:2017-CU12://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
             });
     }
 
@@ -131,16 +136,27 @@ public class JDBCDriverTest {
 
     private void performTestForJDBCParamUsage(String jdbcUrl) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("select CURRENT_USER()", rs -> {
+            boolean result = new QueryRunner(dataSource).query("select CURRENT_USER", rs -> {
                 rs.next();
                 String resultUser = rs.getString(1);
-                assertEquals("User from query param is created.", "someuser@%", resultUser);
+                // Not all databases (eg. Postgres) return @% at the end of user name. We just need to make sure the user name matches.
+                if (resultUser.endsWith("@%")) {
+                    resultUser = resultUser.substring(0, resultUser.length() - 2);
+                }
+                assertEquals("User from query param is created.", "someuser", resultUser);
                 return true;
             });
 
             assertTrue("The database returned a record as expected", result);
 
-            result = new QueryRunner(dataSource).query("SELECT DATABASE()", rs -> {
+            String databaseQuery = "SELECT DATABASE()";
+            // Postgres does not have Database() as a function
+            String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
+            if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
+                databaseQuery = "SELECT CURRENT_DATABASE()";
+            }
+
+            result = new QueryRunner(dataSource).query(databaseQuery, rs -> {
                 rs.next();
                 String resultDB = rs.getString(1);
                 assertEquals("Database name from URL String is used.", "databasename", resultDB);

@@ -65,7 +65,7 @@ public final class SeleniumUtils {
 
     /**
      * Read Manifest to get Selenium Version.
-     * @param manifest
+     * @param manifest manifest
      * @return Selenium Version detected
      */
     public static String getSeleniumVersionFromManifest(Manifest manifest) {

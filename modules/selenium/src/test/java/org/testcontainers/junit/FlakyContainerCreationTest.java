@@ -2,7 +2,7 @@ package org.testcontainers.junit;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
@@ -17,7 +17,7 @@ public class FlakyContainerCreationTest {
     public void testCreationOfManyContainers() {
         for (int i = 0; i < 50; i++) {
             BrowserWebDriverContainer container = new BrowserWebDriverContainer()
-                    .withDesiredCapabilities(DesiredCapabilities.chrome())
+                    .withCapabilities(new ChromeOptions())
                     .withRecordingMode(BrowserWebDriverContainer.VncRecordingMode.RECORD_FAILING, new File("build"));
 
             container.start();

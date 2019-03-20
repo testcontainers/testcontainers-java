@@ -2,6 +2,7 @@ package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.OracleContainer;
@@ -15,6 +16,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 /**
  * @author gusohal
  */
+@Ignore
 public class SimpleOracleTest {
 
     @Rule

@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.*;
 public class DemoController {
 
     private final StringRedisTemplate stringRedisTemplate;
+    private final DemoService demoService;
 
-    public DemoController(StringRedisTemplate stringRedisTemplate){
+    public DemoController(StringRedisTemplate stringRedisTemplate, DemoService demoService) {
         this.stringRedisTemplate = stringRedisTemplate;
+        this.demoService = demoService;
     }
 
     @GetMapping("/foo")
@@ -20,5 +22,10 @@ public class DemoController {
     @PutMapping("/foo")
     public void set(@RequestBody String value) {
         stringRedisTemplate.opsForValue().set("foo", value);
+    }
+
+    @GetMapping("/{id}")
+    public DemoEntity getDemoEntity(@PathVariable("id") Long id) {
+        return demoService.getDemoEntity(id);
     }
 }

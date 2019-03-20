@@ -20,8 +20,4 @@
     <logger name="io.netty" level="WARN" />
     <logger name="org.testcontainers.shaded" level="WARN"/>
 
-    <turboFilter class="ch.qos.logback.classic.turbo.MarkerFilter">
-        <Marker>PROFILER</Marker>
-        <OnMatch>DENY</OnMatch>
-    </turboFilter>
 </configuration>
