@@ -4,6 +4,6 @@ dependencies {
     compile project(':testcontainers')
 
     testCompile 'org.apache.kafka:kafka-clients:2.1.1'
-    testCompile 'org.assertj:assertj-core:3.12.1'
+    testCompile 'org.assertj:assertj-core:3.12.2'
     testCompile 'com.google.guava:guava:23.0'
 }
