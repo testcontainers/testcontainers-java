@@ -180,7 +180,7 @@ public class ContainerDatabaseDriver implements Driver {
             try {
                 URL resource;
                 if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
-                    //relative project path
+                    //relative workdir path
                     resource = new URL(initScriptPath);
                 } else {
                     //classpath resource
