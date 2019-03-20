@@ -176,6 +176,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .withConstantThroughput()
             .build();
 
+    @Nullable
+    private Map<String, String> tmpFsMapping;
+
 
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
@@ -291,6 +294,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         HostConfig config = new HostConfig();
         if (shmSize != null) {
             config.withShmSize(shmSize);
+        }
+        if (tmpFsMapping != null) {
+            config.withTmpFs(tmpFsMapping);
         }
         return config;
     }
@@ -1138,11 +1144,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Size of /dev/shm
-     * @param bytes The number of megabytes to assign the shared memory. If null, it will apply the Docker default which is 64 MB.
+     * @param bytes The number of bytes to assign the shared memory. If null, it will apply the Docker default which is 64 MB.
      * @return this
      */
     public SELF withSharedMemorySize(Long bytes) {
         this.shmSize = bytes;
+        return self();
+    }
+
+    /**
+     * First class support for configuring tmpfs
+     * @param mapping path and params of tmpfs/mount flag for container
+     * @return this
+     */
+    public SELF withTmpFs(Map<String, String> mapping) {
+        this.tmpFsMapping = mapping;
         return self();
     }
 

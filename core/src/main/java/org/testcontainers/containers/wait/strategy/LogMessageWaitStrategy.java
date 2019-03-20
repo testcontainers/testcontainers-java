@@ -22,7 +22,8 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
         LogUtils.followOutput(DockerClientFactory.instance().client(), waitStrategyTarget.getContainerId(), waitingConsumer);
 
         Predicate<OutputFrame> waitPredicate = outputFrame ->
-            outputFrame.getUtf8String().matches(regEx);
+            // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)
+            outputFrame.getUtf8String().matches("(?s)" + regEx);
 
         try {
             waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS, times);

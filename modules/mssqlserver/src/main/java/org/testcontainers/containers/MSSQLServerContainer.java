@@ -2,11 +2,15 @@ package org.testcontainers.containers;
 
 import org.testcontainers.utility.LicenseAcceptance;
 
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
 /**
  * @author Stefan Hufschmidt
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-    public static final String NAME = "mssqlserver";
+
+    public static final String NAME = "sqlserver";
     public static final String IMAGE = "mcr.microsoft.com/mssql/server";
     public static final String DEFAULT_TAG = "2017-CU12";
 
@@ -16,6 +20,13 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
+
+    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[]{
+        Pattern.compile("[A-Z]+"),
+        Pattern.compile("[a-z]+"),
+        Pattern.compile("[0-9]+"),
+        Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE)
+    };
 
     public MSSQLServerContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
@@ -65,5 +76,43 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     @Override
     public String getTestQueryString() {
         return "SELECT 1";
+    }
+
+    @Override
+    public SELF withPassword(final String password) {
+        checkPasswordStrength(password);
+        this.password = password;
+        return self();
+    }
+
+    private void checkPasswordStrength(String password) {
+
+        if (password == null) {
+            throw new IllegalArgumentException("Null password is not allowed");
+        }
+
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("Password should be at least 8 characters long");
+        }
+
+        if (password.length() > 128) {
+            throw new IllegalArgumentException("Password can be up to 128 characters long");
+        }
+
+        long satisfiedCategories = Stream.of(PASSWORD_CATEGORY_VALIDATION_PATTERNS)
+            .filter(p -> p.matcher(password).find())
+            .count();
+
+        if (satisfiedCategories < 3) {
+            throw new IllegalArgumentException(
+                "Password must contain characters from three of the following four categories:\n" +
+                    " - Latin uppercase letters (A through Z)\n" +
+                    " - Latin lowercase letters (a through z)\n" +
+                    " - Base 10 digits (0 through 9)\n" +
+                    " - Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), " +
+                    "or percent (%)."
+            );
+        }
+
     }
 }
