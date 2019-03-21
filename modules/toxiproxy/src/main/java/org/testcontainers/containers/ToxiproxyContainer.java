@@ -5,6 +5,7 @@ import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import eu.rekawek.toxiproxy.model.ToxicList;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -67,7 +68,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
         });
     }
 
-    @RequiredArgsConstructor
+    @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
     public static class ContainerProxy {
         private static final String CUT_CONNECTION_DOWNSTREAM = "CUT_CONNECTION_DOWNSTREAM";
         private static final String CUT_CONNECTION_UPSTREAM = "CUT_CONNECTION_UPSTREAM";
