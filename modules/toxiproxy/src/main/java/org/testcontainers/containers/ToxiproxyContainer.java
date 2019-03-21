@@ -50,8 +50,34 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
         client = new ToxiproxyClient(getContainerIpAddress(), getMappedPort(TOXIPROXY_CONTROL_PORT));
     }
 
-    public ContainerProxy getProxy(GenericContainer container, int port) {
-        String upstream = container.getNetworkAliases().get(0) + ":" + port;
+    /**
+     * Obtain a {@link ContainerProxy} instance for target container that is managed by Testcontainers. The target
+     * container should be routable from this <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
+     * Docker {@link Network}).
+     *
+     * @param container target container
+     * @param port port number on the target service that should be proxied
+     * @return a {@link ContainerProxy} instance
+     */
+    public ContainerProxy getProxy(GenericContainer<?> container, int port) {
+        return this.getProxy(container.getNetworkAliases().get(0), port);
+    }
+
+    /**
+     * Obtain a {@link ContainerProxy} instance for a specific hostname and port, which can be for any host
+     * that is routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
+     * Docker {@link Network} or on routable from the Docker host).
+     *
+     * <p><em>It is expected that {@link ToxiproxyContainer#getProxy(GenericContainer, int)} will be more
+     * useful in most scenarios, but this method is present to allow use of Toxiproxy in front of containers
+     * or external servers that are not managed by Testcontainers.</em></p>
+     *
+     * @param hostname hostname of target server to be proxied
+     * @param port port number on the target server that should be proxied
+     * @return a {@link ContainerProxy} instance
+     */
+    public ContainerProxy getProxy(String hostname, int port) {
+        String upstream = hostname + ":" + port;
 
         return proxies.computeIfAbsent(upstream, __ -> {
             try {
