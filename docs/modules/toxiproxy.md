@@ -70,3 +70,7 @@ testCompile "org.testcontainers:toxiproxy:{{latest_version}}"
     <scope>test</scope>
 </dependency>
 ```
+
+## Acknowledgements
+
+This module was inspired by a [hotels.com blog post](https://medium.com/hotels-com-technology/i-dont-know-about-resilience-testing-and-so-can-you-b3c59d80012d).
