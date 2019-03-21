@@ -5,6 +5,8 @@ import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import eu.rekawek.toxiproxy.model.ToxicList;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.io.IOException;
@@ -27,15 +29,11 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
     public ToxiproxyContainer() {
-        super(IMAGE_NAME);
+        this(IMAGE_NAME);
     }
 
     public ToxiproxyContainer(String imageName) {
         super(imageName);
-    }
-
-    @Override
-    protected void configure() {
         addExposedPorts(TOXIPROXY_CONTROL_PORT);
         setWaitStrategy(new HttpWaitStrategy().forPath("/version").forPort(TOXIPROXY_CONTROL_PORT));
 
@@ -69,43 +67,33 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
         });
     }
 
+    @RequiredArgsConstructor
     public static class ContainerProxy {
         private static final String CUT_CONNECTION_DOWNSTREAM = "CUT_CONNECTION_DOWNSTREAM";
         private static final String CUT_CONNECTION_UPSTREAM = "CUT_CONNECTION_UPSTREAM";
         private final Proxy toxi;
-        private final String ip;
-        private final int port;
-
-        public ContainerProxy(Proxy toxi, String ip, int port) {
-            this.toxi = toxi;
-            this.ip = ip;
-            this.port = port;
-        }
+        @Getter private final String containerIpAddress;
+        @Getter private final int proxyPort;
+        private boolean isCurrentlyCut;
 
         public ToxicList toxics() {
             return toxi.toxics();
         }
 
-        public String getContainerIpAddress() {
-            return ip;
-        }
-
-        public int getProxyPort() {
-            return port;
-        }
-
         /**
-         * Cuts the connection by setting
-         * @param shouldCutConnection
+         * Cuts the connection by setting bandwidth in both directions to zero.
+         * @param shouldCutConnection true if the connection should be cut, or false if it should be re-enabled
          */
         public void setConnectionCut(boolean shouldCutConnection) {
             try {
                 if (shouldCutConnection) {
                     toxics().bandwidth(CUT_CONNECTION_DOWNSTREAM, ToxicDirection.DOWNSTREAM, 0);
                     toxics().bandwidth(CUT_CONNECTION_UPSTREAM, ToxicDirection.UPSTREAM, 0);
-                } else {
+                    isCurrentlyCut = true;
+                } else if (isCurrentlyCut) {
                     toxics().get(CUT_CONNECTION_DOWNSTREAM).remove();
                     toxics().get(CUT_CONNECTION_UPSTREAM).remove();
+                    isCurrentlyCut = false;
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Could not control proxy", e);
