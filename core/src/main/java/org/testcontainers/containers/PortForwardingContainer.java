@@ -8,10 +8,12 @@ import lombok.SneakyThrows;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.time.Duration;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public enum PortForwardingContainer {
@@ -19,7 +21,7 @@ public enum PortForwardingContainer {
 
     private GenericContainer container;
 
-    private final Set<Integer> exposedPorts = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<Entry<Integer, Integer>> exposedPorts = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Getter(value = AccessLevel.PRIVATE, lazy = true)
     private final Connection sshConnection = createSSHSession();
@@ -56,17 +58,15 @@ public enum PortForwardingContainer {
 
     @SneakyThrows
     public void exposeHostPort(int port) {
-        if (exposedPorts.add(port)) {
-            getSshConnection().requestRemotePortForwarding("", port, "localhost", port);
-        }
+        exposeHostPort(port, port);
     }
     
     @SneakyThrows
     public void exposeHostPort(int hostPort, int containerPort) {
-        if (exposedPorts.add(hostPort)) {
+    	if (exposedPorts.add(new AbstractMap.SimpleEntry<>(hostPort, containerPort))) {
             getSshConnection().requestRemotePortForwarding("", containerPort, "localhost", hostPort);
         }
-    }    
+    }
 
     Optional<ContainerNetwork> getNetwork() {
         return Optional.ofNullable(container)

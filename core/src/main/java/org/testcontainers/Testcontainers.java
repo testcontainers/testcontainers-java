@@ -3,9 +3,9 @@ package org.testcontainers;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.testcontainers.containers.PortForwardingContainer;
-
 import lombok.experimental.UtilityClass;
+
+import org.testcontainers.containers.PortForwardingContainer;
 
 @UtilityClass
 public class Testcontainers {
