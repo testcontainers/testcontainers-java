@@ -22,7 +22,7 @@ import java.util.Optional;
  *
  * @author Eugeny Karpov
  */
-public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
+public class CassandraContainer extends GenericContainer<CassandraContainer> {
 
     public static final String IMAGE = "cassandra";
     public static final Integer CQL_PORT = 9042;
@@ -101,7 +101,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * @param configLocation relative classpath with the directory that contains cassandra.yaml and other configuration files
      */
-    public SELF withConfigurationOverride(String configLocation) {
+    public CassandraContainer withConfigurationOverride(String configLocation) {
         this.configLocation = configLocation;
         return self();
     }
@@ -113,7 +113,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * @param initScriptPath relative classpath resource
      */
-    public SELF withInitScript(String initScriptPath) {
+    public CassandraContainer withInitScript(String initScriptPath) {
         this.initScriptPath = initScriptPath;
         return self();
     }
@@ -121,7 +121,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     /**
      * Initialize Cassandra client with JMX reporting enabled or disabled
      */
-    public SELF withJmxReporting(boolean enableJmxReporting) {
+    public CassandraContainer withJmxReporting(boolean enableJmxReporting) {
         this.enableJmxReporting = enableJmxReporting;
         return self();
     }
