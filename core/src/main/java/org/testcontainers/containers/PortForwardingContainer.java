@@ -60,6 +60,13 @@ public enum PortForwardingContainer {
             getSshConnection().requestRemotePortForwarding("", port, "localhost", port);
         }
     }
+    
+    @SneakyThrows
+    public void exposeHostPort(int hostPort, int containerPort) {
+        if (exposedPorts.add(hostPort)) {
+            getSshConnection().requestRemotePortForwarding("", containerPort, "localhost", hostPort);
+        }
+    }    
 
     Optional<ContainerNetwork> getNetwork() {
         return Optional.ofNullable(container)
