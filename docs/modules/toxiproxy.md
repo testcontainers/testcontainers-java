@@ -1,10 +1,16 @@
 # Toxiproxy Module
 
 Testcontainers module for Shopify's [Toxiproxy](https://github.com/Shopify/toxiproxy). 
-This TCP proxy can be used to simulate network failure conditions in between tests and containers.
- 
-[toxiproxy-java](https://github.com/trekawek/toxiproxy-java) is used as a client.
+This TCP proxy can be used to simulate network failure conditions.
 
+You can simulate network failures:
+
+* between Java code and containers, ideal for testing resilience features of client code
+* between containers, for testing resilience and emergent behaviour of multi-container systems
+* if desired, between Java code/containers and external resources (non-Dockerized!), for scenarios where not all dependencies can be/have been dockerized
+
+Testcontainers Toxiproxy support allows resilience features to be easily verified as part of isolated dev/CI testing. This allows earlier testing of resilience features, and broader sets of failure conditions to be covered.
+ 
 ## Usage example
 
 A Toxiproxy container can be placed in between test code and a container, or in between containers.
@@ -74,3 +80,6 @@ testCompile "org.testcontainers:toxiproxy:{{latest_version}}"
 ## Acknowledgements
 
 This module was inspired by a [hotels.com blog post](https://medium.com/hotels-com-technology/i-dont-know-about-resilience-testing-and-so-can-you-b3c59d80012d).
+
+[toxiproxy-java](https://github.com/trekawek/toxiproxy-java) is used to help control failure conditions.
+
