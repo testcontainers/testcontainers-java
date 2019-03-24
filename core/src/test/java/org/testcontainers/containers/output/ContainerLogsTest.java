@@ -16,7 +16,9 @@ public class ContainerLogsTest {
         try (GenericContainer container = shortLivedContainer()) {
             container.start();
 
+            // docsGetAllLogs {
             final String logs = container.getLogs();
+            // }
             assertEquals("stdout and stderr are reflected in the returned logs", "stdout\nstderr", logs);
         }
     }
@@ -26,7 +28,9 @@ public class ContainerLogsTest {
         try (GenericContainer container = shortLivedContainer()) {
             container.start();
 
+            // docsGetStdOut {
             final String logs = container.getLogs(STDOUT);
+            // }
             assertEquals("stdout and stderr are reflected in the returned logs", "stdout", logs);
         }
     }
@@ -36,7 +40,9 @@ public class ContainerLogsTest {
         try (GenericContainer container = shortLivedContainer()) {
             container.start();
 
+            // docsGetStdErr {
             final String logs = container.getLogs(STDERR);
+            // }
             assertEquals("stdout and stderr are reflected in the returned logs", "stderr", logs);
         }
     }

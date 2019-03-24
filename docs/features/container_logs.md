@@ -13,15 +13,15 @@ At present, container output will always begin from the time of container creati
 `getLogs()` is the simplest mechanism, and can be used as follows:
 
 <!--codeinclude--> 
-[Accessing all output (stdout and stderr)](../examples/src/test/java/generic/ContainerLogsAccessTest.java) inside_block:testGetAllLogs
+[Accessing all output (stdout and stderr)](../../core/src/test/java/org/testcontainers/containers/output/ContainerLogsTest.java) inside_block:docsGetAllLogs
 <!--/codeinclude-->
 
 <!--codeinclude--> 
-[Accessing just stdout](../examples/src/test/java/generic/ContainerLogsAccessTest.java) inside_block:testGetStdout
+[Accessing just stdout](../../core/src/test/java/org/testcontainers/containers/output/ContainerLogsTest.java) inside_block:docsGetStdOut
 <!--/codeinclude-->
 
 <!--codeinclude--> 
-[Accessing just stderr](../examples/src/test/java/generic/ContainerLogsAccessTest.java) inside_block:testGetStderr
+[Accessing just stderr](../../core/src/test/java/org/testcontainers/containers/output/ContainerLogsTest.java) inside_block:docsGetStdErr
 <!--/codeinclude-->
 
 ## Streaming logs
