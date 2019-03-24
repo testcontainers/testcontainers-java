@@ -89,6 +89,34 @@ public class ToxiproxyTest {
         // }
     }
 
+    @Test
+    public void testMultipleProxiesCanBeCreated() {
+        try (GenericContainer secondRedis = new GenericContainer("redis:5.0.4")
+            .withExposedPorts(6379)
+            .withNetwork(network)) {
+
+            secondRedis.start();
+
+            final ToxiproxyContainer.ContainerProxy firstProxy = toxiproxy.getProxy(redis, 6379);
+            final ToxiproxyContainer.ContainerProxy secondProxy = toxiproxy.getProxy(secondRedis, 6379);
+
+            final Jedis firstJedis = new Jedis(firstProxy.getContainerIpAddress(), firstProxy.getProxyPort());
+            final Jedis secondJedis = new Jedis(secondProxy.getContainerIpAddress(), secondProxy.getProxyPort());
+
+            firstJedis.set("somekey", "somevalue");
+            secondJedis.set("somekey", "somevalue");
+
+            firstProxy.setConnectionCut(true);
+
+            assertThrows("calls fail when the connection is cut, for only the relevant proxy",
+                JedisConnectionException.class, () -> {
+                    firstJedis.get("somekey");
+                });
+
+            assertEquals("access via a different proxy is OK", "somevalue", secondJedis.get("somekey"));
+        }
+    }
+
     private void checkCallWithLatency(Jedis jedis, final String description, int expectedMinLatency, long expectedMaxLatency) {
         final long start = System.currentTimeMillis();
         String s = jedis.get("somekey");

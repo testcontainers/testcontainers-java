@@ -86,7 +86,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
                     throw new IllegalStateException("Maximum number of proxies exceeded");
                 }
 
-                final Proxy proxy = client.createProxy("name", "0.0.0.0:" + toxiPort, upstream);
+                final Proxy proxy = client.createProxy(upstream, "0.0.0.0:" + toxiPort, upstream);
                 return new ContainerProxy(proxy, getContainerIpAddress(), getMappedPort(toxiPort));
             } catch (IOException e) {
                 throw new RuntimeException("Proxy could not be created", e);
