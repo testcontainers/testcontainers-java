@@ -8,9 +8,9 @@ a varargs list stating which of STDOUT, STDERR, or both, should be followed. If 
 
 At present, container output will always begin from the time of container creation.
 
-## Reading historical logs
+## Reading all logs (from startup time to present)
 
-`getLogs()` is the simplest mechanism, and can be used as follows:
+`getLogs()` is the simplest mechanism for accessing container logs, and can be used as follows:
 
 <!--codeinclude--> 
 [Accessing all output (stdout and stderr)](../../core/src/test/java/org/testcontainers/containers/output/ContainerLogsTest.java) inside_block:docsGetAllLogs
@@ -38,10 +38,7 @@ container.followOutput(logConsumer);
 
 ### Capturing container output as a String
 
-There are two mechanisms for capturing output to a String; the simplest relies on the `getLogs()` method:
-
-
-Additionally, to stream logs live or customize the decoding, `ToStringConsumer` may be used:
+To stream logs live or customize the decoding, `ToStringConsumer` may be used:
 
 ```java
 ToStringConsumer toStringConsumer = new ToStringConsumer();
