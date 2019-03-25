@@ -245,7 +245,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void startAmbassadorContainers() {
-        ambassadorContainer.start();
+        if (!ambassadorPortMappings.isEmpty()) {
+            ambassadorContainer.start();
+        }
     }
 
     private Logger logger() {
