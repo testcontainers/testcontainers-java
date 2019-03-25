@@ -59,7 +59,7 @@ public class ExposedHostTest {
         try {
             container.start();
 
-            String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal").getStdout();
+            String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:80").getStdout();
 
             assertEquals("received response", "Hello World!", response);
         } finally {
