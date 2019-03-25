@@ -9,6 +9,8 @@ import org.testcontainers.Testcontainers;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
@@ -29,7 +31,10 @@ public class ExposedHostTest {
         });
 
         server.start();
-        Testcontainers.exposeHostPorts(server.getAddress().getPort());
+        
+        Map<Integer, Integer> portMapping = new HashMap<>();
+        portMapping.put(server.getAddress().getPort(), 80);
+        Testcontainers.exposeHostPorts(portMapping);
     }
 
     @AfterClass
@@ -54,7 +59,7 @@ public class ExposedHostTest {
         try {
             container.start();
 
-            String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + server.getAddress().getPort()).getStdout();
+            String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal").getStdout();
 
             assertEquals("received response", "Hello World!", response);
         } finally {
