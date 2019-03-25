@@ -27,6 +27,8 @@ public class WaitAllStrategyTest {
     private WaitStrategy strategy1;
     @Mock
     private WaitStrategy strategy2;
+    @Mock
+    private WaitStrategy strategy3;
 
     @Before
     public void setUp() {
@@ -48,6 +50,21 @@ public class WaitAllStrategyTest {
         InOrder inOrder = inOrder(strategy1, strategy2);
         inOrder.verify(strategy1).waitUntilReady(any());
         inOrder.verify(strategy2).waitUntilReady(any());
+    }
+
+    @Test
+    public void maxTimeOutApplies() {
+
+        WaitStrategy child1 = new SleepingStrategy(Duration.ofMinutes(30))
+            .withStartupTimeout(Duration.ofHours(1));
+
+        final WaitStrategy underTest = new WaitAllStrategy()
+            .withStrategy(child1)
+            .withStartupTimeout(Duration.ofMillis(10));
+
+        assertThrows("The outer strategy timeout applies", TimeoutException.class, () -> {
+            underTest.waitUntilReady(container);
+        });
     }
 
     @Test
@@ -92,6 +109,61 @@ public class WaitAllStrategyTest {
                 fail(e.getMessage());
             }
         }
+    }
+
+    @Test
+    public void withoutOuterTimeoutShouldRelyOnInnerStrategies() {
+
+        final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
+            .withStrategy(strategy1)
+            .withStrategy(strategy2)
+            .withStrategy(strategy3);
+
+        doNothing().when(strategy1).waitUntilReady(eq(container));
+        doThrow(TimeoutException.class).when(strategy2).waitUntilReady(eq(container));
+
+        assertThrows("The outer strategy timeout applies", TimeoutException.class, () -> {
+            underTest.waitUntilReady(container);
+        });
+
+        InOrder inOrder = inOrder(strategy1, strategy2, strategy3);
+        inOrder.verify(strategy1).waitUntilReady(any());
+        inOrder.verify(strategy2).waitUntilReady(any());
+        inOrder.verify(strategy3, never()).waitUntilReady(any());
+    }
+
+    @Test
+    public void timeoutChangeShouldNotBePossibleWithIndividualTimeoutMode() {
+
+        final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY);
+
+        assertThrows("Cannot change timeout for individual timeouts", IllegalStateException.class, () -> {
+            underTest.withStartupTimeout(Duration.ofSeconds(42));
+        });
+    }
+
+    @Test
+    public void shouldNotMessWithIndividualTimeouts() {
+
+        final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
+            .withStrategy(strategy1)
+            .withStrategy(strategy2);
+
+        verify(strategy1, never()).withStartupTimeout(any());
+        verify(strategy1, never()).withStartupTimeout(any());
+    }
+
+    @Test
+    public void shouldOverwriteIndividualTimeouts() {
+
+        Duration someSeconds = Duration.ofSeconds(23);
+        final WaitStrategy underTest = new WaitAllStrategy()
+            .withStartupTimeout(someSeconds)
+            .withStrategy(strategy1)
+            .withStrategy(strategy2);
+
+        verify(strategy1).withStartupTimeout(someSeconds);
+        verify(strategy1).withStartupTimeout(someSeconds);
     }
 
     @Test
