@@ -22,7 +22,7 @@ jobs:
 
     - stage: test
       env: [ NAME=core ]
-      jdk: openjdk-ea
+      jdk: openjdk12
       script: ./gradlew testcontainers:check --scan --no-daemon
 
     - env: [ NAME=selenium ]
@@ -30,6 +30,9 @@ jobs:
 
     - env: [ NAME=modules ]
       script: ./gradlew check -x testcontainers:check -x selenium:check --scan --no-daemon
+
+    - env: [ NAME=examples ]
+      script: cd examples && ../gradlew check --no-daemon
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]

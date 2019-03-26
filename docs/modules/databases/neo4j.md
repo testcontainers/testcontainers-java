@@ -68,6 +68,76 @@ public class ExampleTest {
 
 You are not limited to Unit tests and can of course use an instance of the Neo4j Testcontainer in vanilla Java code as well.
 
+## Additional features
+
+### Disable authentication
+
+Authentication can be disabled:
+
+```java
+@Testcontainers
+public class ExampleTest {
+
+    @Container
+    Neo4jContainer neo4jContainer = new Neo4jContainer()
+        .withoutAuthentication();
+}
+```
+
+### Neo4j-Configuration
+
+Neo4j's Docker image needs Neo4j configuration options in a dedicated format.
+The container takes care of that and you can configure the database with standard options like the following:
+
+```java
+@Testcontainers
+public class ExampleTest {
+
+    @Container
+    Neo4jContainer neo4jContainer = new Neo4jContainer()
+        .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*");
+}
+```
+
+### Add custom plugins
+
+Custom plugins, like APOC, can be copied over to the container from any classpath or host resource like this:
+
+```java
+@Testcontainers
+public class ExampleTest {
+
+    @Container
+    Neo4jContainer neo4jContainer = new Neo4jContainer()
+        .withPlugins(MountableFile.forClasspathResource("/apoc-3.5.0.1-all.jar"));
+}
+```
+
+Whole directories work as well:
+
+```java
+@Testcontainers
+public class ExampleTest {
+
+    @Container
+    Neo4jContainer neo4jContainer = new Neo4jContainer()
+        .withPlugins(MountableFile.forClasspathResource("/my-plugins"));
+}
+```
+
+### Start the container with a predefined database
+
+If you have an existing database (`graph.db`) you want to work with, copy it over to the container like this:
+
+```java
+@Testcontainers
+public class ExampleTest {
+
+    @Container
+    Neo4jContainer neo4jContainer = new Neo4jContainer()
+        .withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+}
+```
 
 ## Choose your Neo4j license
 
