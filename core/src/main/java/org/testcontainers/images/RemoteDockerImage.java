@@ -108,7 +108,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         .withTag(imageName.getVersionPart())
                         .exec(callback);
                     callback.awaitCompletion();
-                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName,ImageData.from(dockerClient.inspectImageCmd(imageName.getUnversionedPart()).exec()));
+                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName,ImageData.from(dockerClient.inspectImageCmd(imageName.toString()).exec()));
                     break;
                 } catch (Exception e) {
                     lastException = e;

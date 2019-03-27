@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-@Value
-@AllArgsConstructor(access = AccessLevel.MODULE)
+@Data
+@RequiredArgsConstructor(access = AccessLevel.MODULE)
 public class ImageData {
 
     public static ImageData from(Image image) {
@@ -22,13 +22,13 @@ public class ImageData {
         return new ImageData(OffsetDateTime.parse(imageResponse.getCreated()).toEpochSecond(), imageResponse.getId(), imageResponse.getParent(), imageResponse.getRepoTags(), imageResponse.getRepoDigests(), imageResponse.getSize(), imageResponse.getVirtualSize());
     }
 
-    private Long created;
-    private String id;
-    private String parentId;
-    private List<String> repoTags;
-    private List<String> repoDigests;
-    private Long size;
-    private Long virtualSize;
+    private final Long created;
+    private final String id;
+    private final String parentId;
+    private final List<String> repoTags;
+    private final List<String> repoDigests;
+    private final Long size;
+    private final Long virtualSize;
 
 
 }
