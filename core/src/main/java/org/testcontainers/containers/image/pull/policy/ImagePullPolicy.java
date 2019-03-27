@@ -1,10 +1,10 @@
 package org.testcontainers.containers.image.pull.policy;
 
-import com.github.dockerjava.api.model.Image;
+import org.testcontainers.containers.image.ImageData;
 
 @FunctionalInterface
 public interface ImagePullPolicy {
 
-    boolean shouldPull(Image image);
+    boolean shouldPull(ImageData image);
 
 }

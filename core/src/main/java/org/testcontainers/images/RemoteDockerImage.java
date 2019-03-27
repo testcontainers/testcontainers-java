@@ -18,6 +18,7 @@ import lombok.ToString;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
+import org.testcontainers.containers.image.ImageData;
 import org.testcontainers.containers.image.pull.policy.DefaultPullPolicy;
 import org.testcontainers.containers.image.pull.policy.ImagePullPolicy;
 import org.testcontainers.utility.DockerImageName;
@@ -27,7 +28,7 @@ import org.testcontainers.utility.LazyFuture;
 @ToString
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    public static final Map<DockerImageName, Image> AVAILABLE_IMAGES_CACHE = new HashMap<>();
+    public static final Map<DockerImageName, ImageData> AVAILABLE_IMAGES_CACHE = new HashMap<>();
 
     private DockerImageName imageName;
 
@@ -80,7 +81,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 updatedImages.stream()
                     .filter(i -> Objects.nonNull(i.getRepoTags()))
                     .flatMap(image -> Arrays.stream(image.getRepoTags())
-                        .map(tag -> new SimpleEntry<>(tag, image)))
+                        .map(tag -> new SimpleEntry<>(tag, ImageData.from(image))))
                     .collect(Collectors.toMap(e -> new DockerImageName(e.getKey()), Entry::getValue, (t1,t2) -> t1, () -> AVAILABLE_IMAGES_CACHE));
 
                 // And now?
@@ -107,10 +108,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         .withTag(imageName.getVersionPart())
                         .exec(callback);
                     callback.awaitCompletion();
-                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, listImagesCmd.exec().stream()
-                            .filter(i -> Arrays.asList(i.getRepoTags()).contains(imageName))
-                            .findFirst()
-                            .orElseThrow(() -> new ContainerFetchException("Image pulled but not found in local image repository: " + imageName)));
+                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName,ImageData.from(dockerClient.inspectImageCmd(imageName.getUnversionedPart()).exec()));
                     break;
                 } catch (Exception e) {
                     lastException = e;
