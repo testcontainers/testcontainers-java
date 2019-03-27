@@ -3,6 +3,7 @@ package generic;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.image.pull.policy.PullPolicy;
 
 import static org.junit.Assert.assertTrue;
 
@@ -22,9 +23,10 @@ public class ContainerCreationTest {
     @ClassRule
     public static GenericContainer alpine =
         new GenericContainer("alpine:3.2")
-                .withExposedPorts(80)
-                .withEnv("MAGIC_NUMBER", "42")
-                .withCommand("/bin/sh", "-c", 
+            .withExposedPorts(80)
+            .withEnv("MAGIC_NUMBER", "42")
+            .withImagePullPolicy(PullPolicy.Default())
+            .withCommand("/bin/sh", "-c",
                 "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
     // }
 

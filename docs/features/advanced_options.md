@@ -14,6 +14,22 @@ Additionally, multiple labels may be applied together from a map:
 [Adding multiple labels](../examples/src/test/java/generic/ContainerLabelTest.java) inside_block:multiple_labels
 <!--/codeinclude-->
 
+## Image Pull Policy
+
+By default, the container image is retrieved from the local Docker images cache.
+This works well when running against a specific version, but for images with a static tag (i.e. 'latest') this may lead to a newer version not being pulled.
+
+It is possible to specify an Image Pull Policy to determine in runtime whether an image should be pulled, either by using one of the existing policies:
+
+<!--codeinclude-->
+[Setting image pull policy](../examples/src/test/java/generic/ImagePullPolicyTest.java) inside_block:image_pull_policy
+<!--/codeinclude-->
+
+... or providing a function:
+
+<!--codeinclude-->
+[Custom image pull policy](../examples/src/test/java/generic/ImagePullPolicyTest.java) inside_block:custom_image_pull_policy
+<!--/codeinclude-->
 
 ## Customizing the container
 

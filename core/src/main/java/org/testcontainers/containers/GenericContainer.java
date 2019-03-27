@@ -1,11 +1,52 @@
 package org.testcontainers.containers;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static org.testcontainers.utility.CommandLine.runShellCommand;
+
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.base.Strings;
-import lombok.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -20,6 +61,9 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.image.ImageNameResolverProvider;
+import org.testcontainers.containers.image.pull.policy.ImagePullPolicy;
+import org.testcontainers.containers.image.pull.policy.PullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -28,27 +72,18 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
-import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.*;
-
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.utility.CommandLine.runShellCommand;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ThrowingFunction;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -89,7 +124,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ));
 
     @NonNull
-    private Future<String> image;
+    private ImageNameResolverProvider nameResolverProvider;
 
     @NonNull
     private Map<String, String> env = new HashMap<>();
@@ -181,11 +216,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {
-        this.setDockerImageName(dockerImageName);
+        this.nameResolverProvider = new ImageNameResolverProvider(dockerImageName);
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        this.image = image;
+        this.nameResolverProvider = new ImageNameResolverProvider(image);
     }
 
     /**
@@ -203,12 +238,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             configure();
 
-            logger().debug("Starting container: {}", getDockerImageName());
-            logger().debug("Trying to start container: {}", image.get());
+            logger().debug("Starting Container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
-                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
+                logger().debug("Trying to start container: {} (attempt {}/{})", getDockerImageName(), attempt.incrementAndGet(), startupAttempts);
                 tryStart();
                 return true;
             });
@@ -220,7 +254,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void tryStart() {
         try {
-            String dockerImageName = image.get();
+            String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
@@ -314,7 +348,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             String imageName;
 
             try {
-                imageName = image.get();
+                imageName = getDockerImageName();
             } catch (Exception e) {
                 imageName = "<unknown>";
             }
@@ -353,7 +387,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void configure() {
-
+        getDockerImageName();
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -602,6 +636,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public Map<String, String> getEnvMap() {
         return env;
+    }
+
+    @Override
+    public void setImage(Future<String> image) {
+        this.nameResolverProvider = new ImageNameResolverProvider(image);
     }
 
     /**
@@ -859,6 +898,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
+    public SELF withImagePullPolicy(ImagePullPolicy policy) {
+        this.nameResolverProvider.setImagePullPolicy(policy);
+        return self();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -946,10 +991,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
-        this.image = new RemoteDockerImage(dockerImageName);
+        this.nameResolverProvider = new ImageNameResolverProvider(dockerImageName);
 
         // Mimic old behavior where we resolve image once it's set
-        getDockerImageName();
+//        getDockerImageName();
     }
 
     /**
@@ -959,9 +1004,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     public String getDockerImageName() {
         try {
-            return image.get();
+            return nameResolverProvider.getResolver().get();
         } catch (Exception e) {
-            throw new ContainerFetchException("Can't get Docker image: " + image, e);
+            throw new ContainerFetchException("Can't get Docker image: " + nameResolverProvider.getResolver(), e);
         }
     }
 
@@ -1098,6 +1143,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarInputStream.getNextTarEntry();
             return consumer.apply(tarInputStream);
         }
+    }
+
+    @Override
+    public Future<String> getImage() {
+        return nameResolverProvider.getResolver();
     }
 
     /**
