@@ -25,7 +25,7 @@ public class ContainerCreationTest {
         new GenericContainer("alpine:3.2")
             .withExposedPorts(80)
             .withEnv("MAGIC_NUMBER", "42")
-            .withImagePullPolicy(PullPolicy.Default())
+            .withImagePullPolicy(PullPolicy.getDefaultPullPolicy())
             .withCommand("/bin/sh", "-c",
                 "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
     // }

@@ -1,37 +1,36 @@
 package org.testcontainers.containers.image.pull.policy;
 
 import java.util.concurrent.TimeUnit;
+import lombok.experimental.UtilityClass;
 
 /**
  * Convenience class with logic for building common {@link ImagePullPolicy} instances.
  *
  */
+@UtilityClass
 public class PullPolicy {
 
     /**
-     * Convenience method for returning the default image pull policy, which pulls the image only if it does not exist
+     * Convenience method for returning the {@link DefaultPullPolicy} default image pull policy
      * @return {@link ImagePullPolicy}
      */
-    public static ImagePullPolicy Default() {
+    public static ImagePullPolicy getDefaultPullPolicy() {
         return new DefaultPullPolicy();
     }
 
     /**
-     * Convenience method for returning the Always image pull policy, which pulls the image even if it exists locally.
-     * Useful for obtaining the latest version of an image with a static tag, i.e. 'latest'
+     * Convenience method for returning the {@link AlwaysPullPolicy} alwaysPull image pull policy
      * @return {@link ImagePullPolicy}
      */
-    public static ImagePullPolicy Always() {
+    public static ImagePullPolicy alwaysPull() {
         return new AlwaysPullPolicy();
     }
 
     /**
-     * Convenience method for returning an Age based image pull policy, which pulls the image if its created date is older than maxAge
-     * @param age - Maximum age of image (based on image Created parameter)
-     * @param timeUnit - The TimeUnit to use (MINUTES, HOURS, DAYS, etc.)
+     * Convenience method for returning an {@link AgeBasedPullPolicy} Age based image pull policy,
      * @return {@link ImagePullPolicy}
      */
-    public static ImagePullPolicy AgeBased(long age, TimeUnit timeUnit) {
+    public static ImagePullPolicy ageBased(long age, TimeUnit timeUnit) {
         return new AgeBasedPullPolicy(age, timeUnit);
     }
 

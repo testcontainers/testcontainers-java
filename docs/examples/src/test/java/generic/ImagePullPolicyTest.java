@@ -7,7 +7,7 @@ public class ImagePullPolicyTest {
 
     // image_pull_policy {
     public GenericContainer containerAlwaysPull = new GenericContainer("alpine:3.6")
-        .withImagePullPolicy(PullPolicy.Always());
+        .withImagePullPolicy(PullPolicy.alwaysPull());
     // }
 
     // custom_image_pull_policy {

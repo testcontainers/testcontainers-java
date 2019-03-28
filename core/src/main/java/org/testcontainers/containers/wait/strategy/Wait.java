@@ -1,11 +1,12 @@
 package org.testcontainers.containers.wait.strategy;
 
-import java.net.HttpURLConnection;
+import lombok.experimental.UtilityClass;
 
 /**
  * Convenience class with logic for building common {@link WaitStrategy} instances.
  *
  */
+@UtilityClass
 public class Wait {
     /**
      * Convenience method to return the default WaitStrategy.

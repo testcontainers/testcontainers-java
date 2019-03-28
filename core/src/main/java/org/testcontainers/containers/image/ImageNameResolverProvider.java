@@ -14,7 +14,7 @@ public class ImageNameResolverProvider {
     private String imageName;
 
     public ImageNameResolverProvider(String imageName) {
-        this(imageName, PullPolicy.Default());
+        this(imageName, PullPolicy.getDefaultPullPolicy());
     }
 
     public ImageNameResolverProvider(String imageName, ImagePullPolicy policy) {

@@ -4,6 +4,9 @@ import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.image.ImageData;
 
+/**
+ * The default imagePullPolicy, which pulls the image from a remote repisotiry only if it does not exist locally
+ */
 @Slf4j
 public class DefaultPullPolicy implements ImagePullPolicy {
 
