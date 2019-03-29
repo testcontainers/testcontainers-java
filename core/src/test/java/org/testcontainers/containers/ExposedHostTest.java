@@ -32,10 +32,8 @@ public class ExposedHostTest {
         server.start();
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
         
-        Testcontainers.exposeHostPorts(ImmutableMap.of(
-            server.getAddress().getPort(), 80,
-            server.getAddress().getPort(), 81
-        ));           
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 80));
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 81));           
     }
 
     @AfterClass
