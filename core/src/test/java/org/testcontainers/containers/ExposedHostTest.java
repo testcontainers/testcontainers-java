@@ -32,8 +32,10 @@ public class ExposedHostTest {
         server.start();
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
         
-        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 80));
-        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 81));                
+        Testcontainers.exposeHostPorts(ImmutableMap.of(
+            server.getAddress().getPort(), 80,
+            server.getAddress().getPort(), 81
+        ));           
     }
 
     @AfterClass
@@ -54,27 +56,9 @@ public class ExposedHostTest {
     }
     
     @Test
-    public void testExposedHostPortMappingEighty() throws Exception {
+    public void testExposedHostPortOnFixedInternalPorts() throws Exception {
         assertResponse(new GenericContainer().withCommand("top"), 80);
-    }
-
-    @Test
-    public void testExposedHostWithNetworkPortMappingEighty() throws Exception {
-        try (Network network = Network.newNetwork()) {
-            assertResponse(new GenericContainer().withNetwork(network).withCommand("top"), 80);
-        }
-    }
-    
-    @Test
-    public void testExposedHostPortMappingEightyOne() throws Exception {
         assertResponse(new GenericContainer().withCommand("top"), 81);
-    }
-
-    @Test
-    public void testExposedHostWithNetworkPortMappingEightyOne() throws Exception {
-        try (Network network = Network.newNetwork()) {
-            assertResponse(new GenericContainer().withNetwork(network).withCommand("top"), 81);
-        }
     }    
 
     @SneakyThrows
