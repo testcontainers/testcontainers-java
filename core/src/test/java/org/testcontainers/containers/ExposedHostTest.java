@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.ImmutableMap;
 import com.sun.net.httpserver.HttpServer;
 import lombok.SneakyThrows;
 import org.junit.AfterClass;
@@ -9,15 +10,12 @@ import org.testcontainers.Testcontainers;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class ExposedHostTest {
 
     private static HttpServer server;
-    private static HttpServer serverPortMapping;    
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -34,26 +32,13 @@ public class ExposedHostTest {
         server.start();
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
         
-        serverPortMapping = HttpServer.create(new InetSocketAddress(0), 0);
-        serverPortMapping.createContext("/", exchange -> {
-            byte[] content = "Hello World!".getBytes();
-            exchange.sendResponseHeaders(200, content.length);
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(content);
-                responseBody.flush();
-            }
-        });
-
-        serverPortMapping.start();
-        Map<Integer, Integer> portMapping = new HashMap<>();
-        portMapping.put(serverPortMapping.getAddress().getPort(), 80);
-        Testcontainers.exposeHostPorts(portMapping);        
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 80));
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 81));                
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         server.stop(0);
-        serverPortMapping.stop(0);        
     }
 
     @Test
@@ -69,14 +54,26 @@ public class ExposedHostTest {
     }
     
     @Test
-    public void testExposedHostPortMapping() throws Exception {
+    public void testExposedHostPortMappingEighty() throws Exception {
         assertResponse(new GenericContainer().withCommand("top"), 80);
     }
 
     @Test
-    public void testExposedHostWithNetworkPortMapping() throws Exception {
+    public void testExposedHostWithNetworkPortMappingEighty() throws Exception {
         try (Network network = Network.newNetwork()) {
             assertResponse(new GenericContainer().withNetwork(network).withCommand("top"), 80);
+        }
+    }
+    
+    @Test
+    public void testExposedHostPortMappingEightyOne() throws Exception {
+        assertResponse(new GenericContainer().withCommand("top"), 81);
+    }
+
+    @Test
+    public void testExposedHostWithNetworkPortMappingEightyOne() throws Exception {
+        try (Network network = Network.newNetwork()) {
+            assertResponse(new GenericContainer().withNetwork(network).withCommand("top"), 81);
         }
     }    
 
