@@ -1,25 +1,34 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Info;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.Value;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.wait.Wait;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.LogUtils;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ThrowingFunction;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public interface Container<SELF extends Container<SELF>> extends LinkableContainer {
+public interface Container<SELF extends Container<SELF>> extends LinkableContainer, ContainerState {
 
     /**
      * @return a reference to this container instance, cast to the expected generic type.
@@ -30,24 +39,21 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     }
 
     /**
-     * Class to hold results from a "docker exec" command. Note that, due to the limitations of the
-     * docker API, there's no easy way to get the result code from the process we ran.
+     * Class to hold results from a "docker exec" command
      */
+    @Value
+    @AllArgsConstructor(access = AccessLevel.MODULE)
     class ExecResult {
-        private final String stdout;
-        private final String stderr;
+        int exitCode;
+        String stdout;
+        String stderr;
 
+        /**
+         * @deprecated should not be instantiated outside of the library, please migrate
+         */
+        @Deprecated
         public ExecResult(String stdout, String stderr) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-        }
-
-        public String getStdout() {
-            return stdout;
-        }
-
-        public String getStderr() {
-            return stderr;
+            this(-1, stdout, stderr);
         }
     }
 
@@ -104,7 +110,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param otherContainer the other container object to link to
      * @param alias the alias (for the other container) that this container should be able to use
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
      */
+    @Deprecated
     void addLink(LinkableContainer otherContainer, String alias);
 
     /**
@@ -126,11 +134,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Specify the {@link WaitStrategy} to use to determine if the container is ready.
      *
-     * @see Wait#defaultWaitStrategy()
+     * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      * @param waitStrategy the WaitStrategy to use
      * @return this
      */
     SELF waitingFor(@NonNull WaitStrategy waitStrategy);
+
+    /**
+     * Adds a file system binding.
+     *
+     * @param hostPath the file system path on the host
+     * @param containerPath the file system path inside the container
+     * @return this
+     */
+    default SELF withFileSystemBind(String hostPath, String containerPath) {
+        return withFileSystemBind(hostPath, containerPath, BindMode.READ_WRITE);
+    }
 
     /**
      * Adds a file system binding.
@@ -160,6 +179,15 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withExposedPorts(Integer... ports);
 
     /**
+     * Set the file to be copied before starting a created container
+     *
+     * @param mountableFile a Mountable file with path of source file / folder on host machine
+     * @param containerPath a destination path on conatiner to which the files / folders to be copied
+     * @return this
+     */
+    SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
+
+    /**
      * Add an environment variable to be passed to the container.
      *
      * @param key   environment variable key
@@ -169,12 +197,40 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withEnv(String key, String value);
 
     /**
+     * Add an environment variable to be passed to the container.
+     *
+     * @param key   environment variable key
+     * @param mapper environment variable value mapper, accepts old value as an argument
+     * @return this
+     */
+    default SELF withEnv(String key, Function<Optional<String>, String> mapper) {
+        Optional<String> oldValue = Optional.ofNullable(getEnvMap().get(key));
+        return withEnv(key, mapper.apply(oldValue));
+    }
+
+    /**
      * Add environment variables to be passed to the container.
      *
      * @param env map of environment variables
      * @return this
      */
     SELF withEnv(Map<String, String> env);
+
+    /**
+     * Add a label to the container.
+     *
+     * @param key   label key
+     * @param value label value
+     * @return this
+     */
+    SELF withLabel(String key, String value);
+
+    /**
+     * Add labels to the container.
+     * @param labels map of labels
+     * @return this
+     */
+    SELF withLabels(Map<String, String> labels);
 
     /**
      * Set the command that should be run in the container
@@ -255,7 +311,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Set the duration of waiting time until container treated as started.
-     * @see WaitStrategy#waitUntilReady(GenericContainer)
+     * @see WaitStrategy#waitUntilReady(org.testcontainers.containers.wait.strategy.WaitStrategyTarget)
      *
      * @param startupTimeout timeout
      * @return this
@@ -268,13 +324,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withPrivilegedMode(boolean mode);
-
-    /**
-     * Get the IP address that this container may be reached on (may not be the local machine).
-     *
-     * @return an IP address
-     */
-    String getContainerIpAddress();
 
     /**
      * Only consider a container to have successfully started if it has been running for this duration. The default
@@ -298,33 +347,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param workDir path to the working directory inside the container
      */
     SELF withWorkingDirectory(String workDir);
-
-    /**
-     * @return is the container currently running?
-     */
-    Boolean isRunning();
-
-    /**
-     * Get the actual mapped port for a first port exposed by the container.
-     *
-     * @return the port that the exposed port is mapped to
-     * @throws IllegalStateException if there are no exposed ports
-     */
-    default Integer getFirstMappedPort() {
-        return getExposedPorts()
-                .stream()
-                .findFirst()
-                .map(this::getMappedPort)
-                .orElseThrow(() -> new IllegalStateException("Container doesn't expose any ports"));
-    }
-
-    /**
-     * Get the actual mapped port for a given port exposed by the container.
-     *
-     * @param originalPort the original TCP port that is exposed
-     * @return the port that the exposed port is mapped to, or null if it is not exposed
-     */
-    Integer getMappedPort(int originalPort);
 
     /**
      * <b>Resolve</b> Docker image and set it.
@@ -358,7 +380,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param consumer consumer that the frames should be sent to
      */
-    void followOutput(Consumer<OutputFrame> consumer);
+    default void followOutput(Consumer<OutputFrame> consumer) {
+        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+    }
 
     /**
      * Follow container output, sending each frame (usually, line) to a consumer. This method allows Stdout and/or stderr
@@ -367,7 +391,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param consumer consumer that the frames should be sent to
      * @param types    types that should be followed (one or both of STDOUT, STDERR)
      */
-    void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types);
+    default void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
+        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer, types);
+    }
 
 
     /**
@@ -380,13 +406,18 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
     Info fetchDockerDaemonInfo() throws IOException;
 
     /**
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p>
-     * @see #execInContainer(Charset, String...)
+     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
      */
     ExecResult execInContainer(String... command)
             throws UnsupportedOperationException, IOException, InterruptedException;
@@ -394,19 +425,48 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Run a command inside a running container, as though using "docker exec".
      * <p>
-     * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
-     * the time of writing, CircleCI was using this driver.
-     * @param outputCharset the character set used to interpret the output.
-     * @param command the parts of the command to run
-     * @return the result of execution
-     * @throws IOException if there's an issue communicating with Docker
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
      */
     ExecResult execInContainer(Charset outputCharset, String... command)
                     throws UnsupportedOperationException, IOException, InterruptedException;
 
-    List<Integer> getExposedPorts();
+    /**
+     *
+     * Copies a file or directory to the container.
+     *
+     * @param mountableFile file or directory which is copied into the container
+     * @param containerPath destination path inside the container
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileToContainer(MountableFile mountableFile, String containerPath) throws IOException, InterruptedException;
+
+    /**
+     *
+     * Copies a file to the container.
+     *
+     * @param transferable file which is copied into the container
+     * @param containerPath destination path inside the container
+     */
+    void copyFileToContainer(Transferable transferable, String containerPath);
+
+    /**
+     * Copies a file which resides inside the container to user defined directory
+     *
+     * @param containerPath path to file which is copied from container
+     * @param destinationPath destination path to which file is copied with file name
+     * @throws IOException if there's an issue communicating with Docker or receiving entry from TarArchiveInputStream
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     */
+    void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
+
+    /**
+     * Streams a file which resides inside the container
+     *
+     * @param containerPath path to file which is copied from container
+     * @param function function that takes InputStream of the copied file
+     */
+    <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function);
 
     List<String> getPortBindings();
 
@@ -414,23 +474,33 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     Future<String> getImage();
 
+    /**
+     *
+     * @deprecated use getEnvMap
+     */
+    @Deprecated
     List<String> getEnv();
+
+    Map<String, String> getEnvMap();
 
     String[] getCommandParts();
 
     List<Bind> getBinds();
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
     Map<String, LinkableContainer> getLinkedContainers();
 
     DockerClient getDockerClient();
 
+    /**
+     *
+     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
+     */
+    @Deprecated
     Info getDockerDaemonInfo();
-
-    String getContainerId();
-
-    String getContainerName();
-
-    InspectContainerResponse getContainerInfo();
 
     void setExposedPorts(List<Integer> exposedPorts);
 
@@ -446,6 +516,10 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setBinds(List<Bind> binds);
 
+    /**
+     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
+     */
+    @Deprecated
     void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setWaitStrategy(WaitStrategy waitStrategy);

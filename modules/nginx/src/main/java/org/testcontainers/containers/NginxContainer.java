@@ -1,9 +1,12 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author richardnorth
@@ -16,9 +19,10 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
         super("nginx:1.9.4");
     }
 
+    @NotNull
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(80);
+    protected Set<Integer> getLivenessCheckPorts() {
+        return Collections.singleton(getMappedPort(80));
     }
 
     @Override

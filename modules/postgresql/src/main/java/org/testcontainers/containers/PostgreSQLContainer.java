@@ -1,8 +1,11 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -10,15 +13,19 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * @author richardnorth
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
-    static final String NAME = "postgresql";
-    static final String IMAGE = "postgres";
+    public static final String NAME = "postgresql";
+    public static final String IMAGE = "postgres";
+    public static final String DEFAULT_TAG = "9.6.8";
+
     public static final Integer POSTGRESQL_PORT = 5432;
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
 
+    private static final String FSYNC_OFF_OPTION = "fsync=off";
+
     public PostgreSQLContainer() {
-        this(IMAGE + ":latest");
+        this(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public PostgreSQLContainer(final String dockerImageName) {
@@ -29,9 +36,10 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
                 .withStartupTimeout(Duration.of(60, SECONDS));
     }
 
+    @NotNull
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(POSTGRESQL_PORT);
+    protected Set<Integer> getLivenessCheckPorts() {
+        return new HashSet<>(getMappedPort(POSTGRESQL_PORT));
     }
 
     @Override
@@ -41,7 +49,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
-        setCommand("postgres");
+        setCommand("postgres", "-c", FSYNC_OFF_OPTION);
     }
 
     @Override
@@ -52,6 +60,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName;
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return databaseName;
     }
 
     @Override

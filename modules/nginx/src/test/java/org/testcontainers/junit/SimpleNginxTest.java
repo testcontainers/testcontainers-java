@@ -5,11 +5,13 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.io.*;
 import java.net.URLConnection;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.rnorth.visibleassertions.VisibleAssertions.info;
 
 
 /**
@@ -20,9 +22,11 @@ public class SimpleNginxTest {
     private static File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
 
     @Rule
-    public NginxContainer nginx = new NginxContainer()
-            .withCustomContent(contentFolder.toString());
+    public NginxContainer nginx = new NginxContainer<>()
+        .withCustomContent(contentFolder.toString())
+        .waitingFor(new HttpWaitStrategy());
 
+    @SuppressWarnings({"Duplicates", "ResultOfMethodCallIgnored"})
     @BeforeClass
     public static void setupContent() throws FileNotFoundException {
         contentFolder.mkdir();

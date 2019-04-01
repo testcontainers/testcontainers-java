@@ -1,10 +1,15 @@
 package org.testcontainers.containers;
 
+import lombok.NonNull;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.delegate.DatabaseDelegate;
+import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
@@ -13,6 +18,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,26 +30,41 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
+    private String initScriptPath;
     protected Map<String, String> parameters = new HashMap<>();
 
     private static final RateLimiter DB_CONNECT_RATE_LIMIT = RateLimiterBuilder.newBuilder()
-            .withRate(10, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
+        .withRate(10, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
-    public JdbcDatabaseContainer(String dockerImageName) {
+    private int startupTimeoutSeconds = 120;
+    private int connectTimeoutSeconds = 120;
+
+    public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
+    }
+
+    public JdbcDatabaseContainer(@NonNull final Future<String> image) {
+        super(image);
     }
 
     /**
      * @return the name of the actual JDBC driver to use
      */
-    protected abstract String getDriverClassName();
+    public abstract String getDriverClassName();
 
     /**
      * @return a JDBC URL that may be used to connect to the dockerized DB
      */
     public abstract String getJdbcUrl();
+
+    /**
+     * @return the database name
+     */
+    public String getDatabaseName() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @return the standard database username that should be used for connections
@@ -64,7 +85,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         throw new UnsupportedOperationException();
     }
 
-    public SELF withPassword(String password){
+    public SELF withPassword(String password) {
         throw new UnsupportedOperationException();
     }
 
@@ -73,18 +94,45 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     }
 
+    /**
+     * Set startup time to allow, including image pull time, in seconds.
+     *
+     * @param startupTimeoutSeconds startup time to allow, including image pull time, in seconds
+     * @return self
+     */
+    public SELF withStartupTimeoutSeconds(int startupTimeoutSeconds) {
+        this.startupTimeoutSeconds = startupTimeoutSeconds;
+        return self();
+    }
+
+    /**
+     * Set time to allow for the database to start and establish an initial connection, in seconds.
+     *
+     * @param connectTimeoutSeconds time to allow for the database to start and establish an initial connection in seconds
+     * @return self
+     */
+    public SELF withConnectTimeoutSeconds(int connectTimeoutSeconds) {
+        this.connectTimeoutSeconds = connectTimeoutSeconds;
+        return self();
+    }
+
+    public SELF withInitScript(String initScriptPath) {
+        this.initScriptPath = initScriptPath;
+        return self();
+    }
+
     @Override
     protected void waitUntilContainerStarted() {
         // Repeatedly try and open a connection to the DB and execute a test query
 
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
-        Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> {
+        Unreliables.retryUntilSuccess(getStartupTimeoutSeconds(), TimeUnit.SECONDS, () -> {
 
             if (!isRunning()) {
                 throw new ContainerLaunchException("Container failed to start");
             }
 
-            try (Connection connection = DB_CONNECT_RATE_LIMIT.getWhenReady(() -> createConnection(""))) {
+            try (Connection connection = createConnection("")) {
                 boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
 
                 if (success) {
@@ -95,6 +143,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 }
             }
         });
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        runInitScriptIfRequired();
     }
 
     /**
@@ -120,8 +173,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * Creates a connection to the underlying containerized database instance.
      *
-     * @param queryString any special query string parameters that should be appended to the JDBC connection URL. The
-     *                    '?' character must be included
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
      * @return a Connection
      * @throws SQLException if there is a repeated failure to create the connection
      */
@@ -129,15 +182,30 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Properties info = new Properties();
         info.put("user", this.getUsername());
         info.put("password", this.getPassword());
-        final String url = this.getJdbcUrl() + queryString;
+        final String url = constructUrlForConnection(queryString);
 
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
         try {
-            return Unreliables.retryUntilSuccess(120, TimeUnit.SECONDS, () -> jdbcDriverInstance.connect(url, info));
+            return Unreliables.retryUntilSuccess(getConnectTimeoutSeconds(), TimeUnit.SECONDS, () ->
+                DB_CONNECT_RATE_LIMIT.getWhenReady(() ->
+                    jdbcDriverInstance.connect(url, info)));
         } catch (Exception e) {
             throw new SQLException("Could not create new connection", e);
         }
+    }
+
+    /**
+     * Template method for constructing the JDBC URL to be used for creating {@link Connection}s.
+     * This should be overridden if the JDBC URL and query string concatenation or URL string
+     * construction needs to be different to normal.
+     *
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
+     * @return a full JDBC URL including queryString
+     */
+    protected String constructUrlForConnection(String queryString) {
+        return getJdbcUrl() + queryString;
     }
 
     protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {
@@ -145,12 +213,18 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         if (resourceName != null) {
             final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName);
-            addFileSystemBind(mountableFile.getResolvedPath(), pathNameInContainer, BindMode.READ_ONLY);
+            withCopyFileToContainer(mountableFile, pathNameInContainer);
         }
     }
 
-    @Override
-    protected abstract Integer getLivenessCheckPort();
+    /**
+     * Load init script content and apply it to the database if initScriptPath is set
+     */
+    protected void runInitScriptIfRequired() {
+        if (initScriptPath != null) {
+            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
+        }
+    }
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
@@ -159,5 +233,27 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     @SuppressWarnings("unused")
     public void addParameter(String paramName, String value) {
         this.parameters.put(paramName, value);
+    }
+
+    /**
+     * @return startup time to allow, including image pull time, in seconds
+     * @deprecated should not be overridden anymore, use {@link #withStartupTimeoutSeconds(int)} in constructor instead
+     */
+    @Deprecated
+    protected int getStartupTimeoutSeconds() {
+        return startupTimeoutSeconds;
+    }
+
+    /**
+     * @return time to allow for the database to start and establish an initial connection, in seconds
+     * @deprecated should not be overridden anymore, use {@link #withConnectTimeoutSeconds(int)} in constructor instead
+     */
+    @Deprecated
+    protected int getConnectTimeoutSeconds() {
+        return connectTimeoutSeconds;
+    }
+
+    protected DatabaseDelegate getDatabaseDelegate() {
+        return new JdbcDatabaseDelegate(this, "");
     }
 }

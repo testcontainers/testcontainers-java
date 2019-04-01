@@ -1,0 +1,15 @@
+name-template: $NEXT_PATCH_VERSION
+tag-template: $NEXT_PATCH_VERSION
+template: |
+    # What's Changed
+
+    $CHANGES
+categories:
+  - title: 🚀 Features
+    label: type/feature
+  - title: 🐛 Bug Fixes
+    label: type/bug
+  - title: 📖 Documentation
+    label: type/docs
+  - title: 📦 Dependency updates
+    label: dependencies

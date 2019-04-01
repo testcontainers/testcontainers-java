@@ -2,33 +2,34 @@ package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import lombok.Getter;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.rnorth.visibleassertions.VisibleAssertions;
-import org.testcontainers.dockerclient.*;
+import org.testcontainers.dockerclient.DockerClientProviderStrategy;
+import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.Socket;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -40,14 +41,28 @@ import java.util.function.Consumer;
 @Slf4j
 public class DockerClientFactory {
 
+    public static final ThreadGroup TESTCONTAINERS_THREAD_GROUP = new ThreadGroup("testcontainers");
+    public static final String TESTCONTAINERS_LABEL = DockerClientFactory.class.getPackage().getName();
+    public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
+
+    public static final String SESSION_ID = UUID.randomUUID().toString();
+
+    public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
+            TESTCONTAINERS_LABEL, "true",
+            TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
+    );
+
     private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
     private static DockerClientFactory instance;
 
     // Cached client configuration
     private DockerClientProviderStrategy strategy;
-    private boolean preconditionsChecked = false;
+    private boolean initialized = false;
     private String activeApiVersion;
     private String activeExecutionDriver;
+
+    @Getter(lazy = true)
+    private final boolean fileMountingSupported = checkMountableFile();
 
     static {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
@@ -93,7 +108,7 @@ public class DockerClientFactory {
         log.info("Docker host IP address is {}", hostIpAddress);
         DockerClient client = strategy.getClient();
 
-        if (!preconditionsChecked) {
+        if (!initialized) {
             Info dockerInfo = client.infoCmd().exec();
             Version version = client.versionCmd().exec();
             activeApiVersion = version.getApiVersion();
@@ -104,30 +119,36 @@ public class DockerClientFactory {
                     "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                     "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            if (!TestcontainersConfiguration.getInstance().isDisableChecks()) {
-                VisibleAssertions.info("Checking the system...");
-
-                checkDockerVersion(version.getVersion());
-
-                MountableFile mountableFile = MountableFile.forClasspathResource(this.getClass().getName().replace(".", "/") + ".class");
-
-                runInsideDocker(
-                        client,
-                        cmd -> cmd
-                                .withCmd("/bin/sh", "-c", "while true; do printf 'hello' | nc -l -p 80; done")
-                                .withBinds(new Bind(mountableFile.getResolvedPath(), new Volume("/dummy"), AccessMode.ro))
-                                .withExposedPorts(new ExposedPort(80))
-                                .withPublishAllPorts(true),
-                        (dockerClient, id) -> {
-
-                            checkDiskSpace(dockerClient, id);
-                            checkMountableFile(dockerClient, id);
-                            checkExposedPort(hostIpAddress, dockerClient, id);
-
-                            return null;
-                        });
+            String ryukContainerId = null;
+            boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+            if (useRyuk) {
+                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+                log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
             }
-            preconditionsChecked = true;
+           
+            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
+            if (checksEnabled) {
+                VisibleAssertions.info("Checking the system...");
+                checkDockerVersion(version.getVersion());
+                if (ryukContainerId != null) {
+                    checkDiskSpace(client, ryukContainerId);
+                } else {
+                    runInsideDocker(
+                        client,
+                        createContainerCmd -> {
+                            createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
+                            createContainerCmd.getHostConfig().withAutoRemove(true);
+                            createContainerCmd.withCmd("tail", "-f", "/dev/null");
+                        },
+                        (__, containerId) -> {
+                            checkDiskSpace(client, containerId);
+                            return "";
+                        }
+                    );
+                }
+            }
+
+            initialized = true;
         }
 
         return client;
@@ -167,33 +188,34 @@ public class DockerClientFactory {
         );
     }
 
-    private void checkMountableFile(DockerClient dockerClient, String id) {
-        try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(id, "/dummy").exec()) {
-            stream.read();
-            VisibleAssertions.pass("File should be mountable");
+    private boolean checkMountableFile() {
+        DockerClient dockerClient = client();
+
+        MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
+
+        Volume volume = new Volume("/dummy");
+        try {
+            return runInsideDocker(
+                createContainerCmd -> createContainerCmd.withBinds(new Bind(mountableFile.getResolvedPath(), volume, AccessMode.ro)),
+                (__, containerId) -> {
+                    try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(containerId, volume.getPath()).exec()) {
+                        stream.read();
+                        return true;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+            );
         } catch (Exception e) {
-            VisibleAssertions.fail("File should be mountable but fails with " + e.getMessage());
+            log.debug("Failure while checking for mountable file support", e);
+            return false;
         }
-    }
-
-    private void checkExposedPort(String hostIpAddress, DockerClient dockerClient, String id) {
-        InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
-
-        String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
-
-        String response;
-        try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
-            response = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
-        } catch (IOException e) {
-            response = e.getMessage();
-        }
-        VisibleAssertions.assertEquals("A port exposed by a docker container should be accessible", "hello", response);
     }
 
     /**
    * Check whether the image is available locally and pull it otherwise
    */
-    private void checkAndPullImage(DockerClient client, String image) {
+    public void checkAndPullImage(DockerClient client, String image) {
         List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
         if (images.isEmpty()) {
             client.pullImageCmd(image).exec(new PullImageResultCallback()).awaitSuccess();
@@ -217,7 +239,8 @@ public class DockerClientFactory {
 
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
         checkAndPullImage(client, TINY_IMAGE);
-        CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE);
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE)
+                .withLabels(DEFAULT_LABELS);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
 
@@ -259,7 +282,7 @@ public class DockerClientFactory {
      * @return the docker API version of the daemon that we have connected to
      */
     public String getActiveApiVersion() {
-        if (!preconditionsChecked) {
+        if (!initialized) {
             client();
         }
         return activeApiVersion;
@@ -269,7 +292,7 @@ public class DockerClientFactory {
      * @return the docker execution driver of the daemon that we have connected to
      */
     public String getActiveExecutionDriver() {
-        if (!preconditionsChecked) {
+        if (!initialized) {
             client();
         }
         return activeExecutionDriver;

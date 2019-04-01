@@ -1,0 +1,87 @@
+plugins {
+    id 'com.gradle.build-scan' version '1.16'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+    id 'nebula.provided-base' version '3.0.3'
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id "com.jfrog.bintray" version "1.8.4" apply false
+}
+
+subprojects {
+    apply plugin: 'nebula.provided-base'
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'io.franzbecker.gradle-lombok'
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply from: "$rootDir/gradle/publishing.gradle"
+    apply from: "$rootDir/gradle/bintray.gradle"
+
+    group = "org.testcontainers"
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    compileJava.options.encoding = 'UTF-8'
+
+    lombok {
+        version = '1.18.6'
+    }
+
+    task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
+        def outputDir = file("$buildDir/delombok")
+        outputs.dir(outputDir)
+        for (srcDir in project.sourceSets.main.java.srcDirs) {
+            inputs.dir(srcDir)
+            args(srcDir, "-d", outputDir)
+        }
+    }
+
+    project.tasks.sourceJar.from(delombok)
+
+    task release(dependsOn: bintrayUpload)
+
+    test {
+        defaultCharacterEncoding = "UTF-8"
+        testLogging {
+            displayGranularity 1
+            showStackTraces = true
+            exceptionFormat = 'full'
+            events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
+    }
+
+    repositories {
+        jcenter()
+    }
+
+    shadowJar {
+        configurations = []
+        classifier = null
+
+        // Keep docker-java's package inside the final jar
+        relocate("com.github.dockerjava", "com.github.dockerjava")
+    }
+
+    task relocateShadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation) {
+        target = tasks.shadowJar
+        prefix = "org.testcontainers.shaded"
+    }
+
+    tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) { publication ->
+                artifacts.removeAll { it.classifier == null }
+                artifact project.tasks.shadowJar
+            }
+        }
+    }
+
+    dependencies {
+        testCompile 'ch.qos.logback:logback-classic:1.2.3'
+    }
+}
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+}

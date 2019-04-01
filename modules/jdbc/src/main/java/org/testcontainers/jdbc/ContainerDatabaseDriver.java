@@ -4,7 +4,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.JdbcDatabaseContainerProvider;
-import org.testcontainers.jdbc.ext.ScriptUtils;
+import org.testcontainers.delegate.DatabaseDelegate;
+import org.testcontainers.ext.ScriptUtils;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -15,8 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Test Containers JDBC proxy driver. This driver will handle JDBC URLs of the form:
@@ -36,22 +35,13 @@ import java.util.regex.Pattern;
  */
 public class ContainerDatabaseDriver implements Driver {
 
-    private static final Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:([a-z]+)(:([^:]+))?://[^\\?]+(\\?.*)?");
-    private static final Pattern DAEMON_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_DAEMON=([^\\?&]+).*");
-    private static final Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITSCRIPT=([^\\?&]+).*");
-    private static final Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITFUNCTION=" +
-            "((\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
-            "::" +
-            "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
-            ".*");
-
-    private static final Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile("([A-Z_]+)=([^\\?&]+)");
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
 
     private Driver delegate;
     private static final Map<String, Set<Connection>> containerConnections = new HashMap<>();
     private static final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
     private static final Set<String> initializedContainers = new HashSet<>();
+    private static final String FILE_PATH_PREFIX = "file:";
 
     static {
         load();
@@ -80,50 +70,34 @@ public class ContainerDatabaseDriver implements Driver {
             return null;
         }
 
+        ConnectionUrl connectionUrl = ConnectionUrl.newInstance(url);
+
         synchronized (jdbcUrlContainerCache) {
 
-            String queryString = "";
+            String queryString = connectionUrl.getQueryString().orElse("");
             /*
               If we already have a running container for this exact connection string, we want to connect
               to that rather than create a new container
              */
-            JdbcDatabaseContainer container = jdbcUrlContainerCache.get(url);
+            JdbcDatabaseContainer container = jdbcUrlContainerCache.get(connectionUrl.getUrl());
             if (container == null) {
-                /*
-                  Extract from the JDBC connection URL:
-                   * The database type (e.g. mysql, postgresql, ...)
-                   * The docker tag, if provided.
-                   * The URL query string, if provided
-                 */
-                Matcher urlMatcher = URL_MATCHING_PATTERN.matcher(url);
-                if (!urlMatcher.matches()) {
-                    throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
-                }
-                String databaseType = urlMatcher.group(1);
-                String tag = urlMatcher.group(3);
-                if (tag == null) {
-                    tag = "latest";
-                }
 
-                queryString = urlMatcher.group(4);
-                if (queryString == null) {
-                    queryString = "";
-                }
+                LOGGER.debug("Container not found in cache, creating new instance");
 
-                Map<String, String> parameters = getContainerParameters(url);
+                Map<String, String> parameters = connectionUrl.getContainerParameters();
 
                 /*
                   Find a matching container type using ServiceLoader.
                  */
                 ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
-                    if (candidateContainerType.supports(databaseType)) {
-                        container = candidateContainerType.newInstance(tag);
+                    if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
+                        container = candidateContainerType.newInstance(connectionUrl);
                         delegate = container.getJdbcDriverInstance();
                     }
                 }
                 if (container == null) {
-                    throw new UnsupportedOperationException("Database name " + databaseType + " not supported");
+                    throw new UnsupportedOperationException("Database name " + connectionUrl.getDatabaseType() + " not supported");
                 }
 
                 /*
@@ -153,49 +127,32 @@ public class ContainerDatabaseDriver implements Driver {
               an init script or function has been specified, use it
              */
             if (!initializedContainers.contains(container.getContainerId())) {
-                runInitScriptIfRequired(url, connection);
-                runInitFunctionIfRequired(url, connection);
+                DatabaseDelegate databaseDelegate = new JdbcDatabaseDelegate(container, queryString);
+                runInitScriptIfRequired(connectionUrl, databaseDelegate);
+                runInitFunctionIfRequired(connectionUrl, connection);
                 initializedContainers.add(container.getContainerId());
             }
 
-            return wrapConnection(connection, container, url);
+            return wrapConnection(connection, container, connectionUrl);
         }
     }
 
-    private Map<String, String> getContainerParameters(String url) {
-
-        Map<String, String> results = new HashMap<>();
-
-        Matcher matcher = TC_PARAM_MATCHING_PATTERN.matcher(url);
-        while (matcher.find()) {
-            String key = matcher.group(1);
-            String value = matcher.group(2);
-            results.put(key, value);
-        }
-
-        return results;
-    }
 
     /**
      * Wrap the connection, setting up a callback to be called when the connection is closed.
      * <p>
      * When there are no more open connections, the container itself will be stopped.
      *
-     * @param connection the new connection to be wrapped
-     * @param container  the container which the connection is associated with
-     * @param url        the testcontainers JDBC URL for this connection
+     * @param connection    the new connection to be wrapped
+     * @param container     the container which the connection is associated with
+     * @param connectionUrl {@link ConnectionUrl} instance representing JDBC Url for this connection
      * @return the connection, wrapped
      */
-    private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final String url) {
-        final Matcher matcher = DAEMON_MATCHING_PATTERN.matcher(url);
-        final boolean isDaemon = matcher.matches() ? Boolean.parseBoolean(matcher.group(2)) : false;
+    private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final ConnectionUrl connectionUrl) {
 
-        Set<Connection> connections = containerConnections.get(container.getContainerId());
+        final boolean isDaemon = connectionUrl.isInDaemonMode();
 
-        if (connections == null) {
-            connections = new HashSet<>();
-            containerConnections.put(container.getContainerId(), connections);
-        }
+        Set<Connection> connections = containerConnections.computeIfAbsent(container.getContainerId(), k -> new HashSet<>());
 
         connections.add(connection);
 
@@ -205,7 +162,7 @@ public class ContainerDatabaseDriver implements Driver {
             finalConnections.remove(connection);
             if (!isDaemon && finalConnections.isEmpty()) {
                 container.stop();
-                jdbcUrlContainerCache.remove(url);
+                jdbcUrlContainerCache.remove(connectionUrl.getUrl());
             }
         });
     }
@@ -213,24 +170,29 @@ public class ContainerDatabaseDriver implements Driver {
     /**
      * Run an init script from the classpath.
      *
-     * @param url        the JDBC URL to check for init script declarations.
-     * @param connection JDBC connection to apply init scripts to.
+     * @param connectionUrl    {@link ConnectionUrl} instance representing JDBC Url with init script.
+     * @param databaseDelegate database delegate to apply init scripts to the database
      * @throws SQLException on script or DB error
      */
-    private void runInitScriptIfRequired(String url, Connection connection) throws SQLException {
-        Matcher matcher = INITSCRIPT_MATCHING_PATTERN.matcher(url);
-        if (matcher.matches()) {
-            String initScriptPath = matcher.group(2);
+    private void runInitScriptIfRequired(final ConnectionUrl connectionUrl, DatabaseDelegate databaseDelegate) throws SQLException {
+        if (connectionUrl.getInitScriptPath().isPresent()) {
+            String initScriptPath = connectionUrl.getInitScriptPath().get();
             try {
-                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-
+                URL resource;
+                if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
+                    //relative workdir path
+                    resource = new URL(initScriptPath);
+                } else {
+                    //classpath resource
+                    resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+                }
                 if (resource == null) {
                     LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                     throw new SQLException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
                 }
 
                 String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                ScriptUtils.executeSqlScript(connection, initScriptPath, sql);
+                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, sql);
             } catch (IOException e) {
                 LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                 throw new SQLException("Could not load classpath init script: " + initScriptPath, e);
@@ -244,15 +206,14 @@ public class ContainerDatabaseDriver implements Driver {
     /**
      * Run an init function (must be a public static method on an accessible class).
      *
-     * @param url        the JDBC URL to check for init function declarations.
-     * @param connection JDBC connection to apply init functions to.
+     * @param connectionUrl {@link ConnectionUrl} instance representing JDBC Url with r init function declarations.
+     * @param connection    JDBC connection to apply init functions to.
      * @throws SQLException on script or DB error
      */
-    private void runInitFunctionIfRequired(String url, Connection connection) throws SQLException {
-        Matcher matcher = INITFUNCTION_MATCHING_PATTERN.matcher(url);
-        if (matcher.matches()) {
-            String className = matcher.group(2);
-            String methodName = matcher.group(4);
+    private void runInitFunctionIfRequired(final ConnectionUrl connectionUrl, Connection connection) throws SQLException {
+        if (connectionUrl.getInitFunction().isPresent()) {
+            String className = connectionUrl.getInitFunction().get().getClassName();
+            String methodName = connectionUrl.getInitFunction().get().getMethodName();
 
             try {
                 Class<?> initFunctionClazz = Class.forName(className);
@@ -310,6 +271,7 @@ public class ContainerDatabaseDriver implements Driver {
      * Utility method to kill a database container directly from test support code. It shouldn't be necessary to use this,
      * but it is provided for convenience - e.g. for situations where many different database containers are being
      * tested and cleanup is needed to limit resource usage.
+     *
      * @param jdbcUrl the JDBC URL of the container which should be killed
      */
     public static void killContainer(String jdbcUrl) {
@@ -326,6 +288,7 @@ public class ContainerDatabaseDriver implements Driver {
 
     /**
      * Utility method to get an instance of a database container given its JDBC URL.
+     *
      * @param jdbcUrl the JDBC URL of the container instance to get
      * @return an instance of database container or <code>null</code> if no container associated with JDBC URL
      */

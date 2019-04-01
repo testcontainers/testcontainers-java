@@ -1,11 +1,10 @@
 package org.testcontainers.junit;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
-
-import java.io.IOException;
 
 /**
  *
@@ -14,15 +13,20 @@ public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Rule
     public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer()
-            .withDesiredCapabilities(DesiredCapabilities.firefox());
+            .withCapabilities(new FirefoxOptions());
+
+    @Before
+    public void checkBrowserIsIndeedFirefox() {
+        assertBrowserNameIs(firefox, "firefox");
+    }
 
     @Test
-    public void simpleTest() throws IOException {
+    public void simpleTest() {
         doSimpleWebdriverTest(firefox);
     }
 
     @Test
-    public void simpleExploreTest() throws IOException {
+    public void simpleExploreTest() {
         doSimpleExplore(firefox);
     }
 }

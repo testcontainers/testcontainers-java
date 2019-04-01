@@ -43,3 +43,23 @@ dependency-reduced-pom.xml
 # Gitbook
 _book/
 node_modules/
+
+.gradle/
+build/
+out/
+*.class
+
+# Eclipse IDE files
+**/.project
+**/.classpath
+**/.settings
+**/bin/
+**/out/
+
+# Generated docs
+site/
+.direnv/
+src/mkdocs-codeinclude-plugin
+src/pip-delete-this-directory.txt
+
+.DS_Store

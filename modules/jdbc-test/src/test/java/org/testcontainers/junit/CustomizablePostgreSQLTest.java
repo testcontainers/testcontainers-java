@@ -21,7 +21,7 @@ public class CustomizablePostgreSQLTest {
     private static final String PWD = "baz";
 
     @Rule
-    public PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest")
+    public PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:9.6.8")
         .withDatabaseName(DB_NAME)
         .withUsername(USER)
         .withPassword(PWD);

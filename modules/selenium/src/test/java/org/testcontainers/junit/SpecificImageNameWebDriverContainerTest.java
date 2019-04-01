@@ -2,10 +2,8 @@ package org.testcontainers.junit;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
-
-import java.io.IOException;
 
 /**
  *
@@ -13,16 +11,16 @@ import java.io.IOException;
 public class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Rule
-    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer("selenium/standalone-firefox-debug:2.53.1-beryllium")
-            .withDesiredCapabilities(DesiredCapabilities.firefox());
+    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer("selenium/standalone-firefox:2.53.1-beryllium")
+        .withCapabilities(new FirefoxOptions());
 
     @Test
-    public void simpleTest() throws IOException {
+    public void simpleTest() {
         doSimpleWebdriverTest(firefox);
     }
 
     @Test
-    public void simpleExploreTest() throws IOException {
+    public void simpleExploreTest() {
         doSimpleExplore(firefox);
     }
 }

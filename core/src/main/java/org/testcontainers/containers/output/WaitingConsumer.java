@@ -6,14 +6,13 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
  * A consumer for container output that buffers lines in a {@link java.util.concurrent.BlockingDeque} and enables tests
  * to wait for a matching condition.
  */
-public class WaitingConsumer implements Consumer<OutputFrame> {
+public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WaitingConsumer.class);
 
@@ -114,8 +113,13 @@ public class WaitingConsumer implements Consumer<OutputFrame> {
     /**
      * Wait until Docker closes the stream of output.
      */
-    public void waitUntilEnd() throws TimeoutException {
-        waitUntilEnd(Long.MAX_VALUE);
+    public void waitUntilEnd() {
+        try {
+            waitUntilEnd(Long.MAX_VALUE);
+        } catch (TimeoutException e) {
+            // timeout condition can never occur in a realistic timeframe
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
