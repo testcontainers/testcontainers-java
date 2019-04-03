@@ -3,17 +3,17 @@ package org.testcontainers.junit;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Test;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test of {@link FixedHostPortGenericContainer}. Note that this is not an example of typical use (usually, a container
@@ -22,83 +22,76 @@ import java.net.URL;
  * is started.
  */
 public class FixedHostPortContainerTest {
+    private static final String TEST_IMAGE = "alpine:3.2";
 
     /**
-     * Docker image for simple open-source HTTP echo server https://github.com/hashicorp/http-echo
+     * Default http server port (just something different from default)
      */
-    private static final String HTTP_ECHO_IMAGE = "hashicorp/http-echo";
+    private static final int TEST_PORT = 5678;
 
     /**
-     * Default echo server port
+     * test response
      */
-    private static final int ECHO_PORT = 5678;
+    private static final String TEST_RESPONSE = "test-response";
 
     /**
-     * test echo response
+     * *nix pipe to fire test response on test port
      */
-    private static final String TEST_ECHO = "test-echo";
-
-    /**
-     * Waiting strategy for echo server start
-     */
-    private final WaitStrategy echoServerStartWaitStrategy = new LogMessageWaitStrategy()
-        .withRegEx(".+Server is listening.+");
+    private static final String HTTP_ECHO_CMD =
+        String.format("while true; do echo \"%s\" | nc -l -p %d; done", TEST_RESPONSE, TEST_PORT);
 
     @Test
     public void testFixedHostPortMapping() throws IOException {
         // first find a free port on the docker host that will work for testing
-        GenericContainer echoServer = new GenericContainer(HTTP_ECHO_IMAGE)
-            .withCommand(String.format("-text=%s", TEST_ECHO))
-            .withExposedPorts(ECHO_PORT)
-            .waitingFor(this.echoServerStartWaitStrategy);
+        final Integer unusedHostPort;
+        String content;
+        try (final GenericContainer echoServer = new GenericContainer<>(TEST_IMAGE)
+            .withExposedPorts(TEST_PORT)
+            .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD))
+        {
+            echoServer.start();
 
-        echoServer.start();
-        final Integer unusedHostPort = echoServer.getMappedPort(ECHO_PORT);
+            unusedHostPort = echoServer.getMappedPort(TEST_PORT);
 
-        String content = this.getHttpResponse(unusedHostPort);
+            content = this.readResponse(echoServer, unusedHostPort);
 
-        assertThat("Returned echo does not match expected", content, equalTo(TEST_ECHO));
-
-        echoServer.stop();
+            assertThat("Returned echo does not match expected", content, equalTo(TEST_RESPONSE));
+        }
 
         // now starting echo server container mapped to known-as-free host port
-        echoServer = new FixedHostPortGenericContainer(HTTP_ECHO_IMAGE)
-            .withFixedExposedPort(unusedHostPort, ECHO_PORT)
-            .withCommand(String.format("-text=%s", TEST_ECHO))
-            .waitingFor(this.echoServerStartWaitStrategy);
+        try (final GenericContainer echoServer = new FixedHostPortGenericContainer(TEST_IMAGE)
+            // using workaround for port bind+expose
+            .withFixedExposedPort(unusedHostPort, TEST_PORT)
+            .withExposedPorts(TEST_PORT)
+            .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD))
+        {
+            echoServer.start();
 
-        echoServer.start();
+            assertThat("Port mapping does not seem to match given fixed port",
+                echoServer.getMappedPort(TEST_PORT), equalTo(unusedHostPort));
 
-        assertThat("Port mapping does not seem to match given fixed port",
-            echoServer.getMappedPort(ECHO_PORT), equalTo(unusedHostPort));
+            content = this.readResponse(echoServer, unusedHostPort);
 
-        content = this.getHttpResponse(unusedHostPort);
-
-        assertThat("Returned echo from fixed port does not match expected", content, equalTo(TEST_ECHO));
-
-        echoServer.stop();
+            assertThat("Returned echo from fixed port does not match expected", content, equalTo(TEST_RESPONSE));
+        }
     }
 
     /**
-     * Simple pure-java web request/response functionality from localhost
+     * Simple socket content reader from given container:port
      *
-     * @param port to send request to
-     * @return response content
+     * @param container to query
+     * @param port      to send request to
+     * @return socket reader content
      * @throws IOException if any
      */
-    private String getHttpResponse(Integer port) throws IOException {
-        final URL url = new URL(String.format("http://localhost:%d", port));
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        final StringBuilder response;
-        try (final BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-            String inputLine;
-            response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
+    private String readResponse(GenericContainer container, Integer port) throws IOException {
+        try (final BufferedReader reader = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+            final Socket socket = new Socket(container.getContainerIpAddress(), port);
+            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        }))
+        {
+            return reader.readLine();
         }
-        con.disconnect();
-        return response.toString();
     }
 }
