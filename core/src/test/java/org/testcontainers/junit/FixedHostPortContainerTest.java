@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Test;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -45,25 +45,19 @@ public class FixedHostPortContainerTest {
         .withRegEx(".+Server is listening.+");
 
     @Test
-    public void testFixedHostPortMapping() {
+    public void testFixedHostPortMapping() throws IOException {
         // first find a free port on the docker host that will work for testing
         GenericContainer echoServer = new GenericContainer(HTTP_ECHO_IMAGE)
             .withCommand(String.format("-text=%s", TEST_ECHO))
             .withExposedPorts(ECHO_PORT)
-            .waitingFor(echoServerStartWaitStrategy);
+            .waitingFor(this.echoServerStartWaitStrategy);
 
         echoServer.start();
         final Integer unusedHostPort = echoServer.getMappedPort(ECHO_PORT);
 
-        final String[] content = new String[1];
+        String content = this.getHttpResponse(unusedHostPort);
 
-        assertThatCode(() -> {
-            content[0] = this.getHttpResponse(unusedHostPort);
-        }).as("Problem getting echo from non-fixed-port container").doesNotThrowAnyException();
-
-        assertThat(content[0])
-            .as("Returned echo does not match expected")
-            .isEqualTo(TEST_ECHO);
+        assertThat("Returned echo does not match expected", content, equalTo(TEST_ECHO));
 
         echoServer.stop();
 
@@ -71,21 +65,16 @@ public class FixedHostPortContainerTest {
         echoServer = new FixedHostPortGenericContainer(HTTP_ECHO_IMAGE)
             .withFixedExposedPort(unusedHostPort, ECHO_PORT)
             .withCommand(String.format("-text=%s", TEST_ECHO))
-            .waitingFor(echoServerStartWaitStrategy);
+            .waitingFor(this.echoServerStartWaitStrategy);
 
         echoServer.start();
 
-        assertThat(echoServer.getMappedPort(ECHO_PORT))
-            .as("Port mapping does not seem to match given fixed port")
-            .isEqualTo(unusedHostPort);
+        assertThat("Port mapping does not seem to match given fixed port",
+            echoServer.getMappedPort(ECHO_PORT), equalTo(unusedHostPort));
 
-        assertThatCode(() -> {
-            content[0] = this.getHttpResponse(unusedHostPort);
-        }).as("Problem getting echo from fixed-port container").doesNotThrowAnyException();
+        content = this.getHttpResponse(unusedHostPort);
 
-        assertThat(content[0])
-            .as("Returned echo from fixed port does not match expected")
-            .isEqualTo(TEST_ECHO);
+        assertThat("Returned echo from fixed port does not match expected", content, equalTo(TEST_ECHO));
 
         echoServer.stop();
     }
