@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  * is started.
  */
 public class FixedHostPortContainerTest {
+
     private static final String TEST_IMAGE = "alpine:3.2";
 
     /**
@@ -44,34 +45,29 @@ public class FixedHostPortContainerTest {
     public void testFixedHostPortMapping() throws IOException {
         // first find a free port on the docker host that will work for testing
         final Integer unusedHostPort;
-        String content;
-        try (final GenericContainer echoServer = new GenericContainer<>(TEST_IMAGE)
-            .withExposedPorts(TEST_PORT)
-            .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD))
-        {
+        try (
+            final GenericContainer echoServer = new GenericContainer<>(TEST_IMAGE)
+                .withExposedPorts(TEST_PORT)
+                .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
+        ) {
             echoServer.start();
-
             unusedHostPort = echoServer.getMappedPort(TEST_PORT);
-
-            content = this.readResponse(echoServer, unusedHostPort);
-
-            assertThat("Returned echo does not match expected", content, equalTo(TEST_RESPONSE));
         }
 
         // now starting echo server container mapped to known-as-free host port
-        try (final GenericContainer echoServer = new FixedHostPortGenericContainer(TEST_IMAGE)
+        try (
+            final GenericContainer echoServer = new FixedHostPortGenericContainer(TEST_IMAGE)
             // using workaround for port bind+expose
             .withFixedExposedPort(unusedHostPort, TEST_PORT)
             .withExposedPorts(TEST_PORT)
-            .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD))
-        {
+            .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
+        ) {
             echoServer.start();
 
             assertThat("Port mapping does not seem to match given fixed port",
                 echoServer.getMappedPort(TEST_PORT), equalTo(unusedHostPort));
 
-            content = this.readResponse(echoServer, unusedHostPort);
-
+            final String content = this.readResponse(echoServer, unusedHostPort);
             assertThat("Returned echo from fixed port does not match expected", content, equalTo(TEST_RESPONSE));
         }
     }
@@ -85,12 +81,15 @@ public class FixedHostPortContainerTest {
      * @throws IOException if any
      */
     private String readResponse(GenericContainer container, Integer port) throws IOException {
-        try (final BufferedReader reader = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-            final Socket socket = new Socket(container.getContainerIpAddress(), port);
-            return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        }))
-        {
+        try (
+            final BufferedReader reader = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS,
+                () -> {
+                    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+                    final Socket socket = new Socket(container.getContainerIpAddress(), port);
+                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                }
+            )
+        ) {
             return reader.readLine();
         }
     }
