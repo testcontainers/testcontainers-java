@@ -1,11 +1,13 @@
 # Windows Support
 
 ## Prerequisites
+
 * [Docker for Windows](https://docs.docker.com/docker-for-windows/) needs to be installed
-  * Docker version 17.06 is confirmed to work on Windows 10 with Hyper-V.
-  * Testcontainers supports communication with Docker on Docker for Windows using named pipes.
+* Docker version 17.06 is confirmed to work on Windows 10 with Hyper-V.
+* Testcontainers supports communication with Docker on Docker for Windows using named pipes.
 
 ## Limitations
+
 The following features are not available or do not work correctly so make sure you do not use them or use them with 
 caution. The list may not be complete.
 
@@ -22,6 +24,17 @@ effort.
 ### Windows Container on Windows (WCOW)
 
 * WCOW is currently not supported, since Testcontainers uses auxiliary Linux containers for certain tasks and Docker for Windows does not support hybrid engine mode at the time of writing.
+
+## Windows Subsystem for Linux
+
+Testcontainers supports comunicatin with Docker for Windows within the Windows Subsystem for Linux *([**WSL**](https://docs.microsoft.com/en-us/windows/wsl/about))*.
+The following additional configurations steps are required:
+
++ The Docker for windows daemon needs to be exposed on the tcp port `2375` without **TLS**.
++ Set the `DOCKER_HOST` enviroment variable as `tcp://localhost:2375`.
++ Modify the `/ect/wsl.conf` file to mount the windows drivers on `/` instead of on `/mnt/`.
+
+More information about running Docker within the **WSL** can be found [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly).
 
 ## Reporting issues
 
