@@ -27,11 +27,11 @@ effort.
 
 ## Windows Subsystem for Linux
 
-Testcontainers supports comunicatin with Docker for Windows within the Windows Subsystem for Linux *([**WSL**](https://docs.microsoft.com/en-us/windows/wsl/about))*.
+Testcontainers supports communicating with Docker for Windows within the Windows Subsystem for Linux *([**WSL**](https://docs.microsoft.com/en-us/windows/wsl/about))*.
 The following additional configurations steps are required:
 
-+ The Docker for windows daemon needs to be exposed on the tcp port `2375` without **TLS**.
-+ Set the `DOCKER_HOST` enviroment variable as `tcp://localhost:2375`.
++ Expose the Docker for windows daemon on the `2375` tcp port without **TLS**.
++ Set the `DOCKER_HOST` environment variable as `tcp://localhost:2375`.
 + Modify the `/ect/wsl.conf` file to mount the windows drivers on `/` instead of on `/mnt/`.
 
 More information about running Docker within the **WSL** can be found [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly).
