@@ -12,7 +12,7 @@
 | Mac OS X - Docker for Mac              | 1.12.0                      | *Support is best-efforts at present*. `getTestHostIpAddress()` is [not currently supported](https://github.com/testcontainers/testcontainers-java/issues/166) due to limitations in Docker for Mac. |
 | Windows - Docker Toolbox               |                             | *Support is limited at present and this is not currently tested on a regular basis*. |
 | Windows - Docker for Windows           | Docker v17.06               | *Support is best-efforts at present.* Only Linux Containers (LCOW) are supported at the moment. See [Windows Support](windows.md). |
-| Windows - Windows Substyem for Linux   | Docker v17.06               | *Support is best-efforts at present.* Only Linux Containers (LCOW) are supp    orted at the moment. See [Windows Support](windows.md). |
+| Windows - Windows Substyem for Linux   | Docker v17.06               | *Support is best-efforts at present.* Only Linux Containers (LCOW) are supported at the moment. See [Windows Support](windows.md). |
 
 ## Docker environment discovery
 
