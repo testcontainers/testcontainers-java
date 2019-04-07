@@ -1,6 +1,6 @@
 pool:
   name: "Windows 10 - Docker for Windows"
-  # demands: java
+  demands: java
 
 steps:
 - task: Gradle@2
