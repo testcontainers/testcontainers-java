@@ -7,7 +7,7 @@ steps:
   displayName: Build
   inputs:
     gradleWrapperFile: 'gradlew'
-    options: '--no-daemon --scan'
+    options: '--no-daemon'
     tasks: 'testcontainers:check'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
