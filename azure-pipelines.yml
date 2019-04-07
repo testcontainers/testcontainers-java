@@ -1,5 +1,8 @@
+variables:
+  pool: Default
+
 pool:
-  name: "Windows 10 - Docker for Windows"
+  name: $(pool)
   demands: java
 
 steps:
