@@ -1,0 +1,11 @@
+steps:
+- task: Gradle@2
+  displayName: Build
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    options: '--no-daemon'
+    tasks: 'testcontainers:check'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+
+
