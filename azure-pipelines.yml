@@ -6,6 +6,6 @@ steps:
     options: '--no-daemon'
     tasks: 'testcontainers:check'
     publishJUnitResults: true
-    testResultsFiles: '**/build/test-results/TEST-*.xml'
+    testResultsFiles: '**/TEST-*.xml'
 
 
