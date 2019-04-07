@@ -4,10 +4,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -28,9 +28,9 @@ public class AgeBasedPullPolicyTest {
 
     @Test
     public void shouldPull() {
-        ImagePullPolicy one_hour = new AgeBasedPullPolicy(1L, TimeUnit.HOURS);
+        ImagePullPolicy one_hour = new AgeBasedPullPolicy(Duration.of(1L, ChronoUnit.HOURS));
         assertTrue(one_hour.shouldPull(dockerImage));
-        ImagePullPolicy five_hours = new AgeBasedPullPolicy(5L, TimeUnit.HOURS);
+        ImagePullPolicy five_hours = new AgeBasedPullPolicy(Duration.of(5L, ChronoUnit.HOURS));
         assertFalse(five_hours.shouldPull(dockerImage));
     }
 }

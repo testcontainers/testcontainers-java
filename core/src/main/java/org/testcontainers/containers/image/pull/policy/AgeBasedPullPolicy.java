@@ -1,8 +1,8 @@
 package org.testcontainers.containers.image.pull.policy;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.image.ImageData;
 
@@ -12,21 +12,19 @@ import org.testcontainers.containers.image.ImageData;
 @Slf4j
 public class AgeBasedPullPolicy implements ImagePullPolicy {
 
-    private long maxAge;
-    private TimeUnit unit;
+    private Duration maxAge;
 
     /**
-     * @param maxAge - Maximum age of image (based on image Created parameter)
-     * @param unit - The TimeUnit to use (MINUTES, HOURS, DAYS, etc.)
+     * @param maxAge - Maximum allowed age of image (based on image Created parameter)
      */
-    public AgeBasedPullPolicy(long maxAge, TimeUnit unit) {
+    public AgeBasedPullPolicy(Duration maxAge) {
         this.maxAge = maxAge;
-        this.unit = unit;
     }
 
     @Override
     public boolean shouldPull(ImageData image) {
-        boolean result = unit.convert(Instant.now().getEpochSecond() - image.getCreated(), TimeUnit.SECONDS) > maxAge;
+        Duration imageAge = Duration.between(Instant.now(), Instant.ofEpochMilli(image.getCreated()));
+        boolean result = imageAge.compareTo(maxAge) > 0;
         if (result) {
             log.trace("Should pull image with tags: {}", Arrays.asList(image.getRepoTags()));
         }

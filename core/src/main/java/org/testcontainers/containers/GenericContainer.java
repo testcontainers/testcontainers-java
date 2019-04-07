@@ -42,11 +42,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.SneakyThrows;
+import lombok.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -63,7 +59,6 @@ import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.image.ImageNameResolverProvider;
 import org.testcontainers.containers.image.pull.policy.ImagePullPolicy;
-import org.testcontainers.containers.image.pull.policy.PullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -213,6 +208,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
+    }
+
+    public GenericContainer(@NonNull  ImageNameResolverProvider nameResolverProvider) {
+        this.nameResolverProvider = nameResolverProvider;
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {
@@ -387,7 +386,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void configure() {
-        getDockerImageName();
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -992,9 +990,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
         this.nameResolverProvider = new ImageNameResolverProvider(dockerImageName);
-
-        // Mimic old behavior where we resolve image once it's set
-//        getDockerImageName();
     }
 
     /**
@@ -1004,7 +999,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     public String getDockerImageName() {
         try {
-            return nameResolverProvider.getResolver().get();
+            return getImage().get();
         } catch (Exception e) {
             throw new ContainerFetchException("Can't get Docker image: " + nameResolverProvider.getResolver(), e);
         }

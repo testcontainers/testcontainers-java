@@ -1,6 +1,6 @@
 package org.testcontainers.containers.image.pull.policy;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -30,8 +30,8 @@ public class PullPolicy {
      * Convenience method for returning an {@link AgeBasedPullPolicy} Age based image pull policy,
      * @return {@link ImagePullPolicy}
      */
-    public static ImagePullPolicy ageBased(long age, TimeUnit timeUnit) {
-        return new AgeBasedPullPolicy(age, timeUnit);
+    public static ImagePullPolicy ageBased(Duration maxAge) {
+        return new AgeBasedPullPolicy(maxAge);
     }
 
 }

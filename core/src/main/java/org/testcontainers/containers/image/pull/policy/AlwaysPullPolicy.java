@@ -13,7 +13,7 @@ public class AlwaysPullPolicy implements ImagePullPolicy {
 
     @Override
     public boolean shouldPull(ImageData image) {
-        log.trace("Should pull image with tags: {}", Arrays.asList(image.getRepoTags()));
+        log.trace("Unconditionally pulling an image with tags: {}", Arrays.asList(image.getRepoTags()));
         return true;
     }
 }

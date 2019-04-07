@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.ToString;
@@ -79,10 +78,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
                 // Populate images cache
                 updatedImages.stream()
-                    .filter(i -> Objects.nonNull(i.getRepoTags()))
+                    .filter(image -> image.getRepoTags() != null)
                     .flatMap(image -> Arrays.stream(image.getRepoTags())
                         .map(tag -> new SimpleEntry<>(tag, ImageData.from(image))))
-                    .collect(Collectors.toMap(e -> new DockerImageName(e.getKey()), Entry::getValue, (t1,t2) -> t1, () -> AVAILABLE_IMAGES_CACHE));
+                    .collect(Collectors.toMap(entry -> new DockerImageName(entry.getKey()), Entry::getValue, (oldValue, newValue) -> oldValue, () -> AVAILABLE_IMAGES_CACHE));
 
                 // And now?
                 if (AVAILABLE_IMAGES_CACHE.containsKey(imageName) && !imagePullPolicy.shouldPull(AVAILABLE_IMAGES_CACHE.get(imageName))) {
@@ -108,7 +107,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         .withTag(imageName.getVersionPart())
                         .exec(callback);
                     callback.awaitCompletion();
-                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName,ImageData.from(dockerClient.inspectImageCmd(imageName.toString()).exec()));
+                    ImageData imageData = ImageData.from(dockerClient.inspectImageCmd(imageName.toString()).exec());
+                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
                     break;
                 } catch (Exception e) {
                     lastException = e;
