@@ -4,33 +4,32 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import com.github.dockerjava.api.model.Image;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
 import org.testcontainers.containers.image.ImageData;
 
 public class AgeBasedPullPolicyTest {
 
-    @Mock
-    private ImageData dockerImage;
+    private ImageData dockerImageData;
 
     @Before
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        Image dockerImage = Mockito.mock(Image.class);
         when(dockerImage.getCreated()).thenReturn(Instant.now().minus(2, ChronoUnit.HOURS).getEpochSecond());
-        when(dockerImage.getRepoTags()).thenReturn(Collections.emptyList());
+        when(dockerImage.getRepoTags()).thenReturn(new String[]{});
+        this.dockerImageData = ImageData.from(dockerImage);
     }
 
     @Test
     public void shouldPull() {
         ImagePullPolicy one_hour = new AgeBasedPullPolicy(Duration.of(1L, ChronoUnit.HOURS));
-        assertTrue(one_hour.shouldPull(dockerImage));
+        assertTrue(one_hour.shouldPull(dockerImageData));
         ImagePullPolicy five_hours = new AgeBasedPullPolicy(Duration.of(5L, ChronoUnit.HOURS));
-        assertFalse(five_hours.shouldPull(dockerImage));
+        assertFalse(five_hours.shouldPull(dockerImageData));
     }
 }
