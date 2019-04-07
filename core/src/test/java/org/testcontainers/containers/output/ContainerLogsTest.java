@@ -1,13 +1,11 @@
 package org.testcontainers.containers.output;
 
-import java.util.Arrays;
-import org.hamcrest.collection.IsIn;
-import org.hamcrest.core.AnyOf;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -23,7 +21,7 @@ public class ContainerLogsTest {
 
             // docsGetAllLogs {
             final String logs = container.getLogs();
-            assertThat("stdout and stderr from container logs", logs, isIn(new String[]{"stdout\nstderr", "stderr\nstdout"}));
+            assertThat("stdout and stderr from container logs", logs, anyOf(is("stdout\nstderr"),is("stderr\nstdout")));
         }
     }
 
