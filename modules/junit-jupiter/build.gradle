@@ -12,7 +12,7 @@ dependencies {
 
     testRuntime 'org.postgresql:postgresql:42.2.5'
     testRuntime 'mysql:mysql-connector-java:8.0.15'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.1'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
 }
 
 test {
