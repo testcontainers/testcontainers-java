@@ -28,19 +28,27 @@ public class DockerfileBuildTest {
     public static Object[][] parameters() {
         return new Object[][]{
             // Dockerfile build without explicit per-file inclusion
-            new Object[]{"test1234", new ImageFromDockerfile()
-                .withFileFromPath(".", RESOURCE_PATH)},
+            new Object[]{"test1234",
+                // docsShowRecursiveFileInclusion {
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                // }
+            },
 
             // Dockerfile build using a non-standard Dockerfile
-            new Object[]{"test4567", new ImageFromDockerfile()
-                .withFileFromPath(".", RESOURCE_PATH)
-                .withDockerfilePath("./Dockerfile-alt")},
+            new Object[]{"test4567",
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                    .withDockerfilePath("./Dockerfile-alt")
+            },
 
             // Dockerfile build using build args
-            new Object[]{"test7890", new ImageFromDockerfile()
-                .withFileFromPath(".", RESOURCE_PATH)
-                .withDockerfilePath("./Dockerfile-buildarg")
-                .withBuildArg("CUSTOM_ARG", "test7890")},
+            new Object[]{"test7890",
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                    .withDockerfilePath("./Dockerfile-buildarg")
+                    .withBuildArg("CUSTOM_ARG", "test7890")
+            },
         };
     }
 
