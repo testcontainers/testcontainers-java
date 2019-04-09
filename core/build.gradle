@@ -21,7 +21,6 @@ shadowJar {
     exclude 'org/newsclub/**'
 
     [
-        'META-INF/io.netty.versions.properties',
         'META-INF/NOTICE',
         'META-INF/NOTICE.txt',
         'META-INF/LICENSE',
@@ -33,31 +32,16 @@ shadowJar {
         'META-INF/services/com.fasterxml.jackson.core.*',
         'META-INF/services/com.github.dockerjava.api.command.*',
         'META-INF/services/javax.ws.rs.ext.*',
-        'META-INF/services/org.glassfish.hk2.extension.*',
-        'META-INF/services/org.jvnet.hk2.external.generator.*',
-        'META-INF/services/org.glassfish.jersey.internal.spi.*',
         'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
     ].each { exclude(it) }
 
-    dependencies {
-        include(dependency('org.apache.httpcomponents:.*'))
-        include(dependency('org.glassfish.*:.*'))
-        include(dependency('org.aopalliance.*:.*'))
-        include(dependency('javax.ws.rs:.*'))
-        include(dependency('com.fasterxml.*:.*'))
-        include(dependency('com.github.docker-java:.*'))
-        include(dependency('com.google.guava:.*'))
-        include(dependency('io.netty:.*'))
-        include(dependency('org.bouncycastle:.*'))
-        include(dependency('org.zeroturnaround:zt-exec'))
-        include(dependency('commons-lang:commons-lang'))
-        include(dependency('commons-io:commons-io'))
-        include(dependency('commons-codec:commons-codec'))
-        include(dependency('com.squareup.okhttp3:.*'))
-        include(dependency('com.squareup.okio:.*'))
-        include(dependency('org.scala-sbt.ipcsocket:ipcsocket'))
-        include(dependency('org.glassfish.main.external:trilead-ssh2-repackaged'))
+    project.afterEvaluate {
+        dependencies {
+            for (id in project.configurations.compile.resolvedConfiguration.resolvedArtifacts*.moduleVersion*.id) {
+                exclude(dependency("${id.group}:${id.name}"))
+            }
+        }
     }
 }
 
@@ -98,29 +82,29 @@ dependencies {
     shaded ('com.github.docker-java:docker-java:3.1.0-rc-4') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
+        exclude(group: 'org.glassfish.jersey.inject')
         exclude(group: 'log4j')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'com.kohlschutter.junixsocket')
+        exclude(group: 'io.netty')
+        exclude(group: 'org.apache.httpcomponents')
+        exclude(group: 'org.slf4j')
+        exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
+
     shaded 'com.squareup.okhttp3:okhttp:3.12.1'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'javax.ws.rs:javax.ws.rs-api:2.0.1'
-    shaded 'org.zeroturnaround:zt-exec:1.10'
-    shaded 'commons-lang:commons-lang:2.6'
-    shaded 'commons-io:commons-io:2.6'
-    shaded 'commons-codec:commons-codec:1.12'
-    // docker-java uses SslConfigurator from jersey-common for TLS
-    shaded ('org.glassfish.jersey.core:jersey-common:2.27') {
-        // SslConfigurator doesn't use classes from dependencies
-        exclude(module: '*')
+    shaded 'org.zeroturnaround:zt-exec:1.10', {
+        exclude(group: 'org.slf4j')
     }
 
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.8'
     testCompile 'redis.clients:jedis:3.0.1'
     testCompile 'com.rabbitmq:amqp-client:5.6.0'
     testCompile 'org.mongodb:mongo-java-driver:3.10.1'
-    testCompile ('org.mockito:mockito-core:2.25.0') {
+    testCompile ('org.mockito:mockito-core:2.26.0') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
@@ -129,6 +113,6 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.12.1'
+    jarFileTestCompile 'org.assertj:assertj-core:3.12.2'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }

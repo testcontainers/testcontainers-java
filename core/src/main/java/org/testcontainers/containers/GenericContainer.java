@@ -20,9 +20,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -50,8 +48,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -242,24 +238,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Starting container with ID: {}", containerId);
             dockerClient.startContainerCmd(containerId).exec();
 
+            logger().info("Container {} is starting: {}", dockerImageName, containerId);
+
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
-
-            logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
             containerIsStarting(containerInfo);
 
-            // Wait until the container is running (may not be fully started)
-
+            // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
             }
 
+            // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
@@ -269,17 +265,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (containerId != null) {
                 // Log output if startup failed, either due to a container failure or exception (including timeout)
-                logger().error("Container log output (if any) will follow:");
-                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
-                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
-                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
-                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
+                final String containerLogs = getLogs();
 
-                // Try to ensure that container log output is shown before proceeding
-                try {
-                    resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
-                } catch (InterruptedException ignored) {
-                    // Cannot do anything at this point
+                if (containerLogs.length() > 0) {
+                    logger().error("Log output from the failed container:\n{}", getLogs());
+                } else {
+                    logger().error("There are no stdout/stderr logs available for the failed container");
                 }
             }
 

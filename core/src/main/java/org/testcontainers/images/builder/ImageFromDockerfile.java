@@ -23,6 +23,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
@@ -60,6 +61,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private boolean deleteOnExit = true;
 
     private final Map<String, Transferable> transferables = new HashMap<>();
+    private final Map<String, String> buildArgs = new HashMap<>();
+    private Optional<String> dockerFilePath = Optional.empty();
 
     public ImageFromDockerfile() {
         this("testcontainers/" + Base58.randomString(16).toLowerCase());
@@ -139,5 +142,22 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     protected void configure(BuildImageCmd buildImageCmd) {
         buildImageCmd.withTag(this.getDockerImageName());
+        this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
+        this.buildArgs.forEach(buildImageCmd::withBuildArg);
+    }
+
+    public ImageFromDockerfile withBuildArg(final String key, final String value) {
+        this.buildArgs.put(key, value);
+        return this;
+    }
+
+    public ImageFromDockerfile withBuildArgs(final Map<String, String> args) {
+        this.buildArgs.putAll(args);
+        return this;
+    }
+
+    public ImageFromDockerfile withDockerfilePath(String relativePathFromBuildRoot) {
+        this.dockerFilePath = Optional.of(relativePathFromBuildRoot);
+        return this;
     }
 }
