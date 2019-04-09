@@ -19,11 +19,6 @@ public class DockerfileBuildTest {
     public String expectedFileContent;
     public ImageFromDockerfile image;
 
-    public DockerfileBuildTest(String expectedFileContent, ImageFromDockerfile image) {
-        this.expectedFileContent = expectedFileContent;
-        this.image = image;
-    }
-
     @Parameterized.Parameters
     public static Object[][] parameters() {
         return new Object[][]{
@@ -50,6 +45,11 @@ public class DockerfileBuildTest {
                     .withBuildArg("CUSTOM_ARG", "test7890")
             },
         };
+    }
+
+    public DockerfileBuildTest(String expectedFileContent, ImageFromDockerfile image) {
+        this.expectedFileContent = expectedFileContent;
+        this.image = image;
     }
 
     @Test
