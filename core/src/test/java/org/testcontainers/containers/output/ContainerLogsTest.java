@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
@@ -19,7 +18,8 @@ public class ContainerLogsTest {
             // docsGetAllLogs {
             final String logs = container.getLogs();
             // }
-            assertEquals("stdout and stderr are reflected in the returned logs", "stdout\nstderr", logs);
+            assertTrue("stdout is reflected in the returned logs", logs.contains("stdout"));
+            assertTrue("stderr is reflected in the returned logs", logs.contains("stderr"));
         }
     }
 
@@ -31,7 +31,7 @@ public class ContainerLogsTest {
             // docsGetStdOut {
             final String logs = container.getLogs(STDOUT);
             // }
-            assertEquals("stdout and stderr are reflected in the returned logs", "stdout", logs);
+            assertTrue("stdout is reflected in the returned logs", logs.contains("stdout"));
         }
     }
 
@@ -43,7 +43,7 @@ public class ContainerLogsTest {
             // docsGetStdErr {
             final String logs = container.getLogs(STDERR);
             // }
-            assertEquals("stdout and stderr are reflected in the returned logs", "stderr", logs);
+            assertTrue("stderr is reflected in the returned logs", logs.contains("stderr"));
         }
     }
 
