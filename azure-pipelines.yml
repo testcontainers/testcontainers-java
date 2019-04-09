@@ -4,7 +4,7 @@ steps:
   inputs:
     gradleWrapperFile: 'gradlew'
     options: '--no-daemon'
-    tasks: 'testcontainers:check'
+    tasks: 'check'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
 
