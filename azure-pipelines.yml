@@ -3,7 +3,7 @@ steps:
   displayName: Build
   inputs:
     gradleWrapperFile: 'gradlew'
-    options: '--no-daemon'
+    options: '--no-daemon --continue'
     tasks: 'check'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
