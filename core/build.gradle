@@ -92,7 +92,7 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded 'com.squareup.okhttp3:okhttp:3.12.1'
+    shaded 'com.squareup.okhttp3:okhttp:3.14.0'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
