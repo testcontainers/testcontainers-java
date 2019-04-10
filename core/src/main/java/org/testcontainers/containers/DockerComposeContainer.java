@@ -335,7 +335,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceInstanceName, __ ->
-            (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(Duration.ofMinutes(30)));
+            new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT).withStartupTimeout(Duration.ofMinutes(30)));
         waitAllStrategy.withStrategy(waitStrategy);
     }
 
