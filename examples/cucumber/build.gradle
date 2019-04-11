@@ -11,6 +11,6 @@ dependencies {
     implementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.14.0'
     implementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.14.0'
     implementation 'io.cucumber:cucumber-java:2.3.1'
-    testImplementation 'io.cucumber:cucumber-junit:2.3.1'
+    testImplementation 'io.cucumber:cucumber-junit:4.2.6'
     testImplementation 'org.testcontainers:selenium'
 }
