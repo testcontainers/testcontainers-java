@@ -1,22 +1,17 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
-import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
+import org.testcontainers.containers.image.DockerJavaImageData;
 import org.testcontainers.containers.image.ImageData;
 import org.testcontainers.containers.image.pull.policy.DefaultPullPolicy;
 import org.testcontainers.containers.image.pull.policy.ImagePullPolicy;
@@ -63,30 +58,20 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 // Does our cache already know the image?
                 if (AVAILABLE_IMAGES_CACHE.containsKey(imageName)) {
                     logger.trace("{} is already in image name cache", imageName);
-                    break;
                 }
 
-                // Update the cache
-                ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
-
-                if (Boolean.parseBoolean(System.getProperty("useFilter"))) {
-                    listImagesCmd = listImagesCmd.withImageNameFilter(imageName.toString());
-                }
-
-                List<Image> updatedImages = listImagesCmd.exec();
-
-
-                // Populate images cache
-                updatedImages.stream()
-                    .filter(image -> image.getRepoTags() != null)
-                    .flatMap(image -> Arrays.stream(image.getRepoTags())
-                        .map(tag -> new SimpleEntry<>(tag, ImageData.from(image))))
-                    .collect(Collectors.toMap(entry -> new DockerImageName(entry.getKey()), Entry::getValue, (oldValue, newValue) -> oldValue, () -> AVAILABLE_IMAGES_CACHE));
-
-                // And now?
-                if (AVAILABLE_IMAGES_CACHE.containsKey(imageName) && !imagePullPolicy.shouldPull(AVAILABLE_IMAGES_CACHE.get(imageName))) {
-                    logger.trace("{} is in image name cache following listing of images", imageName);
-                    break;
+                else {
+                    // Does the image exist in the local Docker cache?
+                    try {
+                        ImageData imageData = new DockerJavaImageData(dockerClient.inspectImageCmd(imageName.toString()).exec());
+                        AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
+                        if (!imagePullPolicy.shouldPull(imageData)) {
+                            break;
+                        }
+                    }
+                    catch (NotFoundException ex) {
+                        logger.trace("Docker image {} not found locally", imageName);
+                    }
                 }
 
                 // Log only on first attempt
@@ -107,7 +92,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         .withTag(imageName.getVersionPart())
                         .exec(callback);
                     callback.awaitCompletion();
-                    ImageData imageData = ImageData.from(dockerClient.inspectImageCmd(imageName.toString()).exec());
+                    ImageData imageData = new DockerJavaImageData(dockerClient.inspectImageCmd(imageName.toString()).exec());
                     AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
                     break;
                 } catch (Exception e) {

@@ -4,25 +4,24 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import com.github.dockerjava.api.model.Image;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testcontainers.containers.image.ImageData;
 
 public class AgeBasedPullPolicyTest {
 
+    @Mock
     private ImageData dockerImageData;
 
     @Before
     public void init() {
-        Image dockerImage = Mockito.mock(Image.class);
-        when(dockerImage.getCreated()).thenReturn(Instant.now().minus(2, ChronoUnit.HOURS).getEpochSecond());
-        when(dockerImage.getRepoTags()).thenReturn(new String[]{});
-        this.dockerImageData = ImageData.from(dockerImage);
+        MockitoAnnotations.initMocks(this);
+        when(dockerImageData.getCreated()).thenReturn(Instant.now().minus(2, ChronoUnit.HOURS).getEpochSecond());
     }
 
     @Test

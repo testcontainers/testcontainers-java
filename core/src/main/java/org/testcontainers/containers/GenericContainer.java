@@ -1,47 +1,10 @@
 package org.testcontainers.containers;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.utility.CommandLine.runShellCommand;
-
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ContainerNetwork;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Info;
-import com.github.dockerjava.api.model.Link;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.api.model.VolumesFrom;
+import com.github.dockerjava.api.model.*;
 import com.google.common.base.Strings;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import lombok.AccessLevel;
 import lombok.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -71,14 +34,22 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.DockerLoggerFactory;
-import org.testcontainers.utility.DockerMachineClient;
-import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.PathUtils;
-import org.testcontainers.utility.ResourceReaper;
-import org.testcontainers.utility.TestcontainersConfiguration;
-import org.testcontainers.utility.ThrowingFunction;
+import org.testcontainers.utility.*;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -210,16 +181,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
-    public GenericContainer(@NonNull  ImageNameResolverProvider nameResolverProvider) {
+    public GenericContainer(@NonNull ImageNameResolverProvider nameResolverProvider) {
         this.nameResolverProvider = nameResolverProvider;
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {
-        this.nameResolverProvider = new ImageNameResolverProvider(dockerImageName);
+        this(new ImageNameResolverProvider(dockerImageName));
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        this.nameResolverProvider = new ImageNameResolverProvider(image);
+        this(new ImageNameResolverProvider(image));
     }
 
     /**
