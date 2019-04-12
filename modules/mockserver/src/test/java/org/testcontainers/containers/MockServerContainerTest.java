@@ -46,7 +46,7 @@ public class MockServerContainerTest {
     }
 
     private static String responseFromMockserver(MockServerContainer mockServer, String expectedBody, String path) throws IOException {
-        new MockServerClient(mockServer.getContainerIpAddress(), mockServer.getServerPort())
+        mockServer.getClient()
             .when(request(path))
             .respond(response(expectedBody));
 
