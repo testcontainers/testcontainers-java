@@ -3,16 +3,27 @@ package org.testcontainers.lifecycle;
 import lombok.experimental.UtilityClass;
 
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 @UtilityClass
 public class Startables {
 
+    private static final Executor EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+
+        private final AtomicLong COUNTER = new AtomicLong(0);
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r, "testcontainers-lifecycle-" + COUNTER.getAndIncrement());
+            thread.setDaemon(true);
+            return thread;
+        }
+    });
+
     public CompletableFuture<Void> deepStart(Collection<Startable> startables) {
-        return deepStart(new ConcurrentHashMap<>(), startables.stream());
+        return deepStart(startables.stream());
     }
 
     public CompletableFuture<Void> deepStart(Stream<Startable> startables) {
@@ -22,7 +33,9 @@ public class Startables {
     private CompletableFuture<Void> deepStart(ConcurrentMap<Startable, CompletableFuture<Void>> startProcess, Stream<Startable> startables) {
         return CompletableFuture.allOf(
             startables
-                .map(it -> startProcess.computeIfAbsent(it, __ -> deepStart(startProcess, it.getDependencies().stream()).thenRunAsync(it::start)))
+                .map(it -> startProcess.computeIfAbsent(it, startable -> {
+                    return deepStart(startProcess, startable.getDependencies().stream()).thenRunAsync(startable::start, EXECUTOR);
+                }))
                 .toArray(CompletableFuture[]::new)
         );
     }
