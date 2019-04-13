@@ -48,6 +48,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
 
+    private static final String NO_PROXY_KEY = "no_proxy";
+
     @Nullable
     private Capabilities capabilities;
     private boolean customImageNameIsSet = false;
@@ -156,7 +158,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         addExposedPorts(SELENIUM_PORT, VNC_PORT);
         addEnv("TZ", timeZone);
-        addEnv("no_proxy", "localhost");
+
+        if (!getEnvMap().containsKey(NO_PROXY_KEY)) {
+            addEnv(NO_PROXY_KEY, "localhost");
+        }
+
         setCommand("/opt/bin/entry_point.sh");
 
         /*
