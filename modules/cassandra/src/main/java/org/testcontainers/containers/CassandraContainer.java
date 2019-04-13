@@ -32,6 +32,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     private String configLocation;
     private String initScriptPath;
+    private boolean enableJmxReporting;
 
     public CassandraContainer() {
         this(IMAGE + ":3.11.2");
@@ -41,6 +42,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         super(dockerImageName);
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
+        this.enableJmxReporting = false;
     }
 
     @Override
@@ -117,6 +119,14 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
+     * Initialize Cassandra client with JMX reporting enabled or disabled
+     */
+    public SELF withJmxReporting(boolean enableJmxReporting) {
+        this.enableJmxReporting = enableJmxReporting;
+        return self();
+    }
+
+    /**
      * Get username
      *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
@@ -146,14 +156,21 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * Can be used to obtain connections to Cassandra in the container
      */
     public Cluster getCluster() {
-        return getCluster(this);
+        return getCluster(this, enableJmxReporting);
+    }
+
+    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
+        final Cluster.Builder builder = Cluster.builder()
+            .addContactPoint(containerState.getContainerIpAddress())
+            .withPort(containerState.getMappedPort(CQL_PORT));
+        if (!enableJmxReporting) {
+            builder.withoutJMXReporting();
+        }
+        return builder.build();
     }
 
     public static Cluster getCluster(ContainerState containerState) {
-        return Cluster.builder()
-            .addContactPoint(containerState.getContainerIpAddress())
-            .withPort(containerState.getMappedPort(CQL_PORT))
-            .build();
+        return getCluster(containerState, false);
     }
 
     private DatabaseDelegate getDatabaseDelegate() {
