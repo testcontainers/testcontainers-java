@@ -1,14 +1,5 @@
 package org.testcontainers.containers.wait.strategy;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
-
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -17,7 +8,12 @@ import org.mockito.MockitoAnnotations;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.GenericContainer;
 
-import com.google.common.util.concurrent.Uninterruptibles;
+import java.time.Duration;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class WaitAllStrategyTest {
 
@@ -35,12 +31,69 @@ public class WaitAllStrategyTest {
         MockitoAnnotations.initMocks(this);
     }
 
+    /*
+     * Dummy-based tests, to check that timeout values are propagated correctly, without involving actual timing-sensitive code
+     */
     @Test
-    public void simpleTest() {
+    public void parentTimeoutApplies() {
+
+        DummyStrategy child1 = new DummyStrategy(Duration.ofMillis(10));
+        child1.withStartupTimeout(Duration.ofMillis(20));
+
+        assertEquals("withStartupTimeout directly sets the timeout", 20L, child1.startupTimeout.toMillis());
+
+        new WaitAllStrategy()
+            .withStrategy(child1)
+            .withStartupTimeout(Duration.ofMillis(30));
+
+        assertEquals("WaitAllStrategy overrides a child's timeout", 30L, child1.startupTimeout.toMillis());
+    }
+
+    @Test
+    public void parentTimeoutAppliesToMultipleChildren() {
+
+        Duration defaultInnerWait = Duration.ofMillis(2);
+        Duration outerWait = Duration.ofMillis(6);
+
+        DummyStrategy child1 = new DummyStrategy(defaultInnerWait);
+        DummyStrategy child2 = new DummyStrategy(defaultInnerWait);
+
+        new WaitAllStrategy()
+            .withStrategy(child1)
+            .withStrategy(child2)
+            .withStartupTimeout(outerWait);
+
+        assertEquals("WaitAllStrategy overrides a child's timeout (1st)", 6L, child1.startupTimeout.toMillis());
+        assertEquals("WaitAllStrategy overrides a child's timeout (2nd)", 6L, child2.startupTimeout.toMillis());
+    }
+
+    @Test
+    public void parentTimeoutAppliesToAdditionalChildren() {
+
+        Duration defaultInnerWait = Duration.ofMillis(2);
+        Duration outerWait = Duration.ofMillis(20);
+
+        DummyStrategy child1 = new DummyStrategy(defaultInnerWait);
+        DummyStrategy child2 = new DummyStrategy(defaultInnerWait);
+
+        new WaitAllStrategy()
+            .withStrategy(child1)
+            .withStartupTimeout(outerWait)
+            .withStrategy(child2);
+
+        assertEquals("WaitAllStrategy overrides a child's timeout (1st)", 20L, child1.startupTimeout.toMillis());
+        assertEquals("WaitAllStrategy overrides a child's timeout (2nd, additional)", 20L, child2.startupTimeout.toMillis());
+    }
+
+    /*
+     * Mock-based tests to check overall behaviour, without involving timing-sensitive code
+     */
+    @Test
+    public void childExecutionTest() {
 
         final WaitStrategy underTest = new WaitAllStrategy()
-                .withStrategy(strategy1)
-                .withStrategy(strategy2);
+            .withStrategy(strategy1)
+            .withStrategy(strategy2);
 
         doNothing().when(strategy1).waitUntilReady(eq(container));
         doNothing().when(strategy2).waitUntilReady(eq(container));
@@ -50,65 +103,6 @@ public class WaitAllStrategyTest {
         InOrder inOrder = inOrder(strategy1, strategy2);
         inOrder.verify(strategy1).waitUntilReady(any());
         inOrder.verify(strategy2).waitUntilReady(any());
-    }
-
-    @Test
-    public void maxTimeOutApplies() {
-
-        WaitStrategy child1 = new SleepingStrategy(Duration.ofMinutes(30))
-            .withStartupTimeout(Duration.ofHours(1));
-
-        final WaitStrategy underTest = new WaitAllStrategy()
-            .withStrategy(child1)
-            .withStartupTimeout(Duration.ofMillis(10));
-
-        assertThrows("The outer strategy timeout applies", TimeoutException.class, () -> {
-            underTest.waitUntilReady(container);
-        });
-    }
-
-    @Test
-    public void appliesOuterTimeoutTooLittleTime() {
-
-        Duration defaultInnerWait = Duration.ofMillis(2);
-        Duration outerWait = Duration.ofMillis(6);
-
-        WaitStrategy child1 = new SleepingStrategy(defaultInnerWait);
-        WaitStrategy child2 = new SleepingStrategy(defaultInnerWait);
-
-        final WaitStrategy underTest = new WaitAllStrategy()
-            .withStrategy(child1)
-            .withStrategy(child2)
-            .withStartupTimeout(outerWait);
-
-        assertThrows("The outer strategy timeout applies", TimeoutException.class, () -> {
-            underTest.waitUntilReady(container);
-        });
-    }
-
-    @Test
-    public void appliesOuterTimeoutEnoughTime() {
-
-        Duration defaultInnerWait = Duration.ofMillis(2);
-        Duration outerWait = Duration.ofMillis(20);
-
-        WaitStrategy child1 = new SleepingStrategy(defaultInnerWait);
-        WaitStrategy child2 = new SleepingStrategy(defaultInnerWait);
-
-        final WaitStrategy underTest = new WaitAllStrategy()
-            .withStrategy(child1)
-            .withStrategy(child2)
-            .withStartupTimeout(outerWait);
-
-        try {
-            underTest.waitUntilReady(container);
-        } catch (Exception e) {
-            if (e.getCause() instanceof CaughtTimeoutException)
-                fail("The timeout wasn't applied to inner strategies.");
-            else {
-                fail(e.getMessage());
-            }
-        }
     }
 
     @Test
@@ -145,7 +139,7 @@ public class WaitAllStrategyTest {
     @Test
     public void shouldNotMessWithIndividualTimeouts() {
 
-        final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
+        new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
             .withStrategy(strategy1)
             .withStrategy(strategy2);
 
@@ -157,7 +151,7 @@ public class WaitAllStrategyTest {
     public void shouldOverwriteIndividualTimeouts() {
 
         Duration someSeconds = Duration.ofSeconds(23);
-        final WaitStrategy underTest = new WaitAllStrategy()
+        new WaitAllStrategy()
             .withStartupTimeout(someSeconds)
             .withStrategy(strategy1)
             .withStrategy(strategy2);
@@ -166,59 +160,14 @@ public class WaitAllStrategyTest {
         verify(strategy1).withStartupTimeout(someSeconds);
     }
 
-    @Test
-    public void appliesOuterTimeoutOnAdditionalChildren() {
-
-        Duration defaultInnerWait = Duration.ofMillis(2);
-        Duration outerWait = Duration.ofMillis(20);
-
-        WaitStrategy child1 = new SleepingStrategy(defaultInnerWait);
-        WaitStrategy child2 = new SleepingStrategy(defaultInnerWait);
-
-        final WaitStrategy underTest = new WaitAllStrategy()
-            .withStrategy(child1)
-            .withStartupTimeout(outerWait)
-            .withStrategy(child2);
-
-        try {
-            underTest.waitUntilReady(container);
-        } catch (Exception e) {
-            if (e.getCause() instanceof CaughtTimeoutException)
-                fail("The timeout wasn't applied to inner strategies.");
-            else {
-                fail(e.getMessage());
-            }
-        }
-    }
-
-    static class CaughtTimeoutException extends RuntimeException {
-
-        CaughtTimeoutException(String message) {
-            super(message);
-        }
-    }
-
-    static class SleepingStrategy extends AbstractWaitStrategy {
-
-        private final long sleepingDuration;
-
-        SleepingStrategy(Duration defaultInnerWait) {
+    static class DummyStrategy extends AbstractWaitStrategy {
+        DummyStrategy(Duration defaultInnerWait) {
             super.startupTimeout = defaultInnerWait;
-            // Always oversleep by default
-            this.sleepingDuration = defaultInnerWait.multipliedBy(2).toMillis();
         }
 
         @Override
         protected void waitUntilReady() {
-            try {
-                // Don't use ducttape, make sure we don't catch the wrong TimeoutException later on.
-                CompletableFuture.runAsync(
-                    () -> Uninterruptibles.sleepUninterruptibly(this.sleepingDuration, TimeUnit.MILLISECONDS)
-                ).get((int) startupTimeout.toMillis(), TimeUnit.MILLISECONDS);
-            } catch (InterruptedException | ExecutionException e) {
-            } catch (java.util.concurrent.TimeoutException e) {
-                throw new CaughtTimeoutException("Inner wait timed out, outer strategy didn't apply.");
-            }
+            // no-op
         }
     }
 }

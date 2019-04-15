@@ -28,6 +28,9 @@ public interface Network extends AutoCloseable, TestRule {
 
     String getId();
 
+    @Override
+    void close();
+
     static Network newNetwork() {
         return builder().build();
     }
