@@ -31,6 +31,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.*;
@@ -40,6 +41,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,7 +56,6 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  * Base class for that allows a container to be launched and controlled.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
@@ -131,6 +132,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
 
+    protected final Set<Startable> dependencies = new HashSet<>();
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -188,14 +191,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = image;
     }
 
+    public SELF dependsOn(Startable... startables) {
+        Collections.addAll(dependencies, startables);
+        return self();
+    }
+
+    public SELF dependsOn(List<Startable> startables) {
+        dependencies.addAll(startables);
+        return self();
+    }
+
     /**
      * Starts the container using docker, pulling an image if necessary.
      */
     @Override
+    @SneakyThrows({InterruptedException.class, ExecutionException.class})
     public void start() {
         if (containerId != null) {
             return;
         }
+        Startables.deepStart(dependencies).get();
         doStart();
     }
 
@@ -1151,6 +1166,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withTmpFs(Map<String, String> mapping) {
         this.tmpFsMapping = mapping;
         return self();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
     }
 
     /**
