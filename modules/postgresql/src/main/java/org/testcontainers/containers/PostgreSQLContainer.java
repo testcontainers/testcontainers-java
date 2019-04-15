@@ -3,8 +3,15 @@ package org.testcontainers.containers;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 
+import lombok.NonNull;
+
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -21,6 +28,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
+    private final Map<String, String> options = new HashMap<>();
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
 
@@ -49,7 +57,32 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
-        setCommand("postgres", "-c", FSYNC_OFF_OPTION);
+        List<String> command = new ArrayList<>();
+        command.add("postgres");
+        command.add("-c");
+        command.add(FSYNC_OFF_OPTION);
+        for(Entry<String,String> e : options.entrySet()) {
+            command.add("-c");
+            command.add(e.getKey() + '=' + e.getValue());
+        }
+        setCommand(command.toArray(new String[command.size()]));
+    }
+
+    /**
+     * Add additional configuration options that should be used for this container.
+     * @param key The PostgreSQL configuration option key. For example: "max_connections"
+     * @param value The PostgreSQL configuration option value. For example: "200"
+     * @return this
+     */
+    public SELF withConfigOption(@NonNull String key, @NonNull String value) {
+        if (key == null) {
+            throw new java.lang.NullPointerException("key marked @NonNull but is null");
+        }
+        if (value == null) {
+            throw new java.lang.NullPointerException("value marked @NonNull but is null");
+        }
+        options.put(key, value);
+        return self();
     }
 
     @Override
