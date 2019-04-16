@@ -66,7 +66,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     private String[] buildExecCommand(Map<String, List<String>> map) {
         StringBuilder stringBuilder = new StringBuilder();
         map.forEach((path, secrets) -> {
-            stringBuilder.append(" && vault write " + path);
+            stringBuilder.append(" && vault kv put " + path);
             secrets.forEach(item -> stringBuilder.append(" " + item));
         });
         return new String[] { "/bin/sh", "-c", stringBuilder.toString().substring(4)};
