@@ -22,7 +22,7 @@ public class VaultContainerTest {
     private static final String VAULT_TOKEN = "my-root-token";
 
     @ClassRule
-    public static VaultContainer vaultContainer = new VaultContainer<>("vault:1.1.1")
+    public static VaultContainer vaultContainer = new VaultContainer<>()
         .withVaultToken(VAULT_TOKEN)
         .withVaultPort(VAULT_PORT)
         .withSecretInVault("secret/testing1", "top_secret=password123")
@@ -77,4 +77,6 @@ public class VaultContainerTest {
     private String getHostAndPort() {
         return vaultContainer.getContainerIpAddress() + ":" + vaultContainer.getMappedPort(8200);
     }
+
+
 }
