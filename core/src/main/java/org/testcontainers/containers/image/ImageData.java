@@ -1,10 +1,11 @@
 package org.testcontainers.containers.image;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface ImageData {
 
-    Long getCreated();
+    Instant getCreated();
 
     String getId();
 

@@ -23,7 +23,7 @@ public class AgeBasedPullPolicy implements ImagePullPolicy {
 
     @Override
     public boolean shouldPull(ImageData image) {
-        Duration imageAge = Duration.between(Instant.ofEpochSecond(image.getCreated()), Instant.now());
+        Duration imageAge = Duration.between(image.getCreated(), Instant.now());
         boolean result = imageAge.compareTo(maxAge) > 0;
         if (result) {
             log.trace("Should pull image with tags: {}", Arrays.asList(image.getRepoTags()));

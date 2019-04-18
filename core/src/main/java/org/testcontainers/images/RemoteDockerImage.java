@@ -7,6 +7,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
@@ -26,6 +27,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     private DockerImageName imageName;
 
+    @Setter
     private ImagePullPolicy imagePullPolicy;
 
     public RemoteDockerImage(@NonNull String dockerImageName, ImagePullPolicy pullPolicy) {

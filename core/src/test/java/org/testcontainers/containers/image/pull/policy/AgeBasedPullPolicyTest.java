@@ -21,7 +21,7 @@ public class AgeBasedPullPolicyTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        when(dockerImageData.getCreated()).thenReturn(Instant.now().minus(2, ChronoUnit.HOURS).getEpochSecond());
+        when(dockerImageData.getCreated()).thenReturn(Instant.now().minus(2, ChronoUnit.HOURS));
     }
 
     @Test

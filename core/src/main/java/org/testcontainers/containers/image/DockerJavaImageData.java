@@ -1,24 +1,19 @@
 package org.testcontainers.containers.image;
 
 import com.github.dockerjava.api.command.InspectImageResponse;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
-import lombok.Data;
 import lombok.Value;
 
-@Data
 @Value
 public class DockerJavaImageData implements ImageData {
 
-    private InspectImageResponse inspectImageResponse;
-
-    public DockerJavaImageData(InspectImageResponse inspectImageData) {
-        this.inspectImageResponse = inspectImageData;
-    }
+    InspectImageResponse inspectImageResponse;
 
     @Override
-    public Long getCreated() {
-        return OffsetDateTime.parse(inspectImageResponse.getCreated()).toEpochSecond();
+    public Instant getCreated() {
+        return OffsetDateTime.parse(inspectImageResponse.getCreated()).toInstant();
     }
 
     @Override
