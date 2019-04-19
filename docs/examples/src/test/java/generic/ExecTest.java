@@ -24,7 +24,9 @@ public class ExecTest {
         // execReadingStdout {
         Container.ExecResult lsResult = container.execInContainer("ls", "-al", "/");
         String stdout = lsResult.getStdout();
+        int exitCode = lsResult.getExitCode();
         assertTrue(stdout.contains("somefile.txt"));
+        assertTrue(exitCode == 0);
         // }
     }
 }
