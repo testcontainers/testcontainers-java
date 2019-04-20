@@ -1,0 +1,12 @@
+description = "Examples for docs"
+
+dependencies {
+    compile "io.lettuce:lettuce-core:5.1.1.RELEASE"
+
+    def junitJupiterVersion = '5.4.2'
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+    testCompile project(":testcontainers")
+    testCompile project(":junit-jupiter")
+}
