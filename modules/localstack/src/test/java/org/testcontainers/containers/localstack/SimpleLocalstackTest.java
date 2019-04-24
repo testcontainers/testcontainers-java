@@ -6,6 +6,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.sqs.model.CreateQueueResult;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,14 +17,20 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
-public class SimpleLocalstackS3Test {
+public class SimpleLocalstackTest {
+
+    private static final String TEST_HOSTNAME = "foobar";
 
     @Rule
     public LocalStackContainer localstack = new LocalStackContainer()
-            .withServices(S3);
+            .withHostnameExternal(TEST_HOSTNAME)
+            .withServices(S3, SQS);
 
     @Test
     public void s3Test() throws IOException {
@@ -47,6 +56,17 @@ public class SimpleLocalstackS3Test {
         final S3Object object = s3.getObject("foo", "bar");
         final String content = IOUtils.toString(object.getObjectContent(), Charset.forName("UTF-8"));
         assertEquals("The object can be retrieved", "baz", content);
+    }
 
+    @Test
+    public void hostnameSqsTest() {
+        AmazonSQS sqs = AmazonSQSClientBuilder.standard()
+            .withEndpointConfiguration(localstack.getEndpointConfiguration(SQS))
+            .withCredentials(localstack.getDefaultCredentialsProvider())
+            .build();
+
+        CreateQueueResult queueResult = sqs.createQueue("baz");
+        String fooQueueUrl = queueResult.getQueueUrl();
+        assertThat("Created queue has external hostname URL", fooQueueUrl, containsString(TEST_HOSTNAME));
     }
 }

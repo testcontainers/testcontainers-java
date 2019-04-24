@@ -31,6 +31,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     public static final String VERSION = "0.8.6";
 
     private final List<Service> services = new ArrayList<>();
+    private String hostnameExternal = null;
 
     public LocalStackContainer() {
         this(VERSION);
@@ -51,6 +52,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         withEnv("SERVICES", services.stream().map(Service::getLocalStackName).collect(Collectors.joining(",")));
 
+        if (hostnameExternal != null) {
+            withEnv("HOSTNAME_EXTERNAL", hostnameExternal);
+        }
+
         for (Service service : services) {
             addExposedPort(service.getPort());
         }
@@ -63,6 +68,17 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     public LocalStackContainer withServices(Service... services) {
         this.services.addAll(Arrays.asList(services));
+        return self();
+    }
+
+    /**
+     * Name of the host to expose the services externally (defaults to localhost).
+     * This host is used, e.g., when returning queue URLs from the SQS service to the client.
+     * @param hostname name of the host, matching your container alias
+     * @return this container object
+     */
+    public LocalStackContainer withHostnameExternal(String hostname) {
+        this.hostnameExternal = hostname;
         return self();
     }
 
