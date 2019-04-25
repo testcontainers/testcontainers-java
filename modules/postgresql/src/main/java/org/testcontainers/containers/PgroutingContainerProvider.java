@@ -10,8 +10,8 @@ public class PgroutingContainerProvider extends JdbcDatabaseContainerProvider {
     private static final String NAME = "pgrouting";
     private static final String DEFAULT_TAG = "11-2.5-2.6";
     private static final String DEFAULT_IMAGE = "konturio/pgrouting";
-    public static final String USER_PARAM = "test";
-    public static final String PASSWORD_PARAM = "test";
+    public static final String USER_PARAM = "user";
+    public static final String PASSWORD_PARAM = "password";
 
 
     @Override

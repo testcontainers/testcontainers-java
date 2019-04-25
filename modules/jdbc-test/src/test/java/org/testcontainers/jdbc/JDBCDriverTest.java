@@ -54,6 +54,7 @@ public class JDBCDriverTest {
                 {"jdbc:tc:postgresql:9.6.8://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
                 {"jdbc:tc:postgis://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
                 {"jdbc:tc:postgis:9.6://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
+                {"jdbc:tc:pgrouting://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:mariadb://hostname/databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:mariadb://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
@@ -152,7 +153,9 @@ public class JDBCDriverTest {
             String databaseQuery = "SELECT DATABASE()";
             // Postgres does not have Database() as a function
             String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
-            if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
+            if (databaseType.equalsIgnoreCase("postgresql")
+                || databaseType.equalsIgnoreCase("postgis")
+                || databaseType.equalsIgnoreCase("pgrouting")) {
                 databaseQuery = "SELECT CURRENT_DATABASE()";
             }
 
