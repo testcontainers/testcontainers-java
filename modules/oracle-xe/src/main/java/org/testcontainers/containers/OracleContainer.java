@@ -7,7 +7,7 @@ import java.util.concurrent.Future;
 /**
  * @author gusohal
  */
-public class OracleContainer extends JdbcDatabaseContainer {
+public class OracleContainer<SELF extends OracleContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "oracle";
 
@@ -79,15 +79,15 @@ public class OracleContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    public OracleContainer withUsername(String username) {
+    public SELF withUsername(String username) {
         this.username = username;
-        return this;
+        return self();
     }
 
     @Override
-    public OracleContainer withPassword(String password) {
+    public SELF withPassword(String password) {
         this.password = password;
-        return this;
+        return self();
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -107,5 +107,10 @@ public class OracleContainer extends JdbcDatabaseContainer {
     @Override
     public String getTestQueryString() {
         return "SELECT 1 FROM DUAL";
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
     }
 }
