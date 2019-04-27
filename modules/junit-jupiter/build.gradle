@@ -2,7 +2,7 @@ description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
     compile project(':testcontainers')
-    compile 'org.junit.jupiter:junit-jupiter-api:5.4.1'
+    compile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
 
     testCompile project(':mysql')
     testCompile project(':postgresql')
