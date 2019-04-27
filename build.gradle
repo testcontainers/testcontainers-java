@@ -56,30 +56,33 @@ subprojects {
         configurations = []
         classifier = null
 
-        relocate('META-INF/native/libnetty', 'META-INF/native/liborg-testcontainers-shaded-netty')
+        doFirst {
+            // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
+            Set<String> packages = []
+            // Always read from core's configurations
+            for (configuration in tasks.getByPath(":testcontainers:shadowJar").configurations) {
+                for (jar in configuration.files) {
+                    def jf = new java.util.jar.JarFile(jar)
+                    for (entry in jf.entries()) {
+                        def name = entry.name
+                        if (name.endsWith(".class")) {
+                            packages.add(name.substring(0, name.lastIndexOf('/')))
+                        }
+                    }
+                    jf.close()
+                }
+            }
+            for (pkg in packages) {
+                pkg = pkg.replaceAll('/', '.')
 
-        [
-            "org.apache.http",
-            "org.apache.commons.lang",
-            "org.apache.commons.io",
-            "org.apache.commons.codec",
-            "org.glassfish",
-            "org.aopalliance",
-            "org.jvnet",
-            "javax.annotation",
-            "javax.inject",
-            "javax.ws.rs",
-            "com.fasterxml.jackson",
-            "jersey.repackaged",
-            "com.google",
-            "io.netty",
-            "org.bouncycastle",
-            "org.zeroturnaround",
-            "okhttp3",
-            "okio",
-            "org.scalasbt.ipcsocket",
-            "com.trilead.ssh2",
-        ].each { relocate(it, "org.testcontainers.shaded.$it") }
+                if (pkg.startsWith("com.github.dockerjava.")) {
+                    // Keep docker-java's package inside the final jar
+                    continue;
+                }
+
+                tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
+            }
+        }
     }
 
     publishing {

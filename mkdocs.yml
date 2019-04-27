@@ -56,6 +56,7 @@ nav:
           - modules/pulsar.md
           - modules/localstack.md
           - modules/mockserver.md
+          - modules/toxiproxy.md
           - modules/nginx.md
           - modules/vault.md
     - Test framework integration:
@@ -76,4 +77,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.10.6
+    latest_version: 1.11.2
