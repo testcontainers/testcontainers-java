@@ -1,0 +1,5 @@
+version: '2'
+services:
+  whoami:
+    image: emilevauge/whoami
+    container_name: my_container

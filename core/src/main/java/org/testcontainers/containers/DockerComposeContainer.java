@@ -468,6 +468,7 @@ interface DockerCompose {
     default void validateFileList(List<File> composeFiles) {
         checkNotNull(composeFiles);
         checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
+        PreconditionUtils.checkNotContainUnsupportedComposeOptions(composeFiles);
     }
 }
 
