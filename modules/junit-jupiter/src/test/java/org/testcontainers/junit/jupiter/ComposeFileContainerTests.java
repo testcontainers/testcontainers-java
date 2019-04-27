@@ -20,8 +20,8 @@ public class ComposeFileContainerTests {
         ) {
             composeContainer.start();
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().equals("Compose file docker-compose-with-container-name-option.yml contains "
-                + "container_name option which is not supported by container."));
+            assertTrue(e.getMessage().equals("Compose file src/test/resources/docker-compose-with-container-name-option.yml "
+                + "contains 'container_name' option which is not supported by container."));
         }
     }
 
