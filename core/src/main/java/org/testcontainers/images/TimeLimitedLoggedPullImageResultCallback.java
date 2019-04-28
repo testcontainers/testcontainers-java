@@ -21,7 +21,7 @@ import static org.testcontainers.DockerClientFactory.TESTCONTAINERS_THREAD_GROUP
  * {@link PullImageResultCallback} with improved logging of pull progress and a 'watchdog' which will abort the pull
  * if progress is not being made, to prevent a hanging test
  */
-class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageResultCallback {
+public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageResultCallback {
 
     private static final AtomicInteger THREAD_ID = new AtomicInteger(0);
     private static final ScheduledExecutorService PROGRESS_WATCHDOG_EXECUTOR =
@@ -40,7 +40,7 @@ class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageResultCall
     // All threads that are 'awaiting' this pull
     private Set<Thread> waitingThreads = new HashSet<>();
 
-    TimeLimitedLoggedPullImageResultCallback(Logger logger) {
+    public TimeLimitedLoggedPullImageResultCallback(Logger logger) {
         super(logger);
         this.logger = logger;
     }

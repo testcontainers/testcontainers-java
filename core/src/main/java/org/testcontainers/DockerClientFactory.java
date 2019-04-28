@@ -6,7 +6,6 @@ import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
@@ -18,7 +17,7 @@ import org.hamcrest.Description;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
-import org.testcontainers.images.LoggedTimeLimitedPullImageResultCallback;
+import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
@@ -26,12 +25,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -221,7 +215,7 @@ public class DockerClientFactory {
     public void checkAndPullImage(DockerClient client, String image) {
         List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
         if (images.isEmpty()) {
-            client.pullImageCmd(image).exec(new LoggedTimeLimitedPullImageResultCallback(log)).awaitCompletion();
+            client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
     }
 

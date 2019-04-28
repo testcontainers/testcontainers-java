@@ -23,7 +23,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
     private Map<String, Long> currentSizes = new HashMap<>();
     private boolean completed;
 
-    public LoggedPullImageResultCallback(final Logger logger) {
+    LoggedPullImageResultCallback(final Logger logger) {
         this.logger = logger;
     }
 
