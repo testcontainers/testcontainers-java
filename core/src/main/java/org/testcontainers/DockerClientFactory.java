@@ -10,6 +10,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.BaseMatcher;
@@ -17,6 +18,7 @@ import org.hamcrest.Description;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
+import org.testcontainers.images.LoggedTimeLimitedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
@@ -215,10 +217,11 @@ public class DockerClientFactory {
     /**
    * Check whether the image is available locally and pull it otherwise
    */
+    @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
         List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
         if (images.isEmpty()) {
-            client.pullImageCmd(image).exec(new PullImageResultCallback()).awaitSuccess();
+            client.pullImageCmd(image).exec(new LoggedTimeLimitedPullImageResultCallback(log)).awaitCompletion();
         }
     }
 
