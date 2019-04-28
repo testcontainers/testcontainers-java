@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
-import lombok.NonNull;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base class for containers that expose a JDBC connection
@@ -34,9 +35,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     protected Map<String, String> parameters = new HashMap<>();
 
     private static final RateLimiter DB_CONNECT_RATE_LIMIT = RateLimiterBuilder.newBuilder()
-        .withRate(10, TimeUnit.SECONDS)
-        .withConstantThroughput()
-        .build();
+            .withRate(10, TimeUnit.SECONDS)
+            .withConstantThroughput()
+            .build();
 
     private int startupTimeoutSeconds = 120;
     private int connectTimeoutSeconds = 120;
@@ -126,10 +127,15 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         // Repeatedly try and open a connection to the DB and execute a test query
 
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
-        Unreliables.retryUntilSuccess(getStartupTimeoutSeconds(), TimeUnit.SECONDS, () -> {
 
+        final AtomicBoolean retrying = new AtomicBoolean(true);
+        final long expiry = System.currentTimeMillis() + startupTimeoutSeconds * 1000;
+        Throwable failureReason = null;
+
+        while (retrying.get() && System.currentTimeMillis() < expiry) {
             if (!isRunning()) {
-                throw new ContainerLaunchException("Container failed to start");
+                failureReason = new ContainerLaunchException("Container failed to start", failureReason);
+                continue; // Don't attempt to connect
             }
 
             try (Connection connection = createConnection("")) {
@@ -137,12 +143,18 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
                 if (success) {
                     logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
-                    return null;
-                } else {
-                    throw new SQLException("Failed to execute test query");
+                    return;
                 }
+            } catch (SQLException e) {
+                failureReason = e;
+            } catch (NoDriverFoundException e) {
+                failureReason = e;
+                break; // Fail fast, as this is an unrecoverable condition
             }
-        });
+        }
+
+        // if we reached this point, then we have failed to connect and must throw
+        throw new ContainerLaunchException("Failed to execute test query via JDBC connection to container", failureReason);
     }
 
     @Override
@@ -155,14 +167,14 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      *
      * @return a JDBC Driver
      */
-    public Driver getJdbcDriverInstance() {
+    public Driver getJdbcDriverInstance() throws NoDriverFoundException {
 
         synchronized (DRIVER_LOAD_MUTEX) {
             if (driver == null) {
                 try {
                     driver = (Driver) Class.forName(this.getDriverClassName()).newInstance();
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                    throw new RuntimeException("Could not get Driver", e);
+                    throw new NoDriverFoundException("Could not get Driver", e);
                 }
             }
         }
@@ -178,7 +190,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return a Connection
      * @throws SQLException if there is a repeated failure to create the connection
      */
-    public Connection createConnection(String queryString) throws SQLException {
+    public Connection createConnection(String queryString) throws SQLException, NoDriverFoundException {
         final Properties info = new Properties();
         info.put("user", this.getUsername());
         info.put("password", this.getPassword());
@@ -255,5 +267,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     protected DatabaseDelegate getDatabaseDelegate() {
         return new JdbcDatabaseDelegate(this, "");
+    }
+
+    public static class NoDriverFoundException extends RuntimeException {
+        public NoDriverFoundException(String message, Throwable e) {
+            super(message, e);
+        }
     }
 }
