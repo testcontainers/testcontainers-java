@@ -3,9 +3,6 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
@@ -34,11 +31,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private Driver driver;
     private String initScriptPath;
     protected Map<String, String> parameters = new HashMap<>();
-
-    private static final RateLimiter DB_CONNECT_RATE_LIMIT = RateLimiterBuilder.newBuilder()
-            .withRate(10, SECONDS)
-            .withConstantThroughput()
-            .build();
 
     private int startupTimeoutSeconds = 120;
     private int connectTimeoutSeconds = 120;
@@ -191,9 +183,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
         try {
-            return Unreliables.retryUntilSuccess(getConnectTimeoutSeconds(), SECONDS, () ->
-                    DB_CONNECT_RATE_LIMIT.getWhenReady(() ->
-                            jdbcDriverInstance.connect(url, info)));
+            return await()
+                .ignoreExceptions()
+                .atMost(connectTimeoutSeconds, SECONDS)
+                .pollDelay(0, SECONDS)
+                .pollInterval(5, SECONDS)
+                .until(() -> jdbcDriverInstance.connect(url, info), __ -> true);
         } catch (Exception e) {
             throw new SQLException("Could not create new connection", e);
         }
