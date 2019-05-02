@@ -24,7 +24,6 @@ import static java.util.stream.Collectors.toSet;
 /**
  * Testcontainer for RabbitMQ.
  *
- * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
  * @author Martin Greber
  */
 public class RabbitMQContainer<S extends RabbitMQContainer<S>> extends GenericContainer<S> {
@@ -167,29 +166,58 @@ public class RabbitMQContainer<S extends RabbitMQContainer<S>> extends GenericCo
         return self();
     }
 
-    /**
-     * Adds plugins to the given directory to the container. If {@code plugins} denotes a directory, than all of that
-     * directory is mapped to RabbitMQ's plugins. Otherwise, single resources are copied over.
-     * <br>
-     * If you want to map your plugins into the container instead of copying them, please use {@code #withClasspathResourceMapping},
-     * but this will only work when your test does not run in a container itself.
-     *
-     * @param plugins
-     * @return This container.
-     */
-    public S withPluginsCopiedOver(MountableFile plugins) {
-        return withCopyFileToContainer(plugins, "/etc/rabbitmq/enabled_plugins/");
+    public enum SslVerification {
+        VERIFY_NONE("verify_none"), VERIFY_PEER("");
+
+        SslVerification(String value) {
+            this.value = value;
+        }
+
+        private final String value;
+    }
+
+    public S withSSL(
+            final MountableFile keyFile,
+            final MountableFile certFile,
+            final MountableFile caFile,
+            SslVerification verify,
+            boolean failIfNoCert,
+            int verificationDepth) {
+
+        return withSSL(keyFile, certFile, caFile, verify, failIfNoCert)
+                .withEnv("RABBITMQ_SSL_DEPTH", String.valueOf(verificationDepth));
+    }
+
+    public S withSSL(
+            final MountableFile keyFile,
+            final MountableFile certFile,
+            final MountableFile caFile,
+            SslVerification verify,
+            boolean failIfNoCert) {
+
+        return withSSL(keyFile, certFile, caFile, verify)
+                .withEnv("RABBITMQ_SSL_FAIL_IF_NO_PEER_CERT", String.valueOf(failIfNoCert));
+    }
+
+    public S withSSL(
+            final MountableFile keyFile,
+            final MountableFile certFile,
+            final MountableFile caFile,
+            SslVerification verify) {
+
+        return withEnv("RABBITMQ_SSL_CACERTFILE", "/etc/rabbitmq/ca_cert.pem")
+                .withEnv("RABBITMQ_SSL_CERTFILE", "/etc/rabbitmq/rabbitmq_cert.pem")
+                .withEnv("RABBITMQ_SSL_KEYFILE", "/etc/rabbitmq/rabbitmq_key.pem")
+                .withEnv("RABBITMQ_SSL_VERIFY", verify.value)
+                .withCopyFileToContainer(certFile, "/etc/rabbitmq/rabbitmq_cert.pem")
+                .withCopyFileToContainer(caFile, "/etc/rabbitmq/ca_cert.pem")
+                .withCopyFileToContainer(keyFile, "/etc/rabbitmq/rabbitmq_key.pem");
     }
 
     public S withPluginsEnabled(String... pluginNames) {
         List<String> command = new ArrayList<>(asList("rabbitmq-plugins", "enable"));
         command.addAll(asList(pluginNames));
         command.add("--offline");
-        return self();
-    }
-
-    public S withAllPluginsEnabled() {
-        values.add(asList("rabbitmq-plugins", "enable", "--all", "--offline"));
         return self();
     }
 

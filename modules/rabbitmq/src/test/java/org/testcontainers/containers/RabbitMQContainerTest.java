@@ -2,23 +2,31 @@ package org.testcontainers.containers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.junit.Test;
 import org.testcontainers.utility.MountableFile;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collections;
+import java.security.*;
+import java.security.cert.CertificateException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.testcontainers.containers.RabbitMQContainer.SslVerification.VERIFY_PEER;
+import static org.testcontainers.utility.MountableFile.forClasspathResource;
 
 /**
- * Tests of functionality special to the Neo4jContainer.
- *
- * @author Michael J. Simons
+ * @author Martin Greber
  */
 public class RabbitMQContainerTest {
 
-    // See org.testcontainers.utility.LicenseAcceptance#ACCEPTANCE_FILE_NAME
-    private static final String ACCEPTANCE_FILE_LOCATION = "/container-license-acceptance.txt";
     public static final String DEFAULT_TAG = "3.7-management-alpine";
     public static final int DEFAULT_AMQPS_PORT = 5671;
     public static final int DEFAULT_AMQP_PORT = 5672;
@@ -161,5 +169,55 @@ public class RabbitMQContainerTest {
                 .contains("rabbitmq_random_exchange is enabled");
 
         container.stop();
+    }
+
+    @Test
+    public void shouldWorkWithSSL() {
+        RabbitMQContainer rabbitMQContainer = new RabbitMQContainer()
+                .withSSL(
+                        forClasspathResource("/certs/server_key.pem", 0644),
+                        forClasspathResource("/certs/server_certificate.pem", 0644),
+                        forClasspathResource("/certs/ca_certificate.pem", 0644),
+                        VERIFY_PEER,
+                        true
+                );
+
+        rabbitMQContainer.start();
+        rabbitMQContainer.waitUntilContainerStarted();
+
+        assertThatCode(() -> {
+            ConnectionFactory connectionFactory = new ConnectionFactory();
+            connectionFactory.useSslProtocol(createSslContext(
+                    "certs/client_key.p12", "password",
+                    "certs/truststore.jks", "password"));
+            connectionFactory.enableHostnameVerification();
+            connectionFactory.setUri(rabbitMQContainer.getAmqpsUrl());
+            connectionFactory.setPassword(rabbitMQContainer.getAdminPassword());
+            Connection connection = connectionFactory.newConnection();
+            Channel channel = connection.openChannel().orElseThrow(() -> new RuntimeException("Failed to Open channel"));
+            channel.close();
+            connection.close();
+        }).doesNotThrowAnyException();
+
+        rabbitMQContainer.stop();
+    }
+
+    private SSLContext createSslContext(String keystoreFile, String keystorePassword, String truststoreFile, String truststorePassword)
+            throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(new FileInputStream(new File(classLoader.getResource(keystoreFile).getFile())), keystorePassword.toCharArray());
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, "password".toCharArray());
+
+        KeyStore trustStore = KeyStore.getInstance("PKCS12");
+        trustStore.load(new FileInputStream(new File(classLoader.getResource(truststoreFile).getFile())), truststorePassword.toCharArray());
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(trustStore);
+
+        SSLContext c = SSLContext.getInstance("TLSv1.2");
+        c.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        return c;
     }
 }
