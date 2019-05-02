@@ -54,6 +54,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         if (hostnameExternal != null) {
             withEnv("HOSTNAME_EXTERNAL", hostnameExternal);
+        } else {
+            withEnv("HOSTNAME_EXTERNAL", getContainerIpAddress());
         }
 
         for (Service service : services) {
@@ -72,9 +74,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     /**
-     * Name of the host to expose the services externally (defaults to localhost).
+     * Name of the host to expose the services externally (defaults to containerIpAddress).
      * This host is used, e.g., when returning queue URLs from the SQS service to the client.
-     * @param hostname name of the host, matching your container alias
+     * @param hostname matching your container alias or the containerIpAddress in case of a remote docker daemon
      * @return this container object
      */
     public LocalStackContainer withHostnameExternal(String hostname) {
