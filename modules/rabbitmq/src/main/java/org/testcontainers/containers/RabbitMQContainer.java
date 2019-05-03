@@ -26,7 +26,7 @@ import static java.util.stream.Collectors.toSet;
  *
  * @author Martin Greber
  */
-public class RabbitMQContainer<S extends RabbitMQContainer<S>> extends GenericContainer<S> {
+public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
      * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
