@@ -161,9 +161,9 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @param adminPassword The admin password.
      * @return This container.
      */
-    public S withAdminPassword(final String adminPassword) {
+    public RabbitMQContainer withAdminPassword(final String adminPassword) {
         this.adminPassword = adminPassword;
-        return self();
+        return this;
     }
 
     public enum SslVerification {
@@ -176,7 +176,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         private final String value;
     }
 
-    public S withSSL(
+    public RabbitMQContainer withSSL(
             final MountableFile keyFile,
             final MountableFile certFile,
             final MountableFile caFile,
@@ -188,7 +188,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
                 .withEnv("RABBITMQ_SSL_DEPTH", String.valueOf(verificationDepth));
     }
 
-    public S withSSL(
+    public RabbitMQContainer withSSL(
             final MountableFile keyFile,
             final MountableFile certFile,
             final MountableFile caFile,
@@ -199,7 +199,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
                 .withEnv("RABBITMQ_SSL_FAIL_IF_NO_PEER_CERT", String.valueOf(failIfNoCert));
     }
 
-    public S withSSL(
+    public RabbitMQContainer withSSL(
             final MountableFile keyFile,
             final MountableFile certFile,
             final MountableFile caFile,
@@ -214,99 +214,99 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
                 .withCopyFileToContainer(keyFile, "/etc/rabbitmq/rabbitmq_key.pem");
     }
 
-    public S withPluginsEnabled(String... pluginNames) {
+    public RabbitMQContainer withPluginsEnabled(String... pluginNames) {
         List<String> command = new ArrayList<>(asList("rabbitmq-plugins", "enable"));
         command.addAll(asList(pluginNames));
         values.add(command);
         return self();
     }
 
-    public S withPluginsDisabled(String... pluginNames) {
+    public RabbitMQContainer withPluginsDisabled(String... pluginNames) {
         List<String> command = new ArrayList<>(asList("rabbitmq-plugins", "disable"));
         command.addAll(asList(pluginNames));
         values.add(command);
         return self();
     }
 
-    public S withBinding(String source, String destination) {
+    public RabbitMQContainer withBinding(String source, String destination) {
         values.add(asList("rabbitmqadmin", "declare", "binding", "source=" + source, "destination=" + destination));
         return self();
     }
 
-    public S withBinding(String source, String destination, Map<String, Object> arguments, String routingKey, String destinationType) {
+    public RabbitMQContainer withBinding(String source, String destination, Map<String, Object> arguments, String routingKey, String destinationType) {
         values.add(asList("rabbitmqadmin", "declare", "binding", "source=" + source,
                 "destination=" + destination, "routing-key=" + routingKey, "destination-type=" + destinationType,
                 "arguments=" + toJson(arguments)));
         return self();
     }
 
-    public S withParameter(String component, String name, String value) {
+    public RabbitMQContainer withParameter(String component, String name, String value) {
         values.add(asList("rabbitmqadmin", "declare", "parameter", "component=" + component, "name=" + name, "value=" + value));
         return self();
     }
 
-    public S withPermission(String vhost, String user, String configure, String write, String read) {
+    public RabbitMQContainer withPermission(String vhost, String user, String configure, String write, String read) {
         values.add(asList("rabbitmqadmin", "declare", "permission", "vhost=" + vhost, "user=" + user,
                 "configure=" + configure, "write=" + write, "read=" + read));
         return self();
     }
 
-    public S withUser(String name, String password) {
+    public RabbitMQContainer withUser(String name, String password) {
         values.add(asList("rabbitmqadmin", "declare", "user", "name=" + name, "password=" + password, "tags="));
         return self();
     }
 
-    public S withUser(String name, String password, Set<String> tags) {
+    public RabbitMQContainer withUser(String name, String password, Set<String> tags) {
         values.add(asList("rabbitmqadmin", "declare", "user", "name=" + name, "password=" + password,
                 "tags=" + join(",", tags)));
         return self();
     }
 
-    public S withPolicy(String name, String pattern, Map<String, Object> definition) {
+    public RabbitMQContainer withPolicy(String name, String pattern, Map<String, Object> definition) {
         values.add(asList("rabbitmqadmin", "declare", "policy", "name=" + name, "pattern=" + pattern,
                 "definition=" + toJson(definition)));
         return self();
     }
 
-    public S withPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
+    public RabbitMQContainer withPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
         values.add(asList("rabbitmqadmin", "declare", "policy", "name=" + name,
                 "pattern=" + pattern, "priority=" + priority, "apply-to=" + applyTo, "definition=" + toJson(definition)));
         return self();
     }
 
-    public S withOperatorPolicy(String name, String pattern, Map<String, Object> definition) {
+    public RabbitMQContainer withOperatorPolicy(String name, String pattern, Map<String, Object> definition) {
         values.add(new ArrayList<>(asList("rabbitmqadmin", "declare", "operator_policy", "name=" + name,
                 "pattern=" + pattern, "definition=" + toJson(definition))));
         return self();
     }
 
-    public S withOperatorPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
+    public RabbitMQContainer withOperatorPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
         values.add(asList("rabbitmqadmin", "declare", "operator_policy", "name=" + name, "pattern=" + pattern,
                 "priority=" + priority, "apply-to=" + applyTo, "definition=" + toJson(definition)));
         return self();
     }
 
-    public S withVhost(String name) {
+    public RabbitMQContainer withVhost(String name) {
         values.add(asList("rabbitmqadmin", "declare", "vhost", "name=" + name));
         return self();
     }
 
-    public S withVhost(String name, boolean tracing) {
+    public RabbitMQContainer withVhost(String name, boolean tracing) {
         values.add(asList("rabbitmqadmin", "declare", "vhost", "name=" + name, "tracing=" + tracing));
         return self();
     }
 
-    public S withVhostLimit(String vhost, String name, int value) {
+    public RabbitMQContainer withVhostLimit(String vhost, String name, int value) {
         values.add(asList("rabbitmqadmin", "declare", "vhost_limit", "vhost=" + vhost, "name=" + name, "value=" + value));
         return self();
     }
 
-    public S withQueue(String name) {
+    public RabbitMQContainer withQueue(String name) {
         values.add(asList("rabbitmqadmin", "declare", "queue", "name=" + name));
         return self();
     }
 
-    public S withQueue(String name, boolean autoDelete, boolean durable, Map<String, Object> arguments) {
+    public RabbitMQContainer withQueue(String name, boolean autoDelete, boolean durable, Map<String, Object> arguments) {
         values.add(asList("rabbitmqadmin", "declare", "queue", "name=" + name,
                 "auto_delete=" + autoDelete, "durable=" + durable, "arguments=" + toJson(arguments)));
 
@@ -320,12 +320,12 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return jsonObject;
     }
 
-    public S withExchange(String name, String type) {
+    public RabbitMQContainer withExchange(String name, String type) {
         values.add(asList("rabbitmqadmin", "declare", "exchange", "name=" + name, "type=" + type));
         return self();
     }
 
-    public S withExchange(String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
+    public RabbitMQContainer withExchange(String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
         values.add(asList("rabbitmqadmin", "declare", "exchange", "name=" + name,
                 "type=" + type, "auto_delete=" + autoDelete, "internal=" + internal, "durable=" + durable,
                 "arguments=" + toJson(arguments)));
@@ -338,7 +338,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @param rabbitMQConf The rabbitmq.conf file to use
      * @return This container.
      */
-    public S withRabbitMQConfig(MountableFile rabbitMQConf) {
+    public RabbitMQContainer withRabbitMQConfig(MountableFile rabbitMQConf) {
         withEnv("RABBITMQ_CONFIG_FILE", "/etc/rabbitmq/rabbitmq-custom.conf");
         return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.conf");
     }
