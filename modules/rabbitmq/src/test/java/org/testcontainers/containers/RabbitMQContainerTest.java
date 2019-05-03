@@ -160,11 +160,11 @@ public class RabbitMQContainerTest {
                 .getStdout())
                 .contains("operator policy 1");
 
-        assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_shovel")
+        assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_shovel", "--quiet")
                 .getStdout())
                 .contains("rabbitmq_shovel is enabled");
 
-        assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_random_exchange")
+        assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_random_exchange", "--quiet")
                 .getStdout())
                 .contains("rabbitmq_random_exchange is enabled");
 
