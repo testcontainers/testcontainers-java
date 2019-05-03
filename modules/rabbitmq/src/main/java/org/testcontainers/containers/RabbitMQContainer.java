@@ -42,7 +42,7 @@ public class RabbitMQContainer<S extends RabbitMQContainer<S>> extends GenericCo
     private String adminPassword = "guest";
     private String adminUsername = "guest";
     private List<String> plugins = emptyList();
-    private List<List<String>> values = new ArrayList<>();
+    private final List<List<String>> values = new ArrayList<>();
 
     /**
      * Creates a Testcontainer using the official Neo4j docker image.
