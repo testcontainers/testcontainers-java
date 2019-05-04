@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -314,10 +316,11 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     }
 
     @NotNull
-    private JSONObject toJson(Map<String, Object> arguments) {
-        JSONObject jsonObject = new JSONObject();
-        arguments.forEach(jsonObject::put);
-        return jsonObject;
+    private String toJson(Map<String, Object> arguments) {
+        final ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonObject = mapper.createObjectNode();
+        arguments.forEach((s, o) -> jsonObject.set(s, mapper.convertValue(o, JsonNode.class)));
+        return jsonObject.toString();
     }
 
     public RabbitMQContainer withExchange(String name, String type) {
