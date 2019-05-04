@@ -223,13 +223,6 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
-    public RabbitMQContainer withPluginsDisabled(String... pluginNames) {
-        List<String> command = new ArrayList<>(asList("rabbitmq-plugins", "disable"));
-        command.addAll(asList(pluginNames));
-        values.add(command);
-        return self();
-    }
-
     public RabbitMQContainer withBinding(String source, String destination) {
         values.add(asList("rabbitmqadmin", "declare", "binding", "source=" + source, "destination=" + destination));
         return self();
