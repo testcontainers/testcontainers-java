@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
@@ -59,11 +57,8 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     public RabbitMQContainer(String tag) {
         super(DEFAULT_IMAGE_NAME + ":" + tag);
 
-        WaitStrategy waitForStartup = new LogMessageWaitStrategy()
-                .withRegEx(String.format(".*Server startup complete.*"));
-
-        this.waitStrategy = new WaitAllStrategy()
-                .withStrategy(waitForStartup)
+        this.waitStrategy = Wait.
+                forLogMessage(".*Server startup complete.*", 1)
                 .withStartupTimeout(Duration.ofSeconds(60));
     }
 
