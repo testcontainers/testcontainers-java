@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -43,7 +42,6 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     private String adminPassword = "guest";
     private String adminUsername = "guest";
-    private List<String> plugins = emptyList();
     private final List<List<String>> values = new ArrayList<>();
 
     /**
@@ -89,8 +87,6 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
 
-        enablePlugins();
-
         values.forEach(command -> {
             try {
                 ExecResult execResult = execInContainer(command.toArray(new String[0]));
@@ -99,16 +95,6 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
                 }
             } catch (IOException | InterruptedException e) {
                 logger().error("Could not execute command {}: {}", command, e.getMessage());
-            }
-        });
-    }
-
-    private void enablePlugins() {
-        plugins.forEach(plugin -> {
-            try {
-                execInContainer("rabbitmq-plugins", "enable", "--offline", plugin);
-            } catch (IOException | InterruptedException e) {
-                throw new ContainerConfigurationException(String.format("Could not enable plugin %s: %s", plugin, e.getMessage()));
             }
         });
     }
