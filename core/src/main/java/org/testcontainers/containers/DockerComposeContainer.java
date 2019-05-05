@@ -283,6 +283,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     @Override
     public void restart(){
+        throw new UnsupportedOperationException("Restart container is not supported with Docker Compose");
 
     }
 

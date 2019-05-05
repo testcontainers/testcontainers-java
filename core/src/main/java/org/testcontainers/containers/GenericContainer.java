@@ -332,8 +332,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             });
         } catch (Exception e) {
             throw new ContainerLaunchException("Container startup failed", e);
-        } finally {
-            profiler.stop().log();
         }
     }
 
