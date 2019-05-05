@@ -244,6 +244,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void startContainer() {
+
         try {
             String dockerImageName = image.get();
             logger().info("Starting container with ID: {}", containerId);
@@ -283,8 +284,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 } else {
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
-            }
 
+            }
             throw new ContainerLaunchException("Could not create/start container", e);
         }
     }
@@ -320,6 +321,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (containerId == null) {
             return;
         }
+
 
         try {
             AtomicInteger attempt = new AtomicInteger(0);
