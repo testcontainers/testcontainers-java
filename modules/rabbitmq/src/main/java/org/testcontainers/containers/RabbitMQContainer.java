@@ -43,7 +43,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     private final List<List<String>> values = new ArrayList<>();
 
     /**
-     * Creates a Testcontainer using the official Neo4j docker image.
+     * Creates a Testcontainer using the official RabbitMQ docker image.
      */
     public RabbitMQContainer() {
         this(DEFAULT_TAG);
