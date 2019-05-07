@@ -57,23 +57,15 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     public RabbitMQContainer(String tag) {
         super(DEFAULT_IMAGE_NAME + ":" + tag);
 
+        addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
+
         this.waitStrategy = Wait.
                 forLogMessage(".*Server startup complete.*", 1)
                 .withStartupTimeout(Duration.ofSeconds(60));
     }
 
     @Override
-    public Set<Integer> getLivenessCheckPortNumbers() {
-
-        return Stream.of(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT)
-                .map(this::getMappedPort)
-                .collect(toSet());
-    }
-
-    @Override
     protected void configure() {
-        addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
-
         if (adminPassword != null) {
             addEnv("RABBITMQ_DEFAULT_PASS", adminPassword);
         }
