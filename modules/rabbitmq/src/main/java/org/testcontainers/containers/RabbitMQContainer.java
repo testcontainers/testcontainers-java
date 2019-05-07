@@ -139,7 +139,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     }
 
     public enum SslVerification {
-        VERIFY_NONE("verify_none"), VERIFY_PEER("");
+        VERIFY_NONE("verify_none"), VERIFY_PEER("verify_peer");
 
         SslVerification(String value) {
             this.value = value;
@@ -152,7 +152,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
             final MountableFile keyFile,
             final MountableFile certFile,
             final MountableFile caFile,
-            SslVerification verify,
+            final SslVerification verify,
             boolean failIfNoCert,
             int verificationDepth) {
 
@@ -164,7 +164,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
             final MountableFile keyFile,
             final MountableFile certFile,
             final MountableFile caFile,
-            SslVerification verify,
+            final SslVerification verify,
             boolean failIfNoCert) {
 
         return withSSL(keyFile, certFile, caFile, verify)
@@ -175,7 +175,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
             final MountableFile keyFile,
             final MountableFile certFile,
             final MountableFile caFile,
-            SslVerification verify) {
+            final SslVerification verify) {
 
         return withEnv("RABBITMQ_SSL_CACERTFILE", "/etc/rabbitmq/ca_cert.pem")
                 .withEnv("RABBITMQ_SSL_CERTFILE", "/etc/rabbitmq/rabbitmq_cert.pem")
