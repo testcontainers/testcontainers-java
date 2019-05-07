@@ -42,7 +42,6 @@ public class RabbitMQContainerTest {
             assertThat(container.getAdminUsername()).isEqualTo("guest");
 
             container.start();
-            container.waitUntilContainerStarted();
 
             assertThat(container.getAmqpsUrl()).isEqualTo(
                     String.format("amqps://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
@@ -80,7 +79,6 @@ public class RabbitMQContainerTest {
             container.withExchange("test-exchange", "direct");
 
             container.start();
-            container.waitUntilContainerStarted();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_exchanges").getStdout())
                     .containsPattern("test-exchange\\s+direct");
@@ -95,7 +93,6 @@ public class RabbitMQContainerTest {
                     .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
 
             container.start();
-            container.waitUntilContainerStarted();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
                     .containsPattern("queue-one");
@@ -110,7 +107,6 @@ public class RabbitMQContainerTest {
 
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
-            container.waitUntilContainerStarted();
 
             assertThat(container.getLogs().contains("/etc/rabbitmq/rabbitmq-custom.conf")).isTrue();
         }
@@ -137,7 +133,6 @@ public class RabbitMQContainerTest {
                     .withPluginsEnabled("rabbitmq_shovel", "rabbitmq_random_exchange");
 
             container.start();
-            container.waitUntilContainerStarted();
 
             assertThat(container.execInContainer("rabbitmqadmin", "list", "queues")
                     .getStdout())
@@ -185,7 +180,6 @@ public class RabbitMQContainerTest {
             );
 
             container.start();
-            container.waitUntilContainerStarted();
 
             assertThatCode(() -> {
                 ConnectionFactory connectionFactory = new ConnectionFactory();
