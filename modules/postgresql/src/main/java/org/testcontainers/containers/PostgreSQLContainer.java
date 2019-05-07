@@ -15,7 +15,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
-    public static final String DEFAULT_TAG = "9.6.8";
+    public static final String DEFAULT_TAG = "9.6.12";
 
     public static final Integer POSTGRESQL_PORT = 5432;
     private String databaseName = "test";
