@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -14,11 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Testcontainer for RabbitMQ.
@@ -106,28 +103,28 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @return AMQP URL for use with AMQP clients.
      */
     public String getAmqpUrl() {
-        return String.format("amqp://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_AMQP_PORT));
+        return "amqp://" + getContainerIpAddress() + ":" + getAmqpPort();
     }
 
     /**
      * @return AMQPS URL for use with AMQPS clients.
      */
     public String getAmqpsUrl() {
-        return String.format("amqps://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_AMQPS_PORT));
+        return "amqps://" + getContainerIpAddress() + ":" + getAmqpsPort();
     }
 
     /**
      * @return URL of the HTTP management endpoint.
      */
     public String getHttpUrl() {
-        return String.format("http://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_HTTP_PORT));
+        return "http://" + getContainerIpAddress() + ":" + getHttpPort();
     }
 
     /**
      * @return URL of the HTTPS management endpoint.
      */
     public String getHttpsUrl() {
-        return String.format("https://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_HTTPS_PORT));
+        return "https://" + getContainerIpAddress() + ":" + getHttpsPort();
     }
 
     /**
@@ -283,10 +280,11 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     @NotNull
     private String toJson(Map<String, Object> arguments) {
-        final ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jsonObject = mapper.createObjectNode();
-        arguments.forEach((s, o) -> jsonObject.set(s, mapper.convertValue(o, JsonNode.class)));
-        return jsonObject.toString();
+        try {
+            return new ObjectMapper().writeValueAsString(arguments);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to convert arguments into json: " + e.getMessage(), e);
+        }
     }
 
     public RabbitMQContainer withExchange(String name, String type) {

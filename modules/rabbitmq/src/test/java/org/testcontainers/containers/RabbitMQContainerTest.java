@@ -169,6 +169,21 @@ public class RabbitMQContainerTest {
     }
 
     @Test
+    public void shouldThrowExceptionForDodgyJson() {
+        try (RabbitMQContainer container = new RabbitMQContainer()) {
+
+            assertThatCode(() ->
+                    container.withQueue(
+                            "queue2",
+                            true,
+                            false,
+                            ImmutableMap.of("x-message-ttl", container))
+            ).hasMessageStartingWith("Failed to convert arguments into json");
+
+        }
+    }
+
+    @Test
     public void shouldWorkWithSSL() {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
             container.withSSL(
