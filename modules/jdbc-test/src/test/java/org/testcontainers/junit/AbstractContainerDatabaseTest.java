@@ -9,9 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- * TODO: Javadocs
- */
 abstract class AbstractContainerDatabaseTest {
 
     ResultSet performQuery(JdbcDatabaseContainer container, String sql) throws SQLException {
