@@ -1,5 +1,6 @@
 package org.testcontainers.jdbc;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
@@ -21,7 +22,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
-@RunWith(Parameterized.class)
+@RunWith(ParallelParameterized.class)
 public class JDBCDriverTest {
 
     private enum Options {
