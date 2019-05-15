@@ -1,6 +1,5 @@
 package org.testcontainers.jdbc;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
@@ -22,7 +21,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
-@RunWith(ParallelParameterized.class)
+@RunWith(Parameterized.class)
 public class JDBCDriverTest {
 
     private enum Options {
@@ -199,7 +198,7 @@ public class JDBCDriverTest {
         boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
             rs.next();
             String resultSetInt = rs.getString(2);
-            assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
+            assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8mb4", resultSetInt);
             return true;
         });
 
