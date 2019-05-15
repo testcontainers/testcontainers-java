@@ -23,7 +23,6 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     public void testSimple() throws SQLException {
         ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
 
-        resultSet.next();
         int resultSetInt = resultSet.getInt(1);
         assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
     }
