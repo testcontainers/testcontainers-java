@@ -1,11 +1,10 @@
 package org.testcontainers.junit;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,22 +14,14 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 /**
  * @author Stefan Hufschmidt
  */
-public class SimpleMSSQLServerTest {
+public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Rule
     public MSSQLServerContainer mssqlServer = new MSSQLServerContainer();
 
     @Test
     public void testSimple() throws SQLException {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(mssqlServer.getJdbcUrl());
-        hikariConfig.setUsername(mssqlServer.getUsername());
-        hikariConfig.setPassword(mssqlServer.getPassword());
-
-        HikariDataSource ds = new HikariDataSource(hikariConfig);
-        Statement statement = ds.getConnection().createStatement();
-        statement.execute("SELECT 1");
-        ResultSet resultSet = statement.getResultSet();
+        ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
 
         resultSet.next();
         int resultSetInt = resultSet.getInt(1);
@@ -39,12 +30,7 @@ public class SimpleMSSQLServerTest {
 
     @Test
     public void testSetupDatabase() throws SQLException {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(mssqlServer.getJdbcUrl());
-        hikariConfig.setUsername(mssqlServer.getUsername());
-        hikariConfig.setPassword(mssqlServer.getPassword());
-
-        HikariDataSource ds = new HikariDataSource(hikariConfig);
+        DataSource ds = getDataSource(mssqlServer);
         Statement statement = ds.getConnection().createStatement();
         statement.executeUpdate("CREATE DATABASE [test];");
         statement = ds.getConnection().createStatement();
