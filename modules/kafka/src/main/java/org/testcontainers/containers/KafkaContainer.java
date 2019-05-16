@@ -19,9 +19,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public static final int ZOOKEEPER_PORT = 2181;
 
+    private static final int PORT_NOT_ASSIGNED = -1;
+
     protected String externalZookeeperConnect = null;
 
-    private int port = -1;
+    private int port = PORT_NOT_ASSIGNED;
 
     public KafkaContainer() {
         this("4.0.0");
@@ -56,7 +58,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     public String getBootstrapServers() {
-        if (port == -1) {
+        if (port == PORT_NOT_ASSIGNED) {
             throw new IllegalStateException("You should start Kafka container first");
         }
         return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
@@ -94,17 +96,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         if (externalZookeeperConnect != null) {
             zookeeperConnect = externalZookeeperConnect;
         } else {
-            zookeeperConnect = "localhost:" + ZOOKEEPER_PORT;
-
-            // Start ZooKeeper
-            ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId())
-                .withCmd("sh", "-c", "" +
-                    "printf 'clientPort=" + ZOOKEEPER_PORT + "\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties\n" +
-                    "zookeeper-server-start /zookeeper.properties\n"
-                )
-                .exec();
-
-            dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(new ExecStartResultCallback()).awaitStarted(10, TimeUnit.SECONDS);
+            zookeeperConnect = startZookeeper();
         }
 
         String internalIp = containerInfo.getNetworkSettings().getIpAddress();
@@ -118,5 +110,19 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             .exec();
 
         dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(new ExecStartResultCallback()).awaitStarted(10, TimeUnit.SECONDS);
+    }
+
+    @SneakyThrows(InterruptedException.class)
+    private String startZookeeper() {
+        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId())
+            .withCmd("sh", "-c", "" +
+                "printf 'clientPort=" + ZOOKEEPER_PORT + "\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties\n" +
+                "zookeeper-server-start /zookeeper.properties\n"
+            )
+            .exec();
+
+        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(new ExecStartResultCallback()).awaitStarted(10, TimeUnit.SECONDS);
+
+        return "localhost:" + ZOOKEEPER_PORT;
     }
 }
