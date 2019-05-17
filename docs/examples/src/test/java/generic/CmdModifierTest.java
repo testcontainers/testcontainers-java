@@ -20,8 +20,8 @@ public class CmdModifierTest {
     // memory {
     @Rule
     public GenericContainer memoryLimitedRedis = new GenericContainer<>("redis:3.0.2")
-            .withCreateContainerCmdModifier(cmd -> cmd.withMemory((long) 4 * 1024 * 1024))
-            .withCreateContainerCmdModifier(cmd -> cmd.withMemorySwap((long) 4 * 1024 * 1024));
+            .withCreateContainerCmdModifier(cmd -> cmd.withMemory((long) 8 * 1024 * 1024))
+            .withCreateContainerCmdModifier(cmd -> cmd.withMemorySwap((long) 12 * 1024 * 1024));
     // }
 
 
@@ -34,6 +34,6 @@ public class CmdModifierTest {
     @Test
     public void testMemoryLimitModified() throws IOException, InterruptedException {
         final Container.ExecResult execResult = memoryLimitedRedis.execInContainer("cat", "/sys/fs/cgroup/memory/memory.limit_in_bytes");
-        assertEquals("4194304", execResult.getStdout().trim());
+        assertEquals("8388608", execResult.getStdout().trim());
     }
 }
