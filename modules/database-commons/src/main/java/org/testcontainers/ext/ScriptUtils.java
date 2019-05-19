@@ -206,7 +206,7 @@ public abstract class ScriptUtils {
 							blockCommentEndDelimiter), resource);
 					}
 				}
-				else if (c == ' ' || c == '\n' || c == '\t') {
+				else if (c == ' ' || c == '\n' || c == '\t' || c == '\r') {
 					// avoid multiple adjacent whitespace characters
 					if (sb.length() > 0 && sb.charAt(sb.length() - 1) != ' ') {
 						c = ' ';
