@@ -139,7 +139,13 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         SES("ses",                     4579),
         ROUTE53("route53",                 4580),
         CLOUDFORMATION("cloudformation",          4581),
-        CLOUDWATCH("cloudwatch",              4582);
+        CLOUDWATCH("cloudwatch",              4582),
+        SSM("ssm",              4583),
+        SECRETSMANAGER("secretsmanager",              4584), //require version 0.8.8
+        STEPFUNCTIONS("stepsfunctions",              4585), //require version 0.9.0
+        CLOUDWATCHLOGS("cloudwatchlogs",              4586), //require version 0.9.1
+        STS("sts",              4592), //require version 0.9.0
+        IAM ("iam",              4593); //require version 0.9.0
 
         String localStackName;
 
