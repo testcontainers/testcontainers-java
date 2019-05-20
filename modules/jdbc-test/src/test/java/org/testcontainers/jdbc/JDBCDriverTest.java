@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang.SystemUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,7 @@ import java.util.EnumSet;
 import static java.util.Arrays.asList;
 import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 @RunWith(ParallelParameterized.class)
@@ -30,7 +32,8 @@ public class JDBCDriverTest {
         CharacterSet,
         CustomIniFile,
         JDBCParams,
-        PmdKnownBroken
+        PmdKnownBroken,
+        RequiresTable,
     }
 
     @Parameter
@@ -66,6 +69,9 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
                 {"jdbc:tc:sqlserver:2017-CU12://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:firebird://hostname/databasename?user=someuser&password=somepwd&charSet=utf-8&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams, Options.RequiresTable)},
+                {"jdbc:tc:firebird:3.0.4://hostname/databasename?user=someuser&password=somepwd&charSet=utf-8&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams, Options.RequiresTable)},
+                {"jdbc:tc:firebirdsql:3.0.4://hostname/databasename?user=someuser&password=somepwd&charSet=utf-8&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams, Options.RequiresTable)},
             });
     }
 
@@ -112,7 +118,7 @@ public class JDBCDriverTest {
 
     private void performSimpleTest(String jdbcUrl) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query("SELECT 1", rs -> {
+            boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query(createQuery("SELECT 1"), rs -> {
                 rs.next();
                 int resultSetInt = rs.getInt(1);
                 assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
@@ -135,31 +141,44 @@ public class JDBCDriverTest {
     }
 
     private void performTestForJDBCParamUsage(String jdbcUrl) throws SQLException {
+        final String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("select CURRENT_USER", rs -> {
+            boolean result = new QueryRunner(dataSource).query(createQuery("select CURRENT_USER"), rs -> {
                 rs.next();
                 String resultUser = rs.getString(1);
                 // Not all databases (eg. Postgres) return @% at the end of user name. We just need to make sure the user name matches.
                 if (resultUser.endsWith("@%")) {
                     resultUser = resultUser.substring(0, resultUser.length() - 2);
                 }
-                assertEquals("User from query param is created.", "someuser", resultUser);
+                if (isFirebird(databaseType)) {
+                    assertEquals("User from query param is created.", "SOMEUSER", resultUser);
+                } else {
+                    assertEquals("User from query param is created.", "someuser", resultUser);
+                }
                 return true;
             });
 
             assertTrue("The database returned a record as expected", result);
 
-            String databaseQuery = "SELECT DATABASE()";
-            // Postgres does not have Database() as a function
-            String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
+            String databaseQuery;
+            // Handling for databases without Database() as a function
             if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
                 databaseQuery = "SELECT CURRENT_DATABASE()";
+            } else if (isFirebird(databaseType)) {
+                databaseQuery = "select rdb$get_context('SYSTEM', 'DB_NAME') from RDB$DATABASE";
+            } else {
+                databaseQuery = "SELECT DATABASE()";
             }
 
             result = new QueryRunner(dataSource).query(databaseQuery, rs -> {
                 rs.next();
                 String resultDB = rs.getString(1);
-                assertEquals("Database name from URL String is used.", "databasename", resultDB);
+                if (isFirebird(databaseType)) {
+                    // Firebird reports full path
+                    assertThat("Database name from URL String is used.", resultDB, CoreMatchers.endsWith("/databasename"));
+                } else {
+                    assertEquals("Database name from URL String is used.", "databasename", resultDB);
+                }
                 return true;
             });
 
@@ -229,5 +248,24 @@ public class JDBCDriverTest {
         hikariConfig.setMaximumPoolSize(poolSize);
 
         return new HikariDataSource(hikariConfig);
+    }
+
+    private String createQuery(String selectFragment) {
+        if (options.contains(Options.RequiresTable)) {
+            return selectFragment + " from " + getSingleRowTableName();
+        }
+        return selectFragment;
+    }
+
+    private String getSingleRowTableName() {
+        String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
+        if (isFirebird(databaseType)) {
+            return "RDB$DATABASE";
+        }
+        throw new IllegalArgumentException("No known single row table for type " + databaseType);
+    }
+
+    private boolean isFirebird(String databaseType) {
+        return databaseType.equalsIgnoreCase("firebird") || databaseType.equalsIgnoreCase("firebirdsql");
     }
 }

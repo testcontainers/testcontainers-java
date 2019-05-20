@@ -11,6 +11,7 @@ dependencies {
     compile project(':oracle-xe')
     compile project(':mssqlserver')
     compile project(':clickhouse')
+    compile project(':firebird')
 
     testCompile 'com.google.guava:guava:18.0'
     testCompile 'org.postgresql:postgresql:42.0.0'
@@ -19,6 +20,7 @@ dependencies {
     testCompile 'com.oracle:ojdbc6:12.1.0.1-atlassian-hosted'
     testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     testCompile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.41'
+    testCompile 'org.firebirdsql.jdbc:jaybird-jdk18:3.0.5'
 
     testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
     testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'

@@ -1,0 +1,7 @@
+description = "Testcontainers :: JDBC :: Firebird"
+
+dependencies {
+    compile project(':jdbc')
+
+    testCompile 'org.firebirdsql.jdbc:jaybird-jdk18:3.0.5'
+}
