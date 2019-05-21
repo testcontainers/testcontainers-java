@@ -57,9 +57,12 @@ public class FirebirdContainerTest {
         try (FirebirdContainer container = new FirebirdContainer().withEnableWireCrypt()) {
             container.start();
 
-            try (Connection connection = container.createConnection("")) {
-                GDSServerVersion serverVersion = connection.unwrap(FirebirdConnection.class).getFbDatabase().getServerVersion();
-                assertTrue("Expected encryption in use", serverVersion.isWireEncryptionUsed());
+            if (FirebirdContainer.isWireEncryptionSupported()) {
+                // Check connecting with wire crypt
+                try (Connection connection = container.createConnection("")) {
+                    GDSServerVersion serverVersion = connection.unwrap(FirebirdConnection.class).getFbDatabase().getServerVersion();
+                    assertTrue("Expected encryption in use", serverVersion.isWireEncryptionUsed());
+                }
             }
 
             try (Connection connection = container.createConnection("?wireCrypt=disabled")) {

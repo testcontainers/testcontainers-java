@@ -1,7 +1,12 @@
 package org.testcontainers.containers;
 
+import lombok.extern.slf4j.Slf4j;
+
+import javax.crypto.Cipher;
+import java.security.NoSuchAlgorithmException;
 import java.time.ZoneId;
 
+@Slf4j
 public class FirebirdContainer<SELF extends FirebirdContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "firebird";
@@ -11,6 +16,7 @@ public class FirebirdContainer<SELF extends FirebirdContainer<SELF>> extends Jdb
 
     public static final Integer FIREBIRD_PORT = 3050;
     private static final String FIREBIRD_SYSDBA = "sysdba";
+    private static final int ARC4_REQUIRED_BITS = 160;
 
     private String databaseName = "test";
     private String username = "test";
@@ -49,6 +55,10 @@ public class FirebirdContainer<SELF extends FirebirdContainer<SELF>> extends Jdb
         }
 
         if (enableWireCrypt) {
+            addEnv("EnableWireCrypt", "true");
+        } else if (!isWireEncryptionSupported()) {
+            log.warn("Java Virtual Machine does not support wire protocol encryption requirements. " +
+                "Downgrading to EnableWireCrypt = true. To fix this, configure the JVM with unlimited strength Cryptographic Jurisdiction Policy.");
             addEnv("EnableWireCrypt", "true");
         }
     }
@@ -149,5 +159,22 @@ public class FirebirdContainer<SELF extends FirebirdContainer<SELF>> extends Jdb
     @Override
     protected void waitUntilContainerStarted() {
         getWaitStrategy().waitUntilReady(this);
+    }
+
+    /**
+     * Checks if the JVM meets the Jaybird (Firebird JDBC driver) requirements for encrypted connections.
+     * <p>
+     * Specifically, this checks if the ARC4 cipher can be used with 160 bit keys.
+     * </p>
+     *
+     * @return {@code true} if Jaybird will be able to support encrypted connections on this JVM.
+     */
+    public static boolean isWireEncryptionSupported() {
+        try {
+            return Cipher.getMaxAllowedKeyLength("ARC4") >= ARC4_REQUIRED_BITS;
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Cipher not found, JVM doesn't support encryption requirements", e);
+            return false;
+        }
     }
 }
