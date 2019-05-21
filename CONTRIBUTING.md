@@ -8,5 +8,9 @@
 	* discuss with the authors on an issue ticket prior to doing anything big
 	* follow the style, naming and structure conventions of the rest of the project
 	* make commits atomic and easy to merge
-	* verify all tests are passing. Build the project with `./gradlew check` to do this.
+	* verify all tests are passing. Build the project with `./gradlew check` to do this
+	
+	**PS:** Make sure Docker is running locally and you have the lombok plugin installed in your IDE
+	
 	**N.B.** Gradle's Build Cache is enabled by default, but you can add `--no-build-cache` flag to disable it.
+	
