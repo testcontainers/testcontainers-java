@@ -2,16 +2,17 @@ description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
     compile project(':testcontainers')
-    compile 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+    compile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
 
     testCompile project(':mysql')
     testCompile project(':postgresql')
     testCompile 'com.zaxxer:HikariCP:3.3.1'
     testCompile 'redis.clients:jedis:3.0.1'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.8'
 
     testRuntime 'org.postgresql:postgresql:42.2.5'
-    testRuntime 'mysql:mysql-connector-java:8.0.15'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
+    testRuntime 'mysql:mysql-connector-java:8.0.16'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
 }
 
 test {

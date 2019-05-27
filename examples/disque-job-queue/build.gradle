@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    implementation 'biz.paluch.redis:spinach:0.3'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.guava:guava:23.0'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'org.mockito:mockito-all:1.10.19'
+    testImplementation 'org.testcontainers:testcontainers'
+}

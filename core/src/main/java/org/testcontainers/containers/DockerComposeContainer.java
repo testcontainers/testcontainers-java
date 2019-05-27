@@ -239,7 +239,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void startAmbassadorContainers() {
-        ambassadorContainer.start();
+        if (!ambassadorPortMappings.isEmpty()) {
+            ambassadorContainer.start();
+        }
     }
 
     private Logger logger() {
@@ -333,7 +335,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceInstanceName, __ ->
-            (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(Duration.ofMinutes(30)));
+            new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT).withStartupTimeout(Duration.ofMinutes(30)));
         waitAllStrategy.withStrategy(waitStrategy);
     }
 
@@ -636,7 +638,7 @@ class LocalDockerCompose implements DockerCompose {
         try {
             new ProcessExecutor().command(command)
                     .redirectOutput(Slf4jStream.of(logger()).asInfo())
-                    .redirectError(Slf4jStream.of(logger()).asError())
+                    .redirectError(Slf4jStream.of(logger()).asInfo()) // docker-compose will log pull information to stderr
                     .environment(environment)
                     .directory(pwd)
                     .exitValueNormal()
