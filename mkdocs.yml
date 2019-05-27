@@ -25,6 +25,7 @@ nav:
     - Home: index.md
     - Quickstart:
           - quickstart/junit_4_quickstart.md
+          - quickstart/spock_quickstart.md
     - Features:
           - features/creating_container.md
           - features/networking.md
