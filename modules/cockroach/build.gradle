@@ -2,8 +2,4 @@ description = "Testcontainers :: JDBC :: CockroachDB"
 
 dependencies {
     compile project(':jdbc')
-
-    testCompile 'org.postgresql:postgresql:9.3-1101-jdbc41'
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
-    testCompile 'commons-dbutils:commons-dbutils:1.6'
 }
