@@ -50,6 +50,17 @@ public class ConnectionUrlTest {
     }
 
     @Test
+    public void testTmpfsOption() {
+        String urlString = "jdbc:tc:mysql://somehostname/databasename?TC_TMPFS=key:value,key:value";
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
+
+        assertTrue("Connection Parameters set is empty", url.getQueryParameters().isEmpty());
+        assertFalse("Container Parameters set is not empty", url.getContainerParameters().isEmpty());
+        assertEquals("Container Parameter TC_TMPFS is true", "key:value,key:value", url.getContainerParameters().get("TC_TMPFS"));
+    }
+
+
+    @Test
     public void testInitScriptPathCapture() {
         String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_INITSCRIPT=somepath/init_mysql.sql";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
