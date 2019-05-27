@@ -67,7 +67,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 ## Using a classpath init script
 
-Testcontainers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
+Testcontainers can run an init script after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
 `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 
