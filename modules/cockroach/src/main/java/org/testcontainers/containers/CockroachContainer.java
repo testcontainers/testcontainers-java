@@ -7,14 +7,14 @@ import java.time.Duration;
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
     public static final String NAME = "cockroach";
     public static final String IMAGE = "cockroachdb/cockroach";
-    public static final String IMAGE_TAG = "v1.1.2";
+    public static final String IMAGE_TAG = "v19.1.1";
     public static final String JDBC_DRIVER_CLASS_NAME = "org.postgresql.Driver";
     public static final String JDBC_URL_PREFIX = "jdbc:postgresql";
     public static final String TEST_QUERY_STRING = "SELECT 1";
     public static final int REST_API_PORT = 8080;
     public static final int DB_PORT = 26257;
 
-    private String databaseName = "test";
+    private String databaseName = "postgres";
     private String username = "root";
     private String password = "";
 
@@ -36,10 +36,6 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
                 .withStartupTimeout(Duration.ofMinutes(1))
         );
         withCommand("start --insecure");
-    }
-
-    @Override
-    protected void configure() {
     }
 
     @Override
