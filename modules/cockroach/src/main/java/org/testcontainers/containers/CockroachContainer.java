@@ -24,10 +24,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     public CockroachContainer(final String dockerImageName) {
         super(dockerImageName);
-    }
 
-    @Override
-    protected void configure() {
         withExposedPorts(REST_API_PORT, DB_PORT);
         withEnv("COCKROACH_USER", username);
         withEnv("COCKROACH_DATABASE", databaseName);
@@ -39,6 +36,10 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
                 .withStartupTimeout(Duration.ofMinutes(1))
         );
         withCommand("start --insecure");
+    }
+
+    @Override
+    protected void configure() {
     }
 
     @Override
