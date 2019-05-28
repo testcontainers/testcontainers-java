@@ -24,7 +24,7 @@ public class OutputStreamTest {
 
     @Rule
     public GenericContainer container = new GenericContainer("alpine:3.2")
-            .withCommand("ping -c 5 www.google.com");
+            .withCommand("ping -c 5 127.0.0.1");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);
 
