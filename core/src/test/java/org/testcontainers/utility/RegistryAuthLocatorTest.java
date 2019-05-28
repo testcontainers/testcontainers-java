@@ -11,8 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class RegistryAuthLocatorTest {
     @Test
@@ -35,6 +34,17 @@ public class RegistryAuthLocatorTest {
         assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
         assertEquals("Username is set", "user", authConfig.getUsername());
         assertEquals("Password is set", "pass", authConfig.getPassword());
+    }
+
+    @Test
+    public void lookupAuthConfigWithJsonKeyCredentials() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-json-key.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+
+        assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
+        assertEquals("Username is set", "_json_key", authConfig.getUsername());
+        assertNotNull("Password is set", authConfig.getPassword());
     }
 
     @Test
