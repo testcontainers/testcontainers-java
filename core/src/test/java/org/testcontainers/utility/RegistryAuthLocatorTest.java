@@ -11,8 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class RegistryAuthLocatorTest {
     @Test
@@ -35,6 +34,17 @@ public class RegistryAuthLocatorTest {
         assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
         assertEquals("Username is set", "user", authConfig.getUsername());
         assertEquals("Password is set", "pass", authConfig.getPassword());
+    }
+
+    @Test
+    public void lookupAuthConfigWithJsonKeyCredentials() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-json-key.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+
+        assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
+        assertEquals("Username is set", "_json_key", authConfig.getUsername());
+        assertNotNull("Password is set", authConfig.getPassword());
     }
 
     @Test
@@ -99,6 +109,16 @@ public class RegistryAuthLocatorTest {
             "Not correct message discovered",
             "Fake credentials not found on credentials store 'https://not.a.real.registry/url'",
             discoveredMessage);
+    }
+
+    @Test
+    public void lookupAuthConfigWithCredStoreEmpty() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store-empty.json");
+
+        DockerImageName dockerImageName = new DockerImageName("registry2.example.com/org/repo");
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
+
+        assertNull("CredStore field will be ignored, because value is blank", authConfig.getAuth());
     }
 
     @NotNull

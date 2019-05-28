@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.1.2.RELEASE'
+    id 'org.springframework.boot' version '2.1.5.RELEASE'
 }
 apply plugin: 'io.spring.dependency-management'
 
@@ -9,9 +9,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.seleniumhq.selenium:selenium-remote-driver:3.14.0'
-    implementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.14.0'
-    implementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.14.0'
+    implementation 'org.seleniumhq.selenium:selenium-remote-driver'
+    implementation 'org.seleniumhq.selenium:selenium-firefox-driver'
+    implementation 'org.seleniumhq.selenium:selenium-chrome-driver'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:selenium'

@@ -14,8 +14,6 @@ import static java.lang.String.format;
 @RequiredArgsConstructor
 public class InternalCommandPortListeningCheck implements java.util.concurrent.Callable<Boolean> {
 
-    private static final String SUCCESS_MARKER = "TESTCONTAINERS_SUCCESS";
-
     private final WaitStrategyTarget waitStrategyTarget;
     private final Set<Integer> internalPorts;
 
@@ -30,14 +28,14 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
     private void tryPort(Integer internalPort) {
         String[][] commands = {
-                {"/bin/sh", "-c", format("cat /proc/net/tcp{,6} | awk '{print $2}' | grep -i :%x && echo %s", internalPort, SUCCESS_MARKER)},
-                {"/bin/sh", "-c", format("nc -vz -w 1 localhost %d && echo %s", internalPort, SUCCESS_MARKER)},
-                {"/bin/bash", "-c", format("</dev/tcp/localhost/%d && echo %s", internalPort, SUCCESS_MARKER)}
+                {"/bin/sh", "-c", format("cat /proc/net/tcp{,6} | awk '{print $2}' | grep -i :%x", internalPort)},
+                {"/bin/sh", "-c", format("nc -vz -w 1 localhost %d", internalPort)},
+                {"/bin/bash", "-c", format("</dev/tcp/localhost/%d", internalPort)}
         };
 
         for (String[] command : commands) {
             try {
-                if (ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), command).getStdout().contains(SUCCESS_MARKER)) {
+                if (ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), command).getExitCode() == 0) {
                     return;
                 }
             } catch (Exception e) {
