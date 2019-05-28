@@ -73,7 +73,7 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
-    compile "net.java.dev.jna:jna-platform:5.2.0"
+    compile "net.java.dev.jna:jna-platform:5.3.1"
 
     shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
         exclude(group: "net.java.dev.jna")
