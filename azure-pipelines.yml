@@ -1,3 +1,6 @@
+variables:
+  _JAVA_OPTIONS: "-Djava.net.preferIPv4Stack=true"
+
 steps:
 - task: Gradle@2
   displayName: Build core
@@ -7,8 +10,6 @@ steps:
     tasks: 'testcontainers:check'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
-    env:
-      _JAVA_OPTIONS: "-Djava.net.preferIPv4Stack=true"
 - task: Gradle@2
   displayName: Build modules
   inputs:
