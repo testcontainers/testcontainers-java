@@ -43,6 +43,7 @@ Examples/Tests:
 As long as you have Testcontainers and the appropriate JDBC driver on your classpath, you can simply modify regular JDBC connection URLs to get a fresh containerized instance of the database each time your application starts up.
 
 _N.B:_
+
 * _TC needs to be on your application's classpath at runtime for this to work_
 * _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
@@ -66,7 +67,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 ## Using a classpath init script
 
-Testcontainers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
+Testcontainers can run an init script after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
 `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 

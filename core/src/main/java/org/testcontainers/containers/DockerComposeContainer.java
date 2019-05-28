@@ -638,7 +638,7 @@ class LocalDockerCompose implements DockerCompose {
         try {
             new ProcessExecutor().command(command)
                     .redirectOutput(Slf4jStream.of(logger()).asInfo())
-                    .redirectError(Slf4jStream.of(logger()).asError())
+                    .redirectError(Slf4jStream.of(logger()).asInfo()) // docker-compose will log pull information to stderr
                     .environment(environment)
                     .directory(pwd)
                     .exitValueNormal()
