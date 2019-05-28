@@ -54,8 +54,6 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         if (hostnameExternal != null) {
             withEnv("HOSTNAME_EXTERNAL", hostnameExternal);
-        } else {
-            withEnv("HOSTNAME_EXTERNAL", getContainerIpAddress());
         }
 
         for (Service service : services) {
