@@ -40,7 +40,7 @@ public class OutputStreamTest {
     }
 
     @Test(timeout = 60_000L)
-    public void testFetchStdoutWithTimeout() throws TimeoutException {
+    public void testFetchStdoutWithTimeout() {
 
         WaitingConsumer consumer = new WaitingConsumer();
 
