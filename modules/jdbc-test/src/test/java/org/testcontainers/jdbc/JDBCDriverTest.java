@@ -198,8 +198,8 @@ public class JDBCDriverTest {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
         boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
             rs.next();
-            String resultSetInt = rs.getString(2);
-            assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
+            String resultSetString = rs.getString(2);
+            assertTrue("Passing query parameters to set DB connection encoding is successful", resultSetString.startsWith("utf8"));
             return true;
         });
 
