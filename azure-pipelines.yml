@@ -1,20 +1,9 @@
-variables:
-  GRADLE_OPTS: "-Djava.net.preferIPv4Stack=true"
-
 steps:
 - task: Gradle@2
   displayName: Build core
   inputs:
     gradleWrapperFile: 'gradlew'
     options: '--no-daemon --continue'
-    tasks: 'testcontainers:check'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
-- task: Gradle@2
-  displayName: Build modules
-  inputs:
-    gradleWrapperFile: 'gradlew'
-    options: '--no-daemon --continue -x testcontainers:check'
     tasks: 'check'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
