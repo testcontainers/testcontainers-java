@@ -699,7 +699,7 @@ class DockerComposePrecondition {
         try {
             return Optional.of(YAML.load(FileUtils.openInputStream(file)));
         } catch (ConstructorException e) {
-            logger().warn(String.format("Unable to read yaml structure from compose file %s.", file.getName()));
+            logger().warn(String.format("Unable to read yaml structure from compose file %s.", file.getName()), e);
             return Optional.empty();
         } catch (IOException e) {
             throw new ContainerLaunchException(String.format("Unable to read compose file %s.", file.getName()), e);
