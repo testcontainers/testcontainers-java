@@ -1,5 +1,5 @@
 variables:
-  JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+  GRADLE_OPTS: "-Djava.net.preferIPv4Stack=true"
 
 steps:
 - task: Gradle@2
