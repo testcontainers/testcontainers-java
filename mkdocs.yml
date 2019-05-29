@@ -1,4 +1,4 @@
-'site_name: Testcontainers
+site_name: Testcontainers
 plugins:
     - search
     - codeinclude
