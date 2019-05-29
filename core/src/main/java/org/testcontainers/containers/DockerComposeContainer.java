@@ -6,7 +6,11 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.experimental.UtilityClass;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
@@ -22,11 +26,16 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.*;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.ConstructorException;
+import org.yaml.snakeyaml.representer.Representer;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -470,7 +479,7 @@ interface DockerCompose {
     default void validateFileList(List<File> composeFiles) {
         checkNotNull(composeFiles);
         checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
-        PreconditionUtils.checkNotContainUnsupportedComposeOptions(composeFiles);
+        DockerComposePrecondition.checkNotContainUnsupportedComposeOptions(composeFiles);
     }
 }
 
@@ -661,5 +670,56 @@ class LocalDockerCompose implements DockerCompose {
      */
     private Logger logger() {
         return DockerLoggerFactory.getLogger(COMPOSE_EXECUTABLE);
+    }
+}
+
+@UtilityClass
+class DockerComposePrecondition {
+    private static final String CONTAINER_NAME_OPTION = "container_name";
+    private static final Yaml YAML = buildYamlParser();
+
+    static void checkNotContainUnsupportedComposeOptions(List<File> composeFiles) {
+        composeFiles.forEach(file -> checkArgument(!containUnsupportedComposeOptions(file),
+            String.format("Compose file %s contains '%s' option which is not supported by container.",
+                file,
+                CONTAINER_NAME_OPTION)));
+    }
+
+    private static boolean containUnsupportedComposeOptions(File file) {
+        return transformToYamlFile(file)
+            .map(DockerComposeYamlFile::getServices)
+            .filter(services -> !services.isEmpty())
+            .map(services -> services.values()
+                .stream()
+                .anyMatch(service -> service.containsKey(CONTAINER_NAME_OPTION)))
+            .orElse(false);
+    }
+
+    private static Optional<DockerComposeYamlFile> transformToYamlFile(File file) {
+        try {
+            return Optional.of(YAML.load(FileUtils.openInputStream(file)));
+        } catch (ConstructorException e) {
+            logger().warn(String.format("Unable to read yaml structure from compose file %s.", file.getName()));
+            return Optional.empty();
+        } catch (IOException e) {
+            throw new ContainerLaunchException(String.format("Unable to read compose file %s.", file.getName()), e);
+        }
+    }
+
+    private static Yaml buildYamlParser() {
+        Representer representer = new Representer();
+        representer.getPropertyUtils().setSkipMissingProperties(true);
+
+        return new Yaml(new Constructor(DockerComposeYamlFile.class), representer);
+    }
+
+    private static Logger logger() {
+        return LoggerFactory.getLogger(DockerComposePrecondition.class);
+    }
+
+    @Setter
+    @Getter
+    public class DockerComposeYamlFile {
+        private Map<String, Map<String, Object>> services;
     }
 }

@@ -74,6 +74,7 @@ dependencies {
     }
 
     compile "net.java.dev.jna:jna-platform:5.3.1"
+    compile "org.yaml:snakeyaml:1.21"
 
     shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
         exclude(group: "net.java.dev.jna")
