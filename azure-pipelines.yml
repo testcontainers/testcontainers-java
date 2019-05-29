@@ -1,6 +1,6 @@
 steps:
 - task: Gradle@2
-  displayName: Build core
+  displayName: Build & test
   inputs:
     gradleWrapperFile: 'gradlew'
     options: '--no-daemon --continue'
