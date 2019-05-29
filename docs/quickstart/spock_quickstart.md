@@ -36,7 +36,7 @@ testCompile "org.testcontainers:spock:{{latest_version}}"
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
-Annotate the test class with Testcontainers specification:
+Annotate the Spock specification class with the Testcontainers extension:
 
 ```groovy tab='Spock Testcontainers annotation'
 @org.testcontainers.spock.Testcontainers
