@@ -1,5 +1,6 @@
 package org.testcontainers;
 
+import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * We use {@link Parameterized} runner here to create a test per public class in Testcontainers' JAR file.
  */
 @RunWith(Parameterized.class)
+@RequiredArgsConstructor
 public class PublicBinaryAPITest extends AbstractJarFileTest {
 
     private static String SHADED_PACKAGE = "org.testcontainers.shaded.";
@@ -81,11 +83,6 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
     private final String fileName;
 
     private final ClassNode classNode;
-
-    public PublicBinaryAPITest(String fileName, ClassNode classNode) {
-        this.fileName = fileName;
-        this.classNode = classNode;
-    }
 
     @Test
     public void testSuperClass() {
