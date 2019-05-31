@@ -2,7 +2,6 @@
 
 * Star the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
 * Join our Slack: http://slack.testcontainers.org
-* See [ROADMAP](docs/ROADMAP.md) to understand the approach behind the project and what may/may not be in store for the future.
 * [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
 * Contribute improvements or fixes using a [Pull Request](https://github.com/testcontainers/testcontainers-java/pulls). If you're going to contribute, thank you! Please just be sure to:
 	* discuss with the authors on an issue ticket prior to doing anything big
