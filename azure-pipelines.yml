@@ -3,7 +3,6 @@ steps:
   displayName: Build core
   inputs:
     gradleWrapperFile: 'gradlew'
-    jdkVersionOption: '1.8'
     options: '--no-daemon --continue'
     tasks: 'testcontainers:check'
     publishJUnitResults: true
@@ -12,7 +11,6 @@ steps:
   displayName: Build modules
   inputs:
     gradleWrapperFile: 'gradlew'
-    jdkVersionOption: '1.8'
     options: '--no-daemon --continue -x testcontainers:check'
     tasks: 'check'
     publishJUnitResults: true
