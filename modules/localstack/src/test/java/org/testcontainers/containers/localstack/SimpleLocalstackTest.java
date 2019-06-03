@@ -25,6 +25,10 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
+/**
+ * The only tests that should go here are for those Localstack services that require special testcontainers code to work with them.
+ * For example, S3 needs a test to ensure special HTTP routing to the S3 container works.
+ */
 public class SimpleLocalstackTest {
 
     private static final String BUCKET_1 = "bucket1";
