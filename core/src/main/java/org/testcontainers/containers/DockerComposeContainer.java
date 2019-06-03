@@ -75,7 +75,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private static final Object MUTEX = new Object();
 
-    private List<String> services = new LinkedList<>();
+    private String services = "";
 
     /**
      * Properties that should be passed through to all Compose and ambassador containers (not
@@ -161,15 +161,14 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         runWithCompose("pull");
     }
 
-    public SELF withServices(String... services) {
-        this.services = Arrays.asList(services);
+    public SELF withServices(@NonNull String... services) {
+        this.services = String.join(" ", Arrays.asList(services));
         return self();
     }
 
     private void createServices() {
-        String services = String.join(" ", this.services);
         // Run the docker-compose container, which starts up the services
-        runWithCompose(("up -d " + services).trim());
+        runWithCompose("up -d " + services);
     }
 
     private void waitUntilServiceStarted() {
