@@ -103,7 +103,7 @@ By default database container is being stopped as soon as last connection is clo
 With this parameter database container will keep running even when there're no open connections.
 
 
-## Running container with tmpfs options
+#### Running container with tmpfs options
 
 Container can have `tmpfs` mounts for storing data in host memory. This is useful if you want to speed up your database tests. Be aware that the data will be lost when the container stops.
 
