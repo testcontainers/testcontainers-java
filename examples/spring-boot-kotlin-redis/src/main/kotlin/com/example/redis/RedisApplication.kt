@@ -1,11 +1,11 @@
-package com.example.kafka
+package com.example.redis
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class KafkaApplication
+class RedisApplication
 
 fun main(args: Array<String>) {
-    runApplication<KafkaApplication>(*args)
+    runApplication<RedisApplication>(*args)
 }

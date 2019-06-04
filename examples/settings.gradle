@@ -12,5 +12,5 @@ include 'selenium-container'
 include 'singleton-container'
 include 'spring-boot'
 include 'cucumber'
-include 'spring-boot-kotlin-kafka'
+include 'spring-boot-kotlin-redis'
 

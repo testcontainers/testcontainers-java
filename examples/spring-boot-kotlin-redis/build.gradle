@@ -21,9 +21,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.testcontainers:kafka:1.11.3")
+    testImplementation("org.testcontainers:testcontainers:1.11.3")
 }
 
 compileKotlin {
@@ -31,8 +32,4 @@ compileKotlin {
         jvmTarget = "1.8"
         freeCompilerArgs = ["-Xjsr305=strict"]
     }
-}
-
-test {
-    testLogging.showStandardStreams = true
 }
