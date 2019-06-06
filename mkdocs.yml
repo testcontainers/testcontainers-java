@@ -25,6 +25,7 @@ nav:
     - Home: index.md
     - Quickstart:
           - quickstart/junit_4_quickstart.md
+          - quickstart/spock_quickstart.md
     - Features:
           - features/creating_container.md
           - features/networking.md
@@ -70,6 +71,7 @@ nav:
                 - supported_docker_environment/continuous_integration/dind_patterns.md
                 - supported_docker_environment/continuous_integration/circle_ci.md
                 - supported_docker_environment/continuous_integration/gitlab_ci.md
+                - supported_docker_environment/continuous_integration/bitbucket_pipelines.md
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
     - Getting help: getting_help.md
@@ -77,4 +79,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.11.2
+    latest_version: 1.11.3
