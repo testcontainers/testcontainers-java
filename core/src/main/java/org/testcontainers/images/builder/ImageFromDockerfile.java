@@ -18,6 +18,7 @@ import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -63,6 +64,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private final Map<String, Transferable> transferables = new HashMap<>();
     private final Map<String, String> buildArgs = new HashMap<>();
     private Optional<String> dockerFilePath = Optional.empty();
+    private Optional<File> dockerfile = Optional.empty();
 
     public ImageFromDockerfile() {
         this("testcontainers/" + Base58.randomString(16).toLowerCase());
@@ -119,6 +121,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             configure(buildImageCmd);
 
             BuildImageResultCallback exec = buildImageCmd.exec(resultCallback);
+            
+            long bytesToDockerDaemon = 0;
 
             // To build an image, we have to send the context to Docker in TAR archive format
             try (TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(new GZIPOutputStream(out))) {
@@ -128,9 +132,15 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                     Transferable transferable = entry.getValue();
                     final String destination = entry.getKey();
                     transferable.transferTo(tarArchive, destination);
+                    bytesToDockerDaemon += transferable.getSize();
                 }
                 tarArchive.finish();
             }
+            
+            log.info("Transferred {} KB to Docker daemon", bytesToDockerDaemon % 1024);
+            if (bytesToDockerDaemon > 50 * 1024 * 1024) // warn if >50MB sent to docker daemon
+                log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.", 
+                        bytesToDockerDaemon % (1024 * 1024));
 
             exec.awaitImageId();
 
@@ -142,7 +152,9 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     protected void configure(BuildImageCmd buildImageCmd) {
         buildImageCmd.withTag(this.getDockerImageName());
+        // always use withDockerfile because it honors .dockerignores and withDockerfilePath does not
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
+        this.dockerfile.ifPresent(buildImageCmd::withDockerfile);
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
     }
 
@@ -156,8 +168,24 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         return this;
     }
 
+    /**
+     * Sets the Dockerfile to be used for this image. 
+     * It is recommended to use {@link #withDockerfile} instead because it honors .dockerignore
+     * files and therefore will be more efficient
+     * @param relativePathFromBuildRoot
+     */
     public ImageFromDockerfile withDockerfilePath(String relativePathFromBuildRoot) {
         this.dockerFilePath = Optional.of(relativePathFromBuildRoot);
+        return this;
+    }
+    
+    public ImageFromDockerfile withDockerfile(File dockerfile) {
+        this.dockerfile = Optional.of(dockerfile);
+        return this;
+    }
+    
+    public ImageFromDockerfile withDockerfile(String pathname) {
+        this.dockerfile = Optional.of(new File(pathname));
         return this;
     }
 }

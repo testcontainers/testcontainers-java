@@ -6,6 +6,7 @@ import org.junit.runners.Parameterized;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -44,6 +45,20 @@ public class DockerfileBuildTest {
                     .withDockerfilePath("./Dockerfile-buildarg")
                     .withBuildArg("CUSTOM_ARG", "test7890")
             },
+            
+           // Dockerfile build using withDockerfile(File)
+            new Object[]{"test4567",
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                    .withDockerfile(new File(RESOURCE_PATH.toFile(), "Dockerfile-alt"))
+            },
+            
+         // Dockerfile build using withDockerfile(String)
+            new Object[]{"test4567",
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                    .withDockerfile("src/test/resources/dockerfile-build-test/Dockerfile-alt")
+            },
         };
     }
 
@@ -64,4 +79,5 @@ public class DockerfileBuildTest {
             assertTrue("expected file content indicates that dockerfile build steps have been run", logs.contains(expectedFileContent));
         }
     }
+    
 }
