@@ -154,7 +154,7 @@ public class RegistryAuthLocator {
                 !isBlank(deserializedAuth.getAuth())) {
 
                 final String rawAuth = new String(Base64.getDecoder().decode(deserializedAuth.getAuth()));
-                final String[] splitRawAuth = rawAuth.split(":");
+                final String[] splitRawAuth = rawAuth.split(":", 2);
 
                 if (splitRawAuth.length == 2) {
                     deserializedAuth.withUsername(splitRawAuth[0]);
