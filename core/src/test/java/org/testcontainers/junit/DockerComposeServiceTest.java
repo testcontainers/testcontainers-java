@@ -21,6 +21,7 @@ public class DockerComposeServiceTest extends BaseDockerComposeTest {
         return environment;
     }
 
+    // TODO: Map correct exception
     @Test(expected = NullPointerException.class)
     public void testDbIsNotStarting() {
         environment.getServicePort("db_1", 10001);
