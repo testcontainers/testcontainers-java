@@ -1,0 +1,7 @@
+description = "Testcontainers :: MongoDB"
+
+dependencies {
+    compile project(':testcontainers')
+
+    testCompile 'org.mongodb:mongo-java-driver:3.10.2'
+}
