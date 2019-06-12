@@ -1,13 +1,20 @@
 package org.testcontainers.jdbc;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * This is an Immutable class holding JDBC Connection Url and its parsed components, used by {@link ContainerDatabaseDriver}.
@@ -16,7 +23,8 @@ import java.util.stream.Collectors;
  *
  * @author manikmagar
  */
-@EqualsAndHashCode(of = "url") @Getter
+@EqualsAndHashCode(of = "url")
+@Getter
 public class ConnectionUrl {
 
     private String url;
@@ -48,8 +56,9 @@ public class ConnectionUrl {
     private Map<String, String> containerParameters;
 
     private Map<String, String> queryParameters;
+    private Map<String, String> tmpfsOptions = new HashMap<>();
 
-    public static ConnectionUrl newInstance(final String url){
+    public static ConnectionUrl newInstance(final String url) {
         ConnectionUrl connectionUrl = new ConnectionUrl(url);
         connectionUrl.parseUrl();
         return connectionUrl;
@@ -65,7 +74,8 @@ public class ConnectionUrl {
 
     /**
      * This method applies various REGEX Patterns to parse the URL associated with this instance.
-     * This is called from a @{@link ConnectionUrl#newInstance(String)} static factory method to create immutable instance of {@link ConnectionUrl}.
+     * This is called from a @{@link ConnectionUrl#newInstance(String)} static factory method to create immutable instance of
+     * {@link ConnectionUrl}.
      * To avoid mutation after class is instantiated, this method should not be publicly accessible.
      */
     private void parseUrl() {
@@ -100,14 +110,14 @@ public class ConnectionUrl {
         }
 
         queryParameters = Collections.unmodifiableMap(
-                                            parseQueryParameters(
-                                                Optional.ofNullable(urlMatcher.group(5)).orElse("")));
+            parseQueryParameters(
+                Optional.ofNullable(urlMatcher.group(5)).orElse("")));
 
         String query = queryParameters
-                            .entrySet()
-                                .stream()
-                                .map(e -> e.getKey() + "=" + e.getValue())
-                                .collect(Collectors.joining("&"));
+            .entrySet()
+            .stream()
+            .map(e -> e.getKey() + "=" + e.getValue())
+            .collect(Collectors.joining("&"));
 
         if (query == null || query.trim().length() == 0) {
             queryString = Optional.empty();
@@ -116,6 +126,9 @@ public class ConnectionUrl {
         }
 
         containerParameters = Collections.unmodifiableMap(parseContainerParameters());
+
+        tmpfsOptions = parseTmpfsOptions(containerParameters);
+
 
         initScriptPath = Optional.ofNullable(containerParameters.get("TC_INITSCRIPT"));
 
@@ -127,6 +140,19 @@ public class ConnectionUrl {
         Matcher daemonMatcher = Patterns.DAEMON_MATCHING_PATTERN.matcher(this.getUrl());
         inDaemonMode = daemonMatcher.matches() && Boolean.parseBoolean(daemonMatcher.group(2));
 
+    }
+
+    private Map<String, String> parseTmpfsOptions(Map<String, String> containerParameters) {
+        if(!containerParameters.containsKey("TC_TMPFS")){
+            return Collections.emptyMap();
+        }
+
+        String tmpfsOptions = containerParameters.get("TC_TMPFS");
+
+        return Stream.of(tmpfsOptions.split(","))
+            .collect(toMap(
+                string -> string.split(":")[0],
+                string -> string.split(":")[1]));
     }
 
     /**
@@ -160,10 +186,15 @@ public class ConnectionUrl {
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = matcher.group(2);
-            if(!key.matches(Patterns.TC_PARAM_NAME_PATTERN)) results.put(key, value);
+            if (!key.matches(Patterns.TC_PARAM_NAME_PATTERN))
+                results.put(key, value);
         }
 
         return results;
+    }
+
+    public Map<String, String> getTmpfsOptions() {
+        return Collections.unmodifiableMap(tmpfsOptions);
     }
 
     /**
