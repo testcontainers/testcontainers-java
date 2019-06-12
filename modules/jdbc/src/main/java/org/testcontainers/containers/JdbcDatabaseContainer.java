@@ -124,22 +124,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         await().ignoreExceptionsMatching(e -> ! (e instanceof NoDriverFoundException))
                 .timeout(startupTimeoutSeconds, SECONDS)
-                .until(() -> {
-                    if (!isRunning()) {
-                        return false; // Don't attempt to connect
-                    }
-
-                    try (Connection connection = createConnection("")) {
-                        boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
-
-                        if (success) {
-                            logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    }
-                });
+                .until(this::isConnectable);
     }
 
     @Override
@@ -255,6 +240,23 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     protected DatabaseDelegate getDatabaseDelegate() {
         return new JdbcDatabaseDelegate(this, "");
+    }
+
+    private boolean isConnectable() throws SQLException {
+        if (!isRunning()) {
+            return false; // Don't attempt to connect
+        }
+
+        try (Connection connection = createConnection("")) {
+            boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
+
+            if (success) {
+                logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     public static class NoDriverFoundException extends RuntimeException {
