@@ -10,6 +10,7 @@ import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -64,7 +66,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private final Map<String, Transferable> transferables = new HashMap<>();
     private final Map<String, String> buildArgs = new HashMap<>();
     private Optional<String> dockerFilePath = Optional.empty();
-    private Optional<File> dockerfile = Optional.empty();
+    private Optional<Path> dockerfile = Optional.empty();
 
     public ImageFromDockerfile() {
         this("testcontainers/" + Base58.randomString(16).toLowerCase());
@@ -137,10 +139,10 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                 tarArchive.finish();
             }
             
-            log.info("Transferred {} KB to Docker daemon", bytesToDockerDaemon % 1024);
-            if (bytesToDockerDaemon > 50 * 1024 * 1024) // warn if >50MB sent to docker daemon
+            log.info("Transferred {} KB to Docker daemon", FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
+            if (bytesToDockerDaemon > FileUtils.ONE_MB * 50) // warn if >50MB sent to docker daemon
                 log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.", 
-                        bytesToDockerDaemon % (1024 * 1024));
+                        FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
 
             exec.awaitImageId();
 
@@ -154,7 +156,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         buildImageCmd.withTag(this.getDockerImageName());
         // always use withDockerfile because it honors .dockerignores and withDockerfilePath does not
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
-        this.dockerfile.ifPresent(buildImageCmd::withDockerfile);
+        this.dockerfile.ifPresent(p -> buildImageCmd.withDockerfile(p.toFile()));
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
     }
 
@@ -170,22 +172,23 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     /**
      * Sets the Dockerfile to be used for this image. 
-     * It is recommended to use {@link #withDockerfile} instead because it honors .dockerignore
-     * files and therefore will be more efficient
+     * @deprecated It is recommended to use {@link #withDockerfile} instead because it honors 
+     * .dockerignore files and therefore will be more efficient
      * @param relativePathFromBuildRoot
      */
+    @Deprecated
     public ImageFromDockerfile withDockerfilePath(String relativePathFromBuildRoot) {
         this.dockerFilePath = Optional.of(relativePathFromBuildRoot);
         return this;
     }
     
-    public ImageFromDockerfile withDockerfile(File dockerfile) {
+    /**
+     * Sets the Dockerfile to be used for this image. 
+     * @param dockerfile
+     */
+    public ImageFromDockerfile withDockerfile(Path dockerfile) {
         this.dockerfile = Optional.of(dockerfile);
         return this;
     }
     
-    public ImageFromDockerfile withDockerfile(String pathname) {
-        this.dockerfile = Optional.of(new File(pathname));
-        return this;
-    }
 }

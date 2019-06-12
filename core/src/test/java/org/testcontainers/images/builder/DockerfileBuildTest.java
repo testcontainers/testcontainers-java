@@ -15,7 +15,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @RunWith(Parameterized.class)
 public class DockerfileBuildTest {
 
-    private static final Path RESOURCE_PATH = Paths.get("src/test/resources/dockerfile-build-test");
+    static final Path RESOURCE_PATH = Paths.get("src/test/resources/dockerfile-build-test");
 
     public String expectedFileContent;
     public ImageFromDockerfile image;
@@ -50,14 +50,7 @@ public class DockerfileBuildTest {
             new Object[]{"test4567",
                 new ImageFromDockerfile()
                     .withFileFromPath(".", RESOURCE_PATH)
-                    .withDockerfile(new File(RESOURCE_PATH.toFile(), "Dockerfile-alt"))
-            },
-            
-         // Dockerfile build using withDockerfile(String)
-            new Object[]{"test4567",
-                new ImageFromDockerfile()
-                    .withFileFromPath(".", RESOURCE_PATH)
-                    .withDockerfile("src/test/resources/dockerfile-build-test/Dockerfile-alt")
+                    .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-alt"))
             },
         };
     }
@@ -72,7 +65,6 @@ public class DockerfileBuildTest {
         try (final GenericContainer container = new GenericContainer(image)
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
             .withCommand("cat", "/test.txt")) {
-
             container.start();
 
             final String logs = container.getLogs();
