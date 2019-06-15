@@ -12,6 +12,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ComposeFileContainerTests {
 
     @Test
+    public void testContainerComposeV1ContainerNameComposeOptionValidation() {
+        try (
+            DockerComposeContainer composeContainer = new DockerComposeContainer(
+                new File("src/test/resources/docker-compose-v1-with-service-name-option.yml"))
+                .withExposedService("whoami_1", 80, Wait.forHttp("/"));
+        ) {
+            composeContainer.start();
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().equals("Compose file src/test/resources/docker-compose-v1-with-service-name-option.yml "
+                + "contains 'container_name' option which is not supported by container."));
+        }
+    }
+
+    @Test
     public void testContainerNameComposeOptionValidation() {
         try (
             DockerComposeContainer composeContainer = new DockerComposeContainer(

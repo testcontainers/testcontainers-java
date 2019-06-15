@@ -6,10 +6,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -29,7 +28,6 @@ import org.testcontainers.utility.*;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.constructor.ConstructorException;
-import org.yaml.snakeyaml.representer.Representer;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
@@ -673,53 +671,46 @@ class LocalDockerCompose implements DockerCompose {
     }
 }
 
+@Slf4j
 @UtilityClass
 class DockerComposePrecondition {
     private static final String CONTAINER_NAME_OPTION = "container_name";
-    private static final Yaml YAML = buildYamlParser();
+    private static final String VERSION_KEY = "version";
+    private static final Yaml YAML = new Yaml(new Constructor(Map.class));
 
     static void checkNotContainUnsupportedComposeOptions(List<File> composeFiles) {
-        composeFiles.forEach(file -> checkArgument(!containUnsupportedComposeOptions(file),
+        composeFiles.forEach(file -> checkArgument(!containsUnsupportedComposeOptions(file),
             String.format("Compose file %s contains '%s' option which is not supported by container.",
                 file,
                 CONTAINER_NAME_OPTION)));
     }
 
-    private static boolean containUnsupportedComposeOptions(File file) {
-        return transformToYamlFile(file)
-            .map(DockerComposeYamlFile::getServices)
-            .filter(services -> !services.isEmpty())
-            .map(services -> services.values()
-                .stream()
-                .anyMatch(service -> service.containsKey(CONTAINER_NAME_OPTION)))
-            .orElse(false);
-    }
-
-    private static Optional<DockerComposeYamlFile> transformToYamlFile(File file) {
+    @SuppressWarnings("unchecked")
+    private static boolean containsUnsupportedComposeOptions(File file) {
         try {
-            return Optional.of(YAML.load(FileUtils.openInputStream(file)));
+            return Optional.of(YAML.load(FileUtils.openInputStream(file)))
+                .map(yaml -> getServiceOptions((Map<String, Object>) yaml)
+                    .anyMatch(properties -> ((Map<String, Object>) properties).containsKey(CONTAINER_NAME_OPTION)))
+                .orElse(false);
         } catch (ConstructorException e) {
-            logger().warn(String.format("Unable to read yaml structure from compose file %s.", file.getName()), e);
-            return Optional.empty();
+            log.warn(String.format("Unable to read yaml structure from compose file %s.", file.getName()), e);
+            return false;
         } catch (IOException e) {
             throw new ContainerLaunchException(String.format("Unable to read compose file %s.", file.getName()), e);
+        } catch (Exception e) {
+            log.warn(e.getMessage(), e);
+            return false;
         }
     }
 
-    private static Yaml buildYamlParser() {
-        Representer representer = new Representer();
-        representer.getPropertyUtils().setSkipMissingProperties(true);
+    @SuppressWarnings("unchecked")
+    private static Stream<Object> getServiceOptions(Map<String, Object> yaml) {
+        if (yaml.containsKey(VERSION_KEY)) {
+            return ((Map) yaml.get("services")).values()
+                .stream();
+        }
 
-        return new Yaml(new Constructor(DockerComposeYamlFile.class), representer);
-    }
-
-    private static Logger logger() {
-        return LoggerFactory.getLogger(DockerComposePrecondition.class);
-    }
-
-    @Setter
-    @Getter
-    public class DockerComposeYamlFile {
-        private Map<String, Map<String, Object>> services;
+        return yaml.values()
+            .stream();
     }
 }

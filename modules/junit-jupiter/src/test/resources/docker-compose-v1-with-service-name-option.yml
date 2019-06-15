@@ -1,0 +1,3 @@
+whoami:
+    image: emilevauge/whoami
+    container_name: my_container
