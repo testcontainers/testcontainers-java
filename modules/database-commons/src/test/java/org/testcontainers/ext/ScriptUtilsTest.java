@@ -45,4 +45,17 @@ public class ScriptUtilsTest {
         assertEquals("SELECT * from `bar`", statements.get(4));
         assertEquals("INSERT INTO bar (foo) VALUES ('hello world')", statements.get(6));
     }
+
+
+    @Test
+    public void testKeywordsInName() throws IOException {
+        final String script = Resources.toString(Resources.getResource("parse-end.sql"), Charsets.UTF_8);
+
+        final List<String> statements = new ArrayList<>();
+        ScriptUtils.splitSqlScript("resourcename", script, ";", "--", "/*", "*/", statements);
+
+        assertEquals(3, statements.size());
+        assertEquals("CREATE TABLE gender (gender VARCHAR(255))", statements.get(1));
+        assertEquals("CREATE TABLE foo (bar VARCHAR(255))", statements.get(2));
+    }
 }

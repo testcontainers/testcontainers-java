@@ -163,10 +163,10 @@ public abstract class ScriptUtils {
 			}
 			final boolean inComment = inLineComment || inBlockComment;
 
-			if (!inLiteral && !inComment && containsSubstringAtOffset(lowerCaseScriptContent, "BEGIN", i)) {
+			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "BEGIN", i)) {
 				compoundStatementDepth++;
 			}
-			if (!inLiteral && !inComment && containsSubstringAtOffset(lowerCaseScriptContent, "END", i)) {
+			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "END", i)) {
 				compoundStatementDepth--;
 			}
 			final boolean inCompoundStatement = compoundStatementDepth != 0;
@@ -228,6 +228,18 @@ public abstract class ScriptUtils {
 
 		return lowercaseString.startsWith(lowercaseSubstring, offset);
 	}
+
+    private static boolean containsKeywordsAtOffset(String lowercaseString, String keywords, int offset) {
+        String lowercaseSubstring = keywords.toLowerCase();
+
+        boolean isSeperated = offset == 0;
+        if (offset > 0) {
+            char seperator = lowercaseString.charAt(offset - 1);
+            isSeperated = seperator == '\n' || seperator == '\t' || seperator == ' ';
+        }
+
+        return lowercaseString.startsWith(lowercaseSubstring, offset) && isSeperated;
+    }
 
 	private static void checkArgument(boolean expression, String errorMessage) {
 		if (!expression) {
