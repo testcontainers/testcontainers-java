@@ -58,4 +58,16 @@ public class ScriptUtilsTest {
         assertEquals("CREATE TABLE gender (gender VARCHAR(255))", statements.get(1));
         assertEquals("CREATE TABLE foo (bar VARCHAR(255))", statements.get(2));
     }
+
+    @Test
+    public void testComments() throws IOException {
+        final String script = Resources.toString(Resources.getResource("parse-comment.sql"), Charsets.UTF_8);
+
+        final List<String> statements = new ArrayList<>();
+        ScriptUtils.splitSqlScript("resourcename", script, ";", "--", "/*", "*/", statements);
+
+        assertEquals(3, statements.size());
+        assertEquals("INSERT INTO bar (foo) values ('--1')", statements.get(1));
+        assertEquals("INSERT INTO bar (foo) values ('--2')", statements.get(2));
+    }
 }

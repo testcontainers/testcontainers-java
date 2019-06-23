@@ -199,6 +199,7 @@ public abstract class ScriptUtils {
 					int indexOfCommentEnd = script.indexOf(blockCommentEndDelimiter, i);
 					if (indexOfCommentEnd > i) {
 						i = indexOfCommentEnd + blockCommentEndDelimiter.length() - 1;
+                        inBlockComment = false;
 						continue;
 					}
 					else {
