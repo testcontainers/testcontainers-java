@@ -168,7 +168,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServices() {
         // Run the docker-compose container, which starts up the services
-        runWithCompose("up -d " + String.join(" ", this.services));
+if(services.empty()) {
+    runWithCompose("up -d");
+} else {
+    runWithCompose("up -d " + String.join(" ", services));
+}
     }
 
     private void waitUntilServiceStarted() {
