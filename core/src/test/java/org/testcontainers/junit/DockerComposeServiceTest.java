@@ -21,12 +21,7 @@ public class DockerComposeServiceTest extends BaseDockerComposeTest {
         return environment;
     }
 
-<<<<<<< Updated upstream
-    // TODO: Map correct exception
-    @Test(expected = NullPointerException.class)
-=======
-    @Test/*(expected = NullPointerException.class)*/
->>>>>>> Stashed changes
+    @Test(expected = IllegalArgumentException.class)
     public void testDbIsNotStarting() {
         environment.getServicePort("db_1", 10001);
     }

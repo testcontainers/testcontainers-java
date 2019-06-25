@@ -384,12 +384,14 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a port that can be used for accessing the service container.
      */
     public Integer getServicePort(String serviceName, Integer servicePort) {
-        if(getServiceInstanceName(serviceName) == null) {
-            throw new IllegalArgumentException("Context: Getting the port of '" + serviceName + "'.\n" +
+        Map<Integer, Integer> portMap = ambassadorPortMappings.get(getServiceInstanceName(serviceName));
+
+        if(portMap == null) {
+            throw new IllegalArgumentException("\n\nContext: Getting the port of '" + serviceName + "'.\n" +
                 "Problem: '" + serviceName + "' does not exist.\n" +
                 "Solution: Expose the service '" + serviceName + "' at the container setup of this instance.");
         } else {
-            return ambassadorContainer.getMappedPort(ambassadorPortMappings.get(getServiceInstanceName(serviceName)).get(servicePort));
+            return ambassadorContainer.getMappedPort(portMap.get(servicePort));
         }
     }
 
