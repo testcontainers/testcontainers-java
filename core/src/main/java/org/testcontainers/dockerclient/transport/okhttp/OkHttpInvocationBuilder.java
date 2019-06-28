@@ -154,6 +154,13 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         if (stdin != null) {
             // FIXME there must be a better way of handling it
             okHttpClient = okHttpClient.newBuilder()
+                .hostnameVerifier(new HostnameVerifier() {
+                  @Override
+                  public boolean verify(String hostname, SSLSession session) {
+                    // trust the certificate wathever hostname
+                    return true;
+                  }
+                })
                 .addNetworkInterceptor(chain -> {
                     Response response = chain.proceed(chain.request());
                     if (response.isSuccessful()) {

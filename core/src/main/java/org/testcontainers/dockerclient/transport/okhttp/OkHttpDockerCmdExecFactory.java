@@ -40,6 +40,13 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
         super.init(dockerClientConfig);
 
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+            .hostnameVerifier(new HostnameVerifier() {
+              @Override
+              public boolean verify(String hostname, SSLSession session) {
+                // trust the certificate wathever hostname
+                return true;
+              }
+            })
             .readTimeout(0, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true);
 
