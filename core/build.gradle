@@ -92,6 +92,8 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
+    shaded "org.yaml:snakeyaml:1.21"
+
     shaded 'com.squareup.okhttp3:okhttp:3.14.2'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
@@ -109,6 +111,8 @@ dependencies {
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
+
+    testCompile 'org.assertj:assertj-core:3.12.2'
 
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
