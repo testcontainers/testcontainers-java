@@ -143,12 +143,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected Info dockerDaemonInfo = null;
 
-    /*
+    /**
      * Set during container startup
+     *
+     * @deprecated use {@link ContainerState#getContainerId()}
      */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerId;
 
+    /**
+     * Set during container startup
+     *
+     * @deprecated use {@link GenericContainer#getContainerInfo()}
+     */
     @Setter(AccessLevel.NONE)
     protected String containerName;
 
@@ -188,12 +196,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = image;
     }
 
+    public String getContainerId() {
+        return containerInfo != null ? containerInfo.getId() : null;
+    }
+
     /**
      * Starts the container using docker, pulling an image if necessary.
      */
     @Override
     public void start() {
-        if (containerId != null) {
+        if (getContainerId() != null) {
             return;
         }
         doStart();
@@ -219,6 +231,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void tryStart() {
+        String containerId = null;
         try {
             String dockerImageName = image.get();
             logger().debug("Starting container: {}", dockerImageName);
@@ -227,7 +240,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
-            containerId = createCommand.exec().getId();
+            containerId = this.containerId = createCommand.exec().getId();
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
 
@@ -295,7 +308,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void connectToPortForwardingNetwork(String networkMode) {
         PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
             if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
-                dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+                dockerClient.connectToNetworkCmd().withContainerId(getContainerId()).withNetworkId(networkId).exec();
             }
         });
     }
@@ -305,8 +318,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void stop() {
-
-        if (containerId == null) {
+        if (getContainerId() == null) {
             return;
         }
 
@@ -319,9 +331,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 imageName = "<unknown>";
             }
 
-            ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            ResourceReaper.instance().stopAndRemoveContainer(getContainerId(), imageName);
         } finally {
-            containerId = null;
             containerInfo = null;
         }
     }
@@ -1064,7 +1075,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarArchive.finish();
 
             dockerClient
-                .copyArchiveToContainerCmd(containerId)
+                .copyArchiveToContainerCmd(getContainerId())
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
                 .withRemotePath(extractArchiveTo)
                 .exec();
@@ -1092,7 +1103,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         try (
-            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(containerId, containerPath).exec();
+            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
             TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
         ) {
             tarInputStream.getNextTarEntry();

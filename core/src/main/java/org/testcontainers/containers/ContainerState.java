@@ -170,7 +170,10 @@ public interface ContainerState {
     /**
      * @return the id of the container
      */
-    String getContainerId();
+    default String getContainerId() {
+        InspectContainerResponse containerInfo = getContainerInfo();
+        return containerInfo != null ? containerInfo.getId() : null;
+    }
 
     /**
      * @return the container info
