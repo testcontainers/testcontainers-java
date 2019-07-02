@@ -334,6 +334,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
         } finally {
+            containerId = null;
             containerInfo = null;
         }
     }
