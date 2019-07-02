@@ -242,7 +242,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             containerId = this.containerId = createCommand.exec().getId();
 
-            connectToPortForwardingNetwork(createCommand.getNetworkMode());
+            connectToPortForwardingNetwork(containerId, createCommand.getNetworkMode());
 
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
@@ -305,10 +305,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return config;
     }
 
-    private void connectToPortForwardingNetwork(String networkMode) {
+    private void connectToPortForwardingNetwork(String containerId, String networkMode) {
         PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
             if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
-                dockerClient.connectToNetworkCmd().withContainerId(getContainerId()).withNetworkId(networkId).exec();
+                dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
             }
         });
     }
