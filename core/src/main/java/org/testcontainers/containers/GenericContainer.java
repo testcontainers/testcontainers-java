@@ -145,6 +145,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Set during container startup
+     * // TODO make it private
      *
      * @deprecated use {@link ContainerState#getContainerId()}
      */
@@ -197,7 +198,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public String getContainerId() {
-        return containerInfo != null ? containerInfo.getId() : null;
+        return containerId;
     }
 
     /**
@@ -205,7 +206,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void start() {
-        if (getContainerId() != null) {
+        if (containerId != null) {
             return;
         }
         doStart();
@@ -231,7 +232,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void tryStart() {
-        String containerId = null;
         try {
             String dockerImageName = image.get();
             logger().debug("Starting container: {}", dockerImageName);
@@ -240,9 +240,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
-            containerId = this.containerId = createCommand.exec().getId();
+            containerId = createCommand.exec().getId();
 
-            connectToPortForwardingNetwork(containerId, createCommand.getNetworkMode());
+            connectToPortForwardingNetwork(createCommand.getNetworkMode());
 
             copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
@@ -305,7 +305,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return config;
     }
 
-    private void connectToPortForwardingNetwork(String containerId, String networkMode) {
+    private void connectToPortForwardingNetwork(String networkMode) {
         PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
             if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
                 dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
@@ -318,7 +318,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void stop() {
-        if (getContainerId() == null) {
+
+        if (containerId == null) {
             return;
         }
 
@@ -331,7 +332,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 imageName = "<unknown>";
             }
 
-            ResourceReaper.instance().stopAndRemoveContainer(getContainerId(), imageName);
+            ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
         } finally {
             containerInfo = null;
         }
@@ -1075,7 +1076,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarArchive.finish();
 
             dockerClient
-                .copyArchiveToContainerCmd(getContainerId())
+                .copyArchiveToContainerCmd(containerId)
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
                 .withRemotePath(extractArchiveTo)
                 .exec();
@@ -1103,7 +1104,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         try (
-            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
+            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(containerId, containerPath).exec();
             TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
         ) {
             tarInputStream.getNextTarEntry();
