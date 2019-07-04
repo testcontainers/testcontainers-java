@@ -159,6 +159,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @deprecated use {@link GenericContainer#getContainerInfo()}
      */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerName;
 
     @Setter(AccessLevel.NONE)
