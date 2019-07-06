@@ -224,6 +224,10 @@ public abstract class ScriptUtils {
 		}
 	}
 
+	private static boolean isValidName(char c) {
+	    return (c >= 97 && c <= 122) || c == '_';
+    }
+
 	private static boolean containsSubstringAtOffset(String lowercaseString, String substring, int offset) {
 		String lowercaseSubstring = substring.toLowerCase();
 
@@ -231,15 +235,13 @@ public abstract class ScriptUtils {
 	}
 
     private static boolean containsKeywordsAtOffset(String lowercaseString, String keywords, int offset) {
-        String lowercaseSubstring = keywords.toLowerCase();
+        String lowercaseKeywords = keywords.toLowerCase();
 
-        boolean isSeperated = offset == 0;
-        if (offset > 0) {
-            char seperator = lowercaseString.charAt(offset - 1);
-            isSeperated = seperator == '\n' || seperator == '\t' || seperator == ' ';
-        }
+        boolean frontSeperated = (offset == 0) || !isValidName(lowercaseString.charAt(offset - 1));
+        boolean backSeperated = (offset >= (lowercaseString.length() - keywords.length())) ||
+            !isValidName(lowercaseString.charAt(offset + keywords.length()));
 
-        return lowercaseString.startsWith(lowercaseSubstring, offset) && isSeperated;
+        return frontSeperated && backSeperated && lowercaseString.startsWith(lowercaseKeywords, offset);
     }
 
 	private static void checkArgument(boolean expression, String errorMessage) {

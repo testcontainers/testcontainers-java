@@ -1,5 +1,6 @@
 CREATE TABLE bar (foo VARCHAR(255));
 
 CREATE TABLE gender (gender VARCHAR(255));
+CREATE TABLE ending (ending VARCHAR(255));
 
 CREATE TABLE foo (bar VARCHAR(255));
