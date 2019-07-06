@@ -559,7 +559,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
-        final Integer exitCode = this.dockerClient.inspectContainerCmd(containerId)
+        final Integer exitCode = this.dockerClient.inspectContainerCmd(getContainerId())
                 .exec()
                 .getState()
                 .getExitCode();
