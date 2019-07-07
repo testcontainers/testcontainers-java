@@ -46,6 +46,7 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mysql://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=file:sql/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename", EnumSet.noneOf(Options.class)},
@@ -197,8 +198,8 @@ public class JDBCDriverTest {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
         boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
             rs.next();
-            String resultSetInt = rs.getString(2);
-            assertEquals("Passing query parameters to set DB connection encoding is successful", "utf8", resultSetInt);
+            String resultSetString = rs.getString(2);
+            assertTrue("Passing query parameters to set DB connection encoding is successful", resultSetString.startsWith("utf8"));
             return true;
         });
 

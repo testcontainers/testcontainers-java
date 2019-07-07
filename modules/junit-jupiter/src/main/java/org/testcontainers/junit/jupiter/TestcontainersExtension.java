@@ -152,7 +152,7 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
             if (isAnnotatedWithContainer) {
                 boolean isStartable = Startable.class.isAssignableFrom(field.getType());
                 if (!isStartable) {
-                    throw new ExtensionConfigurationException("Annotation is only supported for Startable types");
+                    throw new ExtensionConfigurationException(String.format("FieldName: %s does not implement Startable", field.getName()));
                 }
                 return true;
             }

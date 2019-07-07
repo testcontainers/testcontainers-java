@@ -7,6 +7,8 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.google.common.base.Preconditions;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.utility.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,6 +149,22 @@ public interface ContainerState {
             .filter(Objects::nonNull)
             .map(Integer::valueOf)
             .collect(Collectors.toList());
+    }
+
+
+    /**
+     * @return all log output from the container from start until the current instant (both stdout and stderr)
+     */
+    default String getLogs() {
+        return LogUtils.getOutput(DockerClientFactory.instance().client(), getContainerId());
+    }
+
+    /**
+     * @param types log types to return
+     * @return all log output from the container from start until the current instant
+     */
+    default String getLogs(OutputFrame.OutputType... types) {
+        return LogUtils.getOutput(DockerClientFactory.instance().client(), getContainerId(), types);
     }
 
     /**
