@@ -75,6 +75,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private static final Object MUTEX = new Object();
 
+    private List<String> services = new ArrayList<>();
+
     /**
      * Properties that should be passed through to all Compose and ambassador containers (not
      * necessarily to containers that are spawned by Compose itself)
@@ -159,10 +161,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         runWithCompose("pull");
     }
 
+    public SELF withServices(@NonNull String... services) {
+        this.services = Arrays.asList(services);
+        return self();
+    }
 
     private void createServices() {
         // Run the docker-compose container, which starts up the services
-        runWithCompose("up -d");
+        if(services.isEmpty()) {
+            runWithCompose("up -d");
+        } else {
+            runWithCompose("up -d " + String.join(" ", services));
+        }
     }
 
     private void waitUntilServiceStarted() {
@@ -559,7 +569,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
-        final Integer exitCode = this.dockerClient.inspectContainerCmd(containerId)
+        final Integer exitCode = this.dockerClient.inspectContainerCmd(getContainerId())
                 .exec()
                 .getState()
                 .getExitCode();
