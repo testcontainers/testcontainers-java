@@ -78,7 +78,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
                         };
 
                         try (
-                                Closeable __ = dockerClient.logContainerCmd(containerId)
+                                Closeable __ = dockerClient.logContainerCmd(getContainerId())
                                         .withFollowStream(true)
                                         .withSince(0)
                                         .withStdErr(true)
@@ -122,7 +122,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     @SneakyThrows
     public InputStream streamRecording() {
         TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
-                dockerClient.copyArchiveFromContainerCmd(containerId, RECORDING_FILE_NAME).exec()
+                dockerClient.copyArchiveFromContainerCmd(getContainerId(), RECORDING_FILE_NAME).exec()
         );
         archiveInputStream.getNextEntry();
         return archiveInputStream;
