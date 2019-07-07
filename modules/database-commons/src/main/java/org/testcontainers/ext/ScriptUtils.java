@@ -228,8 +228,7 @@ public abstract class ScriptUtils {
                                        String blockCommentStartDelimiter) {
 	    return c == ' ' || c == '\r' || c == '\n' || c == '\t' ||
             c == separator.charAt(0) || c == separator.charAt(separator.length() - 1) ||
-            c == commentPrefix.charAt(0) || c == commentPrefix.charAt(commentPrefix.length() - 1) ||
-            c == blockCommentStartDelimiter.charAt(0) ||
+            c == commentPrefix.charAt(0) || c == blockCommentStartDelimiter.charAt(0) ||
             c == blockCommentStartDelimiter.charAt(blockCommentStartDelimiter.length() - 1);
     }
 
