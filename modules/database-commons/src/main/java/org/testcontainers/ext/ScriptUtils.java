@@ -124,6 +124,7 @@ public abstract class ScriptUtils {
 		Character currentLiteralDelimiter = null;
 
 		int compoundStatementDepth = 0;
+		final String lowerCaseScriptContent = script.toLowerCase();
 		char[] content = script.toCharArray();
 		for (int i = 0; i < script.length(); i++) {
 			char c = content[i];
@@ -148,24 +149,24 @@ public abstract class ScriptUtils {
 			}
 			final boolean inLiteral = currentLiteralDelimiter != null;
 
-			if (!inLiteral && containsSubstringAtOffset(script, commentPrefix, i)) {
+			if (!inLiteral && containsSubstringAtOffset(lowerCaseScriptContent, commentPrefix, i)) {
 				inLineComment = true;
 			}
  			if (inLineComment && c == '\n') {
 				inLineComment = false;
 			}
-			if (!inLiteral && containsSubstringAtOffset(script, blockCommentStartDelimiter, i)) {
+			if (!inLiteral && containsSubstringAtOffset(lowerCaseScriptContent, blockCommentStartDelimiter, i)) {
 				inBlockComment = true;
 			}
-			if (!inLiteral && inBlockComment && containsSubstringAtOffset(script, blockCommentEndDelimiter, i)) {
+			if (!inLiteral && inBlockComment && containsSubstringAtOffset(lowerCaseScriptContent, blockCommentEndDelimiter, i)) {
 				inBlockComment = false;
 			}
 			final boolean inComment = inLineComment || inBlockComment;
 
-			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "BEGIN", i)) {
+			if (!inLiteral && !inComment && containsSubstringAtOffset(lowerCaseScriptContent, "BEGIN", i)) {
 				compoundStatementDepth++;
 			}
-			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "END", i)) {
+			if (!inLiteral && !inComment && containsSubstringAtOffset(lowerCaseScriptContent, "END", i)) {
 				compoundStatementDepth--;
 			}
 			final boolean inCompoundStatement = compoundStatementDepth != 0;
@@ -205,7 +206,7 @@ public abstract class ScriptUtils {
 							blockCommentEndDelimiter), resource);
 					}
 				}
-				else if (c == ' ' || c == '\n' || c == '\t') {
+				else if (c == ' ' || c == '\n' || c == '\t' || c == '\r') {
 					// avoid multiple adjacent whitespace characters
 					if (sb.length() > 0 && sb.charAt(sb.length() - 1) != ' ') {
 						c = ' ';
@@ -222,8 +223,7 @@ public abstract class ScriptUtils {
 		}
 	}
 
-	private static boolean containsSubstringAtOffset(String string, String substring, int offset) {
-		String lowercaseString = string.toLowerCase();
+	private static boolean containsSubstringAtOffset(String lowercaseString, String substring, int offset) {
 		String lowercaseSubstring = substring.toLowerCase();
 
 		return lowercaseString.startsWith(lowercaseSubstring, offset);

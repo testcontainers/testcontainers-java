@@ -2,10 +2,6 @@ language: java
 jdk:
   - oraclejdk8
 
-branches:
-  only:
-  - master
-
 sudo: required
 services:
   - docker
@@ -26,7 +22,7 @@ jobs:
 
     - stage: test
       env: [ NAME=core ]
-      jdk: openjdk-ea
+      jdk: openjdk12
       script: ./gradlew testcontainers:check --scan --no-daemon
 
     - env: [ NAME=selenium ]
