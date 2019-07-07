@@ -54,10 +54,11 @@ public class ScriptUtilsTest {
         final List<String> statements = new ArrayList<>();
         ScriptUtils.splitSqlScript("resourcename", script, ";", "--", "/*", "*/", statements);
 
-        assertEquals(4, statements.size());
+        assertEquals(10, statements.size());
         assertEquals("CREATE TABLE gender (gender VARCHAR(255))", statements.get(1));
         assertEquals("CREATE TABLE ending (ending VARCHAR(255))", statements.get(2));
-        assertEquals("CREATE TABLE foo (bar VARCHAR(255))", statements.get(3));
+        assertEquals("CREATE TABLE end2 (end2 VARCHAR(255))", statements.get(3));
+        assertEquals("CREATE TABLE foo (bar VARCHAR(255))", statements.get(9));
     }
 
     @Test

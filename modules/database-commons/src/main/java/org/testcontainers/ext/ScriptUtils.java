@@ -163,10 +163,10 @@ public abstract class ScriptUtils {
 			}
 			final boolean inComment = inLineComment || inBlockComment;
 
-			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "BEGIN", i)) {
+			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "BEGIN", i, separator, commentPrefix, blockCommentStartDelimiter)) {
 				compoundStatementDepth++;
 			}
-			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "END", i)) {
+			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "END", i, separator, commentPrefix, blockCommentStartDelimiter)) {
 				compoundStatementDepth--;
 			}
 			final boolean inCompoundStatement = compoundStatementDepth != 0;
@@ -224,8 +224,13 @@ public abstract class ScriptUtils {
 		}
 	}
 
-	private static boolean isValidName(char c) {
-	    return (c >= 'a' && c <= 'z') || c == '_';
+	private static boolean isSeperator(char c, String separator, String commentPrefix,
+                                       String blockCommentStartDelimiter) {
+	    return c == ' ' || c == '\r' || c == '\n' || c == '\t' ||
+            c == separator.charAt(0) || c == separator.charAt(separator.length() - 1) ||
+            c == commentPrefix.charAt(0) || c == commentPrefix.charAt(commentPrefix.length() - 1) ||
+            c == blockCommentStartDelimiter.charAt(0) ||
+            c == blockCommentStartDelimiter.charAt(blockCommentStartDelimiter.length() - 1);
     }
 
 	private static boolean containsSubstringAtOffset(String lowercaseString, String substring, int offset) {
@@ -234,12 +239,16 @@ public abstract class ScriptUtils {
 		return lowercaseString.startsWith(lowercaseSubstring, offset);
 	}
 
-    private static boolean containsKeywordsAtOffset(String lowercaseString, String keywords, int offset) {
+    private static boolean containsKeywordsAtOffset(String lowercaseString, String keywords, int offset,
+                                                    String separator, String commentPrefix,
+                                                    String blockCommentStartDelimiter) {
         String lowercaseKeywords = keywords.toLowerCase();
 
-        boolean backSeperated = (offset == 0) || !isValidName(lowercaseString.charAt(offset - 1));
+        boolean backSeperated = (offset == 0) || isSeperator(lowercaseString.charAt(offset - 1),
+            separator, commentPrefix, blockCommentStartDelimiter);
         boolean frontSeperated = (offset >= (lowercaseString.length() - keywords.length())) ||
-            !isValidName(lowercaseString.charAt(offset + keywords.length()));
+            isSeperator(lowercaseString.charAt(offset + keywords.length()),
+                separator, commentPrefix, blockCommentStartDelimiter);
 
         return backSeperated && frontSeperated && lowercaseString.startsWith(lowercaseKeywords, offset);
     }
