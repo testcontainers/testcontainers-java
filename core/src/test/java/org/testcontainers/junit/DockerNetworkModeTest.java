@@ -1,20 +1,12 @@
 package org.testcontainers.junit;
 
-import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.NetworkSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.*;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.output.ToStringConsumer;
-import org.testcontainers.containers.output.WaitingConsumer;
-import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
-import org.testcontainers.utility.TestEnvironment;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 /**
@@ -24,61 +16,35 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @Slf4j
 public class DockerNetworkModeTest {
 
-    @BeforeClass
-    public static void checkVersion() {
-        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
-    }
-
     @Test
-    public void testNoNetworkContainer() throws TimeoutException {
-        try (GenericContainer container = pingingContainer().withNetworkMode("none")) {
+    public void testNoNetworkContainer() {
+        try (
+            GenericContainer container = new GenericContainer()
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withCommand("true")
+                .withNetworkMode("none")
+        ) {
             container.start();
-            String output = getContainerOutput(container);
+            NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-            assertTrue("'none' network causes a network access error", output.contains("bad address"));
+            assertEquals("only one network is set", 1, networkSettings.getNetworks().size());
+            assertTrue("network is 'none'", networkSettings.getNetworks().containsKey("none"));
         }
     }
 
     @Test
-    public void testHostNetworkContainer() throws TimeoutException {
-        try (GenericContainer container = pingingContainer().withNetworkMode("host")) {
+    public void testHostNetworkContainer() {
+        try (
+            GenericContainer container = new GenericContainer()
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withCommand("true")
+                .withNetworkMode("host")
+        ) {
             container.start();
-            String output = getContainerOutput(container);
+            NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-            assertTrue("'host' network can access the internet", output.contains("seq=0"));
+            assertEquals("only one network is set", 1, networkSettings.getNetworks().size());
+            assertTrue("network is 'host'", networkSettings.getNetworks().containsKey("host"));
         }
-    }
-
-    @Test
-    public void testBridgedNetworkContainer() throws TimeoutException {
-        try (GenericContainer container = pingingContainer().withNetworkMode("bridge")) {
-            container.start();
-            String output = getContainerOutput(container);
-
-            assertTrue("'bridge' network can access the internet", output.contains("seq=0"));
-        }
-    }
-
-    private GenericContainer<?> pingingContainer() {
-        return new GenericContainer<>()
-            .withStartupCheckStrategy(new StartupCheckStrategy() {
-                @Override
-                public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
-                    return StartupStatus.SUCCESSFUL;
-                }
-            })
-            .withLogConsumer(new Slf4jLogConsumer(log))
-            .withCommand("ping -c 1 -w 1 testcontainers.org");
-    }
-
-    private String getContainerOutput(GenericContainer container) throws TimeoutException {
-        WaitingConsumer waitingConsumer = new WaitingConsumer();
-        ToStringConsumer toStringConsumer = new ToStringConsumer();
-        Consumer<OutputFrame> composedConsumer = waitingConsumer.andThen(toStringConsumer);
-
-        container.followOutput(composedConsumer);
-        waitingConsumer.waitUntilEnd(10, TimeUnit.SECONDS);
-
-        return toStringConsumer.toUtf8String();
     }
 }
