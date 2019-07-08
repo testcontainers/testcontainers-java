@@ -1,10 +1,14 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.DockerClient;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.util.concurrent.TimeUnit;
@@ -17,6 +21,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
  * Simple tests of named network modes - more may be possible, but may not be reproducible
  * without other setup steps.
  */
+@Slf4j
 public class DockerNetworkModeTest {
 
     @BeforeClass
@@ -24,40 +29,46 @@ public class DockerNetworkModeTest {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
 
-    @ClassRule
-    public static GenericContainer noNetwork = new GenericContainer("alpine:3.2")
-            .withNetworkMode("none")
-            .withCommand("ping -c 5 www.google.com");
-
-    @ClassRule
-    public static GenericContainer hostNetwork = new GenericContainer("alpine:3.2")
-            .withNetworkMode("host")
-            .withCommand("ping -c 5 www.google.com");
-
-    @ClassRule
-    public static GenericContainer bridgedNetwork = new GenericContainer("alpine:3.2")
-            .withNetworkMode("bridge")
-            .withCommand("ping -c 5 www.google.com");
-
     @Test
     public void testNoNetworkContainer() throws TimeoutException {
-        String output = getContainerOutput(noNetwork);
+        try (GenericContainer container = pingingContainer().withNetworkMode("none")) {
+            container.start();
+            String output = getContainerOutput(container);
 
-        assertTrue("'none' network causes a network access error", output.contains("bad address"));
+            assertTrue("'none' network causes a network access error", output.contains("bad address"));
+        }
     }
 
     @Test
     public void testHostNetworkContainer() throws TimeoutException {
-        String output = getContainerOutput(hostNetwork);
+        try (GenericContainer container = pingingContainer().withNetworkMode("host")) {
+            container.start();
+            String output = getContainerOutput(container);
 
-        assertTrue("'host' network can access the internet", output.contains("seq=1"));
+            assertTrue("'host' network can access the internet", output.contains("seq=0"));
+        }
     }
 
     @Test
     public void testBridgedNetworkContainer() throws TimeoutException {
-        String output = getContainerOutput(bridgedNetwork);
+        try (GenericContainer container = pingingContainer().withNetworkMode("bridge")) {
+            container.start();
+            String output = getContainerOutput(container);
 
-        assertTrue("'bridge' network can access the internet", output.contains("seq=1"));
+            assertTrue("'bridge' network can access the internet", output.contains("seq=0"));
+        }
+    }
+
+    private GenericContainer<?> pingingContainer() {
+        return new GenericContainer<>()
+            .withStartupCheckStrategy(new StartupCheckStrategy() {
+                @Override
+                public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
+                    return StartupStatus.SUCCESSFUL;
+                }
+            })
+            .withLogConsumer(new Slf4jLogConsumer(log))
+            .withCommand("ping -c 1 -w 1 testcontainers.org");
     }
 
     private String getContainerOutput(GenericContainer container) throws TimeoutException {
