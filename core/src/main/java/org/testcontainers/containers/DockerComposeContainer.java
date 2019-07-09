@@ -21,7 +21,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.AuditLogger;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.CommandLine;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.LogUtils;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
@@ -32,7 +39,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -501,20 +517,34 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         addEnv(ENV_PROJECT_NAME, identifier);
 
-        // Map the docker compose file into the container
-        final File dockerComposeBaseFile = composeFiles.get(0);
-        final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
+        final String pwd = composeFiles.stream()
+            .findFirst()
+            .orElseThrow(() -> new NoSuchElementException("No docker compose file have been provided"))
+            .getParentFile()
+            .getAbsolutePath();
         final String containerPwd = MountableFile.forHostPath(pwd).getFilesystemPath();
 
-        final List<String> absoluteDockerComposeFiles = composeFiles.stream()
-                .map(File::getAbsolutePath)
-                .map(MountableFile::forHostPath)
-                .map(MountableFile::getFilesystemPath)
-                .collect(toList());
-        final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
+        final List<MountableFile> mountableComposeFiles = composeFiles.stream()
+            .map(File::getAbsolutePath)
+            .map(MountableFile::forHostPath)
+            .collect(toList());
+        // Map/copy the docker compose files into the container
+        if (Files.exists(Paths.get("/.dockerenv"))) {
+            // We're executing within docker, need to copy files in, since
+            // Binds won't work; The docker deamon will try to bind files from the host os (not our docker container)
+            // In this case you need to specify all the files you want to mount
+            mountableComposeFiles.forEach(composeFile ->
+                copyFileToContainer(composeFile, composeFile.getResolvedPath()));
+        } else {
+            // Map the docker compose file into the container
+            addFileSystemBind(pwd, containerPwd, READ_ONLY);
+        }
+
+        final String composeFileEnvVariableValue = mountableComposeFiles.stream()
+            .map(MountableFile::getFilesystemPath)
+            .collect(joining(UNIX_PATH_SEPERATOR + "")); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
-        addFileSystemBind(pwd, containerPwd, READ_ONLY);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
