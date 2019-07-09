@@ -403,15 +403,13 @@ public class GenericContainerRuleTest {
 
     @Test
     public void sharedMemorySetTest() {
-        try (GenericContainer containerWithSharedMemory = new GenericContainer("busybox:1.29")
-            .withSharedMemorySize(1024L * FileUtils.ONE_MB)) {
+        try (GenericContainer containerWithSharedMemory = new GenericContainer()
+            .withSharedMemorySize(42L * FileUtils.ONE_MB)) {
 
             containerWithSharedMemory.start();
 
-            HostConfig hostConfig =
-                containerWithSharedMemory.getDockerClient().inspectContainerCmd(containerWithSharedMemory.getContainerId())
-                    .exec().getHostConfig();
-            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+            HostConfig hostConfig = containerWithSharedMemory.getContainerInfo().getHostConfig();
+            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 42L * FileUtils.ONE_MB);
         }
     }
 }
