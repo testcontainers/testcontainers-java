@@ -1,35 +1,33 @@
-project.afterEvaluate {
-    tasks.withType(Test) {
-        if (name.endsWith("Rerun")) {
-            // Avoid recursion
-            return
+tasks.withType(Test) {
+    if (name.endsWith("Rerun")) {
+        // Avoid recursion
+        return
+    }
+
+    def rerunTask = tasks.register("${name}Rerun", Test) {
+        // Enabled only when there are failures (see `afterTest`)
+        enabled = false
+        failFast = true // ¯\_(ツ)_/¯
+        outputs.upToDateWhen { false }
+
+        beforeTest { desc -> logger.warn("Re-running ${desc.className}.${desc.name}") }
+
+        testLogging {
+            displayGranularity 1
+            showStackTraces = true
+            exceptionFormat = 'full'
+            events "STARTED", "PASSED", "FAILED", "SKIPPED"
         }
+    }
 
-        def rerunTask = tasks.register("${name}Rerun", Test) {
-            // Enabled only when there are failures (see `afterTest`)
-            enabled = false
-            failFast = true // ¯\_(ツ)_/¯
-            outputs.upToDateWhen { false }
+    ignoreFailures = true
+    finalizedBy(rerunTask)
 
-            beforeTest { desc -> logger.warn("Re-running ${desc.className}.${desc.name}") }
-
-            testLogging {
-                displayGranularity 1
-                showStackTraces = true
-                exceptionFormat = 'full'
-                events "STARTED", "PASSED", "FAILED", "SKIPPED"
-            }
-        }
-
-        ignoreFailures = true
-        finalizedBy(rerunTask)
-
-        afterTest { desc, result ->
-            if (TestResult.ResultType.FAILURE == result.resultType) {
-                rerunTask.configure {
-                    enabled = true
-                    filter.includeTestsMatching("${desc.className}.${desc.name}")
-                }
+    afterTest { desc, result ->
+        if (TestResult.ResultType.FAILURE == result.resultType) {
+            rerunTask.configure {
+                enabled = true
+                filter.includeTestsMatching("${desc.className}.${desc.name}")
             }
         }
     }
