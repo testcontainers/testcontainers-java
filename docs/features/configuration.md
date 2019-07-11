@@ -32,7 +32,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **tinyimage.container.image = alpine:3.5**  
 > Used by Testcontainers' core
 
-> **vncrecorder.container.image = quay.io/testcontainers/vnc-recorder:1.1.0**  
+> **vncrecorder.container.image = quay.io/testcontainers/vnc-recorder:1.1.0**    
 > Used by VNC recorder in Testcontainers' Seleniun integration
 
 > **ambassador.container.image = richnorth/ambassador:latest**  
@@ -41,6 +41,9 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 
 > **kafka.container.image = confluentinc/cp-kafka**  
 > Used by KafkaContainer 
+
+> **localstack.container.image = localstack/localstack:0.8.6**  
+> Use by LocalStackContainer
 
 ## Customizing Ryuk resource reaper
 

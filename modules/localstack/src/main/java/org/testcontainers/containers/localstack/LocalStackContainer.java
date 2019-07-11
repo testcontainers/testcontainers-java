@@ -37,7 +37,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     public LocalStackContainer(String version) {
-        super("localstack/localstack:" + version);
+        super(TestcontainersConfiguration.getInstance().getLocalStackImage().split(":")[0] + ":" + version);
 
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));

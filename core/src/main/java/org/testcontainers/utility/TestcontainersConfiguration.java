@@ -1,11 +1,14 @@
 package org.testcontainers.utility;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -18,8 +21,9 @@ import java.util.stream.Stream;
 public class TestcontainersConfiguration {
 
     private static String PROPERTIES_FILE_NAME = "testcontainers.properties";
+    private static String SYSTEM_PROPERTY_USER_HOME = "user.home";
 
-    private static File GLOBAL_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
+    private static File GLOBAL_CONFIG_FILE = new File(System.getProperty(SYSTEM_PROPERTY_USER_HOME), "." + PROPERTIES_FILE_NAME);
 
     @Getter(lazy = true)
     private static final TestcontainersConfiguration instance = loadConfiguration();
@@ -144,5 +148,18 @@ public class TestcontainersConfiguration {
         }
 
         return config;
+    }
+
+    /**
+     * <p>Only for testing to workaround the limitations of static, lazy singletons enforced by lombok</p>
+     * @param directoryForGlobalProps if null, defaults to {@code System.property("user.home") }
+     */
+    @VisibleForTesting
+    public void resetConfiguration(@Nullable String directoryForGlobalProps) {
+        String localToUser = Optional.ofNullable(directoryForGlobalProps)
+            .orElse(System.getProperty(SYSTEM_PROPERTY_USER_HOME));
+        GLOBAL_CONFIG_FILE = new File(localToUser + "." + PROPERTIES_FILE_NAME);
+        properties.clear();
+        loadConfiguration();
     }
 }
