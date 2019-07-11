@@ -33,16 +33,20 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private final List<Service> services = new ArrayList<>();
 
     public LocalStackContainer() {
-        this(TestcontainersConfiguration.getInstance().getLocalStackImage().split(":")[1]);
+        super(TestcontainersConfiguration.getInstance().getLocalStackImage());
+        sharedSetup();
     }
 
     public LocalStackContainer(String version) {
-        super(TestcontainersConfiguration.getInstance().getLocalStackImage().split(":")[0] + ":" + version);
+        super("localstack/localstack:" + version);
+        sharedSetup();
+    }
 
+    private void sharedSetup() {
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
     }
-
+    
     @Override
     protected void configure() {
         super.configure();
