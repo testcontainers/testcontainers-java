@@ -74,6 +74,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar");
     }
 
+    public String getLocalStackImage() {
+        return (String) properties.getOrDefault("localstack.container.image", "localstack/localstack:0.8.6");
+    }
+
     public boolean isDisableChecks() {
         return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
     }
@@ -152,6 +156,7 @@ public class TestcontainersConfiguration {
 
     /**
      * <p>Only for testing to workaround the limitations of static, lazy singletons enforced by lombok</p>
+     *
      * @param directoryForGlobalProps if null, defaults to {@code System.property("user.home") }
      */
     @VisibleForTesting

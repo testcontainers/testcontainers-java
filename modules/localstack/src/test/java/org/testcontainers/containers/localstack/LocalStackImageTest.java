@@ -34,6 +34,13 @@ public class LocalStackImageTest {
         Assert.assertEquals(alt, container.getDockerImageName());
     }
 
+    @Test
+    public void defaultImageDifferentVersion() {
+        String altVersion = "0.9.5";
+        LocalStackContainer container = new LocalStackContainer(altVersion);
+        Assert.assertEquals("localstack/localstack:" + altVersion, container.getDockerImageName());
+    }
+
     @AfterClass
     public static void cleanup() {
         TestcontainersConfiguration instance = TestcontainersConfiguration.getInstance();

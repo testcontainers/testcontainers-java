@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -28,12 +29,11 @@ import java.util.stream.Collectors;
  */
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
-    public static final String VERSION = "0.8.6";
 
     private final List<Service> services = new ArrayList<>();
 
     public LocalStackContainer() {
-        this(VERSION);
+        this(TestcontainersConfiguration.getInstance().getLocalStackImage().split(":")[1]);
     }
 
     public LocalStackContainer(String version) {
