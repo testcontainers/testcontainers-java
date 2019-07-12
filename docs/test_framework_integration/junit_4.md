@@ -18,7 +18,7 @@ public class SimpleMySQLTest {
 
 ## Manually controlling container lifecycle
 
-As an alternative, you can manually start the container in a `@BeforeClass`/`@Before` annotated method in your tests. Tear down will be done automatically on JVM exit, but you can of course also use an `@AfterClass`/`@After` annotated method to manually call the `close()` method on your container.
+As an alternative, you can manually start the container in a `@BeforeClass`/`@Before` annotated method in your tests. Tear down will be done automatically on JVM exit, but you can of course also use an `@AfterClass`/`@After` annotated method to manually call the `stop()` method on your container.
 
 *Example of starting a container in a `@Before` annotated method:*
 

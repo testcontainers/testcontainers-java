@@ -93,6 +93,7 @@ public class ContainerDatabaseDriver implements Driver {
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
                     if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
                         container = candidateContainerType.newInstance(connectionUrl);
+                        container.withTmpFs(connectionUrl.getTmpfsOptions());
                         delegate = container.getJdbcDriverInstance();
                     }
                 }

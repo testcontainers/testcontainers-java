@@ -14,7 +14,7 @@ dependencies {
 
     testCompile 'com.google.guava:guava:18.0'
     testCompile 'org.postgresql:postgresql:42.0.0'
-    testCompile 'mysql:mysql-connector-java:5.1.45'
+    testCompile 'mysql:mysql-connector-java:8.0.14'
     testCompile 'org.mariadb.jdbc:mariadb-java-client:1.4.6'
     testCompile 'com.oracle:ojdbc6:12.1.0.1-atlassian-hosted'
     testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
