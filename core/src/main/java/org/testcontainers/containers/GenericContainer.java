@@ -333,7 +333,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 imageName = "<unknown>";
             }
 
+            containerIsStopping(containerInfo);
             ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            containerIsStopped(containerInfo);
         } finally {
             containerId = null;
             containerInfo = null;
@@ -380,6 +382,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopping(InspectContainerResponse containerInfo) {
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopped(InspectContainerResponse containerInfo) {
     }
 
     /**
