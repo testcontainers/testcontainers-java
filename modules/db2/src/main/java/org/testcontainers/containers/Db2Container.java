@@ -65,6 +65,10 @@ public class Db2Container<SELF extends Db2Container<SELF>> extends JdbcDatabaseC
             addEnv("ARCHIVE_LOGS", "false");
     }
 
+    /**
+     * Accepts the license for the DB2 container by setting the LICENSE=accept
+     * variable as described at <a href="https://hub.docker.com/r/ibmcom/db2">https://hub.docker.com/r/ibmcom/db2</a>
+     */
     public SELF acceptLicense() {
         addEnv("LICENSE", "accept");
         return self();
