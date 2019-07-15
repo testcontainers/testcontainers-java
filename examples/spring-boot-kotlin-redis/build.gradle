@@ -4,27 +4,20 @@ plugins {
     id("org.jetbrains.kotlin.plugin.spring") version "1.3.31"
 }
 
-apply plugin: 'java'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'kotlin'
-apply plugin: "kotlin-spring"
 
 repositories {
     mavenCentral()
 }
 
-group = "com.example"
-version = "1.0.0"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.testcontainers:testcontainers:1.11.3")
+    testImplementation("org.testcontainers:testcontainers")
 }
 
 compileKotlin {
