@@ -16,7 +16,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class SimpleDb2Test {
 
     @Rule
-    public Db2Container<?> db2 = new Db2Container<>()
+    public Db2Container db2 = new Db2Container()
         .acceptLicense();
 
     @Test

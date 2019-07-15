@@ -110,11 +110,12 @@ public class JDBCDriverTest {
     }
 
     private void performSimpleTest(HikariDataSource dataSource) throws SQLException {
+        String query = "SELECT 1";
         if (jdbcUrl.startsWith("jdbc:tc:db2:")) {
-            return; // The "SELECT 1" statement is not valid in DB2
+            query = "SELECT 1 FROM SYSIBM.SYSDUMMY1";
         }
 
-        boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query("SELECT 1", rs -> {
+        boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query(query, rs -> {
             rs.next();
             int resultSetInt = rs.getInt(1);
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);

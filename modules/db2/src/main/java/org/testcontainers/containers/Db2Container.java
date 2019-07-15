@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
-public class Db2Container<SELF extends Db2Container<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
     public static final String DEFAULT_DB2_IMAGE_NAME = "ibmcom/db2";
@@ -69,9 +69,9 @@ public class Db2Container<SELF extends Db2Container<SELF>> extends JdbcDatabaseC
      * Accepts the license for the DB2 container by setting the LICENSE=accept
      * variable as described at <a href="https://hub.docker.com/r/ibmcom/db2">https://hub.docker.com/r/ibmcom/db2</a>
      */
-    public SELF acceptLicense() {
+    public Db2Container acceptLicense() {
         addEnv("LICENSE", "accept");
-        return self();
+        return this;
     }
 
     @Override
@@ -100,21 +100,21 @@ public class Db2Container<SELF extends Db2Container<SELF>> extends JdbcDatabaseC
     }
     
     @Override
-    public SELF withUsername(String username) {
+    public Db2Container withUsername(String username) {
         this.username = username;
-        return self();
+        return this;
     }
     
     @Override
-    public SELF withPassword(String password) {
+    public Db2Container withPassword(String password) {
         this.password = password;
-        return self();
+        return this;
     }
     
     @Override
-    public SELF withDatabaseName(String dbName) {
+    public Db2Container withDatabaseName(String dbName) {
         this.databaseName = dbName;
-        return self();
+        return this;
     }
     
     @Override
