@@ -1,21 +1,36 @@
-steps:
-- task: Gradle@2
-  displayName: Build core
-  inputs:
-    gradleWrapperFile: 'gradlew'
-    jdkVersionOption: '1.11'
-    options: '--no-daemon --continue'
-    tasks: 'testcontainers:check'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
-- task: Gradle@2
-  displayName: Build modules
-  inputs:
-    gradleWrapperFile: 'gradlew'
-    jdkVersionOption: '1.11'
-    options: '--no-daemon --continue -x testcontainers:check'
-    tasks: 'check'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
+jobs:
+- job: core
+  steps:
+  - task: Gradle@2
+    displayName: Build & test
+    inputs:
+        gradleWrapperFile: 'gradlew'
+        jdkVersionOption: '1.11'
+        options: '--no-daemon --continue'
+        tasks: 'testcontainers:check'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+- job: jdbc
+  steps:
+  - task: Gradle@2
+    displayName: Build & test
+    inputs:
+        gradleWrapperFile: 'gradlew'
+        jdkVersionOption: '1.11'
+        options: '--no-daemon --continue'
+        tasks: 'jdbc-test:check'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+- job: modules
+  steps:
+  - task: Gradle@2
+    displayName: Build & test
+    inputs:
+        gradleWrapperFile: 'gradlew'
+        jdkVersionOption: '1.11'
+        options: '--continue -x testcontainers:check -x jdbc-test:check'
+        tasks: 'testcontainers:check'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
 
 
