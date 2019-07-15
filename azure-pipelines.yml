@@ -29,7 +29,7 @@ jobs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
         options: '--continue -x testcontainers:check -x jdbc-test:check'
-        tasks: 'testcontainers:check'
+        tasks: 'check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
 
