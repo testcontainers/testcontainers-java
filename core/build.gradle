@@ -63,7 +63,7 @@ dependencies {
     compile 'org.apache.commons:commons-compress:1.18'
     // Added for JDK9 compatibility since it's missing this package
     compile 'javax.xml.bind:jaxb-api:2.3.1'
-    compile ('org.rnorth.duct-tape:duct-tape:1.0.7') {
+    compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
