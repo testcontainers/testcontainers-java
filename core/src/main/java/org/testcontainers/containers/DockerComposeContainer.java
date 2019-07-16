@@ -264,6 +264,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             String serviceName = entry.getKey();
             Object serviceDefinition = entry.getValue();
             if (!(serviceDefinition instanceof Map)) {
+                log.debug("Compose file {} has an unknown format: service '{}' is not Map", identifier, serviceName);
                 break;
             }
 
