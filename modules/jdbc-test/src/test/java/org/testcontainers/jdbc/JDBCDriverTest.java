@@ -1,6 +1,5 @@
 package org.testcontainers.jdbc;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
@@ -22,7 +21,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
-@RunWith(ParallelParameterized.class)
+@RunWith(Parameterized.class)
 public class JDBCDriverTest {
 
     private enum Options {
@@ -66,6 +65,7 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
                 {"jdbc:tc:sqlserver:2017-CU12://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class)},
             });
     }
 
@@ -86,98 +86,96 @@ public class JDBCDriverTest {
 
     @Test
     public void test() throws SQLException {
-        performSimpleTest(jdbcUrl);
-
-        if (options.contains(Options.ScriptedSchema)) {
-            performTestForScriptedSchema(jdbcUrl);
-        }
-
-        if (options.contains(Options.JDBCParams)) {
-            performTestForJDBCParamUsage(jdbcUrl);
-        }
-
-        if (options.contains(Options.CharacterSet)) {
-            //Called twice to ensure that the query string parameters are used when
-            //connections are created from cached containers.
-            performSimpleTestWithCharacterSet(jdbcUrl);
-            performSimpleTestWithCharacterSet(jdbcUrl);
-
-            performTestForCharacterEncodingForInitialScriptConnection(jdbcUrl);
-        }
-
-        if (options.contains(Options.CustomIniFile)) {
-            performTestForCustomIniFile(jdbcUrl);
-        }
-    }
-
-    private void performSimpleTest(String jdbcUrl) throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query("SELECT 1", rs -> {
-                rs.next();
-                int resultSetInt = rs.getInt(1);
-                assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-                return true;
-            });
+            performSimpleTest(dataSource);
 
-            assertTrue("The database returned a record as expected", result);
-        }
-    }
-
-    private void performTestForScriptedSchema(String jdbcUrl) throws SQLException {
-        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%world'", rs -> {
-                rs.next();
-                String resultSetString = rs.getString(1);
-                assertEquals("A basic SELECT query succeeds where the schema has been applied from a script", "hello world", resultSetString);
-                return true;
-            });
-        }
-    }
-
-    private void performTestForJDBCParamUsage(String jdbcUrl) throws SQLException {
-        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("select CURRENT_USER", rs -> {
-                rs.next();
-                String resultUser = rs.getString(1);
-                // Not all databases (eg. Postgres) return @% at the end of user name. We just need to make sure the user name matches.
-                if (resultUser.endsWith("@%")) {
-                    resultUser = resultUser.substring(0, resultUser.length() - 2);
-                }
-                assertEquals("User from query param is created.", "someuser", resultUser);
-                return true;
-            });
-
-            assertTrue("The database returned a record as expected", result);
-
-            String databaseQuery = "SELECT DATABASE()";
-            // Postgres does not have Database() as a function
-            String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
-            if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
-                databaseQuery = "SELECT CURRENT_DATABASE()";
+            if (options.contains(Options.ScriptedSchema)) {
+                performTestForScriptedSchema(dataSource);
             }
 
-            result = new QueryRunner(dataSource).query(databaseQuery, rs -> {
-                rs.next();
-                String resultDB = rs.getString(1);
-                assertEquals("Database name from URL String is used.", "databasename", resultDB);
-                return true;
-            });
+            if (options.contains(Options.JDBCParams)) {
+                performTestForJDBCParamUsage(dataSource);
+            }
 
-            assertTrue("The database returned a record as expected", result);
+            if (options.contains(Options.CharacterSet)) {
+                performSimpleTestWithCharacterSet(jdbcUrl);
+
+                performTestForCharacterEncodingForInitialScriptConnection(dataSource);
+            }
+
+            if (options.contains(Options.CustomIniFile)) {
+                performTestForCustomIniFile(dataSource);
+            }
         }
     }
 
-    private void performTestForCharacterEncodingForInitialScriptConnection(String jdbcUrl) throws SQLException {
-        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
-            boolean result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%мир'", rs -> {
-                rs.next();
-                String resultSetString = rs.getString(1);
-                assertEquals("A SELECT query succeed and the correct charset has been applied for the init script", "привет мир", resultSetString);
-                return true;
-            });
-
-            assertTrue("The database returned a record as expected", result);
+    private void performSimpleTest(HikariDataSource dataSource) throws SQLException {
+        String query = "SELECT 1";
+        if (jdbcUrl.startsWith("jdbc:tc:db2:")) {
+            query = "SELECT 1 FROM SYSIBM.SYSDUMMY1";
         }
+
+        boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query(query, rs -> {
+            rs.next();
+            int resultSetInt = rs.getInt(1);
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            return true;
+        });
+
+        assertTrue("The database returned a record as expected", result);
+    }
+
+    private void performTestForScriptedSchema(HikariDataSource dataSource) throws SQLException {
+        boolean result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%world'", rs -> {
+            rs.next();
+            String resultSetString = rs.getString(1);
+            assertEquals("A basic SELECT query succeeds where the schema has been applied from a script", "hello world", resultSetString);
+            return true;
+        });
+
+        assertTrue("The database returned a record as expected", result);
+    }
+
+    private void performTestForJDBCParamUsage(HikariDataSource dataSource) throws SQLException {
+        boolean result = new QueryRunner(dataSource).query("select CURRENT_USER", rs -> {
+            rs.next();
+            String resultUser = rs.getString(1);
+            // Not all databases (eg. Postgres) return @% at the end of user name. We just need to make sure the user name matches.
+            if (resultUser.endsWith("@%")) {
+                resultUser = resultUser.substring(0, resultUser.length() - 2);
+            }
+            assertEquals("User from query param is created.", "someuser", resultUser);
+            return true;
+        });
+
+        assertTrue("The database returned a record as expected", result);
+
+        String databaseQuery = "SELECT DATABASE()";
+        // Postgres does not have Database() as a function
+        String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
+        if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
+            databaseQuery = "SELECT CURRENT_DATABASE()";
+        }
+
+        result = new QueryRunner(dataSource).query(databaseQuery, rs -> {
+            rs.next();
+            String resultDB = rs.getString(1);
+            assertEquals("Database name from URL String is used.", "databasename", resultDB);
+            return true;
+        });
+
+        assertTrue("The database returned a record as expected", result);
+    }
+
+    private void performTestForCharacterEncodingForInitialScriptConnection(HikariDataSource dataSource) throws SQLException {
+        boolean result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%мир'", rs -> {
+            rs.next();
+            String resultSetString = rs.getString(1);
+            assertEquals("A SELECT query succeed and the correct charset has been applied for the init script", "привет мир", resultSetString);
+            return true;
+        });
+
+        assertTrue("The database returned a record as expected", result);
     }
 
     /**
@@ -207,18 +205,16 @@ public class JDBCDriverTest {
         return dataSource;
     }
 
-    private void performTestForCustomIniFile(final String jdbcUrl) throws SQLException {
+    private void performTestForCustomIniFile(HikariDataSource dataSource) throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
-        try (HikariDataSource ds = getDataSource(jdbcUrl, 1)) {
-            Statement statement = ds.getConnection().createStatement();
-            statement.execute("SELECT @@GLOBAL.innodb_file_format");
-            ResultSet resultSet = statement.getResultSet();
+        Statement statement = dataSource.getConnection().createStatement();
+        statement.execute("SELECT @@GLOBAL.innodb_file_format");
+        ResultSet resultSet = statement.getResultSet();
 
-            assertTrue("The query returns a result", resultSet.next());
-            String result = resultSet.getString(1);
+        assertTrue("The query returns a result", resultSet.next());
+        String result = resultSet.getString(1);
 
-            assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
-        }
+        assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
     }
 
     private HikariDataSource getDataSource(String jdbcUrl, int poolSize) {

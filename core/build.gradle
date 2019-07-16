@@ -63,7 +63,7 @@ dependencies {
     compile 'org.apache.commons:commons-compress:1.18'
     // Added for JDK9 compatibility since it's missing this package
     compile 'javax.xml.bind:jaxb-api:2.3.1'
-    compile ('org.rnorth.duct-tape:duct-tape:1.0.7') {
+    compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
@@ -102,7 +102,7 @@ dependencies {
         exclude(group: 'org.slf4j')
     }
 
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.8'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
     testCompile 'redis.clients:jedis:3.0.1'
     testCompile 'com.rabbitmq:amqp-client:5.7.1'
     testCompile 'org.mongodb:mongo-java-driver:3.10.2'

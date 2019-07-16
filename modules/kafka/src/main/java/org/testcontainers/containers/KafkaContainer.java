@@ -20,7 +20,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected SocatContainer proxy;
 
     public KafkaContainer() {
-        this("4.0.0");
+        this("5.2.1");
     }
 
     public KafkaContainer(String confluentPlatformVersion) {
