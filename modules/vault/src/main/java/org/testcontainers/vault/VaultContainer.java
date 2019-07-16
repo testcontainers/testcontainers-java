@@ -2,7 +2,6 @@ package org.testcontainers.vault;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
@@ -26,9 +25,9 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     private static final int VAULT_PORT = 8200;
 
-    private boolean vaultPortRequested = false;
-
     private Map<String, List<String>> secretsMap = new HashMap<>();
+
+    private int port = VAULT_PORT;
 
     public VaultContainer() {
         this("vault:1.1.3");
@@ -37,18 +36,15 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     public VaultContainer(String dockerImageName) {
         super(dockerImageName);
 
-        withExposedPorts(VAULT_PORT);
         setWaitStrategy(Wait.forHttp("/v1/secret/is_alive").forStatusCode(400));
-
     }
 
     @Override
     protected void configure() {
         setStartupAttempts(3);
         withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(IPC_LOCK));
-        if (!isVaultPortRequested()) {
-            withEnv("VAULT_ADDR", "http://0.0.0.0:" + VAULT_PORT);
-        }
+        withEnv("VAULT_ADDR", "http://0.0.0.0:" + port);
+        withExposedPorts(port);
     }
 
     @Override
@@ -92,12 +88,11 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      *
      * @param port the port number you want to have the Vault container listen on for tests.
      * @return this
+     * @deprecated exposed host will be random, this customization does not make a lot of sense
      */
+    @Deprecated
     public SELF withVaultPort(int port) {
-        setVaultPortRequested(true);
-        String vaultPort = String.valueOf(port);
-        withEnv("VAULT_ADDR", "http://0.0.0.0:" + VAULT_PORT);
-        setPortBindings(Arrays.asList(vaultPort + ":" + VAULT_PORT));
+        this.port = port;
         return self();
     }
 
@@ -125,14 +120,4 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
         secretsMap.putIfAbsent(path, list);
         return self();
     }
-
-    private boolean isVaultPortRequested() {
-        return vaultPortRequested;
-    }
-
-    private void setVaultPortRequested(boolean vaultPortRequested) {
-        this.vaultPortRequested = vaultPortRequested;
-    }
-
-
 }
