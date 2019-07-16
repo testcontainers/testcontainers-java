@@ -3,8 +3,8 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
-import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.concurrent.TimeUnit;
@@ -32,6 +32,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
+        // TODO Only for backward compatibility
+        withNetwork(Network.newNetwork());
+        withNetworkAliases("kafka-" + Base58.randomString(6));
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
@@ -62,16 +65,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             throw new IllegalStateException("You should start Kafka container first");
         }
         return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
-    }
-
-    @Override
-    @NonNull
-    public synchronized Network getNetwork() {
-        if (super.getNetwork() == null) {
-            // Backward compatibility
-            withNetwork(Network.newNetwork());
-        }
-        return super.getNetwork();
     }
 
     @Override
