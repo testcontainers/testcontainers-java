@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
