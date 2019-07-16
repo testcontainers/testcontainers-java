@@ -37,7 +37,6 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     public VaultContainer(String dockerImageName) {
         super(dockerImageName);
 
-        withNetwork(Network.SHARED);
         withExposedPorts(VAULT_PORT);
         setWaitStrategy(Wait.forHttp("/v1/secret/is_alive").forStatusCode(400));
 
