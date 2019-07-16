@@ -27,7 +27,7 @@ import static org.testcontainers.utility.MountableFile.forClasspathResource;
  */
 public class RabbitMQContainerTest {
 
-    public static final String DEFAULT_TAG = "3.7-management-alpine";
+    public static final String DEFAULT_IMAGE = "rabbitmq:3.7-management-alpine";
     public static final int DEFAULT_AMQPS_PORT = 5671;
     public static final int DEFAULT_AMQP_PORT = 5672;
     public static final int DEFAULT_HTTPS_PORT = 15671;
@@ -37,7 +37,7 @@ public class RabbitMQContainerTest {
     public void shouldCreateRabbitMQContainer() {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
-            assertThat(container.getDockerImageName()).isEqualTo("rabbitmq:" + DEFAULT_TAG);
+            assertThat(container.getDockerImageName()).isEqualTo(DEFAULT_IMAGE);
             assertThat(container.getAdminPassword()).isEqualTo("guest");
             assertThat(container.getAdminUsername()).isEqualTo("guest");
 
@@ -68,8 +68,8 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldCreateRabbitMQContainerWithTag() {
-        try (RabbitMQContainer container = new RabbitMQContainer(DEFAULT_TAG)) {
-            assertThat(container.getDockerImageName()).isEqualTo("rabbitmq:" + DEFAULT_TAG);
+        try (RabbitMQContainer container = new RabbitMQContainer(DEFAULT_IMAGE)) {
+            assertThat(container.getDockerImageName()).isEqualTo(DEFAULT_IMAGE);
         }
     }
 
@@ -103,7 +103,7 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldMountConfigurationFile() {
-        try (RabbitMQContainer container = new RabbitMQContainer("3.7-management-alpine")) {
+        try (RabbitMQContainer container = new RabbitMQContainer()) {
 
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
