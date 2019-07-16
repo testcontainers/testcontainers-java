@@ -37,7 +37,7 @@ public class KafkaContainerTest {
                 KafkaContainer kafka = new KafkaContainer()
                         .withExternalZookeeper("zookeeper:2181");
 
-                GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:5.2.1")
+                GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
                         .withNetwork(kafka.getNetwork())
                         .withNetworkAliases("zookeeper")
                         .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
@@ -57,7 +57,7 @@ public class KafkaContainerTest {
                         .withNetwork(network)
                         .withExternalZookeeper("zookeeper:2181");
 
-                GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:5.2.1")
+                GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
                         .withNetwork(network)
                         .withNetworkAliases("zookeeper")
                         .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
