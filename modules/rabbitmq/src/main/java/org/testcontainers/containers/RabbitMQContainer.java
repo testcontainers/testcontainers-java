@@ -43,7 +43,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * Creates a Testcontainer using the official RabbitMQ docker image.
      */
     public RabbitMQContainer() {
-        this(DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG);
     }
 
     /**
@@ -51,8 +51,8 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      *
      * @param tag The docker image to use.
      */
-    public RabbitMQContainer(String tag) {
-        super(DEFAULT_IMAGE_NAME + ":" + tag);
+    public RabbitMQContainer(String image) {
+        super(image);
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 
