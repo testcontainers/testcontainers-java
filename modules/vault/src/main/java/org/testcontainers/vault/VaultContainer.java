@@ -31,7 +31,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     private Map<String, List<String>> secretsMap = new HashMap<>();
 
     public VaultContainer() {
-        this("vault:latest");
+        this("vault:1.1.3");
     }
 
     public VaultContainer(String dockerImageName) {
