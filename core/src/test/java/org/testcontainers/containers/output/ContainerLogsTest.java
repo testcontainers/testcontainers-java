@@ -9,7 +9,7 @@ import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 
 public class ContainerLogsTest {
-    
+
     @Test
     public void getLogsReturnsAllLogsToDate() {
         try (GenericContainer container = shortLivedContainer()) {
