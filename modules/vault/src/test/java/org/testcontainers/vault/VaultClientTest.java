@@ -16,13 +16,12 @@ public class VaultClientTest {
 
     private static final String VAULT_TOKEN = "my-root-token";
 
-
     @Test
     public void writeAndReadMultipleValues() throws VaultException {
-        try (VaultContainer vaultContainer = new VaultContainer<>()
-            .withVaultToken(VAULT_TOKEN)
-            .withExposedPorts(8200)
-            .waitingFor(Wait.forHttp("/v1/secret/not_exists").forStatusCode(400))) {
+        try (
+            VaultContainer vaultContainer = new VaultContainer<>()
+                    .withVaultToken(VAULT_TOKEN)
+        ) {
 
             vaultContainer.start();
 
