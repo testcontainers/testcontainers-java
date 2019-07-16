@@ -26,7 +26,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private int port = PORT_NOT_ASSIGNED;
 
     public KafkaContainer() {
-        this("4.0.0");
+        this("5.2.1");
     }
 
     public KafkaContainer(String confluentPlatformVersion) {

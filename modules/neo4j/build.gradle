@@ -25,10 +25,10 @@ task customNeo4jPluginJar(type: Jar) {
 test.dependsOn customNeo4jPluginJar
 
 dependencies {
-    customNeo4jPluginCompileOnly "org.neo4j:neo4j:3.5.5"
+    customNeo4jPluginCompileOnly "org.neo4j:neo4j:3.5.7"
 
     compile project(":testcontainers")
 
-    testCompile "org.neo4j.driver:neo4j-java-driver:1.7.4"
+    testCompile "org.neo4j.driver:neo4j-java-driver:1.7.5"
     testCompile 'org.assertj:assertj-core:3.12.2'
 }
