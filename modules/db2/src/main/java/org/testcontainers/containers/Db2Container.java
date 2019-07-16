@@ -36,14 +36,14 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         withPrivilegedMode(true);
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")
-                .withStartupTimeout(Duration.of(3, ChronoUnit.MINUTES));
+                .withStartupTimeout(Duration.of(10, ChronoUnit.MINUTES));
     }
-    
+
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         return new HashSet<>(getMappedPort(DB2_PORT));
     }
-    
+
     @Override
     protected void configure() {
         // If license was not accepted programatically, check if it was accepted via resource file
@@ -53,11 +53,11 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         }
 
         addExposedPort(DB2_PORT);
-        
+
         addEnv("DBNAME", databaseName);
         addEnv("DB2INSTANCE", username);
         addEnv("DB2INST1_PASSWORD", password);
-        
+
         // These settings help the DB2 container start faster
         if (!getEnvMap().containsKey("AUTOCONFIG"))
             addEnv("AUTOCONFIG", "false");
@@ -93,30 +93,30 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     public String getPassword() {
         return password;
     }
-    
+
     @Override
     public String getDatabaseName() {
         return databaseName;
     }
-    
+
     @Override
     public Db2Container withUsername(String username) {
         this.username = username;
         return this;
     }
-    
+
     @Override
     public Db2Container withPassword(String password) {
         this.password = password;
         return this;
     }
-    
+
     @Override
     public Db2Container withDatabaseName(String dbName) {
         this.databaseName = dbName;
         return this;
     }
-    
+
     @Override
     protected void waitUntilContainerStarted() {
         getWaitStrategy().waitUntilReady(this);
