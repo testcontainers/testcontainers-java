@@ -17,14 +17,11 @@ import static org.junit.Assert.assertThat;
  */
 public class VaultContainerTest {
 
-    private static final int VAULT_PORT = 8201; //using non-default port to show other ports can be passed besides 8200
-
     private static final String VAULT_TOKEN = "my-root-token";
 
     @ClassRule
     public static VaultContainer vaultContainer = new VaultContainer<>()
         .withVaultToken(VAULT_TOKEN)
-        .withVaultPort(VAULT_PORT)
         .withSecretInVault("secret/testing1", "top_secret=password123")
         .withSecretInVault("secret/testing2",
             "secret_one=password1",
