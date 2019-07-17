@@ -20,6 +20,7 @@ subprojects {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
 
     lombok {
         version = '1.18.6'
@@ -56,16 +57,34 @@ subprojects {
         configurations = []
         classifier = null
 
-        // Keep docker-java's package inside the final jar
-        relocate("com.github.dockerjava", "com.github.dockerjava")
-    }
+        doFirst {
+            // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
+            Set<String> packages = []
+            // Always read from core's configurations
+            for (configuration in tasks.getByPath(":testcontainers:shadowJar").configurations) {
+                for (jar in configuration.files) {
+                    def jf = new java.util.jar.JarFile(jar)
+                    for (entry in jf.entries()) {
+                        def name = entry.name
+                        if (name.endsWith(".class")) {
+                            packages.add(name.substring(0, name.lastIndexOf('/')))
+                        }
+                    }
+                    jf.close()
+                }
+            }
+            for (pkg in packages) {
+                pkg = pkg.replaceAll('/', '.')
 
-    task relocateShadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation) {
-        target = tasks.shadowJar
-        prefix = "org.testcontainers.shaded"
-    }
+                if (pkg.startsWith("com.github.dockerjava.")) {
+                    // Keep docker-java's package inside the final jar
+                    continue;
+                }
 
-    tasks.shadowJar.dependsOn tasks.relocateShadowJar
+                tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
+            }
+        }
+    }
 
     publishing {
         publications {
