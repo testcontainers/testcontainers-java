@@ -49,7 +49,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     /**
      * Creates a Testcontainer using a specific docker image.
      *
-     * @param tag The docker image to use.
+     * @param image The docker image to use.
      */
     public RabbitMQContainer(String image) {
         super(image);
