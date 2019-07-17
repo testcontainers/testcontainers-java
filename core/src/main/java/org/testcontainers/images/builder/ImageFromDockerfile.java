@@ -154,7 +154,6 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     protected void configure(BuildImageCmd buildImageCmd) {
         buildImageCmd.withTag(this.getDockerImageName());
-        // always use withDockerfile because it honors .dockerignores and withDockerfilePath does not
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
         this.dockerfile.ifPresent(p -> buildImageCmd.withDockerfile(p.toFile()));
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
