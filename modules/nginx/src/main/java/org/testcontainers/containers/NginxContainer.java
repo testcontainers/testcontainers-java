@@ -13,16 +13,17 @@ import java.util.Set;
  */
 public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
 
-    private static final int NGINX_DEFAULT_PORT = 80;
+    public static final int NGINX_DEFAULT_PORT = 80;
+    private static final String NGINX_VERSION_STRING = "nginx:1.9.4";
 
     public NginxContainer() {
-        super("nginx:1.9.4");
+        super(NGINX_VERSION_STRING);
     }
 
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
-        return Collections.singleton(getMappedPort(80));
+        return Collections.singleton(getMappedPort(NGINX_DEFAULT_PORT));
     }
 
     @Override

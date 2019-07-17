@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
+import static org.testcontainers.containers.NginxContainer.NGINX_DEFAULT_PORT;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.io.*;
@@ -47,9 +48,9 @@ public class SimpleNginxTest {
     @Test
     public void testSimple() throws Exception {
 
-        info("Base URL is " + nginx.getBaseUrl("http", 80));
+        info("Base URL is " + nginx.getBaseUrl("http", NGINX_DEFAULT_PORT));
 
-        URLConnection urlConnection = nginx.getBaseUrl("http", 80).openConnection();
+        URLConnection urlConnection = nginx.getBaseUrl("http", NGINX_DEFAULT_PORT).openConnection();
         @Cleanup BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         String line = reader.readLine();
         System.out.println(line);
