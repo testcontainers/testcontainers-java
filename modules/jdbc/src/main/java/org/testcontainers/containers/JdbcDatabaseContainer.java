@@ -114,15 +114,21 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     @Override
     protected void waitUntilContainerStarted() {
-        // Repeatedly try and open a connection to the DB and execute a test query
-
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
 
+        // Repeatedly try and open a connection to the DB and execute a test query
         long start = System.currentTimeMillis();
         while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
             try {
-                if (isConnectable()) {
-                    break;
+                if (!isRunning()) {
+                    continue; // Don't attempt to connect yet
+                }
+
+                try (Connection connection = createConnection("")) {
+                    boolean testQuerySucceeded = connection.createStatement().execute(this.getTestQueryString());
+                    if (testQuerySucceeded) {
+                        break;
+                    }
                 }
             } catch (NoDriverFoundException e) {
                 // we explicitly want this exception to fail fast without retries
@@ -131,6 +137,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 // ignore so that we can try again
             }
         }
+
+        logger().info("Container is started (JDBC URL: {})", JdbcDatabaseContainer.this.getJdbcUrl());
     }
 
     @Override
@@ -175,10 +183,13 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
 
         SQLException lastException = null;
-        long start = System.currentTimeMillis();
         try {
-            while (System.currentTimeMillis() < start + (1000 * connectTimeoutSeconds)) {
+            long start = System.currentTimeMillis();
+            // give up if we hit the time limit or the container stops running for some reason
+            while (System.currentTimeMillis() < start + (1000 * connectTimeoutSeconds) && isRunning()) {
                 try {
+                    logger().debug("Trying to create JDBC connection using {} to {} with properties: {}", driver.getClass().getName(), url, info);
+
                     return jdbcDriverInstance.connect(url, info);
                 } catch (SQLException e) {
                     lastException = e;
@@ -251,23 +262,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     protected DatabaseDelegate getDatabaseDelegate() {
         return new JdbcDatabaseDelegate(this, "");
-    }
-
-    private boolean isConnectable() throws SQLException {
-        if (!isRunning()) {
-            return false; // Don't attempt to connect
-        }
-
-        try (Connection connection = createConnection("")) {
-            boolean success = connection.createStatement().execute(JdbcDatabaseContainer.this.getTestQueryString());
-
-            if (success) {
-                logger().info("Obtained a connection to container ({})", JdbcDatabaseContainer.this.getJdbcUrl());
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 
     public static class NoDriverFoundException extends RuntimeException {
