@@ -2,14 +2,19 @@ package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.junit.After;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 
 abstract class AbstractContainerDatabaseTest {
+
+    private final Set<HikariDataSource> datasourcesForCleanup = new HashSet<>();
 
     ResultSet performQuery(JdbcDatabaseContainer container, String sql) throws SQLException {
         DataSource ds = getDataSource(container);
@@ -28,6 +33,14 @@ abstract class AbstractContainerDatabaseTest {
         hikariConfig.setPassword(container.getPassword());
         hikariConfig.setDriverClassName(container.getDriverClassName());
 
-        return new HikariDataSource(hikariConfig);
+        final HikariDataSource dataSource = new HikariDataSource(hikariConfig);
+        datasourcesForCleanup.add(dataSource);
+
+        return dataSource;
+    }
+
+    @After
+    public void teardown() {
+        datasourcesForCleanup.forEach(HikariDataSource::close);
     }
 }
