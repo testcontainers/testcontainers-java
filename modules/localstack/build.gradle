@@ -5,5 +5,5 @@ dependencies {
 
     compileOnly 'com.amazonaws:aws-java-sdk-s3:1.11.479'
     testCompile 'com.amazonaws:aws-java-sdk-s3:1.11.479'
-    testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.479'
+    testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.592'
 }
