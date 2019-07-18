@@ -118,24 +118,32 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         // Repeatedly try and open a connection to the DB and execute a test query
         long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
-            try {
-                if (!isRunning()) {
-                    continue; // Don't attempt to connect yet
-                }
-
-                try (Connection connection = createConnection("")) {
-                    boolean testQuerySucceeded = connection.createStatement().execute(this.getTestQueryString());
-                    if (testQuerySucceeded) {
-                        break;
+        try {
+            while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
+                try {
+                    if (!isRunning()) {
+                        Thread.sleep(100L);
+                        continue; // Don't attempt to connect yet
                     }
+
+                    try (Connection connection = createConnection("")) {
+                        boolean testQuerySucceeded = connection.createStatement().execute(this.getTestQueryString());
+                        if (testQuerySucceeded) {
+                            break;
+                        }
+                    }
+                } catch (NoDriverFoundException e) {
+                    // we explicitly want this exception to fail fast without retries
+                    throw e;
+                } catch (Exception e) {
+                    // ignore so that we can try again
+                    logger().debug("Failure when trying test query", e);
+                    Thread.sleep(100L);
                 }
-            } catch (NoDriverFoundException e) {
-                // we explicitly want this exception to fail fast without retries
-                throw e;
-            } catch (Exception e) {
-                // ignore so that we can try again
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ContainerLaunchException("Container startup wait was interrupted", e);
         }
 
         logger().info("Container is started (JDBC URL: {})", JdbcDatabaseContainer.this.getJdbcUrl());
@@ -193,7 +201,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                     return jdbcDriverInstance.connect(url, info);
                 } catch (SQLException e) {
                     lastException = e;
-                    Thread.sleep(1000L);
+                    Thread.sleep(100L);
                 }
             }
         } catch (InterruptedException e) {
