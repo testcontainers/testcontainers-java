@@ -36,6 +36,7 @@ public class UnixSocketFactory extends SocketFactory {
                     @Override
                     public void close() throws IOException {
                         shutdownInput();
+                        super.close();
                     }
                 };
             }
@@ -52,6 +53,7 @@ public class UnixSocketFactory extends SocketFactory {
                     @Override
                     public void close() throws IOException {
                         shutdownOutput();
+                        super.close();
                     }
                 };
             }
