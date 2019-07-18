@@ -177,7 +177,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         }
 
         if (!services.isEmpty()) {
-            command += "up -d " + String.join(" ", services);
+            command += " " + String.join(" ", services);
         }
 
         runWithCompose(command);
