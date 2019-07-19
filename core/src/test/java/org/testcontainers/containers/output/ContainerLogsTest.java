@@ -4,10 +4,7 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.is;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
@@ -21,7 +18,8 @@ public class ContainerLogsTest {
 
             // docsGetAllLogs {
             final String logs = container.getLogs();
-            assertThat("stdout and stderr from container logs", logs, anyOf(is("stdout\nstderr"),is("stderr\nstdout")));
+            // }
+            assertEquals("stdout and stderr are reflected in the returned logs", "stdout\nstderr", logs);
         }
     }
 
