@@ -31,12 +31,12 @@ public class Startables {
     }
 
     private CompletableFuture<Void> deepStart(ConcurrentMap<Startable, CompletableFuture<Void>> started, Stream<Startable> startables) {
-        return CompletableFuture.allOf(
-            startables
-                .map(it -> started.computeIfAbsent(it, startable -> {
-                    return deepStart(started, startable.getDependencies().stream()).thenRunAsync(startable::start, EXECUTOR);
-                }))
-                .toArray(CompletableFuture[]::new)
-        );
+        CompletableFuture[] futures = startables
+            .map(it -> started.computeIfAbsent(it, startable -> {
+                return deepStart(started, startable.getDependencies().stream()).thenRunAsync(startable::start, EXECUTOR);
+            }))
+            .toArray(CompletableFuture[]::new);
+
+        return CompletableFuture.allOf(futures);
     }
 }
