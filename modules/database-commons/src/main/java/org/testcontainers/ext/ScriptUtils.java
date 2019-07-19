@@ -379,7 +379,7 @@ public abstract class ScriptUtils {
 		}
 	}
 
-	private static class ScriptParseException extends RuntimeException {
+	public static class ScriptParseException extends RuntimeException {
 		public ScriptParseException(String format, String scriptPath) {
 			super(String.format(format, scriptPath));
 		}
