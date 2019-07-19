@@ -63,7 +63,7 @@ dependencies {
     compile 'org.apache.commons:commons-compress:1.18'
     // Added for JDK9 compatibility since it's missing this package
     compile 'javax.xml.bind:jaxb-api:2.3.1'
-    compile ('org.rnorth.duct-tape:duct-tape:1.0.7') {
+    compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
@@ -73,7 +73,7 @@ dependencies {
         exclude(group: "log4j", module: "log4j")
     }
 
-    compile "net.java.dev.jna:jna-platform:5.2.0"
+    compile "net.java.dev.jna:jna-platform:5.3.1"
 
     shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
         exclude(group: "net.java.dev.jna")
@@ -92,7 +92,9 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded 'com.squareup.okhttp3:okhttp:3.12.1'
+    shaded "org.yaml:snakeyaml:1.21"
+
+    shaded 'com.squareup.okhttp3:okhttp:3.14.2'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
@@ -100,15 +102,17 @@ dependencies {
         exclude(group: 'org.slf4j')
     }
 
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.8'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
     testCompile 'redis.clients:jedis:3.0.1'
-    testCompile 'com.rabbitmq:amqp-client:5.7.0'
+    testCompile 'com.rabbitmq:amqp-client:5.7.2'
     testCompile 'org.mongodb:mongo-java-driver:3.10.2'
-    testCompile ('org.mockito:mockito-core:2.26.0') {
+    testCompile ('org.mockito:mockito-core:2.28.2') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
+
+    testCompile 'org.assertj:assertj-core:3.12.2'
 
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"

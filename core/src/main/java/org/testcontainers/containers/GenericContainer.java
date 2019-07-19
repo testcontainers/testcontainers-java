@@ -146,13 +146,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected Info dockerDaemonInfo = null;
 
-    /*
+    /**
      * Set during container startup
+     * // TODO make it private
+     *
+     * @deprecated use {@link ContainerState#getContainerId()}
      */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerId;
 
+    /**
+     * Set during container startup
+     *
+     * @deprecated use {@link GenericContainer#getContainerInfo()}
+     */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerName;
 
     @Setter(AccessLevel.NONE)
@@ -199,6 +209,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF dependsOn(List<Startable> startables) {
         dependencies.addAll(startables);
         return self();
+    }
+
+    public String getContainerId() {
+        return containerId;
     }
 
     /**
