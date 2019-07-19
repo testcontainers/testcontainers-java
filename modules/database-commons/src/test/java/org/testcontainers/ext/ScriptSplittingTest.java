@@ -26,6 +26,51 @@ public class ScriptSplittingTest {
     }
 
     @Test
+    public void testIssue1547Case1() {
+        String script = "create database if not exists ttt;\n" +
+            "\n" +
+            "use ttt;\n" +
+            "\n" +
+            "create table aaa\n" +
+            "(\n" +
+            "    id                  bigint auto_increment   primary key,\n" +
+            "    end_time            datetime     null       COMMENT 'end_time',\n" +
+            "    data_status         varchar(16)  not null\n" +
+            ") comment 'aaa';\n" +
+            "\n" +
+            "create table bbb\n" +
+            "(\n" +
+            "    id                  bigint auto_increment   primary key\n" +
+            ") comment 'bbb';";
+
+        List<String> expected = asList(
+            "create database if not exists ttt",
+            "use ttt",
+            "create table aaa ( id bigint auto_increment primary key, end_time datetime null COMMENT 'end_time', data_status varchar(16) not null ) comment 'aaa'",
+            "create table bbb ( id bigint auto_increment primary key ) comment 'bbb'"
+        );
+
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testIssue1547Case2() {
+        String script = "CREATE TABLE bar (\n" +
+            "  end_time VARCHAR(255)\n" +
+            ");\n" +
+            "CREATE TABLE bar (\n" +
+            "  end_time VARCHAR(255)\n" +
+            ");";
+
+        List<String> expected = asList(
+            "CREATE TABLE bar ( end_time VARCHAR(255) )",
+            "CREATE TABLE bar ( end_time VARCHAR(255) )"
+        );
+
+        splitAndCompare(script, expected);
+    }
+
+    @Test
     public void testUnusualSemicolonPlacement() {
         String script = "SELECT 1;;;;;SELECT 2;\n;SELECT 3\n; SELECT 4;\n SELECT 5";
 
