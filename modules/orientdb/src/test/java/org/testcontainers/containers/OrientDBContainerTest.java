@@ -11,20 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class OrientDBContainerTest {
 
-
-    @Test
-    public void testContainerLifecycle() {
-        OrientDBContainer container = new OrientDBContainer();
-
-        container.start();
-
-        assertThat(container.isRunning()).isTrue();
-
-        container.stop();
-
-        assertThat(container.isRunning()).isFalse();
-    }
-
     @Test
     public void shouldReturnTheSameSession() {
         try (OrientDBContainer container = new OrientDBContainer()) {
@@ -39,7 +25,6 @@ public class OrientDBContainerTest {
 
     @Test
     public void shouldInitializeWithCommands() {
-
         try (OrientDBContainer container = new OrientDBContainer()) {
             container.start();
 
