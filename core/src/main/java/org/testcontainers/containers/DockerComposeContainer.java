@@ -61,6 +61,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * Random identifier which will become part of spawned containers names, so we can shut them down
      */
     private final String identifier;
+    private final boolean uniqueIdentifier;
     private final List<File> composeFiles;
     private final Set<String> spawnedContainerIds = new HashSet<>();
     private final Set<String> spawnedNetworkIds = new HashSet<>();
@@ -107,12 +108,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
+        this(identifier, true, composeFiles);
+    }
+
+    public DockerComposeContainer(String identifier, boolean uniqueIdentifier, List<File> composeFiles) {
 
         this.composeFiles = composeFiles;
 
         // Use a unique identifier so that containers created for this compose environment can be identified
         this.identifier = identifier;
-        project = randomProjectId();
+
+        this.uniqueIdentifier = uniqueIdentifier;
+
+        setProjectId();
 
         this.dockerClient = DockerClientFactory.instance().client();
     }
@@ -349,7 +357,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 spawnedContainerIds.clear();
                 spawnedNetworkIds.clear();
             } finally {
-                project = randomProjectId();
+                setProjectId();
             }
         }
     }
@@ -523,6 +531,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private SELF self() {
         return (SELF) this;
+    }
+
+    private void setProjectId() {
+        this.project = uniqueIdentifier ? randomProjectId() : identifier;
     }
 
     private String randomProjectId() {
