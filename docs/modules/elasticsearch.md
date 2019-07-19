@@ -22,7 +22,7 @@ credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredential
 RestClient restClient = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
         .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
         .build();
-Response response = restClient.performRequest("GET", "/");
+Response response = restClient.performRequest(new Request("GET", "/"));
 
 // ... or the transport client
 TransportAddress transportAddress = new TransportAddress(container.getTcpHost());

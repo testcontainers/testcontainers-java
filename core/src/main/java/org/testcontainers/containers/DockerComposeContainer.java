@@ -75,6 +75,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private static final Object MUTEX = new Object();
 
+    private List<String> services = new ArrayList<>();
+
     /**
      * Properties that should be passed through to all Compose and ambassador containers (not
      * necessarily to containers that are spawned by Compose itself)
@@ -159,10 +161,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         runWithCompose("pull");
     }
 
+    public SELF withServices(@NonNull String... services) {
+        this.services = Arrays.asList(services);
+        return self();
+    }
 
     private void createServices() {
         // Run the docker-compose container, which starts up the services
-        runWithCompose("up -d");
+        if(services.isEmpty()) {
+            runWithCompose("up -d");
+        } else {
+            runWithCompose("up -d " + String.join(" ", services));
+        }
     }
 
     private void waitUntilServiceStarted() {
@@ -335,7 +345,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceInstanceName, __ ->
-            (WaitAllStrategy) new WaitAllStrategy().withStartupTimeout(Duration.ofMinutes(30)));
+            new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT).withStartupTimeout(Duration.ofMinutes(30)));
         waitAllStrategy.withStrategy(waitStrategy);
     }
 
@@ -559,7 +569,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
-        final Integer exitCode = this.dockerClient.inspectContainerCmd(containerId)
+        final Integer exitCode = this.dockerClient.inspectContainerCmd(getContainerId())
                 .exec()
                 .getState()
                 .getExitCode();
@@ -638,7 +648,7 @@ class LocalDockerCompose implements DockerCompose {
         try {
             new ProcessExecutor().command(command)
                     .redirectOutput(Slf4jStream.of(logger()).asInfo())
-                    .redirectError(Slf4jStream.of(logger()).asError())
+                    .redirectError(Slf4jStream.of(logger()).asInfo()) // docker-compose will log pull information to stderr
                     .environment(environment)
                     .directory(pwd)
                     .exitValueNormal()
