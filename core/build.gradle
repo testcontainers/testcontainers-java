@@ -102,7 +102,7 @@ dependencies {
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
     testCompile 'redis.clients:jedis:3.0.1'
-    testCompile 'com.rabbitmq:amqp-client:5.7.1'
+    testCompile 'com.rabbitmq:amqp-client:5.7.2'
     testCompile 'org.mongodb:mongo-java-driver:3.10.2'
     testCompile ('org.mockito:mockito-core:2.28.2') {
         exclude(module: 'hamcrest-core')
