@@ -1,0 +1,5 @@
+description = "Testcontainers :: JDBC :: DB2"
+
+dependencies {
+    compile project(':jdbc')
+}
