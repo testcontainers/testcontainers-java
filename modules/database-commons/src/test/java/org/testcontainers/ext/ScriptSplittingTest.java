@@ -32,7 +32,7 @@ public class ScriptSplittingTest {
         List<String> expected = asList(
             "SELECT 1",
             "SELECT 2",
-            "SELECT 3 ",    // TODO: Could be improved to strip trailing whitespace
+            "SELECT 3",
             "SELECT 4",
             "SELECT 5"
         );
@@ -218,7 +218,7 @@ public class ScriptSplittingTest {
                 "\n" +
                 "    select \"or what if BEGIN appears inside a literal?\";\n" +
                 "\n" +
-                "  END "
+                "  END"
         );
 
         splitAndCompare(script, expected);

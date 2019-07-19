@@ -174,8 +174,8 @@ public abstract class ScriptUtils {
 			if (!inLiteral && !inCompoundStatement) {
 				if (script.startsWith(separator, i)) {
 					// we've reached the end of the current statement
-					if (sb.length() > 0) {
-						statements.add(sb.toString());
+					if (StringUtils.isNotBlank(sb.toString())) {
+						statements.add(sb.toString().trim());
 						sb = new StringBuilder();
 					}
 					i += separator.length() - 1;
@@ -219,8 +219,8 @@ public abstract class ScriptUtils {
 			}
 			sb.append(c);
 		}
-		if (StringUtils.isNotEmpty(sb.toString())) {
-			statements.add(sb.toString());
+		if (StringUtils.isNotBlank(sb.toString())) {
+			statements.add(sb.toString().trim());
 		}
 	}
 
