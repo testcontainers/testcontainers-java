@@ -96,7 +96,7 @@ dependencies {
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.zeroturnaround:zt-exec:1.10', {
+    shaded 'org.zeroturnaround:zt-exec:1.11', {
         exclude(group: 'org.slf4j')
     }
 
