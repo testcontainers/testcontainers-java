@@ -5,6 +5,8 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 import static java.lang.String.format;
@@ -22,6 +24,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
     private final Map<String, Long> totalSizes = new HashMap<>();
     private final Map<String, Long> currentSizes = new HashMap<>();
     private boolean completed;
+    private Instant start;
 
     LoggedPullImageResultCallback(final Logger logger) {
         this.logger = logger;
@@ -30,8 +33,9 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
     @Override
     public void onStart(final Closeable stream) {
         super.onStart(stream);
+        start = Instant.now();
 
-        logger.info("Pulling image");
+        logger.info("Starting to pull image");
     }
 
     @Override
@@ -95,10 +99,15 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
     public void onComplete() {
         super.onComplete();
 
-        long totalSize = totalLayerSize();
+        final long downloadedLayerSize = downloadedLayerSize();
+        final long duration = Duration.between(start, Instant.now()).getSeconds();
 
         if (completed) {
-            logger.info("Pull complete ({} layers, {})", allLayers.size(), byteCountToDisplaySize(totalSize));
+            logger.info("Pull complete. {} layers, pulled in {}s (downloaded {} at {}/s)",
+                allLayers.size(),
+                duration,
+                byteCountToDisplaySize(downloadedLayerSize),
+                byteCountToDisplaySize(downloadedLayerSize / duration));
         }
     }
 
