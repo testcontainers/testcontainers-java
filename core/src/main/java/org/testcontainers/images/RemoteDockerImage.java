@@ -24,7 +24,11 @@ import java.util.stream.Stream;
 @ToString
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    private static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
+    /**
+     * @deprecated this field will become private in a later release
+     */
+    @Deprecated
+    public static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
 
     private DockerImageName imageName;
 

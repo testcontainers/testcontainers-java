@@ -16,11 +16,11 @@ import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 class LoggedPullImageResultCallback extends PullImageResultCallback {
     private final Logger logger;
 
-    private Set<String> allLayers = new HashSet<>();
-    private Set<String> downloadedLayers = new HashSet<>();
-    private Set<String> pulledLayers = new HashSet<>();
-    private Map<String, Long> totalSizes = new HashMap<>();
-    private Map<String, Long> currentSizes = new HashMap<>();
+    private final Set<String> allLayers = new HashSet<>();
+    private final Set<String> downloadedLayers = new HashSet<>();
+    private final Set<String> pulledLayers = new HashSet<>();
+    private final Map<String, Long> totalSizes = new HashMap<>();
+    private final Map<String, Long> currentSizes = new HashMap<>();
     private boolean completed;
 
     LoggedPullImageResultCallback(final Logger logger) {
@@ -38,18 +38,18 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
     public void onNext(final PullResponseItem item) {
         super.onNext(item);
 
-        String status = item.getStatus();
-        String id = item.getId();
+        final String statusLowercase = item.getStatus() != null ? item.getStatus().toLowerCase() : "";
+        final String id = item.getId();
 
         if (item.getProgressDetail() != null) {
             allLayers.add(id);
         }
 
-        if (status != null && status.equalsIgnoreCase("Download complete")) {
+        if (statusLowercase.equalsIgnoreCase("download complete")) {
             downloadedLayers.add(id);
         }
 
-        if (status != null && status.equalsIgnoreCase("Pull complete")) {
+        if (statusLowercase.equalsIgnoreCase("pull complete")) {
             pulledLayers.add(id);
         }
 
@@ -65,7 +65,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
             }
         }
 
-        if (status != null && (status.startsWith("Pulling from") || status.contains("complete"))) {
+        if (statusLowercase.startsWith("pulling from" ) || statusLowercase.contains("complete" )) {
 
             long totalSize = totalLayerSize();
             long currentSize = downloadedLayerSize();
@@ -86,7 +86,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
                 friendlyTotalSize);
         }
 
-        if (status != null && status.contains("complete")) {
+        if (statusLowercase.contains("complete")) {
             completed = true;
         }
     }

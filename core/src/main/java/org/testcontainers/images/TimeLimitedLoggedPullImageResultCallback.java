@@ -3,6 +3,7 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.slf4j.Logger;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,14 +32,14 @@ public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageRes
             t.setName("testcontainers-pull-watchdog-" + THREAD_ID.incrementAndGet());
             return t;
         });
-    private static final Duration PULL_PAUSE_TOLERANCE = Duration.ofSeconds(30);
+    private static final Duration PULL_PAUSE_TOLERANCE = Duration.ofSeconds(TestcontainersConfiguration.getInstance().getImagePullPauseTimeout());
     private final Logger logger;
 
     // A future which, if it ever fires, will kill the pull
     private ScheduledFuture<?> nextCheckForProgress;
 
     // All threads that are 'awaiting' this pull
-    private Set<Thread> waitingThreads = new HashSet<>();
+    private final Set<Thread> waitingThreads = new HashSet<>();
 
     public TimeLimitedLoggedPullImageResultCallback(Logger logger) {
         super(logger);
