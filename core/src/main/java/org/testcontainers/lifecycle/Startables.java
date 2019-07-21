@@ -3,6 +3,8 @@ package org.testcontainers.lifecycle;
 import lombok.experimental.UtilityClass;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -27,14 +29,20 @@ public class Startables {
     }
 
     public CompletableFuture<Void> deepStart(Stream<Startable> startables) {
-        return deepStart(new ConcurrentHashMap<>(), startables);
+        return deepStart(new HashMap<>(), startables);
     }
 
-    private CompletableFuture<Void> deepStart(ConcurrentMap<Startable, CompletableFuture<Void>> started, Stream<Startable> startables) {
+    private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<Startable> startables) {
         CompletableFuture[] futures = startables
-            .map(it -> started.computeIfAbsent(it, startable -> {
-                return deepStart(started, startable.getDependencies().stream()).thenRunAsync(startable::start, EXECUTOR);
-            }))
+            .map(it -> {
+                // avoid a recursive update in `computeIfAbsent`
+                Map<Startable, CompletableFuture<Void>> subStarted = new HashMap<>(started);
+                CompletableFuture<Void> future = started.computeIfAbsent(it, startable -> {
+                    return deepStart(subStarted, startable.getDependencies().stream()).thenRunAsync(startable::start, EXECUTOR);
+                });
+                started.putAll(subStarted);
+                return future;
+            })
             .toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(futures);
