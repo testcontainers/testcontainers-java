@@ -384,10 +384,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
     }
 
+    /**
+     * A hook that is executed before the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStopping(InspectContainerResponse containerInfo) {
     }
 
+    /**
+     * A hook that is executed after the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStopped(InspectContainerResponse containerInfo) {
     }
