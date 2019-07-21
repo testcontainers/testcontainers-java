@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
     compile "io.lettuce:lettuce-core:5.1.7.RELEASE"
-    testImplementation 'org.spockframework:spock-core:1.2-groovy-2.5'
+    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
     testImplementation 'org.testcontainers:spock'
     testImplementation 'ch.qos.logback:logback-classic:1.2.3'
 }
