@@ -9,6 +9,9 @@ dependencies {
     testCompile 'com.zaxxer:HikariCP:3.3.1'
     testCompile 'redis.clients:jedis:3.0.1'
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
+    testCompile ('org.mockito:mockito-core:2.28.2') {
+        exclude(module: 'hamcrest-core')
+    }
 
     testRuntime 'org.postgresql:postgresql:42.2.6'
     testRuntime 'mysql:mysql-connector-java:8.0.16'
