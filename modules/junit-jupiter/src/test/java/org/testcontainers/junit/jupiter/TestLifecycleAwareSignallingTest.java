@@ -27,5 +27,5 @@ class TestLifecycleAwareSignallingTest {
     @Order(2)
     void should_call_afterTest_on_TestLifecycleAware_container() {
         assertEquals(1, startedTestContainer.getNumAfterTestsCalls());
-    }
+    } 
 }

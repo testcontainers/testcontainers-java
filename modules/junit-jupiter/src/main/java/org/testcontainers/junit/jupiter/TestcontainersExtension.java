@@ -1,20 +1,16 @@
 package org.testcontainers.junit.jupiter;
 
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionConfigurationException;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
+import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
@@ -29,7 +25,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, TestInstancePostProcessor {
+class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
@@ -45,7 +41,8 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        Class<?> testClass = context.getTestClass().orElseThrow(() -> new ExtensionConfigurationException("TestcontainersExtension is only supported for classes."));
+        Class<?> testClass = context.getTestClass()
+            .orElseThrow(() -> new ExtensionConfigurationException("TestcontainersExtension is only supported for classes."));
         Store store = context.getStore(NAMESPACE);
 
         List<TestLifecycleAware> lifecycleAwareContainers = findSharedContainers(testClass)
@@ -97,7 +94,6 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
         }
     }
 
-    @NotNull
     private TestDescription testDescriptionFrom(ExtensionContext context) {
         return new TestDescription() {
             @Override
@@ -114,6 +110,43 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
 
     private boolean isTestLifecycleAware(StoreAdapter adapter) {
         return adapter.container instanceof TestLifecycleAware;
+    }
+
+    @Override
+    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+        return findTestcontainers(context).map(this::evaluate)
+            .orElseThrow(() -> new ExtensionConfigurationException("@Testcontainers not found"));
+    }
+
+    private Optional<Testcontainers> findTestcontainers(ExtensionContext context) {
+        Optional<ExtensionContext> current = Optional.of(context);
+        while (current.isPresent()) {
+            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(current.get().getRequiredTestClass(), Testcontainers.class);
+            if (testcontainers.isPresent()) {
+                return testcontainers;
+            }
+            current = current.get().getParent();
+        }
+        return Optional.empty();
+    }
+
+    private ConditionEvaluationResult evaluate(Testcontainers testcontainers) {
+        if (testcontainers.disabledWithoutDocker()) {
+            if (isDockerAvailable()) {
+                return ConditionEvaluationResult.enabled("Docker is available");
+            }
+            return ConditionEvaluationResult.disabled("disabledWithoutDocker is true and Docker is not available");
+        }
+        return ConditionEvaluationResult.enabled("disabledWithoutDocker is false");
+    }
+
+    boolean isDockerAvailable() {
+        try {
+            DockerClientFactory.instance().client();
+            return true;
+        } catch (Throwable ex) {
+            return false;
+        }
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {
@@ -151,6 +184,7 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
             boolean isAnnotatedWithContainer = AnnotationSupport.isAnnotated(field, Container.class);
             if (isAnnotatedWithContainer) {
                 boolean isStartable = Startable.class.isAssignableFrom(field.getType());
+
                 if (!isStartable) {
                     throw new ExtensionConfigurationException(String.format("FieldName: %s does not implement Startable", field.getName()));
                 }
