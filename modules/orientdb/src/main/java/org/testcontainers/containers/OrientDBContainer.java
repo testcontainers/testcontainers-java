@@ -29,7 +29,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final String DEFAULT_IMAGE_NAME = "orientdb";
 
-    private static final String DEFAULT_TAG = "3.0.18";
+    private static final String DEFAULT_TAG = "3.0.22-tp3";
 
     private static final String DEFAULT_USERNAME = "admin";
 

@@ -3,14 +3,12 @@ package org.testcontainers.containers;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author robfrank
  */
 public class OrientDBContainerTest {
-
 
     @Test
     public void testContainerLifecycle() {
@@ -50,7 +48,23 @@ public class OrientDBContainerTest {
             session.command("INSERT INTO Person set name='jane'");
 
             assertThat(session.query("SELECT FROM Person").stream()).hasSize(2);
+        }
+    }
 
+    @Test
+    public void shouldQueryWithGremlin() {
+
+        try (OrientDBContainer container = new OrientDBContainer()) {
+            container.start();
+
+            final ODatabaseSession session = container.getSession();
+
+            session.command("CREATE CLASS Person EXTENDS V");
+            session.command("INSERT INTO Person set name='john'");
+            session.command("INSERT INTO Person set name='jane'");
+
+            assertThat(session.execute("gremlin",
+                                       "g.V().hasLabel('Person')").stream()).hasSize(2);
         }
     }
 
@@ -68,8 +82,6 @@ public class OrientDBContainerTest {
             final ODatabaseSession session = container.getSession();
 
             assertThat(session.query("SELECT FROM Person").stream()).hasSize(4);
-
         }
-
     }
 }
