@@ -6,10 +6,13 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 public class DependenciesTest {
 
@@ -89,6 +92,29 @@ public class DependenciesTest {
         VisibleAssertions.assertEquals("Root started", 1, startable.getStartInvocationCount().intValue());
         VisibleAssertions.assertEquals("Transitive started", 1, transitiveStartable.getStartInvocationCount().intValue());
         VisibleAssertions.assertEquals("Transitive of transitive started", 1, transitiveOfTransitiveStartable.getStartInvocationCount().intValue());
+    }
+
+    @Test
+    public void shouldHandleDiamondDependencies() throws Exception {
+        InvocationCountingStartable a = new InvocationCountingStartable();
+        InvocationCountingStartable b = new InvocationCountingStartable();
+        InvocationCountingStartable c = new InvocationCountingStartable();
+        InvocationCountingStartable d = new InvocationCountingStartable();
+        //  / b \
+        // a     d
+        //  \ c /
+        b.getDependencies().add(a);
+        c.getDependencies().add(a);
+
+        d.getDependencies().add(b);
+        d.getDependencies().add(c);
+
+        Startables.deepStart(Stream.of(d)).get(1, TimeUnit.SECONDS);
+
+        VisibleAssertions.assertEquals("A started", 1, a.getStartInvocationCount().intValue());
+        VisibleAssertions.assertEquals("B started", 1, b.getStartInvocationCount().intValue());
+        VisibleAssertions.assertEquals("C started", 1, c.getStartInvocationCount().intValue());
+        VisibleAssertions.assertEquals("D started", 1, d.getStartInvocationCount().intValue());
     }
 
     private static class InvocationCountingStartable implements Startable {

@@ -24,14 +24,40 @@ public class Startables {
         }
     });
 
+    /**
+     * @see #deepStart(Stream)
+     */
     public CompletableFuture<Void> deepStart(Collection<Startable> startables) {
         return deepStart(startables.stream());
     }
 
+    /**
+     * Start every {@link Startable} recursively and asynchronously and join on the result.
+     *
+     * Performance note:
+     * The method uses and returns {@link CompletableFuture}s to resolve as many {@link Startable}s at once as possible.
+     * This way, for the following graph:
+     *   / b \
+     * a      e
+     *     c /
+     *     d /
+     * "a", "c" and "d" will resolve in parallel, then "b".
+     *
+     * If we would call blocking {@link Startable#start()}, "e" would wait for "b", "b" for "a", and only then "c", and then "d".
+     * But, since "c" and "d" are independent from "a", there is no point in waiting for "a" to be resolved first.
+     *
+     * @param startables a {@link Stream} of {@link Startable}s to start and scan for transitive dependencies.
+     * @return a {@link CompletableFuture} that resolves once all {@link Startable}s have started.
+     */
     public CompletableFuture<Void> deepStart(Stream<Startable> startables) {
         return deepStart(new HashMap<>(), startables);
     }
 
+    /**
+     *
+     * @param started an intermediate storage for already started {@link Startable}s to prevent multiple starts.
+     * @param startables a {@link Stream} of {@link Startable}s to start and scan for transitive dependencies.
+     */
     private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<Startable> startables) {
         CompletableFuture[] futures = startables
             .map(it -> {

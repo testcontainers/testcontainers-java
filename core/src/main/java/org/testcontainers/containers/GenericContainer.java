@@ -201,11 +201,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = image;
     }
 
+    /**
+     * @see #dependsOn(List)
+     */
     public SELF dependsOn(Startable... startables) {
         Collections.addAll(dependencies, startables);
         return self();
     }
 
+    /**
+     * Delays this container's creation and start until provided {@link Startable}s start first.
+     * Note that the circular dependencies are not supported.
+     *
+     * @param startables a list of {@link Startable} to depend on
+     * @see Startables#deepStart(Collection)
+     */
     public SELF dependsOn(List<Startable> startables) {
         dependencies.addAll(startables);
         return self();
