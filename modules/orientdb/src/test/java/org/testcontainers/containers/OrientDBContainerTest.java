@@ -37,7 +37,6 @@ public class OrientDBContainerTest {
 
     @Test
     public void shouldInitializeWithCommands() {
-
         try (OrientDBContainer container = new OrientDBContainer()) {
             container.start();
 
