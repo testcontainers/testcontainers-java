@@ -2,17 +2,19 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -22,11 +24,14 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.*;
+import org.yaml.snakeyaml.Yaml;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,6 +54,7 @@ import static org.testcontainers.containers.BindMode.READ_WRITE;
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
+@Slf4j
 public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> extends FailureDetectingExternalResource implements Startable {
 
     /**
@@ -147,7 +153,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 try {
                     pullImages();
                 } catch (ContainerLaunchException e) {
-                    logger().warn("Exception while pulling images, using local images if available", e);
+                    log.warn("Exception while pulling images, using local images if available", e);
                 }
             }
             applyScaling(); // scale before up, so that all scaled instances are available first for linking
@@ -168,7 +174,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServices() {
         // Run the docker-compose container, which starts up the services
-        runWithCompose("up -d " + String.join(" ", this.services));
+        if(services.isEmpty()) {
+            runWithCompose("up -d");
+        } else {
+            runWithCompose("up -d " + String.join(" ", services));
+        }
     }
 
     private void waitUntilServiceStarted() {
@@ -183,7 +193,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         String containerId = containerInstance.getContainerId();
         if (tailChildContainers) {
-            followLogs(containerId, new Slf4jLogConsumer(logger()).withPrefix(container.getNames()[0]));
+            followLogs(containerId, new Slf4jLogConsumer(log).withPrefix(container.getNames()[0]));
         }
         //follow logs using registered consumers for this service
         logConsumers.getOrDefault(serviceName, Collections.emptyList()).forEach(consumer -> followLogs(containerId, consumer));
@@ -204,6 +214,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void runWithCompose(String cmd) {
+        checkNotNull(composeFiles);
+        checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
+
+        for (File composeFile : composeFiles) {
+            validate(composeFile);
+        }
+
         final DockerCompose dockerCompose;
         if (localCompose) {
             dockerCompose = new LocalDockerCompose(composeFiles, project);
@@ -215,6 +232,60 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 .withCommand(cmd)
                 .withEnv(env)
                 .invoke();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void validate(File composeFile) {
+        Yaml yaml = new Yaml();
+        try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
+            Object template = yaml.load(fileInputStream);
+            validate(template, composeFile.getAbsolutePath());
+        } catch (IOException e) {
+            log.warn("Failed to read YAML from {}", composeFile.getAbsolutePath(), e);
+        }
+    }
+
+    @VisibleForTesting
+    static void validate(Object template, String identifier) {
+        if (!(template instanceof Map)) {
+            return;
+        }
+
+        Map<String, ?> map = (Map<String, ?>) template;
+
+        final Map<String, ?> servicesMap;
+        if (map.containsKey("version")) {
+            if (!map.containsKey("services")) {
+                log.debug("Compose file {} has an unknown format: 'version' is set but 'services' is not defined", identifier);
+                return;
+            }
+            Object services = map.get("services");
+            if (!(services instanceof Map)) {
+                log.debug("Compose file {} has an unknown format: 'services' is not Map", identifier);
+                return;
+            }
+
+            servicesMap = (Map<String, ?>) services;
+        } else {
+            servicesMap = map;
+        }
+
+        for (Map.Entry<String, ?> entry : servicesMap.entrySet()) {
+            String serviceName = entry.getKey();
+            Object serviceDefinition = entry.getValue();
+            if (!(serviceDefinition instanceof Map)) {
+                log.debug("Compose file {} has an unknown format: service '{}' is not Map", identifier, serviceName);
+                break;
+            }
+
+            if (((Map) serviceDefinition).containsKey("container_name")) {
+                throw new IllegalStateException(String.format(
+                    "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
+                    identifier,
+                    serviceName
+                ));
+            }
+        }
     }
 
     private void applyScaling() {
@@ -248,10 +319,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         if (!ambassadorPortMappings.isEmpty()) {
             ambassadorContainer.start();
         }
-    }
-
-    private Logger logger() {
-        return LoggerFactory.getLogger(DockerComposeContainer.class);
     }
 
     @Override
@@ -480,11 +547,6 @@ interface DockerCompose {
     DockerCompose withEnv(Map<String, String> env);
 
     void invoke();
-
-    default void validateFileList(List<File> composeFiles) {
-        checkNotNull(composeFiles);
-        checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
-    }
 }
 
 /**
@@ -501,8 +563,6 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 
         super(TestcontainersConfiguration.getInstance().getDockerComposeContainerImage());
-        validateFileList(composeFiles);
-
         addEnv(ENV_PROJECT_NAME, identifier);
 
         // Map the docker compose file into the container
@@ -573,7 +633,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
-        final Integer exitCode = this.dockerClient.inspectContainerCmd(containerId)
+        final Integer exitCode = this.dockerClient.inspectContainerCmd(getContainerId())
                 .exec()
                 .getState()
                 .getExitCode();
@@ -603,8 +663,6 @@ class LocalDockerCompose implements DockerCompose {
     private Map<String, String> env = new HashMap<>();
 
     public LocalDockerCompose(List<File> composeFiles, String identifier) {
-        validateFileList(composeFiles);
-
         this.composeFiles = composeFiles;
         this.identifier = identifier;
     }

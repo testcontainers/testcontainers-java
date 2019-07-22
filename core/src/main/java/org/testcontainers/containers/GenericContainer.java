@@ -143,13 +143,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected Info dockerDaemonInfo = null;
 
-    /*
+    /**
      * Set during container startup
+     * // TODO make it private
+     *
+     * @deprecated use {@link ContainerState#getContainerId()}
      */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerId;
 
+    /**
+     * Set during container startup
+     *
+     * @deprecated use {@link GenericContainer#getContainerInfo()}
+     */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerName;
 
     @Setter(AccessLevel.NONE)
@@ -186,6 +196,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public GenericContainer(@NonNull final Future<String> image) {
         this.image = image;
+    }
+
+    public String getContainerId() {
+        return containerId;
     }
 
     /**
@@ -319,7 +333,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 imageName = "<unknown>";
             }
 
+            containerIsStopping(containerInfo);
             ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            containerIsStopped(containerInfo);
         } finally {
             containerId = null;
             containerInfo = null;
@@ -366,6 +382,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    }
+
+    /**
+     * A hook that is executed before the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopping(InspectContainerResponse containerInfo) {
+    }
+
+    /**
+     * A hook that is executed after the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopped(InspectContainerResponse containerInfo) {
     }
 
     /**
