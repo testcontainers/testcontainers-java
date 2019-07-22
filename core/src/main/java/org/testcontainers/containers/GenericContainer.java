@@ -3,9 +3,22 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.base.Strings;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -33,13 +46,34 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -143,13 +177,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected Info dockerDaemonInfo = null;
 
-    /*
+    /**
      * Set during container startup
+     * // TODO make it private
+     *
+     * @deprecated use {@link ContainerState#getContainerId()}
      */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerId;
 
+    /**
+     * Set during container startup
+     *
+     * @deprecated use {@link GenericContainer#getContainerInfo()}
+     */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerName;
 
     @Setter(AccessLevel.NONE)
@@ -186,6 +230,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public GenericContainer(@NonNull final Future<String> image) {
         this.image = image;
+    }
+
+    public String getContainerId() {
+        return containerId;
     }
 
     /**
@@ -319,7 +367,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 imageName = "<unknown>";
             }
 
+            containerIsStopping(containerInfo);
             ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            containerIsStopped(containerInfo);
         } finally {
             containerId = null;
             containerInfo = null;
@@ -366,6 +416,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    }
+
+    /**
+     * A hook that is executed before the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopping(InspectContainerResponse containerInfo) {
+    }
+
+    /**
+     * A hook that is executed after the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopped(InspectContainerResponse containerInfo) {
     }
 
     /**

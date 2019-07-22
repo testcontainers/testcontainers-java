@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -231,6 +232,12 @@ public final class ResourceReaper {
                 LOGGER.trace("Stopping container: {}", containerId);
                 dockerClient.killContainerCmd(containerId).exec();
                 LOGGER.trace("Stopped container: {}", imageName);
+            } catch (ConflictException e) {
+                if ( e.getMessage().startsWith("Cannot kill container: ") && e.getMessage().endsWith(containerId + " is not running")) {
+                    LOGGER.trace("Was going to kill the container but it apparently already dead : {}", e.getMessage());
+                } else {
+                    throw e;
+                }
             } catch (DockerException e) {
                 LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
             }
