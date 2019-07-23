@@ -29,7 +29,10 @@ jobs:
       script: ./gradlew selenium:check --scan --no-daemon
 
     - env: [ NAME=modules ]
-      script: ./gradlew check -x testcontainers:check -x selenium:check --scan --no-daemon
+      script: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check --scan --no-daemon
+
+    - env: [ NAME=jdbc ]
+      script: ./gradlew jdbc-test:check --scan --no-daemon
 
     - env: [ NAME=examples ]
       script: cd examples && ../gradlew check --no-daemon

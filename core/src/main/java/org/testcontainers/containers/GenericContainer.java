@@ -3,9 +3,22 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.base.Strings;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -31,15 +44,38 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,7 +90,6 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  * Base class for that allows a container to be launched and controlled.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
@@ -131,6 +166,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
 
+    protected final Set<Startable> dependencies = new HashSet<>();
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -198,6 +235,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = image;
     }
 
+    /**
+     * @see #dependsOn(List)
+     */
+    public SELF dependsOn(Startable... startables) {
+        Collections.addAll(dependencies, startables);
+        return self();
+    }
+
+    /**
+     * Delays this container's creation and start until provided {@link Startable}s start first.
+     * Note that the circular dependencies are not supported.
+     *
+     * @param startables a list of {@link Startable} to depend on
+     * @see Startables#deepStart(Collection)
+     */
+    public SELF dependsOn(List<Startable> startables) {
+        dependencies.addAll(startables);
+        return self();
+    }
+
     public String getContainerId() {
         return containerId;
     }
@@ -206,10 +263,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Starts the container using docker, pulling an image if necessary.
      */
     @Override
+    @SneakyThrows({InterruptedException.class, ExecutionException.class})
     public void start() {
         if (containerId != null) {
             return;
         }
+        Startables.deepStart(dependencies).get();
         doStart();
     }
 
@@ -1185,6 +1244,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withTmpFs(Map<String, String> mapping) {
         this.tmpFsMapping = mapping;
         return self();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
     }
 
     /**
