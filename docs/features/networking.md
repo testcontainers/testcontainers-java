@@ -85,5 +85,5 @@ Docker provides the ability for you to create custom networks and place containe
     Note that Testcontainers currently only allows a container to be on a single network.
 
 <!--codeinclude-->
-[Creating custom networks](../examples/src/test/java/generic/ContainerNetworkCreationTest.java) inside_block:useCustomNetwork
+[Creating custom networks](../../core/src/test/java/org/testcontainers/containers/NetworkTest.java) inside_block:useCustomNetwork
 <!--/codeinclude-->
