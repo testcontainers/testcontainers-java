@@ -1,5 +1,6 @@
 package org.testcontainers.junit.jupiter;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import static org.junit.Assert.assertEquals;
 
 // The order of @ExtendsWith and @Testcontainers is crucial in order for the static case to be tested
-@ExtendWith({TestLifecycleAwareSignallingTest.ExtensionSharedContainerTestExtension.class})
+@ExtendWith({TestLifecycleAwareSignallingTest.SharedContainerAfterAllTestExtension.class})
 @Testcontainers
 @TestMethodOrder(OrderAnnotation.class)
 class TestLifecycleAwareSignallingTest {
@@ -23,6 +24,11 @@ class TestLifecycleAwareSignallingTest {
     private static final TestLifecycleAwareContainerMock SHARED_CONTAINER = new TestLifecycleAwareContainerMock();
 
     private static TestLifecycleAwareContainerMock startedTestContainer;
+
+    @BeforeAll
+    static void beforeAll() {
+        assertEquals(1, SHARED_CONTAINER.getNumBeforeTestsCalls());
+    }
 
     @Test
     @Order(1)
@@ -37,10 +43,11 @@ class TestLifecycleAwareSignallingTest {
         assertEquals(1, startedTestContainer.getNumAfterTestsCalls());
     }
 
-    static class ExtensionSharedContainerTestExtension implements AfterAllCallback {
+    static class SharedContainerAfterAllTestExtension implements AfterAllCallback {
 
         @Override
         public void afterAll(ExtensionContext context) {
+            assertEquals(1, SHARED_CONTAINER.getNumBeforeTestsCalls());
             assertEquals(1, SHARED_CONTAINER.getNumAfterTestsCalls());
         }
     }
