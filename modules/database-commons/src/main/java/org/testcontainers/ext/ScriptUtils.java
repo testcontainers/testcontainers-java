@@ -174,10 +174,7 @@ public abstract class ScriptUtils {
 			if (!inLiteral && !inCompoundStatement) {
 				if (script.startsWith(separator, i)) {
 					// we've reached the end of the current statement
-					if (StringUtils.isNotBlank(sb.toString())) {
-						statements.add(sb.toString().trim());
-						sb = new StringBuilder();
-					}
+					sb = flushStringBuilder(sb, statements);
 					i += separator.length() - 1;
 					continue;
 				}
@@ -219,9 +216,20 @@ public abstract class ScriptUtils {
 			}
 			sb.append(c);
 		}
-		if (StringUtils.isNotBlank(sb.toString())) {
-			statements.add(sb.toString().trim());
+		flushStringBuilder(sb, statements);
+	}
+
+	private static StringBuilder flushStringBuilder(StringBuilder sb, List<String> statements) {
+		if (sb.length() == 0) {
+			return sb;
 		}
+
+		final String s = sb.toString().trim();
+		if (StringUtils.isNotEmpty(s)) {
+			statements.add(s);
+		}
+
+		return new StringBuilder();
 	}
 
 	private static boolean isSeperator(char c, String separator, String commentPrefix,
@@ -258,7 +266,7 @@ public abstract class ScriptUtils {
 		}
 	}
 
-    /**
+	/**
 	 * Does the provided SQL script contain the specified delimiter?
 	 * @param script the SQL script
 	 * @param delim String delimiting each statement - typically a ';' character
