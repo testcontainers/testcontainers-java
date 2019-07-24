@@ -40,14 +40,14 @@ nav:
           - Databases:
                 - modules/databases/index.md
                 - modules/databases/cassandra.md
-                - modules/databases/clickhouse.md
-                - modules/databases/dynalite.md
-                - modules/databases/db2.md
                 - modules/databases/couchbase.md
+                - modules/databases/clickhouse.md
+                - modules/databases/db2.md
+                - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
-                - modules/databases/mysql.md
                 - modules/databases/mariadb.md
                 - modules/databases/mssqlserver.md
+                - modules/databases/mysql.md
                 - modules/databases/neo4j.md
                 - modules/databases/oraclexe.md
                 - modules/databases/postgres.md
