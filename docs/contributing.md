@@ -86,7 +86,7 @@ We currently believe 3 months is a fair period of time, but may change this.
 
 New modules should have the following warning at the top of their documentation pages:
 
-!!! warning
-    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future.
+!!! note
+    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
 
 We will evaluate incubating modules periodically, and remove the label when appropriate.
