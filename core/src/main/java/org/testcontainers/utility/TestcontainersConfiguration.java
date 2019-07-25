@@ -83,7 +83,7 @@ public class TestcontainersConfiguration {
     }
 
     public Integer getImagePullPauseTimeout() {
-        return Integer.parseInt((String) properties.getOrDefault("pull.pause.timeout", "30"));
+        return Integer.parseInt((String) properties.getOrDefault("pull.pause.timeout", "60"));
     }
 
     @Synchronized
