@@ -10,6 +10,7 @@ import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -220,7 +221,9 @@ public final class ResourceReaper {
             LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
             return;
         } catch (Exception e) {
-            LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+                containerId,
+                Throwables.getRootCause(e).getMessage());
             return;
         }
 
@@ -230,7 +233,9 @@ public final class ResourceReaper {
                 dockerClient.killContainerCmd(containerId).exec();
                 LOGGER.trace("Stopped container: {}", imageName);
             } catch (Exception e) {
-                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+                    containerId,
+                    Throwables.getRootCause(e).getMessage());
             }
         }
 
@@ -246,7 +251,9 @@ public final class ResourceReaper {
             dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
             LOGGER.debug("Removed container and associated volume(s): {}", imageName);
         } catch (Exception e) {
-            LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+                containerId,
+                Throwables.getRootCause(e).getMessage());
         }
     }
 
