@@ -5,7 +5,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.4.1"
+    classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.9.0"
   }
 }
 
@@ -19,8 +19,10 @@ buildCache {
     }
 
     remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
-        region = 'us-east-1'
-        bucket = 'testcontainers-build-cache'
+        endpoint = 'fra1.digitaloceanspaces.com'
+        region = 'fra1'
+        bucket = 'testcontainers'
+        path = 'cache'
         push = isMasterBuild
     }
 }

@@ -2,7 +2,7 @@ description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
     compile project(':testcontainers')
-    compile 'org.junit.jupiter:junit-jupiter-api:5.5.0'
+    compile 'org.junit.jupiter:junit-jupiter-api:5.5.1'
 
     testCompile project(':mysql')
     testCompile project(':postgresql')
@@ -15,7 +15,7 @@ dependencies {
 
     testRuntime 'org.postgresql:postgresql:42.2.6'
     testRuntime 'mysql:mysql-connector-java:8.0.16'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.5.0'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.5.1'
 }
 
 test {
