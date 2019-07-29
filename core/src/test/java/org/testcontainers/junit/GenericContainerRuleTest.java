@@ -6,18 +6,36 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
-import org.junit.*;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.testsupport.Flaky;
+import org.testcontainers.testsupport.FlakyTestJUnit4RetryRule;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
@@ -128,28 +146,8 @@ public class GenericContainerRuleTest {
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
 
-//    @Test
-//    public void simpleRedisTest() {
-//        String ipAddress = redis.getContainerIpAddress();
-//        Integer port = redis.getMappedPort(REDIS_PORT);
-//
-//        // Use Redisson to obtain a List that is backed by Redis
-//        Config redisConfig = new Config();
-//        redisConfig.useSingleServer().setAddress(ipAddress + ":" + port);
-//
-//        Redisson redisson = Redisson.create(redisConfig);
-//
-//        List<String> testList = redisson.getList("test");
-//        testList.add("foo");
-//        testList.add("bar");
-//        testList.add("baz");
-//
-//        List<String> testList2 = redisson.getList("test");
-//        assertEquals("The list contains the expected number of items (redis is working!)", 3, testList2.size());
-//        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("foo"));
-//        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("bar"));
-//        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("baz"));
-//    }
+    @Rule
+    public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
 
     @Test
     public void testIsRunning() {
@@ -402,6 +400,7 @@ public class GenericContainerRuleTest {
     }
 
     @Test
+    @Flaky(rationale = "Shared memory seems to be unreliable in some CI environments (Travis, Azure)")
     public void sharedMemorySetTest() {
         try (GenericContainer containerWithSharedMemory = new GenericContainer()
             .withSharedMemorySize(42L * FileUtils.ONE_MB)) {
