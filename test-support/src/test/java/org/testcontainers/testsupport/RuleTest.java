@@ -62,15 +62,32 @@ public class RuleTest {
         assertEquals("The statement should be invoked once", 1, statement.invocationCount);
     }
 
+    @Test
+    public void testTreatsExpiredAnnotationAsNoAnnotation() throws Throwable {
+        final Description description = newDescriptionWithExpiredAnnotation();
+        final DummyStatement statement = newStatement(3);
+        try {
+            rule.apply(statement, description).evaluate();
+            fail("Should not reach here");
+        } catch (Exception ignored) {
+
+        }
+        assertEquals("The statement should only be invoked once, even if it throws", 1, statement.invocationCount);
+    }
+
     private Description newDescriptionWithoutAnnotation() {
         return Description.createTestDescription("SomeTestClass", "someMethod");
     }
 
     private Description newDescriptionWithAnnotation() {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation());
+        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation("2063-04-05"));
     }
 
-    private Flaky newAnnotation() {
+    private Description newDescriptionWithExpiredAnnotation() {
+        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation("1991-08-16"));
+    }
+
+    private Flaky newAnnotation(final String reviewDate) {
         return new Flaky() {
             @Override
             public Class<? extends Annotation> annotationType() {
@@ -80,6 +97,11 @@ public class RuleTest {
             @Override
             public String rationale() {
                 return "";
+            }
+
+            @Override
+            public String reviewDate() {
+                return reviewDate;
             }
         };
     }

@@ -400,7 +400,7 @@ public class GenericContainerRuleTest {
     }
 
     @Test
-    @Flaky(rationale = "Shared memory seems to be unreliable in some CI environments (Travis, Azure)")
+    @Flaky(rationale = "Shared memory seems to be unreliable in some CI environments (Travis, Azure)", reviewDate = "2019-10-01")
     public void sharedMemorySetTest() {
         try (GenericContainer containerWithSharedMemory = new GenericContainer()
             .withSharedMemorySize(42L * FileUtils.ONE_MB)) {

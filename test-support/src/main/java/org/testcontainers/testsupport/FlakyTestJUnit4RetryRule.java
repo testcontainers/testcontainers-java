@@ -6,6 +6,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,16 +18,25 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
-        if (description.getAnnotation(Flaky.class) != null) {
-            return new RetryingStatement(base, description);
-        } else {
-            return new Statement() {
-                @Override
-                public void evaluate() throws Throwable {
-                    base.evaluate();
-                }
-            };
+        final Flaky annotation = description.getAnnotation(Flaky.class);
+        if (annotation != null) {
+            if ( ! isReviewDatePassed(annotation)) {
+                return new RetryingStatement(base, description);
+            }
         }
+
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                base.evaluate();
+            }
+        };
+    }
+
+    private boolean isReviewDatePassed(Flaky annotation) {
+        final LocalDate reviewDate = LocalDate.parse(annotation.reviewDate());
+
+        return reviewDate.isBefore(LocalDate.now());
     }
 
     private static class RetryingStatement extends Statement {
