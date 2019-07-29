@@ -1,7 +1,7 @@
 package org.testcontainers.testsupport;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.rules.TestWatcher;
+import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
@@ -13,14 +13,19 @@ import java.util.List;
  * TODO: Javadocs
  */
 @Slf4j
-public class FlakyTestJUnit4RetryRule extends TestWatcher {
+public class FlakyTestJUnit4RetryRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
         if (description.getAnnotation(Flaky.class) != null) {
             return new RetryingStatement(base, description);
         } else {
-            return super.apply(base, description);
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    base.evaluate();
+                }
+            };
         }
     }
 
@@ -39,7 +44,7 @@ public class FlakyTestJUnit4RetryRule extends TestWatcher {
             int attempts = 0;
             final List<Throwable> causes = new ArrayList<>();
 
-            while (++attempts < 3) {
+            while (++attempts <= 3) {
                 try {
                     base.evaluate();
                     return;
