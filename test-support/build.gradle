@@ -1,0 +1,11 @@
+dependencies {
+    implementation group: 'junit', name: 'junit', version: '4.12'
+    implementation 'org.slf4j:slf4j-api:1.7.26'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
