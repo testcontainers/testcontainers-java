@@ -14,9 +14,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Flaky {
 
     /**
-     * @return an explanation for why this test is marked 'flaky'.
+     * @return a URL for a GitHub issue where this flaky test can be discussed, and where actions to resolve it can be
+     * coordinated.
      */
-    String rationale();
+    String githubIssueUrl();
 
     /**
      * @return a date at which this should be reviewed, in {@link java.time.format.DateTimeFormatter#ISO_LOCAL_DATE}

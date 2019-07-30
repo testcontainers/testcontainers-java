@@ -9,7 +9,7 @@ import java.lang.annotation.Annotation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class RuleTest {
+public class FlakyRuleTest {
 
     private FlakyTestJUnit4RetryRule rule = new FlakyTestJUnit4RetryRule();
 
@@ -95,7 +95,7 @@ public class RuleTest {
             }
 
             @Override
-            public String rationale() {
+            public String githubIssueUrl() {
                 return "";
             }
 

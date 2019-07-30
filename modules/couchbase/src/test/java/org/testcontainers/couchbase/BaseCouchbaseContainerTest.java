@@ -32,7 +32,7 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
     public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
 
     @Test
-    @Flaky(rationale = "", reviewDate = "2019-10-01") // TODO: describe
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2019-10-01") // TODO: describe
     public void shouldInsertDocument() {
         RawJsonDocument expected = RawJsonDocument.create(ID, DOCUMENT);
         getBucket().upsert(expected);
@@ -41,7 +41,7 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
     }
 
     @Test
-    @Flaky(rationale = "", reviewDate = "2019-10-01") // TODO: describe
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2019-10-01") // TODO: describe
     public void shouldExecuteN1ql() {
         getBucket().query(N1qlQuery.simple("INSERT INTO " + TEST_BUCKET + " (KEY, VALUE) VALUES ('" + ID + "', " + DOCUMENT + ")"));
 
@@ -54,7 +54,7 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
     }
 
     @Test
-    @Flaky(rationale = "", reviewDate = "2019-10-01") // TODO: describe
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2019-10-01") // TODO: describe
     public void shouldCreateView() {
         View view = DefaultView.create(VIEW_NAME, VIEW_FUNCTION);
         DesignDocument document = DesignDocument.create(VIEW_NAME, Lists.newArrayList(view));
