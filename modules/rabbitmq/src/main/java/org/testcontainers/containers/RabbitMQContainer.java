@@ -348,12 +348,12 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     /**
      * Overwrites the default RabbitMQ configuration file with the supplied one
      *
-     * @param rabbitMQConf The rabbitmq.conf file to use
+     * @param rabbitMQConf The rabbitmq.config file to use
      * @return This container.
      */
     public RabbitMQContainer withRabbitMQConfig(MountableFile rabbitMQConf) {
-        withEnv("RABBITMQ_CONFIG_FILE", "/etc/rabbitmq/rabbitmq-custom.conf");
-        return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.conf");
+        withEnv("RABBITMQ_CONFIG_FILE", "/etc/rabbitmq/rabbitmq-custom.config");
+        return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.config");
     }
 
     @NotNull

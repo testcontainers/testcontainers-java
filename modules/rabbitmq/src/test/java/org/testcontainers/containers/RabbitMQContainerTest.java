@@ -108,7 +108,8 @@ public class RabbitMQContainerTest {
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.getLogs().contains("/etc/rabbitmq/rabbitmq-custom.conf")).isTrue();
+            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.config");
+            assertThat(container.getLogs()).doesNotContain(" (not found)");
         }
     }
 
