@@ -1,11 +1,4 @@
 dependencies {
-    compile 'junit:junit:4.12'
-    compile 'org.slf4j:slf4j-api:1.7.26'
-}
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
+    implementation 'junit:junit:4.12'
+    implementation 'org.slf4j:slf4j-api:1.7.26'
 }
