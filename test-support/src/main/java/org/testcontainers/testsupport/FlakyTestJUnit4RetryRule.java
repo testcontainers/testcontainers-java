@@ -7,36 +7,53 @@ import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO: Javadocs
+ * <p>
+ *     JUnit 4 @Rule that implements retry for flaky tests (tests that suffer from sporadic random failures).
+ * </p>
+ * <p>
+ *     This rule should be used in conjunction with the @{@link Flaky} annotation. When this Rule is applied to a test
+ *     class, any test method with this annotation will be invoked up to 3 times or until it succeeds.
+ * </p>
+ * <p>
+ *     Tests should <em>not</em> be marked @{@link Flaky} for a long period of time. Every usage should be
+ *     accompanied by a GitHub issue URL, and should be subject to review at a suitable point in the (near) future.
+ *     Should the review date pass without the test's instability being fixed, the retry behaviour will cease to have an
+ *     effect and the test will be allowed to sporadically fail again.
+ * </p>
  */
 @Slf4j
 public class FlakyTestJUnit4RetryRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
+
         final Flaky annotation = description.getAnnotation(Flaky.class);
+
         if (annotation != null) {
-            if ( ! isReviewDatePassed(annotation)) {
+            if (annotation.githubIssueUrl().trim().length() == 0) {
+                throw new IllegalArgumentException("A GitHub issue URL must be set for usages of the @Flaky annotation");
+            }
+
+            final LocalDate reviewDate;
+            try {
+                reviewDate = LocalDate.parse(annotation.reviewDate());
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("@Flaky reviewDate could not be parsed. Please provide a date in yyyy-mm-dd format");
+            }
+
+            // the annotation should only have an effect before the review date, to encourage review and resolution
+            if ( LocalDate.now().isBefore(reviewDate) ) {
                 return new RetryingStatement(base, description);
             }
         }
 
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                base.evaluate();
-            }
-        };
-    }
-
-    private boolean isReviewDatePassed(Flaky annotation) {
-        final LocalDate reviewDate = LocalDate.parse(annotation.reviewDate());
-
-        return reviewDate.isBefore(LocalDate.now());
+        // otherwise leave the statement as-is
+        return base;
     }
 
     private static class RetryingStatement extends Statement {
@@ -59,7 +76,7 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
                     base.evaluate();
                     return;
                 } catch (Throwable throwable) {
-                    log.info("Retrying @Flaky-annotated test: {}", description.getDisplayName());
+                    log.warn("Retrying @Flaky-annotated test: {}", description.getDisplayName());
                     causes.add(throwable);
                 }
             }

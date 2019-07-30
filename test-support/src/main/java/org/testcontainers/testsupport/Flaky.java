@@ -7,7 +7,8 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * TODO: Javadocs
+ * Annotation for test methods that should be retried in the event of failure. See {@link FlakyTestJUnit4RetryRule} for
+ * more details.
  */
 @Retention(RUNTIME)
 @Target({METHOD})
@@ -21,8 +22,8 @@ public @interface Flaky {
 
     /**
      * @return a date at which this should be reviewed, in {@link java.time.format.DateTimeFormatter#ISO_LOCAL_DATE}
-     * format (e.g. {@code 2020-12-03}). Now + 3 months is suggested. Once this date has passed, the annotation will
-     * stop having an effect.
+     * format (e.g. {@code 2020-12-03}). Now + 3 months is suggested. Once this date has passed, retries will no longer
+     * be applied.
      */
     String reviewDate();
 }
