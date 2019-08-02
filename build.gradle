@@ -33,16 +33,16 @@ subprojects {
         }
     }
 
+    repositories {
+        jcenter()
+    }
+
     // specific modules should be excluded from publication
     if ( ! ["test-support", "jdbc-test", "docs-examples"].contains(it.name) ) {
         apply from: "$rootDir/gradle/publishing.gradle"
         apply from: "$rootDir/gradle/bintray.gradle"
 
         project.tasks.sourceJar.from(delombok)
-
-        repositories {
-            jcenter()
-        }
 
         publishing {
             publications {
