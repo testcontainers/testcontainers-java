@@ -11,7 +11,7 @@ We publish our documentation using Netlify.
 
 ### Using Docker locally
 
-At the root of the project contains a `docker-compose.yml` file. Simply run `docker-compose up` and then access the docs at [http://localhost:8000](http://localhost:8000).
+The root of the project contains a `docker-compose.yml` file. Simply run `docker-compose up` and then access the docs at [http://localhost:8000](http://localhost:8000).
 
 ### Using Python locally
 
