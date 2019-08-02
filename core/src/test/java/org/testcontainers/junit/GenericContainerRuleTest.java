@@ -14,7 +14,7 @@ import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.testsupport.Flaky;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.testsupport.FlakyTestJUnit4RetryRule;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
@@ -384,10 +384,10 @@ public class GenericContainerRuleTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1688", reviewDate = "2019-10-01")
     public void sharedMemorySetTest() {
         try (GenericContainer containerWithSharedMemory = new GenericContainer()
-            .withSharedMemorySize(42L * FileUtils.ONE_MB)) {
+            .withSharedMemorySize(42L * FileUtils.ONE_MB)
+            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {
 
             containerWithSharedMemory.start();
 
