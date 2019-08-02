@@ -17,6 +17,7 @@ public class FlakyRuleTest {
     private static final String VALID_DATE_IN_FAR_FUTURE = "2063-04-05";
     private static final String VALID_DATE_IN_PAST = "1991-08-16";
     private static final String INVALID_DATE = "91-01-45";
+    private static final int DEFAULT_TRIES = 3;
 
     private FlakyTestJUnit4RetryRule rule = new FlakyTestJUnit4RetryRule();
 
@@ -45,6 +46,20 @@ public class FlakyRuleTest {
 
         }
         assertEquals("The statement should be invoked three times", 3, statement.invocationCount);
+    }
+
+    @Test
+    public void testCustomRetryCount() throws Throwable {
+        final Description description = newDescriptionWithAnnotationAndCustomTries(10);
+
+        final DummyStatement statement = newStatement(10);
+        try {
+            rule.apply(statement, description).evaluate();
+            fail("Should not reach here");
+        } catch (Exception ignored) {
+
+        }
+        assertEquals("The statement should be invoked ten times", 10, statement.invocationCount);
     }
 
     @Test
@@ -109,7 +124,7 @@ public class FlakyRuleTest {
     }
 
     private Description newDescriptionWithAnnotation(String reviewDate, String gitHubUrl) {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(reviewDate, gitHubUrl));
+        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(reviewDate, gitHubUrl, DEFAULT_TRIES));
     }
 
     private Description newDescriptionWithoutAnnotation() {
@@ -117,14 +132,18 @@ public class FlakyRuleTest {
     }
 
     private Description newDescriptionWithAnnotation() {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_FAR_FUTURE, VALID_URL));
+        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_FAR_FUTURE, VALID_URL, DEFAULT_TRIES));
+    }
+
+    private Description newDescriptionWithAnnotationAndCustomTries(int maxTries) {
+        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_FAR_FUTURE, VALID_URL, maxTries));
     }
 
     private Description newDescriptionWithExpiredAnnotation() {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_PAST, VALID_URL));
+        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_PAST, VALID_URL, DEFAULT_TRIES));
     }
 
-    private Flaky newAnnotation(final String reviewDate, String gitHubUrl) {
+    private Flaky newAnnotation(final String reviewDate, String gitHubUrl, int tries) {
         return new Flaky() {
             @Override
             public Class<? extends Annotation> annotationType() {
@@ -139,6 +158,11 @@ public class FlakyRuleTest {
             @Override
             public String reviewDate() {
                 return reviewDate;
+            }
+
+            @Override
+            public int maxTries() {
+                return tries;
             }
         };
     }

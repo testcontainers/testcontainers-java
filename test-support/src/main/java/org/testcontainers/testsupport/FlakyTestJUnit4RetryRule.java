@@ -39,6 +39,8 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
                 throw new IllegalArgumentException("A GitHub issue URL must be set for usages of the @Flaky annotation");
             }
 
+            final int maxTries = annotation.maxTries();
+
             final LocalDate reviewDate;
             try {
                 reviewDate = LocalDate.parse(annotation.reviewDate());
@@ -48,7 +50,7 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
 
             // the annotation should only have an effect before the review date, to encourage review and resolution
             if ( LocalDate.now().isBefore(reviewDate) ) {
-                return new RetryingStatement(base, description);
+                return new RetryingStatement(base, description, maxTries);
             }
         }
 
@@ -59,10 +61,12 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
     private static class RetryingStatement extends Statement {
         private final Statement base;
         private final Description description;
+        private final int maxTries;
 
-        RetryingStatement(Statement base, Description description) {
+        RetryingStatement(Statement base, Description description, int maxTries) {
             this.base = base;
             this.description = description;
+            this.maxTries = maxTries;
         }
 
         @Override
@@ -71,7 +75,7 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
             int attempts = 0;
             final List<Throwable> causes = new ArrayList<>();
 
-            while (++attempts <= 3) {
+            while (++attempts <= maxTries) {
                 try {
                     base.evaluate();
                     return;

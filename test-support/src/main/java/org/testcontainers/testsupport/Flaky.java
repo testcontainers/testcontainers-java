@@ -26,4 +26,9 @@ public @interface Flaky {
      * be applied.
      */
     String reviewDate();
+
+    /**
+     * @return the total number of times to try running this test (default 3)
+     */
+    int maxTries() default 3;
 }
