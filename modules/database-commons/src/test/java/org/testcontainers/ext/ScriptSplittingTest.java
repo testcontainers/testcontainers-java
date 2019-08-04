@@ -281,6 +281,21 @@ public class ScriptSplittingTest {
         }
     }
 
+    @Test
+    public void testIssue1452Case() {
+        String script = "create table test (text VARCHAR(255));\n" +
+            "\n" +
+            "/* some comment */\n" +
+            "insert into `test` (`text`) values ('a     b');";
+
+        List<String> expected = asList(
+            "create table test (text VARCHAR(255))",
+            "insert into `test` (`text`) values ('a     b')"
+        );
+
+        splitAndCompare(script, expected);
+    }
+
     private void splitAndCompare(String script, List<String> expected) {
         final List<String> statements = doSplit(script);
         Assertions.assertThat(statements).isEqualTo(expected);
