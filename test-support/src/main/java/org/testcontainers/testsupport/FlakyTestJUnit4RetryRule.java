@@ -34,28 +34,34 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
 
         final Flaky annotation = description.getAnnotation(Flaky.class);
 
-        if (annotation != null) {
-            if (annotation.githubIssueUrl().trim().length() == 0) {
-                throw new IllegalArgumentException("A GitHub issue URL must be set for usages of the @Flaky annotation");
-            }
-
-            final int maxTries = annotation.maxTries();
-
-            final LocalDate reviewDate;
-            try {
-                reviewDate = LocalDate.parse(annotation.reviewDate());
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("@Flaky reviewDate could not be parsed. Please provide a date in yyyy-mm-dd format");
-            }
-
-            // the annotation should only have an effect before the review date, to encourage review and resolution
-            if ( LocalDate.now().isBefore(reviewDate) ) {
-                return new RetryingStatement(base, description, maxTries);
-            }
+        if (annotation == null) {
+            // leave the statement as-is
+            return base;
         }
 
-        // otherwise leave the statement as-is
-        return base;
+        if (annotation.githubIssueUrl().trim().length() == 0) {
+            throw new IllegalArgumentException("A GitHub issue URL must be set for usages of the @Flaky annotation");
+        }
+
+        final int maxTries = annotation.maxTries();
+
+        if (maxTries < 1) {
+            throw new IllegalArgumentException("@Flaky annotation maxTries must be at least one");
+        }
+
+        final LocalDate reviewDate;
+        try {
+            reviewDate = LocalDate.parse(annotation.reviewDate());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("@Flaky reviewDate could not be parsed. Please provide a date in yyyy-mm-dd format");
+        }
+
+        // the annotation should only have an effect before the review date, to encourage review and resolution
+        if ( LocalDate.now().isBefore(reviewDate) ) {
+            return new RetryingStatement(base, description, maxTries);
+        } else {
+            return base;
+        }
     }
 
     private static class RetryingStatement extends Statement {

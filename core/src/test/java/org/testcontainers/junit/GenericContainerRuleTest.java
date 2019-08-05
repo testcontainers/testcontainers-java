@@ -15,7 +15,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
-import org.testcontainers.testsupport.FlakyTestJUnit4RetryRule;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
@@ -129,9 +128,6 @@ public class GenericContainerRuleTest {
             .withExposedPorts(80)
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
-
-    @Rule
-    public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
 
     @Test
     public void testIsRunning() {
