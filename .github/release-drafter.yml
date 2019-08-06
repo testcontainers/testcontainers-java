@@ -11,5 +11,9 @@ categories:
     label: type/bug
   - title: 📖 Documentation
     label: type/docs
+  - title: 🧹 Housekeeping
+    labels:
+      - type/housekeeping
+      - type/test-improvement
   - title: 📦 Dependency updates
     label: dependencies

@@ -79,7 +79,7 @@ dependencies {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java:docker-java:3.1.0-rc-4') {
+    shaded ('com.github.docker-java:docker-java:3.1.5') {
         exclude(group: 'org.glassfish.jersey.core')
         exclude(group: 'org.glassfish.jersey.connectors')
         exclude(group: 'org.glassfish.jersey.inject')
@@ -113,7 +113,7 @@ dependencies {
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testCompile 'org.assertj:assertj-core:3.12.2'
-
+    testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'

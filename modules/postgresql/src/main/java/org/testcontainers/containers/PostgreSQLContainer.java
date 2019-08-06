@@ -34,6 +34,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
                 .withRegEx(".*database system is ready to accept connections.*\\s")
                 .withTimes(2)
                 .withStartupTimeout(Duration.of(60, SECONDS));
+        this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
     }
 
     @NotNull
@@ -44,12 +45,10 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void configure() {
-
         addExposedPort(POSTGRESQL_PORT);
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
-        setCommand("postgres", "-c", FSYNC_OFF_OPTION);
     }
 
     @Override
