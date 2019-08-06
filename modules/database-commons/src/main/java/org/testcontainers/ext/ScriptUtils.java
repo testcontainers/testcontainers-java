@@ -124,6 +124,7 @@ public abstract class ScriptUtils {
 		Character currentLiteralDelimiter = null;
 
 		int compoundStatementDepth = 0;
+		final String lowerCaseScriptContent = script.toLowerCase();
 		char[] content = script.toCharArray();
 		for (int i = 0; i < script.length(); i++) {
 			char c = content[i];
@@ -148,24 +149,24 @@ public abstract class ScriptUtils {
 			}
 			final boolean inLiteral = currentLiteralDelimiter != null;
 
-			if (!inLiteral && containsSubstringAtOffset(script, commentPrefix, i)) {
+			if (!inLiteral && containsSubstringAtOffset(lowerCaseScriptContent, commentPrefix, i)) {
 				inLineComment = true;
 			}
  			if (inLineComment && c == '\n') {
 				inLineComment = false;
 			}
-			if (!inLiteral && containsSubstringAtOffset(script, blockCommentStartDelimiter, i)) {
+			if (!inLiteral && containsSubstringAtOffset(lowerCaseScriptContent, blockCommentStartDelimiter, i)) {
 				inBlockComment = true;
 			}
-			if (!inLiteral && inBlockComment && containsSubstringAtOffset(script, blockCommentEndDelimiter, i)) {
+			if (!inLiteral && inBlockComment && containsSubstringAtOffset(lowerCaseScriptContent, blockCommentEndDelimiter, i)) {
 				inBlockComment = false;
 			}
 			final boolean inComment = inLineComment || inBlockComment;
 
-			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "BEGIN", i)) {
+			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "BEGIN", i, separator, commentPrefix, blockCommentStartDelimiter)) {
 				compoundStatementDepth++;
 			}
-			if (!inLiteral && !inComment && containsSubstringAtOffset(script, "END", i)) {
+			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "END", i, separator, commentPrefix, blockCommentStartDelimiter)) {
 				compoundStatementDepth--;
 			}
 			final boolean inCompoundStatement = compoundStatementDepth != 0;
@@ -173,10 +174,7 @@ public abstract class ScriptUtils {
 			if (!inLiteral && !inCompoundStatement) {
 				if (script.startsWith(separator, i)) {
 					// we've reached the end of the current statement
-					if (sb.length() > 0) {
-						statements.add(sb.toString());
-						sb = new StringBuilder();
-					}
+					sb = flushStringBuilder(sb, statements);
 					i += separator.length() - 1;
 					continue;
 				}
@@ -198,6 +196,7 @@ public abstract class ScriptUtils {
 					int indexOfCommentEnd = script.indexOf(blockCommentEndDelimiter, i);
 					if (indexOfCommentEnd > i) {
 						i = indexOfCommentEnd + blockCommentEndDelimiter.length() - 1;
+                        inBlockComment = false;
 						continue;
 					}
 					else {
@@ -205,7 +204,7 @@ public abstract class ScriptUtils {
 							blockCommentEndDelimiter), resource);
 					}
 				}
-				else if (c == ' ' || c == '\n' || c == '\t') {
+				else if (c == ' ' || c == '\n' || c == '\t' || c == '\r') {
 					// avoid multiple adjacent whitespace characters
 					if (sb.length() > 0 && sb.charAt(sb.length() - 1) != ' ') {
 						c = ' ';
@@ -217,17 +216,49 @@ public abstract class ScriptUtils {
 			}
 			sb.append(c);
 		}
-		if (StringUtils.isNotEmpty(sb.toString())) {
-			statements.add(sb.toString());
-		}
+		flushStringBuilder(sb, statements);
 	}
 
-	private static boolean containsSubstringAtOffset(String string, String substring, int offset) {
-		String lowercaseString = string.toLowerCase();
+	private static StringBuilder flushStringBuilder(StringBuilder sb, List<String> statements) {
+		if (sb.length() == 0) {
+			return sb;
+		}
+
+		final String s = sb.toString().trim();
+		if (StringUtils.isNotEmpty(s)) {
+			statements.add(s);
+		}
+
+		return new StringBuilder();
+	}
+
+	private static boolean isSeperator(char c, String separator, String commentPrefix,
+                                       String blockCommentStartDelimiter) {
+	    return c == ' ' || c == '\r' || c == '\n' || c == '\t' ||
+            c == separator.charAt(0) || c == separator.charAt(separator.length() - 1) ||
+            c == commentPrefix.charAt(0) || c == blockCommentStartDelimiter.charAt(0) ||
+            c == blockCommentStartDelimiter.charAt(blockCommentStartDelimiter.length() - 1);
+    }
+
+	private static boolean containsSubstringAtOffset(String lowercaseString, String substring, int offset) {
 		String lowercaseSubstring = substring.toLowerCase();
 
 		return lowercaseString.startsWith(lowercaseSubstring, offset);
 	}
+
+    private static boolean containsKeywordsAtOffset(String lowercaseString, String keywords, int offset,
+                                                    String separator, String commentPrefix,
+                                                    String blockCommentStartDelimiter) {
+        String lowercaseKeywords = keywords.toLowerCase();
+
+        boolean backSeperated = (offset == 0) || isSeperator(lowercaseString.charAt(offset - 1),
+            separator, commentPrefix, blockCommentStartDelimiter);
+        boolean frontSeperated = (offset >= (lowercaseString.length() - keywords.length())) ||
+            isSeperator(lowercaseString.charAt(offset + keywords.length()),
+                separator, commentPrefix, blockCommentStartDelimiter);
+
+        return backSeperated && frontSeperated && lowercaseString.startsWith(lowercaseKeywords, offset);
+    }
 
 	private static void checkArgument(boolean expression, String errorMessage) {
 		if (!expression) {
@@ -235,7 +266,7 @@ public abstract class ScriptUtils {
 		}
 	}
 
-    /**
+	/**
 	 * Does the provided SQL script contain the specified delimiter?
 	 * @param script the SQL script
 	 * @param delim String delimiting each statement - typically a ';' character
@@ -356,7 +387,7 @@ public abstract class ScriptUtils {
 		}
 	}
 
-	private static class ScriptParseException extends RuntimeException {
+	public static class ScriptParseException extends RuntimeException {
 		public ScriptParseException(String format, String scriptPath) {
 			super(String.format(format, scriptPath));
 		}
