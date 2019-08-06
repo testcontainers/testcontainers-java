@@ -29,6 +29,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
      */
     @Deprecated
     public static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
+    private static final int PULL_ATTEMPTS = 3;
 
     private DockerImageName imageName;
 
@@ -73,23 +74,29 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 return imageName.toString();
             }
 
+            // The image is not available locally - pull it
             logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
 
-            // The image is not available locally - pull it
-            try {
-                final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
-                dockerClient
-                    .pullImageCmd(imageName.getUnversionedPart())
-                    .withTag(imageName.getVersionPart())
-                    .exec(callback);
-                callback.awaitCompletion();
-                AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
-            } catch (Exception e) {
-                logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName);
-                throw new ContainerFetchException("Failed to pull image: " + imageName, e);
-            }
+            Exception lastFailure = null;
+            for (int i = 1; i <= PULL_ATTEMPTS; i++) {
+                try {
+                    final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
+                    dockerClient
+                        .pullImageCmd(imageName.getUnversionedPart())
+                        .withTag(imageName.getVersionPart())
+                        .exec(callback);
+                    callback.awaitCompletion();
+                    AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
 
-            return imageName.toString();
+                    return imageName.toString();
+                } catch (Exception e) {
+                    logger.debug("Retrying pull for image: {}", imageName);
+                    lastFailure = e;
+                }
+            }
+            logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName, lastFailure);
+
+            throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
         }
