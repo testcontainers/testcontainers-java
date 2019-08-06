@@ -14,12 +14,17 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.time.Duration.between;
+import static java.time.Instant.now;
 
 @ToString
 public class RemoteDockerImage extends LazyFuture<String> {
@@ -29,7 +34,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
      */
     @Deprecated
     public static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
-    private static final int PULL_ATTEMPTS = 3;
+    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
     private DockerImageName imageName;
 
@@ -78,7 +83,9 @@ public class RemoteDockerImage extends LazyFuture<String> {
             logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
 
             Exception lastFailure = null;
-            for (int i = 1; i <= PULL_ATTEMPTS; i++) {
+            final Instant lastRetryAllowed = now().plus(PULL_RETRY_TIME_LIMIT);
+
+            while (now().isBefore(lastRetryAllowed)) {
                 try {
                     final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
                     dockerClient
@@ -90,8 +97,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
                     return imageName.toString();
                 } catch (Exception e) {
-                    logger.debug("Retrying pull for image: {}", imageName);
                     lastFailure = e;
+                    logger.warn("Retrying pull for image: {} ({}s remaining)",
+                        imageName,
+                        between(now(), lastRetryAllowed).getSeconds());
                 }
             }
             logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName, lastFailure);
