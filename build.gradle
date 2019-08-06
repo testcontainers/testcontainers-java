@@ -12,8 +12,6 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply plugin: 'com.github.johnrengelman.shadow'
-    apply from: "$rootDir/gradle/publishing.gradle"
-    apply from: "$rootDir/gradle/bintray.gradle"
 
     group = "org.testcontainers"
 
@@ -35,9 +33,29 @@ subprojects {
         }
     }
 
-    project.tasks.sourceJar.from(delombok)
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
 
-    task release(dependsOn: bintrayUpload)
+    // specific modules should be excluded from publication
+    if ( ! ["test-support", "jdbc-test", "docs-examples"].contains(it.name) ) {
+        apply from: "$rootDir/gradle/publishing.gradle"
+        apply from: "$rootDir/gradle/bintray.gradle"
+
+        project.tasks.sourceJar.from(delombok)
+
+        publishing {
+            publications {
+                mavenJava(MavenPublication) { publication ->
+                    artifacts.removeAll { it.classifier == null }
+                    artifact project.tasks.shadowJar
+                }
+            }
+        }
+
+        task release(dependsOn: bintrayUpload)
+    }
 
     test {
         defaultCharacterEncoding = "UTF-8"
@@ -47,11 +65,6 @@ subprojects {
             exceptionFormat = 'full'
             events "STARTED", "PASSED", "FAILED", "SKIPPED"
         }
-    }
-
-    repositories {
-        jcenter()
-        mavenCentral()
     }
 
     shadowJar {
@@ -83,15 +96,6 @@ subprojects {
                 }
 
                 tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
-            }
-        }
-    }
-
-    publishing {
-        publications {
-            mavenJava(MavenPublication) { publication ->
-                artifacts.removeAll { it.classifier == null }
-                artifact project.tasks.shadowJar
             }
         }
     }
