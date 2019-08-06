@@ -51,6 +51,7 @@ subprojects {
 
     repositories {
         jcenter()
+        mavenCentral()
     }
 
     shadowJar {
