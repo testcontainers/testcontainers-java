@@ -3,6 +3,7 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
+import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.NonNull;
@@ -96,7 +97,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
                     AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
 
                     return imageName.toString();
-                } catch (Exception e) {
+                } catch (InterruptedException | InternalServerErrorException e) {
+                    // these classes of exception often relate to timeout/connection errors so should be retried
                     lastFailure = e;
                     logger.warn("Retrying pull for image: {} ({}s remaining)",
                         imageName,
