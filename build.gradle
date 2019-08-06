@@ -35,6 +35,7 @@ subprojects {
 
     repositories {
         jcenter()
+        mavenCentral()
     }
 
     // specific modules should be excluded from publication
