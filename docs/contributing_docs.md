@@ -9,7 +9,11 @@ We publish our documentation using Netlify.
 
 ## Previewing rendered content
 
-### Previewing docs locally
+### Using Docker locally
+
+The root of the project contains a `docker-compose.yml` file. Simply run `docker-compose up` and then access the docs at [http://localhost:8000](http://localhost:8000).
+
+### Using Python locally
 
 * Ensure that you have Python 3.6.0 or higher.
 * Set up a virtualenv and run `pip install -r requirements.txt` in the `testcontainers-java` root directory.
