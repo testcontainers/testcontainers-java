@@ -70,6 +70,15 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
+    public void lookupAuthConfigUsingHelperWithToken() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper-using-token.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registrytoken.example.com/org/repo"), new AuthConfig());
+
+        assertEquals("Correct identitytoken is obtained from a credential store", "secret", authConfig.getIdentitytoken());
+    }
+
+    @Test
     public void lookupUsingHelperEmptyAuth() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty-auth-with-helper.json");
 
