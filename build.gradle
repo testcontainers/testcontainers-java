@@ -67,6 +67,14 @@ subprojects {
         }
     }
 
+    jar {
+        manifest {
+            attributes(
+                "Automatic-Module-Name": "testcontainers.${project.name}"
+            )
+        }
+    }
+
     shadowJar {
         configurations = []
         classifier = null
