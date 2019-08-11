@@ -346,12 +346,38 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     }
 
     /**
-     * Overwrites the default RabbitMQ configuration file with the supplied one
+     * Overwrites the default RabbitMQ configuration file with the supplied one.
      *
-     * @param rabbitMQConf The rabbitmq.config file to use
+     * @param rabbitMQConf The rabbitmq.conf file to use (in sysctl format, don't forget empty line in the end of file)
      * @return This container.
      */
     public RabbitMQContainer withRabbitMQConfig(MountableFile rabbitMQConf) {
+
+        return withRabbitMQConfigSysctl(rabbitMQConf);
+    }
+
+    /**
+     * Overwrites the default RabbitMQ configuration file with the supplied one.
+     *
+     * This function doesn't work with RabbitMQ < 3.7.
+     *
+     * This function and the Sysctl format is recommended for RabbitMQ >= 3.7
+     *
+     * @param rabbitMQConf The rabbitmq.config file to use (in sysctl format, don't forget empty line in the end of file)
+     * @return This container.
+     */
+    public RabbitMQContainer withRabbitMQConfigSysctl(MountableFile rabbitMQConf) {
+        withEnv("RABBITMQ_CONFIG_FILE", "/etc/rabbitmq/rabbitmq-custom");
+        return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.conf");
+    }
+
+    /**
+     * Overwrites the default RabbitMQ configuration file with the supplied one.
+     *
+     * @param rabbitMQConf The rabbitmq.config file to use (in erlang format)
+     * @return This container.
+     */
+    public RabbitMQContainer withRabbitMQConfigErlang(MountableFile rabbitMQConf) {
         withEnv("RABBITMQ_CONFIG_FILE", "/etc/rabbitmq/rabbitmq-custom.config");
         return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.config");
     }

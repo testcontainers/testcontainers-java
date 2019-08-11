@@ -1,26 +1,29 @@
 package org.testcontainers.containers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.testcontainers.containers.RabbitMQContainer.SslVerification.VERIFY_PEER;
+import static org.testcontainers.utility.MountableFile.forClasspathResource;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import org.junit.Test;
-import org.testcontainers.utility.MountableFile;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.testcontainers.containers.RabbitMQContainer.SslVerification.VERIFY_PEER;
-import static org.testcontainers.utility.MountableFile.forClasspathResource;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import org.junit.Test;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * @author Martin Greber
@@ -34,7 +37,8 @@ public class RabbitMQContainerTest {
     public static final int DEFAULT_HTTP_PORT = 15672;
 
     @Test
-    public void shouldCreateRabbitMQContainer() {
+    public void shouldCreateRabbitMQContainer()
+    {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
             assertThat(container.getDockerImageName()).isEqualTo(DEFAULT_IMAGE);
@@ -44,13 +48,13 @@ public class RabbitMQContainerTest {
             container.start();
 
             assertThat(container.getAmqpsUrl()).isEqualTo(
-                    String.format("amqps://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
+                String.format("amqps://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
             assertThat(container.getAmqpUrl()).isEqualTo(
-                    String.format("amqp://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQP_PORT)));
+                String.format("amqp://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQP_PORT)));
             assertThat(container.getHttpsUrl()).isEqualTo(
-                    String.format("https://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
+                String.format("https://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
             assertThat(container.getHttpUrl()).isEqualTo(
-                    String.format("http://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTP_PORT)));
+                String.format("http://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTP_PORT)));
 
             assertThat(container.getHttpsPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTPS_PORT));
             assertThat(container.getHttpPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTP_PORT));
@@ -58,54 +62,72 @@ public class RabbitMQContainerTest {
             assertThat(container.getAmqpPort()).isEqualTo(container.getMappedPort(DEFAULT_AMQP_PORT));
 
             assertThat(container.getLivenessCheckPortNumbers()).containsExactlyInAnyOrder(
-                    container.getMappedPort(DEFAULT_AMQP_PORT),
-                    container.getMappedPort(DEFAULT_AMQPS_PORT),
-                    container.getMappedPort(DEFAULT_HTTP_PORT),
-                    container.getMappedPort(DEFAULT_HTTPS_PORT)
+                container.getMappedPort(DEFAULT_AMQP_PORT),
+                container.getMappedPort(DEFAULT_AMQPS_PORT),
+                container.getMappedPort(DEFAULT_HTTP_PORT),
+                container.getMappedPort(DEFAULT_HTTPS_PORT)
             );
         }
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithTag() {
+    public void shouldCreateRabbitMQContainerWithTag()
+    {
         try (RabbitMQContainer container = new RabbitMQContainer(DEFAULT_IMAGE)) {
             assertThat(container.getDockerImageName()).isEqualTo(DEFAULT_IMAGE);
         }
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithExchange() throws IOException, InterruptedException {
+    public void shouldCreateRabbitMQContainerWithExchange() throws IOException, InterruptedException
+    {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
             container.withExchange("test-exchange", "direct");
 
             container.start();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_exchanges").getStdout())
-                    .containsPattern("test-exchange\\s+direct");
+                .containsPattern("test-exchange\\s+direct");
         }
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithQueues() throws IOException, InterruptedException {
+    public void shouldCreateRabbitMQContainerWithQueues() throws IOException, InterruptedException
+    {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
             container.withQueue("queue-one")
-                    .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
+                .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
 
             container.start();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
-                    .containsPattern("queue-one");
+                .containsPattern("queue-one");
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
-                    .containsPattern("queue-two\\s.*x-message-ttl");
+                .containsPattern("queue-two\\s.*x-message-ttl");
         }
     }
 
     @Test
-    public void shouldMountConfigurationFile() {
+    public void shouldMountConfigurationFile()
+    {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
+            container.start();
+
+            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
+            assertThat(container.getLogs()).doesNotContain(" (not found)");
+        }
+    }
+
+
+    @Test
+    public void shouldMountConfigurationFileErlang()
+    {
+        try (RabbitMQContainer container = new RabbitMQContainer()) {
+
+            container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
 
             assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.config");
@@ -113,86 +135,103 @@ public class RabbitMQContainerTest {
         }
     }
 
-    @Test
-    public void shouldStartTheWholeEnchilada() throws IOException, InterruptedException {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
-            container
-                    .withVhost("vhost1")
-                    .withVhostLimit("vhost1", "max-connections", 1)
-                    .withVhost("vhost2", true)
-                    .withExchange("direct-exchange", "direct")
-                    .withExchange("topic-exchange", "topic")
-                    .withQueue("queue1")
-                    .withQueue("queue2", true, false, ImmutableMap.of("x-message-ttl", 1000))
-                    .withBinding("direct-exchange", "queue1")
-                    .withUser("user1", "password1")
-                    .withUser("user2", "password2", ImmutableSet.of("administrator"))
-                    .withPermission("vhost1", "user1", ".*", ".*", ".*")
-                    .withPolicy("max length policy", "^dog", ImmutableMap.of("max-length", 1), 1, "queues")
-                    .withPolicy("alternate exchange policy", "^direct-exchange", ImmutableMap.of("alternate-exchange", "amq.direct"))
-                    .withOperatorPolicy("operator policy 1", "^queue1", ImmutableMap.of("message-ttl", 1000), 1, "queues")
-                    .withPluginsEnabled("rabbitmq_shovel", "rabbitmq_random_exchange");
 
+    @Test
+    public void shouldMountConfigurationFileSysctl()
+    {
+        try (RabbitMQContainer container = new RabbitMQContainer()) {
+
+            container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.execInContainer("rabbitmqadmin", "list", "queues")
-                    .getStdout())
-                    .contains("queue1", "queue2");
-
-            assertThat(container.execInContainer("rabbitmqadmin", "list", "exchanges")
-                    .getStdout())
-                    .contains("direct-exchange", "topic-exchange");
-
-            assertThat(container.execInContainer("rabbitmqadmin", "list", "bindings")
-                    .getStdout())
-                    .contains("direct-exchange");
-
-            assertThat(container.execInContainer("rabbitmqadmin", "list", "users")
-                    .getStdout())
-                    .contains("user1", "user2");
-
-            assertThat(container.execInContainer("rabbitmqadmin", "list", "policies")
-                    .getStdout())
-                    .contains("max length policy", "alternate exchange policy");
-
-            assertThat(container.execInContainer("rabbitmqadmin", "list", "operator_policies")
-                    .getStdout())
-                    .contains("operator policy 1");
-
-            assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_shovel", "--quiet")
-                    .getStdout())
-                    .contains("rabbitmq_shovel is enabled");
-
-            assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_random_exchange", "--quiet")
-                    .getStdout())
-                    .contains("rabbitmq_random_exchange is enabled");
+            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
+            assertThat(container.getLogs()).doesNotContain(" (not found)");
         }
     }
 
     @Test
-    public void shouldThrowExceptionForDodgyJson() {
+    public void shouldStartTheWholeEnchilada() throws IOException, InterruptedException
+    {
+        try (RabbitMQContainer container = new RabbitMQContainer()) {
+            container
+                .withVhost("vhost1")
+                .withVhostLimit("vhost1", "max-connections", 1)
+                .withVhost("vhost2", true)
+                .withExchange("direct-exchange", "direct")
+                .withExchange("topic-exchange", "topic")
+                .withQueue("queue1")
+                .withQueue("queue2", true, false, ImmutableMap.of("x-message-ttl", 1000))
+                .withBinding("direct-exchange", "queue1")
+                .withUser("user1", "password1")
+                .withUser("user2", "password2", ImmutableSet.of("administrator"))
+                .withPermission("vhost1", "user1", ".*", ".*", ".*")
+                .withPolicy("max length policy", "^dog", ImmutableMap.of("max-length", 1), 1, "queues")
+                .withPolicy("alternate exchange policy", "^direct-exchange", ImmutableMap.of("alternate-exchange", "amq.direct"))
+                .withOperatorPolicy("operator policy 1", "^queue1", ImmutableMap.of("message-ttl", 1000), 1, "queues")
+                .withPluginsEnabled("rabbitmq_shovel", "rabbitmq_random_exchange");
+
+            container.start();
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "queues")
+                .getStdout())
+                .contains("queue1", "queue2");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "exchanges")
+                .getStdout())
+                .contains("direct-exchange", "topic-exchange");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "bindings")
+                .getStdout())
+                .contains("direct-exchange");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "users")
+                .getStdout())
+                .contains("user1", "user2");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "policies")
+                .getStdout())
+                .contains("max length policy", "alternate exchange policy");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "operator_policies")
+                .getStdout())
+                .contains("operator policy 1");
+
+            assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_shovel", "--quiet")
+                .getStdout())
+                .contains("rabbitmq_shovel is enabled");
+
+            assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_random_exchange", "--quiet")
+                .getStdout())
+                .contains("rabbitmq_random_exchange is enabled");
+        }
+    }
+
+    @Test
+    public void shouldThrowExceptionForDodgyJson()
+    {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
             assertThatCode(() ->
-                    container.withQueue(
-                            "queue2",
-                            true,
-                            false,
-                            ImmutableMap.of("x-message-ttl", container))
+                container.withQueue(
+                    "queue2",
+                    true,
+                    false,
+                    ImmutableMap.of("x-message-ttl", container))
             ).hasMessageStartingWith("Failed to convert arguments into json");
 
         }
     }
 
     @Test
-    public void shouldWorkWithSSL() {
+    public void shouldWorkWithSSL()
+    {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
             container.withSSL(
-                    forClasspathResource("/certs/server_key.pem", 0644),
-                    forClasspathResource("/certs/server_certificate.pem", 0644),
-                    forClasspathResource("/certs/ca_certificate.pem", 0644),
-                    VERIFY_PEER,
-                    true
+                forClasspathResource("/certs/server_key.pem", 0644),
+                forClasspathResource("/certs/server_certificate.pem", 0644),
+                forClasspathResource("/certs/ca_certificate.pem", 0644),
+                VERIFY_PEER,
+                true
             );
 
             container.start();
@@ -200,8 +239,8 @@ public class RabbitMQContainerTest {
             assertThatCode(() -> {
                 ConnectionFactory connectionFactory = new ConnectionFactory();
                 connectionFactory.useSslProtocol(createSslContext(
-                        "certs/client_key.p12", "password",
-                        "certs/truststore.jks", "password"));
+                    "certs/client_key.p12", "password",
+                    "certs/truststore.jks", "password"));
                 connectionFactory.enableHostnameVerification();
                 connectionFactory.setUri(container.getAmqpsUrl());
                 connectionFactory.setPassword(container.getAdminPassword());
@@ -214,7 +253,8 @@ public class RabbitMQContainerTest {
     }
 
     private SSLContext createSslContext(String keystoreFile, String keystorePassword, String truststoreFile, String truststorePassword)
-            throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException
+    {
         ClassLoader classLoader = getClass().getClassLoader();
 
         KeyStore ks = KeyStore.getInstance("PKCS12");
