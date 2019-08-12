@@ -398,6 +398,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         } finally {
             containerId = null;
             containerInfo = null;
+            portBindings.clear();
         }
     }
 
