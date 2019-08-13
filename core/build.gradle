@@ -92,7 +92,7 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded "org.yaml:snakeyaml:1.21"
+    shaded "org.yaml:snakeyaml:1.24"
 
     shaded 'com.squareup.okhttp3:okhttp:3.14.2'
 
