@@ -67,7 +67,10 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    compile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    compile ('org.rnorth.visible-assertions:visible-assertions:2.1.2') {
+        // Excluded in favor of jna-platform below
+        exclude(group: "net.java.dev.jna", module: "jna")
+    }
 
     compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
         exclude(group: "log4j", module: "log4j")
