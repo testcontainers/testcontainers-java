@@ -22,6 +22,7 @@ import org.testcontainers.images.builder.traits.StringsTrait;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -41,26 +42,6 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         FilesTrait<ImageFromDockerfile>,
         StringsTrait<ImageFromDockerfile>,
         DockerfileTrait<ImageFromDockerfile> {
-
-    private static final Set<String> imagesToDelete = Sets.newConcurrentHashSet();
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-            DockerClient dockerClientForCleaning = DockerClientFactory.instance().client();
-            try {
-                for (String dockerImageName : imagesToDelete) {
-                    log.info("Removing image tagged {}", dockerImageName);
-                    try {
-                        dockerClientForCleaning.removeImageCmd(dockerImageName).withForce(true).exec();
-                    } catch (Throwable e) {
-                        log.warn("Unable to delete image " + dockerImageName, e);
-                    }
-                }
-            } catch (DockerClientException e) {
-                throw new RuntimeException(e);
-            }
-        }));
-    }
 
     private final String dockerImageName;
 
@@ -102,7 +83,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         DockerClient dockerClient = DockerClientFactory.instance().client();
         try {
             if (deleteOnExit) {
-                imagesToDelete.add(dockerImageName);
+                ResourceReaper.instance().registerImageForCleanup(dockerImageName);
             }
 
             BuildImageResultCallback resultCallback = new BuildImageResultCallback() {

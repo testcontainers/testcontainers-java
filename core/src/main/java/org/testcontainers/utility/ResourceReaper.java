@@ -11,6 +11,8 @@ import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Sets;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -51,7 +53,8 @@ public final class ResourceReaper {
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
-    private Set<String> registeredNetworks = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
+    private Set<String> registeredImages = Sets.newConcurrentHashSet();
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
 
     private ResourceReaper() {
@@ -164,6 +167,7 @@ public final class ResourceReaper {
     public synchronized void performCleanup() {
         registeredContainers.forEach(this::stopContainer);
         registeredNetworks.forEach(this::removeNetwork);
+        registeredImages.forEach(this::removeImage);
     }
 
     /**
@@ -336,6 +340,20 @@ public final class ResourceReaper {
 
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
+    }
+    
+    public void registerImageForCleanup(String dockerImageName) {
+        setHook();
+        registeredImages.add(dockerImageName);
+    }
+    
+    private void removeImage(String dockerImageName) {
+        LOGGER.trace("Removing image tagged {}", dockerImageName);
+        try {
+            dockerClient.removeImageCmd(dockerImageName).withForce(true).exec();
+        } catch (Throwable e) {
+            LOGGER.warn("Unable to delete image " + dockerImageName, e);
+        }
     }
 
     private void setHook() {
