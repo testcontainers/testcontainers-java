@@ -2,7 +2,7 @@ description = "Testcontainers :: Couchbase"
 
 dependencies {
     compile project(':testcontainers')
-    compile 'com.couchbase.client:java-client:2.7.7'
+    compile 'com.couchbase.client:java-client:2.7.9'
 
     testCompile project(':test-support')
 }
