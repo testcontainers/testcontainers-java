@@ -281,7 +281,9 @@ public class MountableFile implements Transferable {
     }
 
     private void deleteOnExit(final Path path) {
-        Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> recursiveDeleteDir(path)));
+        recursiveDeleteDir(Paths.get("/tmp/maven-hack"));
+        Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
+            () -> recursiveDeleteDir(path)));
     }
 
     /**

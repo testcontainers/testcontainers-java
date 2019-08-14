@@ -13,6 +13,7 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.base.Strings;
+import java.nio.file.Paths;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -85,6 +86,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
+import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -419,9 +421,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected Path createVolumeDirectory(boolean temporary) {
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
         PathUtils.mkdirp(directory);
-
+        recursiveDeleteDir(Paths.get("/tmp/maven-hack"));
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-            PathUtils.recursiveDeleteDir(directory);
+            recursiveDeleteDir(directory);
         }));
 
         return directory;
