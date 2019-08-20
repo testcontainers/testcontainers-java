@@ -80,6 +80,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -128,6 +129,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @NonNull
     private Map<String, String> env = new HashMap<>();
+    
+    @NonNull
+    private final Map<String, Supplier<String>> lazyEnv = new HashMap<>();
 
     @NonNull
     private Map<String, String> labels = new HashMap<>();
@@ -521,6 +525,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (commandParts != null) {
             createCommand.withCmd(commandParts);
         }
+        
+        resolveLazyEnv();
 
         String[] envArray = env.entrySet().stream()
                 .map(it -> it.getKey() + "=" + it.getValue())
@@ -694,6 +700,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public Map<String, String> getEnvMap() {
+        resolveLazyEnv();
         return env;
     }
 
@@ -702,6 +709,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public List<String> getEnv() {
+        resolveLazyEnv();
         return env.entrySet().stream()
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .collect(Collectors.toList());
@@ -709,6 +717,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setEnv(List<String> env) {
+        lazyEnv.clear();
         this.env = env.stream()
                 .map(it -> it.split("="))
                 .collect(Collectors.toMap(
@@ -723,6 +732,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addEnv(String key, String value) {
         env.put(key, value);
+        lazyEnv.remove(key);
     }
 
     /**
@@ -866,6 +876,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     protected void addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
         portBindings.add(String.format("%d:%d/%s", hostPort, containerPort, protocol.toDockerNotation()));
+    }
+
+    /**
+     * Resolve all lazyEnv variables and apply them to the env map IFF the 
+     * current env map does not already contain keys for this variable
+     */
+    private void resolveLazyEnv() {
+        lazyEnv.entrySet().stream()
+            .forEach(it -> env.computeIfAbsent(it.getKey(), k -> it.getValue().get()));
+        lazyEnv.clear();
+    }
+    
+    public SELF withEnv(String key, Supplier<String> lazyValue) {
+        this.lazyEnv.put(key, lazyValue);
+        this.env.remove(key);
+        return self();
     }
 
     /**

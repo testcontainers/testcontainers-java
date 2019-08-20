@@ -22,6 +22,7 @@ import java.io.*;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -218,6 +219,30 @@ public class GenericContainerRuleTest {
         String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
 
         assertEquals("Environment variables can be passed into a command from a map", "42 and 50", line);
+    }
+    
+    @Test
+    public void lazyEnvTest1() {
+        GenericContainer<?> c = new GenericContainer<>("alpine:3.2")
+                .withEnv("foo", "bar")
+                .withEnv("foo", () -> "lazybar");
+        assertEquals("Environment variables with same keys should override earlier set values", "lazybar", c.getEnvMap().get("foo"));
+    }
+    
+    @Test
+    public void lazyEnvTest2() {
+        GenericContainer<?> c = new GenericContainer<>("alpine:3.2")
+                .withEnv("foo", () -> "lazybar")
+                .withEnv("foo", "bar");
+        assertEquals("Environment variables with same keys should override earlier set values", "bar", c.getEnvMap().get("foo"));
+    }
+    
+    @Test
+    public void lazyEnvTest3() {
+        GenericContainer<?> c = new GenericContainer<>("alpine:3.2")
+                .withEnv("foo", () -> "lazybar");
+        c.setEnv(Collections.singletonList("other=bogus"));
+        assertEquals("Environment variables with same keys should override earlier set values", null, c.getEnvMap().get("foo"));
     }
 
     @Test
