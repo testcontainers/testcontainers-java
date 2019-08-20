@@ -166,7 +166,15 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 try {
                     driver = (Driver) Class.forName(this.getDriverClassName()).newInstance();
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                    throw new NoDriverFoundException("Could not get Driver", e);
+                    if(getJdbcUrl().startsWith("jdbc:mysql://")) {
+                        try {
+                            driver = (Driver) Class.forName("com.mysql.jdbc.Driver").newInstance();
+                        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                            throw new NoDriverFoundException("Could not get MySQL Driver", ex);
+                        }
+                    } else {
+                        throw new NoDriverFoundException("Could not get Driver", e);
+                    }
                 }
             }
         }
