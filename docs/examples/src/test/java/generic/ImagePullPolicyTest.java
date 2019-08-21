@@ -11,13 +11,13 @@ public class ImagePullPolicyTest {
 
     // image_pull_policy {
     @ClassRule
-    public static GenericContainer containerAlwaysPull = new GenericContainer("alpine:3.6")
+    public static GenericContainer containerAlwaysPull = new GenericContainer("redis:3.0.2")
         .withImagePullPolicy(PullPolicy.alwaysPull());
     // }
 
     // custom_image_pull_policy {
     @ClassRule
-    public static GenericContainer containerCustomPullPolicy = new GenericContainer("alpine:3.6")
+    public static GenericContainer containerCustomPullPolicy = new GenericContainer("redis:3.0.2")
         .withImagePullPolicy(image -> System.getenv("ALWAYS_PULL_IMAGE") != null);
     // }
 
