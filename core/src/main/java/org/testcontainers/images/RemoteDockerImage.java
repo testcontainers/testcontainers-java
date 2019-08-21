@@ -24,9 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.time.Duration.between;
-import static java.time.Instant.now;
-
 @ToString
 public class RemoteDockerImage extends LazyFuture<String> {
 
@@ -84,9 +81,9 @@ public class RemoteDockerImage extends LazyFuture<String> {
             logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
 
             Exception lastFailure = null;
-            final Instant lastRetryAllowed = now().plus(PULL_RETRY_TIME_LIMIT);
+            final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
 
-            while (now().isBefore(lastRetryAllowed)) {
+            while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
                     final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
                     dockerClient
@@ -102,7 +99,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                     lastFailure = e;
                     logger.warn("Retrying pull for image: {} ({}s remaining)",
                         imageName,
-                        between(now(), lastRetryAllowed).getSeconds());
+                        Duration.between(Instant.now(), lastRetryAllowed).getSeconds());
                 }
             }
             logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName, lastFailure);
