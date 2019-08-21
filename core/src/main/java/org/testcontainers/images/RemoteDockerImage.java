@@ -23,6 +23,10 @@ import org.testcontainers.utility.LazyFuture;
 @ToString
 public class RemoteDockerImage extends LazyFuture<String> {
 
+    /**
+     * @deprecated this field will become private in a later release
+     */
+    @Deprecated
     public static final Map<DockerImageName, ImageData> AVAILABLE_IMAGES_CACHE = new HashMap<>();
 
     private DockerImageName imageName;
@@ -54,52 +58,39 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
         try {
-            int attempts = 0;
-            Exception lastException = null;
-            while (true) {
-                // Does our cache already know the image?
-                if (AVAILABLE_IMAGES_CACHE.containsKey(imageName)) {
-                    logger.trace("{} is already in image name cache", imageName);
-                }
+            // Does our cache already know the image?
+            if (AVAILABLE_IMAGES_CACHE.containsKey(imageName)) {
+                logger.trace("{} is already in image name cache", imageName);
+                return imageName.toString();
+            }
 
-                else {
-                    // Does the image exist in the local Docker cache?
-                    try {
-                        ImageData imageData = new DockerJavaImageData(dockerClient.inspectImageCmd(imageName.toString()).exec());
-                        AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
-                        if (!imagePullPolicy.shouldPull(imageData)) {
-                            break;
-                        }
-                    }
-                    catch (NotFoundException ex) {
-                        logger.trace("Docker image {} not found locally", imageName);
-                    }
+            // Does the image exist in the local Docker cache?
+            try {
+                ImageData imageData = new DockerJavaImageData(
+                    dockerClient.inspectImageCmd(imageName.toString()).exec());
+                AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
+                if (!imagePullPolicy.shouldPull(imageData)) {
+                    return imageName.toString();
                 }
+            } catch (NotFoundException ex) {
+                logger.trace("Docker image {} not found locally", imageName);
+            }
 
-                // Log only on first attempt
-                if (attempts == 0) {
-                    logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
-                }
+            logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
 
-                if (attempts++ >= 3) {
-                    logger.error("Retry limit reached while trying to pull image: {}. Please check output of `docker pull {}`", imageName, imageName);
-                    throw new ContainerFetchException("Retry limit reached while trying to pull image: " + imageName, lastException);
-                }
-
-                // The image is not available locally - pull it
-                try {
-                    final PullImageResultCallback callback = new PullImageResultCallback();
-                    dockerClient
-                        .pullImageCmd(imageName.getUnversionedPart())
-                        .withTag(imageName.getVersionPart())
-                        .exec(callback);
-                    callback.awaitCompletion();
-                    ImageData imageData = new DockerJavaImageData(dockerClient.inspectImageCmd(imageName.toString()).exec());
-                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
-                    break;
-                } catch (Exception e) {
-                    lastException = e;
-                }
+            // The image is not available locally - pull it
+            try {
+                final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
+                dockerClient
+                    .pullImageCmd(imageName.getUnversionedPart())
+                    .withTag(imageName.getVersionPart())
+                    .exec(callback);
+                callback.awaitCompletion();
+                ImageData imageData = new DockerJavaImageData(dockerClient.inspectImageCmd(imageName.toString()).exec());
+                AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
+            } catch (Exception e) {
+                logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName);
+                throw new ContainerFetchException("Failed to pull image: " + imageName, e);
             }
 
             return imageName.toString();
