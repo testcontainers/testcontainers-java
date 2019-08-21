@@ -59,3 +59,7 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 !!!tip
     Note that Testcontainers will continue doing the cleanup at JVM's shutdown, unless you `kill -9` your JVM process.
 
+## Customizing image pull behaviour
+
+> **pull.pause.timeout = 30**
+> By default Testcontainers will abort the pull of an image if the pull appears stalled (no data transferred) for longer than this duration (in seconds).
