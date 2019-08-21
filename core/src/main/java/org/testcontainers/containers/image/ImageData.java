@@ -2,6 +2,7 @@ package org.testcontainers.containers.image;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.OptionalLong;
 
 public interface ImageData {
 
@@ -15,9 +16,9 @@ public interface ImageData {
 
     List<String> getRepoDigests();
 
-    Long getSize();
+    OptionalLong getSize();
 
-    Long getVirtualSize();
+    OptionalLong getVirtualSize();
 
 
 }

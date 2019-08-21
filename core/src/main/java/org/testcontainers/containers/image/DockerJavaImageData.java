@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.InspectImageResponse;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.OptionalLong;
 import lombok.Value;
 
 @Value
@@ -37,13 +38,15 @@ public class DockerJavaImageData implements ImageData {
     }
 
     @Override
-    public Long getSize() {
-        return inspectImageResponse.getSize();
+    public OptionalLong getSize() {
+        return inspectImageResponse.getSize() == null ? OptionalLong.empty() :
+            OptionalLong.of(inspectImageResponse.getSize());
     }
 
     @Override
-    public Long getVirtualSize() {
-        return inspectImageResponse.getVirtualSize();
+    public OptionalLong getVirtualSize() {
+        return inspectImageResponse.getVirtualSize() == null ? OptionalLong.empty() :
+            OptionalLong.of(inspectImageResponse.getVirtualSize());
     }
 }
 
