@@ -5,8 +5,10 @@ import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.junit.platform.commons.support.AnnotationSupport;
+import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
 
 import java.lang.reflect.Field;
@@ -16,7 +18,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, TestInstancePostProcessor {
+class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, ExecutionCondition, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
@@ -46,6 +48,43 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
             .flatMap(this::findRestartContainers)
             .forEach(adapter -> context.getStore(NAMESPACE)
                 .getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
+    }
+
+    @Override
+    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+        return findTestcontainers(context).map(this::evaluate)
+            .orElseThrow(() -> new ExtensionConfigurationException("@Testcontainers not found"));
+    }
+
+    private Optional<Testcontainers> findTestcontainers(ExtensionContext context) {
+        Optional<ExtensionContext> current = Optional.of(context);
+        while (current.isPresent()) {
+            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(current.get().getRequiredTestClass(), Testcontainers.class);
+            if (testcontainers.isPresent()) {
+                return testcontainers;
+            }
+            current = current.get().getParent();
+        }
+        return Optional.empty();
+    }
+
+    private ConditionEvaluationResult evaluate(Testcontainers testcontainers) {
+        if (testcontainers.disabledWithoutDocker()) {
+            if (isDockerAvailable()) {
+                return ConditionEvaluationResult.enabled("Docker is available");
+            }
+            return ConditionEvaluationResult.disabled("disabledWithoutDocker is true and Docker is not available");
+        }
+        return ConditionEvaluationResult.enabled("disabledWithoutDocker is false");
+    }
+
+    boolean isDockerAvailable() {
+        try {
+            DockerClientFactory.instance().client();
+            return true;
+        } catch (Throwable ex) {
+            return false;
+        }
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {
@@ -95,7 +134,7 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
                 boolean isStartable = Startable.class.isAssignableFrom(field.getType());
 
                 if (!isStartable) {
-                    throw new ExtensionConfigurationException("Annotation is only supported for Startable types");
+                    throw new ExtensionConfigurationException(String.format("FieldName: %s does not implement Startable", field.getName()));
                 }
                 return true;
             }

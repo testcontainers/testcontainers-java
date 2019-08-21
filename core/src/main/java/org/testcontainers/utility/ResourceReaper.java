@@ -2,8 +2,6 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.exception.DockerException;
-import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -12,6 +10,7 @@ import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -217,12 +216,14 @@ public final class ResourceReaper {
         boolean running;
         try {
             InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
-            running = containerInfo.getState().getRunning();
+            running = containerInfo.getState() != null && Boolean.TRUE.equals(containerInfo.getState().getRunning());
         } catch (NotFoundException e) {
             LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
             return;
-        } catch (DockerException e) {
-            LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+        } catch (Exception e) {
+            LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+                containerId,
+                Throwables.getRootCause(e).getMessage());
             return;
         }
 
@@ -231,28 +232,28 @@ public final class ResourceReaper {
                 LOGGER.trace("Stopping container: {}", containerId);
                 dockerClient.killContainerCmd(containerId).exec();
                 LOGGER.trace("Stopped container: {}", imageName);
-            } catch (DockerException e) {
-                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            } catch (Exception e) {
+                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+                    containerId,
+                    Throwables.getRootCause(e).getMessage());
             }
         }
 
         try {
             dockerClient.inspectContainerCmd(containerId).exec();
-        } catch (NotFoundException e) {
+        } catch (Exception e) {
             LOGGER.trace("Was going to remove container but it apparently no longer exists: {}", containerId);
             return;
         }
 
         try {
             LOGGER.trace("Removing container: {}", containerId);
-            try {
-                dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
-                LOGGER.debug("Removed container and associated volume(s): {}", imageName);
-            } catch (InternalServerErrorException e) {
-                LOGGER.trace("Exception when removing container with associated volume(s): {} (due to {})", imageName, e.getMessage());
-            }
-        } catch (DockerException e) {
-            LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped: {}", containerId, e.getMessage());
+            dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
+            LOGGER.debug("Removed container and associated volume(s): {}", imageName);
+        } catch (Exception e) {
+            LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+                containerId,
+                Throwables.getRootCause(e).getMessage());
         }
     }
 
