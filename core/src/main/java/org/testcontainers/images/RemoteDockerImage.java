@@ -2,10 +2,9 @@ package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerClientException;
+import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -20,6 +19,11 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+
 @ToString
 public class RemoteDockerImage extends LazyFuture<String> {
 
@@ -28,6 +32,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
      */
     @Deprecated
     public static final Map<DockerImageName, ImageData> AVAILABLE_IMAGES_CACHE = new HashMap<>();
+    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
     private DockerImageName imageName;
 
@@ -76,24 +81,36 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 logger.trace("Docker image {} not found locally", imageName);
             }
 
+            // The image is not available locally - pull it
             logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
 
-            // The image is not available locally - pull it
-            try {
-                final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
-                dockerClient
-                    .pullImageCmd(imageName.getUnversionedPart())
-                    .withTag(imageName.getVersionPart())
-                    .exec(callback);
-                callback.awaitCompletion();
-                ImageData imageData = new DockerJavaImageData(dockerClient.inspectImageCmd(imageName.toString()).exec());
-                AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
-            } catch (Exception e) {
-                logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName);
-                throw new ContainerFetchException("Failed to pull image: " + imageName, e);
-            }
+            Exception lastFailure = null;
+            final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
 
-            return imageName.toString();
+            while(Instant.now().isBefore(lastRetryAllowed)) {
+                try {
+                    final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
+                    dockerClient
+                        .pullImageCmd(imageName.getUnversionedPart())
+                        .withTag(imageName.getVersionPart())
+                        .exec(callback);
+                    callback.awaitCompletion();
+                    ImageData imageData = new DockerJavaImageData(
+                        dockerClient.inspectImageCmd(imageName.toString()).exec());
+                    AVAILABLE_IMAGES_CACHE.putIfAbsent(imageName, imageData);
+
+                    return imageName.toString();
+                } catch (InterruptedException | InternalServerErrorException e) {
+                    // these classes of exception often relate to timeout/connection errors so should be retried
+                    lastFailure = e;
+                    logger.warn("Retrying pull for image: {} ({}s remaining)",
+                        imageName,
+                        Duration.between(Instant.now(), lastRetryAllowed).getSeconds());
+                }
+            }
+            logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName);
+
+            throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
         }
