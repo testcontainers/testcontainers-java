@@ -108,8 +108,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         Duration.between(Instant.now(), lastRetryAllowed).getSeconds());
                 }
             }
-            logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName,
-                imageName, lastFailure);
+            logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName, lastFailure);
 
             throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
