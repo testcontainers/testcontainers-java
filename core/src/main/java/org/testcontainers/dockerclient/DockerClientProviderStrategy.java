@@ -203,7 +203,7 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected void checkOSType() {
-        LOGGER.info("Checking Docker container OS type");
+        LOGGER.debug("Checking Docker OS type for {}", this.getDescription());
         String osType = client.infoCmd().exec().getOsType();
         if (StringUtils.isBlank(osType)) {
             LOGGER.warn("Could not determine Docker container OS type");
