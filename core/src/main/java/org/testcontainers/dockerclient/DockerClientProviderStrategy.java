@@ -199,4 +199,11 @@ public abstract class DockerClientProviderStrategy {
     public String getDockerHostIpAddress() {
         return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
     }
+
+    protected void checkOSTypeForWindows() {
+        String osType = client.infoCmd().exec().getOsType();
+        if ("windows".equalsIgnoreCase(osType)) {
+            throw new InvalidConfigurationException("Windows containers is currently not supported");
+        }
+    }
 }

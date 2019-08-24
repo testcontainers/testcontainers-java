@@ -18,6 +18,7 @@ public class WindowsClientProviderStrategy extends DockerClientProviderStrategy 
     @Override
     public void test() throws InvalidConfigurationException {
         config = tryConfiguration("tcp://localhost:2375");
+        checkOSTypeForWindows();
     }
 
     @Override
