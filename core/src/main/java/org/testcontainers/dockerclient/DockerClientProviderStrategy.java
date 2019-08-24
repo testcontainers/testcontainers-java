@@ -5,6 +5,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -111,6 +112,7 @@ public abstract class DockerClientProviderStrategy {
                     try {
                         strategy.test();
                         LOGGER.info("Found Docker environment with {}", strategy.getDescription());
+                        strategy.checkOSType();
 
                         if (strategy.isPersistable()) {
                             TestcontainersConfiguration.getInstance().updateGlobalConfig("docker.client.strategy", strategy.getClass().getName());
@@ -200,10 +202,14 @@ public abstract class DockerClientProviderStrategy {
         return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
     }
 
-    protected void checkOSTypeForWindows() {
+    protected void checkOSType() {
+        LOGGER.info("Checking Docker container OS type");
         String osType = client.infoCmd().exec().getOsType();
-        if ("windows".equalsIgnoreCase(osType)) {
-            throw new InvalidConfigurationException("Windows containers are currently not supported");
+        if (StringUtils.isBlank(osType)) {
+            LOGGER.warn("Could not determine Docker container OS type");
+        } else if (!osType.equals("linux")) {
+            LOGGER.warn("{} is currently not supported", osType);
+            throw new InvalidConfigurationException(osType + " containers are currently not supported");
         }
     }
 }

@@ -34,7 +34,6 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
         } catch (Exception | UnsatisfiedLinkError e) {
             throw new InvalidConfigurationException("ping failed", e);
         }
-        checkOSTypeForWindows();
     }
 
     @NotNull
