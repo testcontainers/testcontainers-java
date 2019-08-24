@@ -82,6 +82,10 @@ public class TestcontainersConfiguration {
         return properties.getProperty("transport.type", "okhttp");
     }
 
+    public Integer getImagePullPauseTimeout() {
+        return Integer.parseInt((String) properties.getOrDefault("pull.pause.timeout", "30"));
+    }
+
     @Synchronized
     public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
         try {

@@ -4,12 +4,17 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.Version;
+import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.BaseMatcher;
@@ -17,6 +22,7 @@ import org.hamcrest.Description;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
+import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
@@ -125,7 +131,7 @@ public class DockerClientFactory {
                 ryukContainerId = ResourceReaper.start(hostIpAddress, client);
                 log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
             }
-           
+
             boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
             if (checksEnabled) {
                 VisibleAssertions.info("Checking the system...");
@@ -215,10 +221,11 @@ public class DockerClientFactory {
     /**
    * Check whether the image is available locally and pull it otherwise
    */
+    @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
         List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
         if (images.isEmpty()) {
-            client.pullImageCmd(image).exec(new PullImageResultCallback()).awaitSuccess();
+            client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
     }
 

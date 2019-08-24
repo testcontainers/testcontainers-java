@@ -6,7 +6,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compileOnly 'org.slf4j:slf4j-api:1.7.26'
+    compileOnly 'org.slf4j:slf4j-api:1.7.28'
     implementation 'com.squareup.okhttp3:okhttp:3.14.2'
     implementation 'org.json:json:20180813'
     testImplementation 'org.postgresql:postgresql:42.2.6'

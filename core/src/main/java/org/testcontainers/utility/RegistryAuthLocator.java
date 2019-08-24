@@ -209,7 +209,7 @@ public class RegistryAuthLocator {
     private AuthConfig runCredentialProvider(String hostName, String helperOrStoreName) throws Exception {
 
         if (isBlank(hostName)) {
-            log.debug("There is no point to locate AuthConfig for blank hostName. Return NULL to allow fallback");
+            log.debug("There is no point in locating AuthConfig for blank hostName. Returning NULL to allow fallback");
             return null;
         }
 
@@ -228,9 +228,9 @@ public class RegistryAuthLocator {
             if (!isBlank(responseErrorMsg)) {
                 String credentialsNotFoundMsg = getGenericCredentialsNotFoundMsg(credentialProgramName);
                 if (credentialsNotFoundMsg != null && credentialsNotFoundMsg.equals(responseErrorMsg)) {
-                    log.info("Credentials not found for host ({}) when using credential helper/store ({})",
-                        hostName,
-                        credentialProgramName);
+                    log.info("Credential helper/store ({}) does not have credentials for {}",
+                        credentialProgramName,
+                        hostName);
 
                     return null;
                 }

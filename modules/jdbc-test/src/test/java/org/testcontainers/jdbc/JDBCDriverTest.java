@@ -65,6 +65,7 @@ public class JDBCDriverTest {
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
                 {"jdbc:tc:sqlserver:2017-CU12://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class)},
             });
     }
 
@@ -109,7 +110,12 @@ public class JDBCDriverTest {
     }
 
     private void performSimpleTest(HikariDataSource dataSource) throws SQLException {
-        boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query("SELECT 1", rs -> {
+        String query = "SELECT 1";
+        if (jdbcUrl.startsWith("jdbc:tc:db2:")) {
+            query = "SELECT 1 FROM SYSIBM.SYSDUMMY1";
+        }
+
+        boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query(query, rs -> {
             rs.next();
             int resultSetInt = rs.getInt(1);
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
