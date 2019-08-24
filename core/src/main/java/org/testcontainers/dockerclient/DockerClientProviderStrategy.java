@@ -203,7 +203,7 @@ public abstract class DockerClientProviderStrategy {
     protected void checkOSTypeForWindows() {
         String osType = client.infoCmd().exec().getOsType();
         if ("windows".equalsIgnoreCase(osType)) {
-            throw new InvalidConfigurationException("Windows containers is currently not supported");
+            throw new InvalidConfigurationException("Windows containers are currently not supported");
         }
     }
 }
