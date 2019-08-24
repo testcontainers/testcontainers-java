@@ -49,6 +49,8 @@ public class ConnectionUrl {
 
     private Optional<String> initScriptPath = Optional.empty();
 
+    private boolean reusable = false;
+
     private Optional<InitFunctionDef> initFunction = Optional.empty();
 
     private Optional<String> queryString;
@@ -131,6 +133,8 @@ public class ConnectionUrl {
 
 
         initScriptPath = Optional.ofNullable(containerParameters.get("TC_INITSCRIPT"));
+
+        reusable = Boolean.parseBoolean(containerParameters.get("TC_REUSABLE"));
 
         Matcher funcMatcher = Patterns.INITFUNCTION_MATCHING_PATTERN.matcher(this.getUrl());
         if (funcMatcher.matches()) {

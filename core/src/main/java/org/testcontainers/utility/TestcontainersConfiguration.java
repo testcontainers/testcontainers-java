@@ -74,6 +74,11 @@ public class TestcontainersConfiguration {
         return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
     }
 
+    public boolean environmentSupportsReuse() {
+        // FIXME read it only from global properties
+        return Boolean.parseBoolean((String) properties.getOrDefault("testcontainers.reuse.enable", "false"));
+    }
+
     public String getDockerClientStrategyClassName() {
         return (String) properties.get("docker.client.strategy");
     }

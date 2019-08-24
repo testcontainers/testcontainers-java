@@ -46,6 +46,9 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
+            if (imagesToDelete.isEmpty()) {
+                return;
+            }
             DockerClient dockerClientForCleaning = DockerClientFactory.instance().client();
             try {
                 for (String dockerImageName : imagesToDelete) {

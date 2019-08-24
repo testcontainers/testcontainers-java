@@ -1,5 +1,9 @@
 package org.testcontainers.containers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -13,12 +17,13 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -62,11 +67,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -99,6 +106,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
     public static final String INTERNAL_HOST_HOSTNAME = "host.testcontainers.internal";
+
+    static final String HASH_LABEL = "org.testcontainers.hash";
 
     /*
      * Default settings
@@ -168,11 +177,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
-    /*
+    /**
      * Unique instance of DockerClient for use by this container object.
+     * We use {@link LazyDockerClient} here to avoid eager client creation
      */
     @Setter(AccessLevel.NONE)
-    protected DockerClient dockerClient = DockerClientFactory.instance().client();
+    protected DockerClient dockerClient = LazyDockerClient.INSTANCE;
 
     /*
      * Info about the Docker server; lazily fetched.
@@ -222,6 +232,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private Map<String, String> tmpFsMapping;
 
+    @Setter(AccessLevel.NONE)
+    private boolean shouldBeReused = false;
 
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
@@ -291,6 +303,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    @SneakyThrows
+    protected boolean canBeReused() {
+        for (Class<?> type = getClass(); type != GenericContainer.class; type = type.getSuperclass()) {
+            try {
+                Method method = type.getDeclaredMethod("containerIsCreated", String.class);
+                if (method.getDeclaringClass() != GenericContainer.class) {
+                    logger().warn("{} can't be reused because it overrides {}", getClass(), method.getName());
+                    return false;
+                }
+            } catch (NoSuchMethodException e) {
+                // ignore
+            }
+        }
+
+        return true;
+    }
+
     private void tryStart() {
         try {
             String dockerImageName = image.get();
@@ -300,36 +329,73 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
-            containerId = createCommand.exec().getId();
+            createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
+
+            if (shouldBeReused) {
+                if (!canBeReused()) {
+                    throw new IllegalStateException("This container does not support reuse");
+                }
+
+                if (TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+                    String hash = hash(createCommand);
+
+                    containerId = findContainerForReuse(hash).orElse(null);
+
+                    if (containerId != null) {
+                        logger().info("Reusing container with ID: {} and hash: {}", containerId, hash);
+                        containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+                    } else {
+                        logger().debug("Can't find a reusable running container with hash: {}", hash);
+
+                        createCommand.getLabels().put(HASH_LABEL, hash);
+                    }
+                } else {
+                    logger().info("Reuse was requested but the environment does not support the reuse of containers");
+                }
+            } else {
+                createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
+            }
+
+            if (containerInfo == null) {
+                containerId = createCommand.exec().getId();
+
+                copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+            }
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
 
-            copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+            if (containerInfo == null) {
+                containerIsCreated(containerId);
 
-            containerIsCreated(containerId);
-
-            logger().info("Starting container with ID: {}", containerId);
-            dockerClient.startContainerCmd(containerId).exec();
+                logger().info("Starting container with ID: {}", containerId);
+                dockerClient.startContainerCmd(containerId).exec();
+            }
 
             logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
 
-            // Tell subclasses that we're starting
-            containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+            boolean reused = containerInfo != null;
+
+            if (containerInfo == null) {
+                // Tell subclasses that we're starting
+                containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+            }
             containerName = containerInfo.getName();
             containerIsStarting(containerInfo);
 
-            // Wait until the container has reached the desired running state
-            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
-                // Bail out, don't wait for the port to start listening.
-                // (Exception thrown here will be caught below and wrapped)
-                throw new IllegalStateException("Container did not start correctly.");
-            }
+            if (!reused) {
+                // Wait until the container has reached the desired running state
+                if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
+                    // Bail out, don't wait for the port to start listening.
+                    // (Exception thrown here will be caught below and wrapped)
+                    throw new IllegalStateException("Container did not start correctly.");
+                }
 
-            // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
-            waitUntilContainerStarted();
+                // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
+                waitUntilContainerStarted();
+            }
 
             logger().info("Container {} started", dockerImageName);
             containerIsStarted(containerInfo);
@@ -349,6 +415,29 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             throw new ContainerLaunchException("Could not create/start container", e);
         }
+    }
+
+    @SneakyThrows(JsonProcessingException.class)
+    final String hash(CreateContainerCmd createCommand) {
+        // TODO add Testcontainers' version to the hash
+        String commandJson = new ObjectMapper()
+            .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+            .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+            .writeValueAsString(createCommand);
+
+        return DigestUtils.sha1Hex(commandJson);
+    }
+
+    Optional<String> findContainerForReuse(String hash) {
+        // TODO locking
+        return dockerClient.listContainersCmd()
+            .withLabelFilter(ImmutableMap.of(HASH_LABEL, hash))
+            .withLimit(1)
+            .withStatusFilter(Arrays.asList("running"))
+            .exec()
+            .stream()
+            .findAny()
+            .map(it -> it.getId());
     }
 
     /**
@@ -613,7 +702,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (createCommand.getLabels() != null) {
             combinedLabels.putAll(createCommand.getLabels());
         }
-        combinedLabels.putAll(DockerClientFactory.DEFAULT_LABELS);
 
         createCommand.withLabels(combinedLabels);
     }
@@ -1243,6 +1331,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withTmpFs(Map<String, String> mapping) {
         this.tmpFsMapping = mapping;
+        return self();
+    }
+
+    public SELF withReuse(boolean reusable) {
+        this.shouldBeReused = reusable;
         return self();
     }
 
