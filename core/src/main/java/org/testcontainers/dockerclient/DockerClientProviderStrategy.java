@@ -206,7 +206,7 @@ public abstract class DockerClientProviderStrategy {
         LOGGER.debug("Checking Docker OS type for {}", this.getDescription());
         String osType = client.infoCmd().exec().getOsType();
         if (StringUtils.isBlank(osType)) {
-            LOGGER.warn("Could not determine Docker container OS type");
+            LOGGER.warn("Could not determine Docker OS type");
         } else if (!osType.equals("linux")) {
             LOGGER.warn("{} is currently not supported", osType);
             throw new InvalidConfigurationException(osType + " containers are currently not supported");
