@@ -113,6 +113,7 @@ public class ReusabilityUnitTests {
         DockerClient client = Mockito.mock(DockerClient.class);
 
         GenericContainer container = new GenericContainer(IMAGE_FUTURE)
+            .withNetworkMode("none") // to disable the port forwarding
             .withStartupCheckStrategy(startupCheckStrategy)
             .waitingFor(waitStrategy)
             .withReuse(true);
