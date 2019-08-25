@@ -71,6 +71,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -288,13 +289,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             configure();
 
+            Instant startedAt = Instant.now();
+
             logger().debug("Starting container: {}", getDockerImageName());
             logger().debug("Trying to start container: {}", image.get());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
                 logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
-                tryStart();
+                tryStart(startedAt);
                 return true;
             });
 
@@ -320,7 +323,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return true;
     }
 
-    private void tryStart() {
+    private void tryStart(Instant startedAt) {
         try {
             String dockerImageName = image.get();
             logger().debug("Starting container: {}", dockerImageName);
@@ -331,6 +334,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
 
+            boolean reused = false;
             if (shouldBeReused) {
                 if (!canBeReused()) {
                     throw new IllegalStateException("This container does not support reuse");
@@ -343,7 +347,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                     if (containerId != null) {
                         logger().info("Reusing container with ID: {} and hash: {}", containerId, hash);
-                        containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+                        reused = true;
                     } else {
                         logger().debug("Can't find a reusable running container with hash: {}", hash);
 
@@ -356,15 +360,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
             }
 
-            if (containerInfo == null) {
+            if (!reused) {
                 containerId = createCommand.exec().getId();
 
+                // TODO add to the hash
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
             }
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
 
-            if (containerInfo == null) {
+            if (!reused) {
                 containerIsCreated(containerId);
 
                 logger().info("Starting container with ID: {}", containerId);
@@ -376,28 +381,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
 
-            boolean reused = containerInfo != null;
-
-            if (containerInfo == null) {
-                // Tell subclasses that we're starting
-                containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
-            }
+            // Tell subclasses that we're starting
+            containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
             containerIsStarting(containerInfo);
 
-            if (!reused) {
-                // Wait until the container has reached the desired running state
-                if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
-                    // Bail out, don't wait for the port to start listening.
-                    // (Exception thrown here will be caught below and wrapped)
-                    throw new IllegalStateException("Container did not start correctly.");
-                }
-
-                // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
-                waitUntilContainerStarted();
+            // Wait until the container has reached the desired running state
+            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
+                // Bail out, don't wait for the port to start listening.
+                // (Exception thrown here will be caught below and wrapped)
+                throw new IllegalStateException("Container did not start correctly.");
             }
 
-            logger().info("Container {} started", dockerImageName);
+            // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
+            waitUntilContainerStarted();
+
+            logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
             containerIsStarted(containerInfo);
         } catch (Exception e) {
             logger().error("Could not start container", e);
@@ -1302,7 +1301,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart()}.
+     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart(Instant)}.
      * Invocation happens eagerly on a moment when container is created.
      * Warning: this does expose the underlying docker-java API so might change outside of our control.
      *
