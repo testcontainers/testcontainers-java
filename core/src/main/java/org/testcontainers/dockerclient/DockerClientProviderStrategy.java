@@ -165,20 +165,10 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
-        DockerClientBuilder clientBuilder = DockerClientBuilder
-            .getInstance(new AuthDelegatingDockerClientConfig(config));
-
-        String transportType = TestcontainersConfiguration.getInstance().getTransportType();
-        if ("okhttp".equals(transportType)) {
-            clientBuilder
-                .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory());
-        } else {
-            throw new IllegalArgumentException("Unknown transport type: " + transportType);
-        }
-
-        LOGGER.info("Will use '{}' transport", transportType);
-
-        return clientBuilder.build();
+        return DockerClientBuilder
+            .getInstance(new AuthDelegatingDockerClientConfig(config))
+            .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory())
+            .build();
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
