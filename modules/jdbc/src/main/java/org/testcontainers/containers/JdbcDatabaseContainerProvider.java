@@ -62,7 +62,15 @@ public abstract class JdbcDatabaseContainerProvider {
         final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
         final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
 
-        return newInstance(connectionUrl)
+        final JdbcDatabaseContainer<?> instance;
+        if (connectionUrl.getImageTag().isPresent()) {
+            instance = newInstance(connectionUrl.getImageTag().get());
+        } else {
+            instance = newInstance();
+        }
+
+        return instance
+            .withReuse(connectionUrl.isReusable())
             .withDatabaseName(databaseName)
             .withUsername(user)
             .withPassword(password);
