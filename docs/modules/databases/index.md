@@ -47,7 +47,7 @@ _N.B:_
 * _TC needs to be on your application's classpath at runtime for this to work_
 * _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
-**Original URL**: `jdbc:mysql:5.7.22://somehostname:someport/databasename`
+**Original URL**: `jdbc:mysql:5.7.22:///databasename`
 
 Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value.
 
@@ -55,21 +55,21 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using Testcontainers with a fixed version
 
-`jdbc:tc:mysql:5.6.23://somehostname:someport/databasename`
+`jdbc:tc:mysql:5.6.23:///databasename`
 
 #### Using PostgreSQL
 
-`jdbc:tc:postgresql:9.6.8://hostname/databasename`
+`jdbc:tc:postgresql:9.6.8:///databasename`
 
 ### Using PostGIS
 
-`jdbc:tc:postgis:9.6://hostname/databasename`
+`jdbc:tc:postgis:9.6:///databasename`
 
 ## Using a classpath init script
 
 Testcontainers can run an init script after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
-`jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
+`jdbc:tc:mysql:5.7.22:///databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 
 This is useful if you have a fixed script for setting up database schema, etc.
 
@@ -77,13 +77,13 @@ This is useful if you have a fixed script for setting up database schema, etc.
 
 If the init script path is prefixed `file:`, it will be loaded from a file (relative to the working directory, which will usually be the project root).
 
-`jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITSCRIPT=file:src/main/resources/init_mysql.sql`
+`jdbc:tc:mysql:5.7.22:///databasename?TC_INITSCRIPT=file:src/main/resources/init_mysql.sql`
 
 #### Using an init function
 
 Instead of running a fixed script for DB setup, it may be useful to call a Java function that you define. This is intended to allow you to trigger database schema migration tools. To do this, add TC_INITFUNCTION to the URL as follows, passing a full path to the class name and method:
 
- `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
+ `jdbc:tc:mysql:5.7.22:///databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
 
 The init function must be a public static method which takes a `java.sql.Connection` as its only parameter, e.g.
 ```java
@@ -98,7 +98,7 @@ public class JDBCDriverTest {
 
 By default database container is being stopped as soon as last connection is closed. There are cases when you might need to start container and keep it running till you stop it explicitly or JVM is shutdown. To do this, add `TC_DAEMON` parameter to the URL as follows:
 
- `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_DAEMON=true`
+ `jdbc:tc:mysql:5.7.22:///databasename?TC_DAEMON=true`
 
 With this parameter database container will keep running even when there're no open connections.
 
@@ -109,7 +109,7 @@ Container can have `tmpfs` mounts for storing data in host memory. This is usefu
 
 To pass this option to the container, add `TC_TMPFS` paramater to the URL as follows:
 
-  `jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_TMPFS=/testtmpfs:rw`
+  `jdbc:tc:postgresql:9.6.8:///databasename?TC_TMPFS=/testtmpfs:rw`
 
 If you need more than one option, seperate them by comma (e.g. `TC_TMPFS=key:value,key1:value1&other_parameters=foo`).
 
