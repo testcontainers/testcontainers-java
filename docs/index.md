@@ -73,6 +73,7 @@ You can also [check the latest version available on Maven Central](https://searc
 * [Lightbend](https://www.lightbend.com/) - Testing [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/current/) and support in [Alpakka Kafka Testkit](https://doc.akka.io/docs/alpakka-kafka/current/testing.html#testing-with-kafka-in-docker)
 * [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
 * [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
+* [Micronaut Data](https://github.com/micronaut-projects/micronaut-data/) - Testing of Micronaut Data JDBC, a database access toolkit
 
 ## License
 
