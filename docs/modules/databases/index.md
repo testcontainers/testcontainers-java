@@ -47,7 +47,7 @@ _N.B:_
 * _TC needs to be on your application's classpath at runtime for this to work_
 * _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
-**Original URL**: `jdbc:mysql:5.7.22:///databasename`
+**Original URL**: `jdbc:mysql:5.7.22://localhost:3306/databasename`
 
 Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value.
 
