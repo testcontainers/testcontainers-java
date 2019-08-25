@@ -2,6 +2,12 @@ apply plugin: 'maven-publish'
 
 task sourceJar(type: Jar) {
     classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task delombokedSourceJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources-delomboked'
+    from delombok
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -16,6 +22,7 @@ publishing {
 
             artifact project.tasks.jar
             artifact sourceJar
+            artifact project.tasks.delombokedSourceJar
             artifact javadocJar
 
             pom.withXml {
