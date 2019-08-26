@@ -56,7 +56,12 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     @Override
     public String getDriverClassName() {
-        return "com.mysql.jdbc.Driver";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return "com.mysql.cj.jdbc.Driver";
+        } catch (ClassNotFoundException e) {
+            return "com.mysql.jdbc.Driver";
+        }
     }
 
     @Override
