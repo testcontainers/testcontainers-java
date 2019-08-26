@@ -86,8 +86,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean environmentSupportsReuse() {
-        // FIXME read it only from global properties
-        return Boolean.parseBoolean((String) properties.getOrDefault("testcontainers.reuse.enable", "false"));
+        return Boolean.parseBoolean((String) environmentProperties.getOrDefault("testcontainers.reuse.enable", "false"));
     }
 
     public String getDockerClientStrategyClassName() {
@@ -95,7 +94,7 @@ public class TestcontainersConfiguration {
     }
 
     /**
-     * 
+     *
      * @deprecated we no longer have different transport types
      */
     @Deprecated

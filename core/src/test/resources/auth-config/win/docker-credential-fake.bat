@@ -14,8 +14,21 @@ if "%inputLine%" == "https://not.a.real.registry/url" (
      exit 1
 )
 
-echo {
-echo   "ServerURL": "url",
-echo   "Username": "username",
-echo   "Secret": "secret"
-echo }
+if "%inputLine%" == "registry.example.com" (
+     echo {
+     echo   "ServerURL": "url",
+     echo   "Username": "username",
+     echo   "Secret": "secret"
+     echo }
+     exit 0
+)
+if "%inputLine%" == "registrytoken.example.com" (
+     echo {
+     echo   "ServerURL": "url",
+     echo   "Username": "<token>",
+     echo   "Secret": "secret"
+     echo }
+     exit 0
+)
+
+exit 1
