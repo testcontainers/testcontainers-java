@@ -33,14 +33,15 @@ public class VaultContainerTest {
 
     @Test
     public void readFirstSecretPathWithCli() throws IOException, InterruptedException {
-        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault", "kv", "get", "secret/testing1");
-        assertThat(result.getStdout(), containsString("password123"));
+        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault", "kv", "get", "-format=json", "secret/testing1");
+        final String output = result.getStdout().replaceAll("\\r?\\n", "");
+        assertThat(output, containsString("password123"));
     }
 
     @Test
     public void readSecondSecretPathWithCli() throws IOException, InterruptedException {
-        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault", "kv", "get", "secret/testing2");
-        String output = result.getStdout();
+        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault", "kv", "get", "-format=json", "secret/testing2");
+        final String output = result.getStdout().replaceAll("\\r?\\n", "");
         System.out.println("output = " + output);
         assertThat(output, containsString("password1"));
         assertThat(output, containsString("password2"));
