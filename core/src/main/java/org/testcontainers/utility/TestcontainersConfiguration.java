@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -19,12 +20,22 @@ public class TestcontainersConfiguration {
 
     private static String PROPERTIES_FILE_NAME = "testcontainers.properties";
 
-    private static File GLOBAL_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
+    private static File ENVIRONMENT_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     @Getter(lazy = true)
     private static final TestcontainersConfiguration instance = loadConfiguration();
 
-    private final Properties properties;
+    @Getter(AccessLevel.NONE)
+    private final Properties environmentProperties;
+
+    private final Properties properties = new Properties();
+
+    TestcontainersConfiguration(Properties environmentProperties, Properties classpathProperties) {
+        this.environmentProperties = environmentProperties;
+
+        this.properties.putAll(classpathProperties);
+        this.properties.putAll(environmentProperties);
+    }
 
     public String getAmbassadorContainerImage() {
         return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
@@ -71,78 +82,78 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isDisableChecks() {
-        return Boolean.parseBoolean((String) properties.getOrDefault("checks.disable", "false"));
+        return Boolean.parseBoolean((String) environmentProperties.getOrDefault("checks.disable", "false"));
     }
 
     public String getDockerClientStrategyClassName() {
-        return (String) properties.get("docker.client.strategy");
+        return (String) environmentProperties.get("docker.client.strategy");
     }
 
+    /**
+     * 
+     * @deprecated we no longer have different transport types
+     */
+    @Deprecated
     public String getTransportType() {
         return properties.getProperty("transport.type", "okhttp");
+    }
+
+    public Integer getImagePullPauseTimeout() {
+        return Integer.parseInt((String) properties.getOrDefault("pull.pause.timeout", "30"));
     }
 
     @Synchronized
     public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
         try {
-            Properties globalProperties = new Properties();
-            GLOBAL_CONFIG_FILE.createNewFile();
-            try (InputStream inputStream = new FileInputStream(GLOBAL_CONFIG_FILE)) {
-                globalProperties.load(inputStream);
-            }
-
-            if (value.equals(globalProperties.get(prop))) {
+            if (value.equals(environmentProperties.get(prop))) {
                 return false;
             }
 
-            globalProperties.setProperty(prop, value);
+            environmentProperties.setProperty(prop, value);
 
-            try (OutputStream outputStream = new FileOutputStream(GLOBAL_CONFIG_FILE)) {
-                globalProperties.store(outputStream, "Modified by Testcontainers");
+            ENVIRONMENT_CONFIG_FILE.createNewFile();
+            try (OutputStream outputStream = new FileOutputStream(ENVIRONMENT_CONFIG_FILE)) {
+                environmentProperties.store(outputStream, "Modified by Testcontainers");
             }
 
-            // Update internal state only if global config was successfully updated
+            // Update internal state only if environment config was successfully updated
             properties.setProperty(prop, value);
             return true;
         } catch (Exception e) {
-            log.debug("Can't store global property {} in {}", prop, GLOBAL_CONFIG_FILE);
+            log.debug("Can't store environment property {} in {}", prop, ENVIRONMENT_CONFIG_FILE);
             return false;
         }
     }
 
     @SneakyThrows(MalformedURLException.class)
     private static TestcontainersConfiguration loadConfiguration() {
-        final TestcontainersConfiguration config = new TestcontainersConfiguration(
-                Stream
-                        .of(
-                                TestcontainersConfiguration.class.getClassLoader().getResource(PROPERTIES_FILE_NAME),
-                                Thread.currentThread().getContextClassLoader().getResource(PROPERTIES_FILE_NAME),
-                                GLOBAL_CONFIG_FILE.toURI().toURL()
-                        )
-                        .filter(Objects::nonNull)
-                        .map(it -> {
-                            log.debug("Testcontainers configuration overrides will be loaded from {}", it);
-
-                            final Properties subProperties = new Properties();
-                            try (final InputStream inputStream = it.openStream()) {
-                                subProperties.load(inputStream);
-                            } catch (FileNotFoundException e) {
-                                log.trace("Testcontainers config override was found on " + it + " but the file was not found", e);
-                            } catch (IOException e) {
-                                log.warn("Testcontainers config override was found on " + it + " but could not be loaded", e);
-                            }
-                            return subProperties;
-                        })
-                        .reduce(new Properties(), (a, b) -> {
-                            a.putAll(b);
-                            return a;
-                        })
+        return new TestcontainersConfiguration(
+            readProperties(ENVIRONMENT_CONFIG_FILE.toURI().toURL()),
+            Stream
+                .of(
+                    TestcontainersConfiguration.class.getClassLoader(),
+                    Thread.currentThread().getContextClassLoader()
+                )
+                .map(it -> it.getResource(PROPERTIES_FILE_NAME))
+                .filter(Objects::nonNull)
+                .map(TestcontainersConfiguration::readProperties)
+                .reduce(new Properties(), (a, b) -> {
+                    a.putAll(b);
+                    return a;
+                })
         );
+    }
 
-        if (!config.getProperties().isEmpty()) {
-            log.debug("Testcontainers configuration overrides loaded from {}", config);
+    private static Properties readProperties(URL url) {
+        log.debug("Testcontainers configuration overrides will be loaded from {}", url);
+        Properties properties = new Properties();
+        try (InputStream inputStream = url.openStream()) {
+            properties.load(inputStream);
+        } catch (FileNotFoundException e) {
+            log.trace("Testcontainers config override was found on {} but the file was not found", url, e);
+        } catch (IOException e) {
+            log.warn("Testcontainers config override was found on {} but could not be loaded", url, e);
         }
-
-        return config;
+        return properties;
     }
 }

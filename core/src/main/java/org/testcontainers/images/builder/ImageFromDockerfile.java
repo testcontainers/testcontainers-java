@@ -14,12 +14,16 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.images.builder.traits.*;
+import org.testcontainers.images.builder.traits.BuildContextBuilderTrait;
+import org.testcontainers.images.builder.traits.ClasspathTrait;
+import org.testcontainers.images.builder.traits.DockerfileTrait;
+import org.testcontainers.images.builder.traits.FilesTrait;
+import org.testcontainers.images.builder.traits.StringsTrait;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
+import org.testcontainers.utility.ResourceReaper;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -38,26 +42,6 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         FilesTrait<ImageFromDockerfile>,
         StringsTrait<ImageFromDockerfile>,
         DockerfileTrait<ImageFromDockerfile> {
-
-    private static final Set<String> imagesToDelete = Sets.newConcurrentHashSet();
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-            DockerClient dockerClientForCleaning = DockerClientFactory.instance().client();
-            try {
-                for (String dockerImageName : imagesToDelete) {
-                    log.info("Removing image tagged {}", dockerImageName);
-                    try {
-                        dockerClientForCleaning.removeImageCmd(dockerImageName).withForce(true).exec();
-                    } catch (Throwable e) {
-                        log.warn("Unable to delete image " + dockerImageName, e);
-                    }
-                }
-            } catch (DockerClientException e) {
-                throw new RuntimeException(e);
-            }
-        }));
-    }
 
     private final String dockerImageName;
 
@@ -99,7 +83,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         DockerClient dockerClient = DockerClientFactory.instance().client();
         try {
             if (deleteOnExit) {
-                imagesToDelete.add(dockerImageName);
+                ResourceReaper.instance().registerImageForCleanup(dockerImageName);
             }
 
             BuildImageResultCallback resultCallback = new BuildImageResultCallback() {
@@ -123,7 +107,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             configure(buildImageCmd);
 
             BuildImageResultCallback exec = buildImageCmd.exec(resultCallback);
-            
+
             long bytesToDockerDaemon = 0;
 
             // To build an image, we have to send the context to Docker in TAR archive format
@@ -138,10 +122,10 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                 }
                 tarArchive.finish();
             }
-            
+
             log.info("Transferred {} KB to Docker daemon", FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
             if (bytesToDockerDaemon > FileUtils.ONE_MB * 50) // warn if >50MB sent to docker daemon
-                log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.", 
+                log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.",
                         FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
 
             exec.awaitImageId();
@@ -170,8 +154,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     }
 
     /**
-     * Sets the Dockerfile to be used for this image. 
-     * @deprecated It is recommended to use {@link #withDockerfile} instead because it honors 
+     * Sets the Dockerfile to be used for this image.
+     * @deprecated It is recommended to use {@link #withDockerfile} instead because it honors
      * .dockerignore files and therefore will be more efficient
      * @param relativePathFromBuildRoot
      */
@@ -180,14 +164,14 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         this.dockerFilePath = Optional.of(relativePathFromBuildRoot);
         return this;
     }
-    
+
     /**
-     * Sets the Dockerfile to be used for this image. 
+     * Sets the Dockerfile to be used for this image.
      * @param dockerfile
      */
     public ImageFromDockerfile withDockerfile(Path dockerfile) {
         this.dockerfile = Optional.of(dockerfile);
         return this;
     }
-    
+
 }

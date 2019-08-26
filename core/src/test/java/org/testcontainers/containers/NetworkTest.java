@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.Network;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 import static org.testcontainers.containers.Network.newNetwork;
@@ -39,8 +40,9 @@ public class NetworkTest {
 
         @Test
         public void testNetworkSupport() throws Exception {
+            // useCustomNetwork {
             try (
-                    Network network = newNetwork();
+                    Network network = Network.newNetwork();
 
                     GenericContainer foo = new GenericContainer()
                             .withNetwork(network)
@@ -57,6 +59,7 @@ public class NetworkTest {
                 String response = bar.execInContainer("wget", "-O", "-", "http://foo:8080").getStdout();
                 assertEquals("received response", "yay", response);
             }
+            // }
         }
 
         @Test

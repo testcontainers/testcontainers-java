@@ -3,6 +3,8 @@ package org.testcontainers.containers;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.testsupport.Flaky;
+import org.testcontainers.testsupport.FlakyTestJUnit4RetryRule;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -30,6 +32,9 @@ public class ToxiproxyTest {
         .withNetwork(network);
     // }
 
+    @Rule
+    public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
+
     @Test
     public void testDirect() {
         final Jedis jedis = new Jedis(redis.getContainerIpAddress(), redis.getFirstMappedPort());
@@ -40,6 +45,7 @@ public class ToxiproxyTest {
     }
 
     @Test
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2019-10-01")
     public void testLatencyViaProxy() throws IOException {
         // obtainProxyObject {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
@@ -66,6 +72,7 @@ public class ToxiproxyTest {
     }
 
     @Test
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2019-10-01")
     public void testConnectionCut() {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
         final Jedis jedis = new Jedis(proxy.getContainerIpAddress(), proxy.getProxyPort());
@@ -90,6 +97,7 @@ public class ToxiproxyTest {
     }
 
     @Test
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2019-10-01")
     public void testMultipleProxiesCanBeCreated() {
         try (GenericContainer secondRedis = new GenericContainer("redis:5.0.4")
             .withExposedPorts(6379)
