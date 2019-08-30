@@ -131,7 +131,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * Change the default port (9042) that Cassandra is initialized with.
      */
     public SELF withCqlPort(int cqlPort) {
-		getExposedPorts().remove(Integer.valueOf(this.cqlPort))
+		getExposedPorts().remove(Integer.valueOf(this.cqlPort));
         this.cqlPort = cqlPort;
         addExposedPort(cqlPort);
         return self();
