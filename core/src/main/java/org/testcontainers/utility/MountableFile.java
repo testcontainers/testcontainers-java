@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import com.google.common.base.Charsets;
+import java.util.function.BiConsumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import static lombok.AccessLevel.PACKAGE;
-import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
 
 /**
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
@@ -281,9 +281,9 @@ public class MountableFile implements Transferable {
     }
 
     private void deleteOnExit(final Path path) {
-        recursiveDeleteDir(Paths.get("/tmp/maven-hack"));
+        BiConsumer<Path, DeleteFileVisitor> consumer = PathUtils::recursiveDeleteDir;
         Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
-            () -> recursiveDeleteDir(path)));
+            () -> consumer.accept(path, new DeleteFileVisitor())));
     }
 
     /**

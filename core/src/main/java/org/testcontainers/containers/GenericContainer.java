@@ -49,6 +49,7 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DeleteFileVisitor;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.MountableFile;
@@ -421,9 +422,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected Path createVolumeDirectory(boolean temporary) {
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
         PathUtils.mkdirp(directory);
-        recursiveDeleteDir(Paths.get("/tmp/maven-hack"));
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-            recursiveDeleteDir(directory);
+            recursiveDeleteDir(directory, new DeleteFileVisitor());
         }));
 
         return directory;
