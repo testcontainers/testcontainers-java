@@ -33,6 +33,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private String configLocation;
     private String initScriptPath;
     private boolean enableJmxReporting;
+    private int cqlPort = CQL_PORT;
 
     public CassandraContainer() {
         this(IMAGE + ":3.11.2");
@@ -127,6 +128,16 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
+     * Change the default port (9042) that Cassandra is initialized with.
+     */
+    public SELF withCqlPort(int cqlPort) {
+		getExposedPorts().remove(Integer.valueOf(this.cqlPort))
+        this.cqlPort = cqlPort;
+        addExposedPort(cqlPort);
+        return self();
+    }
+
+    /**
      * Get username
      *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
@@ -156,13 +167,17 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * Can be used to obtain connections to Cassandra in the container
      */
     public Cluster getCluster() {
-        return getCluster(this, enableJmxReporting);
+        return getCluster(this, enableJmxReporting, cqlPort);
     }
 
     public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
+        return getCluster(this, enableJmxReporting, CQL_PORT);
+    }
+
+    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting, int cqlPort) {
         final Cluster.Builder builder = Cluster.builder()
             .addContactPoint(containerState.getContainerIpAddress())
-            .withPort(containerState.getMappedPort(CQL_PORT));
+            .withPort(containerState.getMappedPort(cqlPort));
         if (!enableJmxReporting) {
             builder.withoutJMXReporting();
         }
