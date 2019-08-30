@@ -95,7 +95,7 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded "org.yaml:snakeyaml:1.21"
+    shaded "org.yaml:snakeyaml:1.25"
 
     shaded 'com.squareup.okhttp3:okhttp:3.14.2'
 
@@ -106,9 +106,9 @@ dependencies {
     }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.0.1'
+    testCompile 'redis.clients:jedis:3.1.0'
     testCompile 'com.rabbitmq:amqp-client:5.7.2'
-    testCompile 'org.mongodb:mongo-java-driver:3.10.2'
+    testCompile 'org.mongodb:mongo-java-driver:3.11.0'
     testCompile ('org.mockito:mockito-core:3.0.0') {
         exclude(module: 'hamcrest-core')
     }
