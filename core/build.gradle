@@ -13,10 +13,6 @@ configurations {
     [runtime, compileOnly, testCompile]*.extendsFrom shaded
 }
 
-repositories {
-    maven { url 'https://jitpack.io' }
-}
-
 shadowJar {
     configurations = [project.configurations.shaded]
 

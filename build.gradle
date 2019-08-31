@@ -36,6 +36,8 @@ subprojects {
     repositories {
         jcenter()
         mavenCentral()
+
+        maven { url 'https://jitpack.io' }
     }
 
     // specific modules should be excluded from publication
