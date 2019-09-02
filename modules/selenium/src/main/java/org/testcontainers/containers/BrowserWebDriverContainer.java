@@ -227,6 +227,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         return driver;
     }
 
+    public SELF withSharedMemorySize(Long bytes) {
+        super.withSharedMemorySize(bytes);
+        return self();
+    }
+
     @Override
     public void afterTest(TestDescription description, Optional<Throwable> throwable) {
         retainRecordingIfNeeded(description.getFilesystemFriendlyName(), !throwable.isPresent());
