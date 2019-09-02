@@ -67,6 +67,9 @@ subprojects {
         }
     }
 
+    // Ensure that Javadoc generation is always tested
+    check.dependsOn(javadoc)
+
     shadowJar {
         configurations = []
         classifier = null

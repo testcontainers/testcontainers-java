@@ -8,7 +8,7 @@ jobs:
     - run:
         command: ./gradlew testcontainers:build -x test -x check
     - run:
-        command: ./gradlew testcontainers:check javadoc --scan
+        command: ./gradlew testcontainers:check --scan
     - run:
         name: Save test results
         command: |
