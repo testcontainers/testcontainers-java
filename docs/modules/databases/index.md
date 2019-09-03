@@ -7,7 +7,7 @@ You might want to use Testcontainers' database support:
  * **Instead of H2 database for DAO unit tests that depend on database features that H2 doesn't emulate.** Testcontainers is not as performant as H2, but does give you the benefit of 100% database compatibility (since it runs a real DB inside of a container).
  * **Instead of a database running on the local machine or in a VM** for DAO unit tests or end-to-end integration tests that need a database to be present. In this context, the benefit of Testcontainers is that the database always starts in a known state, without any contamination between test runs or on developers' local machines.
 
-!!! note 
+!!! note
     Of course, it's still important to have as few tests that hit the database as possible, and make good use of mocks for components higher up the stack.
 
 You can obtain a temporary database in one of two ways:
@@ -43,6 +43,7 @@ Examples/Tests:
 As long as you have Testcontainers and the appropriate JDBC driver on your classpath, you can simply modify regular JDBC connection URLs to get a fresh containerized instance of the database each time your application starts up.
 
 _N.B:_
+
 * _TC needs to be on your application's classpath at runtime for this to work_
 * _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
@@ -64,13 +65,19 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:postgis:9.6://hostname/databasename`
 
-## Using an init script
+## Using a classpath init script
 
-Testcontainers can run an initscript after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
+Testcontainers can run an init script after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
 `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 
 This is useful if you have a fixed script for setting up database schema, etc.
+
+## Using an init script from a file
+
+If the init script path is prefixed `file:`, it will be loaded from a file (relative to the working directory, which will usually be the project root).
+
+`jdbc:tc:mysql:5.7.22://hostname/databasename?TC_INITSCRIPT=file:src/main/resources/init_mysql.sql`
 
 #### Using an init function
 
@@ -94,3 +101,16 @@ By default database container is being stopped as soon as last connection is clo
  `jdbc:tc:mysql:5.7.22://hostname/databasename?TC_DAEMON=true`
 
 With this parameter database container will keep running even when there're no open connections.
+
+
+#### Running container with tmpfs options
+
+Container can have `tmpfs` mounts for storing data in host memory. This is useful if you want to speed up your database tests. Be aware that the data will be lost when the container stops.
+
+To pass this option to the container, add `TC_TMPFS` paramater to the URL as follows:
+
+  `jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_TMPFS=/testtmpfs:rw`
+
+If you need more than one option, seperate them by comma (e.g. `TC_TMPFS=key:value,key1:value1&other_parameters=foo`).
+
+For more information about `tmpfs` mount, see [the official Docker documentation](https://docs.docker.com/storage/tmpfs/).

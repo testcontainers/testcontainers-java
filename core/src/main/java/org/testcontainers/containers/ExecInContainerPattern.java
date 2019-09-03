@@ -82,8 +82,10 @@ public class ExecInContainerPattern {
         callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
 
         dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
+        Integer exitCode = dockerClient.inspectExecCmd(execCreateCmdResponse.getId()).exec().getExitCode();
 
         final Container.ExecResult result = new Container.ExecResult(
+            exitCode,
             stdoutConsumer.toString(outputCharset),
             stderrConsumer.toString(outputCharset));
 

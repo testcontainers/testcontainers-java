@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
-    public static final String VERSION = "5.5.1";
+    public static final String VERSION = "5.5.4";
 
     public static final int PORT = 1080;
 
@@ -15,7 +15,7 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     public MockServerContainer(String version) {
         super("jamesdbloom/mockserver:mockserver-" + version);
-        withCommand("/opt/mockserver/run_mockserver.sh -logLevel INFO -serverPort " + PORT);
+        withCommand("-logLevel INFO -serverPort " + PORT);
         addExposedPorts(PORT);
     }
 

@@ -4,6 +4,8 @@ import org.testcontainers.jdbc.ConnectionUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 /**
  * Base class for classes that can provide a JDBC container.
  */
@@ -48,5 +50,25 @@ public abstract class JdbcDatabaseContainerProvider {
         } else {
             return newInstance();
         }
+    }
+
+    protected JdbcDatabaseContainer newInstanceFromConnectionUrl(ConnectionUrl connectionUrl, final String userParamName, final String pwdParamName) {
+        Objects.requireNonNull(connectionUrl, "Connection URL cannot be null");
+
+        final String databaseName = connectionUrl.getDatabaseName().orElse("test");
+        final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
+        final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
+
+        final JdbcDatabaseContainer instance;
+        if (connectionUrl.getImageTag().isPresent()) {
+            instance = newInstance(connectionUrl.getImageTag().get());
+        } else {
+            instance = newInstance();
+        }
+
+        return instance
+            .withDatabaseName(databaseName)
+            .withUsername(user)
+            .withPassword(password);
     }
 }

@@ -7,7 +7,7 @@ import java.util.concurrent.Future;
 /**
  * @author gusohal
  */
-public class OracleContainer extends JdbcDatabaseContainer {
+public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public static final String NAME = "oracle";
 
@@ -81,13 +81,13 @@ public class OracleContainer extends JdbcDatabaseContainer {
     @Override
     public OracleContainer withUsername(String username) {
         this.username = username;
-        return this;
+        return self();
     }
 
     @Override
     public OracleContainer withPassword(String password) {
         this.password = password;
-        return this;
+        return self();
     }
 
     @SuppressWarnings("SameReturnValue")
