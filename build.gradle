@@ -70,6 +70,11 @@ subprojects {
     // Ensure that Javadoc generation is always tested
     check.dependsOn(javadoc)
 
+    javadoc {
+        dependsOn delombok
+        source = delombok.outputs
+    }
+
     shadowJar {
         configurations = []
         classifier = null
