@@ -215,8 +215,8 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         values.add(asList("rabbitmqadmin", "declare", "binding",
                 "source=" + source,
                 "destination=" + destination,
-                "routing-key=" + routingKey,
-                "destination-type=" + destinationType,
+                "routing_key=" + routingKey,
+                "destination_type=" + destinationType,
                 "arguments=" + toJson(arguments)));
         return self();
     }

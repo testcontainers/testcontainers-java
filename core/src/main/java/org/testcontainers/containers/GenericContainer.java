@@ -968,7 +968,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
+            withCopyFileToContainer(mountableFile, containerPath);
+        } else {
+            addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        }
 
         return self();
     }
