@@ -359,9 +359,9 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     /**
      * Overwrites the default RabbitMQ configuration file with the supplied one.
      *
-     * This function doesn't work with RabbitMQ < 3.7.
+     * This function doesn't work with RabbitMQ &lt; 3.7.
      *
-     * This function and the Sysctl format is recommended for RabbitMQ >= 3.7
+     * This function and the Sysctl format is recommended for RabbitMQ &gt;= 3.7
      *
      * @param rabbitMQConf The rabbitmq.config file to use (in sysctl format, don't forget empty line in the end of file)
      * @return This container.
