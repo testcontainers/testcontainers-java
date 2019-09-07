@@ -1,21 +1,29 @@
 package org.testcontainers.containers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.MountableFile;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.binding;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.exchange;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.operatorPolicy;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.parameter;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.permission;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.policy;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.queue;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.user;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.vhost;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.vhostLimit;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.lang.String.join;
-import static java.util.Arrays.asList;
+import org.testcontainers.containers.rabbitmq.admin.DeclareCommand;
+import org.testcontainers.containers.rabbitmq.admin.DeclareCommands;
+import org.testcontainers.containers.rabbitmq.plugins.PluginsEnableCommand;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
 
 /**
  * Testcontainer for RabbitMQ.
@@ -37,7 +45,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     private String adminPassword = "guest";
     private String adminUsername = "guest";
-    private final List<List<String>> values = new ArrayList<>();
+    private final List<RabbitMQCommand> commands = new ArrayList<>();
 
     /**
      * Creates a Testcontainer using the official RabbitMQ docker image.
@@ -70,17 +78,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-
-        values.forEach(command -> {
-            try {
-                ExecResult execResult = execInContainer(command.toArray(new String[0]));
-                if (execResult.getExitCode() != 0) {
-                    logger().error("Could not execute command {}: {}", command, execResult.getStderr());
-                }
-            } catch (IOException | InterruptedException e) {
-                logger().error("Could not execute command {}: {}", command, e.getMessage());
-            }
-        });
+        commands.forEach(command -> command.executeInContainer(this));
     }
 
     /**
@@ -198,151 +196,132 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     }
 
     public RabbitMQContainer withPluginsEnabled(String... pluginNames) {
-        List<String> command = new ArrayList<>(asList("rabbitmq-plugins", "enable"));
-        command.addAll(asList(pluginNames));
-        values.add(command);
+        commands.add(new PluginsEnableCommand(pluginNames));
+        return self();
+    }
+
+    /**
+     * Adds the given {@link DeclareCommand} to the list of commands that will execute
+     * when the RabbitMQ container starts.
+     *
+     * <p>The {@link DeclareCommand} will declare an object on the RabbitMQ server when the container starts.</p>
+     *
+     * <p>Use the static factory methods from {@link DeclareCommands} to create the {@code declareCommand}.</p>
+     *
+     * <p>For example:</p>
+     * <pre>
+     *     import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.queue;
+     *
+     *     container.declare(queue("myQueue").autoDelete());
+     * </pre>
+     *
+     * @param declareCommand declares a RabbitMQ object when the container starts
+     * @return this container
+     */
+    public RabbitMQContainer declare(DeclareCommand declareCommand) {
+        commands.add(declareCommand);
         return self();
     }
 
     public RabbitMQContainer withBinding(String source, String destination) {
-        values.add(asList("rabbitmqadmin", "declare", "binding",
-                "source=" + source,
-                "destination=" + destination));
-        return self();
+        return declare(binding(source, destination));
     }
 
     public RabbitMQContainer withBinding(String source, String destination, Map<String, Object> arguments, String routingKey, String destinationType) {
-        values.add(asList("rabbitmqadmin", "declare", "binding",
-                "source=" + source,
-                "destination=" + destination,
-                "routing_key=" + routingKey,
-                "destination_type=" + destinationType,
-                "arguments=" + toJson(arguments)));
-        return self();
+        return declare(binding(source, destination)
+            .arguments(arguments)
+            .routingKey(routingKey)
+            .destinationType(destinationType));
     }
 
     public RabbitMQContainer withParameter(String component, String name, String value) {
-        values.add(asList("rabbitmqadmin", "declare", "parameter",
-                "component=" + component,
-                "name=" + name,
-                "value=" + value));
-        return self();
+        return declare(parameter(component, name, value));
     }
 
     public RabbitMQContainer withPermission(String vhost, String user, String configure, String write, String read) {
-        values.add(asList("rabbitmqadmin", "declare", "permission",
-                "vhost=" + vhost,
-                "user=" + user,
-                "configure=" + configure,
-                "write=" + write,
-                "read=" + read));
-        return self();
+        return declare(permission(user)
+            .vhost(vhost)
+            .configure(configure)
+            .write(write)
+            .read(read));
     }
 
     public RabbitMQContainer withUser(String name, String password) {
-        values.add(asList("rabbitmqadmin", "declare", "user",
-                "name=" + name,
-                "password=" + password,
-                "tags="));
-        return self();
+        return declare(user(name)
+            .password(password));
     }
 
     public RabbitMQContainer withUser(String name, String password, Set<String> tags) {
-        values.add(asList("rabbitmqadmin", "declare", "user",
-                "name=" + name,
-                "password=" + password,
-                "tags=" + join(",", tags)));
-        return self();
+        return declare(user(name)
+            .password(password)
+            .tags(tags));
     }
 
     public RabbitMQContainer withPolicy(String name, String pattern, Map<String, Object> definition) {
-        values.add(asList("rabbitmqadmin", "declare", "policy",
-                "name=" + name,
-                "pattern=" + pattern,
-                "definition=" + toJson(definition)));
-        return self();
+        return declare(policy(name)
+            .pattern(pattern)
+            .definition(definition));
     }
 
     public RabbitMQContainer withPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
-        values.add(asList("rabbitmqadmin", "declare", "policy",
-                "name=" + name,
-                "pattern=" + pattern,
-                "priority=" + priority,
-                "apply-to=" + applyTo,
-                "definition=" + toJson(definition)));
-        return self();
+        return declare(policy(name)
+            .pattern(pattern)
+            .definition(definition)
+            .priority(priority)
+            .applyTo(applyTo));
     }
 
     public RabbitMQContainer withOperatorPolicy(String name, String pattern, Map<String, Object> definition) {
-        values.add(new ArrayList<>(asList("rabbitmqadmin", "declare", "operator_policy",
-                "name=" + name,
-                "pattern=" + pattern,
-                "definition=" + toJson(definition))));
-        return self();
+        return declare(operatorPolicy(name)
+            .pattern(pattern)
+            .definition(definition));
     }
 
     public RabbitMQContainer withOperatorPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
-        values.add(asList("rabbitmqadmin", "declare", "operator_policy",
-                "name=" + name,
-                "pattern=" + pattern,
-                "priority=" + priority,
-                "apply-to=" + applyTo,
-                "definition=" + toJson(definition)));
-        return self();
+        return declare(operatorPolicy(name)
+            .pattern(pattern)
+            .definition(definition)
+            .priority(priority)
+            .applyTo(applyTo));
     }
 
     public RabbitMQContainer withVhost(String name) {
-        values.add(asList("rabbitmqadmin", "declare", "vhost",
-                "name=" + name));
-        return self();
+        return declare(vhost(name));
     }
 
     public RabbitMQContainer withVhost(String name, boolean tracing) {
-        values.add(asList("rabbitmqadmin", "declare", "vhost",
-                "name=" + name,
-                "tracing=" + tracing));
-        return self();
+        return declare(vhost(name)
+            .tracing(tracing));
     }
 
     public RabbitMQContainer withVhostLimit(String vhost, String name, int value) {
-        values.add(asList("rabbitmqadmin", "declare", "vhost_limit",
-                "vhost=" + vhost,
-                "name=" + name,
-                "value=" + value));
-        return self();
+        return declare(vhostLimit(name, value)
+            .vhost(vhost));
     }
 
     public RabbitMQContainer withQueue(String name) {
-        values.add(asList("rabbitmqadmin", "declare", "queue",
-                "name=" + name));
-        return self();
+        return declare(queue(name));
     }
 
     public RabbitMQContainer withQueue(String name, boolean autoDelete, boolean durable, Map<String, Object> arguments) {
-        values.add(asList("rabbitmqadmin", "declare", "queue",
-                "name=" + name,
-                "auto_delete=" + autoDelete,
-                "durable=" + durable,
-                "arguments=" + toJson(arguments)));
-        return self();
+        return declare(queue(name)
+            .autoDelete(autoDelete)
+            .durable(durable)
+            .arguments(arguments));
     }
 
     public RabbitMQContainer withExchange(String name, String type) {
-        values.add(asList("rabbitmqadmin", "declare", "exchange",
-                "name=" + name,
-                "type=" + type));
-        return self();
+        return declare(exchange(name)
+            .type(type));
     }
 
     public RabbitMQContainer withExchange(String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
-        values.add(asList("rabbitmqadmin", "declare", "exchange",
-                "name=" + name,
-                "type=" + type,
-                "auto_delete=" + autoDelete,
-                "internal=" + internal,
-                "durable=" + durable,
-                "arguments=" + toJson(arguments)));
-        return self();
+        return declare(exchange(name)
+            .type(type)
+            .autoDelete(autoDelete)
+            .internal(internal)
+            .durable(durable)
+            .arguments(arguments));
     }
 
     /**
@@ -382,12 +361,4 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.config");
     }
 
-    @NotNull
-    private String toJson(Map<String, Object> arguments) {
-        try {
-            return new ObjectMapper().writeValueAsString(arguments);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to convert arguments into json: " + e.getMessage(), e);
-        }
-    }
 }
