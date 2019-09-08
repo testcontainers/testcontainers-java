@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -7,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 
 import java.util.concurrent.TimeUnit;
@@ -20,11 +22,12 @@ public class GenericContainerTest {
     public void shouldReportOOMAfterWait() {
         try (
             GenericContainer container = new GenericContainer<>()
+                .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForState(ContainerState::getOOMKilled))
                 .withCreateContainerCmdModifier(it -> {
                     it.getHostConfig().withMemory(4 * FileUtils.ONE_MB);
                 })
-                .withCommand("sh", "-c", "usleep 100; dd if=/dev/urandom bs=128GB count=1 > test.txt")
+                .withCommand("sh", "-c", "usleep 100; dd if=/dev/urandom of=/dev/null bs=32MB count=1")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container crashed with out-of-memory");
@@ -35,11 +38,20 @@ public class GenericContainerTest {
     public void shouldReportErrorAfterWait() {
         try (
             GenericContainer container = new GenericContainer<>()
+                .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForState(state -> state.getExitCode() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container exited with code 123");
+        }
+    }
+
+    static class NoopStartupCheckStrategy extends StartupCheckStrategy {
+
+        @Override
+        public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
+            return StartupStatus.SUCCESSFUL;
         }
     }
 
