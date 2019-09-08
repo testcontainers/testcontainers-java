@@ -49,7 +49,11 @@ _N.B:_
 
 **Original URL**: `jdbc:mysql:5.7.22://localhost:3306/databasename`
 
-Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value.
+Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value. 
+
+!!! note
+    We will use `///` (host-less URIs) from now on to emphasis the unimportance of the `host:port` pair.  
+    From Testcontainers' perspective, `jdbc:mysql:5.7.22://localhost:3306/databasename` and `jdbc:mysql:5.7.22:///databasename` is the same URI.
 
 ### JDBC URL examples
 
