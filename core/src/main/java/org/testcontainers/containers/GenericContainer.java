@@ -352,7 +352,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
 
                 if (Boolean.TRUE.equals(state.getOOMKilled())) {
-                    throw new IllegalStateException("Container crashed with out-of-memory");
+                    throw new IllegalStateException("Container crashed with out-of-memory (OOMKilled)");
                 }
 
                 String error = state.getError();
