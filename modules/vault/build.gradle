@@ -3,5 +3,5 @@ description = "Testcontainers :: Vault"
 dependencies {
     compile project(':testcontainers')
 
-    testCompile 'io.rest-assured:rest-assured:4.1.0'
+    testCompile 'io.rest-assured:rest-assured:4.1.1'
 }
