@@ -104,4 +104,9 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     protected void waitUntilContainerStarted() {
         getWaitStrategy().waitUntilReady(this);
     }
+
+    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+        super.addFixedExposedPort(hostPort, containerPort);
+        return self();
+    }
 }
