@@ -162,7 +162,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // (b) so that credential helper-based auth still works when compose is running from within a container
         parsedComposeFiles.stream()
             .flatMap(it -> it.getServiceImageNames().stream())
-            .forEach(imageName -> DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName));
+            .forEach(imageName -> {
+                try {
+                    DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                } catch (Exception e) {
+                    log.warn("Failed to pull image '{}'. Exception message was {}", imageName, e.getMessage());
+                }
+            });
     }
 
     public SELF withServices(@NonNull String... services) {
