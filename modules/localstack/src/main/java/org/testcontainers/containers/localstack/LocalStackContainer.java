@@ -50,7 +50,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         Preconditions.check("services list must not be empty", !services.isEmpty());
 
         withEnv("SERVICES", services.stream().map(Service::getLocalStackName).collect(Collectors.joining(",")));
-
+        withEnv("HOSTNAME_EXTERNAL",  determineIpAddress()); //required for S3 and SQS url creation
         for (Service service : services) {
             addExposedPort(service.getPort());
         }
@@ -79,18 +79,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
-        final String address = getContainerIpAddress();
-        String ipAddress = address;
-        try {
-            // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
-            ipAddress = InetAddress.getByName(address).getHostAddress();
-        } catch (UnknownHostException ignored) {
-
-        }
 
         return new AwsClientBuilder.EndpointConfiguration(
-                "http://" +
-                ipAddress +
+            "http://" +
+                determineIpAddress() +
                 ":" +
                 getMappedPort(service.getPort()), "us-east-1");
     }
@@ -141,5 +133,17 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         String localStackName;
 
         int port;
+    }
+
+    private String determineIpAddress() {
+        final String address = getContainerIpAddress();
+        String ipAddress = address;
+        try {
+            // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
+            ipAddress = InetAddress.getByName(address).getHostAddress();
+        } catch (UnknownHostException ignored) {
+
+        }
+        return ipAddress;
     }
 }
