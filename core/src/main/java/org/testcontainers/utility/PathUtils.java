@@ -18,7 +18,18 @@ public class PathUtils {
      *
      * @param directory path to the directory to delete.
      */
-    public static void recursiveDeleteDir(final @NonNull Path directory, DeleteFileVisitor deleteFileVisitor) {
+    public static void recursiveDeleteDir(final @NonNull Path directory) {
+        recursiveDeleteDir(directory, new DeleteFileVisitor());
+    }
+
+    /**
+     * Recursively delete a directory and all its subdirectories and files, with delete file visitor argument.
+     *
+     * @param directory path to the directory to delete.
+     * @param deleteFileVisitor file visitor implementation
+     */
+    public static void recursiveDeleteDir(final @NonNull Path directory,
+                                          final @NonNull DeleteFileVisitor deleteFileVisitor) {
         try {
             Files.walkFileTree(directory, deleteFileVisitor);
         } catch (IOException ignored) {
