@@ -81,6 +81,10 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar");
     }
 
+    public String getLocalStackImage() {
+        return (String) properties.getOrDefault("localstack.container.image", "localstack/localstack");
+    }
+
     public boolean isDisableChecks() {
         return Boolean.parseBoolean((String) environmentProperties.getOrDefault("checks.disable", "false"));
     }
