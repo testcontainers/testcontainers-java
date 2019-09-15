@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.util.stream.Collectors.joining;
+
 /**
  * @author richardnorth
  */
@@ -82,7 +84,19 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
             url = url + "&allowPublicKeyRetrieval=true";
         }
 
+        if (!urlParameters.isEmpty()) {
+            String additionalParameters = this.urlParameters.entrySet().stream()
+                .map(Object::toString)
+                .collect(joining("&"));
+            url = url + "&" + additionalParameters;
+        }
         return url;
+    }
+
+    @Override
+    public SELF withUrlParam(String paramName, String paramValue) {
+        urlParameters.put(paramName, paramValue);
+        return self();
     }
 
     @Override

@@ -28,6 +28,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private Driver driver;
     private String initScriptPath;
     protected Map<String, String> parameters = new HashMap<>();
+    protected Map<String, String> urlParameters = new HashMap<>();
 
     private int startupTimeoutSeconds = 120;
     private int connectTimeoutSeconds = 120;
@@ -82,7 +83,10 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     public SELF withDatabaseName(String dbName) {
         throw new UnsupportedOperationException();
+    }
 
+    public SELF withUrlParam(String paramName, String paramValue) {
+        throw new UnsupportedOperationException();
     }
 
     /**

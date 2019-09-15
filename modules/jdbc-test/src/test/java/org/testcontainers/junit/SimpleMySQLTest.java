@@ -8,8 +8,14 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -134,6 +140,60 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         } catch (ContainerLaunchException e) {
         } finally {
             container.stop();
+        }
+    }
+
+    @Test
+    public void testWithAdditionalUrlParamTimeZone() throws SQLException {
+        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+            .withUrlParam("serverTimezone", "Europe/Zurich")
+            .withEnv("TZ", "Europe/Zurich")
+            .withLogConsumer(new Slf4jLogConsumer(logger));
+        mysql.start();
+
+        try(Connection connection = mysql.createConnection("")) {
+            Statement statement = connection.createStatement();
+            statement.execute("SELECT NOW();");
+            try (ResultSet resultSet = statement.getResultSet()) {
+                resultSet.next();
+
+                // checking that the time_zone MySQL is Europe/Zurich
+                LocalDateTime localDateTime = resultSet.getObject(1, LocalDateTime.class);
+                ZonedDateTime actualDateTime = localDateTime.atZone(ZoneId.of("Europe/Zurich"))
+                    .truncatedTo(ChronoUnit.MINUTES);
+                ZonedDateTime expectedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Zurich"))
+                    .truncatedTo(ChronoUnit.MINUTES);
+
+                String message = String.format("MySQL time zone is not Europe/Zurich. MySQL date:%s, current date:%s",
+                    actualDateTime, expectedDateTime);
+                assertTrue(message, actualDateTime.equals(expectedDateTime));
+            }
+        } finally {
+            mysql.stop();
+        }
+    }
+
+    @Test
+    public void testWithAdditionalUrlParamMultiQueries() throws SQLException {
+        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+            .withUrlParam("allowMultiQueries", "true")
+            .withLogConsumer(new Slf4jLogConsumer(logger));
+        mysql.start();
+
+        try(Connection connection = mysql.createConnection("")) {
+            Statement statement = connection.createStatement();
+            String multiQuery = "DROP TABLE IF EXISTS bar; " +
+                "CREATE TABLE bar (foo VARCHAR(20)); " +
+                "INSERT INTO bar (foo) VALUES ('hello world');";
+            statement.execute(multiQuery);
+            statement.execute("SELECT foo FROM bar;");
+            try(ResultSet resultSet = statement.getResultSet()) {
+                resultSet.next();
+                String firstColumnValue = resultSet.getString(1);
+                assertEquals("Value from bar should equal real value", "hello world", firstColumnValue);
+            }
+        } finally {
+            mysql.stop();
         }
     }
 }
