@@ -28,4 +28,5 @@ dependencies {
     testCompile 'commons-dbutils:commons-dbutils:1.6'
 
     testCompile 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
+    testCompile project(':test-support')
 }
