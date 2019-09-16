@@ -3,7 +3,7 @@ description = "Testcontainers :: JDBC :: MariaDB"
 dependencies {
     compile project(':jdbc')
 
-    testCompile 'org.mariadb.jdbc:mariadb-java-client:2.4.3'
+    testCompile 'org.mariadb.jdbc:mariadb-java-client:2.4.4'
     testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
     testCompile 'commons-dbutils:commons-dbutils:1.7'
     testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.24'
