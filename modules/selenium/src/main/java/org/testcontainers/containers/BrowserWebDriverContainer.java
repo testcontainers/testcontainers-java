@@ -49,8 +49,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
 
-    private static final long DEFAULT_SHM_SIZE = 2 * FileUtils.ONE_GB;
-
     private static final String NO_PROXY_KEY = "no_proxy";
 
     @Nullable
@@ -168,7 +166,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         setCommand("/opt/bin/entry_point.sh");
 
-        setShmSize(DEFAULT_SHM_SIZE);
+        if (getShmSize() == null) {
+            addFileSystemBind("/dev/shm", "/dev/shm", BindMode.READ_WRITE);
+        }
 
         /*
          * Some unreliability of the selenium browser containers has been observed, so allow multiple attempts to start.
