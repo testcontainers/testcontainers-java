@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
-import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Capabilities;
