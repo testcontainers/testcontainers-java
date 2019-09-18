@@ -101,8 +101,15 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
 
     @Override
     public <T> void get(TypeReference<T> typeReference, ResultCallback<T> resultCallback) {
-        // FIXME
-        throw new IllegalStateException("doesn't seem to be used in docker-java");
+        Request request = requestBuilder
+            .get()
+            .build();
+
+        executeAndStream(
+            request,
+            resultCallback,
+            new JsonSink<T>(objectMapper, typeReference, resultCallback)
+        );
     }
 
     @Override
