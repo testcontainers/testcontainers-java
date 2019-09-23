@@ -75,3 +75,15 @@ For example, here we construct an HTTP URL for our local web application and tel
 <!--codeinclude-->
 [Accessing the exposed host port from a container](../examples/src/test/java/generic/HostPortExposedTest.java) inside_block:useHostExposedPort
 <!--/codeinclude-->
+
+
+## Advanced networking
+
+Docker provides the ability for you to create custom networks and place containers on one or more networks. Then, communication can occur between networked containers without the need of exposing ports through the host. With Testcontainers, you can do this as well. 
+
+!!! warning
+    Note that Testcontainers currently only allows a container to be on a single network.
+
+<!--codeinclude-->
+[Creating custom networks](../../core/src/test/java/org/testcontainers/containers/NetworkTest.java) inside_block:useCustomNetwork
+<!--/codeinclude-->
