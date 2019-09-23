@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public static final String NAME = "oracle";
+    public static final String IMAGE_NAME_PROPERTY = "oracle.container.image";
 
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
@@ -22,12 +23,12 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()
-            .getProperties().getProperty("oracle.container.image");
+            .getProperties().getProperty(IMAGE_NAME_PROPERTY);
 
         if (image == null) {
             throw new IllegalStateException("An image to use for Oracle containers must be configured. " +
                 "To do this, please place a file on the classpath named `testcontainers.properties`, " +
-                "containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag.");
+                "containing `" + IMAGE_NAME_PROPERTY + "=IMAGE`, where IMAGE is a suitable image name and tag.");
         }
         return image;
     }
