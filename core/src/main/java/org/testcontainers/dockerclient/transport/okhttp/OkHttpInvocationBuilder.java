@@ -42,6 +42,8 @@ import java.util.function.Consumer;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 class OkHttpInvocationBuilder implements InvocationBuilder {
 
+    static final ThreadLocal<Boolean> CLOSING = ThreadLocal.withInitial(() -> false);
+
     ObjectMapper objectMapper;
 
     OkHttpClient okHttpClient;
@@ -108,7 +110,7 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
         executeAndStream(
             request,
             resultCallback,
-            new JsonSink<T>(objectMapper, typeReference, resultCallback)
+            new JsonSink<>(objectMapper, typeReference, resultCallback)
         );
     }
 
@@ -299,7 +301,16 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
                 Response response = execute(okHttpClient, request.newBuilder().tag("streaming").build());
                 BufferedSource source = response.body().source();
             ) {
-                callback.onStart(response);
+                callback.onStart(() -> {
+                    boolean previous = CLOSING.get();
+                    CLOSING.set(true);
+                    try {
+                        response.close();
+                    } finally {
+                        CLOSING.set(previous);
+                    }
+                });
+
                 sourceConsumer.accept(source);
                 callback.onComplete();
             } catch (Exception e) {
