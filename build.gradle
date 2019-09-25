@@ -32,6 +32,9 @@ subprojects {
             args(srcDir, "-d", outputDir)
         }
     }
+    delombok.onlyIf {
+        project.sourceSets.main.java.srcDirs.find { it.exists() }
+    }
 
     repositories {
         jcenter()
