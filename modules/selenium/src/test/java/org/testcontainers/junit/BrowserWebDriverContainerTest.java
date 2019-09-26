@@ -6,6 +6,9 @@ import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
@@ -51,8 +54,10 @@ public class BrowserWebDriverContainerTest {
         ) {
             webDriverContainer.start();
 
-            assertEquals("Shm mounts present", webDriverContainer.getContainerInfo().getMounts().size(), 1);
-            final InspectContainerResponse.Mount shmMount = webDriverContainer.getContainerInfo().getMounts().get(0);
+            final List<InspectContainerResponse.Mount> mounts = webDriverContainer.getContainerInfo().getMounts();
+            assertEquals("Shm mounts present", mounts.size(), 1);
+
+            final InspectContainerResponse.Mount shmMount = mounts.get(0);
             assertEquals("Shm mount source is correct", "/dev/shm", shmMount.getSource());
             assertEquals("Shm mount destination is correct", "/dev/shm", shmMount.getDestination().getPath());
             assertEquals("Shm mount mode is correct", shmMount.getMode(), "rw");
@@ -62,12 +67,17 @@ public class BrowserWebDriverContainerTest {
     @Test
     public void createContainerWithoutShmVolume() {
         try (
-            BrowserWebDriverContainer webDriverContainer = (BrowserWebDriverContainer) new BrowserWebDriverContainer()
+            BrowserWebDriverContainer webDriverContainer =  new BrowserWebDriverContainer<>()
              .withSharedMemorySize(512 * FileUtils.ONE_MB)
         ) {
             webDriverContainer.start();
             assertEquals("Shared memory size is configured", 512 * FileUtils.ONE_MB, webDriverContainer.getShmSize());
-            assertEquals("No mounts present", webDriverContainer.getContainerInfo().getMounts().size(), 0);
+
+            final long shmMountCount = webDriverContainer.getContainerInfo().getMounts()
+                .stream()
+                .filter(m -> "/dev/shm".equals(m.getSource()))
+                .count();
+            assertEquals("No shm mounts present", shmMountCount, 0L);
         }
     }
 
