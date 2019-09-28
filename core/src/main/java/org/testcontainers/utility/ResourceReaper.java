@@ -91,15 +91,12 @@ public final class ResourceReaper {
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(binds)
                 .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
-                .withNetworkMode()
                 .exec()
                 .getId();
 
         client.startContainerCmd(ryukContainerId).exec();
 
         InspectContainerResponse inspectedContainer = client.inspectContainerCmd(ryukContainerId).exec();
-
-
 
         Integer ryukPort = ryukUserDefinedNetwork!=null ? 8080 :
                 inspectedContainer.getNetworkSettings().getPorts().getBindings().values().stream()
