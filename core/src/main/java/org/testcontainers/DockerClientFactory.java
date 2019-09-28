@@ -110,7 +110,8 @@ public class DockerClientFactory {
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
 
-        String hostIpAddress = strategy.getDockerHostIpAddress();
+        String hostIpAddress = System.getProperty("TESTCONTAINERS_RYUK_HOST_OVERRIDE",strategy.getDockerHostIpAddress());
+
         log.info("Docker host IP address is {}", hostIpAddress);
         DockerClient client = strategy.getClient();
 
@@ -128,6 +129,7 @@ public class DockerClientFactory {
             String ryukContainerId = null;
             boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
             if (useRyuk) {
+
                 ryukContainerId = ResourceReaper.start(hostIpAddress, client);
                 log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
             }

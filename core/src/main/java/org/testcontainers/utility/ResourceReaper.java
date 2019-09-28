@@ -76,7 +76,6 @@ public final class ResourceReaper {
 
         HostConfig hostConfig = new HostConfig().withAutoRemove(true);
 
-        hostIpAddress = System.getProperty("TESTCONTAINERS_RYUK_HOST_OVERRIDE",hostIpAddress);
         String ryukUserDefinedNetwork = System.getProperty("TESTCONTAINERS_RYUK_USER_NETWORK");
         if (ryukUserDefinedNetwork!=null) {
             hostConfig.withNetworkMode(ryukUserDefinedNetwork);
