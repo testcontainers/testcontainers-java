@@ -5,5 +5,5 @@ dependencies {
 
     testCompile 'com.oracle.ojdbc:ojdbc8:19.3.0.0'
     testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
-    testCompile 'commons-dbutils:commons-dbutils:1.6'
+    testCompile 'commons-dbutils:commons-dbutils:1.7'
 }
