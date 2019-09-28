@@ -74,14 +74,24 @@ public final class ResourceReaper {
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
 
+        HostConfig hostConfig = new HostConfig().withAutoRemove(true);
+
+        hostIpAddress = System.getProperty("TESTCONTAINERS_RYUK_HOST_OVERRIDE",hostIpAddress);
+        String ryukUserDefinedNetwork = System.getProperty("TESTCONTAINERS_RYUK_USER_NETWORK");
+        if (ryukUserDefinedNetwork!=null) {
+            hostConfig.withNetworkMode(ryukUserDefinedNetwork);
+        }
+
+        String name = "testcontainers-ryuk-" + DockerClientFactory.SESSION_ID;
         String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig().withAutoRemove(true))
+                .withHostConfig(hostConfig)
                 .withExposedPorts(new ExposedPort(8080))
                 .withPublishAllPorts(true)
-                .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
+                .withName(name)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(binds)
                 .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
+                .withNetworkMode()
                 .exec()
                 .getId();
 
@@ -89,12 +99,16 @@ public final class ResourceReaper {
 
         InspectContainerResponse inspectedContainer = client.inspectContainerCmd(ryukContainerId).exec();
 
-        Integer ryukPort = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().stream()
+
+
+        Integer ryukPort = ryukUserDefinedNetwork!=null ? 8080 :
+                inspectedContainer.getNetworkSettings().getPorts().getBindings().values().stream()
                 .flatMap(Stream::of)
                 .findFirst()
                 .map(Ports.Binding::getHostPortSpec)
                 .map(Integer::parseInt)
                 .get();
+
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
@@ -111,7 +125,7 @@ public final class ResourceReaper {
                 () -> {
                     while (true) {
                         int index = 0;
-                        try(Socket clientSocket = new Socket(hostIpAddress, ryukPort)) {
+                        try(Socket clientSocket = new Socket(ryukUserDefinedNetwork!=null?name:hostIpAddress, ryukPort)) {
                             FilterRegistry registry = new FilterRegistry(clientSocket.getInputStream(), clientSocket.getOutputStream());
 
                             synchronized (DEATH_NOTE) {
@@ -341,12 +355,12 @@ public final class ResourceReaper {
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
     }
-    
+
     public void registerImageForCleanup(String dockerImageName) {
         setHook();
         registeredImages.add(dockerImageName);
     }
-    
+
     private void removeImage(String dockerImageName) {
         LOGGER.trace("Removing image tagged {}", dockerImageName);
         try {
