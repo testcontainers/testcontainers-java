@@ -106,7 +106,6 @@ public final class ResourceReaper {
                 .map(Integer::parseInt)
                 .get();
 
-
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
         synchronized (DEATH_NOTE) {
