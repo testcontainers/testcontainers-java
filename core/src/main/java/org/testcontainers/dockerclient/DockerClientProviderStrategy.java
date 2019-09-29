@@ -1,8 +1,8 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
@@ -165,7 +165,7 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
-        DockerClientBuilder clientBuilder = DockerClientBuilder
+        DockerClientImpl clientBuilder = DockerClientImpl
             .getInstance(new AuthDelegatingDockerClientConfig(config));
 
         String transportType = TestcontainersConfiguration.getInstance().getTransportType();
@@ -178,7 +178,7 @@ public abstract class DockerClientProviderStrategy {
 
         LOGGER.info("Will use '{}' transport", transportType);
 
-        return clientBuilder.build();
+        return clientBuilder;
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
