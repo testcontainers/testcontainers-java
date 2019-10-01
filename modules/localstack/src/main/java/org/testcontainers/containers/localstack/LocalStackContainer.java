@@ -63,7 +63,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getContainerIpAddress());
             hostnameExternalReason = "to match host-routable address for container";
         }
-        logger().info(HOSTNAME_EXTERNAL_ENV_VAR + " environment variable set to {} ({})", getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
+        logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
 
         for (Service service : services) {
             addExposedPort(service.getPort());
