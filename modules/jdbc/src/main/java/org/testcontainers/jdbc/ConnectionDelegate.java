@@ -1,18 +1,13 @@
 package org.testcontainers.jdbc;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Value;
 import lombok.experimental.Delegate;
 
-import java.sql.*;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Executor;
+import java.sql.Connection;
 
+@AllArgsConstructor
 class ConnectionDelegate implements Connection {
-    @Delegate(types=Connection.class)
-    private final Connection delegate;
-
-    public ConnectionDelegate(Connection connection){
-        this.delegate = connection;
-    }
+    @Delegate
+    Connection delegate;
 }

@@ -9,7 +9,7 @@ public class ConnectionWrapper extends ConnectionDelegate {
 
     public ConnectionWrapper(Connection connection, Runnable runnable) {
         super(connection);
-        this.closeCallback =runnable;
+        this.closeCallback = runnable;
     }
 
     @Override
@@ -17,7 +17,7 @@ public class ConnectionWrapper extends ConnectionDelegate {
         super.close();
         try {
             closeCallback.run();
-        }catch(Exception e){
+        } catch(Exception e) {
             e.printStackTrace();
         }
     }
