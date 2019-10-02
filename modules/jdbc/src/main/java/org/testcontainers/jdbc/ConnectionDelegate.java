@@ -1,13 +1,13 @@
 package org.testcontainers.jdbc;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.experimental.Delegate;
 
 import java.sql.Connection;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 class ConnectionDelegate implements Connection {
     @Delegate
-    Connection delegate;
+    private final Connection delegate;
 }
