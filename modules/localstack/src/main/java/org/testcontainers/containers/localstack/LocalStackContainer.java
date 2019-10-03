@@ -134,7 +134,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         CLOUDWATCH("cloudwatch", 4582),
         SSM("ssm", 4583),
         SECRETSMANAGER("secretsmanager", 4584),
-        STEPFUNCTIONS("stepsfunctions", 4585),
+        STEPFUNCTIONS("stepfunctions", 4585),
         CLOUDWATCHLOGS("cloudwatchlogs", 4586),
         STS("sts", 4592),
         IAM("iam", 4593);
