@@ -8,11 +8,11 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     public static final String NAME = "cockroach";
     public static final String IMAGE = "cockroachdb/cockroach";
     public static final String IMAGE_TAG = "v19.1.1";
-    public static final String JDBC_DRIVER_CLASS_NAME = "org.postgresql.Driver";
-    public static final String JDBC_URL_PREFIX = "jdbc:postgresql";
-    public static final String TEST_QUERY_STRING = "SELECT 1";
-    public static final int REST_API_PORT = 8080;
-    public static final int DB_PORT = 26257;
+    private static final String JDBC_DRIVER_CLASS_NAME = "org.postgresql.Driver";
+    private static final String JDBC_URL_PREFIX = "jdbc:postgresql";
+    private static final String TEST_QUERY_STRING = "SELECT 1";
+    private static final int REST_API_PORT = 8080;
+    private static final int DB_PORT = 26257;
 
     private String databaseName = "postgres";
     private String username = "root";
@@ -26,8 +26,6 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
         super(dockerImageName);
 
         withExposedPorts(REST_API_PORT, DB_PORT);
-        withEnv("COCKROACH_USER", username);
-        withEnv("COCKROACH_DATABASE", databaseName);
         waitingFor(
             new HttpWaitStrategy()
                 .forPath("/health")
@@ -54,11 +52,6 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     }
 
     @Override
-    public CockroachContainer withPassword(String password) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public String getPassword() {
         return password;
     }
@@ -69,15 +62,17 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     }
 
     @Override
-    public CockroachContainer withDatabaseName(final String databaseName) {
-        this.databaseName = databaseName;
-        return self();
+    public CockroachContainer withUsername(String username) {
+        throw new UnsupportedOperationException("The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826");
     }
 
     @Override
-    public CockroachContainer withUsername(String username) {
-        this.username = username;
-        return self();
+    public CockroachContainer withPassword(String password) {
+        throw new UnsupportedOperationException("The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826");
     }
 
+    @Override
+    public CockroachContainer withDatabaseName(final String databaseName) {
+        throw new UnsupportedOperationException("The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826");
+    }
 }
