@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -38,7 +39,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     public LocalStackContainer(String version) {
-        super("localstack/localstack:" + version);
+        super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
 
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
@@ -152,7 +153,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         CLOUDWATCH("cloudwatch", 4582),
         SSM("ssm", 4583),
         SECRETSMANAGER("secretsmanager", 4584),
-        STEPFUNCTIONS("stepsfunctions", 4585),
+        STEPFUNCTIONS("stepfunctions", 4585),
         CLOUDWATCHLOGS("cloudwatchlogs", 4586),
         STS("sts", 4592),
         IAM("iam", 4593);
