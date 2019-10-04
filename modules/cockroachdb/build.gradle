@@ -1,0 +1,5 @@
+description = "Testcontainers :: JDBC :: CockroachDB"
+
+dependencies {
+    compile project(':jdbc')
+}

@@ -165,6 +165,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         setCommand("/opt/bin/entry_point.sh");
 
+        if (getShmSize() == null) {
+            addFileSystemBind("/dev/shm", "/dev/shm", BindMode.READ_WRITE);
+        }
+
         /*
          * Some unreliability of the selenium browser containers has been observed, so allow multiple attempts to start.
          */
