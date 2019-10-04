@@ -1,8 +1,8 @@
 plugins {
-    id 'com.gradle.build-scan' version '1.16'
+    id 'com.gradle.build-scan' version '2.4.2'
     id 'io.franzbecker.gradle-lombok' version '3.1.0'
     id 'nebula.provided-base' version '3.0.3'
-    id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
     id "com.jfrog.bintray" version "1.8.4" apply false
 }
 
@@ -36,6 +36,9 @@ subprojects {
             inputs.dir(srcDir)
             args(srcDir, "-d", outputDir)
         }
+    }
+    delombok.onlyIf {
+        project.sourceSets.main.java.srcDirs.find { it.exists() }
     }
 
     // specific modules should be excluded from publication
