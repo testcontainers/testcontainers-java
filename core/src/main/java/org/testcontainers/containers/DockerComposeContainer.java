@@ -336,7 +336,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 try {
                     String cmd = "down -v";
                     if (removeImages != null) {
-                        cmd += " --rmi " + removeImages.name();
+                        cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                     }
                     runWithCompose(cmd);
 
@@ -561,12 +561,22 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         /**
          * Remove all images used by any service.
          */
-        all,
+        ALL("all"),
 
         /**
          * Remove only images that don't have a custom tag set by the `image` field.
          */
-        local
+        LOCAL("local");
+
+        private final String dockerRemoveImagesType;
+
+        RemoveImages(final String dockerRemoveImagesType) {
+            this.dockerRemoveImagesType = dockerRemoveImagesType;
+        }
+
+        public String dockerRemoveImagesType() {
+            return dockerRemoveImagesType;
+        }
     }
 }
 
