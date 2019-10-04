@@ -69,9 +69,9 @@ public class DockerComposeContainerWithBuildTest {
         });
     }
 
-    private String imageNameForRunningContainer(final String imageNameSuffix) {
+    private String imageNameForRunningContainer(final String containerNameSuffix) {
         return DockerClientFactory.instance().client().listContainersCmd().exec().stream()
-            .filter(it -> Stream.of(it.getNames()).anyMatch(name -> name.endsWith(imageNameSuffix)))
+            .filter(it -> Stream.of(it.getNames()).anyMatch(name -> name.endsWith(containerNameSuffix)))
             .findFirst()
             .map(Container::getImage)
             .orElseThrow(IllegalStateException::new);
