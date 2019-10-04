@@ -5,11 +5,18 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
 
 public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
+
+    static {
+        // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
+        LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
+    }
 
     @Test
     public void testSimple() throws SQLException {
