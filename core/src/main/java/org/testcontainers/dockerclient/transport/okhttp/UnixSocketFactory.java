@@ -37,6 +37,14 @@ public class UnixSocketFactory extends SocketFactory {
                     public void close() throws IOException {
                         shutdownInput();
                     }
+
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        if (OkHttpInvocationBuilder.CLOSING.get()) {
+                            return 0;
+                        }
+                        return super.read(b, off, len);
+                    }
                 };
             }
 
