@@ -82,6 +82,14 @@ public class MountableFileTest {
     }
 
     @Test
+    public void forHostPathSpecialLocationDev() throws Exception {
+        final MountableFile mountableFile = MountableFile.forHostPath("/dev/shm");
+
+        final String resolvedPath = mountableFile.getResolvedPath();
+        assertEquals("the /dev/shm path should always be direct", "/dev/shm", resolvedPath);
+    }
+
+    @Test
     public void forClasspathResourceWithPermission() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt",
             TEST_FILE_MODE);

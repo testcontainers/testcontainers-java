@@ -82,10 +82,8 @@ public class BrowserWebDriverContainerTest {
         return container.getContainerInfo().getMounts()
             .stream()
             /* source path on Linux/OS X should be /dev/shm
-               source path on Windows is likely to be different: /host_mnt/c/dev/shm has been observed, but other paths
-               may be possible. As such, be liberal when checking that the source path is correct.
              */
-            .filter(m -> m.getSource().endsWith("/dev/shm"))
+            .filter(m -> m.getSource().equals("/dev/shm"))
             // destination path is always /dev/shm
             .filter(m -> m.getDestination().getPath().equals("/dev/shm"))
             // mode should always be r/w

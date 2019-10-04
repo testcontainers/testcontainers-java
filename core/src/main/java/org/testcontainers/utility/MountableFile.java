@@ -167,7 +167,12 @@ public class MountableFile implements Transferable {
     private String resolvePath() {
         String result = getResourcePath();
 
-        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+        // Special cases for Windows
+        if (SystemUtils.IS_OS_WINDOWS && result.matches("^/[A-Z]:/dev/.*")) {
+            // If the user tries to mount /dev/*, it is intentional and should be applied without indirection
+            result = result.replaceFirst("^/[A-Z]:", "");
+        } else if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+            // Remove leading /
             result = result.substring(1);
         }
 
