@@ -7,7 +7,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -58,7 +57,13 @@ public class BrowserWebDriverContainerTest {
             assertEquals("Shm mounts present", mounts.size(), 1);
 
             final InspectContainerResponse.Mount shmMount = mounts.get(0);
-            assertEquals("Shm mount source is correct", "/dev/shm", shmMount.getSource());
+
+            /* source path on Linux/OS X should be /dev/shm
+               source path on Windows is likely to be different: /host_mnt/c/dev/shm has been observed, but other paths
+               may be possible. As such, be liberal when asserting that the source path is correct.
+             */
+            assertTrue("Shm mount source is correct", shmMount.getSource().endsWith("/dev/shm"));
+
             assertEquals("Shm mount destination is correct", "/dev/shm", shmMount.getDestination().getPath());
             assertEquals("Shm mount mode is correct", shmMount.getMode(), "rw");
         }
