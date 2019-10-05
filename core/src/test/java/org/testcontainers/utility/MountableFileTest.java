@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class MountableFileTest {
@@ -86,7 +87,7 @@ public class MountableFileTest {
         final MountableFile mountableFile = MountableFile.forHostPath("/dev/shm");
 
         final String resolvedPath = mountableFile.getResolvedPath();
-        assertEquals("the /dev/shm path should always be direct", "/dev/shm", resolvedPath);
+        assertThat("the /dev/shm path should always be direct", resolvedPath, startsWith("/dev/shm"));
     }
 
     @Test
