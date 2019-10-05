@@ -110,6 +110,8 @@ subprojects {
 
     dependencies {
         testCompile 'ch.qos.logback:logback-classic:1.2.3'
+        compileOnly 'org.jetbrains:annotations:17.0.0'
+        testCompile 'org.jetbrains:annotations:17.0.0'
     }
 }
 

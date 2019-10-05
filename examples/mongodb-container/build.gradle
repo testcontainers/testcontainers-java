@@ -7,6 +7,8 @@ repositories {
 }
 
 dependencies {
+    testCompileOnly 'org.jetbrains:annotations:17.0.0'
+    
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'junit:junit:4.12'
 }
