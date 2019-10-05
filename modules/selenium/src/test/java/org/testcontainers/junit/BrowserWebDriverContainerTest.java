@@ -1,11 +1,16 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
+import java.util.List;
+
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class BrowserWebDriverContainerTest {
@@ -51,8 +56,11 @@ public class BrowserWebDriverContainerTest {
         ) {
             webDriverContainer.start();
 
-            assertEquals("Only one shm mount present", countCorrectlyConfiguredShmVolumes(webDriverContainer), 1L);
-            assertEquals("No additional shm mounts present", countAnyShmVolumes(webDriverContainer), 1L);
+            final List<InspectContainerResponse.Mount> shmVolumes = shmVolumes(webDriverContainer);
+
+            assertEquals("Only one shm mount present", 1, shmVolumes.size());
+            assertEquals("Shm mount source is correct", "/dev/shm", shmVolumes.get(0).getSource());
+            assertEquals("Shm mount mode is correct", "rw", shmVolumes.get(0).getMode());
         }
     }
 
@@ -69,28 +77,15 @@ public class BrowserWebDriverContainerTest {
                 512 * FileUtils.ONE_MB,
                 webDriverContainer.getShmSize());
 
-            assertEquals("No shm mounts present", countAnyShmVolumes(webDriverContainer), 0L);
+            assertEquals("No shm mounts present", emptyList(), shmVolumes(webDriverContainer));
         }
     }
 
-    private long countAnyShmVolumes(final BrowserWebDriverContainer container) {
+    private List<InspectContainerResponse.Mount> shmVolumes(final BrowserWebDriverContainer container) {
         return container.getContainerInfo().getMounts()
             .stream()
             // destination path is always /dev/shm
             .filter(m -> m.getDestination().getPath().equals("/dev/shm"))
-            .count();
-    }
-
-    private long countCorrectlyConfiguredShmVolumes(final BrowserWebDriverContainer container) {
-        return container.getContainerInfo().getMounts()
-            .stream()
-            /* source path on Linux/OS X should be /dev/shm
-             */
-            .filter(m -> m.getSource().equals("/dev/shm"))
-            // destination path is always /dev/shm
-            .filter(m -> m.getDestination().getPath().equals("/dev/shm"))
-            // mode should always be r/w
-            .filter(m -> m.getMode().equals("rw"))
-            .count();
+            .collect(toList());
     }
 }
