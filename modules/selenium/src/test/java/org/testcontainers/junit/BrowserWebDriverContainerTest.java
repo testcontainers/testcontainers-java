@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -46,6 +47,7 @@ public class BrowserWebDriverContainerTest {
     public void createContainerWithShmVolume() {
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
+                .withCapabilities(new FirefoxOptions())
         ) {
             webDriverContainer.start();
 
@@ -59,6 +61,7 @@ public class BrowserWebDriverContainerTest {
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer<>()
                 .withSharedMemorySize(512 * FileUtils.ONE_MB)
+                .withCapabilities(new FirefoxOptions())
         ) {
             webDriverContainer.start();
 
