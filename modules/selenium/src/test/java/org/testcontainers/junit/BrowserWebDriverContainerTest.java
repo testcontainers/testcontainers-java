@@ -4,13 +4,14 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class BrowserWebDriverContainerTest {
 
@@ -51,34 +52,40 @@ public class BrowserWebDriverContainerTest {
     public void createContainerWithShmVolume() {
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
+                .withCapabilities(new FirefoxOptions())
         ) {
             webDriverContainer.start();
 
-            final List<InspectContainerResponse.Mount> mounts = webDriverContainer.getContainerInfo().getMounts();
-            assertEquals("Shm mounts present", mounts.size(), 1);
+            final List<InspectContainerResponse.Mount> shmVolumes = shmVolumes(webDriverContainer);
 
-            final InspectContainerResponse.Mount shmMount = mounts.get(0);
-            assertEquals("Shm mount source is correct", "/dev/shm", shmMount.getSource());
-            assertEquals("Shm mount destination is correct", "/dev/shm", shmMount.getDestination().getPath());
-            assertEquals("Shm mount mode is correct", shmMount.getMode(), "rw");
+            assertEquals("Only one shm mount present", 1, shmVolumes.size());
+            assertEquals("Shm mount source is correct", "/dev/shm", shmVolumes.get(0).getSource());
+            assertEquals("Shm mount mode is correct", "rw", shmVolumes.get(0).getMode());
         }
     }
 
     @Test
     public void createContainerWithoutShmVolume() {
         try (
-            BrowserWebDriverContainer webDriverContainer =  new BrowserWebDriverContainer<>()
-             .withSharedMemorySize(512 * FileUtils.ONE_MB)
+            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer<>()
+                .withSharedMemorySize(512 * FileUtils.ONE_MB)
+                .withCapabilities(new FirefoxOptions())
         ) {
             webDriverContainer.start();
-            assertEquals("Shared memory size is configured", 512 * FileUtils.ONE_MB, webDriverContainer.getShmSize());
 
-            final long shmMountCount = webDriverContainer.getContainerInfo().getMounts()
-                .stream()
-                .filter(m -> "/dev/shm".equals(m.getSource()))
-                .count();
-            assertEquals("No shm mounts present", shmMountCount, 0L);
+            assertEquals("Shared memory size is configured",
+                512 * FileUtils.ONE_MB,
+                webDriverContainer.getShmSize());
+
+            assertEquals("No shm mounts present", emptyList(), shmVolumes(webDriverContainer));
         }
     }
 
+    private List<InspectContainerResponse.Mount> shmVolumes(final BrowserWebDriverContainer container) {
+        return container.getContainerInfo().getMounts()
+            .stream()
+            // destination path is always /dev/shm
+            .filter(m -> m.getDestination().getPath().equals("/dev/shm"))
+            .collect(toList());
+    }
 }
