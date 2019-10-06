@@ -88,7 +88,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      *
      * @param port the port number you want to have the Vault container listen on for tests.
      * @return this
-     * @deprecated exposed host will be random, this customization does not make a lot of sense
+     * @deprecated the exposed port will be randomized automatically. As calling this method provides no additional value, you are recommended to remove the call. getFirstMappedPort() may be used to obtain the listening vault port.
      */
     @Deprecated
     public SELF withVaultPort(int port) {
