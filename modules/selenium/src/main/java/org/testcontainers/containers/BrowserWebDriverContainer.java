@@ -1,5 +1,8 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -166,7 +169,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setCommand("/opt/bin/entry_point.sh");
 
         if (getShmSize() == null) {
-            addFileSystemBind("/dev/shm", "/dev/shm", BindMode.READ_WRITE);
+            this.getBinds().add(new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw));
         }
 
         /*
