@@ -79,7 +79,10 @@ dependencies {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java.docker-java:docker-java-core:bf4fb10657') {
+    // TODO
+    // compile 'com.github.docker-java:docker-java-api:3.2.0-rc1'
+
+    shaded ('com.github.docker-java:docker-java-core:3.2.0-rc1') {
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
