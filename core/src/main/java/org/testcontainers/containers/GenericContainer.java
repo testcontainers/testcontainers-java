@@ -1154,16 +1154,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
-            int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
-            String extractArchiveTo = containerPath.substring(0, lastSlashIndex + 1);
-            String pathInArchive = containerPath.substring(lastSlashIndex + 1);
-            transferable.transferTo(tarArchive, pathInArchive);
+            transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
 
             dockerClient
                 .copyArchiveToContainerCmd(containerId)
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath(extractArchiveTo)
+                .withRemotePath("/")
                 .exec();
         }
     }
