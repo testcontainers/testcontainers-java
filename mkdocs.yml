@@ -52,6 +52,7 @@ nav:
                 - modules/databases/neo4j.md
                 - modules/databases/oraclexe.md
                 - modules/databases/postgres.md
+                - modules/databases/mongodb.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/kafka.md

@@ -1,0 +1,47 @@
+description = "Testcontainers :: MongoDB"
+
+buildscript {
+    ext {
+        junitVersion = '5.5.1'
+    }
+}
+
+dependencies {
+    compile project(':testcontainers')
+
+    testCompile("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testCompile('org.mockito:mockito-core:3.0.0')
+    testCompile('ch.qos.logback:logback-classic:1.2.3')
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testCompile("org.mongodb:mongodb-driver-reactivestreams:1.12.0")
+    testCompile("org.mongodb:mongodb-driver-sync:3.11.0")
+    testCompile("org.mockito:mockito-junit-jupiter:3.0.0")
+}
+
+test {
+    failFast = true
+}
+
+tasks.withType(Test) { Test task ->
+    task.useJUnitPlatform { JUnitPlatformOptions ops ->
+        ops.excludeTags("integration-test")
+    }
+
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+}
+
+task integrationTest(type: Test) { Test task ->
+    task.useJUnitPlatform { JUnitPlatformOptions ops ->
+        ops.includeTags("integration-test")
+    }
+
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+
+    task.minHeapSize('32m')
+    task.maxHeapSize('256m')
+
+    check.dependsOn integrationTest
+    integrationTest.mustRunAfter test
+}
