@@ -2,7 +2,7 @@ if: branch = master OR tag is present
 
 language: java
 jdk:
-  - openjdk11
+  - oraclejdk8
 
 sudo: required
 services:
@@ -51,7 +51,7 @@ jobs:
                 openjdk:8-jdk-alpine \
                 ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan
 
-    - env: [ NAME=mongodb ]
+    - env: [ NAME=docker-in-mongodb ]
       script:
           - |
               DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
@@ -60,7 +60,7 @@ jobs:
               -v "$(pwd)":"$(pwd)" \
               -w "$(pwd)" \
               openjdk:8-jdk-alpine \
-              ./gradlew mongodb:integrationTest --scan --no-daemon
+              ./gradlew mongodb:integrationTest --scan --no-daemon --no-build-cache
 
     - stage: deploy
       sudo: false
