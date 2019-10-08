@@ -1,10 +1,12 @@
 package org.testcontainers.junit;
 
 import org.apache.commons.lang.SystemUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
@@ -132,6 +134,20 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             container.start();
             fail("ContainerLaunchException expected to be thrown");
         } catch (ContainerLaunchException e) {
+        } finally {
+            container.stop();
+        }
+    }
+
+    @Test
+    public void testCreateJdbcUrlWithUrlParam() {
+        JdbcDatabaseContainer container = new MySQLContainer("mysql:5.5")
+            .withDatabaseName("TEST")
+            .withUrlParam("TZ", "Europe/Zurich");
+        try {
+            container.start();
+            String actual = container.getJdbcUrl();
+            Assert.assertTrue(actual.contains("?TZ=Europe/Zurich"));
         } finally {
             container.stop();
         }

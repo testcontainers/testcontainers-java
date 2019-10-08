@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * Base class for containers that expose a JDBC connection
@@ -110,6 +111,21 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public SELF withInitScript(String initScriptPath) {
         this.initScriptPath = initScriptPath;
         return self();
+    }
+
+    public SELF withUrlParam(String key, String value) {
+        this.parameters.put(key, value);
+        return self();
+    }
+
+    protected String buildUrlParams(String firstSymbol, String paramDelimiter) {
+        if (parameters.isEmpty()) {
+            return "";
+        }
+        return firstSymbol + parameters.entrySet()
+            .stream()
+            .map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue()))
+            .collect(Collectors.joining(paramDelimiter));
     }
 
     @Override

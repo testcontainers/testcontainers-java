@@ -66,7 +66,13 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/" + databaseName;
+        return String.format(
+            "jdbc:mysql://%s:%s/%s%s",
+            getContainerIpAddress(),
+            getMappedPort(MYSQL_PORT),
+            databaseName,
+            buildUrlParams("?", "&")
+        );
     }
 
     @Override
