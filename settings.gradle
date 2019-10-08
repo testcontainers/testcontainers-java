@@ -1,12 +1,18 @@
 buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
-  }
-  dependencies {
-    classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.9.0"
-  }
+    dependencies {
+        classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.9.0"
+    }
+
+    configurations.classpath {
+        resolutionStrategy {
+            force 'com.amazonaws:aws-java-sdk-s3:1.11.582'
+        }
+    }
 }
 
 apply plugin: 'ch.myniva.s3-build-cache'
