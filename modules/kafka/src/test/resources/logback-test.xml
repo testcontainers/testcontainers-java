@@ -13,6 +13,4 @@
     </root>
 
     <logger name="org.testcontainers" level="DEBUG"/>
-    <logger name="org.testcontainers.shaded" level="WARN"/>
-
 </configuration>

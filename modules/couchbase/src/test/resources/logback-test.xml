@@ -8,18 +8,9 @@
         </encoder>
     </appender>
 
-    <root level="debug">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="org.apache.http" level="WARN"/>
-    <logger name="com.github.dockerjava" level="WARN"/>
-    <logger name="org.zeroturnaround.exec" level="WARN"/>
-    <logger name="com.zaxxer.hikari" level="INFO"/>
-    <logger name="org.rnorth.tcpunixsocketproxy" level="INFO" />
-    <logger name="io.netty" level="WARN" />
-    <logger name="com.couchbase" level="INFO" />
-    <logger name="org.testcontainers.shaded" level="WARN"/>
-    <logger name="com.zaxxer.hikari" level="INFO"/>
-
+    <logger name="org.testcontainers" level="DEBUG"/>
 </configuration>

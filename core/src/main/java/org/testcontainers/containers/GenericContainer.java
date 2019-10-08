@@ -3,9 +3,22 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.base.Strings;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -20,9 +33,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -33,15 +44,38 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,15 +84,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * Base class for that allows a container to be launched and controlled.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
@@ -135,6 +166,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
 
+    protected final Set<Startable> dependencies = new HashSet<>();
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -147,13 +180,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected Info dockerDaemonInfo = null;
 
-    /*
+    /**
      * Set during container startup
+     * // TODO make it private
+     *
+     * @deprecated use {@link ContainerState#getContainerId()}
      */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerId;
 
+    /**
+     * Set during container startup
+     *
+     * @deprecated use {@link GenericContainer#getContainerInfo()}
+     */
     @Setter(AccessLevel.NONE)
+    @Deprecated
     protected String containerName;
 
     @Setter(AccessLevel.NONE)
@@ -193,13 +236,39 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * @see #dependsOn(List)
+     */
+    public SELF dependsOn(Startable... startables) {
+        Collections.addAll(dependencies, startables);
+        return self();
+    }
+
+    /**
+     * Delays this container's creation and start until provided {@link Startable}s start first.
+     * Note that the circular dependencies are not supported.
+     *
+     * @param startables a list of {@link Startable} to depend on
+     * @see Startables#deepStart(Collection)
+     */
+    public SELF dependsOn(List<Startable> startables) {
+        dependencies.addAll(startables);
+        return self();
+    }
+
+    public String getContainerId() {
+        return containerId;
+    }
+
+    /**
      * Starts the container using docker, pulling an image if necessary.
      */
     @Override
+    @SneakyThrows({InterruptedException.class, ExecutionException.class})
     public void start() {
         if (containerId != null) {
             return;
         }
+        Startables.deepStart(dependencies).get();
         doStart();
     }
 
@@ -242,24 +311,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Starting container with ID: {}", containerId);
             dockerClient.startContainerCmd(containerId).exec();
 
+            logger().info("Container {} is starting: {}", dockerImageName, containerId);
+
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
-
-            logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
             containerIsStarting(containerInfo);
 
-            // Wait until the container is running (may not be fully started)
-
+            // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
             }
 
+            // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
             waitUntilContainerStarted();
 
             logger().info("Container {} started", dockerImageName);
@@ -269,17 +338,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (containerId != null) {
                 // Log output if startup failed, either due to a container failure or exception (including timeout)
-                logger().error("Container log output (if any) will follow:");
-                FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback();
-                resultCallback.addConsumer(STDOUT, new Slf4jLogConsumer(logger()));
-                resultCallback.addConsumer(STDERR, new Slf4jLogConsumer(logger()));
-                dockerClient.logContainerCmd(containerId).withStdOut(true).withStdErr(true).exec(resultCallback);
+                final String containerLogs = getLogs();
 
-                // Try to ensure that container log output is shown before proceeding
-                try {
-                    resultCallback.getCompletionLatch().await(1, TimeUnit.MINUTES);
-                } catch (InterruptedException ignored) {
-                    // Cannot do anything at this point
+                if (containerLogs.length() > 0) {
+                    logger().error("Log output from the failed container:\n{}", getLogs());
+                } else {
+                    logger().error("There are no stdout/stderr logs available for the failed container");
                 }
             }
 
@@ -328,7 +392,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 imageName = "<unknown>";
             }
 
+            containerIsStopping(containerInfo);
             ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            containerIsStopped(containerInfo);
         } finally {
             containerId = null;
             containerInfo = null;
@@ -375,6 +441,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    }
+
+    /**
+     * A hook that is executed before the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopping(InspectContainerResponse containerInfo) {
+    }
+
+    /**
+     * A hook that is executed after the container is stopped with {@link #stop()}.
+     * Warning! This hook won't be executed if the container is terminated during
+     * the JVM's shutdown hook or by Ryuk.
+     */
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    protected void containerIsStopped(InspectContainerResponse containerInfo) {
     }
 
     /**
@@ -883,7 +967,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
+            withCopyFileToContainer(mountableFile, containerPath);
+        } else {
+            addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        }
 
         return self();
     }
@@ -1066,16 +1154,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
-            int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
-            String extractArchiveTo = containerPath.substring(0, lastSlashIndex + 1);
-            String pathInArchive = containerPath.substring(lastSlashIndex + 1);
-            transferable.transferTo(tarArchive, pathInArchive);
+            transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
 
             dockerClient
                 .copyArchiveToContainerCmd(containerId)
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath(extractArchiveTo)
+                .withRemotePath("/")
                 .exec();
         }
     }
@@ -1160,6 +1245,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withTmpFs(Map<String, String> mapping) {
         this.tmpFsMapping = mapping;
         return self();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
     }
 
     /**

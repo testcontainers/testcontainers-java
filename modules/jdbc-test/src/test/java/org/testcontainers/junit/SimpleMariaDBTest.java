@@ -1,26 +1,21 @@
 package org.testcontainers.junit;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import lombok.NonNull;
-
 import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
 import org.testcontainers.containers.MariaDBContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
+import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 
 /**
  * @author Miguel Gonzalez Sanchez
  */
-public class SimpleMariaDBTest {
+public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
@@ -84,21 +79,5 @@ public class SimpleMariaDBTest {
         } finally {
             mariadbCustomConfig.stop();
         }
-    }
-
-    @NonNull
-    protected ResultSet performQuery(MariaDBContainer containerRule, String sql) throws SQLException {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(containerRule.getJdbcUrl());
-        hikariConfig.setUsername(containerRule.getUsername());
-        hikariConfig.setPassword(containerRule.getPassword());
-
-        HikariDataSource ds = new HikariDataSource(hikariConfig);
-        Statement statement = ds.getConnection().createStatement();
-        statement.execute(sql);
-        ResultSet resultSet = statement.getResultSet();
-
-        resultSet.next();
-        return resultSet;
     }
 }

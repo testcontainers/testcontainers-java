@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.ImmutableMap;
 import com.sun.net.httpserver.HttpServer;
 import lombok.SneakyThrows;
 import org.junit.AfterClass;
@@ -30,6 +31,9 @@ public class ExposedHostTest {
 
         server.start();
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
+        
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 80));
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 81));           
     }
 
     @AfterClass
@@ -39,22 +43,28 @@ public class ExposedHostTest {
 
     @Test
     public void testExposedHost() throws Exception {
-        assertResponse(new GenericContainer().withCommand("top"));
+        assertResponse(new GenericContainer().withCommand("top"), server.getAddress().getPort());
     }
 
     @Test
     public void testExposedHostWithNetwork() throws Exception {
         try (Network network = Network.newNetwork()) {
-            assertResponse(new GenericContainer().withNetwork(network).withCommand("top"));
+            assertResponse(new GenericContainer().withNetwork(network).withCommand("top"), server.getAddress().getPort());
         }
     }
+    
+    @Test
+    public void testExposedHostPortOnFixedInternalPorts() throws Exception {
+        assertResponse(new GenericContainer().withCommand("top"), 80);
+        assertResponse(new GenericContainer().withCommand("top"), 81);
+    }    
 
     @SneakyThrows
-    protected void assertResponse(GenericContainer container) {
+    protected void assertResponse(GenericContainer container, int port) {
         try {
             container.start();
 
-            String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + server.getAddress().getPort()).getStdout();
+            String response = container.execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + port).getStdout();
 
             assertEquals("received response", "Hello World!", response);
         } finally {

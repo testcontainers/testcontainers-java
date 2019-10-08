@@ -1,13 +1,34 @@
 # Accessing container logs
 
-It is possible to capture container output using the `followOutput()` method. This method accepts a Consumer and (optionally)
+It is possible to capture container output using:
+ 
+ * the `getLogs()` method, which simply returns a `String` snapshot of a container's entire log output
+ * the `followOutput()` method. This method accepts a Consumer and (optionally)
 a varargs list stating which of STDOUT, STDERR, or both, should be followed. If not specified, both will be followed.
 
 At present, container output will always begin from the time of container creation.
 
-Testcontainers includes some out-of-the-box Consumer implementations that can be used; examples follow.
+## Reading all logs (from startup time to present)
 
-## Streaming container output to an SLF4J logger
+`getLogs()` is the simplest mechanism for accessing container logs, and can be used as follows:
+
+<!--codeinclude--> 
+[Accessing all output (stdout and stderr)](../../core/src/test/java/org/testcontainers/containers/output/ContainerLogsTest.java) inside_block:docsGetAllLogs
+<!--/codeinclude-->
+
+<!--codeinclude--> 
+[Accessing just stdout](../../core/src/test/java/org/testcontainers/containers/output/ContainerLogsTest.java) inside_block:docsGetStdOut
+<!--/codeinclude-->
+
+<!--codeinclude--> 
+[Accessing just stderr](../../core/src/test/java/org/testcontainers/containers/output/ContainerLogsTest.java) inside_block:docsGetStdErr
+<!--/codeinclude-->
+
+## Streaming logs
+
+Testcontainers includes some out-of-the-box Consumer implementations that can be used with the streaming `followOutput()` model; examples follow.
+
+### Streaming container output to an SLF4J logger
 
 Given an existing SLF4J logger instance named LOGGER:
 ```java
@@ -15,7 +36,10 @@ Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER);
 container.followOutput(logConsumer);
 ```
 
-## Capturing container output as a String
+### Capturing container output as a String
+
+To stream logs live or customize the decoding, `ToStringConsumer` may be used:
+
 ```java
 ToStringConsumer toStringConsumer = new ToStringConsumer();
 container.followOutput(toStringConsumer, OutputType.STDOUT);
@@ -26,7 +50,7 @@ String utf8String = toStringConsumer.toUtf8String();
 String otherString = toStringConsumer.toString(CharSet.forName("ISO-8859-1"));
 ```
 
-## Waiting for container output to contain expected content
+### Waiting for container output to contain expected content
 
 `WaitingConsumer` will block until a frame of container output (usually a line) matches a provided predicate.
 

@@ -56,7 +56,12 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     @Override
     public String getDriverClassName() {
-        return "com.mysql.jdbc.Driver";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return "com.mysql.cj.jdbc.Driver";
+        } catch (ClassNotFoundException e) {
+            return "com.mysql.jdbc.Driver";
+        }
     }
 
     @Override
@@ -70,10 +75,14 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
         if (! url.contains("useSSL=")) {
             String separator = url.contains("?") ? "&" : "?";
-            return url + separator + "useSSL=false";
-        } else {
-            return url;
+            url = url + separator + "useSSL=false";
         }
+
+        if (! url.contains("allowPublicKeyRetrieval=")) {
+            url = url + "&allowPublicKeyRetrieval=true";
+        }
+
+        return url;
     }
 
     @Override
