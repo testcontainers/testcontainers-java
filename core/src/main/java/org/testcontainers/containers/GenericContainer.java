@@ -967,7 +967,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
+            withCopyFileToContainer(mountableFile, containerPath);
+        } else {
+            addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        }
 
         return self();
     }
@@ -1150,16 +1154,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
-            int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
-            String extractArchiveTo = containerPath.substring(0, lastSlashIndex + 1);
-            String pathInArchive = containerPath.substring(lastSlashIndex + 1);
-            transferable.transferTo(tarArchive, pathInArchive);
+            transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
 
             dockerClient
                 .copyArchiveToContainerCmd(containerId)
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath(extractArchiveTo)
+                .withRemotePath("/")
                 .exec();
         }
     }
