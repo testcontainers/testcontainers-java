@@ -1,4 +1,6 @@
-# Java8 MongoDbContainer to constructs a single node MongoDB replica set   
+#### This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future.
+
+# Java8 MongoDbContainer for constructing a single node MongoDB replica set. To construct a multi-node MongoDB cluster, consider [mongodb-replica-set project](https://github.com/silaev/mongodb-replica-set/)   
 
 #### Prerequisite
 - Java 8+
@@ -10,8 +12,7 @@
     | + | + | + |    
     
 Tips:
-- Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency
-- To construct a multi-node MongoDB cluster, consider [mongodb-replica-set project](https://github.com/silaev/mongodb-replica-set/) 
+- Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency  
 - To use remote Docker daemon:
     - check that [.testcontainers.properties](https://www.testcontainers.org/features/configuration/) file has `docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy`
     - set your DOCKER_HOST environment variable       
