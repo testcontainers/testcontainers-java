@@ -7,6 +7,7 @@ repositories {
 dependencies {
     compile project(':mysql')
     compile project(':postgresql')
+    compile project(':cockroachdb')
     compile project(':mariadb')
     compile project(':oracle-xe')
     compile project(':mssqlserver')
@@ -28,4 +29,5 @@ dependencies {
     testCompile 'commons-dbutils:commons-dbutils:1.6'
 
     testCompile 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
+    testCompile project(':test-support')
 }

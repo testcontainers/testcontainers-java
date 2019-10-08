@@ -44,6 +44,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
@@ -74,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,7 +90,6 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  * Base class for that allows a container to be launched and controlled.
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
@@ -165,6 +166,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
 
+    protected final Set<Startable> dependencies = new HashSet<>();
+
     /*
      * Unique instance of DockerClient for use by this container object.
      */
@@ -232,6 +235,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = image;
     }
 
+    /**
+     * @see #dependsOn(List)
+     */
+    public SELF dependsOn(Startable... startables) {
+        Collections.addAll(dependencies, startables);
+        return self();
+    }
+
+    /**
+     * Delays this container's creation and start until provided {@link Startable}s start first.
+     * Note that the circular dependencies are not supported.
+     *
+     * @param startables a list of {@link Startable} to depend on
+     * @see Startables#deepStart(Collection)
+     */
+    public SELF dependsOn(List<Startable> startables) {
+        dependencies.addAll(startables);
+        return self();
+    }
+
     public String getContainerId() {
         return containerId;
     }
@@ -240,10 +263,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Starts the container using docker, pulling an image if necessary.
      */
     @Override
+    @SneakyThrows({InterruptedException.class, ExecutionException.class})
     public void start() {
         if (containerId != null) {
             return;
         }
+        Startables.deepStart(dependencies).get();
         doStart();
     }
 
@@ -942,7 +967,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
+            withCopyFileToContainer(mountableFile, containerPath);
+        } else {
+            addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        }
 
         return self();
     }
@@ -1125,16 +1154,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
-            int lastSlashIndex = StringUtils.removeEnd(containerPath, "/").lastIndexOf("/");
-            String extractArchiveTo = containerPath.substring(0, lastSlashIndex + 1);
-            String pathInArchive = containerPath.substring(lastSlashIndex + 1);
-            transferable.transferTo(tarArchive, pathInArchive);
+            transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
 
             dockerClient
                 .copyArchiveToContainerCmd(containerId)
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath(extractArchiveTo)
+                .withRemotePath("/")
                 .exec();
         }
     }
@@ -1219,6 +1245,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withTmpFs(Map<String, String> mapping) {
         this.tmpFsMapping = mapping;
         return self();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
     }
 
     /**
