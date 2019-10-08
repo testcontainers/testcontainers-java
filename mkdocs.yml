@@ -40,6 +40,7 @@ nav:
           - Databases:
                 - modules/databases/index.md
                 - modules/databases/cassandra.md
+                - modules/databases/cockroachdb.md
                 - modules/databases/couchbase.md
                 - modules/databases/clickhouse.md
                 - modules/databases/db2.md
@@ -82,4 +83,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.11.3
+    latest_version: 1.12.2

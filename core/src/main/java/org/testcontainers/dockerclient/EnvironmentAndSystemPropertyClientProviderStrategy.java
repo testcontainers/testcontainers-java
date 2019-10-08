@@ -1,7 +1,6 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 
@@ -50,21 +49,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
 
     @Override
     public String getDescription() {
-        return "Environment variables, system properties and defaults. Resolved: \n" + stringRepresentation(config);
-    }
-
-    private String stringRepresentation(DockerClientConfig config) {
-
-        if (config == null) {
-            return "";
-        }
-
-        return  "    dockerHost=" + config.getDockerHost() + "\n" +
-                "    apiVersion='" + config.getApiVersion() + "'\n" +
-                "    registryUrl='" + config.getRegistryUrl() + "'\n" +
-                "    registryUsername='" + config.getRegistryUsername() + "'\n" +
-                "    registryPassword='" + config.getRegistryPassword() + "'\n" +
-                "    registryEmail='" + config.getRegistryEmail() + "'\n" +
-                "    dockerConfig='" + config.toString() + "'\n";
+        return "Environment variables, system properties and defaults. Resolved dockerHost=" +
+            (config != null ? config.getDockerHost() : "");
     }
 }
