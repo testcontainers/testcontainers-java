@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
+import static org.junit.Assert.assertTrue;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
@@ -39,6 +40,19 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
+    @Test
+    public void testCreateJdbcUrlWithUrlParam() {
+        CockroachContainer container = new CockroachContainer()
+            .withUrlParam("sslmode", "disable");
+        try {
+            container.start();
+            String actual = container.getJdbcUrl();
+            assertTrue("Jdbc url should contains params", actual.contains("?sslmode=disable"));
+        } finally {
+            container.stop();
         }
     }
 }
