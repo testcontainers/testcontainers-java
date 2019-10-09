@@ -59,7 +59,13 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         // Disable Postgres driver use of java.util.logging to reduce noise at startup time
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName + "?loggerLevel=OFF";
+        return String.format(
+            "jdbc:postgresql://%s:%s/%s?loggerLevel=OFF%s",
+            getContainerIpAddress(),
+            getMappedPort(POSTGRESQL_PORT),
+            databaseName,
+            buildUrlParams("&","&")
+        );
     }
 
     @Override

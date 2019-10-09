@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
 import org.junit.Test;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.ResultSet;
@@ -8,6 +9,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
+import static org.junit.Assert.assertTrue;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
 
@@ -60,6 +62,20 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
+    @Test
+    public void testCreateJdbcUrlWithUrlParam() {
+        JdbcDatabaseContainer container = new PostgreSQLContainer()
+            .withDatabaseName("TEST")
+            .withUrlParam("ssl", "false");
+        try {
+            container.start();
+            String actual = container.getJdbcUrl();
+            assertTrue("Jdbc url should contains params", actual.contains("?loggerLevel=OFF&ssl=false"));
+        } finally {
+            container.stop();
         }
     }
 }
