@@ -1,23 +1,21 @@
+# Mongo DB Module
+
 #### This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future.
 
 # Java8 MongoDbContainer for constructing a single node MongoDB replica set. To construct a multi-node MongoDB cluster, consider [mongodb-replica-set project](https://github.com/silaev/mongodb-replica-set/)   
 
 #### Prerequisite
-- Java 8+
-- Docker Desktop
-- Chart shows support for local and remote Docker
+
+* Java 8+
+* Docker Desktop
+* Chart shows support for local and remote Docker
 
     local docker host | local docker host running tests from inside a container with mapping the Docker socket | remote docker daemon |
     |:---: | :---: | :---: |
     | + | + | + |    
-    
-Tips:
-- Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency  
-- To use remote Docker daemon:
-    - check that [.testcontainers.properties](https://www.testcontainers.org/features/configuration/) file has `docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy`
-    - set your DOCKER_HOST environment variable       
-    
+            
 #### Getting it
+
 ```groovy tab='Gradle'
 testCompile "org.testcontainers:mongodb:{{latest_version}}"
 ```
@@ -30,9 +28,10 @@ testCompile "org.testcontainers:mongodb:{{latest_version}}"
     <scope>test</scope>
 </dependency>
 ```
+
 To see logs, consider adding a slf4j implementation (Logback is recommended) if you don't have it in your application.
     
-#### MongoDB versions that MongoDbContainer is constantly tested against
+#### MongoDB versions that MongoDbContainer is constantly tested against:
 version |
 ---------- |
 4.0.12 |
@@ -124,13 +123,19 @@ fixed ports to test MongoDB transactions. The solution should work with local an
 #### General info
 MongoDB starting form version 4 supports multi-document transactions only for a replica set.
 For instance, to initialize a single and simple node replica set on fixed ports via Docker, one has to do the following:
-1)	Run a MongoDB container of version 4 and up specifying --replSet command
-2)	Initializing a single replica set via executing a proper command (depending on local or remote Docker daemon usage)
-3)	Waiting for the initialization to complete
-4)	Providing a special url (without the need to modify the OS host file) for a user to employ with a MongoDB driver without specifying replicaSet
+
+* Run a MongoDB container of version 4 and up specifying --replSet command
+* Initializing a single replica set via executing a proper command (depending on local or remote Docker daemon usage)
+* Waiting for the initialization to complete
+* Providing a special url (without the need to modify the OS host file) for a user to employ with a MongoDB driver without specifying replicaSet
 
 As we can see, there is a lot of operations to execute and we even haven't touched a non-fixed port approach.
 That's where the MongoDbContainer might come in handy. 
 
+!!! hint
+* Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency  
+* To use remote Docker daemon check that [.testcontainers.properties](https://www.testcontainers.org/features/configuration/) file has `docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy`
+and set your DOCKER_HOST environment variable   
+    
 #### Copyright
 Copyright (c) 2019 Konstantin Silaev <silaev256@gmail.com>
