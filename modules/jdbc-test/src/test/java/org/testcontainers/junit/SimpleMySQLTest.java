@@ -1,7 +1,6 @@
 package org.testcontainers.junit;
 
 import org.apache.commons.lang.SystemUtils;
-import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +146,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         try {
             container.start();
             String actual = container.getJdbcUrl();
-            Assert.assertTrue(actual.contains("?TZ=Europe/Zurich"));
+            assertTrue("Jdbc url should contains params", actual.contains("?TZ=Europe/Zurich"));
         } finally {
             container.stop();
         }

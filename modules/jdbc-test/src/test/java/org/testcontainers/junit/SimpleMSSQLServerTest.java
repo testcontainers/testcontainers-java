@@ -1,6 +1,5 @@
 package org.testcontainers.junit;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -11,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 /**
@@ -54,7 +54,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
         try {
             container.start();
             String actual = container.getJdbcUrl();
-            Assert.assertTrue("Jdbc url should contains params", actual.contains(";integratedSecurity=false"));
+            assertTrue("Jdbc url should contains params", actual.contains(";integratedSecurity=false"));
         } finally {
             container.stop();
         }
