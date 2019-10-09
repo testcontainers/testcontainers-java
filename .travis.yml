@@ -2,7 +2,7 @@ if: branch = master OR tag is present
 
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 sudo: required
 services:

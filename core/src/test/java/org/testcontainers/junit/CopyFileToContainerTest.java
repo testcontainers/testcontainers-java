@@ -59,4 +59,18 @@ public class CopyFileToContainerTest {
         assertFalse("uses mount for read-only with Selinux", copyMap.containsValue("/readOnlyShared"));
         assertFalse("uses mount for read-write", copyMap.containsValue("/readWrite"));
     }
+
+    @Test
+    public void shouldCreateFoldersStructureWithCopy() throws Exception {
+        String resource = "/test_copy_to_container.txt";
+        try (
+            GenericContainer container = new GenericContainer<>()
+                .withCommand("sleep", "3000")
+                .withClasspathResourceMapping(resource, "/a/b/c/file", BindMode.READ_ONLY)
+        ) {
+            container.start();
+            String filesList = container.execInContainer("ls", "/a/b/c/").getStdout();
+            assertTrue("file list contains the file", filesList.contains("file"));
+        }
+    }
 }
