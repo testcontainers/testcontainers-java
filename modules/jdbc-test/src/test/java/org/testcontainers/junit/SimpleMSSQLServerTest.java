@@ -1,7 +1,9 @@
 package org.testcontainers.junit;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 import javax.sql.DataSource;
@@ -43,5 +45,18 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
         resultSet.next();
         int resultSetInt = resultSet.getInt("ID");
         assertEquals("A basic SELECT query succeeds", 3, resultSetInt);
+    }
+
+    @Test
+    public void testCreateJdbcUrlWithUrlParam() {
+        JdbcDatabaseContainer container = new MSSQLServerContainer()
+            .withUrlParam("integratedSecurity", "false");
+        try {
+            container.start();
+            String actual = container.getJdbcUrl();
+            Assert.assertTrue("Jdbc url should contains params", actual.contains(";integratedSecurity=false"));
+        } finally {
+            container.stop();
+        }
     }
 }
