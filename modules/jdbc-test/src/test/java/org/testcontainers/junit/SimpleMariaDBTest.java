@@ -2,6 +2,7 @@ package org.testcontainers.junit;
 
 import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MariaDBContainer;
 
 import java.sql.ResultSet;
@@ -78,6 +79,20 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             assertEquals("Auto increment increment should be overriden by command line", "10", result);
         } finally {
             mariadbCustomConfig.stop();
+        }
+    }
+
+    @Test
+    public void testCreateJdbcUrlWithUrlParam() {
+        JdbcDatabaseContainer container = new MariaDBContainer("mariadb:10.1.16")
+            .withDatabaseName("TEST")
+            .withUrlParam("TZ", "Europe/Zurich");
+        try {
+            container.start();
+            String actual = container.getJdbcUrl();
+            assertTrue("Jdbc url should contains params", actual.contains("?TZ=Europe/Zurich"));
+        } finally {
+            container.stop();
         }
     }
 }
