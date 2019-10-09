@@ -81,7 +81,13 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:db2://" + getContainerIpAddress() + ":" + getMappedPort(DB2_PORT) + "/" + databaseName;
+        return String.format(
+            "jdbc:db2://%s:%s/%s%s",
+            getContainerIpAddress(),
+            getMappedPort(DB2_PORT),
+            databaseName,
+            buildUrlParams(":", ";")
+        );
     }
 
     @Override

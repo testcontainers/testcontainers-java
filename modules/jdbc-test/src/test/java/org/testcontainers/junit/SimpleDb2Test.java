@@ -5,12 +5,14 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.Db2Container;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 
 public class SimpleDb2Test {
@@ -36,4 +38,16 @@ public class SimpleDb2Test {
         assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
     }
 
+    @Test
+    public void testCreateJdbcUrlWithUrlParam() {
+        JdbcDatabaseContainer container = new Db2Container()
+            .withUrlParam("traceLevel", "TRACE_ALL");
+        try {
+            container.start();
+            String actual = container.getJdbcUrl();
+            assertTrue("Jdbc url should contains params", actual.contains(":traceLevel=TRACE_ALL"));
+        } finally {
+            container.stop();
+        }
+    }
 }
