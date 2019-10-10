@@ -55,16 +55,25 @@ public class NamedPipeSocketFactory extends SocketFactory {
                 is = new InputStream() {
                     @Override
                     public int read(byte[] bytes, int off, int len) throws IOException {
+                        if (OkHttpInvocationBuilder.CLOSING.get()) {
+                            return 0;
+                        }
                         return file.read(bytes, off, len);
                     }
 
                     @Override
                     public int read() throws IOException {
+                        if (OkHttpInvocationBuilder.CLOSING.get()) {
+                            return 0;
+                        }
                         return file.read();
                     }
 
                     @Override
                     public int read(byte[] bytes) throws IOException {
+                        if (OkHttpInvocationBuilder.CLOSING.get()) {
+                            return 0;
+                        }
                         return file.read(bytes);
                     }
                 };
