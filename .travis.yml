@@ -15,29 +15,29 @@ jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./gradlew testcontainers:check javadoc --scan --no-daemon
+      script: ./gradlew testcontainers:check javadoc --scan --no-daemon -i
 
     - stage: test
       env: [ NAME=core ]
       jdk: openjdk11
-      script: ./gradlew testcontainers:check --scan --no-daemon
+      script: ./gradlew testcontainers:check --scan --no-daemon -i
 
     - stage: test
       env: [ NAME=core ]
       jdk: openjdk12
-      script: ./gradlew testcontainers:check --scan --no-daemon
+      script: ./gradlew testcontainers:check --scan --no-daemon -i
 
     - env: [ NAME=selenium ]
-      script: ./gradlew selenium:check --scan --no-daemon
+      script: ./gradlew selenium:check --scan --no-daemon -i
 
     - env: [ NAME=modules ]
-      script: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check --scan --no-daemon
+      script: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check --scan --no-daemon -i
 
     - env: [ NAME=jdbc ]
-      script: ./gradlew jdbc-test:check --scan --no-daemon
+      script: ./gradlew jdbc-test:check --scan --no-daemon -i
 
     - env: [ NAME=examples ]
-      script: cd examples && ../gradlew check --no-daemon
+      script: cd examples && ../gradlew check --no-daemon -i
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]
@@ -49,7 +49,7 @@ jobs:
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan
+                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan -i
 
     - stage: deploy
       sudo: false
@@ -58,7 +58,7 @@ jobs:
       script: skip
       deploy:
         provider: script
-        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon
+        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon -i
         on:
           tags: true
           branch: master
