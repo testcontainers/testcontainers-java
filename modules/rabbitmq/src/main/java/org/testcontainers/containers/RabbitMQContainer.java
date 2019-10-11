@@ -221,6 +221,25 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    public RabbitMQContainer withBinding(String vhost, String source, String destination) {
+        values.add(asList("rabbitmqadmin", "declare", "binding",
+                "--vhost=" + vhost,
+                "source=" + source,
+                "destination=" + destination));
+        return self();
+    }
+
+    public RabbitMQContainer withBinding(String vhost, String source, String destination, Map<String, Object> arguments, String routingKey, String destinationType) {
+        values.add(asList("rabbitmqadmin", "declare", "binding",
+                "--vhost=" + vhost,
+                "source=" + source,
+                "destination=" + destination,
+                "routing_key=" + routingKey,
+                "destination_type=" + destinationType,
+                "arguments=" + toJson(arguments)));
+        return self();
+    }
+
     public RabbitMQContainer withParameter(String component, String name, String value) {
         values.add(asList("rabbitmqadmin", "declare", "parameter",
                 "component=" + component,
@@ -312,6 +331,23 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    public RabbitMQContainer withQueue(String vhost, String name) {
+        values.add(asList("rabbitmqadmin", "declare", "queue",
+                "--vhost=" + vhost,
+                "name=" + name));
+        return self();
+    }
+
+    public RabbitMQContainer withQueue(String vhost, String name, boolean autoDelete, boolean durable, Map<String, Object> arguments) {
+        values.add(asList("rabbitmqadmin", "declare", "queue",
+                "--vhost=" + vhost,
+                "name=" + name,
+                "auto_delete=" + autoDelete,
+                "durable=" + durable,
+                "arguments=" + toJson(arguments)));
+        return self();
+    }
+
     public RabbitMQContainer withQueue(String name) {
         values.add(asList("rabbitmqadmin", "declare", "queue",
                 "name=" + name));
@@ -336,6 +372,26 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     public RabbitMQContainer withExchange(String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
         values.add(asList("rabbitmqadmin", "declare", "exchange",
+                "name=" + name,
+                "type=" + type,
+                "auto_delete=" + autoDelete,
+                "internal=" + internal,
+                "durable=" + durable,
+                "arguments=" + toJson(arguments)));
+        return self();
+    }
+
+    public RabbitMQContainer withExchange(String vhost, String name, String type) {
+        values.add(asList("rabbitmqadmin", "declare", "exchange",
+                "--vhost=" + vhost,
+                "name=" + name,
+                "type=" + type));
+        return self();
+    }
+
+    public RabbitMQContainer withExchange(String vhost, String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
+        values.add(asList("rabbitmqadmin", "declare", "exchange",
+                "--vhost=" + vhost,
                 "name=" + name,
                 "type=" + type,
                 "auto_delete=" + autoDelete,

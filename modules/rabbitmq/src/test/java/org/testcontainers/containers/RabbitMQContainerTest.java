@@ -83,10 +83,14 @@ public class RabbitMQContainerTest {
     {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
             container.withExchange("test-exchange", "direct");
+            container.withVhost("vhost").withExchange("vhost","test-exchange", "direct");
 
             container.start();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_exchanges").getStdout())
+                .containsPattern("test-exchange\\s+direct");
+
+            assertThat(container.execInContainer("rabbitmqctl", "list_exchanges", "--vhost=vhost").getStdout())
                 .containsPattern("test-exchange\\s+direct");
         }
     }
@@ -96,12 +100,12 @@ public class RabbitMQContainerTest {
     {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
-            container.withQueue("queue-one")
+            container.withVhost("vhost").withQueue("vhost","queue-one")
                 .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
 
             container.start();
 
-            assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
+            assertThat(container.execInContainer("rabbitmqctl", "list_queues", "--vhost=vhost","name", "arguments").getStdout())
                 .containsPattern("queue-one");
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
                 .containsPattern("queue-two\\s.*x-message-ttl");
