@@ -42,6 +42,9 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **kafka.container.image = confluentinc/cp-kafka**  
 > Used by KafkaContainer 
 
+> **localstack.container.image = localstack/localstack**  
+> Used by LocalStack
+
 ## Customizing Ryuk resource reaper
 
 > **ryuk.container.image = quay.io/testcontainers/ryuk:0.2.3**
