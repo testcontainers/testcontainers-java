@@ -9,12 +9,12 @@ services:
   - docker
   
 env:
-  - DOCKER_COMPOSE_VERSION=1.24.1
+  - DOCKER_COMPOSE_VERSION=
 
 # Fix for https://travis-ci.community/t/problematic-docker-compose-version-1-23-1/5362/3
 before_install:
   - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-Linux-x86_64 > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
