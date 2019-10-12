@@ -7,9 +7,6 @@ jdk:
 sudo: required
 services:
   - docker
-  
-env:
-  - DOCKER_COMPOSE_VERSION=
 
 # Fix for https://travis-ci.community/t/problematic-docker-compose-version-1-23-1/5362/3
 before_install:
