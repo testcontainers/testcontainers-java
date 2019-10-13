@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -20,16 +21,18 @@ import java.util.Set;
 @EqualsAndHashCode
 class ParsedDockerComposeFile {
 
-    private Map<String, Object> composeFileContent;
+    private final Map<String, Object> composeFileContent;
     private final String composeFileName;
-    private Set<String> imageNames = new HashSet<>();
+
+    @Getter
+    private Set<String> serviceImageNames = new HashSet<>();
 
     ParsedDockerComposeFile(File composeFile) {
         Yaml yaml = new Yaml();
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
             composeFileContent = yaml.load(fileInputStream);
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to parse YAML file from " + composeFile.getAbsolutePath(), e);
+            throw new IllegalArgumentException("Unable to parse YAML file from " + composeFile.getAbsolutePath(), e);
         }
         this.composeFileName = composeFile.getAbsolutePath();
 
@@ -45,34 +48,27 @@ class ParsedDockerComposeFile {
     }
 
     private void parseAndValidate() {
-        if (composeFileContent == null) {
-            return;
-        }
-
-        Map<String, ?> map = (Map<String, ?>) composeFileContent;
-
         final Map<String, ?> servicesMap;
-        if (map.containsKey("version")) {
-            if ("2.0".equals(map.get("version"))) {
+        if (composeFileContent.containsKey("version")) {
+            if ("2.0".equals(composeFileContent.get("version"))) {
                 log.warn("Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
                     "Please see https://github.com/testcontainers/moby-ryuk/issues/2, and specify 'version: \"2.1\"' or " +
                     "higher in {}", composeFileName);
             }
 
-
-            if (!map.containsKey("services")) {
+            final Object servicesElement = composeFileContent.get("services");
+            if (servicesElement == null) {
                 log.debug("Compose file {} has an unknown format: 'version' is set but 'services' is not defined", composeFileName);
                 return;
             }
-            Object services = map.get("services");
-            if (!(services instanceof Map)) {
+            if (!(servicesElement instanceof Map)) {
                 log.debug("Compose file {} has an unknown format: 'services' is not Map", composeFileName);
                 return;
             }
 
-            servicesMap = (Map<String, ?>) services;
+            servicesMap = (Map<String, ?>) servicesElement;
         } else {
-            servicesMap = map;
+            servicesMap = composeFileContent;
         }
 
         for (Map.Entry<String, ?> entry : servicesMap.entrySet()) {
@@ -92,12 +88,8 @@ class ParsedDockerComposeFile {
                 ));
             }
             if (serviceDefinitionMap.containsKey("image") && serviceDefinitionMap.get("image") instanceof String) {
-                imageNames.add((String) serviceDefinitionMap.get("image"));
+                serviceImageNames.add((String) serviceDefinitionMap.get("image"));
             }
         }
-    }
-
-    public Set<String> getServiceImageNames() {
-        return imageNames;
     }
 }
