@@ -3,125 +3,25 @@ package org.testcontainers.containers;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
 
 /**
  * Constructs a single node MongoDB replica set for testing transactions.
- * <p>To construct a multi-node MongoDB cluster, consider <a href="https://github.com/silaev/mongodb-replica-set/">mongodb-replica-set project on GitHub</a>
- *
- * <blockquote>
- * <table class="striped">
- * <caption style="display:none">Chart shows a pattern for local and remote Docker support</caption>
- * <thead>
- *     <tr>
- *         <th scope="col" style="text-align:center">local docker host
- *         <th scope="col" style="text-align:center">local docker host running tests from inside a container with mapping the Docker socket
- *         <th scope="col" style="text-align:center">remote docker daemon
- * </thead>
- * <tbody>
- *     <tr>
- *         <td style="text-align:center">+
- *         <td style="text-align:center">+
- *         <td style="text-align:center">+
- *     <tr>
- * </tbody>
- * </table>
- * </blockquote>
- * <p>
- * Tested on a Mongo DB version 4.0.10 (that is the default version if not specified) and up.
- *
- * <h3>Example usage (note that the MongoDbContainer is test framework agnostic)</h3>
- * <p>The example of a JUnit5 test class:
- * <pre style="code">
- * import org.junit.jupiter.api.AfterEach;
- * import org.junit.jupiter.api.BeforeEach;
- * import org.junit.jupiter.api.Test;
- * import org.testcontainers.mongodb.MongoDbContainer;
- *
- * import static org.junit.jupiter.api.Assertions.assertNotNull;
- *
- * class ITTest {
- *     private final MongoDbContainer mongoDbContainer = new MongoDbContainer(
- *         //"mongo:4.2.0"
- *     );
- *
- *     {@literal @}BeforeEach
- *     void setUp() {
- *         mongoDbContainer.start();
- *     }
- *
- *     {@literal @}AfterEach
- *     void tearDown() {
- *         mongoDbContainer.stop();
- *     }
- *
- *     {@literal @}Test
- *     void shouldTestReplicaSetUrl() {
- *         assertNotNull(mongoDbContainer.getReplicaSetUrl());
- *     }
- * }
- * </pre>
- *
- * <p>The example of a SpringBoot+SpringData test with JUnit5:
- * <pre style="code">
- * import org.junit.jupiter.api.AfterAll;
- * import org.junit.jupiter.api.BeforeAll;
- * import org.junit.jupiter.api.Test;
- * import org.springframework.boot.test.context.SpringBootTest;
- * import org.springframework.boot.test.util.TestPropertyValues;
- * import org.springframework.context.ApplicationContextInitializer;
- * import org.springframework.context.ConfigurableApplicationContext;
- * import org.springframework.test.context.ContextConfiguration;
- * import org.testcontainers.mongodb.MongoDbContainer;
- *
- * import static org.junit.jupiter.api.Assertions.assertNotNull;
- *
- * {@literal @}SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
- * //@DataMongoTest
- * {@literal @}ContextConfiguration(initializers = ITTest.Initializer.class)
- * class ITTest {
- *     private static final MongoDbContainer MONGO_DB_CONTAINER = new MongoDbContainer(
- *             //"mongo:4.2.0"
- *     );
- *
- *     {@literal @}BeforeAll
- *     static void setUp() {
- *         MONGO_DB_CONTAINER.start();
- *     }
- *
- *     {@literal @}AfterAll
- *     static void tearDown() {
- *         MONGO_DB_CONTAINER.stop();
- *     }
- *
- *     {@literal @}Test
- *     void shouldTestReplicaSetUrl() {
- *         assertNotNull(MONGO_DB_CONTAINER.getReplicaSetUrl());
- *     }
- *
- *     static class Initializer implements ApplicationContextInitializer&#60;ConfigurableApplicationContext&#62; {
- *        {@literal @}@Override
- *         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
- *             TestPropertyValues.of(
- *                     String.format("spring.data.mongodb.uri: %s", MONGO_DB_CONTAINER.getReplicaSetUrl())
- *             ).applyTo(configurableApplicationContext);
- *         }
- *     }
- * }
- * </pre>
+ * <p>To construct a multi-node MongoDB cluster, consider the <a href="https://github.com/silaev/mongodb-replica-set/">mongodb-replica-set project on GitHub</a>
+ * <p>Tested on a Mongo DB version 4.0.10+ (that is the default version if not specified).
  *
  * @author Konstantin Silaev on 9/30/2019
  */
 @Slf4j
 public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     static final int ERROR_CONTAINER_EXIT_CODE = 1;
-    static final int MONGO_DB_INTERNAL_PORT = 27017;
+    static final int MONGODB_INTERNAL_PORT = 27017;
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 30;
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
     private static final String LOCALHOST = "localhost";
+    private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
     public MongoDbContainer() {
         super("mongo:" + MONGODB_VERSION_DEFAULT);
@@ -133,14 +33,13 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     public String getReplicaSetUrl() {
         if (!isRunning()) {
-            throw new IllegalStateException(
-                String.format(
-                    "Please, start %s first", MongoDbContainer.class.getCanonicalName())
-            );
+            throw new IllegalStateException("MongoDbContainer should be started first");
         }
         return String.format(
-            "mongodb://%s:%d/test",
-            getContainerIpAddress(), getMappedPort(MONGO_DB_INTERNAL_PORT)
+            "mongodb://%s:%d/%s",
+            getContainerIpAddress(),
+            getMappedPort(MONGODB_INTERNAL_PORT),
+            MONGODB_DATABASE_NAME_DEFAULT
         );
     }
 
@@ -161,7 +60,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     @Override
     protected void configure() {
-        withExposedPorts(MONGO_DB_INTERNAL_PORT);
+        withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");
         waitingFor(
             Wait.forLogMessage(".*waiting for connections on port.*", 1)
@@ -169,11 +68,11 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     }
 
     private String getMongoReplicaSetInitializer() {
-        val containerIpAddress = getContainerIpAddress();
-        val containerPort = LOCALHOST.equals(containerIpAddress)
-            ? MONGO_DB_INTERNAL_PORT
-            : getMappedPort(MONGO_DB_INTERNAL_PORT);
-        val initializer = String.format(
+        final String containerIpAddress = getContainerIpAddress();
+        final int containerPort = LOCALHOST.equals(containerIpAddress)
+            ? MONGODB_INTERNAL_PORT
+            : getMappedPort(MONGODB_INTERNAL_PORT);
+        final String initializer = String.format(
             "rs.initiate({\n" +
                 "    \"_id\": \"docker-rs\",\n" +
                 "    \"members\": [\n" +
@@ -190,7 +89,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     private void checkMongoNodeExitCode(final Container.ExecResult execResult) {
         if (execResult.getExitCode() == ERROR_CONTAINER_EXIT_CODE) {
-            val errorMessage = String.format("An error occurred: %s", execResult.getStderr());
+            final String errorMessage = String.format("An error occurred: %s", execResult.getStderr());
             log.error(errorMessage);
             throw new ReplicaSetInitializationException(errorMessage);
         }
@@ -215,7 +114,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
         final Container.ExecResult execResultWaitForMaster
     ) {
         if (execResultWaitForMaster.getExitCode() == ERROR_CONTAINER_EXIT_CODE) {
-            val errorMessage = String.format(
+            final String errorMessage = String.format(
                 "A single node replica set was not initialized in a set timeout: %d attempts",
                 AWAIT_INIT_REPLICA_SET_ATTEMPTS
             );
@@ -227,7 +126,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     @SneakyThrows(value = {IOException.class, InterruptedException.class})
     void initReplicaSet() {
         log.debug("Initializing a single node node replica set...");
-        val execResultInitRs = execInContainer(
+        final ExecResult execResultInitRs = execInContainer(
             buildMongoEvalCommand(getMongoReplicaSetInitializer())
         );
         log.debug(execResultInitRs.getStdout());
@@ -237,7 +136,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
             "Awaiting for a single node replica set initialization up to {} attempts",
             AWAIT_INIT_REPLICA_SET_ATTEMPTS
         );
-        val execResultWaitForMaster = execInContainer(
+        final ExecResult execResultWaitForMaster = execInContainer(
             buildMongoEvalCommand(buildMongoWaitCommand())
         );
         log.debug(execResultWaitForMaster.getStdout());

@@ -51,17 +51,6 @@ jobs:
                 openjdk:8-jdk-alpine \
                 ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan -i
 
-    - env: [ NAME=docker-in-mongodb ]
-      script:
-          - |
-              DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TLS_VERIFY= docker run -t --rm \
-              -v "$HOME/.gradle":/root/.gradle/ \
-              -v /var/run/docker.sock:/var/run/docker.sock \
-              -v "$(pwd)":"$(pwd)" \
-              -w "$(pwd)" \
-              openjdk:8-jdk-alpine \
-              ./gradlew mongodb:integrationTest --scan --no-daemon --no-build-cache
-
     - stage: deploy
       sudo: false
       services: []

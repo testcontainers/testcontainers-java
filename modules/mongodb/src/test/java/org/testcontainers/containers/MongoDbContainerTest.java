@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -40,13 +39,13 @@ class MongoDbContainerTest {
     void shouldNotInitReplicaSetBecauseOfExecInitReplicaSet()
         throws IOException, InterruptedException {
         //GIVEN
-        val mockExecResult = mock(Container.ExecResult.class);
+        Container.ExecResult mockExecResult = mock(Container.ExecResult.class);
         when(mockExecResult.getExitCode())
             .thenReturn(MongoDbContainer.ERROR_CONTAINER_EXIT_CODE);
         doReturn(mockExecResult).when(MONGODB_CONTAINER).execInContainer(any());
-        val mappedPort = 37723;
+        final int mappedPort = 37723;
         lenient().doReturn(mappedPort).when(MONGODB_CONTAINER)
-            .getMappedPort(MongoDbContainer.MONGO_DB_INTERNAL_PORT);
+            .getMappedPort(MongoDbContainer.MONGODB_INTERNAL_PORT);
 
         //WHEN
         Executable executable = () -> MONGODB_CONTAINER.initReplicaSet();
@@ -61,17 +60,17 @@ class MongoDbContainerTest {
     @Test
     void shouldNotInitReplicaSetBecauseOfWaitCommand() throws IOException, InterruptedException {
         //GIVEN
-        val mockExecResult1 = mock(Container.ExecResult.class);
-        val mockExecResult2 = mock(Container.ExecResult.class);
+        final Container.ExecResult mockExecResult1 = mock(Container.ExecResult.class);
+        final Container.ExecResult mockExecResult2 = mock(Container.ExecResult.class);
         when(mockExecResult1.getExitCode())
             .thenReturn(0);
         when(mockExecResult2.getExitCode())
             .thenReturn(MongoDbContainer.ERROR_CONTAINER_EXIT_CODE);
         doReturn(mockExecResult1, mockExecResult2)
             .when(MONGODB_CONTAINER).execInContainer(any());
-        val mappedPort = 37723;
+        final int mappedPort = 37723;
         lenient().doReturn(mappedPort).when(MONGODB_CONTAINER)
-            .getMappedPort(MongoDbContainer.MONGO_DB_INTERNAL_PORT);
+            .getMappedPort(MongoDbContainer.MONGODB_INTERNAL_PORT);
 
         //WHEN
         Executable executable = () -> MONGODB_CONTAINER.initReplicaSet();
