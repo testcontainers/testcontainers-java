@@ -20,7 +20,7 @@ The following example shows how to create a MongoDbContainer
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting and stoping a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/integration/InitializationITTest.java) inside_block:startingStoppingMongoDbContainer
+[Starting and stopping a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/integration/InitializationITTest.java) inside_block:startingStoppingMongoDbContainer
 <!--/codeinclude-->
 
 #### Motivation
