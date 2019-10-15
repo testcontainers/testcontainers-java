@@ -126,7 +126,7 @@ This extension has only be tested with sequential test execution. Using it with 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:junit-jupiter:{{latest_version}}"
+testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
