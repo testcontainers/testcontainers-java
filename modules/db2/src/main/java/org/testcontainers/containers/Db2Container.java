@@ -81,7 +81,9 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:db2://" + getContainerIpAddress() + ":" + getMappedPort(DB2_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters(":", ";");
+        return "jdbc:db2://" + getContainerIpAddress() + ":" + getMappedPort(DB2_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override
@@ -114,6 +116,12 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     @Override
     public Db2Container withDatabaseName(String dbName) {
         this.databaseName = dbName;
+        return this;
+    }
+
+    @Override
+    public Db2Container withUrlParam(String paramName, String paramValue) {
+        urlParameters.put(paramName, paramValue);
         return this;
     }
 

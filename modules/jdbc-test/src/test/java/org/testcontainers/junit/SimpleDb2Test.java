@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 
@@ -17,6 +19,7 @@ public class SimpleDb2Test {
 
     @Rule
     public Db2Container db2 = new Db2Container()
+        .withUrlParam("sslConnection", "false")
         .acceptLicense();
 
     @Test
@@ -36,4 +39,9 @@ public class SimpleDb2Test {
         assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
     }
 
+    @Test
+    public void testWithAdditionalUrlParamInJdbcUrl() {
+        String jdbcUrl = db2.getJdbcUrl();
+        assertThat(jdbcUrl, containsString(":sslConnection=false"));
+    }
 }
