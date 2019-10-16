@@ -56,7 +56,9 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mariadb://" + getContainerIpAddress() + ":" + getMappedPort(MARIADB_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:mariadb://" + getContainerIpAddress() + ":" + getMappedPort(MARIADB_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override
@@ -79,11 +81,17 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         return "SELECT 1";
     }
 
+    @Override
+    public SELF withUrlParam(String paramName, String paramValue) {
+        urlParameters.put(paramName, paramValue);
+        return self();
+    }
+
     public SELF withConfigurationOverride(String s) {
         parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
         return self();
     }
-    
+
     @Override
     public SELF withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;

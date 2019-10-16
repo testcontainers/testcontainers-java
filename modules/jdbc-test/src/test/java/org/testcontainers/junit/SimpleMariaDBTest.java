@@ -7,6 +7,8 @@ import org.testcontainers.containers.MariaDBContainer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -78,6 +80,24 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             assertEquals("Auto increment increment should be overriden by command line", "10", result);
         } finally {
             mariadbCustomConfig.stop();
+        }
+    }
+
+    @Test
+    public void testWithAdditionalUrlParamInJdbcUrl() {
+        MariaDBContainer mariaDBContainer = new MariaDBContainer()
+            .withUrlParam("connectTimeout", "40000")
+            .withUrlParam("rewriteBatchedStatements", "true");
+
+        try {
+            mariaDBContainer.start();
+            String jdbcUrl = mariaDBContainer.getJdbcUrl();
+            assertThat(jdbcUrl, containsString("?"));
+            assertThat(jdbcUrl, containsString("&"));
+            assertThat(jdbcUrl, containsString("rewriteBatchedStatements=true"));
+            assertThat(jdbcUrl, containsString("connectTimeout=40000"));
+        } finally {
+            mariaDBContainer.stop();
         }
     }
 }

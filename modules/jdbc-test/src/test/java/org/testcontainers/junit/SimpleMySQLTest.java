@@ -200,7 +200,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() throws SQLException {
+    public void testWithAdditionalUrlParamInJdbcUrl() {
         MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
             .withUrlParam("allowMultiQueries", "true")
             .withUrlParam("rewriteBatchedStatements", "true")
