@@ -45,7 +45,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() throws SQLException {
+    public void testWithAdditionalUrlParamInJdbcUrl() {
         CockroachContainer cockroach = new CockroachContainer()
             .withUrlParam("sslmode", "disable")
             .withUrlParam("application_name", "cockroach");
