@@ -60,7 +60,8 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:sqlserver://" + getContainerIpAddress() + ":" + getMappedPort(MS_SQL_SERVER_PORT);
+        String additionalUrlParams = constructUrlParameters(";", ";");
+        return "jdbc:sqlserver://" + getContainerIpAddress() + ":" + getMappedPort(MS_SQL_SERVER_PORT) + additionalUrlParams;
     }
 
     @Override
@@ -76,6 +77,12 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     @Override
     public String getTestQueryString() {
         return "SELECT 1";
+    }
+
+    @Override
+    public SELF withUrlParam(String paramName, String paramValue) {
+        urlParameters.put(paramName, paramValue);
+        return self();
     }
 
     @Override
