@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package com.example.kafkacluster;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -24,62 +24,22 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.testcontainers.containers.KafkaContainer.CONFLUENT_PLATFORM_VERSION;
 
-public class KafkaContainerTest {
+public class KafkaContainerClusterTest {
 
     @Test
-    public void testUsage() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer()) {
-            kafka.start();
-            testKafkaFunctionality(kafka.getBootstrapServers());
-        }
-    }
-
-    /**
-     * @deprecated the {@link Network} should be set explicitly with {@link KafkaContainer#withNetwork(Network)}.
-     */
-    @Test
-    @Deprecated
-    public void testExternalZookeeperWithKafkaNetwork() throws Exception {
+    public void testKafkaContainerCluster() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer()
-                .withExternalZookeeper("zookeeper:2181");
-
-            GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
-                .withNetwork(kafka.getNetwork())
-                .withNetworkAliases("zookeeper")
-                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
+            KafkaContainerCluster cluster = new KafkaContainerCluster(CONFLUENT_PLATFORM_VERSION, 3, 2)
         ) {
-            zookeeper.start();
-            kafka.start();
+            cluster.start();
+            String bootstrapServers = cluster.getBootstrapServers();
 
-            testKafkaFunctionality(kafka.getBootstrapServers());
+            assertThat(cluster.getBrokers()).hasSize(3);
+
+            testKafkaFunctionality(bootstrapServers, 3, 2);
         }
-    }
-
-    @Test
-    public void testExternalZookeeperWithExternalNetwork() throws Exception {
-        try (
-            Network network = Network.newNetwork();
-
-            KafkaContainer kafka = new KafkaContainer()
-                .withNetwork(network)
-                .withExternalZookeeper("zookeeper:2181");
-
-            GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
-                .withNetwork(network)
-                .withNetworkAliases("zookeeper")
-                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
-        ) {
-            zookeeper.start();
-            kafka.start();
-
-            testKafkaFunctionality(kafka.getBootstrapServers());
-        }
-    }
-
-    protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
-        testKafkaFunctionality(bootstrapServers, 1, 1);
     }
 
     protected void testKafkaFunctionality(String bootstrapServers, int partitions, int rf) throws Exception {
