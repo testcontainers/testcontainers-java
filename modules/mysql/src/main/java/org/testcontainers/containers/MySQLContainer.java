@@ -68,7 +68,9 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(MYSQL_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override
@@ -84,12 +86,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
             url = url + "&allowPublicKeyRetrieval=true";
         }
 
-        if (!urlParameters.isEmpty()) {
-            String additionalParameters = this.urlParameters.entrySet().stream()
-                .map(Object::toString)
-                .collect(joining("&"));
-            url = url + "&" + additionalParameters;
-        }
         return url;
     }
 

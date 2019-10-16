@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import static java.util.stream.Collectors.joining;
+
 /**
  * Base class for containers that expose a JDBC connection
  *
@@ -225,6 +227,17 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     protected String constructUrlForConnection(String queryString) {
         return getJdbcUrl() + queryString;
+    }
+
+    protected String constructUrlParameters(String startCharacter, String delimiter) {
+        String urlParameters = "";
+        if (!this.urlParameters.isEmpty()) {
+            String additionalParameters = this.urlParameters.entrySet().stream()
+                .map(Object::toString)
+                .collect(joining(delimiter));
+            urlParameters = startCharacter + additionalParameters;
+        }
+        return urlParameters;
     }
 
     protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {

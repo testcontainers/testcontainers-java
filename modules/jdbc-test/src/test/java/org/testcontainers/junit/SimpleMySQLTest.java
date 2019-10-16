@@ -17,6 +17,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -192,6 +194,25 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
                 String firstColumnValue = resultSet.getString(1);
                 assertEquals("Value from bar should equal real value", "hello world", firstColumnValue);
             }
+        } finally {
+            mysql.stop();
+        }
+    }
+
+    @Test
+    public void testWithAdditionalUrlParamInJdbcUrl() throws SQLException {
+        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+            .withUrlParam("allowMultiQueries", "true")
+            .withUrlParam("rewriteBatchedStatements", "true")
+            .withLogConsumer(new Slf4jLogConsumer(logger));
+
+        try {
+            mysql.start();
+            String jdbcUrl = mysql.getJdbcUrl();
+            assertThat(jdbcUrl, containsString("?"));
+            assertThat(jdbcUrl, containsString("&"));
+            assertThat(jdbcUrl, containsString("rewriteBatchedStatements=true"));
+            assertThat(jdbcUrl, containsString("allowMultiQueries=true"));
         } finally {
             mysql.stop();
         }
