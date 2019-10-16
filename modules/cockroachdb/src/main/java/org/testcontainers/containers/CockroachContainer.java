@@ -43,7 +43,9 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     @Override
     public String getJdbcUrl() {
-        return JDBC_URL_PREFIX + "://" + getContainerIpAddress() + ":" + getMappedPort(DB_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return JDBC_URL_PREFIX + "://" + getContainerIpAddress() + ":" + getMappedPort(DB_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override
@@ -74,5 +76,11 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     @Override
     public CockroachContainer withDatabaseName(final String databaseName) {
         throw new UnsupportedOperationException("The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826");
+    }
+
+    @Override
+    public CockroachContainer withUrlParam(String paramName, String paramValue) {
+        urlParameters.put(paramName, paramValue);
+        return self();
     }
 }
