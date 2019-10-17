@@ -42,6 +42,6 @@ public class SimpleDb2Test {
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
         String jdbcUrl = db2.getJdbcUrl();
-        assertThat(jdbcUrl, containsString(":sslConnection=false"));
+        assertThat(jdbcUrl, containsString(":sslConnection=false;"));
     }
 }

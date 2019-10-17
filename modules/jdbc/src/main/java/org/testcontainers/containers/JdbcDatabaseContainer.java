@@ -232,12 +232,16 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     }
 
     protected String constructUrlParameters(String startCharacter, String delimiter) {
+        return constructUrlParameters(startCharacter, delimiter, StringUtils.EMPTY);
+    }
+
+    protected String constructUrlParameters(String startCharacter, String delimiter, String endCharacter) {
         String urlParameters = "";
         if (!this.urlParameters.isEmpty()) {
             String additionalParameters = this.urlParameters.entrySet().stream()
                 .map(Object::toString)
                 .collect(joining(delimiter));
-            urlParameters = startCharacter + additionalParameters;
+            urlParameters = startCharacter + additionalParameters + endCharacter;
         }
         return urlParameters;
     }
