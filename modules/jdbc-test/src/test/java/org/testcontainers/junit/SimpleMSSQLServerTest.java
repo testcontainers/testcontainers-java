@@ -19,7 +19,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Rule
-    public MSSQLServerContainer mssqlServer = new MSSQLServerContainer()
+    public MSSQLServerContainer mssqlServer = (MSSQLServerContainer) new MSSQLServerContainer()
         .withUrlParam("integratedSecurity", "false")
         .withUrlParam("applicationName", "MyApp");
 

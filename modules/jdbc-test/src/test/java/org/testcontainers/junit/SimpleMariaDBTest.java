@@ -85,7 +85,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        MariaDBContainer mariaDBContainer = new MariaDBContainer()
+        MariaDBContainer mariaDBContainer = (MariaDBContainer) new MariaDBContainer()
             .withUrlParam("connectTimeout", "40000")
             .withUrlParam("rewriteBatchedStatements", "true");
 

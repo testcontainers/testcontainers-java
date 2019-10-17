@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
@@ -88,7 +89,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     }
 
     public SELF withUrlParam(String paramName, String paramValue) {
-        throw new UnsupportedOperationException();
+        urlParameters.put(paramName, paramValue);
+        return self();
     }
 
     /**

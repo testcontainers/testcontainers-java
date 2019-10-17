@@ -81,12 +81,6 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         return "SELECT 1";
     }
 
-    @Override
-    public SELF withUrlParam(String paramName, String paramValue) {
-        urlParameters.put(paramName, paramValue);
-        return self();
-    }
-
     public SELF withConfigurationOverride(String s) {
         parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
         return self();

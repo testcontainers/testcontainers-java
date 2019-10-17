@@ -80,12 +80,6 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
-    public SELF withUrlParam(String paramName, String paramValue) {
-        urlParameters.put(paramName, paramValue);
-        return self();
-    }
-
-    @Override
     public SELF withPassword(final String password) {
         checkPasswordStrength(password);
         this.password = password;

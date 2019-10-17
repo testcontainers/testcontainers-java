@@ -69,4 +69,8 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
         return TEST_QUERY;
     }
 
+    @Override
+    public ClickHouseContainer withUrlParam(String paramName, String paramValue) {
+        throw new UnsupportedOperationException("The ClickHouse does not support this");
+    }
 }

@@ -77,10 +77,4 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     public CockroachContainer withDatabaseName(final String databaseName) {
         throw new UnsupportedOperationException("The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826");
     }
-
-    @Override
-    public CockroachContainer withUrlParam(String paramName, String paramValue) {
-        urlParameters.put(paramName, paramValue);
-        return self();
-    }
 }

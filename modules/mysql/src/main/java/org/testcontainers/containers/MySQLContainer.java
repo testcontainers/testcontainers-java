@@ -90,12 +90,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     }
 
     @Override
-    public SELF withUrlParam(String paramName, String paramValue) {
-        urlParameters.put(paramName, paramValue);
-        return self();
-    }
-
-    @Override
     public String getDatabaseName() {
         return databaseName;
     }

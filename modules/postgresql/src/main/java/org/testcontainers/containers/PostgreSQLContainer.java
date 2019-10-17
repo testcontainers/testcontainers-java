@@ -86,12 +86,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     }
 
     @Override
-    public SELF withUrlParam(String paramName, String paramValue) {
-        urlParameters.put(paramName, paramValue);
-        return self();
-    }
-
-    @Override
     public SELF withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();

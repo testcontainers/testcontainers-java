@@ -120,12 +120,6 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     }
 
     @Override
-    public Db2Container withUrlParam(String paramName, String paramValue) {
-        urlParameters.put(paramName, paramValue);
-        return this;
-    }
-
-    @Override
     protected void waitUntilContainerStarted() {
         getWaitStrategy().waitUntilReady(this);
     }
