@@ -52,6 +52,6 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
         String jdbcUrl = mssqlServer.getJdbcUrl();
-        assertThat(jdbcUrl, containsString(";integratedSecurity=true;applicationName=MyApp"));
+        assertThat(jdbcUrl, containsString(";integratedSecurity=false;applicationName=MyApp"));
     }
 }
