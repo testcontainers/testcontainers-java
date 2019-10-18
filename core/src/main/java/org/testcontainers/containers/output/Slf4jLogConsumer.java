@@ -47,8 +47,10 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
                 case END:
                     break;
                 case STDOUT:
+                    logger.info("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
+                    break;
                 case STDERR:
-                    logger.info("{}{}: {}", prefix, outputType, utf8String);
+                    logger.error("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected outputType " + outputType);
