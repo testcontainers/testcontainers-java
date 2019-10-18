@@ -7,6 +7,7 @@ repositories {
 dependencies {
     compile project(':mysql')
     compile project(':postgresql')
+    compile project(':cockroachdb')
     compile project(':mariadb')
     compile project(':oracle-xe')
     compile project(':mssqlserver')

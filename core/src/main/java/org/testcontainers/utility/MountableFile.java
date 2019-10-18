@@ -167,7 +167,9 @@ public class MountableFile implements Transferable {
     private String resolvePath() {
         String result = getResourcePath();
 
+        // Special case for Windows
         if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+            // Remove leading /
             result = result.substring(1);
         }
 
