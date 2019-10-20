@@ -17,7 +17,9 @@ public class CopyFilesToAndFromContainersTest {
         // copyToContainer {
 
         GenericContainer container = new GenericContainer("alpine:3.2")
+            .withCommand("top")
             .withCopyFileToContainer(mountableFile, "/tmp/temp-in-container.tmp");
+
         container.start();
 
         container.copyFileFromContainer("/tmp/temp-in-container.tmp",
