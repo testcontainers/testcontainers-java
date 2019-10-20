@@ -7,6 +7,7 @@ import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Map;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
@@ -16,18 +17,25 @@ import static org.testcontainers.TestImages.TINY_IMAGE;
 public class CopyFileToContainerTest {
     private static String containerPath = "/tmp/mappable-resource/";
     private static String fileName = "test-resource.txt";
+    private static String filePath = containerPath + fileName;
 
     @Test
     public void checkFileCopied() throws IOException, InterruptedException {
+        // copyToContainer {
+
         try (
             GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
                 .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), containerPath)
         ) {
             container.start();
-            String filesList = container.execInContainer("ls", "/tmp/mappable-resource").getStdout();
-            assertTrue("file list contains the file", filesList.contains(fileName));
+            container.copyFileFromContainer(filePath, "/tmp/test-resource-in-host.txt");
         }
+
+        // }
+
+        Assert.assertEquals(new RandomAccessFile(new File(filePath), "r").getChannel().size(),
+            new RandomAccessFile("/tmp/test-resource-in-host.txt", "r").getChannel().size());
     }
 
     @Test
