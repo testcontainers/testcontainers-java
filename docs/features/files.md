@@ -18,3 +18,11 @@ new GenericContainer(...)
                                       "/etc/redis.conf",
                                       BindMode.READ_ONLY)
 ```
+
+## Copying files to and from containers
+
+Files can be copied into the container only before creation and files can be copied from the container only after container has started.
+
+<!--codeinclude-->
+[Copying files to and from container](../examples/src/test/java/generic/CopyFilesToAndFromContainersTest.java) inside_block:copyToContainer
+<!--/codeinclude-->
