@@ -14,7 +14,7 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Gradle
-      run: ./gradlew -Pversion=$GITHUB_REF test release --scan --no-daemon -i
+      run: ./gradlew -Pversion=$GITHUB_REF check release --scan --no-daemon -i
       env:
         BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
         BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
