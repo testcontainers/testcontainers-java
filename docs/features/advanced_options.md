@@ -47,6 +47,12 @@ For example, this can be used to change the container hostname:
 [Using modifier to change memory limits](../examples/junit4/generic/src/test/java/generic/CmdModifierTest.java) inside_block:memory
 <!--/codeinclude-->
 
+Files can be copied into the container only before creation and files can be copied from the container only after container has started.
+
+<!--codeinclude-->
+[Copying files to and from container](../examples/src/test/java/generic/CopyFilesToAndFromContainersTest.java) inside_block:copyToContainer
+<!--/codeinclude-->
+
 !!! note
     It is recommended to use this sparingly, and follow changes to the `docker-java` API if you choose to use this. 
     It is typically quite stable, though.
