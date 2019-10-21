@@ -6,7 +6,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +35,9 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     public VaultContainer(String dockerImageName) {
         super(dockerImageName);
 
-        setWaitStrategy(Wait.forHttp("/v1/secret/is_alive").forStatusCode(400));
-    }
+        // Use the vault healthcheck endpoint to check for readiness, per https://www.vaultproject.io/api/system/health.html
+        setWaitStrategy(Wait.forHttp("/v1/sys/health").forStatusCode(200));
 
-    @Override
-    protected void configure() {
-        setStartupAttempts(3);
         withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(IPC_LOCK));
         withEnv("VAULT_ADDR", "http://0.0.0.0:" + port);
         withExposedPorts(port);

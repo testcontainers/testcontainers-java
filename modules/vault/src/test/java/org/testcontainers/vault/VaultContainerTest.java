@@ -3,7 +3,6 @@ package org.testcontainers.vault;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
 
@@ -28,8 +27,7 @@ public class VaultContainerTest {
             "secret_two=password2",
             "secret_three=password3",
             "secret_three=password3",
-            "secret_four=password4")
-        .waitingFor(Wait.forHttp("/v1/secret/testing1").forStatusCode(400));
+            "secret_four=password4");
 
     @Test
     public void readFirstSecretPathWithCli() throws IOException, InterruptedException {
