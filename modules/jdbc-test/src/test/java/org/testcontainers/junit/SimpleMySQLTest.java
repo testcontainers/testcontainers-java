@@ -17,9 +17,6 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 
-/**
- * @author richardnorth
- */
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleMySQLTest.class);
@@ -43,69 +40,62 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
-                .withConfigurationOverride("somepath/mysql_conf_override")
-                .withLogConsumer(new Slf4jLogConsumer(logger));
-        mysql.start();
+        try (MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+            .withConfigurationOverride("somepath/mysql_conf_override")
+            .withLogConsumer(new Slf4jLogConsumer(logger))) {
 
-        try {
+            mysql.start();
+
             ResultSet resultSet = performQuery(mysql, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
 
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-        } finally {
-            mysql.stop();
         }
     }
 
     @Test
     public void testSpecificVersion() throws SQLException {
-        MySQLContainer mysqlOldVersion = (MySQLContainer) new MySQLContainer("mysql:5.5")
-                .withConfigurationOverride("somepath/mysql_conf_override")
-                .withLogConsumer(new Slf4jLogConsumer(logger));
-        mysqlOldVersion.start();
+        try (MySQLContainer mysqlOldVersion = (MySQLContainer) new MySQLContainer("mysql:5.5")
+            .withConfigurationOverride("somepath/mysql_conf_override")
+            .withLogConsumer(new Slf4jLogConsumer(logger))) {
 
-        try {
+            mysqlOldVersion.start();
+
             ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
             String resultSetString = resultSet.getString(1);
 
             assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5"));
-        } finally {
-            mysqlOldVersion.stop();
         }
     }
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
-    	assumeFalse(SystemUtils.IS_OS_WINDOWS);
-        MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
-                                                .withConfigurationOverride("somepath/mysql_conf_override");
-        mysqlCustomConfig.start();
+        assumeFalse(SystemUtils.IS_OS_WINDOWS);
 
-        try {
+        try (MySQLContainer mysqlCustomConfig = new MySQLContainer("mysql:5.6")
+            .withConfigurationOverride("somepath/mysql_conf_override")) {
+
+            mysqlCustomConfig.start();
+
             ResultSet resultSet = performQuery(mysqlCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
             String result = resultSet.getString(1);
 
             assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
-        } finally {
-            mysqlCustomConfig.stop();
         }
     }
 
     @Test
     public void testCommandOverride() throws SQLException {
-        MySQLContainer mysqlCustomConfig = (MySQLContainer) new MySQLContainer().withCommand("mysqld --auto_increment_increment=42");
-        mysqlCustomConfig.start();
+        try (MySQLContainer mysqlCustomConfig = new MySQLContainer<>()
+            .withCommand("mysqld --auto_increment_increment=42")) {
 
-        try {
+            mysqlCustomConfig.start();
+
             ResultSet resultSet = performQuery(mysqlCustomConfig, "show variables like 'auto_increment_increment'");
             String result = resultSet.getString("Value");
 
             assertEquals("Auto increment increment should be overriden by command line", "42", result);
-        } finally {
-            mysqlCustomConfig.stop();
         }
-
     }
 
     @Test
@@ -120,13 +110,15 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
         }
-     }
+    }
 
     @Test
     public void testEmptyPasswordWithNonRootUser() {
-
-        MySQLContainer container = (MySQLContainer) new MySQLContainer("mysql:5.5").withDatabaseName("TEST")
-                .withUsername("test").withPassword("").withEnv("MYSQL_ROOT_HOST", "%");
+        MySQLContainer container = new MySQLContainer<>("mysql:5.5")
+            .withDatabaseName("TEST")
+            .withUsername("test")
+            .withPassword("")
+            .withEnv("MYSQL_ROOT_HOST", "%");
 
         try {
             container.start();
@@ -134,6 +126,24 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         } catch (ContainerLaunchException e) {
         } finally {
             container.stop();
+        }
+    }
+
+    @Test
+    public void testEmptyPasswordWithRootUser() throws SQLException {
+        // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
+        try (MySQLContainer mysql = (MySQLContainer) new MySQLContainer("mysql:5.5")
+            .withDatabaseName("foo")
+            .withUsername("root")
+            .withPassword("")
+            .withEnv("MYSQL_ROOT_HOST", "%")) {
+
+            mysql.start();
+
+            ResultSet resultSet = performQuery(mysql, "SELECT 1");
+            int resultSetInt = resultSet.getInt(1);
+
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         }
     }
 }

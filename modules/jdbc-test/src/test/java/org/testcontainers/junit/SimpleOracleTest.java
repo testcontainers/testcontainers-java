@@ -10,9 +10,6 @@ import java.sql.SQLException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
-/**
- * @author gusohal
- */
 @Ignore
 public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 

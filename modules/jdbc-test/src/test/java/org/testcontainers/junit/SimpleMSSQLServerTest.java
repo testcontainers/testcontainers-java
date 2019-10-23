@@ -1,6 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -11,13 +11,10 @@ import java.sql.Statement;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
-/**
- * @author Stefan Hufschmidt
- */
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
-    @Rule
-    public MSSQLServerContainer mssqlServer = new MSSQLServerContainer();
+    @ClassRule
+    public static MSSQLServerContainer mssqlServer = new MSSQLServerContainer();
 
     @Test
     public void testSimple() throws SQLException {
