@@ -38,6 +38,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -306,6 +307,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    @UnstableAPI
     @SneakyThrows
     protected boolean canBeReused() {
         for (Class<?> type = getClass(); type != GenericContainer.class; type = type.getSuperclass()) {
@@ -416,6 +418,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    @UnstableAPI
     @SneakyThrows(JsonProcessingException.class)
     final String hash(CreateContainerCmd createCommand) {
         // TODO add Testcontainers' version to the hash
@@ -1333,6 +1336,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @UnstableAPI
     public SELF withReuse(boolean reusable) {
         this.shouldBeReused = reusable;
         return self();

@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.testcontainers.UnstableAPI;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -49,6 +50,7 @@ public class ConnectionUrl {
 
     private Optional<String> initScriptPath = Optional.empty();
 
+    @UnstableAPI
     private boolean reusable = false;
 
     private Optional<InitFunctionDef> initFunction = Optional.empty();
