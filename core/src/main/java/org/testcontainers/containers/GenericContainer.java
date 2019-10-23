@@ -16,6 +16,7 @@ import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import lombok.AccessLevel;
@@ -430,6 +431,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return DigestUtils.sha1Hex(commandJson);
     }
 
+    @VisibleForTesting
     Optional<String> findContainerForReuse(String hash) {
         // TODO locking
         return dockerClient.listContainersCmd()
