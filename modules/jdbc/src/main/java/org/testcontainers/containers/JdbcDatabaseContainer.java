@@ -12,8 +12,11 @@ import org.testcontainers.utility.MountableFile;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
@@ -26,7 +29,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
-    private String initScriptPath;
+    private List<String> initScriptPaths = new LinkedList<>();
     protected Map<String, String> parameters = new HashMap<>();
 
     private int startupTimeoutSeconds = 120;
@@ -107,8 +110,14 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return self();
     }
 
-    public SELF withInitScript(String initScriptPath) {
-        this.initScriptPath = initScriptPath;
+    /**
+     * Add init script in order. One container could have more one scripts with structure and data.
+     *
+     * @param initScriptPath path to resource file
+     * @return self
+     */
+    public SELF withInitScript(String ... initScriptPath) {
+        this.initScriptPaths.addAll(Arrays.asList(initScriptPath));
         return self();
     }
 
@@ -236,7 +245,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * Load init script content and apply it to the database if initScriptPath is set
      */
     protected void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
+        for (String initScriptPath : initScriptPaths) {
             ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
         }
     }
