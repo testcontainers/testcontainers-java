@@ -31,7 +31,7 @@ jobs:
 
     - stage: test
       env: [ NAME=core ]
-      jdk: openjdk12
+      jdk: openjdk13
       script: ./gradlew testcontainers:check --scan --no-daemon -i
 
     - env: [ NAME=selenium ]
