@@ -11,11 +11,17 @@ import org.slf4j.MDC;
  */
 public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
     private final Logger logger;
-    private String prefix = "";
     private final Map<String, String> mdc = new HashMap<>();
+    private boolean separateOutputStreams;
+    private String prefix = "";
 
     public Slf4jLogConsumer(Logger logger) {
+        this(logger, false);
+    }
+
+    public Slf4jLogConsumer(Logger logger, boolean separateOutputStreams) {
         this.logger = logger;
+        this.separateOutputStreams = separateOutputStreams;
     }
 
     public Slf4jLogConsumer withPrefix(String prefix) {
@@ -33,6 +39,11 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
         return this;
     }
 
+    public Slf4jLogConsumer separateOutputStreams() {
+        this.separateOutputStreams = true;
+        return this;
+    }
+
     @Override
     public void accept(OutputFrame outputFrame) {
         OutputFrame.OutputType outputType = outputFrame.getType();
@@ -47,10 +58,18 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
                 case END:
                     break;
                 case STDOUT:
-                    logger.info("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
+                    if (separateOutputStreams) {
+                        logger.info("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
+                    } else {
+                        logger.info("{}{}: {}", prefix, outputType, utf8String);
+                    }
                     break;
                 case STDERR:
-                    logger.error("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
+                    if (separateOutputStreams) {
+                        logger.error("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
+                    } else {
+                        logger.info("{}{}: {}", prefix, outputType, utf8String);
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected outputType " + outputType);
