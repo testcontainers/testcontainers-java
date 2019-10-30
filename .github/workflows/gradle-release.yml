@@ -13,6 +13,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Verify CI check status
+      run: [ $(curl -s https://api.github.com/repos/testcontainers/testcontainers-java/commits/master/status | jq '.state') == 'success' ]
     - name: Release with Gradle
       run: ./gradlew -Pversion=$GITHUB_REF release --scan --no-daemon -i
       env:
