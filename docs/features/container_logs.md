@@ -36,6 +36,25 @@ Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER);
 container.followOutput(logConsumer);
 ```
 
+By default both standard out and standard error will both be emitted at INFO level. 
+Standard error may be emitted at ERROR level, if desired:
+
+```java
+Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log).withSeparateOutputStreams()
+```
+
+The [Mapped Diagnostic Context (MDC)](http://logback.qos.ch/manual/mdc.html) for emitted messages may be configured using the `withMdc(...)` option:
+
+```java
+Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log).withMdc("key", "value")
+```
+
+or using an existing map of key-value pairs:
+
+```java
+Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log).withMdc(map)
+```
+
 ### Capturing container output as a String
 
 To stream logs live or customize the decoding, `ToStringConsumer` may be used:
