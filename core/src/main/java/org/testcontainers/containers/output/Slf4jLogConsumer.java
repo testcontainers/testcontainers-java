@@ -39,7 +39,7 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
         return this;
     }
 
-    public Slf4jLogConsumer separateOutputStreams() {
+    public Slf4jLogConsumer withSeparateOutputStreams() {
         this.separateOutputStreams = true;
         return this;
     }
