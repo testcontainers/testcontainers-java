@@ -43,10 +43,14 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
     public void beforeAll(ExtensionContext context) {
         Class<?> testClass = context.getTestClass()
             .orElseThrow(() -> new ExtensionConfigurationException("TestcontainersExtension is only supported for classes."));
-        Store store = context.getStore(NAMESPACE);
 
-        List<TestLifecycleAware> lifecycleAwareContainers = findSharedContainers(testClass)
-            .peek(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()))
+        Store store = context.getStore(NAMESPACE);
+        List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
+
+        sharedContainersStoreAdapters.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
+
+        List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters
+            .stream()
             .filter(this::isTestLifecycleAware)
             .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
             .collect(toList());
@@ -163,13 +167,14 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
         return testInstances;
     }
 
-    private Stream<StoreAdapter> findSharedContainers(Class<?> testClass) {
+    private List<StoreAdapter> findSharedContainers(Class<?> testClass) {
         return ReflectionUtils.findFields(
                 testClass,
                 isSharedContainer(),
                 ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
             .stream()
-            .map(f -> getContainerInstance(null, f));
+            .map(f -> getContainerInstance(null, f))
+            .collect(toList());
     }
 
     private Predicate<Field> isSharedContainer() {
