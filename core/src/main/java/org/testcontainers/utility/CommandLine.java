@@ -35,12 +35,11 @@ public class CommandLine {
         LOGGER.debug("Executing shell command: `{}`", joinedCommand);
 
         try {
-            ProcessResult result;
-            result = new ProcessExecutor()
-                    .command(command)
-                    .readOutput(true)
-                    .exitValueNormal()
-                    .execute();
+            ProcessResult result = new ProcessExecutor()
+                .command(command)
+                .readOutput(true)
+                .exitValueNormal()
+                .execute();
 
             return result.outputUTF8().trim();
         } catch (IOException | InterruptedException | TimeoutException | InvalidExitValueException e) {
