@@ -27,7 +27,7 @@ public class GenericContainerTest {
                 .withCreateContainerCmdModifier(it -> {
                     it.getHostConfig().withMemory(4 * FileUtils.ONE_MB);
                 })
-                .withCommand("sh", "-c", "A='A'; while true; do A=$A$A; done")
+                .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 16); do A=$A$A; done")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container crashed with out-of-memory");
