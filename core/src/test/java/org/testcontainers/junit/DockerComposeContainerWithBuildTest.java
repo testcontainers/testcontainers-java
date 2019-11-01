@@ -2,6 +2,8 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.Container;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -11,31 +13,36 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.testcontainers.containers.DockerComposeContainer.RemoveImages.ALL;
 import static org.testcontainers.containers.DockerComposeContainer.RemoveImages.LOCAL;
 
+@RunWith(Parameterized.class)
 public class DockerComposeContainerWithBuildTest {
 
-    @Test
-    public void defaultDoesNotRemoveAnyImages() {
-        doTest(null, true, true);
+    public DockerComposeContainerWithBuildTest(final DockerComposeContainer.RemoveImages removeMode,
+                                               final boolean shouldBuiltImageBePresentAfterRunning,
+                                               final boolean shouldPulledImageBePresentAfterRunning) {
+        this.removeMode = removeMode;
+        this.shouldBuiltImageBePresentAfterRunning = shouldBuiltImageBePresentAfterRunning;
+        this.shouldPulledImageBePresentAfterRunning = shouldPulledImageBePresentAfterRunning;
+    }
+
+    public final DockerComposeContainer.RemoveImages removeMode;
+    public final boolean shouldBuiltImageBePresentAfterRunning;
+    public final boolean shouldPulledImageBePresentAfterRunning;
+
+    @Parameterized.Parameters(name = "removeMode = {0}")
+    public static Object[][] params() {
+        return new Object[][]{
+            {null, true, true},
+            {LOCAL, false, true},
+            {ALL, false, false},
+        };
     }
 
     @Test
-    public void localModeRemovesBuiltImages() {
-        doTest(LOCAL, false, true);
-    }
-
-
-    @Test
-    public void allModeRemovesAllImages() {
-        doTest(ALL, false, false);
-    }
-
-    private void doTest(final DockerComposeContainer.RemoveImages removeMode,
-                        final boolean shouldBuiltImageBePresentAfterRunning,
-                        final boolean shouldPulledImageBePresentAfterRunning) {
+    public void performTest() {
         final File composeFile = new File("src/test/resources/compose-build-test/docker-compose.yml");
 
         final AtomicReference<String> builtImageName = new AtomicReference<>("");
