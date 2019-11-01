@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.image.pull.policy.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
@@ -282,6 +283,12 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withNetworkAliases(String... aliases);
+
+    /**
+     * Set the image pull policy of the container
+     * @return
+     */
+    SELF withImagePullPolicy(ImagePullPolicy policy);
 
     /**
      * Map a resource (file or directory) on the classpath to a path inside the container.

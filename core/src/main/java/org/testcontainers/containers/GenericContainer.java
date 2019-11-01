@@ -40,6 +40,8 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.containers.image.ImageNameResolverProvider;
+import org.testcontainers.containers.image.pull.policy.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -48,7 +50,6 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
-import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
@@ -136,7 +137,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ));
 
     @NonNull
-    private Future<String> image;
+    private ImageNameResolverProvider nameResolverProvider;
 
     @NonNull
     private Map<String, String> env = new HashMap<>();
@@ -242,12 +243,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
+    public GenericContainer(@NonNull ImageNameResolverProvider nameResolverProvider) {
+        this.nameResolverProvider = nameResolverProvider;
+    }
+
     public GenericContainer(@NonNull final String dockerImageName) {
-        this.setDockerImageName(dockerImageName);
+        this(new ImageNameResolverProvider(dockerImageName));
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        this.image = image;
+        this(new ImageNameResolverProvider(image));
     }
 
     /**
@@ -294,11 +299,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             Instant startedAt = Instant.now();
 
             logger().debug("Starting container: {}", getDockerImageName());
-            logger().debug("Trying to start container: {}", image.get());
+            logger().debug("Trying to start container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
-                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
+                logger().debug("Trying to start container: {} (attempt {}/{})", getDockerImageName(), attempt.incrementAndGet(), startupAttempts);
                 tryStart(startedAt);
                 return true;
             });
@@ -328,7 +333,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void tryStart(Instant startedAt) {
         try {
-            String dockerImageName = image.get();
+            String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
@@ -480,7 +485,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             String imageName;
 
             try {
-                imageName = image.get();
+                imageName = getDockerImageName();
             } catch (Exception e) {
                 imageName = "<unknown>";
             }
@@ -521,7 +526,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void configure() {
-
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -789,6 +793,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return env;
     }
 
+    @Override
+    public void setImage(Future<String> image) {
+        this.nameResolverProvider = new ImageNameResolverProvider(image);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1044,6 +1053,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
+    public SELF withImagePullPolicy(ImagePullPolicy policy) {
+        this.nameResolverProvider.setImagePullPolicy(policy);
+        return self();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1135,10 +1150,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
-        this.image = new RemoteDockerImage(dockerImageName);
-
-        // Mimic old behavior where we resolve image once it's set
-        getDockerImageName();
+        this.nameResolverProvider = new ImageNameResolverProvider(dockerImageName);
     }
 
     /**
@@ -1148,9 +1160,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     public String getDockerImageName() {
         try {
-            return image.get();
+            return getImage().get();
         } catch (Exception e) {
-            throw new ContainerFetchException("Can't get Docker image: " + image, e);
+            throw new ContainerFetchException("Can't get Docker image: " + nameResolverProvider.getResolver(), e);
         }
     }
 
@@ -1284,6 +1296,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarInputStream.getNextTarEntry();
             return consumer.apply(tarInputStream);
         }
+    }
+
+    @Override
+    public Future<String> getImage() {
+        return nameResolverProvider.getResolver();
     }
 
     /**
