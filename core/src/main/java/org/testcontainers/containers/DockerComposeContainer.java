@@ -449,7 +449,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public Integer getServicePort(String serviceName, Integer servicePort) {
         Map<Integer, Integer> portMap = ambassadorPortMappings.get(getServiceInstanceName(serviceName));
 
-        if(portMap == null) {
+        if (portMap == null) {
             throw new IllegalArgumentException("\n\nContext: Getting the port of '" + serviceName + "'.\n" +
                 "Problem: '" + serviceName + "' does not exist.\n" +
                 "Solution: Expose the service '" + serviceName + "' at the container setup of this instance.");
