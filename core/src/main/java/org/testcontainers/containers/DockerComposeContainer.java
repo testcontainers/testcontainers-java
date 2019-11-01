@@ -452,7 +452,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         if (portMap == null) {
             throw new IllegalArgumentException("Could not get a port for '" + serviceName + "'. " +
                 "Reason: '" + serviceName + "' does not exist. " +
-                "Solution: Expose the service '" + serviceName + "' at the container setup of this instance.");
+                "To fix, please ensure that the service '" + serviceName + "' has ports exposed using .withExposedService(...)");
         } else {
             return ambassadorContainer.getMappedPort(portMap.get(servicePort));
         }
