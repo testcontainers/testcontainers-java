@@ -164,7 +164,12 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
     }
 
     private Stream<StoreAdapter> findSharedContainers(Class<?> testClass) {
-        return ReflectionUtils.findFields(testClass, isSharedContainer(), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN).stream().map(f -> getContainerInstance(null, f));
+        return ReflectionUtils.findFields(
+                testClass,
+                isSharedContainer(),
+                ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+            .stream()
+            .map(f -> getContainerInstance(null, f));
     }
 
     private Predicate<Field> isSharedContainer() {
@@ -172,7 +177,12 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
     }
 
     private Stream<StoreAdapter> findRestartContainers(Object testInstance) {
-        return ReflectionUtils.findFields(testInstance.getClass(), isRestartContainer(), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN).stream().map(f -> getContainerInstance(testInstance, f));
+        return ReflectionUtils.findFields(
+                testInstance.getClass(),
+                isRestartContainer(),
+                ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+            .stream()
+            .map(f -> getContainerInstance(testInstance, f));
     }
 
     private Predicate<Field> isRestartContainer() {
