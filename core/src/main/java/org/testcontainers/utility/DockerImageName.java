@@ -67,7 +67,7 @@ public final class DockerImageName {
 
         if (tag.startsWith("sha256:")) {
             repo = remoteName;
-            versioning = new Sha256Versioning(tag);
+            versioning = new Sha256Versioning(tag.replace("sha256:", ""));
         } else {
             repo = remoteName;
             versioning = new TagVersioning(tag);
