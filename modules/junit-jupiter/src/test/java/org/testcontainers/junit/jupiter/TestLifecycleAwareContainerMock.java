@@ -11,8 +11,9 @@ public class TestLifecycleAwareContainerMock extends GenericContainer implements
     private int numBeforeTestsCalls = 0;
     private int numAfterTestsCalls = 0;
 
-    public TestLifecycleAwareContainerMock() {
-        super("httpd:2.4-alpine");
+    TestLifecycleAwareContainerMock() {
+        super("alpine:3.2");
+        setCommand("top");
     }
 
     @Override
@@ -25,11 +26,11 @@ public class TestLifecycleAwareContainerMock extends GenericContainer implements
         numAfterTestsCalls++;
     }
 
-    public int getNumBeforeTestsCalls() {
+    int getNumBeforeTestsCalls() {
         return numBeforeTestsCalls;
     }
 
-    public int getNumAfterTestsCalls() {
+    int getNumAfterTestsCalls() {
         return numAfterTestsCalls;
     }
 }
