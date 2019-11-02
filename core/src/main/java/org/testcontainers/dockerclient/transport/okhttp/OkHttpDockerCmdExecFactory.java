@@ -129,7 +129,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
 
     }
 

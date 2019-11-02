@@ -14,6 +14,7 @@ import org.testcontainers.utility.TestEnvironment;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides utility methods for executing commands in containers
@@ -32,7 +33,7 @@ public class ExecInContainerPattern {
      */
     public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
-        return execInContainer(containerInfo, Charset.forName("UTF-8"), command);
+        return execInContainer(containerInfo, StandardCharsets.UTF_8, command);
     }
 
     /**

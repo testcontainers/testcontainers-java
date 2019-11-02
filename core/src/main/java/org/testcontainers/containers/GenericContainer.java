@@ -71,6 +71,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -104,7 +105,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
-    private static final Charset UTF8 = Charset.forName("UTF-8");
+    private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
@@ -631,12 +632,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         }
 
-        Bind[] bindsArray = binds.stream()
-                .toArray(Bind[]::new);
+        Bind[] bindsArray = binds.toArray(new Bind[0]);
         createCommand.withBinds(bindsArray);
 
-        VolumesFrom[] volumesFromsArray = volumesFroms.stream()
-                .toArray(VolumesFrom[]::new);
+        VolumesFrom[] volumesFromsArray = volumesFroms.toArray(new VolumesFrom[0]);
         createCommand.withVolumesFrom(volumesFromsArray);
 
         Set<Link> allLinks = new HashSet<>();
@@ -659,7 +658,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             allLinkedContainerNetworks.addAll(linkedContainerNetworks);
         }
 
-        createCommand.withLinks(allLinks.toArray(new Link[allLinks.size()]));
+        createCommand.withLinks(allLinks.toArray(new Link[0]));
 
         allLinkedContainerNetworks.remove("bridge");
         if (allLinkedContainerNetworks.size() > 1) {
@@ -668,11 +667,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     allLinkedContainerNetworks);
         }
 
-        Optional<String> networkForLinks = allLinkedContainerNetworks.stream().findFirst();
-        if (networkForLinks.isPresent()) {
-            logger().debug("Associating container with network: {}", networkForLinks.get());
-            createCommand.withNetworkMode(networkForLinks.get());
-        }
+        allLinkedContainerNetworks.stream().findFirst()
+            .ifPresent(networkForLinks -> {
+                logger().debug("Associating container with network: {}", networkForLinks);
+                createCommand.withNetworkMode(networkForLinks);
+            });
 
         createCommand.withPublishAllPorts(true);
 
@@ -680,8 +679,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
         });
 
-        String[] extraHostsArray = extraHosts.stream()
-                .toArray(String[]::new);
+        String[] extraHostsArray = extraHosts.toArray(new String[0]);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (network != null) {
@@ -701,8 +699,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
-        Map<String, String> combinedLabels = new HashMap<>();
-        combinedLabels.putAll(labels);
+        Map<String, String> combinedLabels = new HashMap<>(labels);
         if (createCommand.getLabels() != null) {
             combinedLabels.putAll(createCommand.getLabels());
         }
@@ -712,7 +709,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
         return dockerClient.listContainersCmd()
-                .withStatusFilter(Arrays.asList("running"))
+                .withStatusFilter(Collections.singletonList("running"))
                 .exec().stream()
                 .flatMap(container -> Stream.of(container.getNames()))
                 .filter(name -> name.endsWith(linkableContainer.getContainerName()))

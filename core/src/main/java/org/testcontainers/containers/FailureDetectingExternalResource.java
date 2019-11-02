@@ -23,7 +23,7 @@ public class FailureDetectingExternalResource implements TestRule {
             @Override
             public void evaluate() throws Throwable {
 
-                List<Throwable> errors = new ArrayList<Throwable>();
+                List<Throwable> errors = new ArrayList<>();
 
                 try {
                     starting(description);
