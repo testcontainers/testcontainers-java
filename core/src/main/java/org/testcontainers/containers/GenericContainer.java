@@ -442,7 +442,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .map(it -> it.getId());
     }
 
-    @NotNull
     private Map<String, String> labelFilterFor(String hash) {
         Map<String, String> labels = new HashMap<>();
         labels.put(HASH_LABEL, hash);
