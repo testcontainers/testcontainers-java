@@ -18,7 +18,6 @@ import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
@@ -28,7 +27,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -71,6 +69,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -93,7 +92,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -104,7 +102,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
-    private static final Charset UTF8 = Charset.forName("UTF-8");
+    private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
@@ -435,13 +433,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     Optional<String> findContainerForReuse(String hash) {
         // TODO locking
         return dockerClient.listContainersCmd()
-            .withLabelFilter(ImmutableMap.of(HASH_LABEL, hash))
+            .withLabelFilter(labelFilterFor(hash))
             .withLimit(1)
             .withStatusFilter(Arrays.asList("running"))
             .exec()
             .stream()
             .findAny()
             .map(it -> it.getId());
+    }
+
+    @NotNull
+    private Map<String, String> labelFilterFor(String hash) {
+        Map<String, String> labels = new HashMap<>();
+        labels.put(HASH_LABEL, hash);
+        return Collections.unmodifiableMap(labels);
     }
 
     /**
@@ -926,7 +931,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withExposedPorts(Integer... ports) {
-        this.setExposedPorts(newArrayList(ports));
+        this.setExposedPorts(new ArrayList<>(Arrays.asList(ports)));
         return self();
 
     }

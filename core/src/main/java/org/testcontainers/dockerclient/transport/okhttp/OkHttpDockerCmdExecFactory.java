@@ -6,7 +6,6 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.SSLConfig;
 import com.github.dockerjava.core.WebTarget;
 import com.github.dockerjava.core.exec.PingCmdExec;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +21,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Collections.unmodifiableList;
 
 @Slf4j
 public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
@@ -107,7 +109,7 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
         return new OkHttpWebTarget(
             okHttpClient,
             baseUrl,
-            ImmutableList.of(),
+            unmodifiableList(new ArrayList<>()),
             MultimapBuilder.hashKeys().hashSetValues().build()
         );
     }

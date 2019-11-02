@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.core.InvocationBuilder;
 import com.github.dockerjava.core.WebTarget;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.SetMultimap;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -15,7 +14,10 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -32,7 +34,7 @@ class OkHttpWebTarget implements WebTarget {
 
     HttpUrl baseUrl;
 
-    ImmutableList<String> path;
+    List<String> path;
 
     SetMultimap<String, String> queryParams;
 
@@ -64,22 +66,20 @@ class OkHttpWebTarget implements WebTarget {
 
     @Override
     public OkHttpWebTarget path(String... components) {
-        return this.withPath(
-            ImmutableList.<String>builder()
-                .addAll(path)
-                .add(components)
-                .build()
-        );
+        List<String> newPath = new ArrayList<>(path);
+        Collections.addAll(newPath, components);
+
+        return this.withPath(Collections.unmodifiableList(newPath));
     }
 
     @Override
     public OkHttpWebTarget resolveTemplate(String name, Object value) {
-        ImmutableList.Builder<String> newPath = ImmutableList.builder();
+        List<String> newPath = new ArrayList<>();
         for (String component : path) {
             component = component.replaceAll("\\{" + name + "\\}", value.toString());
             newPath.add(component);
         }
-        return this.withPath(newPath.build());
+        return this.withPath(newPath);
     }
 
     @Override
