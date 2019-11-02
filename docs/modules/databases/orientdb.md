@@ -1,5 +1,9 @@
 # OrientDB Module
 
+!!! note
+    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
+
+
 This module helps running [OrientDB](https://orientdb.org/download) using Testcontainers.
 
 Note that it's based on the [official Docker image](https://hub.docker.com/_/orientdb/) provided by OrientDB.
@@ -58,14 +62,14 @@ testCompile "org.testcontainers:orientdb:{{latest_version}}"
     Add the OrientDB Java client if you plan to access the Testcontainer:
     
     ```groovy tab='Gradle'
-    compile "com.orientechnologies:orientdb-client:3.0.17"
+    compile "com.orientechnologies:orientdb-client:3.0.24"
     ```
     
     ```xml tab='Maven'
     <dependency>
         <groupId>com.orientechnologies</groupId>
         <artifactId>orientdb-client</artifactId>
-        <version>3.0.17</version>
+        <version>3.0.24</version>
     </dependency>
     ```
     

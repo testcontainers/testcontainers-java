@@ -11,19 +11,6 @@ import static org.assertj.core.api.Assertions.*;
 public class OrientDBContainerTest {
 
     @Test
-    public void testContainerLifecycle() {
-        OrientDBContainer container = new OrientDBContainer();
-
-        container.start();
-
-        assertThat(container.isRunning()).isTrue();
-
-        container.stop();
-
-        assertThat(container.isRunning()).isFalse();
-    }
-
-    @Test
     public void shouldReturnTheSameSession() {
         try (OrientDBContainer container = new OrientDBContainer()) {
             container.start();
@@ -56,14 +43,14 @@ public class OrientDBContainerTest {
         try (OrientDBContainer container = new OrientDBContainer()) {
             container.start();
 
-            final ODatabaseSession session = container.getSession();
+            final ODatabaseSession session = container.getSession("admin", "admin");
 
             session.command("CREATE CLASS Person EXTENDS V");
             session.command("INSERT INTO Person set name='john'");
             session.command("INSERT INTO Person set name='jane'");
 
             assertThat(session.execute("gremlin",
-                                       "g.V().hasLabel('Person')").stream()).hasSize(2);
+                "g.V().hasLabel('Person')").stream()).hasSize(2);
         }
     }
 

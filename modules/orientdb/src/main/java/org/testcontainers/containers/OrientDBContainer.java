@@ -26,37 +26,27 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * @author robfrank
  */
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
 
     private static final String DEFAULT_IMAGE_NAME = "orientdb";
-
     private static final String DEFAULT_TAG = "3.0.24-tp3";
+    private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
 
     private static final String DEFAULT_USERNAME = "admin";
-
     private static final String DEFAULT_PASSWORD = "admin";
+    private static final String DEFAULT_SERVER_PASSWORD = "root";
 
     private static final String DEFAULT_DATABASE_NAME = "testcontainers";
 
     private static final int DEFAULT_BINARY_PORT = 2424;
-
     private static final int DEFAULT_HTTP_PORT = 2480;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
-
-    private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
-
     private String databaseName;
-
-    private String username;
-
-    private String password;
-
-    private OrientDB orientDB;
-
-    private ODatabaseSession session;
-
+    private String serverPassword;
     private Optional<String> scriptPath = Optional.empty();
 
+    private OrientDB orientDB;
+    private ODatabaseSession session;
 
     public OrientDBContainer() {
         this(DOCKER_IMAGE_NAME);
@@ -65,8 +55,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     public OrientDBContainer(@NonNull String dockerImageName) {
         super(dockerImageName);
 
-        username = DEFAULT_USERNAME;
-        password = DEFAULT_PASSWORD;
+        serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
         WaitStrategy waitForHttp = new HttpWaitStrategy()
@@ -81,22 +70,12 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     @Override
     protected void configure() {
-
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
-        addEnv("ORIENTDB_ROOT_PASSWORD", "root");
+        addEnv("ORIENTDB_ROOT_PASSWORD", serverPassword);
     }
-
 
     public String getDatabaseName() {
         return databaseName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public String getTestQueryString() {
@@ -108,26 +87,19 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         return self();
     }
 
-    public OrientDBContainer withUsername(final String username) {
-        this.username = username;
-        return self();
-    }
-
-    public OrientDBContainer withPassword(final String password) {
-        this.password = password;
+    public OrientDBContainer withServerPassword(final String serverPassword) {
+        this.serverPassword = serverPassword;
         return self();
     }
 
     public OrientDBContainer withScriptPath(String scriptPath) {
-
         this.scriptPath = Optional.of(scriptPath);
         return self();
     }
 
-
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        orientDB = new OrientDB(getServerUrl(), "root", "root", OrientDBConfig.defaultConfig());
+        orientDB = new OrientDB(getServerUrl(), "root", serverPassword, OrientDBConfig.defaultConfig());
     }
 
     public OrientDB getOrientDB() {
@@ -143,7 +115,10 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     }
 
     public ODatabaseSession getSession() {
+        return getSession(DEFAULT_USERNAME, DEFAULT_PASSWORD);
+    }
 
+    public synchronized ODatabaseSession getSession(String username, String password) {
         orientDB.createIfNotExists(databaseName, ODatabaseType.PLOCAL);
 
         if (session == null) {
@@ -153,7 +128,6 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         }
         return session;
     }
-
 
     private void loadScript(String path, ODatabaseSession session) {
         try {
@@ -174,8 +148,6 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
             LOGGER.error("Error while executing init script: {}", scriptPath, e);
             throw new RuntimeException("Error while executing init script: " + scriptPath, e);
         }
-
     }
-
 
 }
