@@ -1,6 +1,5 @@
 package org.testcontainers.utility;
 
-import com.google.common.base.Charsets;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,7 @@ import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -148,7 +148,7 @@ public class MountableFile implements Transferable {
     private static String unencodeResourceURIToFilePath(@NotNull final String resource) {
         try {
             // Convert any url-encoded characters (e.g. spaces) back into unencoded form
-            return URLDecoder.decode(resource.replaceAll("\\+", "%2B"), Charsets.UTF_8.name())
+            return URLDecoder.decode(resource.replaceAll("\\+", "%2B"), StandardCharsets.UTF_8.toString())
                     .replaceFirst("jar:", "")
                     .replaceFirst("file:", "")
                     .replaceAll("!.*", "");

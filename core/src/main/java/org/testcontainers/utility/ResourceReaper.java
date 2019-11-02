@@ -11,7 +11,6 @@ import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Sets;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +29,7 @@ import java.net.URLEncoder;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +39,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Collections.synchronizedSet;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -52,9 +54,9 @@ public final class ResourceReaper {
 
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
-    private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
-    private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
-    private Set<String> registeredImages = Sets.newConcurrentHashSet();
+    private final Map<String, String> registeredContainers = new ConcurrentHashMap<>();
+    private final Set<String> registeredNetworks = synchronizedSet(new HashSet<>());
+    private final Set<String> registeredImages = synchronizedSet(new HashSet<>());
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
 
     private ResourceReaper() {
@@ -341,12 +343,12 @@ public final class ResourceReaper {
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
     }
-    
+
     public void registerImageForCleanup(String dockerImageName) {
         setHook();
         registeredImages.add(dockerImageName);
     }
-    
+
     private void removeImage(String dockerImageName) {
         LOGGER.trace("Removing image tagged {}", dockerImageName);
         try {

@@ -1,10 +1,10 @@
 package org.testcontainers.utility;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import lombok.experimental.UtilityClass;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -18,7 +18,7 @@ public class LicenseAcceptance {
     public static void assertLicenseAccepted(final String imageName) {
         try {
             final URL url = Resources.getResource(ACCEPTANCE_FILE_NAME);
-            final List<String> acceptedLicences = Resources.readLines(url, Charsets.UTF_8);
+            final List<String> acceptedLicences = Resources.readLines(url, StandardCharsets.UTF_8);
 
             if (acceptedLicences.stream().map(String::trim).anyMatch(imageName::equals)) {
                 return;

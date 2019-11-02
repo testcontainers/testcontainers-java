@@ -12,7 +12,6 @@ import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
@@ -31,6 +30,8 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,20 +54,17 @@ public class DockerClientFactory {
 
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
-    public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
-            TESTCONTAINERS_LABEL, "true",
-            TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
-    );
+    public static final Map<String, String> DEFAULT_LABELS = defaultLabels();
 
     private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
-    private static DockerClientFactory instance;
 
+    private static DockerClientFactory instance;
     // Cached client configuration
+
     private DockerClientProviderStrategy strategy;
     private boolean initialized = false;
     private String activeApiVersion;
     private String activeExecutionDriver;
-
     @Getter(lazy = true)
     private final boolean fileMountingSupported = checkMountableFile();
 
@@ -265,10 +263,10 @@ public class DockerClientFactory {
 
     @VisibleForTesting
     static class DiskSpaceUsage {
+
         Optional<Long> availableMB = Optional.empty();
         Optional<Integer> usedPercent = Optional.empty();
     }
-
     @VisibleForTesting
     DiskSpaceUsage parseAvailableDiskSpace(String dfOutput) {
         DiskSpaceUsage df = new DiskSpaceUsage();
@@ -314,8 +312,16 @@ public class DockerClientFactory {
     }
 
     private static class NotEnoughDiskSpaceException extends RuntimeException {
+
         NotEnoughDiskSpaceException(String message) {
             super(message);
         }
+    }
+
+    private static Map<String, String> defaultLabels() {
+        Map<String, String> map = new HashMap<>();
+        map.put(TESTCONTAINERS_LABEL, "true");
+        map.put(TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID);
+        return Collections.unmodifiableMap(map);
     }
 }

@@ -2,7 +2,8 @@ package org.testcontainers.containers.output;
 
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
-import com.google.common.base.Charsets;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Holds a frame of container output (usually one line, possibly more)
@@ -33,7 +34,7 @@ public class OutputFrame {
             return "";
         }
 
-        return new String(bytes, Charsets.UTF_8);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     public enum OutputType {
