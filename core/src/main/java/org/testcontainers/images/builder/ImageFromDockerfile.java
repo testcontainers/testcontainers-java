@@ -2,10 +2,8 @@ package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
-import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
-import com.google.common.collect.Sets;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +29,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 @Slf4j
