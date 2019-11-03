@@ -3,7 +3,6 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -22,7 +21,6 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 @ToString
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -46,7 +44,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     public RemoteDockerImage(@NonNull Future<String> imageFuture) {
-        this.imageNameFuture = new FutureTask<>(() -> new DockerImageName(imageFuture.get()));
+        this.imageNameFuture = new LazyFuture<DockerImageName>() {
+            @Override
+            @SneakyThrows({InterruptedException.class, ExecutionException.class})
+            protected DockerImageName resolve() {
+                return new DockerImageName(imageFuture.get());
+            }
+        };
     }
 
     @Override
