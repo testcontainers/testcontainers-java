@@ -94,7 +94,7 @@ public final class ResourceReaper {
                 .findFirst()
                 .map(Ports.Binding::getHostPortSpec)
                 .map(Integer::parseInt)
-                .get();
+                .orElseThrow(() -> new IllegalStateException("Could not fetch Ryuk's port"));
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
@@ -341,12 +341,12 @@ public final class ResourceReaper {
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
     }
-    
+
     public void registerImageForCleanup(String dockerImageName) {
         setHook();
         registeredImages.add(dockerImageName);
     }
-    
+
     private void removeImage(String dockerImageName) {
         LOGGER.trace("Removing image tagged {}", dockerImageName);
         try {
