@@ -67,13 +67,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
-                    final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
                     dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())
                         .withTag(imageName.getVersionPart())
-                        .exec(callback);
+                        .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                        .awaitCompletion();
+
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
-                    callback.awaitCompletion();
 
                     return imageName.toString();
                 } catch (InterruptedException | InternalServerErrorException e) {

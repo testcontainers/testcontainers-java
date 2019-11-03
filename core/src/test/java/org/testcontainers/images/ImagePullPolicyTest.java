@@ -79,6 +79,16 @@ public class ImagePullPolicyTest {
 
     @Test
     public void shouldAlwaysPull() {
+        try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
+            container.start();
+        }
+
+        DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
+
+        try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
+            expectToFailWithNotFoundException(container);
+        }
+
         try (
             // built_in_image_pull_policy {
             GenericContainer<?> container = new GenericContainer<>(imageName)
@@ -86,11 +96,6 @@ public class ImagePullPolicyTest {
             // }
         ) {
             container.start();
-            container.stop();
-
-            DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
-
-            expectToFailWithNotFoundException(container);
         }
     }
 
