@@ -81,6 +81,10 @@ public class DockerClientFactory {
 
     }
 
+    public static DockerClient lazyClient() {
+        return LazyDockerClient.INSTANCE;
+    }
+
     /**
      * Obtain an instance of the DockerClientFactory.
      *

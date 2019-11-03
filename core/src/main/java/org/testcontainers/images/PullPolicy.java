@@ -1,6 +1,7 @@
-package org.testcontainers.containers.image.pull.policy;
+package org.testcontainers.images;
 
 import java.time.Duration;
+
 import lombok.experimental.UtilityClass;
 
 /**
@@ -14,7 +15,7 @@ public class PullPolicy {
      * Convenience method for returning the {@link DefaultPullPolicy} default image pull policy
      * @return {@link ImagePullPolicy}
      */
-    public static ImagePullPolicy getDefaultPullPolicy() {
+    public static ImagePullPolicy defaultPolicy() {
         return new DefaultPullPolicy();
     }
 

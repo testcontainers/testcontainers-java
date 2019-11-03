@@ -28,7 +28,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -40,8 +39,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.containers.image.ImageNameResolverProvider;
-import org.testcontainers.containers.image.pull.policy.ImagePullPolicy;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -50,6 +48,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
@@ -137,7 +136,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ));
 
     @NonNull
-    private ImageNameResolverProvider nameResolverProvider;
+    private RemoteDockerImage image;
 
     @NonNull
     private Map<String, String> env = new HashMap<>();
@@ -183,10 +182,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Unique instance of DockerClient for use by this container object.
-     * We use {@link LazyDockerClient} here to avoid eager client creation
+     * We use {@link DockerClientFactory#lazyClient()} here to avoid eager client creation
      */
     @Setter(AccessLevel.NONE)
-    protected DockerClient dockerClient = LazyDockerClient.INSTANCE;
+    protected DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     /*
      * Info about the Docker server; lazily fetched.
@@ -243,16 +242,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
-    public GenericContainer(@NonNull ImageNameResolverProvider nameResolverProvider) {
-        this.nameResolverProvider = nameResolverProvider;
-    }
-
     public GenericContainer(@NonNull final String dockerImageName) {
-        this(new ImageNameResolverProvider(dockerImageName));
+        this.setDockerImageName(dockerImageName);
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        this(new ImageNameResolverProvider(image));
+        setImage(image);
+    }
+
+    public void setImage(Future<String> image) {
+        this.image = new RemoteDockerImage(image);
     }
 
     /**
@@ -793,11 +792,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return env;
     }
 
-    @Override
-    public void setImage(Future<String> image) {
-        this.nameResolverProvider = new ImageNameResolverProvider(image);
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -1054,8 +1048,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     @Override
-    public SELF withImagePullPolicy(ImagePullPolicy policy) {
-        this.nameResolverProvider.setImagePullPolicy(policy);
+    public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
+        this.image = this.image.withImagePullPolicy(imagePullPolicy);
         return self();
     }
 
@@ -1150,7 +1144,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
-        this.nameResolverProvider = new ImageNameResolverProvider(dockerImageName);
+        this.image = new RemoteDockerImage(dockerImageName);
     }
 
     /**
@@ -1160,9 +1154,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     public String getDockerImageName() {
         try {
-            return getImage().get();
+            return image.get();
         } catch (Exception e) {
-            throw new ContainerFetchException("Can't get Docker image: " + nameResolverProvider.getResolver(), e);
+            throw new ContainerFetchException("Can't get Docker image: " + image, e);
         }
     }
 
@@ -1296,11 +1290,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             tarInputStream.getNextTarEntry();
             return consumer.apply(tarInputStream);
         }
-    }
-
-    @Override
-    public Future<String> getImage() {
-        return nameResolverProvider.getResolver();
     }
 
     /**
