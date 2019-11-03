@@ -17,6 +17,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.UUID;
@@ -72,20 +73,29 @@ public class ImagePullPolicyTest {
 
     @Test
     public void pullsByDefault() {
-        try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(imageName)
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+        ) {
             container.start();
         }
     }
 
     @Test
     public void shouldAlwaysPull() {
-        try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(imageName)
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+        ) {
             container.start();
         }
 
         DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
 
-        try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(imageName)
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+        ) {
             expectToFailWithNotFoundException(container);
         }
 
@@ -95,6 +105,7 @@ public class ImagePullPolicyTest {
                 .withImagePullPolicy(PullPolicy.alwaysPull())
             // }
         ) {
+            container.withStartupCheckStrategy(new OneShotStartupCheckStrategy());
             container.start();
         }
     }
@@ -112,6 +123,7 @@ public class ImagePullPolicyTest {
                 })
             // }
         ) {
+            container.withStartupCheckStrategy(new OneShotStartupCheckStrategy());
             container.start();
         }
     }
@@ -126,7 +138,8 @@ public class ImagePullPolicyTest {
         });
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withImagePullPolicy(policy);
+                .withImagePullPolicy(policy)
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             container.start();
 
@@ -139,6 +152,7 @@ public class ImagePullPolicyTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(__ -> false)
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             expectToFailWithNotFoundException(container);
         }

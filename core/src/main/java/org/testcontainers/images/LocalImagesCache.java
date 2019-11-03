@@ -29,12 +29,12 @@ enum LocalImagesCache {
     DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     public ImageData get(DockerImageName imageName) {
-        maybeInitCache(dockerClient);
+        maybeInitCache();
         return cache.get(imageName);
     }
 
     public Optional<ImageData> refreshCache(DockerImageName imageName) {
-        if (!maybeInitCache(dockerClient)) {
+        if (!maybeInitCache()) {
             // Cache may be stale, trying inspectImageCmd...
 
             InspectImageResponse response = null;
@@ -54,10 +54,9 @@ enum LocalImagesCache {
         }
 
         return Optional.ofNullable(cache.get(imageName));
-
     }
 
-    private synchronized boolean maybeInitCache(DockerClient dockerClient) {
+    private synchronized boolean maybeInitCache() {
         if (!initialized.compareAndSet(false, true)) {
             return false;
         }
