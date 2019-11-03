@@ -22,7 +22,7 @@ This works well when running against a specific version, but for images with a s
 It is possible to specify an Image Pull Policy to determine at runtime whether an image should be pulled or not:
 
 <!--codeinclude-->
-[Setting image pull policy](../../core/src/test/java/org/testcontainers/images/ImagePullPolicyTest.java) inside_block:image_pull_policy
+[Setting image pull policy](../../core/src/test/java/org/testcontainers/images/ImagePullPolicyTest.java) inside_block:built_in_image_pull_policy
 <!--/codeinclude-->
 
 ... or providing a function:

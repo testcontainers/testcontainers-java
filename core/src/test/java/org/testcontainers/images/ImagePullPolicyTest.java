@@ -80,7 +80,7 @@ public class ImagePullPolicyTest {
     @Test
     public void shouldAlwaysPull() {
         try (
-            // image_pull_policy {
+            // built_in_image_pull_policy {
             GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(PullPolicy.alwaysPull())
             // }
