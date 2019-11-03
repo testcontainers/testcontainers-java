@@ -78,23 +78,6 @@ public class ImagePullPolicyTest {
     }
 
     @Test
-    public void shouldSupportCustomPolicies() {
-        try (
-            // custom_image_pull_policy {
-            GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withImagePullPolicy(new AbstractImagePullPolicy() {
-                    @Override
-                    protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
-                        return System.getenv("ALWAYS_PULL_IMAGE") != null;
-                    }
-                })
-            // }
-        ) {
-            container.start();
-        }
-    }
-
-    @Test
     public void shouldAlwaysPull() {
         try (
             // image_pull_policy {
@@ -108,6 +91,23 @@ public class ImagePullPolicyTest {
             DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
 
             expectToFailWithNotFoundException(container);
+        }
+    }
+
+    @Test
+    public void shouldSupportCustomPolicies() {
+        try (
+            // custom_image_pull_policy {
+            GenericContainer<?> container = new GenericContainer<>(imageName)
+                .withImagePullPolicy(new AbstractImagePullPolicy() {
+                    @Override
+                    protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
+                        return System.getenv("ALWAYS_PULL_IMAGE") != null;
+                    }
+                })
+            // }
+        ) {
+            container.start();
         }
     }
 
