@@ -4,14 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.wait.internal.AsyncCheck;
 import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.containers.wait.internal.InternalCommandPortListeningCheck;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 /**
  * Waits until a socket connection can be established on a port exposed or mapped by the container.
@@ -31,25 +34,24 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
             return;
         }
 
-        @SuppressWarnings("unchecked")
         List<Integer> exposedPorts = waitStrategyTarget.getExposedPorts();
 
         final Set<Integer> internalPorts = getInternalPorts(externalLivenessCheckPorts, exposedPorts);
 
-        Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(waitStrategyTarget, internalPorts);
-
-        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(waitStrategyTarget, externalLivenessCheckPorts);
+        AsyncCheck internalCheck = new InternalCommandPortListeningCheck(waitStrategyTarget, internalPorts);
+        AsyncCheck externalCheck = new ExternalPortListeningCheck(waitStrategyTarget, externalLivenessCheckPorts);
 
         try {
             Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS,
-                () -> getRateLimiter().getWhenReady(() -> internalCheck.call() && externalCheck.call()));
+                () -> getRateLimiter().getWhenReady(() -> {
+                    CompletableFuture<Boolean> internalCheckResult = internalCheck.perform();
+                    CompletableFuture<Boolean> externalCheckResult = externalCheck.perform();
+                    return internalCheckResult.join() && externalCheckResult.join();
+                }));
 
         } catch (TimeoutException e) {
-            throw new ContainerLaunchException("Timed out waiting for container port to open (" +
-                    waitStrategyTarget.getContainerIpAddress() +
-                    " ports: " +
-                    externalLivenessCheckPorts +
-                    " should be listening)");
+            throw new ContainerLaunchException(format("Timed out waiting for container port to open (%s ports: %s should be listening)",
+                waitStrategyTarget.getContainerIpAddress(), externalLivenessCheckPorts));
         }
     }
 

@@ -8,6 +8,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.net.ServerSocket;
+import java.util.concurrent.CompletionException;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,7 +38,7 @@ public class ExternalPortListeningCheckTest {
 
         final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort()));
 
-        final Boolean result = check.call();
+        final Boolean result = check.perform().join();
 
         VisibleAssertions.assertTrue("ExternalPortListeningCheck identifies a single listening port", result);
     }
@@ -47,7 +48,7 @@ public class ExternalPortListeningCheckTest {
 
         final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort()));
 
-        final Boolean result = check.call();
+        final Boolean result = check.perform().join();
 
         VisibleAssertions.assertTrue("ExternalPortListeningCheck identifies multiple listening port", result);
     }
@@ -58,8 +59,8 @@ public class ExternalPortListeningCheckTest {
         final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort()));
 
         assertThrows("ExternalPortListeningCheck detects a non-listening port among many",
-                IllegalStateException.class,
-                (Runnable) check::call);
+                CompletionException.class,
+                () -> check.perform().join());
 
     }
 

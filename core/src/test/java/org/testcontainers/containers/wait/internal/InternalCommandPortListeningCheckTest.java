@@ -21,7 +21,7 @@ public class InternalCommandPortListeningCheckTest {
     public void singleListening() {
         final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, ImmutableSet.of(8080));
 
-        final Boolean result = check.call();
+        final Boolean result = check.perform().join();
 
         assertTrue("InternalCommandPortListeningCheck identifies a single listening port", result);
     }
@@ -30,7 +30,7 @@ public class InternalCommandPortListeningCheckTest {
     public void nonListening() {
         final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, ImmutableSet.of(8080, 1234));
 
-        final Boolean result = check.call();
+        final Boolean result = check.perform().join();
 
         assertFalse("InternalCommandPortListeningCheck detects a non-listening port among many", result);
     }
