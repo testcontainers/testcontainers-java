@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import static java.lang.String.format;
-import static java.util.concurrent.Executors.*;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.testcontainers.containers.wait.internal.ThreadFactories.prefixedThreadFactory;
 
 /**
