@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,10 +27,14 @@ public class ExternalPortListeningCheck implements AsyncCheck {
     public CompletableFuture<Boolean> perform() {
         ExecutorService executor = Executors.newFixedThreadPool(Math.min(externalLivenessCheckPorts.size(), 100), prefixedThreadFactory("external-port-listening-check"));
 
-        return externalLivenessCheckPorts.stream()
-            .map(externalPort -> openSocketAsync(containerState.getContainerIpAddress(), externalPort, executor))
-            .collect(collectingAndThen(toList(), ExternalPortListeningCheck::combineOrShortcircuit))
-            .thenApply(__ -> true);
+        try {
+            return externalLivenessCheckPorts.stream()
+                .map(externalPort -> openSocketAsync(containerState.getContainerIpAddress(), externalPort, executor))
+                .collect(collectingAndThen(toList(), ExternalPortListeningCheck::combineOrShortcircuit))
+                .thenApply(__ -> true);
+        } finally {
+            executor.shutdown();
+        }
     }
 
     private static CompletableFuture<Void> openSocketAsync(String address, Integer externalPort, ExecutorService executor) {
