@@ -72,11 +72,7 @@ public final class DockerImageName {
      * @return the unversioned (non 'tag') part of this name
      */
     public String getUnversionedPart() {
-        if (!"".equals(registry)) {
-            return registry + "/" + repo;
-        } else {
-            return repo;
-        }
+        return "".equals(registry) ? repo : registry + "/" + repo;
     }
 
     /**
