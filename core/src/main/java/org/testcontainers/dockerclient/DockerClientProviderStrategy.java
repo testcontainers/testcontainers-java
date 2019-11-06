@@ -4,7 +4,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.google.common.base.Throwables;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
@@ -17,6 +16,8 @@ import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
 import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -183,7 +184,11 @@ public abstract class DockerClientProviderStrategy {
                 });
             });
         } catch (TimeoutException e) {
-            IOUtils.closeQuietly(client);
+            try {
+                client.close();
+            } catch (IOException ignored) {
+                // ignore
+            }
             throw e;
         }
     }
