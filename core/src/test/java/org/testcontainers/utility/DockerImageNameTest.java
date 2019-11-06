@@ -35,7 +35,7 @@ public class DockerImageNameTest {
 
         @Test
         public void testValidNameAccepted() {
-            new DockerImageName(imageName).assertValid();
+            new DockerImageName(imageName);
         }
     }
 
@@ -56,7 +56,7 @@ public class DockerImageNameTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void testInvalidNameRejected() {
-            new DockerImageName(imageName).assertValid();
+            new DockerImageName(imageName);
         }
     }
 

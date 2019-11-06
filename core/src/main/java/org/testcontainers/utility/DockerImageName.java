@@ -4,7 +4,6 @@ package org.testcontainers.utility;
 import com.google.common.net.HostAndPort;
 import lombok.EqualsAndHashCode;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
@@ -29,15 +28,20 @@ public final class DockerImageName {
         registry = registryWithRemote.getRegistry();
         repo = repositoryWithVersioning.getRepository();
         versioning = repositoryWithVersioning.getVersioning();
+
+        assertValid();
     }
 
     public DockerImageName(String name, String tag) {
         this.rawName = name;
 
         RegistryWithRemote registryWithRemote = RegistryWithRemote.from(name);
+
         registry = registryWithRemote.getRegistry();
         repo = registryWithRemote.getRemoteName();
         versioning = parseVersioning(tag);
+
+        assertValid();
     }
 
 

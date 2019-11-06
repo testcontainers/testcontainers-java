@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 public interface FromStatementTrait<SELF extends FromStatementTrait<SELF> & DockerfileBuilderTrait<SELF>> {
 
     default SELF from(String dockerImageName) {
-        new DockerImageName(dockerImageName).assertValid();
+        new DockerImageName(dockerImageName);
 
         return ((SELF) this).withStatement(new SingleArgumentStatement("FROM", dockerImageName));
     }
