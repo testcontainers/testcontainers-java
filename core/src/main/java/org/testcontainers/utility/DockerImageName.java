@@ -3,7 +3,6 @@ package org.testcontainers.utility;
 
 import com.google.common.net.HostAndPort;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 
 import java.util.regex.Pattern;
 
