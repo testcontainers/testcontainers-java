@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode(exclude = "rawName")
 public final class DockerImageName {
@@ -39,11 +38,14 @@ public final class DockerImageName {
 
         registry = registryWithRemote.getRegistry();
         repo = registryWithRemote.getRemoteName();
-        versioning = parseVersioning(tag);
+        versioning = Versioning.from(tag);
 
         assertValid();
     }
 
+    public String getRegistry() {
+        return registry;
+    }
 
     /**
      * @return the unversioned (non 'tag') part of this name
@@ -82,14 +84,6 @@ public final class DockerImageName {
         if (!versioning.isValid()) {
             throw new IllegalArgumentException(format("%s is not a valid image versioning identifier (in %s)", versioning, rawName));
         }
-    }
-
-    public String getRegistry() {
-        return registry;
-    }
-
-    private static Versioning parseVersioning(String tag) {
-        return requireNonNull(tag).startsWith("sha256:") ? new Sha256Versioning(tag.replace("sha256:", "")) : new TagVersioning(tag);
     }
 
     private static Pattern getRepoNamePattern() {
