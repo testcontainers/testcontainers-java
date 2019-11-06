@@ -7,7 +7,10 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.rnorth.ducttape.Preconditions;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.fail;
@@ -27,8 +30,10 @@ public abstract class AbstractStatementTest {
 
             Preconditions.check("inputStream is null for path " + path, inputStream != null);
 
-            String content = IOUtils.toString(inputStream);
-            IOUtils.closeQuietly(inputStream);
+            String content = IOUtils.toString(inputStream, Charset.defaultCharset());
+            try {
+                inputStream.close();
+            } catch (final IOException ignored) { }
             expectedLines = StringUtils.chomp(content.replaceAll("\r\n", "\n").trim()).split("\n");
         } catch (Exception e) {
             fail("can't load fixture '" + testName.getMethodName() + "'\n" + ExceptionUtils.getFullStackTrace(e));
