@@ -14,10 +14,10 @@ import okhttp3.ConnectionPool;
 import okhttp3.Dns;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
-import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -121,7 +121,11 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                 WebTarget webResource = getBaseResource().path("/_ping");
 
                 // TODO contribute to docker-java, make it close the stream
-                IOUtils.closeQuietly(webResource.request().get());
+                try {
+                    webResource.request().get().close();
+                } catch (IOException ignored) {
+                    // ignore
+                }
 
                 return null;
             }
