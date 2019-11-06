@@ -3,6 +3,7 @@ package org.testcontainers.utility;
 
 import com.google.common.net.HostAndPort;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.util.regex.Pattern;
 
@@ -71,7 +72,7 @@ public final class DockerImageName {
      *
      * @throws IllegalArgumentException if not valid
      */
-    public void assertValid() {
+    private void assertValid() {
         HostAndPort.fromString(registry);
         if (!REPO_NAME.matcher(repo).matches()) {
             throw new IllegalArgumentException(format("%s is not a valid Docker image name (in %s)", repo, rawName));
