@@ -4,9 +4,11 @@ package org.testcontainers.utility;
 import com.google.common.net.HostAndPort;
 import lombok.EqualsAndHashCode;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode(exclude = "rawName")
 public final class DockerImageName {
@@ -83,7 +85,7 @@ public final class DockerImageName {
     }
 
     private static Versioning parseVersioning(String tag) {
-        return tag.startsWith("sha256:") ? new Sha256Versioning(tag.replace("sha256:", "")) : new TagVersioning(tag);
+        return requireNonNull(tag).startsWith("sha256:") ? new Sha256Versioning(tag.replace("sha256:", "")) : new TagVersioning(tag);
     }
 
     private static Pattern getRepoNamePattern() {
