@@ -2,25 +2,22 @@ package org.testcontainers.utility;
 
 
 import com.google.common.net.HostAndPort;
-import lombok.EqualsAndHashCode;
+import lombok.Data;
 
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 
-@EqualsAndHashCode(exclude = "rawName")
+@Data
 public final class DockerImageName {
 
     private static final Pattern REPO_NAME = getRepoNamePattern();
 
-    private final String rawName;
     private final String registry;
     private final String repo;
     private final Versioning versioning;
 
     public DockerImageName(String name) {
-        this.rawName = name;
-
         RegistryWithRemote registryWithRemote = RegistryWithRemote.from(name);
         RepositoryWithVersioning repositoryWithVersioning = RepositoryWithVersioning.from(registryWithRemote.getRemoteName());
 
@@ -28,19 +25,17 @@ public final class DockerImageName {
         repo = repositoryWithVersioning.getRepository();
         versioning = repositoryWithVersioning.getVersioning();
 
-        assertValid();
+        assertValid(name);
     }
 
     public DockerImageName(String name, String tag) {
-        this.rawName = name;
-
         RegistryWithRemote registryWithRemote = RegistryWithRemote.from(name);
 
         registry = registryWithRemote.getRegistry();
         repo = registryWithRemote.getRemoteName();
         versioning = Versioning.from(tag);
 
-        assertValid();
+        assertValid(name);
     }
 
     public String getRegistry() {
@@ -73,7 +68,7 @@ public final class DockerImageName {
      *
      * @throws IllegalArgumentException if not valid
      */
-    private void assertValid() {
+    private void assertValid(String rawName) {
         HostAndPort.fromString(registry);
         if (!REPO_NAME.matcher(repo).matches()) {
             throw new IllegalArgumentException(format("%s is not a valid Docker image name (in %s)", repo, rawName));
