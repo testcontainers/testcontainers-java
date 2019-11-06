@@ -63,14 +63,10 @@ public final class DockerImageName {
             remoteName = name.substring(slashIndex + 1);
         }
 
-        if (tag.startsWith("sha256:")) {
-            repo = remoteName;
-            versioning = new Sha256Versioning(tag.replace("sha256:", ""));
-        } else {
-            repo = remoteName;
-            versioning = new TagVersioning(tag);
-        }
+        repo = remoteName;
+        versioning = parseVersioning(tag);
     }
+
 
     /**
      * @return the unversioned (non 'tag') part of this name
@@ -92,11 +88,9 @@ public final class DockerImageName {
 
     @Override
     public String toString() {
-        if (versioning == null) {
-            return getUnversionedPart();
-        } else {
-            return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
-        }
+        return versioning == null
+            ? getUnversionedPart()
+            : format("%s%s%s", getUnversionedPart(), versioning.getSeparator(), versioning.toString());
     }
 
     /**
@@ -120,6 +114,10 @@ public final class DockerImageName {
 
     public String getRegistry() {
         return registry;
+    }
+
+    private static Versioning parseVersioning(String tag) {
+        return tag.startsWith("sha256:") ? new Sha256Versioning(tag.replace("sha256:", "")) : new TagVersioning(tag);
     }
 
     private static Pattern getRepoNamePattern() {
