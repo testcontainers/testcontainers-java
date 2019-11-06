@@ -2,7 +2,6 @@ package org.testcontainers.utility;
 
 
 import com.google.common.net.HostAndPort;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.regex.Pattern;
@@ -21,49 +20,21 @@ public final class DockerImageName {
 
     public DockerImageName(String name) {
         this.rawName = name;
-        final int slashIndex = name.indexOf('/');
 
-        String remoteName;
-        if (slashIndex == -1 ||
-            (!name.substring(0, slashIndex).contains(".") &&
-                !name.substring(0, slashIndex).contains(":") &&
-                !name.substring(0, slashIndex).equals("localhost"))) {
-            registry = "";
-            remoteName = name;
-        } else {
-            registry = name.substring(0, slashIndex);
-            remoteName = name.substring(slashIndex + 1);
-        }
+        RegistryWithRemote registryWithRemote = RegistryWithRemote.from(name);
+        RepositoryWithVersioning repositoryWithVersioning = RepositoryWithVersioning.from(registryWithRemote.getRemoteName());
 
-        if (remoteName.contains("@sha256:")) {
-            repo = remoteName.split("@sha256:")[0];
-            versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
-        } else if (remoteName.contains(":")) {
-            repo = remoteName.split(":")[0];
-            versioning = new TagVersioning(remoteName.split(":")[1]);
-        } else {
-            repo = remoteName;
-            versioning = new TagVersioning("latest");
-        }
+        registry = registryWithRemote.getRegistry();
+        repo = repositoryWithVersioning.getRepository();
+        versioning = repositoryWithVersioning.getVersioning();
     }
 
     public DockerImageName(String name, String tag) {
         this.rawName = name;
-        final int slashIndex = name.indexOf('/');
 
-        String remoteName;
-        if (slashIndex == -1 ||
-            (!name.substring(0, slashIndex).contains(".") &&
-                !name.substring(0, slashIndex).contains(":") &&
-                !name.substring(0, slashIndex).equals("localhost"))) {
-            registry = "";
-            remoteName = name;
-        } else {
-            registry = name.substring(0, slashIndex);
-            remoteName = name.substring(slashIndex + 1);
-        }
-
-        repo = remoteName;
+        RegistryWithRemote registryWithRemote = RegistryWithRemote.from(name);
+        registry = registryWithRemote.getRegistry();
+        repo = registryWithRemote.getRemoteName();
         versioning = parseVersioning(tag);
     }
 
@@ -97,14 +68,13 @@ public final class DockerImageName {
     public void assertValid() {
         HostAndPort.fromString(registry);
         if (!REPO_NAME.matcher(repo).matches()) {
-            throw new IllegalArgumentException(repo + " is not a valid Docker image name (in " + rawName + ")");
+            throw new IllegalArgumentException(format("%s is not a valid Docker image name (in %s)", repo, rawName));
         }
         if (versioning == null) {
-            throw new IllegalArgumentException("No image tag was specified in docker image name " +
-                "(" + rawName + "). Please provide a tag; this may be 'latest' or a specific version");
+            throw new IllegalArgumentException(format("No image tag was specified in docker image name (%s). Please provide a tag; this may be 'latest' or a specific version", rawName));
         }
         if (!versioning.isValid()) {
-            throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");
+            throw new IllegalArgumentException(format("%s is not a valid image versioning identifier (in %s)", versioning, rawName));
         }
     }
 
@@ -122,60 +92,5 @@ public final class DockerImageName {
         String repoNamePart = format("%s(%s%s)*", alphaNumeric, separator, alphaNumeric);
 
         return Pattern.compile(format("%s(/%s)*", repoNamePart, repoNamePart));
-    }
-
-    private interface Versioning {
-        boolean isValid();
-        String getSeparator();
-    }
-
-    @Data
-    private static class TagVersioning implements Versioning {
-        public static final String TAG_REGEX = "[\\w][\\w\\.\\-]{0,127}";
-        private final String tag;
-
-        TagVersioning(String tag) {
-            this.tag = tag;
-        }
-
-        @Override
-        public boolean isValid() {
-            return tag.matches(TAG_REGEX);
-        }
-
-        @Override
-        public String getSeparator() {
-            return ":";
-        }
-
-        @Override
-        public String toString() {
-            return tag;
-        }
-    }
-
-    @Data
-    private static class Sha256Versioning implements Versioning {
-        public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
-        private final String hash;
-
-        Sha256Versioning(String hash) {
-            this.hash = hash;
-        }
-
-        @Override
-        public boolean isValid() {
-            return hash.matches(HASH_REGEX);
-        }
-
-        @Override
-        public String getSeparator() {
-            return "@";
-        }
-
-        @Override
-        public String toString() {
-            return "sha256:" + hash;
-        }
     }
 }
