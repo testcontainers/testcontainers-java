@@ -7,14 +7,12 @@ import lombok.EqualsAndHashCode;
 
 import java.util.regex.Pattern;
 
+import static java.lang.String.format;
+
 @EqualsAndHashCode(exclude = "rawName")
 public final class DockerImageName {
 
-    /* Regex patterns used for validation */
-    private static final String ALPHA_NUMERIC = "[a-z0-9]+";
-    private static final String SEPARATOR = "([\\.]{1}|_{1,2}|-+)";
-    private static final String REPO_NAME_PART = ALPHA_NUMERIC + "(" + SEPARATOR + ALPHA_NUMERIC + ")*";
-    private static final Pattern REPO_NAME = Pattern.compile(REPO_NAME_PART + "(/" + REPO_NAME_PART + ")*");
+    private static final Pattern REPO_NAME = getRepoNamePattern();
 
     private final String rawName;
     private final String registry;
@@ -124,6 +122,14 @@ public final class DockerImageName {
         return registry;
     }
 
+    private static Pattern getRepoNamePattern() {
+        String alphaNumeric = "[a-z0-9]+";
+        String separator = "([\\.]{1}|_{1,2}|-+)";
+        String repoNamePart = format("%s(%s%s)*", alphaNumeric, separator, alphaNumeric);
+
+        return Pattern.compile(format("%s(/%s)*", repoNamePart, repoNamePart));
+    }
+
     private interface Versioning {
         boolean isValid();
         String getSeparator();
@@ -155,7 +161,7 @@ public final class DockerImageName {
     }
 
     @Data
-    private class Sha256Versioning implements Versioning {
+    private static class Sha256Versioning implements Versioning {
         public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
         private final String hash;
 
