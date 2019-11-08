@@ -46,9 +46,9 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     protected void configure() {
         addExposedPort(POSTGRESQL_PORT);
-        addEnv("POSTGRES_DB", databaseName);
-        addEnv("POSTGRES_USER", username);
-        addEnv("POSTGRES_PASSWORD", password);
+        addEnv("POSTGRES_DB", getDatabaseName());
+        addEnv("POSTGRES_USER", getUsername());
+        addEnv("POSTGRES_PASSWORD", getPassword());
     }
 
     @Override
@@ -59,7 +59,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         // Disable Postgres driver use of java.util.logging to reduce noise at startup time
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName + "?loggerLevel=OFF";
+        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + getDatabaseName() + "?loggerLevel=OFF";
     }
 
     @Override
