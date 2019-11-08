@@ -22,8 +22,13 @@ public class PostgreSQLConnectionURLTest {
     public static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer {
 
         @Override
-        public String getJdbcUrl() {
-            return "jdbc:postgresql://localhost:34532/databasename?loggerLevel=OFF";
+        public String getContainerIpAddress() {
+            return "localhost";
+        }
+
+        @Override
+        public Integer getMappedPort(int originalPort) {
+            return 34532;
         }
     }
 }
