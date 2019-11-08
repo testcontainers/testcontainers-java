@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.lang.String.format;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
@@ -23,6 +24,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     private String password = "test";
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
+
+    private static final String QUERY_PARAM_SEPARATOR = "&";
 
     public PostgreSQLContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
@@ -59,7 +62,14 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         // Disable Postgres driver use of java.util.logging to reduce noise at startup time
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName + "?loggerLevel=OFF";
+        return format("jdbc:postgresql://%s:%d/%s?loggerLevel=OFF", getContainerIpAddress(), getMappedPort(POSTGRESQL_PORT), databaseName);
+    }
+
+    @Override
+    protected String constructUrlForConnection(String queryString) {
+        return "".equals(queryString)
+            ? getJdbcUrl()
+            : getJdbcUrl() + QUERY_PARAM_SEPARATOR + queryString.substring(1);
     }
 
     @Override

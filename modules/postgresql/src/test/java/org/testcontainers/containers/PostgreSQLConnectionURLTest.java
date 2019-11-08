@@ -8,7 +8,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.jdbc.ConnectionUrl.newInstance;
 
-public class PostgreSQLContainerTest {
+public class PostgreSQLConnectionURLTest {
 
     @Rule
     public JdbcDatabaseContainer postgres = new PostgreSQLContainerProvider().newInstance(newInstance("jdbc:tc:postgresql://hostname/databasename"));
