@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     public static final String VERSION = "0.9.4";
+    private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
 
     private final List<Service> services = new ArrayList<>();
 
@@ -51,6 +52,19 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         Preconditions.check("services list must not be empty", !services.isEmpty());
 
         withEnv("SERVICES", services.stream().map(Service::getLocalStackName).collect(Collectors.joining(",")));
+
+        String hostnameExternalReason;
+        if (getEnvMap().containsKey(HOSTNAME_EXTERNAL_ENV_VAR)) {
+            // do nothing
+            hostnameExternalReason = "explicitly as environment variable";
+        } else if (getNetwork() != null && getNetworkAliases() != null && getNetworkAliases().size() >= 1) {
+            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1));  // use the last network alias set
+            hostnameExternalReason = "to match last network alias on container with non-default network";
+        } else {
+            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getContainerIpAddress());
+            hostnameExternalReason = "to match host-routable address for container";
+        }
+        logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
 
         for (Service service : services) {
             addExposedPort(service.getPort());
@@ -76,6 +90,11 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             .withCredentials(localstack.getDefaultCredentialsProvider())
             .build();
      </code></pre>
+     *
+     * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
+     * that are running on the test host. If other containers need to call this one, they should be configured
+     * specifically to do so using a Docker network and appropriate addressing.</strong></p>
+     *
      * @param service the service that is to be accessed
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
      */
