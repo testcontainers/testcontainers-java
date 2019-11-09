@@ -28,7 +28,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -71,6 +71,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -83,6 +84,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -92,6 +94,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
@@ -111,6 +115,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public static final String INTERNAL_HOST_HOSTNAME = "host.testcontainers.internal";
 
     static final String HASH_LABEL = "org.testcontainers.hash";
+
+    static final String COPIED_FILES_HASH_LABEL = "org.testcontainers.copied_files.hash";
 
     /*
      * Default settings
@@ -345,6 +351,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
 
                 if (TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+                    createCommand.getLabels().put(
+                        COPIED_FILES_HASH_LABEL,
+                        Long.toHexString(hashCopiedFiles().getValue())
+                    );
+
                     String hash = hash(createCommand);
 
                     containerId = findContainerForReuse(hash).orElse(null);
@@ -373,7 +384,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             if (!reused) {
                 containerId = createCommand.exec().getId();
 
-                // TODO add to the hash
+                // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
             }
 
@@ -423,6 +434,34 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
+        }
+    }
+
+    @VisibleForTesting
+    Checksum hashCopiedFiles() {
+        Checksum checksum = new Adler32();
+        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
+            byte[] pathBytes = entry.getValue().getBytes();
+            // Add path to the hash
+            checksum.update(pathBytes, 0, pathBytes.length);
+
+            File file = new File(entry.getKey().getResolvedPath());
+            checksumFile(file, checksum);
+        });
+        return checksum;
+    }
+
+    @VisibleForTesting
+    @SneakyThrows(IOException.class)
+    void checksumFile(File file, Checksum checksum) {
+        if (file.isDirectory()) {
+            try (Stream<Path> stream = Files.walk(file.toPath())) {
+                stream.filter(it -> !Files.isDirectory(it)).forEach(path -> {
+                    checksumFile(path.toFile(), checksum);
+                });
+            }
+        } else {
+            FileUtils.checksum(file, checksum);
         }
     }
 
@@ -648,7 +687,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         Set<Link> allLinks = new HashSet<>();
         Set<String> allLinkedContainerNetworks = new HashSet<>();
-        for (Map.Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
+        for (Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
 
             String alias = linkEntries.getKey();
             LinkableContainer linkableContainer = linkEntries.getValue();
