@@ -399,6 +399,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
             waitUntilContainerStarted();
 
+            if (reused) {
+                containerIsReused();
+            }
+
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
             containerIsStarted(containerInfo);
         } catch (Exception e) {
@@ -530,6 +534,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    @UnstableAPI
+    protected void containerIsReused() {
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
