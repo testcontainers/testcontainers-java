@@ -13,8 +13,8 @@ import org.testcontainers.containers.GenericContainer;
  */
 public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
 
-    private static final String IMAGE_NAME = "quay.io/testcontainers/dynalite:v1.2.1-1";
-    private static final int MAPPED_PORT = 4567;
+    public static final String IMAGE_NAME = "quay.io/testcontainers/dynalite:v1.2.1-1";
+    public static final int MAPPED_PORT = 4567;
 
     public DynaliteContainer() {
         this(IMAGE_NAME);

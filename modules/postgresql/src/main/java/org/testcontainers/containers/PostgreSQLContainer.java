@@ -16,16 +16,22 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
     public static final String DEFAULT_TAG = "9.6.12";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = IMAGE + ":" + DEFAULT_TAG;
 
     public static final Integer POSTGRESQL_PORT = 5432;
-    private String databaseName = "test";
-    private String username = "test";
-    private String password = "test";
+
+    public static final String DEFAULT_DATABASE_NAME = "test";
+    public static final String DEFAULT_USERNAME = "test";
+    public static final String DEFAULT_PASSWORD = "test";
+
+    private String databaseName = DEFAULT_DATABASE_NAME;
+    private String username = DEFAULT_USERNAME;
+    private String password = DEFAULT_PASSWORD;
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
 
     public PostgreSQLContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public PostgreSQLContainer(final String dockerImageName) {

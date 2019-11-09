@@ -8,20 +8,21 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     public static final String NAME = "clickhouse";
     public static final String IMAGE = "yandex/clickhouse-server";
     public static final String DEFAULT_TAG = "18.10.3";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = IMAGE + ":" + DEFAULT_TAG;
 
     public static final Integer HTTP_PORT = 8123;
     public static final Integer NATIVE_PORT = 9000;
 
-    private static final String DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
-    private static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
-    private static final String TEST_QUERY = "SELECT 1";
+    public static final String DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
+    public static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
+    public static final String TEST_QUERY = "SELECT 1";
 
-    private String databaseName = "default";
-    private String username = "default";
-    private String password = "";
+    public static final String DEFAULT_DATABASE_NAME = "default";
+    public static final String DEFAULT_USERNAME = "default";
+    public static final String DEFAULT_PASSWORD = "";
 
     public ClickHouseContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        super(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public ClickHouseContainer(String dockerImageName) {
@@ -51,17 +52,17 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
 
     @Override
     public String getJdbcUrl() {
-        return JDBC_URL_PREFIX + getContainerIpAddress() + ":" + getMappedPort(HTTP_PORT) + "/" + databaseName;
+        return JDBC_URL_PREFIX + getContainerIpAddress() + ":" + getMappedPort(HTTP_PORT) + "/" + DEFAULT_DATABASE_NAME;
     }
 
     @Override
     public String getUsername() {
-        return username;
+        return DEFAULT_USERNAME;
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return DEFAULT_PASSWORD;
     }
 
     @Override

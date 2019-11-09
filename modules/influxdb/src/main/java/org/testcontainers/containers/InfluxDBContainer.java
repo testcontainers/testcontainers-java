@@ -16,15 +16,22 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     public static final String VERSION = "1.4.3";
     public static final Integer INFLUXDB_PORT = 8086;
 
-    private static final String IMAGE_NAME = "influxdb";
+    public static final String IMAGE_NAME = "influxdb";
+
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = IMAGE_NAME + ":" + VERSION;
+
+    public static final String DEFAULT_ADMIN = "admin";
+    public static final String DEFALT_ADMIN_PASSWORD = "admin";
+    public static final String DEFAULT_USERNAME = "any";
+    public static final String DEFAULT_PASSWORD = "any";
 
     private boolean authEnabled = true;
-    private String admin = "admin";
-    private String adminPassword = "password";
+    private String admin = DEFAULT_ADMIN;
+    private String adminPassword = DEFALT_ADMIN_PASSWORD;
 
     private String database;
-    private String username = "any";
-    private String password = "any";
+    private String username = DEFAULT_USERNAME;
+    private String password = DEFAULT_PASSWORD;
 
 
     public InfluxDBContainer() {
@@ -32,7 +39,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     }
 
     public InfluxDBContainer(final String version) {
-        super(IMAGE_NAME + ":" + version);
+        super(DEFAULT_DOCKER_IMAGE_NAME);
         waitStrategy = new WaitAllStrategy()
             .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
             .withStrategy(Wait.forListeningPort());

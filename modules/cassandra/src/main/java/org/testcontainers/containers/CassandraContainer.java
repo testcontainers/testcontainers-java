@@ -26,16 +26,19 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     public static final String IMAGE = "cassandra";
     public static final Integer CQL_PORT = 9042;
-    private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
-    private static final String USERNAME = "cassandra";
-    private static final String PASSWORD = "cassandra";
+    public static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
+
+    public static final String DEFAULT_USERNAME = "cassandra";
+    public static final String DEFAULT_PASSWORD = "cassandra";
+    public static final String DEFAULT_TAG = "3.11.2";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = IMAGE + ":" + DEFAULT_TAG;
 
     private String configLocation;
     private String initScriptPath;
     private boolean enableJmxReporting;
 
     public CassandraContainer() {
-        this(IMAGE + ":3.11.2");
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public CassandraContainer(String dockerImageName) {
@@ -135,7 +138,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * user management should be modified
      */
     public String getUsername() {
-        return USERNAME;
+        return DEFAULT_USERNAME;
     }
 
     /**
@@ -147,7 +150,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * user management should be modified
      */
     public String getPassword() {
-        return PASSWORD;
+        return DEFAULT_PASSWORD;
     }
 
     /**

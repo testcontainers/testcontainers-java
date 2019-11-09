@@ -17,8 +17,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
 
-    private String username = "system";
-    private String password = "oracle";
+    public static final String DEFAULT_USERNAME = "system";
+    public static final String DEFAULT_PASSWORD = "oracle";
+
+    private String username = DEFAULT_USERNAME;
+    private String password = DEFAULT_PASSWORD;
 
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()

@@ -27,23 +27,27 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     /**
      * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
-    private static final String DEFAULT_IMAGE_NAME = "rabbitmq";
-    private static final String DEFAULT_TAG = "3.7-management-alpine";
+    public static final String DEFAULT_IMAGE_NAME = "rabbitmq";
+    public static final String DEFAULT_TAG = "3.7-management-alpine";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
 
-    private static final int DEFAULT_AMQP_PORT = 5672;
-    private static final int DEFAULT_AMQPS_PORT = 5671;
-    private static final int DEFAULT_HTTPS_PORT = 15671;
-    private static final int DEFAULT_HTTP_PORT = 15672;
+    public static final int DEFAULT_AMQP_PORT = 5672;
+    public static final int DEFAULT_AMQPS_PORT = 5671;
+    public static final int DEFAULT_HTTPS_PORT = 15671;
+    public static final int DEFAULT_HTTP_PORT = 15672;
 
-    private String adminPassword = "guest";
-    private String adminUsername = "guest";
+    public static final String DEFAULT_ADMIN_PASSWORD = "guest";
+    public static final String DEFAULT_ADMIN_USERNAME = "guest";
+
+    private String adminPassword = DEFAULT_ADMIN_PASSWORD;
+    private String adminUsername = DEFAULT_ADMIN_USERNAME;
     private final List<List<String>> values = new ArrayList<>();
 
     /**
      * Creates a Testcontainer using the official RabbitMQ docker image.
      */
     public RabbitMQContainer() {
-        this(DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG);
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     /**

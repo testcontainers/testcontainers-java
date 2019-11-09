@@ -19,6 +19,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public static final int ZOOKEEPER_PORT = 2181;
 
+    public static final String DEFAULT_TAG = "5.2.1";
+
     private static final int PORT_NOT_ASSIGNED = -1;
 
     protected String externalZookeeperConnect = null;
@@ -26,7 +28,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private int port = PORT_NOT_ASSIGNED;
 
     public KafkaContainer() {
-        this("5.2.1");
+        this(DEFAULT_TAG);
     }
 
     public KafkaContainer(String confluentPlatformVersion) {

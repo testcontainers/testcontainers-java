@@ -19,25 +19,27 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     /**
      * Elasticsearch Default HTTP port
      */
-    private static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
+    public static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
 
     /**
      * Elasticsearch Default Transport port
      */
-    private static final int ELASTICSEARCH_DEFAULT_TCP_PORT = 9300;
+    public static final int ELASTICSEARCH_DEFAULT_TCP_PORT = 9300;
 
     /**
      * Elasticsearch Docker base URL
      */
-    private static final String ELASTICSEARCH_DEFAULT_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch";
+    public static final String ELASTICSEARCH_DEFAULT_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch";
 
     /**
      * Elasticsearch Default version
      */
-    protected static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
+    public static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
+
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = ELASTICSEARCH_DEFAULT_IMAGE + ":" + ELASTICSEARCH_DEFAULT_VERSION;
 
     public ElasticsearchContainer() {
-        this(ELASTICSEARCH_DEFAULT_IMAGE + ":" + ELASTICSEARCH_DEFAULT_VERSION);
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     /**

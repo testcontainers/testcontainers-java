@@ -13,10 +13,13 @@ import java.util.Set;
  */
 public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
 
-    private static final int NGINX_DEFAULT_PORT = 80;
+    public static final int NGINX_DEFAULT_PORT = 80;
+    public static final String DEFAULT_IMAGE = "nginx";
+    public static final String DEFAULT_TAG = "1.9.4";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = DEFAULT_IMAGE + ":" + DEFAULT_TAG;
 
     public NginxContainer() {
-        super("nginx:1.9.4");
+        super(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     @NotNull

@@ -13,16 +13,23 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     public static final String NAME = "mysql";
     public static final String IMAGE = "mysql";
     public static final String DEFAULT_TAG = "5.7.22";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = IMAGE + ":" + DEFAULT_TAG;
 
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
     public static final Integer MYSQL_PORT = 3306;
-    private String databaseName = "test";
-    private String username = "test";
-    private String password = "test";
+
+    public static final String DEFAULT_DATABASE_NAME = "test";
+    public static final String DEFAULT_USERNAME = "test";
+    public static final String DEFAULT_PASSWORD = "test";
+
+    private String databaseName = DEFAULT_DATABASE_NAME;
+    private String username = DEFAULT_USERNAME;
+    private String password = DEFAULT_PASSWORD;
+
     private static final String MYSQL_ROOT_USER = "root";
 
     public MySQLContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        super(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public MySQLContainer(String dockerImageName) {

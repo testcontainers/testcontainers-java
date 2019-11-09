@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
-    private static final String IMAGE_NAME = "shopify/toxiproxy:2.1.0";
+    public static final String IMAGE_NAME = "shopify/toxiproxy:2.1.0";
     private static final int TOXIPROXY_CONTROL_PORT = 8474;
     private static final int FIRST_PROXIED_PORT = 8666;
     private static final int LAST_PROXIED_PORT = 8666 + 31;

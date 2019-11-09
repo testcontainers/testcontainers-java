@@ -25,36 +25,36 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
      */
-    private static final String DEFAULT_IMAGE_NAME = "neo4j";
+    public static final String DEFAULT_IMAGE_NAME = "neo4j";
 
     /**
      * The default tag (version) to use.
      */
-    private static final String DEFAULT_TAG = "3.5.0";
+    public static final String DEFAULT_TAG = "3.5.0";
 
-    private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
+    public static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
 
     /**
      * Default port for the binary Bolt protocol.
      */
-    private static final int DEFAULT_BOLT_PORT = 7687;
+    public static final int DEFAULT_BOLT_PORT = 7687;
 
     /**
      * The port of the transactional HTTPS endpoint: <a href="https://neo4j.com/docs/rest-docs/current/">Neo4j REST API</a>.
      */
-    private static final int DEFAULT_HTTPS_PORT = 7473;
+    public static final int DEFAULT_HTTPS_PORT = 7473;
 
     /**
      * The port of the transactional HTTP endpoint: <a href="https://neo4j.com/docs/rest-docs/current/">Neo4j REST API</a>.
      */
-    private static final int DEFAULT_HTTP_PORT = 7474;
+    public static final int DEFAULT_HTTP_PORT = 7474;
 
     /**
      * The official image requires a change of password by default from "neo4j" to something else. This defaults to "password".
      */
-    private static final String DEFAULT_ADMIN_PASSWORD = "password";
+    public static final String DEFAULT_ADMIN_PASSWORD = "password";
 
-    private static final String AUTH_FORMAT = "neo4j/%s";
+    public static final String AUTH_FORMAT = "neo4j/%s";
 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 

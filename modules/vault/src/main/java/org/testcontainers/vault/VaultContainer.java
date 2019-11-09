@@ -22,14 +22,18 @@ import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
  */
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
 
-    private static final int VAULT_PORT = 8200;
+    public static final String DEFAULT_IMAGE = "vault";
+    public static final String DEFAULT_TAG = "1.1.3";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = DEFAULT_IMAGE + ":" + DEFAULT_TAG;
+
+    public static final int VAULT_PORT = 8200;
 
     private Map<String, List<String>> secretsMap = new HashMap<>();
 
     private int port = VAULT_PORT;
 
     public VaultContainer() {
-        this("vault:1.1.3");
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public VaultContainer(String dockerImageName) {

@@ -44,12 +44,12 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  */
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer, TestLifecycleAware {
 
-    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
-    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
+    public static final String CHROME_IMAGE = "selenium/standalone-chrome-debug";
+    public static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug";
 
-    private static final String DEFAULT_PASSWORD = "secret";
-    private static final int SELENIUM_PORT = 4444;
-    private static final int VNC_PORT = 5900;
+    public static final String DEFAULT_PASSWORD = "secret";
+    public static final int SELENIUM_PORT = 4444;
+    public static final int VNC_PORT = 5900;
 
     private static final String NO_PROXY_KEY = "no_proxy";
 
@@ -183,9 +183,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         String browserName = capabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
-                return String.format(CHROME_IMAGE, seleniumVersion);
+                return CHROME_IMAGE + ":" + seleniumVersion;
             case BrowserType.FIREFOX:
-                return String.format(FIREFOX_IMAGE, seleniumVersion);
+                return FIREFOX_IMAGE + ":" + seleniumVersion;
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }

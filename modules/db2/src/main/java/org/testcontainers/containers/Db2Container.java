@@ -1,34 +1,31 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.LicenseAcceptance;
-import org.testcontainers.utility.LogUtils;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Predicate;
 
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
     public static final String DEFAULT_DB2_IMAGE_NAME = "ibmcom/db2";
     public static final String DEFAULT_TAG = "11.5.0.0a";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = DEFAULT_DB2_IMAGE_NAME + ":" + DEFAULT_TAG;
     public static final int DB2_PORT = 50000;
 
-    private String databaseName = "test";
-    private String username = "db2inst1";
-    private String password = "foobar1234";
+    public static final String DEFAULT_DATABASE_NAME = "test";
+    public static final String DEFAULT_USERNAME = "db2inst1";
+    public static final String DEFAULT_PASSWORD = "foobar1234";
+
+    private String databaseName = DEFAULT_DATABASE_NAME;
+    private String username = DEFAULT_USERNAME;
+    private String password = DEFAULT_PASSWORD;
 
     public Db2Container() {
-        this(DEFAULT_DB2_IMAGE_NAME + ":" + DEFAULT_TAG);
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public Db2Container(String imageName) {

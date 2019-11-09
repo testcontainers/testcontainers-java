@@ -13,10 +13,15 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     public static final String NAME = "sqlserver";
     public static final String IMAGE = "mcr.microsoft.com/mssql/server";
     public static final String DEFAULT_TAG = "2017-CU12";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = IMAGE + ":" + DEFAULT_TAG;
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
-    private String username = "SA";
-    private String password = "A_Str0ng_Required_Password";
+
+    public static final String DEFAULT_USERNAME = "SA";
+    public static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
+
+    private String username = DEFAULT_USERNAME;
+    private String password = DEFAULT_PASSWORD;
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
@@ -29,7 +34,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     };
 
     public MSSQLServerContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public MSSQLServerContainer(final String dockerImageName) {

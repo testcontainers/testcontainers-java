@@ -63,19 +63,26 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     public static final String VERSION = "5.5.1";
     public static final String DOCKER_IMAGE_NAME = "couchbase/server:";
+    public static final String DEFAULT_DOCKER_IMAGE_NAME = DOCKER_IMAGE_NAME + VERSION;
+
     public static final ObjectMapper MAPPER = new ObjectMapper();
     public static final String STATIC_CONFIG = "/opt/couchbase/etc/couchbase/static_config";
     public static final String CAPI_CONFIG = "/opt/couchbase/etc/couchdb/default.d/capi.ini";
 
+    public static final String DEFAULT_MEMORY_QUOTA = "300";
+    public static final String DEFAULT_INDEX_MEMORY_QUOTA = "300";
+    public static final String DEFAULT_CLUSTER_USERNAME = "Administrator";
+    public static final String DEFAULT_CLUSTER_PASSWORD = "password";
+
     private static final int REQUIRED_DEFAULT_PASSWORD_LENGTH = 6;
 
-    private String memoryQuota = "300";
+    private String memoryQuota = DEFAULT_MEMORY_QUOTA;
 
-    private String indexMemoryQuota = "300";
+    private String indexMemoryQuota = DEFAULT_INDEX_MEMORY_QUOTA;
 
-    private String clusterUsername = "Administrator";
+    private String clusterUsername = DEFAULT_CLUSTER_USERNAME;
 
-    private String clusterPassword = "password";
+    private String clusterPassword = DEFAULT_CLUSTER_PASSWORD;
 
     private boolean keyValue = true;
 
@@ -104,7 +111,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private SocatContainer proxy;
 
     public CouchbaseContainer() {
-        this(DOCKER_IMAGE_NAME + VERSION);
+        this(DEFAULT_DOCKER_IMAGE_NAME);
     }
 
     public CouchbaseContainer(String containerName) {
