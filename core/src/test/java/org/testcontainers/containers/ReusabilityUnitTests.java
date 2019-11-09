@@ -150,18 +150,13 @@ public class ReusabilityUnitTests {
             }
 
             @Override
-            protected void containerIsStarting(InspectContainerResponse containerInfo) {
-                script.add("containerIsStarting");
+            protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+                script.add("containerIsStarting(reused=" + reused + ")");
             }
 
             @Override
-            protected void containerIsReused() {
-                script.add("containerIsReused");
-            }
-
-            @Override
-            protected void containerIsStarted(InspectContainerResponse containerInfo) {
-                script.add("containerIsStarted");
+            protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+                script.add("containerIsStarted(reused=" + reused + ")");
             }
         });
 
@@ -177,9 +172,8 @@ public class ReusabilityUnitTests {
 
             container.start();
             assertThat(script).containsExactly(
-                "containerIsStarting",
-                "containerIsReused",
-                "containerIsStarted"
+                "containerIsStarting(reused=true)",
+                "containerIsStarted(reused=true)"
             );
         }
 
@@ -194,8 +188,8 @@ public class ReusabilityUnitTests {
             container.start();
             assertThat(script).containsExactly(
                 "containerIsCreated",
-                "containerIsStarting",
-                "containerIsStarted"
+                "containerIsStarting(reused=false)",
+                "containerIsStarted(reused=false)"
             );
         }
     }

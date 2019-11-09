@@ -387,7 +387,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
-            containerIsStarting(containerInfo);
+            containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
@@ -399,12 +399,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
             waitUntilContainerStarted();
 
-            if (reused) {
-                containerIsReused();
-            }
-
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
-            containerIsStarted(containerInfo);
+            containerIsStarted(containerInfo, reused);
         } catch (Exception e) {
             logger().error("Could not start container", e);
 
@@ -538,11 +534,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     @UnstableAPI
-    protected void containerIsReused() {
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        containerIsStarting(containerInfo);
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    @UnstableAPI
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        containerIsStarted(containerInfo);
     }
 
     /**
