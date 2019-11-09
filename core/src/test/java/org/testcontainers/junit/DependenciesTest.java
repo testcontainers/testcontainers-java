@@ -121,7 +121,7 @@ public class DependenciesTest {
 
     @Test
     public void shouldHandleParallelStream() throws Exception {
-        List<Startable> startables = Stream.generate(() -> (Startable) new InvocationCountingStartable())
+        List<Startable> startables = Stream.generate(InvocationCountingStartable::new)
             .limit(10)
             .collect(Collectors.toList());
 
