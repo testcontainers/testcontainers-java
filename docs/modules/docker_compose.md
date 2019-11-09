@@ -112,7 +112,13 @@ public static DockerComposeContainer environment =
 
 You can override Testcontainers' default behaviour and make it use a `docker-compose` binary installed on the local machine. 
 This will generally yield an experience that is closer to running docker-compose locally, with the caveat that Docker Compose needs to be present on dev and CI machines.
-
+```java
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
+            .waitingFor("db_1", Wait.forLogMessage("started", 1))
+            .withLocalCompose(true);
+```
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
 By default, those setting are located in `$HOME/.docker/config.json`. 

@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.UnstableAPI;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -89,12 +90,17 @@ public class TestcontainersConfiguration {
         return Boolean.parseBoolean((String) environmentProperties.getOrDefault("checks.disable", "false"));
     }
 
+    @UnstableAPI
+    public boolean environmentSupportsReuse() {
+        return Boolean.parseBoolean((String) environmentProperties.getOrDefault("testcontainers.reuse.enable", "false"));
+    }
+
     public String getDockerClientStrategyClassName() {
         return (String) environmentProperties.get("docker.client.strategy");
     }
 
     /**
-     * 
+     *
      * @deprecated we no longer have different transport types
      */
     @Deprecated
