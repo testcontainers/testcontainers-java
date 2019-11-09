@@ -27,6 +27,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLEncoder;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +53,9 @@ public final class ResourceReaper {
     private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
 
     private static ResourceReaper instance;
+
+    private static String ryukContainerId;
+
     private final DockerClient dockerClient;
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
@@ -67,14 +72,18 @@ public final class ResourceReaper {
     }
 
     @SneakyThrows(InterruptedException.class)
-    public static String start(String hostIpAddress, DockerClient client) {
+    public static synchronized String start(String hostIpAddress, DockerClient client) {
+        if (ryukContainerId != null) {
+            return ryukContainerId;
+        }
+        Instant startTime = Instant.now();
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
 
-        String ryukContainerId = client.createContainerCmd(ryukImage)
+        ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig().withAutoRemove(true))
                 .withExposedPorts(new ExposedPort(8080))
                 .withPublishAllPorts(true)
@@ -149,6 +158,8 @@ public final class ResourceReaper {
         if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
             throw new IllegalStateException("Can not connect to Ryuk");
         }
+
+        log.info("Ryuk started in {} - will monitor and terminate Testcontainers containers on JVM exit", Duration.between(startTime, Instant.now()));
 
         return ryukContainerId;
     }
@@ -341,12 +352,12 @@ public final class ResourceReaper {
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
     }
-    
+
     public void registerImageForCleanup(String dockerImageName) {
         setHook();
         registeredImages.add(dockerImageName);
     }
-    
+
     private void removeImage(String dockerImageName) {
         LOGGER.trace("Removing image tagged {}", dockerImageName);
         try {
