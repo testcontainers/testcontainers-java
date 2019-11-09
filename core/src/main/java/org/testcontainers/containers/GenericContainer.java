@@ -616,6 +616,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         String[] envArray = env.entrySet().stream()
+                .filter(it -> it.getValue() != null)
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
