@@ -20,6 +20,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -29,9 +30,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -149,6 +153,26 @@ public class ReusabilityUnitTests {
             Mockito.verify(client, Mockito.never()).startContainerCmd(existingContainerId);
         }
 
+        @Test
+        public void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
+            // TODO mock TestcontainersConfiguration
+            Assume.assumeFalse("does not support reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
+            String containerId = randomContainerId();
+            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
+            when(client.startContainerCmd(containerId)).then(startContainerAnswer());
+            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+
+            container.start();
+
+            assertThat(commandRef)
+                .isNotNull()
+                .satisfies(command -> {
+                    assertThat(command.get().getLabels())
+                        .containsKeys(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL);
+                });
+        }
+
         private String randomContainerId() {
             return UUID.randomUUID().toString();
         }
@@ -168,8 +192,13 @@ public class ReusabilityUnitTests {
         }
 
         private Answer<CreateContainerCmd> createContainerAnswer(String containerId) {
+            return createContainerAnswer(containerId, command -> {});
+        }
+
+        private Answer<CreateContainerCmd> createContainerAnswer(String containerId, Consumer<CreateContainerCmd> cmdConsumer) {
             return invocation -> {
                 CreateContainerCmd.Exec exec = command -> {
+                    cmdConsumer.accept(command);
                     CreateContainerResponse response = new CreateContainerResponse();
                     response.setId(containerId);
                     return response;

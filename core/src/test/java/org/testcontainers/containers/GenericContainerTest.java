@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
+import com.github.dockerjava.api.model.HostConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -26,9 +27,14 @@ public class GenericContainerTest {
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(ContainerState::getOOMKilled))
                 .withCreateContainerCmdModifier(it -> {
-                    it.getHostConfig().withMemory(4 * FileUtils.ONE_MB);
+                    it.getHostConfig()
+                        .withMemory(20 * FileUtils.ONE_MB)
+                        .withMemorySwappiness(0L)
+                        .withMemorySwap(0L)
+                        .withMemoryReservation(0L)
+                        .withKernelMemory(16 * FileUtils.ONE_MB);
                 })
-                .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 32); do A=$A$A; sleep 0.01; done; sleep 10m")
+                .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 32); do A=$A$A; done; sleep 10m")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container crashed with out-of-memory");
