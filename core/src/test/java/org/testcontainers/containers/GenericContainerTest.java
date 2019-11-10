@@ -26,9 +26,9 @@ public class GenericContainerTest {
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(ContainerState::getOOMKilled))
                 .withCreateContainerCmdModifier(it -> {
-                    it.getHostConfig().withMemory(4 * FileUtils.ONE_MB);
+                    it.getHostConfig().withMemory(32 * FileUtils.ONE_MB);
                 })
-                .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 32); do A=$A$A; done")
+                .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 32); do A=$A$A; done; sleep 10m")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container crashed with out-of-memory");
