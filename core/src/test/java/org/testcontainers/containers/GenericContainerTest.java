@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -23,11 +24,11 @@ public class GenericContainerTest {
         try (
             GenericContainer container = new GenericContainer<>()
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
-                .waitingFor(new WaitForState(ContainerState::getOOMKilled))
+                .waitingFor(new WaitForExitedState(ContainerState::getOOMKilled))
                 .withCreateContainerCmdModifier(it -> {
                     it.getHostConfig().withMemory(4 * FileUtils.ONE_MB);
                 })
-                .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 32); do A=$A$A; done")
+                .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 32); do A=$A$A; sleep 0.01; done; sleep 10m")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container crashed with out-of-memory");
@@ -39,7 +40,7 @@ public class GenericContainerTest {
         try (
             GenericContainer container = new GenericContainer<>()
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
-                .waitingFor(new WaitForState(state -> state.getExitCode() > 0))
+                .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
             assertThatThrownBy(container::start)
@@ -57,7 +58,8 @@ public class GenericContainerTest {
 
     @RequiredArgsConstructor
     @FieldDefaults(makeFinal = true)
-    static class WaitForState extends AbstractWaitStrategy {
+    @Slf4j
+    static class WaitForExitedState extends AbstractWaitStrategy {
 
         Predicate<ContainerState> predicate;
 
@@ -66,6 +68,12 @@ public class GenericContainerTest {
         protected void waitUntilReady() {
             Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, () -> {
                 ContainerState state = waitStrategyTarget.getCurrentContainerInfo().getState();
+
+                log.debug("Current state: {}", state);
+                if (!"exited".equalsIgnoreCase(state.getStatus())) {
+                    Thread.sleep(100);
+                    return false;
+                }
                 return predicate.test(state);
             });
 
