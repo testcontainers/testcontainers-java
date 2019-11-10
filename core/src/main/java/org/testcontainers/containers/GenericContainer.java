@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -69,7 +70,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -338,6 +341,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
 
             boolean reused = false;
+            final boolean reusable;
             if (shouldBeReused) {
                 if (!canBeReused()) {
                     throw new IllegalStateException("This container does not support reuse");
@@ -356,10 +360,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                         createCommand.getLabels().put(HASH_LABEL, hash);
                     }
+                    reusable = true;
                 } else {
                     logger().info("Reuse was requested but the environment does not support the reuse of containers");
+                    reusable = false;
                 }
             } else {
+                reusable = false;
+            }
+
+            if (!reusable) {
                 createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
             }
 
@@ -397,11 +407,51 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             // Wait until the process within the container has become ready for use (e.g. listening on network, log message emitted, etc).
-            waitUntilContainerStarted();
+            try {
+                waitUntilContainerStarted();
+            } catch (Exception e) {
+                logger().debug("Wait strategy threw an exception", e);
+                InspectContainerResponse inspectContainerResponse = null;
+                try {
+                    inspectContainerResponse = dockerClient.inspectContainerCmd(containerId).exec();
+                } catch (NotFoundException notFoundException) {
+                    logger().debug("Container {} not found", containerId, notFoundException);
+                }
+
+                if (inspectContainerResponse == null) {
+                    throw new IllegalStateException("Container is removed");
+                }
+
+                InspectContainerResponse.ContainerState state = inspectContainerResponse.getState();
+                if (Boolean.TRUE.equals(state.getDead())) {
+                    throw new IllegalStateException("Container is dead");
+                }
+
+                if (Boolean.TRUE.equals(state.getOOMKilled())) {
+                    throw new IllegalStateException("Container crashed with out-of-memory (OOMKilled)");
+                }
+
+                String error = state.getError();
+                if (!StringUtils.isBlank(error)) {
+                    throw new IllegalStateException("Container crashed: " + error);
+                }
+
+                if (!Boolean.TRUE.equals(state.getRunning())) {
+                    throw new IllegalStateException("Container exited with code " + state.getExitCode());
+                }
+
+                throw e;
+            }
 
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
             containerIsStarted(containerInfo, reused);
         } catch (Exception e) {
+            if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
+                e = (Exception) e.getCause();
+            }
+            if (e instanceof InvocationTargetException && e.getCause() instanceof Exception) {
+                e = (Exception) e.getCause();
+            }
             logger().error("Could not start container", e);
 
             if (containerId != null) {
@@ -628,6 +678,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         String[] envArray = env.entrySet().stream()
+                .filter(it -> it.getValue() != null)
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);

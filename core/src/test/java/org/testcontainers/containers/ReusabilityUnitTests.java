@@ -20,15 +20,18 @@ import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -95,9 +98,33 @@ public class ReusabilityUnitTests {
 
     @RunWith(BlockJUnit4ClassRunner.class)
     @FieldDefaults(makeFinal = true)
-    public static class HashTest extends AbstractReusabilityTest {
+    public static class HashTest {
 
-        protected GenericContainer<?> container = makeReusable(new GenericContainer<>(IMAGE_FUTURE));
+        StartupCheckStrategy startupCheckStrategy = new StartupCheckStrategy() {
+            @Override
+            public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
+                return StartupStatus.SUCCESSFUL;
+            }
+        };
+
+        WaitStrategy waitStrategy = new AbstractWaitStrategy() {
+            @Override
+            protected void waitUntilReady() {
+
+            }
+        };
+
+        DockerClient client = Mockito.mock(DockerClient.class);
+
+        GenericContainer container = new GenericContainer(IMAGE_FUTURE)
+            .withNetworkMode("none") // to disable the port forwarding
+            .withStartupCheckStrategy(startupCheckStrategy)
+            .waitingFor(waitStrategy)
+            .withReuse(true);
+
+        {
+            container.dockerClient = client;
+        }
 
         @Test
         public void shouldStartIfListReturnsEmpty() {
@@ -116,113 +143,41 @@ public class ReusabilityUnitTests {
         public void shouldReuseIfListReturnsID() {
             // TODO mock TestcontainersConfiguration
             Assume.assumeTrue("supports reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
-            String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
+            when(client.createContainerCmd(any())).then(createContainerAnswer(randomContainerId()));
             String existingContainerId = randomContainerId();
             when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
             when(client.inspectContainerCmd(existingContainerId)).then(inspectContainerAnswer());
 
             container.start();
 
-            Mockito.verify(client, Mockito.never()).startContainerCmd(containerId);
             Mockito.verify(client, Mockito.never()).startContainerCmd(existingContainerId);
         }
 
-    }
-
-    @RunWith(BlockJUnit4ClassRunner.class)
-    @FieldDefaults(makeFinal = true)
-    public static class HooksTest extends AbstractReusabilityTest {
-
-        List<String> script = new ArrayList<>();
-
-        GenericContainer<?> container = makeReusable(new GenericContainer(IMAGE_FUTURE) {
-
-            @Override
-            protected boolean canBeReused() {
-                // Because we override "containerIsCreated"
-                return true;
-            }
-
-            @Override
-            protected void containerIsCreated(String containerId) {
-                script.add("containerIsCreated");
-            }
-
-            @Override
-            protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
-                script.add("containerIsStarting(reused=" + reused + ")");
-            }
-
-            @Override
-            protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-                script.add("containerIsStarted(reused=" + reused + ")");
-            }
-        });
-
         @Test
-        public void shouldCallHookIfReused() {
+        public void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
             // TODO mock TestcontainersConfiguration
-            Assume.assumeTrue("supports reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            Assume.assumeFalse("does not support reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
-            String existingContainerId = randomContainerId();
-            when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
-            when(client.inspectContainerCmd(existingContainerId)).then(inspectContainerAnswer());
-
-            container.start();
-            assertThat(script).containsExactly(
-                "containerIsStarting(reused=true)",
-                "containerIsStarted(reused=true)"
-            );
-        }
-
-        @Test
-        public void shouldNotCallHookIfNotReused() {
-            String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
-            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
 
             container.start();
-            assertThat(script).containsExactly(
-                "containerIsCreated",
-                "containerIsStarting(reused=false)",
-                "containerIsStarted(reused=false)"
-            );
-        }
-    }
 
-    @FieldDefaults(makeFinal = true)
-    static abstract class AbstractReusabilityTest {
-
-        protected DockerClient client = Mockito.mock(DockerClient.class);
-
-        protected <T extends GenericContainer<?>> T makeReusable(T container) {
-            container.dockerClient = client;
-            container.withNetworkMode("none"); // to disable the port forwarding
-            container.withStartupCheckStrategy(new StartupCheckStrategy() {
-                    @Override
-                    public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
-                        return StartupStatus.SUCCESSFUL;
-                    }
+            assertThat(commandRef)
+                .isNotNull()
+                .satisfies(command -> {
+                    assertThat(command.get().getLabels())
+                        .containsKeys(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL);
                 });
-            container.waitingFor(new AbstractWaitStrategy() {
-                    @Override
-                    protected void waitUntilReady() {
-
-                    }
-                });
-            container.withReuse(true);
-            return container;
         }
 
-        protected String randomContainerId() {
+        private String randomContainerId() {
             return UUID.randomUUID().toString();
         }
 
-        protected Answer<ListContainersCmd> listContainersAnswer(String... ids) {
+        private Answer<ListContainersCmd> listContainersAnswer(String... ids) {
             return invocation -> {
                 ListContainersCmd.Exec exec = command -> {
                     return new ObjectMapper().convertValue(
@@ -236,9 +191,14 @@ public class ReusabilityUnitTests {
             };
         }
 
-        protected Answer<CreateContainerCmd> createContainerAnswer(String containerId) {
+        private Answer<CreateContainerCmd> createContainerAnswer(String containerId) {
+            return createContainerAnswer(containerId, command -> {});
+        }
+
+        private Answer<CreateContainerCmd> createContainerAnswer(String containerId, Consumer<CreateContainerCmd> cmdConsumer) {
             return invocation -> {
                 CreateContainerCmd.Exec exec = command -> {
+                    cmdConsumer.accept(command);
                     CreateContainerResponse response = new CreateContainerResponse();
                     response.setId(containerId);
                     return response;
@@ -247,7 +207,7 @@ public class ReusabilityUnitTests {
             };
         }
 
-        protected Answer<StartContainerCmd> startContainerAnswer() {
+        private Answer<StartContainerCmd> startContainerAnswer() {
             return invocation -> {
                 StartContainerCmd.Exec exec = command -> {
                     return null;
@@ -256,7 +216,7 @@ public class ReusabilityUnitTests {
             };
         }
 
-        protected Answer<InspectContainerCmd> inspectContainerAnswer() {
+        private Answer<InspectContainerCmd> inspectContainerAnswer() {
             return invocation -> {
                 InspectContainerCmd.Exec exec = command -> {
                     return new InspectContainerResponse();
@@ -264,5 +224,6 @@ public class ReusabilityUnitTests {
                 return new InspectContainerCmdImpl(exec, invocation.getArgument(0));
             };
         }
+
     }
 }
