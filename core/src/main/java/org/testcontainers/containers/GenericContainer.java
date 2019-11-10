@@ -341,6 +341,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
 
             boolean reused = false;
+            final boolean reusable;
             if (shouldBeReused) {
                 if (!canBeReused()) {
                     throw new IllegalStateException("This container does not support reuse");
@@ -359,10 +360,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                         createCommand.getLabels().put(HASH_LABEL, hash);
                     }
+                    reusable = true;
                 } else {
                     logger().info("Reuse was requested but the environment does not support the reuse of containers");
+                    reusable = false;
                 }
             } else {
+                reusable = false;
+            }
+
+            if (!reusable) {
                 createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
             }
 
