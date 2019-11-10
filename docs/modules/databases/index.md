@@ -111,10 +111,10 @@ With this parameter database container will keep running even when there're no o
 
 Container can have `tmpfs` mounts for storing data in host memory. This is useful if you want to speed up your database tests. Be aware that the data will be lost when the container stops.
 
-To pass this option to the container, add `TC_TMPFS` paramater to the URL as follows:
+To pass this option to the container, add `TC_TMPFS` parameter to the URL as follows:
 
   `jdbc:tc:postgresql:9.6.8:///databasename?TC_TMPFS=/testtmpfs:rw`
 
-If you need more than one option, seperate them by comma (e.g. `TC_TMPFS=key:value,key1:value1&other_parameters=foo`).
+If you need more than one option, separate them by comma (e.g. `TC_TMPFS=key:value,key1:value1&other_parameters=foo`).
 
 For more information about `tmpfs` mount, see [the official Docker documentation](https://docs.docker.com/storage/tmpfs/).

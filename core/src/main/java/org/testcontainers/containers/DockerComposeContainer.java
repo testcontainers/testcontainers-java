@@ -61,6 +61,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private DockerClient dockerClient;
     private boolean localCompose;
     private boolean pull = true;
+    private boolean build = false;
     private boolean tailChildContainers;
 
     private String project;
@@ -81,6 +82,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * necessarily to containers that are spawned by Compose itself)
      */
     private Map<String, String> env = new HashMap<>();
+    private RemoveImages removeImages;
 
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
@@ -182,12 +184,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .map(service -> "--scale " + service + "=" + scalingPreferences.getOrDefault(service, 1))
             .collect(joining(" "));
 
+        String flags = "-d";
+
+        if (build) {
+            flags += " --build";
+        }
+
         // Run the docker-compose container, which starts up the services
         if(Strings.isNullOrEmpty(servicesWithScalingSettings)) {
-            runWithCompose("up -d");
+            runWithCompose("up " + flags);
         } else {
-            runWithCompose("up -d " + servicesWithScalingSettings);
+            runWithCompose("up " + flags + " " + servicesWithScalingSettings);
         }
+
+        runWithCompose(command);
     }
 
     private void waitUntilServiceStarted() {
@@ -268,7 +278,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 ambassadorContainer.stop();
 
                 // Kill the services using docker-compose
-                runWithCompose("down -v");
+                String cmd = "down -v";
+                if (removeImages != null) {
+                    cmd += " --rmi " + removeImages.dockerRemoveImagesType();
+                }
+                runWithCompose(cmd);
 
             } finally {
                 project = randomProjectId();
@@ -439,6 +453,26 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return self();
     }
 
+    /**
+     * Whether to always build images before starting containers.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withBuild(boolean build) {
+        this.build = build;
+        return self();
+    }
+
+    /**
+     * Remove images after containers shutdown.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withRemoveImages(RemoveImages removeImages) {
+        this.removeImages = removeImages;
+        return self();
+    }
+
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
         LogUtils.followOutput(DockerClientFactory.instance().client(), containerId, consumer);
     }
@@ -449,6 +483,28 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private String randomProjectId() {
         return identifier + Base58.randomString(6).toLowerCase();
+    }
+
+    public enum RemoveImages {
+        /**
+         * Remove all images used by any service.
+         */
+        ALL("all"),
+
+        /**
+         * Remove only images that don't have a custom tag set by the `image` field.
+         */
+        LOCAL("local");
+
+        private final String dockerRemoveImagesType;
+
+        RemoveImages(final String dockerRemoveImagesType) {
+            this.dockerRemoveImagesType = dockerRemoveImagesType;
+        }
+
+        public String dockerRemoveImagesType() {
+            return dockerRemoveImagesType;
+        }
     }
 }
 
