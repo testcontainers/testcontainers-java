@@ -15,21 +15,28 @@ public abstract class AbstractImagePullPolicy implements ImagePullPolicy {
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
 
         // Does our cache already know the image?
-        ImageData imageData = LOCAL_IMAGES_CACHE.get(imageName);
-        if (imageData != null) {
+        ImageData cachedImageData = LOCAL_IMAGES_CACHE.get(imageName);
+        if (cachedImageData != null) {
             logger.trace("{} is already in image name cache", imageName);
         } else {
             logger.debug("{} is not in image name cache, updating...", imageName);
             // Was not in cache, inspecting...
-            imageData = LOCAL_IMAGES_CACHE.refreshCache(imageName).orElse(null);
+            cachedImageData = LOCAL_IMAGES_CACHE.refreshCache(imageName).orElse(null);
+
+            if (cachedImageData == null) {
+                log.debug("Not available locally, should pull image: {}", imageName);
+                return true;
+            }
         }
 
-        if (imageData != null && !shouldPullCached(imageName, imageData)) {
+        if (shouldPullCached(imageName, cachedImageData)) {
+            log.debug("Should pull locally available image: {}", imageName);
+            return true;
+        } else {
+            log.debug("Using locally available and not pulling image: {}", imageName);
             return false;
         }
 
-        log.trace("Should pull image: {}", imageName);
-        return true;
     }
 
     /**
