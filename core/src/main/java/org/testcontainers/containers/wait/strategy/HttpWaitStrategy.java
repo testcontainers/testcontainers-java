@@ -2,7 +2,6 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -14,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -41,6 +41,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private Predicate<String> responsePredicate;
     private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
+    private int readTimeout = 1000;
 
     /**
      * Waits for the given status code.
@@ -109,6 +110,17 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     /**
+     * Set the HTTP connections read timeout.
+     *
+     * @param timeout the timeout in millis
+     * @return this
+     */
+    public HttpWaitStrategy withReadTimeout(int timeout) {
+        this.readTimeout = timeout;
+        return this;
+    }
+
+    /**
      * Waits for the response to pass the given predicate
      * @param responsePredicate The predicate to test the response against
      * @return this
@@ -143,6 +155,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                 getRateLimiter().doWhenReady(() -> {
                     try {
                         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
+                        connection.setReadTimeout(readTimeout);
 
                         // authenticate
                         if (!Strings.isNullOrEmpty(username)) {
