@@ -13,7 +13,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -118,6 +117,9 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      * @return this
      */
     public HttpWaitStrategy withReadTimeout(Duration timeout) {
+        if (timeout.toMillis() < 1) {
+            throw new RuntimeException("you cannot specify a value smaller than 1 ms");
+        }
         this.readTimeout = timeout;
         return this;
     }
@@ -157,7 +159,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                 getRateLimiter().doWhenReady(() -> {
                     try {
                         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
-                        connection.setReadTimeout(Math.toIntExact(readTimeout.get(ChronoUnit.MILLIS)));
+                        connection.setReadTimeout(Math.toIntExact(readTimeout.toMillis()));
 
                         // authenticate
                         if (!Strings.isNullOrEmpty(username)) {
