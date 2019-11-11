@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
@@ -135,7 +136,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     public void testWaitUntilReadyWithTimoutCausedByReadTimeout() {
         waitUntilReadyAndTimeout(
             startContainerWithCommand(createShellCommand("0 Connection Refused", GOOD_RESPONSE_BODY, 9090),
-                createHttpWaitStrategy(ready).forPort(9090).withReadTimeout(1),
+                createHttpWaitStrategy(ready).forPort(9090).withReadTimeout(Duration.ofMillis(1)),
                 9090
             ));
     }

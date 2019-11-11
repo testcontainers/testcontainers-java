@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -41,7 +43,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private Predicate<String> responsePredicate;
     private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
-    private int readTimeout = 1000;
+    private Duration readTimeout = Duration.ofSeconds(1);
 
     /**
      * Waits for the given status code.
@@ -115,7 +117,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      * @param timeout the timeout in millis
      * @return this
      */
-    public HttpWaitStrategy withReadTimeout(int timeout) {
+    public HttpWaitStrategy withReadTimeout(Duration timeout) {
         this.readTimeout = timeout;
         return this;
     }
@@ -155,7 +157,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                 getRateLimiter().doWhenReady(() -> {
                     try {
                         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
-                        connection.setReadTimeout(readTimeout);
+                        connection.setReadTimeout(Math.toIntExact(readTimeout.get(ChronoUnit.MILLIS)));
 
                         // authenticate
                         if (!Strings.isNullOrEmpty(username)) {
