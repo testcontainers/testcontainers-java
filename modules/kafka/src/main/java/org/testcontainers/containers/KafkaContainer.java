@@ -80,8 +80,12 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     @SneakyThrows
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        super.containerIsStarting(containerInfo);
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        super.containerIsStarting(containerInfo, reused);
+
+        if (reused) {
+            return;
+        }
 
         port = getMappedPort(KAFKA_PORT);
 
