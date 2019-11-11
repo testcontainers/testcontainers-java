@@ -118,7 +118,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      */
     public HttpWaitStrategy withReadTimeout(Duration timeout) {
         if (timeout.toMillis() < 1) {
-            throw new RuntimeException("you cannot specify a value smaller than 1 ms");
+            throw new IllegalArgumentException("you cannot specify a value smaller than 1 ms");
         }
         this.readTimeout = timeout;
         return this;
