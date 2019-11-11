@@ -114,7 +114,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     /**
      * Set the HTTP connections read timeout.
      *
-     * @param timeout the timeout in millis
+     * @param timeout the timeout (minimum 1 millisecond)
      * @return this
      */
     public HttpWaitStrategy withReadTimeout(Duration timeout) {
