@@ -83,11 +83,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
         super.containerIsStarting(containerInfo, reused);
 
+        port = getMappedPort(KAFKA_PORT);
+
         if (reused) {
             return;
         }
-
-        port = getMappedPort(KAFKA_PORT);
 
         final String zookeeperConnect;
         if (externalZookeeperConnect != null) {
