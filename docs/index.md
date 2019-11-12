@@ -76,6 +76,7 @@ You can also [check the latest version available on Maven Central](https://searc
 * [Micronaut Data](https://github.com/micronaut-projects/micronaut-data/) - Testing of Micronaut Data JDBC, a database access toolkit
 * [JHipster](https://www.jhipster.tech/) - Couchbase and Cassandra integration testing
 * [wescale](https://www.wescale.com) - Integration testing against HTTP service mocks and various data stores
+* [Marquez](https://github.com/MarquezProject/marquez) - PostgreSQL integration testing
 
 ## License
 
