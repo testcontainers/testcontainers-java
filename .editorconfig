@@ -14,3 +14,11 @@ trim_trailing_whitespace = true
 
 [*.md]
 trim_trailing_whitespace = false
+
+[*.java]
+indent_style = space
+indent_size = 4
+# Never use star imports
+ij_java_names_count_to_use_import_on_demand = 99
+ij_java_class_count_to_use_import_on_demand = 99
+ij_java_layout_static_imports_separately = true
