@@ -91,6 +91,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Getter
     private boolean fts = false;
 
+    @Getter
+    private String storageMode = "memory_optimized";
+
     @Getter(lazy = true)
     private final CouchbaseEnvironment couchbaseEnvironment = createCouchbaseEnvironment();
 
@@ -239,7 +242,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
 
         createNodeWaitStrategy().waitUntilReady(this);
-        callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
+        callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=" + URLEncoder.encode(storageMode, "UTF-8"));
     }
 
     @NotNull
@@ -387,6 +390,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     public CouchbaseContainer withFts(boolean fts) {
         this.fts = fts;
+        return self();
+    }
+
+    public CouchbaseContainer withStorageMode(String storageMode) {
+        this.storageMode = storageMode;
         return self();
     }
 
