@@ -29,12 +29,15 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.collect.Lists;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Sets;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SocatContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.Base58;
@@ -46,6 +49,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,6 +63,7 @@ import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.*;
  * optimized by Tayeb Chlyah
  */
 @AllArgsConstructor
+@Slf4j
 public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     public static final String VERSION = "5.5.1";
@@ -112,7 +117,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         withNetwork(Network.SHARED);
         withNetworkAliases("couchbase-" + Base58.randomString(6));
-        setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html"));
+        setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html").withStartupTimeout(Duration.ofMinutes(2)));
     }
 
     @Override
@@ -131,6 +136,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     @SneakyThrows
     protected void doStart() {
+        log.trace("Entering doStart");
         String networkAlias = getNetworkAliases().get(0);
         startProxy(networkAlias);
 
@@ -138,10 +144,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
         }
         super.doStart();
+        log.trace("Leaving doStart");
     }
 
     private void startProxy(String networkAlias) {
-        proxy = new SocatContainer().withNetwork(getNetwork());
+        log.trace("Entering startProxy");
+        proxy = new SocatContainer().withLogConsumer(new Slf4jLogConsumer(logger())).withNetwork(getNetwork());
 
         for (CouchbasePort port : CouchbasePort.values()) {
             if (port.isDynamic()) {
@@ -152,9 +160,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         }
         proxy.setWaitStrategy(null);
         proxy.start();
+        log.trace("Leaving startProxy");
     }
 
     private void exposePortThroughProxy(String networkAlias, int originalPort, int mappedPort) {
+        log.trace("Entering exportPortThroughProxy");
         ExecCreateCmdResponse createCmdResponse = dockerClient
             .execCreateCmd(proxy.getContainerId())
             .withCmd("/usr/bin/socat", "TCP-LISTEN:" + originalPort + ",fork,reuseaddr", "TCP:" + networkAlias + ":" + mappedPort)
@@ -162,6 +172,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         dockerClient.execStartCmd(createCmdResponse.getId())
             .exec(new ExecStartResultCallback());
+        log.trace("Leaving exportPortThroughProxy");
     }
 
     @Override
@@ -190,13 +201,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     public void stop() {
+        log.trace("Entering stop");
         stopCluster();
         Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
+        log.trace("Leaving stop");
     }
 
     private void stopCluster() {
+        log.trace("Entering stopCluster");
         getCouchbaseCluster().disconnect();
         getCouchbaseEnvironment().shutdown();
+        log.trace("Leaving stopCluster");
     }
 
     public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
@@ -211,7 +226,14 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @SneakyThrows
     public void initCluster() {
+        log.trace("Entering initCluster");
         urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(REST));
+
+        // Ensure that the REST API is up and running before sending configuration
+        new HttpWaitStrategy()
+            .forPort(REST.originalPort)
+            .waitUntilReady(this);
+
         String poolURL = "/pools/default";
         String poolPayload = "memoryQuota=" + URLEncoder.encode(memoryQuota, "UTF-8") + "&indexMemoryQuota=" + URLEncoder.encode(indexMemoryQuota, "UTF-8");
 
@@ -240,6 +262,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         createNodeWaitStrategy().waitUntilReady(this);
         callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
+        log.trace("Leaving initCluster");
     }
 
     @NotNull
@@ -263,25 +286,37 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     public void createBucket(BucketSettings bucketSetting, UserSettings userSettings, boolean primaryIndex) {
+        log.trace("Entering createBucket");
+        log.trace("Getting clusterManager");
         ClusterManager clusterManager = getCouchbaseCluster().clusterManager(clusterUsername, clusterPassword);
         // Insert Bucket
+        log.trace("Inserting bucket");
         BucketSettings bucketSettings = clusterManager.insertBucket(bucketSetting);
         try {
             // Insert Bucket user
+            log.trace("Inserting bucket user");
             clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
+            log.trace("Upserted bucket user");
         } catch (Exception e) {
             logger().warn("Unable to insert user '" + bucketSetting.name() + "', maybe you are using older version");
         }
         if (index) {
+            log.trace("Opening bucket");
             Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name(), bucketSettings.password());
+            log.trace("Waiting until ready");
             new CouchbaseQueryServiceWaitStrategy(bucket).waitUntilReady(this);
+            log.trace("Finished waiting");
             if (primaryIndex) {
+                log.trace("Querying bucket");
                 bucket.query(Index.createPrimaryIndex().on(bucketSetting.name()));
+                log.trace("Queried bucket");
             }
         }
+        log.trace("Leaving createBucket");
     }
 
     public void callCouchbaseRestAPI(String url, String payload) throws IOException {
+        log.trace("Entering callCouchbaseRestAPI for URL: {}", url);
         String fullUrl = urlBase + url;
         @Cleanup("disconnect")
         HttpURLConnection httpConnection = (HttpURLConnection) ((new URL(fullUrl).openConnection()));
@@ -296,19 +331,24 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         out.writeBytes(payload);
         out.flush();
         httpConnection.getResponseCode();
+        log.trace("Leaving callCouchbaseRestAPI");
     }
 
     @Override
     protected void containerIsCreated(String containerId) {
+        log.trace("Entering containerIsCreated");
         patchConfig(STATIC_CONFIG, this::addMappedPorts);
         // capi needs a special configuration, see https://developer.couchbase.com/documentation/server/current/install/install-ports.html
         patchConfig(CAPI_CONFIG, this::replaceCapiPort);
+        log.trace("Leaving containerIsCreated");
     }
 
     private void patchConfig(String configLocation, ThrowingFunction<String, String> patchFunction) {
+        log.trace("Entering patchConfig for configLocation: {}", configLocation);
         String patchedConfig = copyFileFromContainer(configLocation,
             inputStream -> patchFunction.apply(IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
         copyFileToContainer(Transferable.of(patchedConfig.getBytes(StandardCharsets.UTF_8)), configLocation);
+        log.trace("Leaving patchConfig");
     }
 
     private String addMappedPorts(String originalConfig) {
@@ -327,26 +367,39 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (!newBuckets.isEmpty()) {
-            for (BucketAndUserSettings bucket : newBuckets) {
-                createBucket(bucket.getBucketSettings(), bucket.getUserSettings(), primaryIndex);
+        log.trace("Entering containerIsStarted");
+        try {
+            if (!newBuckets.isEmpty()) {
+                for (BucketAndUserSettings bucket : newBuckets) {
+                    createBucket(bucket.getBucketSettings(), bucket.getUserSettings(), primaryIndex);
+                }
             }
+        } catch (Exception e) {
+            log.error("Bucket creation failed", e);
+            throw new ContainerLaunchException("Bucket creation failed", e);
         }
+        log.trace("Leaving containerIsStarted");
     }
 
     private CouchbaseCluster createCouchbaseCluster() {
-        return CouchbaseCluster.create(getCouchbaseEnvironment(), getContainerIpAddress());
+        log.trace("Entering createCouchbaseCluster");
+        final CouchbaseCluster cluster = CouchbaseCluster.create(getCouchbaseEnvironment(), getContainerIpAddress());
+        log.trace("Leaving createCouchbaseCluster");
+        return cluster;
     }
 
     private DefaultCouchbaseEnvironment createCouchbaseEnvironment() {
+        log.trace("Entering createCouchbaseEnvironment");
         initCluster();
-        return DefaultCouchbaseEnvironment.builder()
+        final DefaultCouchbaseEnvironment couchbaseEnvironment = DefaultCouchbaseEnvironment.builder()
             .kvTimeout(10000)
             .bootstrapCarrierDirectPort(getMappedPort(MEMCACHED))
             .bootstrapCarrierSslPort(getMappedPort(MEMCACHED_SSL))
             .bootstrapHttpDirectPort(getMappedPort(REST))
             .bootstrapHttpSslPort(getMappedPort(REST_SSL))
             .build();
+        log.trace("Leaving createCouchbaseEnvironment");
+        return couchbaseEnvironment;
     }
 
     public CouchbaseContainer withMemoryQuota(String memoryQuota) {
