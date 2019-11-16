@@ -80,10 +80,14 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     @SneakyThrows
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        super.containerIsStarting(containerInfo);
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        super.containerIsStarting(containerInfo, reused);
 
         port = getMappedPort(KAFKA_PORT);
+
+        if (reused) {
+            return;
+        }
 
         final String zookeeperConnect;
         if (externalZookeeperConnect != null) {
