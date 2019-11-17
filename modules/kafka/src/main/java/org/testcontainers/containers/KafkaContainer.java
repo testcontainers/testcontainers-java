@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -24,6 +25,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected String externalZookeeperConnect = null;
 
     private int port = PORT_NOT_ASSIGNED;
+
+    private boolean implicitNetwork = true;
 
     public KafkaContainer() {
         this("5.2.1");
@@ -48,6 +51,37 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
+    }
+
+    @Override
+    public KafkaContainer withNetwork(Network network) {
+        implicitNetwork = false;
+        return super.withNetwork(network);
+    }
+
+    @Override
+    @NonNull
+    public Network getNetwork() {
+        if (implicitNetwork) {
+            // TODO Only for backward compatibility, to be removed soon
+            logger().warn(
+                "Deprecation warning! " +
+                    "KafkaContainer#getNetwork without an explicitly set network. " +
+                    "Consider using KafkaContainer#withNetwork",
+                new Exception("Deprecated method")
+            );
+            Network network = Network.SHARED;
+            super.withNetwork(network);
+
+            if (getContainerId() != null) {
+                dockerClient.connectToNetworkCmd()
+                    .withContainerId(getContainerId())
+                    .withNetworkId(network.getId())
+                    .exec();
+            }
+            return network;
+        }
+        return super.getNetwork();
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
