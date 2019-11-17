@@ -498,6 +498,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     @SneakyThrows(IOException.class)
     void checksumFile(File file, Checksum checksum) {
+        checksum.update(MountableFile.getUnixFileMode(file.toPath()));
         if (file.isDirectory()) {
             try (Stream<Path> stream = Files.walk(file.toPath())) {
                 stream.filter(it -> !Files.isDirectory(it)).forEach(path -> {

@@ -29,10 +29,13 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -405,6 +408,22 @@ public class ReusabilityUnitTests {
                 MountableFile.forClasspathResource("test_copy_to_container.txt"),
                 "/foo/baz"
             );
+
+            assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(hash1);
+        }
+
+        @Test
+        public void filePermissions() throws Exception {
+            Path path = File.createTempFile("reusable_test", ".txt").toPath();
+            MountableFile mountableFile = MountableFile.forHostPath(path);
+            container.withCopyFileToContainer(mountableFile, "/foo/bar");
+
+            long hash1 = container.hashCopiedFiles().getValue();
+
+            Set<PosixFilePermission> filePermissions = new HashSet<>(Files.getPosixFilePermissions(path));
+            assertThat(filePermissions).doesNotContain(PosixFilePermission.OWNER_EXECUTE);
+            filePermissions.add(PosixFilePermission.OWNER_EXECUTE);
+            Files.setPosixFilePermissions(path, filePermissions);
 
             assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(hash1);
         }
