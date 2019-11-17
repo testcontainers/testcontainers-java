@@ -11,7 +11,7 @@ import com.github.dockerjava.core.command.ListContainersCmdImpl;
 import com.github.dockerjava.core.command.StartContainerCmdImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.junit.Assume;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -23,6 +23,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
@@ -128,9 +129,8 @@ public class ReusabilityUnitTests {
 
         @Test
         public void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
-            // TODO mock TestcontainersConfiguration
-            Assume.assumeFalse("does not support reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
-            AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
+            Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
+
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
@@ -147,8 +147,7 @@ public class ReusabilityUnitTests {
 
         @Test
         public void shouldCallHookIfReused() {
-            // TODO mock TestcontainersConfiguration
-            Assume.assumeTrue("supports reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
@@ -200,8 +199,7 @@ public class ReusabilityUnitTests {
 
         @Test
         public void shouldReuseIfListReturnsID() {
-            // TODO mock TestcontainersConfiguration
-            Assume.assumeTrue("supports reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
@@ -216,8 +214,7 @@ public class ReusabilityUnitTests {
 
         @Test
         public void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
-            // TODO mock TestcontainersConfiguration
-            Assume.assumeFalse("does not support reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
@@ -236,7 +233,10 @@ public class ReusabilityUnitTests {
     }
 
     @FieldDefaults(makeFinal = true)
-    static abstract class AbstractReusabilityTest {
+    public static abstract class AbstractReusabilityTest {
+
+        @Rule
+        public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
 
         protected DockerClient client = Mockito.mock(DockerClient.class);
 
@@ -244,11 +244,18 @@ public class ReusabilityUnitTests {
             container.dockerClient = client;
             container.withNetworkMode("none"); // to disable the port forwarding
             container.withStartupCheckStrategy(new StartupCheckStrategy() {
-                    @Override
-                    public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
-                        return StartupStatus.SUCCESSFUL;
-                    }
-                });
+
+                @Override
+                public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
+                    // Skip DockerClient rate limiter
+                    return true;
+                }
+
+                @Override
+                public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
+                    return StartupStatus.SUCCESSFUL;
+                }
+            });
             container.waitingFor(new AbstractWaitStrategy() {
                     @Override
                     protected void waitUntilReady() {
