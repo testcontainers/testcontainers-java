@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.nio.charset.StandardCharsets;
@@ -37,6 +38,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
+        // TODO Only for backward compatibility
+        withNetwork(Network.newNetwork());
+        withNetworkAliases("kafka-" + Base58.randomString(6));
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
