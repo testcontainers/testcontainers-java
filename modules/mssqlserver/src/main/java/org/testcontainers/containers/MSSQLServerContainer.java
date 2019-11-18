@@ -50,9 +50,22 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     protected void configure() {
-        LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
-        addEnv("ACCEPT_EULA", "Y");
+        // If license was not accepted programatically, check if it was accepted via resource file
+        if (!getEnvMap().containsKey("ACCEPT_EULA")) {
+            LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
+            acceptLicense();
+        }
+
         addEnv("SA_PASSWORD", password);
+    }
+
+    /**
+     * Accepts the license for the SQLServer container by setting the ACCEPT_EULA=Y
+     * variable as described at <a href="https://hub.docker.com/_/microsoft-mssql-server">https://hub.docker.com/_/microsoft-mssql-server</a>
+     */
+    public SELF acceptLicense() {
+        addEnv("ACCEPT_EULA", "Y");
+        return self();
     }
 
     @Override
@@ -116,6 +129,5 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
                     "or percent (%)."
             );
         }
-
     }
 }
