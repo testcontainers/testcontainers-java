@@ -3,9 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
-import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.concurrent.TimeUnit;
@@ -26,7 +24,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private int port = PORT_NOT_ASSIGNED;
 
-    private boolean implicitNetwork = true;
+    private boolean useImplicitNetwork = true;
 
     public KafkaContainer() {
         this("5.2.1");
@@ -35,9 +33,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
-        // TODO Only for backward compatibility
-        withNetwork(Network.newNetwork());
-        withNetworkAliases("kafka-" + Base58.randomString(6));
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
@@ -55,14 +50,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     public KafkaContainer withNetwork(Network network) {
-        implicitNetwork = false;
+        useImplicitNetwork = false;
         return super.withNetwork(network);
     }
 
     @Override
-    @NonNull
     public Network getNetwork() {
-        if (implicitNetwork) {
+        if (useImplicitNetwork) {
             // TODO Only for backward compatibility, to be removed soon
             logger().warn(
                 "Deprecation warning! " +
