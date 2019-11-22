@@ -20,8 +20,8 @@ public class ParsedDockerComposeFileValidationTest {
             .assertThatThrownBy(() -> {
                 new ParsedDockerComposeFile(file);
             })
-                .hasMessageContaining(file.getAbsolutePath())
-                .hasMessageContaining("'container_name' property set for service 'redis'");
+            .hasMessageContaining(file.getAbsolutePath())
+            .hasMessageContaining("'container_name' property set for service 'redis'");
     }
 
     @Test
