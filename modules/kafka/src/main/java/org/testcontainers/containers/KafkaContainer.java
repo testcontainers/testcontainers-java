@@ -4,7 +4,6 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.SneakyThrows;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.concurrent.TimeUnit;
@@ -25,6 +24,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private int port = PORT_NOT_ASSIGNED;
 
+    private boolean useImplicitNetwork = true;
+
     public KafkaContainer() {
         this("5.2.1");
     }
@@ -32,9 +33,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
-        // TODO Only for backward compatibility
-        withNetwork(Network.newNetwork());
-        withNetworkAliases("kafka-" + Base58.randomString(6));
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
@@ -48,6 +46,36 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
+    }
+
+    @Override
+    public KafkaContainer withNetwork(Network network) {
+        useImplicitNetwork = false;
+        return super.withNetwork(network);
+    }
+
+    @Override
+    public Network getNetwork() {
+        if (useImplicitNetwork) {
+            // TODO Only for backward compatibility, to be removed soon
+            logger().warn(
+                "Deprecation warning! " +
+                    "KafkaContainer#getNetwork without an explicitly set network. " +
+                    "Consider using KafkaContainer#withNetwork",
+                new Exception("Deprecated method")
+            );
+            Network network = Network.SHARED;
+            super.withNetwork(network);
+
+            if (getContainerId() != null) {
+                dockerClient.connectToNetworkCmd()
+                    .withContainerId(getContainerId())
+                    .withNetworkId(network.getId())
+                    .exec();
+            }
+            return network;
+        }
+        return super.getNetwork();
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
@@ -80,10 +108,14 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     @SneakyThrows
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        super.containerIsStarting(containerInfo);
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        super.containerIsStarting(containerInfo, reused);
 
         port = getMappedPort(KAFKA_PORT);
+
+        if (reused) {
+            return;
+        }
 
         final String zookeeperConnect;
         if (externalZookeeperConnect != null) {

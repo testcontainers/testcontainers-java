@@ -341,6 +341,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
 
             boolean reused = false;
+            final boolean reusable;
             if (shouldBeReused) {
                 if (!canBeReused()) {
                     throw new IllegalStateException("This container does not support reuse");
@@ -359,10 +360,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                         createCommand.getLabels().put(HASH_LABEL, hash);
                     }
+                    reusable = true;
                 } else {
                     logger().info("Reuse was requested but the environment does not support the reuse of containers");
+                    reusable = false;
                 }
             } else {
+                reusable = false;
+            }
+
+            if (!reusable) {
                 createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
             }
 
@@ -390,7 +397,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
-            containerIsStarting(containerInfo);
+            containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
@@ -437,7 +444,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
-            containerIsStarted(containerInfo);
+            containerIsStarted(containerInfo, reused);
         } catch (Exception e) {
             if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
                 e = (Exception) e.getCause();
@@ -576,7 +583,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    @UnstableAPI
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        containerIsStarting(containerInfo);
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    @UnstableAPI
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        containerIsStarted(containerInfo);
     }
 
     /**

@@ -60,6 +60,7 @@ public class Startables {
      */
     private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<Startable> startables) {
         CompletableFuture[] futures = startables
+            .sequential()
             .map(it -> {
                 // avoid a recursive update in `computeIfAbsent`
                 Map<Startable, CompletableFuture<Void>> subStarted = new HashMap<>(started);
