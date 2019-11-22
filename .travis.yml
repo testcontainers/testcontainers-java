@@ -44,7 +44,7 @@ jobs:
       script: ./gradlew jdbc-test:check --scan --no-daemon -i
 
     - env: [ NAME=examples ]
-      script: cd examples && ../gradlew check --no-daemon -i
+      script: cd examples && ./gradlew check --no-daemon -i
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]
