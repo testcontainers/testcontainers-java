@@ -196,8 +196,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         } else {
             runWithCompose("up " + flags + " " + servicesWithScalingSettings);
         }
-
-        runWithCompose(command);
     }
 
     private void waitUntilServiceStarted() {
