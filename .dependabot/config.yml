@@ -4,9 +4,6 @@ update_configs:
   - package_manager: "java:gradle"
     directory: "/core"
     update_schedule: "daily"
-    automerged_updates:
-      - match: { dependency_type: "development", update_type: "semver:minor" }
-      - match: { dependency_type: "production", update_type: "semver:minor" }
 
 # Explicit entry for each module
   - package_manager: "java:gradle"

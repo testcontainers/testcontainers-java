@@ -1,9 +1,13 @@
 package org.testcontainers.containers.wait.internal;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.ExecInContainerPattern;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
 
 import static java.lang.String.format;
@@ -12,6 +16,7 @@ import static java.lang.String.format;
  * Mechanism for testing that a socket is listening when run from the container being checked.
  */
 @RequiredArgsConstructor
+@Slf4j
 public class InternalCommandPortListeningCheck implements java.util.concurrent.Callable<Boolean> {
 
     private final WaitStrategyTarget waitStrategyTarget;
@@ -19,30 +24,26 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
     @Override
     public Boolean call() {
-        for (Integer internalPort : internalPorts) {
-            tryPort(internalPort);
+        String command = "true";
+
+        for (int internalPort : internalPorts) {
+            command += " && ";
+            command += " (";
+            command += format("cat /proc/net/tcp{,6} | awk '{print $2}' | grep -i :%x", internalPort);
+            command += " || ";
+            command += format("nc -vz -w 1 localhost %d", internalPort);
+            command += " || ";
+            command += format("/bin/bash -c '</dev/tcp/localhost/%d'", internalPort);
+            command += ")";
         }
 
-        return true;
-    }
-
-    private void tryPort(Integer internalPort) {
-        String[][] commands = {
-                {"/bin/sh", "-c", format("cat /proc/net/tcp{,6} | awk '{print $2}' | grep -i :%x", internalPort)},
-                {"/bin/sh", "-c", format("nc -vz -w 1 localhost %d", internalPort)},
-                {"/bin/bash", "-c", format("</dev/tcp/localhost/%d", internalPort)}
-        };
-
-        for (String[] command : commands) {
-            try {
-                if (ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), command).getExitCode() == 0) {
-                    return;
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
+        Instant before = Instant.now();
+        try {
+            ExecResult result = ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), "/bin/sh", "-c", command);
+            log.trace("Check for {} took {}", internalPorts, Duration.between(before, Instant.now()));
+            return result.getExitCode() == 0;
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
-
-        throw new IllegalStateException("Socket not listening yet: " + internalPort);
     }
 }

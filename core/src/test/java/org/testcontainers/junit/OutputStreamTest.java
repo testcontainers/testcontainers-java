@@ -24,11 +24,11 @@ public class OutputStreamTest {
 
     @Rule
     public GenericContainer container = new GenericContainer("alpine:3.2")
-            .withCommand("ping -c 5 www.google.com");
+            .withCommand("ping -c 5 127.0.0.1");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);
 
-    @Test
+    @Test(timeout = 60_000L)
     public void testFetchStdout() throws TimeoutException {
 
         WaitingConsumer consumer = new WaitingConsumer();
@@ -39,8 +39,8 @@ public class OutputStreamTest {
                 30, TimeUnit.SECONDS);
     }
 
-    @Test
-    public void testFetchStdoutWithTimeout() throws TimeoutException {
+    @Test(timeout = 60_000L)
+    public void testFetchStdoutWithTimeout() {
 
         WaitingConsumer consumer = new WaitingConsumer();
 
@@ -53,7 +53,7 @@ public class OutputStreamTest {
         });
     }
 
-    @Test
+    @Test(timeout = 60_000L)
     public void testFetchStdoutWithNoLimit() throws TimeoutException {
 
         WaitingConsumer consumer = new WaitingConsumer();
@@ -63,7 +63,7 @@ public class OutputStreamTest {
         consumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("seq=2"));
     }
 
-    @Test
+    @Test(timeout = 60_000L)
     public void testLogConsumer() throws TimeoutException {
 
         WaitingConsumer waitingConsumer = new WaitingConsumer();
@@ -75,7 +75,7 @@ public class OutputStreamTest {
         waitingConsumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("seq=2"));
     }
 
-    @Test
+    @Test(timeout = 60_000L)
     public void testToStringConsumer() throws TimeoutException {
 
         WaitingConsumer waitingConsumer = new WaitingConsumer();

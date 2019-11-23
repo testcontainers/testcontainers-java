@@ -154,7 +154,7 @@ public class RegistryAuthLocator {
                 !isBlank(deserializedAuth.getAuth())) {
 
                 final String rawAuth = new String(Base64.getDecoder().decode(deserializedAuth.getAuth()));
-                final String[] splitRawAuth = rawAuth.split(":");
+                final String[] splitRawAuth = rawAuth.split(":", 2);
 
                 if (splitRawAuth.length == 2) {
                     deserializedAuth.withUsername(splitRawAuth[0]);
@@ -209,7 +209,7 @@ public class RegistryAuthLocator {
     private AuthConfig runCredentialProvider(String hostName, String helperOrStoreName) throws Exception {
 
         if (isBlank(hostName)) {
-            log.debug("There is no point to locate AuthConfig for blank hostName. Return NULL to allow fallback");
+            log.debug("There is no point in locating AuthConfig for blank hostName. Returning NULL to allow fallback");
             return null;
         }
 
@@ -228,9 +228,9 @@ public class RegistryAuthLocator {
             if (!isBlank(responseErrorMsg)) {
                 String credentialsNotFoundMsg = getGenericCredentialsNotFoundMsg(credentialProgramName);
                 if (credentialsNotFoundMsg != null && credentialsNotFoundMsg.equals(responseErrorMsg)) {
-                    log.info("Credentials not found for host ({}) when using credential helper/store ({})",
-                        hostName,
-                        credentialProgramName);
+                    log.info("Credential helper/store ({}) does not have credentials for {}",
+                        credentialProgramName,
+                        hostName);
 
                     return null;
                 }
@@ -251,10 +251,16 @@ public class RegistryAuthLocator {
         final JsonNode helperResponse = OBJECT_MAPPER.readTree(data);
         log.debug("Credential helper/store provided auth config for: {}", hostName);
 
-        return new AuthConfig()
-            .withRegistryAddress(helperResponse.at("/ServerURL").asText())
-            .withUsername(helperResponse.at("/Username").asText())
-            .withPassword(helperResponse.at("/Secret").asText());
+        final String username = helperResponse.at("/Username").asText();
+        final String password = helperResponse.at("/Secret").asText();
+        if ("<token>".equals(username)) {
+            return new AuthConfig().withIdentityToken(password);
+        } else {
+            return new AuthConfig()
+                .withRegistryAddress(helperResponse.at("/ServerURL").asText())
+                .withUsername(username)
+                .withPassword(password);
+        }
     }
 
     private String getCredentialProgramName(String credHelper) {
