@@ -1,4 +1,4 @@
-# JUnit 4 Quickstart
+# JUnit 5 Quickstart
 
 It's easy to add Testcontainers to your project - let's walk through a quick example to see how.
 
@@ -8,7 +8,7 @@ In our imaginary program, there is a `RedisBackedCache` class which stores data 
 You can see an example test that could have been written for it (without using Testcontainers):
 
 <!--codeinclude-->
-[Pre-Testcontainers test code](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTestStep0.java) block:RedisBackedCacheIntTestStep0
+[Pre-Testcontainers test code](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTestStep0.java) block:RedisBackedCacheIntTestStep0
 <!--/codeinclude-->
 
 Notice that the existing test has a problem - it's relying on a local installation of Redis, which is a red flag for test reliability.
@@ -22,13 +22,41 @@ Let's start from here, and see how to improve the test with Testcontainers:
 First, add Testcontainers as a dependency as follows:
 
 ```groovy tab='Gradle'
+def junitJupiterVersion = '5.4.2'
+testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
+testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
 testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
 <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>5.4.2</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-params</artifactId>
+    <version>5.4.2</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-engine</artifactId>
+    <version>5.4.2</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers</artifactId>
+    <version>{{latest_version}}</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>
@@ -36,13 +64,13 @@ testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
-Simply add the following to the body of our test class:
+First, you'll need to annotate the test class with `@Testcontainers`. Furthermore, add the following to the body of our test class:
 
 <!--codeinclude-->
-[JUnit 4 Rule](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:rule
+[JUnit 5 Rule](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:container
 <!--/codeinclude-->
 
-The `@Rule` annotation tells JUnit to notify this field about various events in the test lifecycle.
+The `@Container` annotation tells JUnit to notify this field about various events in the test lifecycle.
 In this case, our rule object is a Testcontainers `GenericContainer`, configured to use a specific Redis image from Docker Hub, and configured to expose a port.
 
 If we run our test as-is, then regardless of the actual test outcome, we'll see logs showing us that Testcontainers:
@@ -61,7 +89,7 @@ Testcontainers uses *randomized ports* for each container it starts, but makes i
 We can do this in our test `setUp` method, to set up our component under test:
 
 <!--codeinclude-->
-[Obtaining a mapped port](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:setUp
+[Obtaining a mapped port](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:setUp
 <!--/codeinclude-->
 
 !!! tip
@@ -77,6 +105,6 @@ That's it!
 Let's look at our complete test class to see how little we had to add to get up and running with Testcontainers:
 
 <!--codeinclude-->
-[RedisBackedCacheIntTest](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:RedisBackedCacheIntTest
+[RedisBackedCacheIntTest](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:class
 <!--/codeinclude-->
 
