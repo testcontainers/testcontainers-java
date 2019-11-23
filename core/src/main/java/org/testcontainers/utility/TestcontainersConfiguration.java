@@ -51,7 +51,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getDockerComposeContainerImage() {
-        return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.8.0");
+        return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.24.1");
     }
 
     public String getTinyImage() {
