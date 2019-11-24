@@ -1,13 +1,11 @@
 package org.testcontainers.couchbase;
 
-import org.junit.ClassRule;
+import org.junit.BeforeClass;
 
 public class Couchbase5_5Test extends BaseCouchbaseContainerTest {
-    @ClassRule
-    public static CouchbaseContainer container = initCouchbaseContainer("couchbase/server:5.5.1");
 
-    @Override
-    public CouchbaseContainer getCouchbaseContainer() {
-        return container;
+    @BeforeClass
+    public static void beforeClass() {
+        initializeContainerAndBucket("couchbase/server:5.5.1");
     }
 }

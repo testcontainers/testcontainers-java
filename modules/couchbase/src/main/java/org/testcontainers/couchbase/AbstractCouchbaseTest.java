@@ -19,10 +19,12 @@ public abstract class AbstractCouchbaseTest {
 
     public static final String DEFAULT_PASSWORD = "password";
 
-    private Bucket bucket;
-
     @After
     public void clear() {
+        if (getCouchbaseContainer() == null) {
+            return;
+        }
+
         if (getCouchbaseContainer().isIndex() && getCouchbaseContainer().isQuery() && getCouchbaseContainer().isPrimaryIndex()) {
             getBucket().query(
                 N1qlQuery.simple(String.format("DELETE FROM `%s`", getBucket().name()),
@@ -30,14 +32,6 @@ public abstract class AbstractCouchbaseTest {
         } else {
             getBucket().bucketManager().flush();
         }
-    }
-
-    protected abstract CouchbaseContainer getCouchbaseContainer();
-
-    protected static CouchbaseContainer initCouchbaseContainer(String imageName) {
-        CouchbaseContainer couchbaseContainer = (imageName == null) ? new CouchbaseContainer() : new CouchbaseContainer(imageName);
-        couchbaseContainer.withNewBucket(getDefaultBucketSettings());
-        return couchbaseContainer;
     }
 
     protected static BucketSettings getDefaultBucketSettings() {
@@ -51,15 +45,12 @@ public abstract class AbstractCouchbaseTest {
             .build();
     }
 
-    protected synchronized Bucket getBucket() {
-        if (bucket == null) {
-            bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
-        }
-        return bucket;
+    protected static Bucket openBucket(CouchbaseContainer container) {
+        CouchbaseCluster cluster = container.getCouchbaseCluster();
+        return cluster.openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
     }
 
-    private Bucket openBucket(String bucketName, String password) {
-        CouchbaseCluster cluster = getCouchbaseContainer().getCouchbaseCluster();
-        return cluster.openBucket(bucketName, password);
-    }
+    protected abstract Bucket getBucket();
+
+    protected abstract CouchbaseContainer getCouchbaseContainer();
 }
