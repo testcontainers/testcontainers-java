@@ -41,6 +41,7 @@ public class ContainerDatabaseDriver implements Driver {
     private static final Map<String, Set<Connection>> containerConnections = new HashMap<>();
     private static final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
     private static final Set<String> initializedContainers = new HashSet<>();
+    private static final String FILE_PATH_PREFIX = "file:";
 
     static {
         load();
@@ -92,6 +93,7 @@ public class ContainerDatabaseDriver implements Driver {
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
                     if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
                         container = candidateContainerType.newInstance(connectionUrl);
+                        container.withTmpFs(connectionUrl.getTmpfsOptions());
                         delegate = container.getJdbcDriverInstance();
                     }
                 }
@@ -149,7 +151,7 @@ public class ContainerDatabaseDriver implements Driver {
      */
     private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final ConnectionUrl connectionUrl) {
 
-        final boolean isDaemon = connectionUrl.isInDaemonMode();
+        final boolean isDaemon = connectionUrl.isInDaemonMode() || connectionUrl.isReusable();
 
         Set<Connection> connections = containerConnections.computeIfAbsent(container.getContainerId(), k -> new HashSet<>());
 
@@ -177,8 +179,14 @@ public class ContainerDatabaseDriver implements Driver {
         if (connectionUrl.getInitScriptPath().isPresent()) {
             String initScriptPath = connectionUrl.getInitScriptPath().get();
             try {
-                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-
+                URL resource;
+                if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
+                    //relative workdir path
+                    resource = new URL(initScriptPath);
+                } else {
+                    //classpath resource
+                    resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+                }
                 if (resource == null) {
                     LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                     throw new SQLException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");

@@ -16,13 +16,11 @@ Your test can execute a command inside a running container, similar to a `docker
 [Executing a command inside a running container](../examples/src/test/java/generic/ExecTest.java) inside_block:standaloneExec
 <!--/codeinclude-->
 
-This can be useful for software that has a command line administration tool. You can also get the output (stdout/stderr) from the command - for example:
+This can be useful for software that has a command line administration tool. You can also get the output (stdout/stderr) and exit code from the command - for example:
 
 <!--codeinclude-->
 [Executing a command inside a running container and reading the result](../examples/src/test/java/generic/ExecTest.java) inside_block:execReadingStdout
 <!--/codeinclude-->
-
-Note that there is no way to get the return code of the executed command, only stdout/stderr.
 
 ## Environment variables
 

@@ -1,5 +1,8 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -47,6 +50,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final String DEFAULT_PASSWORD = "secret";
     private static final int SELENIUM_PORT = 4444;
     private static final int VNC_PORT = 5900;
+
+    private static final String NO_PROXY_KEY = "no_proxy";
 
     @Nullable
     private Capabilities capabilities;
@@ -156,8 +161,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         addExposedPorts(SELENIUM_PORT, VNC_PORT);
         addEnv("TZ", timeZone);
-        addEnv("no_proxy", "localhost");
+
+        if (!getEnvMap().containsKey(NO_PROXY_KEY)) {
+            addEnv(NO_PROXY_KEY, "localhost");
+        }
+
         setCommand("/opt/bin/entry_point.sh");
+
+        if (getShmSize() == null) {
+            this.getBinds().add(new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw));
+        }
 
         /*
          * Some unreliability of the selenium browser containers has been observed, so allow multiple attempts to start.

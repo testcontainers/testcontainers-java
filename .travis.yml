@@ -1,10 +1,19 @@
+if: branch = master OR tag is present
+
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 sudo: required
 services:
   - docker
+
+# Fix for https://travis-ci.community/t/problematic-docker-compose-version-1-23-1/5362/3
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-Linux-x86_64 > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 install:
   - ./gradlew build -x check --scan --no-daemon
@@ -13,18 +22,29 @@ jobs:
   include:
     - stage: test
       env: [ NAME=core ]
-      script: ./gradlew testcontainers:check javadoc --scan --no-daemon
+      script: ./gradlew testcontainers:check javadoc --scan --no-daemon -i
 
     - stage: test
       env: [ NAME=core ]
       jdk: openjdk11
-      script: ./gradlew testcontainers:check --scan --no-daemon
+      script: ./gradlew testcontainers:check --scan --no-daemon -i
+
+    - stage: test
+      env: [ NAME=core ]
+      jdk: openjdk12
+      script: ./gradlew testcontainers:check --scan --no-daemon -i
 
     - env: [ NAME=selenium ]
-      script: ./gradlew selenium:check --scan --no-daemon
+      script: ./gradlew selenium:check --scan --no-daemon -i
 
     - env: [ NAME=modules ]
-      script: ./gradlew check -x testcontainers:check -x selenium:check --scan --no-daemon
+      script: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check --scan --no-daemon -i
+
+    - env: [ NAME=jdbc ]
+      script: ./gradlew jdbc-test:check --scan --no-daemon -i
+
+    - env: [ NAME=examples ]
+      script: cd examples && ./gradlew check --no-daemon -i
 
     # Run Docker-in-Docker tests inside Alpine
     - env: [ NAME="docker-in-alpine-docker" ]
@@ -36,7 +56,7 @@ jobs:
                 -v "$(pwd)":"$(pwd)" \
                 -w "$(pwd)" \
                 openjdk:8-jdk-alpine \
-                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan
+                ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan -i
 
     - stage: deploy
       sudo: false
@@ -45,7 +65,7 @@ jobs:
       script: skip
       deploy:
         provider: script
-        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon
+        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon -i
         on:
           tags: true
           branch: master

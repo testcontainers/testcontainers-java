@@ -6,6 +6,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static org.testcontainers.containers.GenericContainer.CONTAINER_RUNNING_TIMEOUT_SEC;
@@ -21,9 +22,17 @@ public abstract class StartupCheckStrategy {
             .withConstantThroughput()
             .build();
 
+    private Duration timeout = Duration.ofSeconds(CONTAINER_RUNNING_TIMEOUT_SEC);
+
+    @SuppressWarnings("unchecked")
+    public <SELF extends StartupCheckStrategy> SELF withTimeout(Duration timeout) {
+        this.timeout = timeout;
+        return (SELF) this;
+    }
+
     public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
         final Boolean[] startedOK = {null};
-        Unreliables.retryUntilTrue(CONTAINER_RUNNING_TIMEOUT_SEC, TimeUnit.SECONDS, () -> {
+        Unreliables.retryUntilTrue((int) timeout.toMillis(), TimeUnit.MILLISECONDS, () -> {
             //noinspection CodeBlock2Expr
             return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
                 StartupStatus state = checkStartupState(dockerClient, containerId);
