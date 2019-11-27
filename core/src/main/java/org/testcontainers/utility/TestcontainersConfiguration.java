@@ -1,5 +1,6 @@
 package org.testcontainers.utility;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.UnstableAPI;
@@ -9,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 /**
@@ -24,7 +26,14 @@ public class TestcontainersConfiguration {
     private static File ENVIRONMENT_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     @Getter(lazy = true)
-    private static final TestcontainersConfiguration instance = loadConfiguration();
+    private static final TestcontainersConfiguration instance = loadConfiguration();;
+
+    @SuppressWarnings({"ConstantConditions", "unchecked", "rawtypes"})
+    @VisibleForTesting
+    static AtomicReference<TestcontainersConfiguration> getInstanceField() {
+        // Lazy Getter from Lombok changes the field's type to AtomicReference
+        return (AtomicReference) (Object) instance;
+    }
 
     @Getter(AccessLevel.NONE)
     private final Properties environmentProperties;
@@ -51,7 +60,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getDockerComposeContainerImage() {
-        return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.8.0");
+        return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.24.1");
     }
 
     public String getTinyImage() {
