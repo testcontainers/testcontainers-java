@@ -4,7 +4,10 @@ dependencies {
     compile "io.lettuce:lettuce-core:5.1.1.RELEASE"
 
     testCompile "junit:junit:4.12"
+    testCompile 'org.assertj:assertj-core:3.12.2'
     testCompile project(":testcontainers")
     testCompile project(":selenium")
+    testCompile project(":rabbitmq")
+    testCompile "com.rabbitmq:amqp-client:5.7.0"
     testCompile "org.seleniumhq.selenium:selenium-api:3.141.59"
 }

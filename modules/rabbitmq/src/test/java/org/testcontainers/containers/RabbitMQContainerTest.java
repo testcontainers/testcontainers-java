@@ -3,13 +3,14 @@ package org.testcontainers.containers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.testcontainers.containers.RabbitMQContainer.SslVerification.VERIFY_PEER;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.exchange;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.permission;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.queue;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.user;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.vhost;
+import static org.testcontainers.containers.rabbitmq.admin.DeclareCommands.vhostLimit;
 import static org.testcontainers.utility.MountableFile.forClasspathResource;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,8 +23,16 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+
 import org.junit.Test;
+import org.testcontainers.containers.rabbitmq.admin.DeclareVhostLimitCommand;
 import org.testcontainers.utility.MountableFile;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
 /**
  * @author Martin Greber
@@ -168,9 +177,19 @@ public class RabbitMQContainerTest {
                 .withPolicy("max length policy", "^dog", ImmutableMap.of("max-length", 1), 1, "queues")
                 .withPolicy("alternate exchange policy", "^direct-exchange", ImmutableMap.of("alternate-exchange", "amq.direct"))
                 .withOperatorPolicy("operator policy 1", "^queue1", ImmutableMap.of("message-ttl", 1000), 1, "queues")
-                .withPluginsEnabled("rabbitmq_shovel", "rabbitmq_random_exchange");
+                .withPluginsEnabled("rabbitmq_shovel", "rabbitmq_random_exchange")
+                .declare(vhost("vhost3")
+                    .declare(exchange("vhost-exchange").direct().durable())
+                    .declare(queue("queue3").maxLength(100).autoDelete())
+                    .declare(vhostLimit(DeclareVhostLimitCommand.MAX_CONNECTIONS, 10))
+                    .declare(user("user3"))
+                    .declare(permission("user3").read(".*")));
 
             container.start();
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "vhosts")
+                    .getStdout())
+                    .contains("vhost1", "vhost2", "vhost3");
 
             assertThat(container.execInContainer("rabbitmqadmin", "list", "queues")
                 .getStdout())
@@ -196,6 +215,22 @@ public class RabbitMQContainerTest {
                 .getStdout())
                 .contains("operator policy 1");
 
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "permissions")
+                    .getStdout())
+                    .contains("user1", "user3");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "--vhost=vhost3", "list", "exchanges")
+                .getStdout())
+                .contains("vhost-exchange");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "--vhost=vhost3", "list", "queues")
+                    .getStdout())
+                    .contains("queue3");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "--vhost=vhost3", "list", "users")
+                    .getStdout())
+                    .contains("user3");
+
             assertThat(container.execInContainer("rabbitmq-plugins", "is_enabled", "rabbitmq_shovel", "--quiet")
                 .getStdout())
                 .contains("rabbitmq_shovel is enabled");
@@ -217,8 +252,7 @@ public class RabbitMQContainerTest {
                     true,
                     false,
                     ImmutableMap.of("x-message-ttl", container))
-            ).hasMessageStartingWith("Failed to convert arguments into json");
-
+            ).hasMessageStartingWith("Failed to convert map into json");
         }
     }
 
