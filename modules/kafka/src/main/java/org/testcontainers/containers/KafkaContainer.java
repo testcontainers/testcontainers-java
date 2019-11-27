@@ -103,7 +103,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void doStart() {
-        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.05; done; " + STARTER_SCRIPT);
+        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
 
         if (externalZookeeperConnect == null) {
             addExposedPort(ZOOKEEPER_PORT);

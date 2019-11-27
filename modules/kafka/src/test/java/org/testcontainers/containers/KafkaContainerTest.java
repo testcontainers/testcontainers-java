@@ -16,7 +16,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -46,7 +45,8 @@ public class KafkaContainerTest {
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
         ) {
-            Stream.of(kafka, zookeeper).parallel().forEach(GenericContainer::start);
+            zookeeper.start();
+            kafka.start();
 
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
@@ -66,7 +66,8 @@ public class KafkaContainerTest {
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
         ) {
-            Stream.of(kafka, zookeeper).parallel().forEach(GenericContainer::start);
+            zookeeper.start();
+            kafka.start();
 
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
