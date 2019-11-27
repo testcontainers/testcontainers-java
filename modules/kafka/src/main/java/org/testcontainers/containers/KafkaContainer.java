@@ -131,14 +131,14 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
 
         String command = "#!/bin/bash \n";
-        command += "export KAFKA_ZOOKEEPER_CONNECT=" + zookeeperConnect + "\n";
-        command += "export KAFKA_ADVERTISED_LISTENERS=" + Stream
+        command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
+        command += "export KAFKA_ADVERTISED_LISTENERS='" + Stream
             .concat(
                 Stream.of(getBootstrapServers()),
                 containerInfo.getNetworkSettings().getNetworks().values().stream()
                     .map(it -> "BROKER://" + it.getIpAddress() + ":9092")
             )
-            .collect(Collectors.joining(",")) + "\n";
+            .collect(Collectors.joining(",")) + "'\n";
 
         command += ". /etc/confluent/docker/bash-config \n";
         command += "/etc/confluent/docker/configure \n";
