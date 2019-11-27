@@ -77,6 +77,7 @@ You can also [check the latest version available on Maven Central](https://searc
 * [JHipster](https://www.jhipster.tech/) - Couchbase and Cassandra integration testing
 * [wescale](https://www.wescale.com) - Integration testing against HTTP service mocks and various data stores
 * [Marquez](https://marquezproject.github.io/marquez) - PostgreSQL integration testing
+* [Transferwise](https://transferwise.com/) - Integration testing for different RDBMS, kafka and micro services
 
 ## License
 
