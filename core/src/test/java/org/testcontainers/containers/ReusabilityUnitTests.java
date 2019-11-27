@@ -246,8 +246,7 @@ public class ReusabilityUnitTests {
 
         @Test
         public void shouldSetCopiedFilesHashLabel() {
-            // TODO mock TestcontainersConfiguration
-            Assume.assumeTrue("supports reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
@@ -264,8 +263,7 @@ public class ReusabilityUnitTests {
 
         @Test
         public void shouldHashCopiedFiles() {
-            // TODO mock TestcontainersConfiguration
-            Assume.assumeTrue("supports reuse", TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
