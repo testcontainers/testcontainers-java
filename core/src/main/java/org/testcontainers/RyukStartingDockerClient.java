@@ -74,7 +74,6 @@ import com.github.dockerjava.api.model.PruneType;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.SwarmSpec;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
@@ -85,15 +84,14 @@ import java.io.InputStream;
  * Note: this class is not using {@link lombok.experimental.Delegate}
  * to force us implementing new methods when we update docker-java.
  */
-@FieldDefaults(makeFinal = true)
 @RequiredArgsConstructor
 class RyukStartingDockerClient implements DockerClient {
 
-    DockerClient dockerClient;
+    private final DockerClient dockerClient;
 
-    String hostIpAddress;
+    private final String hostIpAddress;
 
-    void ensureRyukIsRunning() {
+    private void ensureRyukIsRunning() {
         ResourceReaper.start(hostIpAddress, dockerClient);
     }
 
