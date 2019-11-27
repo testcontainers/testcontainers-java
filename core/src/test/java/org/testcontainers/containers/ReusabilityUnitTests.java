@@ -9,6 +9,7 @@ import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
 import com.github.dockerjava.core.command.ListContainersCmdImpl;
 import com.github.dockerjava.core.command.StartContainerCmdImpl;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.junit.Rule;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -419,6 +421,29 @@ public class ReusabilityUnitTests {
             assertThat(filePermissions).doesNotContain(PosixFilePermission.OWNER_EXECUTE);
             filePermissions.add(PosixFilePermission.OWNER_EXECUTE);
             Files.setPosixFilePermissions(path, filePermissions);
+
+            assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(hash1);
+        }
+
+        @Test
+        public void folderPermissions() throws Exception {
+            Path tempDirectory = Files.createTempDirectory("reusable_test");
+            MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
+            assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
+            Path subDir = Files.createDirectory(
+                tempDirectory.resolve("sub"),
+                PosixFilePermissions.asFileAttribute(
+                    Sets.newHashSet(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)
+                )
+            );
+            container.withCopyFileToContainer(mountableFile, "/foo/bar/");
+
+            long hash1 = container.hashCopiedFiles().getValue();
+
+            Set<PosixFilePermission> permissions = new HashSet<>(Files.getPosixFilePermissions(subDir));
+            assertThat(permissions).doesNotContain(PosixFilePermission.OWNER_EXECUTE);
+            permissions.add(PosixFilePermission.OWNER_EXECUTE);
+            Files.setPosixFilePermissions(subDir, permissions);
 
             assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(hash1);
         }
