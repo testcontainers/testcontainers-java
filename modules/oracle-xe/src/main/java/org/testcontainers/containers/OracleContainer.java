@@ -19,6 +19,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private String username = "system";
     private String password = "oracle";
+    private String sid = "xe";
+    private String serviceName;
 
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()
@@ -65,7 +67,15 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + ":" + getSid();
+        String jdbcUrl = "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@"
+            + getContainerIpAddress() + ":" + getOraclePort();
+        if (sid != null) {
+            return jdbcUrl + ":" + getSid();
+        } else if (serviceName != null) {
+            return jdbcUrl + "/" + getServiceName();
+        } else {
+            throw new IllegalStateException("Cannot compose JDBC Url: Neither SID nor ServiceName have been set.");
+        }
     }
 
     @Override
@@ -90,9 +100,25 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return self();
     }
 
+    public OracleContainer withSid(String sid) {
+        this.sid = sid;
+        this.serviceName = null;
+        return self();
+    }
+
+    public OracleContainer withServiceName(String serviceName) {
+        this.serviceName = serviceName;
+        this.sid = null;
+        return self();
+    }
+
     @SuppressWarnings("SameReturnValue")
     public String getSid() {
-        return "xe";
+        return sid;
+    }
+
+    public String getServiceName() {
+        return serviceName;
     }
 
     public Integer getOraclePort() {
