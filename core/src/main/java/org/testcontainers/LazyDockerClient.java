@@ -1,9 +1,10 @@
-package org.testcontainers.containers;
+package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
+import lombok.ToString;
 import lombok.experimental.Delegate;
-import org.testcontainers.DockerClientFactory;
 
+@ToString
 enum LazyDockerClient implements DockerClient {
 
     INSTANCE;
