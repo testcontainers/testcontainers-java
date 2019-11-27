@@ -42,6 +42,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -146,7 +147,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ));
 
     @NonNull
-    private Future<String> image;
+    private RemoteDockerImage image;
 
     @NonNull
     private Map<String, String> env = new HashMap<>();
@@ -192,10 +193,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Unique instance of DockerClient for use by this container object.
-     * We use {@link LazyDockerClient} here to avoid eager client creation
+     * We use {@link DockerClientFactory#lazyClient()} here to avoid eager client creation
      */
     @Setter(AccessLevel.NONE)
-    protected DockerClient dockerClient = LazyDockerClient.INSTANCE;
+    protected DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     /*
      * Info about the Docker server; lazily fetched.
@@ -257,7 +258,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        this.image = image;
+        setImage(image);
+    }
+
+    public void setImage(Future<String> image) {
+        this.image = new RemoteDockerImage(image);
     }
 
     /**
@@ -304,11 +309,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             Instant startedAt = Instant.now();
 
             logger().debug("Starting container: {}", getDockerImageName());
-            logger().debug("Trying to start container: {}", image.get());
+            logger().debug("Trying to start container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
-                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
+                logger().debug("Trying to start container: {} (attempt {}/{})", getDockerImageName(), attempt.incrementAndGet(), startupAttempts);
                 tryStart(startedAt);
                 return true;
             });
@@ -338,7 +343,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void tryStart(Instant startedAt) {
         try {
-            String dockerImageName = image.get();
+            String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
@@ -571,7 +576,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             String imageName;
 
             try {
-                imageName = image.get();
+                imageName = getDockerImageName();
             } catch (Exception e) {
                 imageName = "<unknown>";
             }
@@ -612,7 +617,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void configure() {
-
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -1148,6 +1152,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
+    public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
+        this.image = this.image.withImagePullPolicy(imagePullPolicy);
+        return self();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1240,9 +1250,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
-
-        // Mimic old behavior where we resolve image once it's set
-        getDockerImageName();
     }
 
     /**
