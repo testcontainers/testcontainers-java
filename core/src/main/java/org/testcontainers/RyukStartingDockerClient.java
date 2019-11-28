@@ -96,6 +96,12 @@ class RyukStartingDockerClient implements DockerClient {
     }
 
     @Override
+    public CreateContainerCmd createContainerCmd(String image) {
+        ensureRyukIsRunning();
+        return dockerClient.createContainerCmd(image);
+    }
+
+    @Override
     public StartContainerCmd startContainerCmd(String containerId) {
         ensureRyukIsRunning();
         return dockerClient.startContainerCmd(containerId);
@@ -220,11 +226,6 @@ class RyukStartingDockerClient implements DockerClient {
     @Override
     public ListContainersCmd listContainersCmd() {
         return dockerClient.listContainersCmd();
-    }
-
-    @Override
-    public CreateContainerCmd createContainerCmd(String image) {
-        return dockerClient.createContainerCmd(image);
     }
 
     @Override

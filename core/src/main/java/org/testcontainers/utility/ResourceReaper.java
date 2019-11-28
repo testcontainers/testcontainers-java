@@ -76,6 +76,7 @@ public final class ResourceReaper {
         if (ryukContainerId != null) {
             return ryukContainerId;
         }
+        log.info("Starting Ryuk...");
         Instant startTime = Instant.now();
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);

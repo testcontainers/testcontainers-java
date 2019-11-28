@@ -24,7 +24,10 @@ public class DockerClientConfigUtils {
     @Getter(lazy = true)
     private static final Optional<String> defaultGateway = Optional
             .ofNullable(DockerClientFactory.instance().runInsideDocker(
-                    cmd -> cmd.withCmd("sh", "-c", "ip route|awk '/default/ { print $3 }'"),
+                    cmd -> {
+                        cmd.withCmd("sh", "-c", "ip route|awk '/default/ { print $3 }'");
+                        cmd.getHostConfig().withAutoRemove(true);
+                    },
                     (client, id) -> {
                         try {
                             LogToStringContainerCallback loggingCallback = new LogToStringContainerCallback();

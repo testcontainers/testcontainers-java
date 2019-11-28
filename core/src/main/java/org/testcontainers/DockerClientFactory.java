@@ -2,6 +2,7 @@ package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
@@ -119,14 +120,15 @@ public class DockerClientFactory {
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
 
+        // Eagerly set the client, so that `DockerClientConfigUtils` can call `runInsideDocker`
+        dockerClient = strategy.getClient();
+
         String hostIpAddress = strategy.getDockerHostIpAddress();
         log.info("Docker host IP address is {}", hostIpAddress);
 
         boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
         if (useRyuk) {
-            dockerClient = new RyukStartingDockerClient(strategy.getClient(), hostIpAddress);
-        } else {
-            dockerClient = strategy.getClient();
+            dockerClient = new RyukStartingDockerClient(dockerClient, hostIpAddress);
         }
 
         Info dockerInfo = dockerClient.infoCmd().exec();
@@ -262,8 +264,10 @@ public class DockerClientFactory {
         } finally {
             try {
                 client.removeContainerCmd(id).withRemoveVolumes(true).withForce(true).exec();
-            } catch (NotFoundException | InternalServerErrorException ignored) {
-                log.debug("", ignored);
+            } catch (NotFoundException | ConflictException e) {
+                log.trace("", e);
+            } catch (InternalServerErrorException e) {
+                log.debug("", e);
             }
         }
     }
