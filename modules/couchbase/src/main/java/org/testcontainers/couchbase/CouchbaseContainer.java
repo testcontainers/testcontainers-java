@@ -47,6 +47,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -199,9 +200,15 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     public void stop() {
-        stopCluster();
-        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
+        try {
+            stopCluster();
+            ((AtomicReference<Object>) (Object) couchbaseEnvironment).set(null);
+            ((AtomicReference<Object>) (Object) couchbaseCluster).set(null);
+        } finally {
+            Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
+        }
     }
 
     private void stopCluster() {

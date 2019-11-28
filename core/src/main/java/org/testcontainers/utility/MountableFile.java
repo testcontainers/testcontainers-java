@@ -9,6 +9,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.UnstableAPI;
 import org.testcontainers.images.builder.Transferable;
 
 import java.io.File;
@@ -361,9 +362,13 @@ public class MountableFile implements Transferable {
         if (this.forcedFileMode != null) {
             return this.getModeValue(path);
         }
+        return getUnixFileMode(path);
+    }
 
+    @UnstableAPI
+    public static int getUnixFileMode(final Path path) {
         try {
-            return (int) Files.getAttribute(path, "unix:mode");
+            return (int) Files.readAttributes(path, "unix:mode").get("mode");
         } catch (IOException | UnsupportedOperationException e) {
             // fallback for non-posix environments
             int mode = DEFAULT_FILE_MODE;
