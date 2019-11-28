@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -413,7 +414,7 @@ public class ReusabilityUnitTests {
 
             long hash1 = container.hashCopiedFiles().getValue();
 
-            assertThat(path.toFile().canExecute()).isFalse();
+            assumeThat(path.toFile().canExecute()).isFalse();
             path.toFile().setExecutable(true);
 
             assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(hash1);
@@ -423,7 +424,7 @@ public class ReusabilityUnitTests {
         public void folderPermissions() throws Exception {
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
-            assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
+            assumeThat(new File(mountableFile.getResolvedPath())).isDirectory();
             Path subDir = Files.createDirectory(tempDirectory.resolve("sub"));
             subDir.toFile().setWritable(false);
             container.withCopyFileToContainer(mountableFile, "/foo/bar/");
