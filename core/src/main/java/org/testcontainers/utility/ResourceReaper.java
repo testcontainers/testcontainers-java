@@ -56,15 +56,11 @@ public final class ResourceReaper {
 
     private static String ryukContainerId;
 
-    private final DockerClient dockerClient;
+    private final DockerClient dockerClient = DockerClientFactory.lazyClient();
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
     private Set<String> registeredImages = Sets.newConcurrentHashSet();
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
-
-    private ResourceReaper() {
-        dockerClient = DockerClientFactory.instance().client();
-    }
 
     @Deprecated
     public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
