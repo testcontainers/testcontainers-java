@@ -29,6 +29,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +42,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -74,6 +76,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -86,6 +89,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -95,6 +99,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
@@ -114,6 +120,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public static final String INTERNAL_HOST_HOSTNAME = "host.testcontainers.internal";
 
     static final String HASH_LABEL = "org.testcontainers.hash";
+
+    static final String COPIED_FILES_HASH_LABEL = "org.testcontainers.copied_files.hash";
 
     /*
      * Default settings
@@ -139,7 +147,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ));
 
     @NonNull
-    private Future<String> image;
+    private RemoteDockerImage image;
 
     @NonNull
     private Map<String, String> env = new HashMap<>();
@@ -185,10 +193,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Unique instance of DockerClient for use by this container object.
-     * We use {@link LazyDockerClient} here to avoid eager client creation
+     * We use {@link DockerClientFactory#lazyClient()} here to avoid eager client creation
      */
     @Setter(AccessLevel.NONE)
-    protected DockerClient dockerClient = LazyDockerClient.INSTANCE;
+    protected DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     /*
      * Info about the Docker server; lazily fetched.
@@ -250,7 +258,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        this.image = image;
+        setImage(image);
+    }
+
+    public void setImage(Future<String> image) {
+        this.image = new RemoteDockerImage(image);
     }
 
     /**
@@ -297,11 +309,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             Instant startedAt = Instant.now();
 
             logger().debug("Starting container: {}", getDockerImageName());
-            logger().debug("Trying to start container: {}", image.get());
+            logger().debug("Trying to start container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
-                logger().debug("Trying to start container: {} (attempt {}/{})", image.get(), attempt.incrementAndGet(), startupAttempts);
+                logger().debug("Trying to start container: {} (attempt {}/{})", getDockerImageName(), attempt.incrementAndGet(), startupAttempts);
                 tryStart(startedAt);
                 return true;
             });
@@ -331,7 +343,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void tryStart(Instant startedAt) {
         try {
-            String dockerImageName = image.get();
+            String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
@@ -348,6 +360,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
 
                 if (TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+                    createCommand.getLabels().put(
+                        COPIED_FILES_HASH_LABEL,
+                        Long.toHexString(hashCopiedFiles().getValue())
+                    );
+
                     String hash = hash(createCommand);
 
                     containerId = findContainerForReuse(hash).orElse(null);
@@ -376,7 +393,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             if (!reused) {
                 containerId = createCommand.exec().getId();
 
-                // TODO add to the hash
+                // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
             }
 
@@ -397,7 +414,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerName = containerInfo.getName();
-            containerIsStarting(containerInfo);
+            containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
@@ -444,7 +461,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
-            containerIsStarted(containerInfo);
+            containerIsStarted(containerInfo, reused);
         } catch (Exception e) {
             if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
                 e = (Exception) e.getCause();
@@ -466,6 +483,36 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
+        }
+    }
+
+    @VisibleForTesting
+    Checksum hashCopiedFiles() {
+        Checksum checksum = new Adler32();
+        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
+            byte[] pathBytes = entry.getValue().getBytes();
+            // Add path to the hash
+            checksum.update(pathBytes, 0, pathBytes.length);
+
+            File file = new File(entry.getKey().getResolvedPath());
+            checksumFile(file, checksum);
+        });
+        return checksum;
+    }
+
+    @VisibleForTesting
+    @SneakyThrows(IOException.class)
+    void checksumFile(File file, Checksum checksum) {
+        Path path = file.toPath();
+        checksum.update(MountableFile.getUnixFileMode(path));
+        if (file.isDirectory()) {
+            try (Stream<Path> stream = Files.walk(path)) {
+                stream.filter(it -> it != path).forEach(it -> {
+                    checksumFile(it.toFile(), checksum);
+                });
+            }
+        } else {
+            FileUtils.checksum(file, checksum);
         }
     }
 
@@ -530,7 +577,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             String imageName;
 
             try {
-                imageName = image.get();
+                imageName = getDockerImageName();
             } catch (Exception e) {
                 imageName = "<unknown>";
             }
@@ -571,7 +618,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void configure() {
-
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
@@ -583,7 +629,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    @UnstableAPI
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        containerIsStarting(containerInfo);
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    }
+
+    @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
+    @UnstableAPI
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        containerIsStarted(containerInfo);
     }
 
     /**
@@ -692,7 +750,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         Set<Link> allLinks = new HashSet<>();
         Set<String> allLinkedContainerNetworks = new HashSet<>();
-        for (Map.Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
+        for (Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
 
             String alias = linkEntries.getKey();
             LinkableContainer linkableContainer = linkEntries.getValue();
@@ -1095,6 +1153,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
+    public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
+        this.image = this.image.withImagePullPolicy(imagePullPolicy);
+        return self();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1187,9 +1251,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
-
-        // Mimic old behavior where we resolve image once it's set
-        getDockerImageName();
     }
 
     /**

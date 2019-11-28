@@ -20,6 +20,11 @@ subprojects {
     compileJava.options.encoding = 'UTF-8'
     compileTestJava.options.encoding = 'UTF-8'
 
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
     lombok {
         version = '1.18.8'
     }
@@ -36,17 +41,10 @@ subprojects {
         project.sourceSets.main.java.srcDirs.find { it.exists() }
     }
 
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-
     // specific modules should be excluded from publication
     if ( ! ["test-support", "jdbc-test", "docs-examples"].contains(it.name) ) {
         apply from: "$rootDir/gradle/publishing.gradle"
         apply from: "$rootDir/gradle/bintray.gradle"
-
-        project.tasks.sourceJar.from(delombok)
 
         publishing {
             publications {
