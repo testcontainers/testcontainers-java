@@ -424,14 +424,16 @@ public class ReusabilityUnitTests {
         public void folderPermissions() throws Exception {
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
-            assumeThat(new File(mountableFile.getResolvedPath())).isDirectory();
+            assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
             Path subDir = Files.createDirectory(tempDirectory.resolve("sub"));
             subDir.toFile().setWritable(false);
+            assumeThat(subDir.toFile().canWrite()).isFalse();
             container.withCopyFileToContainer(mountableFile, "/foo/bar/");
 
             long hash1 = container.hashCopiedFiles().getValue();
 
             subDir.toFile().setWritable(true);
+            assumeThat(subDir.toFile()).canWrite();
 
             assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(hash1);
         }
