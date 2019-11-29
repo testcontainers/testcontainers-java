@@ -58,14 +58,3 @@ jobs:
                 openjdk:8-jdk-alpine \
                 ./gradlew --no-daemon testcontainers:test --tests '*GenericContainerRuleTest' --scan -i
 
-    - stage: deploy
-      sudo: false
-      services: []
-      install: skip
-      script: skip
-      deploy:
-        provider: script
-        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon -i
-        on:
-          tags: true
-          branch: master
