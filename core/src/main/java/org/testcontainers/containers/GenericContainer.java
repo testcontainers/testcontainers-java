@@ -11,6 +11,7 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HealthCheck;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
@@ -165,6 +166,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @NonNull
     private List<VolumesFrom> volumesFroms = new ArrayList<>();
+
+    @NonNull
+    private HealthCheck healthCheck = new HealthCheck();
 
     /**
      * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
@@ -816,6 +820,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             combinedLabels.putAll(createCommand.getLabels());
         }
 
+
+        createCommand.withHealthcheck(healthCheck);
         createCommand.withLabels(combinedLabels);
     }
 
@@ -1156,6 +1162,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
         this.image = this.image.withImagePullPolicy(imagePullPolicy);
+        return self();
+    }
+
+    @Override
+    public SELF withHealthCheck(HealthCheck healthCheck) {
+        this.healthCheck = healthCheck;
         return self();
     }
 

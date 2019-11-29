@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.HealthCheck;
 import com.github.dockerjava.api.model.Info;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -289,6 +290,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return
      */
     SELF withImagePullPolicy(ImagePullPolicy policy);
+
+    /**
+     * Set healthcheck property for this container, similar to the <code>--health-*</code> options on the docker CLI.
+     *
+     * @param healthCheck the instance of {@link HealthCheck}
+     * @return this
+     */
+    SELF withHealthCheck(HealthCheck healthCheck);
 
     /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
