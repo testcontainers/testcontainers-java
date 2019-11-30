@@ -52,11 +52,4 @@ public class DockerClientFactoryTest {
         instance.strategy = null;
         assertThat(instance.dockerHostIpAddress()).isNotNull();
     }
-
-    @Test
-    public void dockerClient() {
-        DockerClientFactory instance = new DockerClientFactory();
-        instance.dockerClient = null;
-        assertThat(instance.client()).isNotNull();
-    }
 }
