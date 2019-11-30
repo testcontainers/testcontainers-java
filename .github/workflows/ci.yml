@@ -7,7 +7,6 @@ jobs:
     runs-on: ubuntu-18.04
     container:
       image: openjdk:8-jdk-alpine
-      options: "--workdir /home/runner/work/${{ github.repository }}"
       volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/home/runner/work/${{ github.repository }}/:/home/runner/work/${{ github.repository }}/"
@@ -19,5 +18,6 @@ jobs:
         ls -la
         ls -la /home/runner/work/
         cd "/home/runner/work/${{ github.repository }}"
+        ls -la
         pwd
         ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
