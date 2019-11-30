@@ -7,6 +7,8 @@ import org.testcontainers.DockerClientFactory.DiskSpaceUsage;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Test for {@link DockerClientFactory}.
  */
@@ -42,5 +44,19 @@ public class DockerClientFactoryTest {
 
         VisibleAssertions.assertEquals("Available MB is correct", 2982480572L / 1024L, usage.availableMB.orElse(0L));
         VisibleAssertions.assertEquals("Available percentage is correct", 31, usage.usedPercent.orElse(0));
+    }
+
+    @Test
+    public void dockerHostIpAddress() {
+        DockerClientFactory instance = new DockerClientFactory();
+        instance.strategy = null;
+        assertThat(instance.dockerHostIpAddress()).isNotNull();
+    }
+
+    @Test
+    public void dockerClient() {
+        DockerClientFactory instance = new DockerClientFactory();
+        instance.dockerClient = null;
+        assertThat(instance.client()).isNotNull();
     }
 }
