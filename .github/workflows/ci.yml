@@ -1,0 +1,23 @@
+name: CI
+
+jobs:
+  test:
+    container: {{ matrix.container }}
+    strategy:
+      matrix:
+        include:
+          - tasks: "testcontainers:check --tests '*GenericContainerRuleTest'"
+            jdk: 8
+            container: { image: "openjdk:8-jdk-alpine", volumes: ["/var/run/docker.sock:/var/run/docker.sock"] }
+#          - { container: null, tasks: "testcontainers:check", jdk: 8 }
+#          - { container: null, tasks: "jdbc-test:check", jdk: 8 }
+#          - { container: null, tasks: "--continue -x testcontainers:check -x jdbc-test:check", jdk: 8 }
+      runs-on: ubuntu-18.04
+      steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: {{ matrix.jdk }}
+      - name: Build with Gradle
+        run: ./gradlew --no-daemon --continue --scan {{ matrix.tasks }}
