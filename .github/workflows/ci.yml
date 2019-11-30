@@ -14,5 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build with Gradle
-      working-directory: /home/runner/work/${{ github.repository }}
-      run: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+      working-directory:
+      run: |
+        cd /home/runner/work/${{ github.repository }}
+        ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
