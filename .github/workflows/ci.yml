@@ -7,10 +7,10 @@ jobs:
     runs-on: ubuntu-18.04
     container:
       image: openjdk:8-jdk-alpine
-      options: "--workdir /home/runner/work"
+      options: "--workdir /home/runner/work/${{ github.repository }}"
       volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "/home/runner/:/home/runner/"
+      - "/home/runner/work/${{ github.repository }}/:/home/runner/work/${{ github.repository }}/"
     steps:
     - uses: actions/checkout@v1
     - name: Build with Gradle
