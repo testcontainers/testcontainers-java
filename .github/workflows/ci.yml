@@ -9,6 +9,7 @@ jobs:
       image: openjdk:8-jdk-alpine
       volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/home/runner/work:/home/runner/work"
     steps:
     - uses: actions/checkout@v1
     - name: Build with Gradle
