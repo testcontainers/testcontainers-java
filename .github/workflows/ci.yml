@@ -5,19 +5,15 @@ on: [push, pull_request]
 jobs:
   in-docker_test:
     runs-on: ubuntu-18.04
-    container:
-      image: openjdk:8-jdk-alpine
-      volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "/home/runner/work/${{ github.repository }}/:/home/runner/work/${{ github.repository }}/"
     steps:
     - uses: actions/checkout@v1
     - name: Build with Gradle
       run: |
-        pwd
-        ls -la
-        ls -la /home/runner/work/
-        cd "/home/runner/work/${{ github.repository }}"
-        ls -la
-        pwd
-        ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+        docker run -it --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "$HOME:$HOME" \
+          -v "$PWD:$PWD" \
+          -w "$PWD" \
+          openjdk:8-jdk-alpine \
+          ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+
