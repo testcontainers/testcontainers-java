@@ -6,19 +6,22 @@ jobs:
   test:
     strategy:
       matrix:
-        tasks: ["testcontainers:check", "jdbc-test:check", "testcontainers:check -x jdbc-test:check"]
+        tasks:
+        - "testcontainers:check"
+        - "jdbc-test:check"
+        - "testcontainers:check -x jdbc-test:check"
         jdk: ["1.8"]
         include:
-          - { tasks: "testcontainers:check", jdk: 11 }
+        - { tasks: "testcontainers:check", jdk: 11 }
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
-        java-version: {{ matrix.jdk }}
+        java-version: ${{ matrix.jdk }}
     - name: Build with Gradle
-      run: ./gradlew --no-daemon --continue --scan {{ matrix.tasks }}
+      run: ./gradlew --no-daemon --continue --scan ${{ matrix.tasks }}
   in-docker_test:
     runs-on: ubuntu-18.04
     steps:
