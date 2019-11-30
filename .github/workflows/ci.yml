@@ -10,11 +10,11 @@ jobs:
       options: "--workdir /home/runner/work"
       volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "/home/runner/work:/home/runner/work"
+      - "/home/runner/:/home/runner/"
     steps:
     - uses: actions/checkout@v1
     - name: Build with Gradle
       working-directory:
       run: |
-        cd /home/runner/work/${{ github.repository }}
+        cd "$GITHUB_WORKSPACE"
         ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
