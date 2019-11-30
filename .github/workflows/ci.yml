@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-18.04
     container:
       image: openjdk:8-jdk-alpine
+      options: "--workdir /home/runner/work"
       volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/home/runner/work:/home/runner/work"
