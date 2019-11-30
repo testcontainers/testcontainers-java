@@ -15,5 +15,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build with Gradle
       run: |
-        cd "$GITHUB_WORKSPACE"
+        cd "/home/runner/work/${{ github.repository }}"
+        pwd
         ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
