@@ -3,23 +3,13 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        include:
-          - tasks: "testcontainers:check --tests '*GenericContainerRuleTest'"
-            jdk: 8
-            container: { image: "openjdk:8-jdk-alpine", volumes: ["/var/run/docker.sock:/var/run/docker.sock"] }
-#          - { container: null, tasks: "testcontainers:check", jdk: 8 }
-#          - { container: null, tasks: "jdbc-test:check", jdk: 8 }
-#          - { container: null, tasks: "--continue -x testcontainers:check -x jdbc-test:check", jdk: 8 }
-    container: {{ matrix.container }}
+  in-docker_test:
     runs-on: ubuntu-18.04
+    container:
+      image: openjdk:8-jdk-alpine
+      volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
     steps:
     - uses: actions/checkout@v1
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: {{ matrix.jdk }}
     - name: Build with Gradle
-      run: ./gradlew --no-daemon --continue --scan {{ matrix.tasks }}
+      run: ./gradlew --no-daemon --continue --scan testcontainers:check --tests '*GenericContainerRuleTest'
