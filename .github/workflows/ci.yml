@@ -12,4 +12,4 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build with Gradle
-      run: ./gradlew --no-daemon --continue --scan testcontainers:check --tests '*GenericContainerRuleTest'
+      run: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
