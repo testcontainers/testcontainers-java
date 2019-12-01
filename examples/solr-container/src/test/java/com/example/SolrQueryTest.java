@@ -38,7 +38,7 @@ public class SolrQueryTest {
         ));
 
         solrClient.add(COLLECTION_NAME, Collections.singletonList(
-            new SolrInputDocument(Map.of(
+            new SolrInputDocument(createMap(
                 "id", createInputField("id", "2"),
                 "title", createInputField("title", "print t-shirt")
             ))
