@@ -9,21 +9,22 @@ jobs:
         runs-on: ubuntu-18.04
         steps:
             -   uses: actions/checkout@v1
-            -   uses: webfactory/ssh-agent@ea39f521c5e59e2e0a73686497d303bb2b499e03 # v0.1.1
-                with:
-                    ssh-private-key: ${{ secrets.github_deploy_key_for_update_docs_action }}
             -   name: Update latest_version property in mkdocs.yml
                 run: |
                     sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml
-            -   name: Commit and push changes
+            -   name: Commit changes
                 env:
                     COMMIT_MSG: |
-                            Update documentation version to ${GITHUB_REF##*/}
-                            skip-checks: true
+                        Update documentation version to ${GITHUB_REF##*/}
+                        skip-checks: true
                 run: |
-                        git config user.email "nobody@testcontainers.org"
-                        git config user.name "GitHub Action - Update docs version"
-                        git checkout master
-                        git add .
-                        # Only commit and push if we have changes
-                        git diff && git diff --staged --quiet || (git commit -m "${COMMIT_MSG}"; git push origin master)
+                    git config user.email "nobody@testcontainers.org"
+                    git config user.name "GitHub Action - Update docs version"
+                    git checkout master
+                    git add .
+                    # Only commit and push if we have changes
+                    git diff && git diff --staged --quiet || (git commit -m "${COMMIT_MSG}")
+            -   name: Push changes
+                uses: ad-m/github-push-action@68af9897f2b021035ca3952bf354bbb4675c1762 # v0.5.0
+                with:
+                    github_token: ${{ secrets.GITHUB_TOKEN }}
