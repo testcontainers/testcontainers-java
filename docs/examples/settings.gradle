@@ -1,0 +1,9 @@
+rootProject.name = 'testcontainers-docs-examples'
+
+includeBuild '../../'
+
+// explicit include to allow Dependabot to autodiscover subprojects
+include ':junit4:generic'
+include ':junit4:redis'
+include ':junit5:redis'
+include ':spock:redis'

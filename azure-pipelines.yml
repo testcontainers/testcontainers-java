@@ -10,6 +10,26 @@ jobs:
         tasks: 'testcontainers:check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
+  - task: Gradle@2
+    displayName: Test examples
+    inputs:
+        workingDirectory: 'examples'
+        gradleWrapperFile: 'gradlew'
+        jdkVersionOption: '1.11'
+        options: '--no-daemon'
+        tasks: 'check'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+  - task: Gradle@2
+    displayName: Test docs
+    inputs:
+        workingDirectory: 'docs/examples'
+        gradleWrapperFile: 'gradlew'
+        jdkVersionOption: '1.11'
+        options: '--no-daemon'
+        tasks: 'check'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
 - job: jdbc
   steps:
   - task: Gradle@2

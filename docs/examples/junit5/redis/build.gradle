@@ -6,6 +6,6 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-api:5.4.2"
     testCompile "org.junit.jupiter:junit-jupiter-params:5.4.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.4.2"
-    testCompile project(":testcontainers")
-    testCompile project(":junit-jupiter")
+    testCompile 'org.testcontainers:testcontainers'
+    testCompile 'org.testcontainers:junit-jupiter'
 }
