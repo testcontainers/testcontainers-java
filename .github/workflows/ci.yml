@@ -7,7 +7,9 @@ jobs:
     strategy:
       matrix:
         tasks:
-        - "testcontainers:test --tests org.testcontainers.junit.DockerComposeContainerWithBuildTest"
+        - "testcontainers:check"
+#        - "jdbc-test:check"
+#        - "testcontainers:check -x jdbc-test:check"
         jdk: ["1.8"]
     runs-on: ubuntu-18.04
     steps:
