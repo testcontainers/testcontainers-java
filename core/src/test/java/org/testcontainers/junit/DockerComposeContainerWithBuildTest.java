@@ -65,13 +65,13 @@ public class DockerComposeContainerWithBuildTest {
 
         Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             final boolean isBuiltImagePresentAfterRunning = isImagePresent(builtImageName.get());
-            assertEquals("the built image is not present after running", shouldBuiltImageBePresentAfterRunning, isBuiltImagePresentAfterRunning);
+            assertEquals("the built image is present after running, expected: " + shouldBuiltImageBePresentAfterRunning, shouldBuiltImageBePresentAfterRunning, isBuiltImagePresentAfterRunning);
             return null;
         });
 
         Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             final boolean isPulledImagePresentAfterRunning = isImagePresent(pulledImageName.get());
-            assertEquals("the pulled image is present after running", shouldPulledImageBePresentAfterRunning, isPulledImagePresentAfterRunning);
+            assertEquals("the pulled image is present after running, expected: " + shouldPulledImageBePresentAfterRunning, shouldPulledImageBePresentAfterRunning, isPulledImagePresentAfterRunning);
             return null;
         });
     }
