@@ -30,6 +30,9 @@ buildCache {
         bucket = 'testcontainers'
         path = 'cache'
         push = isMasterBuild
+        headers = [
+            'x-amz-acl': 'public-read'
+        ]
     }
 }
 
