@@ -1,2 +1,2 @@
 redis:
-  image: redis
+  image: redis:5.0.7-alpine3.10

@@ -1,6 +1,6 @@
 redis:
-  image: redis
+  image: redis:5.0.7-alpine3.10
 db:
-  image: orchardup/mysql
+  image: mysql:8.0.18
   environment:
     MYSQL_DATABASE: wordpress

@@ -1,9 +1,9 @@
 version: "2.1"
 services:
     redis:
-        image: redis
+        image: redis:5.0.7-alpine3.10
     mysql:
-        image: mysql
+        image: mysql:8.0.18
     custom:
         build: .
 networks:
