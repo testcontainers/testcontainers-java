@@ -4,7 +4,8 @@ import static com.example.SolrSearchEngine.COLLECTION_NAME;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrClient;
@@ -29,14 +30,14 @@ public class SolrQueryTest {
         solrClient = new Http2SolrClient.Builder("http://localhost:" + solrContainer.getSolrPort() + "/solr").build();
 
         // Add Sample Data
-        solrClient.add(COLLECTION_NAME, List.of(
-            new SolrInputDocument(Map.of(
+        solrClient.add(COLLECTION_NAME, Collections.singletonList(
+            new SolrInputDocument(createMap(
                 "id", createInputField("id", "1"),
                 "title", createInputField("title", "old skool - trainers - shoes")
             ))
         ));
 
-        solrClient.add(COLLECTION_NAME, List.of(
+        solrClient.add(COLLECTION_NAME, Collections.singletonList(
             new SolrInputDocument(Map.of(
                 "id", createInputField("id", "2"),
                 "title", createInputField("title", "print t-shirt")
@@ -76,5 +77,12 @@ public class SolrQueryTest {
         SolrInputField inputField = new SolrInputField(key);
         inputField.setValue(value);
         return inputField;
+    }
+
+    private static Map<String, SolrInputField> createMap(String k0, SolrInputField v0, String k1, SolrInputField v1) {
+        Map<String, SolrInputField> result = new HashMap<>();
+        result.put(k0, v0);
+        result.put(k1, v1);
+        return result;
     }
 }
