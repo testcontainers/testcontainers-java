@@ -1,6 +1,6 @@
-version: '2.0'
+version: '2.1'
 services:
   customredis:
       build: .
   normalredis:
-      image: redis:latest
+      image: redis:5.0.7-alpine3.10
