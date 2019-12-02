@@ -293,7 +293,7 @@ public abstract class ScriptUtils {
 	 */
 	public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
 		try {
-			URL resource = ScriptUtils.class.getClassLoader().getResource(initScriptPath);
+			URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
 			if (resource == null) {
 				LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");

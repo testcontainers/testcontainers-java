@@ -23,7 +23,7 @@ public abstract class AbstractStatementTest {
         String[] expectedLines = new String[0];
         try {
             String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName.getMethodName();
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
+            InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
 
             Preconditions.check("inputStream is null for path " + path, inputStream != null);
 

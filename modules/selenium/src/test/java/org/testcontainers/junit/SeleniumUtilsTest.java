@@ -31,7 +31,7 @@ public class SeleniumUtilsTest {
      */
     private void checkSeleniumVersionDetected(String urlManifest, String expectedVersion) throws IOException {
         Manifest manifest = new Manifest();
-        manifest.read(this.getClass().getClassLoader().getResourceAsStream(urlManifest));
+        manifest.read(Thread.currentThread().getContextClassLoader().getResourceAsStream(urlManifest));
         String seleniumVersion = SeleniumUtils.getSeleniumVersionFromManifest(manifest);
         assertEquals("Check if Selenium Version detected is the correct one.", expectedVersion, seleniumVersion);
     }

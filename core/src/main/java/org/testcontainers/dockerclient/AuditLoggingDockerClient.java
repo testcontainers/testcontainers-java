@@ -90,7 +90,7 @@ public class AuditLoggingDockerClient implements DockerClient {
                                                              BiConsumer<T, Exception> failureConsumer) {
 
         return (T) Proxy.newProxyInstance(
-                clazz.getClassLoader(),
+                Thread.currentThread().getContextClassLoader(),
                 new Class<?>[]{clazz},
                 (proxy, method, args) -> {
 
