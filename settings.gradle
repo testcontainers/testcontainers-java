@@ -17,7 +17,7 @@ buildscript {
 
 apply plugin: 'ch.myniva.s3-build-cache'
 
-ext.isMasterBuild = System.getenv("CIRCLE_BRANCH") == "master"
+ext.isMasterBuild = (System.getenv("CIRCLE_BRANCH") ?: System.getenv("BUILD_SOURCEBRANCHNAME")) == "master"
 
 buildCache {
     local {
@@ -30,6 +30,9 @@ buildCache {
         bucket = 'testcontainers'
         path = 'cache'
         push = isMasterBuild
+        headers = [
+            'x-amz-acl': 'public-read'
+        ]
     }
 }
 
