@@ -37,7 +37,7 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
  * a path that the Docker daemon is about to create a volume mount for.
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(of = {"path", "forcedFileMode"})
 @ToString(of = {"path", "forcedFileMode"})
 @RequiredArgsConstructor(access = PACKAGE)
 @Slf4j
@@ -56,8 +56,6 @@ public class MountableFile implements Transferable {
 
     @Getter(lazy = true)
     private final String filesystemPath = resolveFilesystemPath();
-
-    private String resourcePath;
 
     /**
      * Obtains a {@link MountableFile} corresponding to a resource on the classpath (including resources in JAR files)
@@ -202,11 +200,10 @@ public class MountableFile implements Transferable {
 
     private String getResourcePath() {
         if (path.contains(".jar!")) {
-            resourcePath = extractClassPathResourceToTempLocation(this.path);
+            return extractClassPathResourceToTempLocation(this.path);
         } else {
-            resourcePath = unencodeResourceURIToFilePath(path);
+            return unencodeResourceURIToFilePath(path);
         }
-        return resourcePath;
     }
 
     /**
