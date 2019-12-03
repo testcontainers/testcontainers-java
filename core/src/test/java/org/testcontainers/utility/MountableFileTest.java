@@ -82,7 +82,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void forClasspathResourceWithPermission() {
+    public void forClasspathResourceWithPermission() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt",
             TEST_FILE_MODE);
 
@@ -133,7 +133,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void equalsAndHashCodeDifferWithPath() throws Exception {
+    public void equalsAndHashCodeDifferWithPath() {
         final MountableFile mountableFile1 = MountableFile.forHostPath("/foo", 365);
         final MountableFile mountableFile2 = MountableFile.forHostPath("/bar", 365);
 
