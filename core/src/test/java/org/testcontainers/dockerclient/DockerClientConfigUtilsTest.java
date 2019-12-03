@@ -6,6 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class DockerClientConfigUtilsTest {
@@ -33,7 +34,7 @@ public class DockerClientConfigUtilsTest {
         String actual = DockerClientConfigUtils.getDockerHostIpAddress(configuration);
         assertEquals("12.23.34.45", actual);
     }
-    
+
     @Test
     public void getDockerHostIpAddressShouldReturnDockerHostIpWhenTcpUri() {
         DockerClientConfig configuration = DefaultDockerClientConfig.createDefaultConfigBuilder()
@@ -43,11 +44,16 @@ public class DockerClientConfigUtilsTest {
         String actual = DockerClientConfigUtils.getDockerHostIpAddress(configuration);
         assertEquals("12.23.34.45", actual);
     }
-    
+
     @Test @Ignore
     public void getDockerHostIpAddressShouldReturnNullWhenUnsupportedUriScheme() {
         DockerClientConfig configuration = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost("gopher://12.23.34.45").build();
         String actual = DockerClientConfigUtils.getDockerHostIpAddress(configuration);
         assertNull(actual);
+    }
+
+    @Test(timeout = 5_000)
+    public void getDefaultGateway() {
+        assertNotNull(DockerClientConfigUtils.getDefaultGateway());
     }
 }
