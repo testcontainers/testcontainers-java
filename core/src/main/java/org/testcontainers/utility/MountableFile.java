@@ -37,7 +37,7 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
  * a path that the Docker daemon is about to create a volume mount for.
  */
-@EqualsAndHashCode(of = {"path", "forcedFileMode"})
+@EqualsAndHashCode(of = "path")
 @ToString(of = {"path", "forcedFileMode"})
 @RequiredArgsConstructor(access = PACKAGE)
 @Slf4j

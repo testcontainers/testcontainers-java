@@ -82,7 +82,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void forClasspathResourceWithPermission() throws Exception {
+    public void forClasspathResourceWithPermission() {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt",
             TEST_FILE_MODE);
 
@@ -142,13 +142,13 @@ public class MountableFileTest {
     }
 
     @Test
-    public void equalsAndHashCodeDifferWithFileMode() throws Exception {
+    public void equalsAndHashCodeEvenWithDifferentFileMode() throws Exception {
         final Path file = createTempFile("somepath");
         final MountableFile mountableFile1 = MountableFile.forHostPath(file.toString(), 365);
         final MountableFile mountableFile2 = MountableFile.forHostPath(file.toString(), 356);
 
-        assertNotEquals("should not be equal", mountableFile1, mountableFile2);
-        assertNotEquals("should not have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
+        assertEquals("should not be equal", mountableFile1, mountableFile2);
+        assertEquals("should not have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
     }
 
     @Test
