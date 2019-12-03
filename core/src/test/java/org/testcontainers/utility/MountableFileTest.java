@@ -133,6 +133,15 @@ public class MountableFileTest {
     }
 
     @Test
+    public void equalsAndHashCodeDifferWithPath() throws Exception {
+        final MountableFile mountableFile1 = MountableFile.forHostPath("/foo", 365);
+        final MountableFile mountableFile2 = MountableFile.forHostPath("/bar", 365);
+
+        assertNotEquals("should not be equal", mountableFile1, mountableFile2);
+        assertNotEquals("should not have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
+    }
+
+    @Test
     public void equalsAndHashCodeDifferWithFileMode() throws Exception {
         final Path file = createTempFile("somepath");
         final MountableFile mountableFile1 = MountableFile.forHostPath(file.toString(), 365);
