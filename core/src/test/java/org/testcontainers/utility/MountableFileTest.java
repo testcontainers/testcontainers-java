@@ -133,6 +133,30 @@ public class MountableFileTest {
     }
 
     @Test
+    public void equalsAndHashCodeDifferWithFileMode() throws Exception {
+        final Path file = createTempFile("somepath");
+        final MountableFile mountableFile1 = MountableFile.forHostPath(file.toString(), 365);
+        final MountableFile mountableFile2 = MountableFile.forHostPath(file.toString(), 356);
+
+        assertNotEquals("should not be equal", mountableFile1, mountableFile2);
+        assertNotEquals("should not have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
+    }
+
+    @Test
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void equalsAndHashCodeEvenAfterResolvingLazyProperties() throws Exception {
+        final Path file = createTempFile("somepath");
+        final MountableFile mountableFile1 = MountableFile.forHostPath(file.toString());
+        final MountableFile mountableFile2 = MountableFile.forHostPath(file.toString());
+
+        mountableFile1.getResolvedPath();
+        mountableFile1.getFilesystemPath();
+
+        assertEquals("should be equal", mountableFile1, mountableFile2);
+        assertEquals("should have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
+    }
+
+    @Test
     public void usefulToString() throws Exception {
         final Path file = createTempFile("somepath");
         @SuppressWarnings("OctalInteger") final MountableFile mountableFile = MountableFile.forHostPath(file.toString(), 0555);
