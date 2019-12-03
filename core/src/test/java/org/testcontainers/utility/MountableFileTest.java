@@ -122,6 +122,26 @@ public class MountableFileTest {
         }
     }
 
+    @Test
+    public void equalsAndHashCode() throws Exception {
+        final Path file = createTempFile("somepath");
+        final MountableFile mountableFile1 = MountableFile.forHostPath(file.toString());
+        final MountableFile mountableFile2 = MountableFile.forHostPath(file.toString());
+
+        assertEquals("should be equal", mountableFile1, mountableFile2);
+        assertEquals("should have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
+    }
+
+    @Test
+    public void usefulToString() throws Exception {
+        final Path file = createTempFile("somepath");
+        @SuppressWarnings("OctalInteger") final MountableFile mountableFile = MountableFile.forHostPath(file.toString(), 0555);
+
+        assertEquals("should have toString",
+            "MountableFile(path=file:" + file + ", forcedFileMode=365)",
+            mountableFile.toString());
+    }
+
     private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
         @Cleanup final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         @Cleanup final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);

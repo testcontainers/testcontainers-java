@@ -1,8 +1,10 @@
 package org.testcontainers.utility;
 
 import com.google.common.base.Charsets;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -35,6 +37,8 @@ import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
  * An abstraction over files and classpath resources aimed at encapsulating all the complexity of generating
  * a path that the Docker daemon is about to create a volume mount for.
  */
+@EqualsAndHashCode
+@ToString(of = {"path", "forcedFileMode"})
 @RequiredArgsConstructor(access = PACKAGE)
 @Slf4j
 public class MountableFile implements Transferable {
