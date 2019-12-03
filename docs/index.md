@@ -66,6 +66,7 @@ You can also [check the latest version available on Maven Central](https://searc
 * [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Puslar, Apache Bookeeper and Apache Heron.
 * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
 * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
+* [Infinispan](https://infinispan.org) - Testing the Infinispan Server as well as integration tests with databases, LDAP and KeyCloak
 * [Instana](https://www.instana.com) - Testing agents and stream processing backends
 * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
@@ -78,6 +79,7 @@ You can also [check the latest version available on Maven Central](https://searc
 * [wescale](https://www.wescale.com) - Integration testing against HTTP service mocks and various data stores
 * [Marquez](https://marquezproject.github.io/marquez) - PostgreSQL integration testing
 * [Transferwise](https://transferwise.com/) - Integration testing for different RDBMS, kafka and micro services
+* [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
 
 ## License
 
