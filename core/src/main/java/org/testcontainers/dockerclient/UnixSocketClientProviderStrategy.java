@@ -41,7 +41,7 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
     }
 
     @NotNull
-    protected DockerClientConfig tryConfiguration(String dockerHost) {
+    DockerClientConfig tryConfiguration(String dockerHost) {
 
         Path dockerSocketFile = Paths.get(DOCKER_SOCK_PATH);
         Integer mode;

@@ -1,8 +1,8 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -167,10 +167,9 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
-        return DockerClientBuilder
+        return DockerClientImpl
             .getInstance(new AuthDelegatingDockerClientConfig(config))
-            .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory())
-            .build();
+            .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory());
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
@@ -189,7 +188,7 @@ public abstract class DockerClientProviderStrategy {
     }
 
     public String getDockerHostIpAddress() {
-        return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
+        return DockerClientConfigUtils.getDockerHostIpAddress(this.config.getDockerHost());
     }
 
     protected void checkOSType() {

@@ -1,5 +1,6 @@
 package org.testcontainers.dockerclient.transport.okhttp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.PingCmd;
 import com.github.dockerjava.core.AbstractDockerCmdExecFactory;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -29,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
     private static final String SOCKET_SUFFIX = ".socket";
+
+    private ObjectMapper objectMapper;
 
     private OkHttpClient okHttpClient;
 
@@ -100,11 +103,14 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
                 baseUrlBuilder = HttpUrl.get(dockerHost.toString()).newBuilder();
         }
         baseUrl = baseUrlBuilder.build();
+
+        objectMapper = dockerClientConfig.getObjectMapper();
     }
 
     @Override
-    protected WebTarget getBaseResource() {
+    protected OkHttpWebTarget getBaseResource() {
         return new OkHttpWebTarget(
+            objectMapper,
             okHttpClient,
             baseUrl,
             ImmutableList.of(),

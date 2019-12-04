@@ -16,20 +16,11 @@ public class JarFileShadingTest extends AbstractJarFileTest {
         assertThatFileList(root).containsOnly(
                 "docker-java.properties",
                 "org",
-                "META-INF",
-                "com"
+                "META-INF"
         );
 
         assertThatFileList(root.resolve("org")).containsOnly(
                 "testcontainers"
-        );
-
-        assertThatFileList(root.resolve("com")).containsOnly(
-                "github"
-        );
-
-        assertThatFileList(root.resolve("com").resolve("github")).containsOnly(
-                "dockerjava"
         );
     }
 
