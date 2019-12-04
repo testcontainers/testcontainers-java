@@ -84,8 +84,6 @@ dependencies {
 
     compile 'com.github.docker-java:docker-java-api:3.2.0-rc2'
 
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.9.8'
-
     shaded ('com.github.docker-java:docker-java-core:3.2.0-rc2') {
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
