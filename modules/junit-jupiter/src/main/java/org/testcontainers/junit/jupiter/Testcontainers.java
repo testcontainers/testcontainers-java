@@ -3,6 +3,7 @@ package org.testcontainers.junit.jupiter;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -17,6 +18,10 @@ import java.lang.annotation.Target;
  * started only once before any test method is executed and stopped after the
  * last test method has executed. Containers declared as instance fields will
  * be started and stopped for every test method.</p>
+ *
+ * <p>The annotation {@code @Testcontainers} can be used on a superclass in
+ * the test hierarchy as well. All subclasses will automatically inherit
+ * support for the extension.</p>
  *
  * <p><strong>Note:</strong> This extension has only be tested with sequential
  * test execution. Using it with parallel test execution is unsupported and
@@ -52,6 +57,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith(TestcontainersExtension.class)
+@Inherited
 public @interface Testcontainers {
 
     /**

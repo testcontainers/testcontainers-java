@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class InternalCommandPortListeningCheckTest {
@@ -30,8 +30,8 @@ public class InternalCommandPortListeningCheckTest {
     public void nonListening() {
         final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(nginx, ImmutableSet.of(8080, 1234));
 
-        assertThrows("InternalCommandPortListeningCheck detects a non-listening port among many",
-                IllegalStateException.class,
-                (Runnable) check::call);
+        final Boolean result = check.call();
+
+        assertFalse("InternalCommandPortListeningCheck detects a non-listening port among many", result);
     }
 }

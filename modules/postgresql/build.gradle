@@ -3,7 +3,7 @@ description = "Testcontainers :: JDBC :: PostgreSQL"
 dependencies {
     compile project(':jdbc')
 
-    testCompile 'org.postgresql:postgresql:42.2.6'
+    testCompile 'org.postgresql:postgresql:42.2.8'
     testCompile 'commons-dbutils:commons-dbutils:1.7'
     testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
 }
