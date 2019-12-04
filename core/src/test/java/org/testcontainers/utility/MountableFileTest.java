@@ -147,8 +147,8 @@ public class MountableFileTest {
         final MountableFile mountableFile1 = MountableFile.forHostPath(file.toString(), 365);
         final MountableFile mountableFile2 = MountableFile.forHostPath(file.toString(), 356);
 
-        assertEquals("should not be equal", mountableFile1, mountableFile2);
-        assertEquals("should not have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
+        assertEquals("should be equal", mountableFile1, mountableFile2);
+        assertEquals("should have same hash code", mountableFile1.hashCode(), mountableFile2.hashCode());
     }
 
     @Test
