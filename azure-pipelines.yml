@@ -3,6 +3,9 @@ jobs:
   steps:
   - task: Gradle@2
     displayName: Build & test
+    env:
+      AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
+      AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
@@ -14,6 +17,9 @@ jobs:
   steps:
   - task: Gradle@2
     displayName: Build & test
+    env:
+      AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
+      AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
@@ -25,6 +31,9 @@ jobs:
   steps:
   - task: Gradle@2
     displayName: Build & test
+    env:
+      AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
+      AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
