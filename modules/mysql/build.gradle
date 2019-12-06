@@ -7,5 +7,5 @@ dependencies {
     testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
     testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.29'
     testCompile 'commons-dbutils:commons-dbutils:1.7'
-    testCompile 'org.vibur:vibur-dbcp:22.2'
+    testCompile 'org.vibur:vibur-dbcp:25.0'
 }
