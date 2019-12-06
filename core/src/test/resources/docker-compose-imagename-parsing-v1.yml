@@ -1,0 +1,6 @@
+redis:
+    image: redis
+mysql:
+    image: mysql
+custom:
+    build: .

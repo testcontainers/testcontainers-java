@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
@@ -131,6 +132,15 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
         ));
     }
 
+    @Test
+    public void testWaitUntilReadyWithTimoutCausedByReadTimeout() {
+        waitUntilReadyAndTimeout(
+            startContainerWithCommand(createShellCommand("0 Connection Refused", GOOD_RESPONSE_BODY, 9090),
+                createHttpWaitStrategy(ready).forPort(9090).withReadTimeout(Duration.ofMillis(1)),
+                9090
+            ));
+    }
+
     /**
      * @param ready the AtomicBoolean on which to indicate success
      * @return the WaitStrategy under test
@@ -143,6 +153,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
 
     /**
      * Create a HttpWaitStrategy instance with a waitUntilReady implementation
+     *
      * @param ready Indicates that the WaitStrategy has completed waiting successfully.
      * @return the HttpWaitStrategy instance
      */
@@ -163,9 +174,9 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
 
     private String createShellCommand(String header, String responseBody, int port) {
         int length = responseBody.getBytes().length;
-        return "while true; do { echo -e \"HTTP/1.1 "+header+NEWLINE+
-                "Content-Type: text/html"+NEWLINE+
-                "Content-Length: "+length +NEWLINE+ "\";"
-                +" echo \""+responseBody+"\";} | nc -lp " + port + "; done";
+        return "while true; do { echo -e \"HTTP/1.1 " + header + NEWLINE +
+            "Content-Type: text/html" + NEWLINE +
+            "Content-Length: " + length + NEWLINE + "\";"
+            + " echo \"" + responseBody + "\";} | nc -lp " + port + "; done";
     }
 }

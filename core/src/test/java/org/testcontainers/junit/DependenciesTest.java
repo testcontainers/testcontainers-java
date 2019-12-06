@@ -9,9 +9,11 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DependenciesTest {
@@ -117,6 +119,19 @@ public class DependenciesTest {
         VisibleAssertions.assertEquals("D started", 1, d.getStartInvocationCount().intValue());
     }
 
+    @Test
+    public void shouldHandleParallelStream() throws Exception {
+        List<Startable> startables = Stream.generate(InvocationCountingStartable::new)
+            .limit(10)
+            .collect(Collectors.toList());
+
+        for (int i = 1; i < startables.size(); i++) {
+            startables.get(0).getDependencies().add(startables.get(i));
+        }
+
+        Startables.deepStart(startables.parallelStream()).get(1, TimeUnit.SECONDS);
+    }
+
     private static class InvocationCountingStartable implements Startable {
 
         @Getter
@@ -131,7 +146,6 @@ public class DependenciesTest {
         @Override
         public void start() {
             startInvocationCount.getAndIncrement();
-
         }
 
         @Override

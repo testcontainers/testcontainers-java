@@ -2,14 +2,13 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
@@ -19,18 +18,16 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy;
-import org.testcontainers.containers.wait.strategy.*;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.*;
-import org.yaml.snakeyaml.Yaml;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.*;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -38,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -58,12 +56,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private final String identifier;
     private final List<File> composeFiles;
-    private final Set<String> spawnedContainerIds = new HashSet<>();
-    private final Set<String> spawnedNetworkIds = new HashSet<>();
+    private Set<ParsedDockerComposeFile> parsedComposeFiles;
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
     private boolean pull = true;
+    private boolean build = false;
     private boolean tailChildContainers;
 
     private String project;
@@ -84,6 +82,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * necessarily to containers that are spawned by Compose itself)
      */
     private Map<String, String> env = new HashMap<>();
+    private RemoveImages removeImages;
 
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
@@ -105,10 +104,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
 
         this.composeFiles = composeFiles;
+        this.parsedComposeFiles = composeFiles.stream().map(ParsedDockerComposeFile::new).collect(Collectors.toSet());
 
         // Use a unique identifier so that containers created for this compose environment can be identified
         this.identifier = identifier;
-        project = randomProjectId();
+        this.project = randomProjectId();
 
         this.dockerClient = DockerClientFactory.instance().client();
     }
@@ -152,7 +152,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                     log.warn("Exception while pulling images, using local images if available", e);
                 }
             }
-            applyScaling(); // scale before up, so that all scaled instances are available first for linking
             createServices();
             startAmbassadorContainers();
             waitUntilServiceStarted();
@@ -160,7 +159,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void pullImages() {
-        runWithCompose("pull");
+        // Pull images using our docker client rather than compose itself,
+        // (a) as a workaround for https://github.com/docker/compose/issues/5854, which prevents authenticated image pulls being possible when credential helpers are in use
+        // (b) so that credential helper-based auth still works when compose is running from within a container
+        parsedComposeFiles.stream()
+            .flatMap(it -> it.getServiceImageNames().stream())
+            .forEach(imageName -> {
+                try {
+                    DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                } catch (Exception e) {
+                    log.warn("Failed to pull image '{}'. Exception message was {}", imageName, e.getMessage());
+                }
+            });
     }
 
     public SELF withServices(@NonNull String... services) {
@@ -169,11 +179,22 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void createServices() {
+        // Apply scaling
+        final String servicesWithScalingSettings = Stream.concat(services.stream(), scalingPreferences.keySet().stream())
+            .map(service -> "--scale " + service + "=" + scalingPreferences.getOrDefault(service, 1))
+            .collect(joining(" "));
+
+        String flags = "-d";
+
+        if (build) {
+            flags += " --build";
+        }
+
         // Run the docker-compose container, which starts up the services
-        if(services.isEmpty()) {
-            runWithCompose("up -d");
+        if(Strings.isNullOrEmpty(servicesWithScalingSettings)) {
+            runWithCompose("up " + flags);
         } else {
-            runWithCompose("up -d " + String.join(" ", services));
+            runWithCompose("up " + flags + " " + servicesWithScalingSettings);
         }
     }
 
@@ -213,10 +234,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         checkNotNull(composeFiles);
         checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
 
-        for (File composeFile : composeFiles) {
-            validate(composeFile);
-        }
-
         final DockerCompose dockerCompose;
         if (localCompose) {
             dockerCompose = new LocalDockerCompose(composeFiles, project);
@@ -228,72 +245,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 .withCommand(cmd)
                 .withEnv(env)
                 .invoke();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void validate(File composeFile) {
-        Yaml yaml = new Yaml();
-        try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
-            Object template = yaml.load(fileInputStream);
-            validate(template, composeFile.getAbsolutePath());
-        } catch (IOException e) {
-            log.warn("Failed to read YAML from {}", composeFile.getAbsolutePath(), e);
-        }
-    }
-
-    @VisibleForTesting
-    static void validate(Object template, String identifier) {
-        if (!(template instanceof Map)) {
-            return;
-        }
-
-        Map<String, ?> map = (Map<String, ?>) template;
-
-        final Map<String, ?> servicesMap;
-        if (map.containsKey("version")) {
-            if (!map.containsKey("services")) {
-                log.debug("Compose file {} has an unknown format: 'version' is set but 'services' is not defined", identifier);
-                return;
-            }
-            Object services = map.get("services");
-            if (!(services instanceof Map)) {
-                log.debug("Compose file {} has an unknown format: 'services' is not Map", identifier);
-                return;
-            }
-
-            servicesMap = (Map<String, ?>) services;
-        } else {
-            servicesMap = map;
-        }
-
-        for (Map.Entry<String, ?> entry : servicesMap.entrySet()) {
-            String serviceName = entry.getKey();
-            Object serviceDefinition = entry.getValue();
-            if (!(serviceDefinition instanceof Map)) {
-                log.debug("Compose file {} has an unknown format: service '{}' is not Map", identifier, serviceName);
-                break;
-            }
-
-            if (((Map) serviceDefinition).containsKey("container_name")) {
-                throw new IllegalStateException(String.format(
-                    "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
-                    identifier,
-                    serviceName
-                ));
-            }
-        }
-    }
-
-    private void applyScaling() {
-        // Apply scaling
-        if (!scalingPreferences.isEmpty()) {
-            StringBuilder sb = new StringBuilder("scale");
-            for (Map.Entry<String, Integer> scale : scalingPreferences.entrySet()) {
-                sb.append(" ").append(scale.getKey()).append("=").append(scale.getValue());
-            }
-
-            runWithCompose(sb.toString());
-        }
     }
 
     private void registerContainersForShutdown() {
@@ -325,25 +276,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
                 ambassadorContainer.stop();
 
                 // Kill the services using docker-compose
-                try {
-                    runWithCompose("down -v");
-
-                    // If we reach here then docker-compose down has cleared networks and containers;
-                    //  we can unregister from ResourceReaper
-                    spawnedContainerIds.forEach(ResourceReaper.instance()::unregisterContainer);
-                    spawnedNetworkIds.forEach(ResourceReaper.instance()::unregisterNetwork);
-                } catch (Exception e) {
-                    // docker-compose down failed; use ResourceReaper to ensure cleanup
-
-                    // kill the spawned service containers
-                    spawnedContainerIds.forEach(ResourceReaper.instance()::stopAndRemoveContainer);
-
-                    // remove the networks after removing the containers
-                    spawnedNetworkIds.forEach(ResourceReaper.instance()::removeNetworkById);
+                String cmd = "down -v";
+                if (removeImages != null) {
+                    cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
+                runWithCompose(cmd);
 
-                spawnedContainerIds.clear();
-                spawnedNetworkIds.clear();
             } finally {
                 project = randomProjectId();
             }
@@ -521,6 +459,26 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return self();
     }
 
+    /**
+     * Whether to always build images before starting containers.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withBuild(boolean build) {
+        this.build = build;
+        return self();
+    }
+
+    /**
+     * Remove images after containers shutdown.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withRemoveImages(RemoveImages removeImages) {
+        this.removeImages = removeImages;
+        return self();
+    }
+
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
         LogUtils.followOutput(DockerClientFactory.instance().client(), containerId, consumer);
     }
@@ -531,6 +489,28 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private String randomProjectId() {
         return identifier + Base58.randomString(6).toLowerCase();
+    }
+
+    public enum RemoveImages {
+        /**
+         * Remove all images used by any service.
+         */
+        ALL("all"),
+
+        /**
+         * Remove only images that don't have a custom tag set by the `image` field.
+         */
+        LOCAL("local");
+
+        private final String dockerRemoveImagesType;
+
+        RemoveImages(final String dockerRemoveImagesType) {
+            this.dockerRemoveImagesType = dockerRemoveImagesType;
+        }
+
+        public String dockerRemoveImagesType() {
+            return dockerRemoveImagesType;
+        }
     }
 }
 
@@ -551,9 +531,6 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
     private static final String DOCKER_SOCKET_PATH = "/var/run/docker.sock";
-    private static final String DOCKER_CONFIG_FILE = "/root/.docker/config.json";
-    private static final String DOCKER_CONFIG_ENV = "DOCKER_CONFIG_FILE";
-    private static final String DOCKER_CONFIG_PROPERTY = "dockerConfigFile";
     public static final char UNIX_PATH_SEPERATOR = ':';
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
@@ -584,27 +561,6 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
-
-        String dockerConfigPath = determineDockerConfigPath();
-        if (dockerConfigPath != null && !dockerConfigPath.isEmpty()) {
-            addFileSystemBind(dockerConfigPath, DOCKER_CONFIG_FILE, READ_ONLY);
-        }
-    }
-
-    private String determineDockerConfigPath() {
-        String dockerConfigEnv = System.getenv(DOCKER_CONFIG_ENV);
-        String dockerConfigProperty = System.getProperty(DOCKER_CONFIG_PROPERTY);
-        Path dockerConfig = Paths.get(System.getProperty("user.home"), ".docker", "config.json");
-
-        if (dockerConfigEnv != null && !dockerConfigEnv.trim().isEmpty() && Files.exists(Paths.get(dockerConfigEnv))) {
-            return dockerConfigEnv;
-        } else if (dockerConfigProperty != null && !dockerConfigProperty.trim().isEmpty() && Files.exists(Paths.get(dockerConfigProperty))) {
-            return dockerConfigProperty;
-        } else if (Files.exists(dockerConfig)) {
-            return dockerConfig.toString();
-        } else {
-            return null;
-        }
     }
 
     private String getDockerSocketHostPath() {
