@@ -14,10 +14,10 @@ import java.nio.file.Paths;
 
 @Slf4j
 public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
-    protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
-    private static final String SOCKET_LOCATION = System.getenv()
-                                                        .getOrDefault("DOCKER_HOST",
-                                                                      "unix://" + DOCKER_SOCK_PATH);
+
+    protected static final String SOCKET_LOCATION = System.getenv().getOrDefault("DOCKER_HOST", "unix:///var/run/docker.sock");
+    protected static final String DOCKER_SOCK_PATH = SOCKET_LOCATION.replace("unix://", "");
+
     private static final int SOCKET_FILE_MODE_MASK = 0xc000;
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
@@ -27,7 +27,7 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
     @Override
     protected boolean isApplicable() {
         final boolean nettyDoesSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
-                ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
+            ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
 
         return SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets;
     }
@@ -58,9 +58,9 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
         }
 
         config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost(dockerHost)
-                .withDockerTlsVerify(false)
-                .build();
+            .withDockerHost(dockerHost)
+            .withDockerTlsVerify(false)
+            .build();
         client = getClientForConfig(config);
 
         final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));

@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class WindowsClientProviderStrategy extends DockerClientProviderStrategy {
 
+    private static final String SOCKET_LOCATION = System.getenv().getOrDefault("DOCKER_HOST", "tcp://localhost:2375");
+
     private static final int PING_TIMEOUT_DEFAULT = 5;
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.windowsprovider.timeout";
 
@@ -17,7 +19,7 @@ public class WindowsClientProviderStrategy extends DockerClientProviderStrategy 
 
     @Override
     public void test() throws InvalidConfigurationException {
-        config = tryConfiguration("tcp://localhost:2375");
+        config = tryConfiguration(SOCKET_LOCATION);
     }
 
     @Override
