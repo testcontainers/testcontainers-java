@@ -1,17 +1,23 @@
 buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
-  }
-  dependencies {
-    classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.9.0"
-  }
+    dependencies {
+        classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.9.0"
+    }
+
+    configurations.classpath {
+        resolutionStrategy {
+            force 'com.amazonaws:aws-java-sdk-s3:1.11.582'
+        }
+    }
 }
 
 apply plugin: 'ch.myniva.s3-build-cache'
 
-ext.isMasterBuild = System.getenv("CIRCLE_BRANCH") == "master"
+ext.isMasterBuild = (System.getenv("CIRCLE_BRANCH") ?: System.getenv("BUILD_SOURCEBRANCHNAME")) == "master"
 
 buildCache {
     local {
@@ -24,6 +30,9 @@ buildCache {
         bucket = 'testcontainers'
         path = 'cache'
         push = isMasterBuild
+        headers = [
+            'x-amz-acl': 'public-read'
+        ]
     }
 }
 
@@ -39,7 +48,10 @@ file('modules').eachDir { dir ->
     project(":${dir.name}").projectDir = dir
 }
 
-include "docs-examples"
-project(":docs-examples").projectDir = file("docs/examples")
+include ':docs:examples:junit4:generic'
+include ':docs:examples:junit4:redis'
+include ':docs:examples:junit5:redis'
+include ':docs:examples:spock:redis'
+
 include 'test-support'
 

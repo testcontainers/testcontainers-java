@@ -25,6 +25,7 @@ nav:
     - Home: index.md
     - Quickstart:
           - quickstart/junit_4_quickstart.md
+          - quickstart/junit_5_quickstart.md
           - quickstart/spock_quickstart.md
     - Features:
           - features/creating_container.md
@@ -40,6 +41,7 @@ nav:
           - Databases:
                 - modules/databases/index.md
                 - modules/databases/cassandra.md
+                - modules/databases/cockroachdb.md
                 - modules/databases/couchbase.md
                 - modules/databases/clickhouse.md
                 - modules/databases/db2.md
@@ -82,4 +84,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.11.3
+    latest_version: 1.12.3

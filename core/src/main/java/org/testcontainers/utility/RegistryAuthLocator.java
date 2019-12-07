@@ -251,10 +251,16 @@ public class RegistryAuthLocator {
         final JsonNode helperResponse = OBJECT_MAPPER.readTree(data);
         log.debug("Credential helper/store provided auth config for: {}", hostName);
 
-        return new AuthConfig()
-            .withRegistryAddress(helperResponse.at("/ServerURL").asText())
-            .withUsername(helperResponse.at("/Username").asText())
-            .withPassword(helperResponse.at("/Secret").asText());
+        final String username = helperResponse.at("/Username").asText();
+        final String password = helperResponse.at("/Secret").asText();
+        if ("<token>".equals(username)) {
+            return new AuthConfig().withIdentityToken(password);
+        } else {
+            return new AuthConfig()
+                .withRegistryAddress(helperResponse.at("/ServerURL").asText())
+                .withUsername(username)
+                .withPassword(password);
+        }
     }
 
     private String getCredentialProgramName(String credHelper) {
