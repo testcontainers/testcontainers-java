@@ -37,7 +37,7 @@ public class DynaliteContainerTest {
                         "Name", ScalarAttributeType.S))
                 .withKeySchema(new KeySchemaElement("Name", KeyType.HASH))
                 .withProvisionedThroughput(new ProvisionedThroughput(
-                        new Long(10), new Long(10)))
+                    10L, 10L))
                 .withTableName("foo");
 
 
