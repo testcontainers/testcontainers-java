@@ -14,7 +14,7 @@ Ordinarily Testcontainers will wait for up to 60 seconds for the container's fir
 This simple measure provides a basic check whether a container is ready for use.
 
 <!--codeinclude--> 
-[Waiting for the first exposed port to start listening](../examples/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForNetworkListening
+[Waiting for the first exposed port to start listening](../examples/junit4/generic/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForNetworkListening
 <!--/codeinclude-->
 
 If the default 60s timeout is not sufficient, it can be altered with the `withStartupTimeout()` method.
@@ -28,24 +28,24 @@ You can choose to wait for an HTTP(S) endpoint to return a particular status cod
 
 #### Waiting for 200 OK
 <!--codeinclude--> 
-[](../examples/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForSimpleHttp
+[](../examples/junit4/generic/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForSimpleHttp
 <!--/codeinclude-->
 
 Variations on the HTTP wait strategy are supported, including:
 
 #### Waiting for multiple possible status codes
 <!--codeinclude--> 
-[](../examples/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForHttpWithMultipleStatusCodes
+[](../examples/junit4/generic/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForHttpWithMultipleStatusCodes
 <!--/codeinclude-->
 
 #### Waiting for a status code that matches a predicate
 <!--codeinclude--> 
-[Waiting for a status code that matches a predicate](../examples/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForHttpWithStatusCodePredicate
+[Waiting for a status code that matches a predicate](../examples/junit4/generic/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForHttpWithStatusCodePredicate
 <!--/codeinclude-->
 
 #### Using TLS
 <!--codeinclude--> 
-[](../examples/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForHttpWithTls
+[](../examples/junit4/generic/src/test/java/generic/WaitStrategiesTest.java) inside_block:waitForHttpWithTls
 <!--/codeinclude-->
 
 ### Healthcheck Wait strategy examples
@@ -53,7 +53,7 @@ Variations on the HTTP wait strategy are supported, including:
 If the used image supports Docker's [Healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck) feature, you can directly leverage the `healthy` state of the container as your wait condition:
 
 <!--codeinclude-->
-[](../examples/src/test/java/generic/WaitStrategiesTest.java) inside_block:healthcheckWait
+[](../examples/junit4/generic/src/test/java/generic/WaitStrategiesTest.java) inside_block:healthcheckWait
 <!--/codeinclude-->
 
 ### Log output Wait Strategy
@@ -62,7 +62,7 @@ In some situations a container's log output is a simple way to determine if it i
 For example, we can wait for a `Ready' message in the container's logs as follows:
 
 <!--codeinclude-->
-[](../examples/src/test/java/generic/WaitStrategiesTest.java) inside_block:logMessageWait
+[](../examples/junit4/generic/src/test/java/generic/WaitStrategiesTest.java) inside_block:logMessageWait
 <!--/codeinclude-->
 
 ### Other Wait Strategies

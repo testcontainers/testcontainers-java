@@ -6,6 +6,7 @@ import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.function.BiConsumer;
 
@@ -99,6 +100,9 @@ public class AuditLoggingDockerClient implements DockerClient {
                             successConsumer.accept(cmd, r);
                             return r;
                         } catch (Exception e) {
+                            if (e instanceof InvocationTargetException && e.getCause() instanceof Exception) {
+                                e = (Exception) e.getCause();
+                            }
                             failureConsumer.accept(cmd, e);
                             throw e;
                         }
