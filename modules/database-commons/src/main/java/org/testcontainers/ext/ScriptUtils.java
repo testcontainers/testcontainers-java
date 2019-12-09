@@ -28,6 +28,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * This is a modified version of the Spring-JDBC ScriptUtils class, adapted to reduce
@@ -76,6 +77,12 @@ public abstract class ScriptUtils {
 	 * Default end delimiter for block comments within SQL scripts.
 	 */
 	public static final String DEFAULT_BLOCK_COMMENT_END_DELIMITER = "*/";
+
+    /**
+     * List of keywords for statement depth increment identification
+     */
+	public static final String[] BEGIN_BLOCK_KEYWORD_LIST =
+        {"BEGIN", "CREATE TYPE BODY", "CREATE OR REPLACE TYPE BODY"};
 
 
 	/**
@@ -163,7 +170,8 @@ public abstract class ScriptUtils {
 			}
 			final boolean inComment = inLineComment || inBlockComment;
 
-			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "BEGIN", i, separator, commentPrefix, blockCommentStartDelimiter)) {
+			if (!inLiteral && !inComment && hasBeginKeywordAtOffset(lowerCaseScriptContent, i, separator,
+                                                                    commentPrefix, blockCommentStartDelimiter)) {
 				compoundStatementDepth++;
 			}
 			if (!inLiteral && !inComment && containsKeywordsAtOffset(lowerCaseScriptContent, "END", i, separator, commentPrefix, blockCommentStartDelimiter)) {
@@ -265,6 +273,14 @@ public abstract class ScriptUtils {
 			throw new IllegalArgumentException(errorMessage);
 		}
 	}
+
+	private static boolean hasBeginKeywordAtOffset(String lowercaseString, int offset,
+                                                   String separator, String commentPrefix,
+                                                   String blockCommentStartDelimiter) {
+	    return Stream.of(BEGIN_BLOCK_KEYWORD_LIST).anyMatch(
+	        keyword -> containsKeywordsAtOffset(lowercaseString, keyword, offset,
+                                                separator, commentPrefix, blockCommentStartDelimiter));
+    }
 
 	/**
 	 * Does the provided SQL script contain the specified delimiter?

@@ -296,6 +296,83 @@ public class ScriptSplittingTest {
         splitAndCompare(script, expected);
     }
 
+    @Test
+    public void testCreateType() {
+        String script = "CREATE OR REPLACE TYPE \"BUREAU\".\"T_STRING_TAB\" as table of varchar2(2000 char);\n" +
+            "\n" +
+            "CREATE OR REPLACE TYPE \"BUREAU\".\"T_NUMBER_TAB\" as table of number;\n" +
+            "\n" +
+            "CREATE OR REPLACE TYPE \"BUREAU\".\"T_PARAM\" as object\n" +
+            "(\n" +
+            "    name            varchar2(32),\n" +
+            "    data            sys.anydata,\n" +
+            "    is_chk_null     number(1),\n" +
+            "    list_chk_values sys.anydata,\n" +
+            "    chk_entity      varchar2(256),\n" +
+            "\n" +
+            "    constructor function t_param(p_name            varchar2\n" +
+            "        ,p_data            sys.anydata\n" +
+            "        ,p_is_chk_null     number := 0\n" +
+            "        ,p_list_chk_values sys.anydata := null\n" +
+            "        ,p_chk_entity      varchar2 := null) return self as result\n" +
+            ");\n" +
+            "\n" +
+            "CREATE OR REPLACE TYPE BODY \"BUREAU\".\"T_PARAM\" is\n" +
+            "\n" +
+            "    constructor function t_param(p_name            varchar2\n" +
+            "        ,p_data            sys.anydata\n" +
+            "        ,p_is_chk_null     number := 0\n" +
+            "        ,p_list_chk_values sys.anydata := null\n" +
+            "        ,p_chk_entity      varchar2 := null) return self as result is\n" +
+            "        begin\n" +
+            "            self.name            := p_name;\n" +
+            "            self.data            := p_data;\n" +
+            "            self.is_chk_null     := p_is_chk_null;\n" +
+            "            self.list_chk_values := p_list_chk_values;\n" +
+            "            self.chk_entity      := p_chk_entity;\n" +
+            "\n" +
+            "            return;\n" +
+            "        end;\n" +
+            "    end;";
+
+        List<String> expected = asList(
+            "CREATE OR REPLACE TYPE \"BUREAU\".\"T_STRING_TAB\" as table of varchar2(2000 char)",
+            "CREATE OR REPLACE TYPE \"BUREAU\".\"T_NUMBER_TAB\" as table of number",
+            "CREATE OR REPLACE TYPE \"BUREAU\".\"T_PARAM\" as object ( " +
+                "name varchar2(32), " +
+                "data sys.anydata, " +
+                "is_chk_null number(1), " +
+                "list_chk_values sys.anydata, " +
+                "chk_entity varchar2(256), " +
+                "constructor function t_param(" +
+                    "p_name varchar2 " +
+                    ",p_data sys.anydata " +
+                    ",p_is_chk_null number := 0 " +
+                    ",p_list_chk_values sys.anydata := null " +
+                    ",p_chk_entity varchar2 := null) " +
+                "return self as result )",
+            "CREATE OR REPLACE TYPE BODY \"BUREAU\".\"T_PARAM\" is\n" +
+                "\n" +
+                "    constructor function t_param(p_name            varchar2\n" +
+                "        ,p_data            sys.anydata\n" +
+                "        ,p_is_chk_null     number := 0\n" +
+                "        ,p_list_chk_values sys.anydata := null\n" +
+                "        ,p_chk_entity      varchar2 := null) return self as result is\n" +
+                "        begin\n" +
+                "            self.name            := p_name;\n" +
+                "            self.data            := p_data;\n" +
+                "            self.is_chk_null     := p_is_chk_null;\n" +
+                "            self.list_chk_values := p_list_chk_values;\n" +
+                "            self.chk_entity      := p_chk_entity;\n" +
+                "\n" +
+                "            return;\n" +
+                "        end;\n" +
+                "    end"
+        );
+
+        splitAndCompare(script, expected);
+    }
+
     private void splitAndCompare(String script, List<String> expected) {
         final List<String> statements = doSplit(script);
         Assertions.assertThat(statements).isEqualTo(expected);
@@ -303,7 +380,15 @@ public class ScriptSplittingTest {
 
     private List<String> doSplit(String script) {
         final List<String> statements = new ArrayList<>();
-        ScriptUtils.splitSqlScript("ignored", script, DEFAULT_STATEMENT_SEPARATOR, DEFAULT_COMMENT_PREFIX, DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER, statements);
+        ScriptUtils.splitSqlScript(
+            "ignored",
+            script,
+            DEFAULT_STATEMENT_SEPARATOR,
+            DEFAULT_COMMENT_PREFIX,
+            DEFAULT_BLOCK_COMMENT_START_DELIMITER,
+            DEFAULT_BLOCK_COMMENT_END_DELIMITER,
+            statements
+        );
         return statements;
     }
 }
