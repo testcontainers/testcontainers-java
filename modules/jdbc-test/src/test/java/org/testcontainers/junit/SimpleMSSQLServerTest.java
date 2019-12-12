@@ -29,7 +29,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSetupDatabase() throws SQLException {
-        DataSource ds = getDataSource(mssqlServer);
+        DataSource ds = mssqlServer.createDataSource();
         Statement statement = ds.getConnection().createStatement();
         statement.executeUpdate("CREATE DATABASE [test];");
         statement = ds.getConnection().createStatement();

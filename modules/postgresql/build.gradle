@@ -5,5 +5,4 @@ dependencies {
 
     testCompile 'org.postgresql:postgresql:42.2.9'
     testCompile 'commons-dbutils:commons-dbutils:1.7'
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
 }

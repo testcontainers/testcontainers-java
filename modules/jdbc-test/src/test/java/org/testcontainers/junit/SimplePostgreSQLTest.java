@@ -30,6 +30,14 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
+    public void testCreateDataSource() throws SQLException {
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>()) {
+            postgres.start();
+            validateCreateDataSource(postgres);
+        }
+    }
+
+    @Test
     public void testCommandOverride() throws SQLException {
         try (PostgreSQLContainer postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42")) {
             postgres.start();

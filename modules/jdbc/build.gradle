@@ -2,4 +2,5 @@ description = "Testcontainers :: JDBC"
 
 dependencies {
     compile project(':database-commons')
+    compile 'com.zaxxer:HikariCP:3.4.1'
 }

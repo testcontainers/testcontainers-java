@@ -9,6 +9,9 @@ import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.utility.MountableFile;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -16,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
+
+import javax.sql.DataSource;
 
 /**
  * Base class for containers that expose a JDBC connection
@@ -270,6 +275,16 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     protected DatabaseDelegate getDatabaseDelegate() {
         return new JdbcDatabaseDelegate(this, "");
+    }
+
+    public DataSource createDataSource() {
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(this.getJdbcUrl());
+        hikariConfig.setUsername(this.getUsername());
+        hikariConfig.setPassword(this.getPassword());
+        hikariConfig.setDriverClassName(this.getDriverClassName());
+
+        return new HikariDataSource(hikariConfig);
     }
 
     public static class NoDriverFoundException extends RuntimeException {
