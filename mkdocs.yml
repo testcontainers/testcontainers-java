@@ -33,6 +33,7 @@ nav:
           - features/commands.md
           - features/files.md
           - features/startup_and_waits.md
+          - features/container_dependencies.md
           - features/container_logs.md
           - features/creating_images.md
           - features/configuration.md
