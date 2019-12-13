@@ -13,7 +13,7 @@ dependencies {
         exclude(module: 'hamcrest-core')
     }
 
-    testRuntime 'org.postgresql:postgresql:42.2.8'
+    testRuntime 'org.postgresql:postgresql:42.2.9'
     testRuntime 'mysql:mysql-connector-java:8.0.18'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
 }
