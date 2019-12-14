@@ -1321,6 +1321,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    @SneakyThrows
+    public void copyFileFromContainer(String containerPath, String destinationPath) {
+        Container.super.copyFileFromContainer(containerPath, destinationPath);
+    }
+
+    /**
      * Allow container startup to be attempted more than once if an error occurs. To be if containers are
      * 'flaky' but this flakiness is not something that should affect test outcomes.
      *
