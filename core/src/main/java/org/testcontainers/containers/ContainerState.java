@@ -222,8 +222,6 @@ public interface ContainerState {
      *
      * @param mountableFile file or directory which is copied into the container
      * @param containerPath destination path inside the container
-     * @throws IOException if there's an issue communicating with Docker
-     * @throws InterruptedException if the thread waiting for the response is interrupted
      */
     default void copyFileToContainer(MountableFile mountableFile, String containerPath) {
         File sourceFile = new File(mountableFile.getResolvedPath());
