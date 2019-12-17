@@ -13,6 +13,10 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 
+import javax.management.*;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
+
+    private final static String TOPIC_NAME = "messages";
 
     @Test
     public void testUsage() throws Exception {
@@ -73,6 +79,37 @@ public class KafkaContainerTest {
         }
     }
 
+    @Test
+    public void testKafkaJmxAccess() throws Exception {
+        try (
+            KafkaContainer kafka = new KafkaContainer()
+                .withRemoteJmxService()
+        ) {
+            kafka.start();
+            String remoteJmxServiceUrl = kafka.getJmxServiceUrl();
+
+            JMXServiceURL url = new JMXServiceURL(remoteJmxServiceUrl);
+            JMXConnector conn = JMXConnectorFactory.connect(url);
+            MBeanServerConnection mBeanServerConnection = conn.getMBeanServerConnection();
+
+            assertThat(mBeanServerConnection.getMBeanCount()).isGreaterThan(0);
+
+            testKafkaFunctionality(kafka.getBootstrapServers());
+
+            // assert bytes in for topic is greater than 0 after some data was produced
+            ObjectName bytesInPerSec = new ObjectName(String.format("kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec,topic=%s", TOPIC_NAME));
+            String[] attributes = {"Count"};
+
+            AttributeList attributeValues = mBeanServerConnection.getAttributes(bytesInPerSec, attributes);
+
+            assertThat(attributes.length).isEqualTo(attributeValues.size());
+
+            Attribute attr = (Attribute) attributeValues.stream().findFirst().get();
+            Long val = (Long)attr.getValue();
+            assertThat(val).isGreaterThan(0);
+        }
+    }
+
     protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
         try (
             KafkaProducer<String, String> producer = new KafkaProducer<>(
@@ -94,10 +131,10 @@ public class KafkaContainerTest {
                 new StringDeserializer()
             );
         ) {
-            String topicName = "messages";
-            consumer.subscribe(Arrays.asList(topicName));
 
-            producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
+            consumer.subscribe(Arrays.asList(TOPIC_NAME));
+
+            producer.send(new ProducerRecord<>(TOPIC_NAME, "testcontainers", "rulezzz")).get();
 
             Unreliables.retryUntilTrue(10, TimeUnit.SECONDS, () -> {
                 ConsumerRecords<String, String> records = consumer.poll(100);
@@ -109,7 +146,7 @@ public class KafkaContainerTest {
                 assertThat(records)
                     .hasSize(1)
                     .extracting(ConsumerRecord::topic, ConsumerRecord::key, ConsumerRecord::value)
-                    .containsExactly(tuple(topicName, "testcontainers", "rulezzz"));
+                    .containsExactly(tuple(TOPIC_NAME, "testcontainers", "rulezzz"));
 
                 return true;
             });

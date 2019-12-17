@@ -2,12 +2,14 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +24,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public static final int KAFKA_PORT = 9093;
 
+    public static final int KAFKA_JMX_PORT = 49999;
+
     public static final int ZOOKEEPER_PORT = 2181;
 
     private static final int PORT_NOT_ASSIGNED = -1;
@@ -29,8 +33,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected String externalZookeeperConnect = null;
 
     private int port = PORT_NOT_ASSIGNED;
+    private int jmxPort = PORT_NOT_ASSIGNED;
 
     private boolean useImplicitNetwork = true;
+
+    private boolean enableRemoteJmxService = false;
 
     public KafkaContainer() {
         this("5.2.1");
@@ -85,11 +92,24 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return self();
     }
 
+    public KafkaContainer withRemoteJmxService() {
+        enableRemoteJmxService = true;
+        return self();
+    }
+
     public String getBootstrapServers() {
         if (port == PORT_NOT_ASSIGNED) {
             throw new IllegalStateException("You should start Kafka container first");
         }
         return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
+    }
+
+    public String getJmxServiceUrl() {
+        if (jmxPort == PORT_NOT_ASSIGNED) {
+            throw new IllegalStateException("You should start Kafka container first");
+        }
+
+        return String.format("service:jmx:rmi:///jndi/rmi://%s:%s/jmxrmi", getContainerIpAddress(), jmxPort);
     }
 
     @Override
@@ -98,6 +118,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         if (externalZookeeperConnect == null) {
             addExposedPort(ZOOKEEPER_PORT);
+        }
+        if (enableRemoteJmxService) {
+            addExposedPort(KAFKA_JMX_PORT);
         }
 
         super.doStart();
@@ -109,6 +132,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         super.containerIsStarting(containerInfo, reused);
 
         port = getMappedPort(KAFKA_PORT);
+        if (enableRemoteJmxService) {
+            jmxPort = getMappedPort(KAFKA_JMX_PORT);
+        }
 
         if (reused) {
             return;
@@ -121,15 +147,29 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             zookeeperConnect = startZookeeper();
         }
 
+        List<String> internalIps = containerInfo
+            .getNetworkSettings()
+            .getNetworks()
+            .values()
+            .stream()
+            .map(ContainerNetwork::getIpAddress)
+            .collect(Collectors.toList());
+
         String command = "#!/bin/bash \n";
         command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
         command += "export KAFKA_ADVERTISED_LISTENERS='" + Stream
             .concat(
                 Stream.of(getBootstrapServers()),
-                containerInfo.getNetworkSettings().getNetworks().values().stream()
-                    .map(it -> "BROKER://" + it.getIpAddress() + ":9092")
+                internalIps.stream()
+                    .map(ip -> "BROKER://" + ip + ":9092")
             )
             .collect(Collectors.joining(",")) + "'\n";
+
+        if (enableRemoteJmxService) {
+            String jmxIp = internalIps.stream().findFirst().orElseThrow(() -> new IllegalStateException("Could not find IP address for JMX"));
+            command += "export KAFKA_JMX_PORT='" + KAFKA_JMX_PORT + "' \n";
+            command += "export KAFKA_JMX_HOSTNAME='" + jmxIp + "' \n";
+        }
 
         command += ". /etc/confluent/docker/bash-config \n";
         command += "/etc/confluent/docker/configure \n";
