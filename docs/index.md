@@ -43,7 +43,12 @@ testCompile "org.testcontainers:testcontainers:{{latest_version}}"
     <scope>test</scope>
 </dependency>
 ```
-To avoid specifying the version of each dependency, you can use `BOM` or `Bill Of Materials`.
+
+You can also [check the latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
+
+### Managing versions for multiple Testcontainers dependencies
+
+To avoid specifying the version of each dependency, you can use a `BOM` or `Bill Of Materials`.
 
 Using `Maven` you must add the following to `dependencyManagement` section in your `pom.xml`:
 
