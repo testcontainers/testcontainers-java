@@ -3,7 +3,7 @@ description = "Testcontainers :: Vault"
 dependencies {
     compile project(':testcontainers')
 
-    testCompile 'com.bettercloud:vault-java-driver:5.0.0'
+    testCompile 'com.bettercloud:vault-java-driver:5.1.0'
     testCompile 'io.rest-assured:rest-assured:4.1.2'
     testCompile 'org.assertj:assertj-core:3.14.0'
 
