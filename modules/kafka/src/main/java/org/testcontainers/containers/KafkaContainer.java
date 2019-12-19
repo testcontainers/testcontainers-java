@@ -131,9 +131,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             )
             .collect(Collectors.joining(",")) + "'\n";
 
-        command += ". /etc/confluent/docker/bash-config \n";
-        command += "/etc/confluent/docker/configure \n";
-        command += "/etc/confluent/docker/launch \n";
+        command += ". /etc/confluent/docker/bash-config > /var/log/kafka.log 2>&1\n";
+        command += "/etc/confluent/docker/configure >> /var/log/kafka.log 2>&1\n";
+        command += "/etc/confluent/docker/launch >> /var/log/kafka.log 2>&1\n";
 
         copyFileToContainer(
             Transferable.of(command.getBytes(StandardCharsets.UTF_8), 700),
@@ -146,7 +146,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId())
             .withCmd("sh", "-c", "" +
                 "printf 'clientPort=" + ZOOKEEPER_PORT + "\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties\n" +
-                "zookeeper-server-start /zookeeper.properties\n"
+                "zookeeper-server-start /zookeeper.properties > /var/log/zookeeper.log 2>&1\n"
             )
             .exec();
 
