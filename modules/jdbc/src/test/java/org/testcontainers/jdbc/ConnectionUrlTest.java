@@ -50,6 +50,12 @@ public class ConnectionUrlTest {
     }
 
     @Test
+    public void testEmptyQueryParameter() {
+        ConnectionUrl url = ConnectionUrl.newInstance("jdbc:tc:mysql://somehostname/databasename?key=");
+        assertEquals("'key' property value", "", url.getQueryParameters().get("key"));
+    }
+
+    @Test
     public void testTmpfsOption() {
         String urlString = "jdbc:tc:mysql://somehostname/databasename?TC_TMPFS=key:value,key1:value1";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
