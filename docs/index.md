@@ -70,7 +70,7 @@ and then use dependencies without specifying a version:
 </dependency>
 ```
 
-Using `Gradle` you must add the following to `dependencies` section in your `build.gradle`:
+Using Gradle 5.0 or higher, you can add the following to the `dependencies` section in your `build.gradle`:
 
 ```groovy tab='Gradle'
 implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
