@@ -50,7 +50,7 @@ You can also [check the latest version available on Maven Central](https://searc
 
 To avoid specifying the version of each dependency, you can use a `BOM` or `Bill Of Materials`.
 
-Using `Maven` you must add the following to `dependencyManagement` section in your `pom.xml`:
+Using Maven you can add the following to `dependencyManagement` section in your `pom.xml`:
 
 ```xml tab='Maven'
 <dependencyManagement>
