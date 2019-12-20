@@ -2,6 +2,8 @@ package org.testcontainers.junit;
 
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.PostgreSQLContainerProvider;
+import org.testcontainers.containers.TimescaleDbContainerProvider;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,7 +24,7 @@ public class SimpleTimescaleDbTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>(TIMESCALE_IMAGE))  {
+        try (PostgreSQLContainer<?> postgres = new TimescaleDbContainerProvider().newInstance())  {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT 1");
@@ -33,7 +35,7 @@ public class SimpleTimescaleDbTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testCommandOverride() throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>(TIMESCALE_IMAGE).withCommand("postgres -c max_connections=42")) {
+        try (PostgreSQLContainer<?> postgres = new TimescaleDbContainerProvider().newInstance().withCommand("postgres -c max_connections=42")) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
@@ -44,7 +46,7 @@ public class SimpleTimescaleDbTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testUnsetCommand() throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>("timescale/timescaledb:latest-pg11").withCommand("postgres -c max_connections=42").withCommand()) {
+        try (PostgreSQLContainer<?> postgres = new TimescaleDbContainerProvider().newInstance().withCommand("postgres -c max_connections=42").withCommand()) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
@@ -55,7 +57,7 @@ public class SimpleTimescaleDbTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>(TIMESCALE_IMAGE).withInitScript("somepath/init_timescaledb.sql")) {
+        try (PostgreSQLContainer<?> postgres = new TimescaleDbContainerProvider().newInstance().withInitScript("somepath/init_timescaledb.sql")) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
