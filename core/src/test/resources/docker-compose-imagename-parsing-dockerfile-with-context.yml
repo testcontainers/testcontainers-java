@@ -4,5 +4,9 @@ services:
         image: redis
     mysql:
         image: mysql
+    custom:
+        build:
+            context: compose-dockerfile
+            dockerfile: Dockerfile
 networks:
     custom_network: {}

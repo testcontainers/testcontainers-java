@@ -5,10 +5,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.testcontainers.images.ParsedDockerfile;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,9 +26,10 @@ class ParsedDockerComposeFile {
 
     private final Map<String, Object> composeFileContent;
     private final String composeFileName;
+    private final File composeFile;
 
     @Getter
-    private Set<String> serviceImageNames = new HashSet<>();
+    private Set<String> dependencyImageNames = new HashSet<>();
 
     ParsedDockerComposeFile(File composeFile) {
         Yaml yaml = new Yaml();
@@ -35,7 +39,7 @@ class ParsedDockerComposeFile {
             throw new IllegalArgumentException("Unable to parse YAML file from " + composeFile.getAbsolutePath(), e);
         }
         this.composeFileName = composeFile.getAbsolutePath();
-
+        this.composeFile = composeFile;
         parseAndValidate();
     }
 
@@ -43,6 +47,7 @@ class ParsedDockerComposeFile {
     ParsedDockerComposeFile(Map<String, Object> testContent) {
         this.composeFileContent = testContent;
         this.composeFileName = "";
+        this.composeFile = new File(".");
 
         parseAndValidate();
     }
@@ -80,15 +85,61 @@ class ParsedDockerComposeFile {
             }
 
             final Map serviceDefinitionMap = (Map) serviceDefinition;
-            if (serviceDefinitionMap.containsKey("container_name")) {
-                throw new IllegalStateException(String.format(
-                    "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
-                    composeFileName,
-                    serviceName
-                ));
+
+            validateNoContainerNameSpecified(serviceName, serviceDefinitionMap);
+            findServiceImageName(serviceDefinitionMap);
+            findImageNamesInDockerfile(serviceDefinitionMap);
+        }
+    }
+
+    private void validateNoContainerNameSpecified(String serviceName, Map serviceDefinitionMap) {
+        if (serviceDefinitionMap.containsKey("container_name")) {
+            throw new IllegalStateException(String.format(
+                "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
+                composeFileName,
+                serviceName
+            ));
+        }
+    }
+
+    private void findServiceImageName(Map serviceDefinitionMap) {
+        if (serviceDefinitionMap.containsKey("image") && serviceDefinitionMap.get("image") instanceof String) {
+            final String imageName = (String) serviceDefinitionMap.get("image");
+            log.debug("Resolved dependency image for Docker Compose in {}: {}", composeFileName, imageName);
+            dependencyImageNames.add(imageName);
+        }
+    }
+
+    private void findImageNamesInDockerfile(Map serviceDefinitionMap) {
+        final Object buildNode = serviceDefinitionMap.get("build");
+        Path dockerfilePath = null;
+
+        if (buildNode instanceof Map) {
+            final Map buildElement = (Map) buildNode;
+            final Object dockerfileRelativePath = buildElement.get("dockerfile");
+            final Object contextRelativePath = buildElement.get("context");
+            if (dockerfileRelativePath instanceof String && contextRelativePath instanceof String) {
+                dockerfilePath = composeFile
+                    .getParentFile()
+                    .toPath()
+                    .resolve((String) contextRelativePath)
+                    .resolve((String) dockerfileRelativePath)
+                    .normalize();
             }
-            if (serviceDefinitionMap.containsKey("image") && serviceDefinitionMap.get("image") instanceof String) {
-                serviceImageNames.add((String) serviceDefinitionMap.get("image"));
+        } else if (buildNode instanceof String) {
+            dockerfilePath = composeFile
+                .getParentFile()
+                .toPath()
+                .resolve((String) buildNode)
+                .resolve("./Dockerfile")
+                .normalize();
+        }
+
+        if (dockerfilePath != null && Files.exists(dockerfilePath)) {
+            Set<String> resolvedImageNames = new ParsedDockerfile(dockerfilePath).getDependencyImageNames();
+            if (!resolvedImageNames.isEmpty()) {
+                log.debug("Resolved Dockerfile dependency images for Docker Compose in {} -> {}: {}", composeFileName, dockerfilePath, resolvedImageNames);
+                this.dependencyImageNames.addAll(resolvedImageNames);
             }
         }
     }

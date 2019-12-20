@@ -76,13 +76,27 @@ public class ParsedDockerComposeFileValidationTest {
     public void shouldObtainImageNamesV1() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-v1.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertEquals("all defined service names are found", Sets.newHashSet("redis", "mysql"), parsedFile.getServiceImageNames());
+        assertEquals("all defined service names are found", Sets.newHashSet("redis", "mysql"), parsedFile.getDependencyImageNames());
     }
 
     @Test
     public void shouldObtainImageNamesV2() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-v2.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertEquals("all defined service names are found", Sets.newHashSet("redis", "mysql"), parsedFile.getServiceImageNames());
+        assertEquals("all defined service names are found", Sets.newHashSet("redis", "mysql"), parsedFile.getDependencyImageNames());
+    }
+
+    @Test
+    public void shouldObtainImageFromDockerfileBuild() {
+        File file = new File("src/test/resources/docker-compose-imagename-parsing-dockerfile.yml");
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertEquals("all defined service names are found", Sets.newHashSet("redis", "mysql", "alpine:3.2"), parsedFile.getDependencyImageNames());
+    }
+
+    @Test
+    public void shouldObtainImageFromDockerfileBuildWithContext() {
+        File file = new File("src/test/resources/docker-compose-imagename-parsing-dockerfile-with-context.yml");
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertEquals("all defined service names are found", Sets.newHashSet("redis", "mysql", "alpine:3.2"), parsedFile.getDependencyImageNames());
     }
 }
