@@ -52,7 +52,7 @@ public interface Network extends AutoCloseable, TestRule {
         @Singular
         private Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers;
 
-        private String id;
+        private volatile String id;
 
         private final AtomicBoolean initialized = new AtomicBoolean();
 
@@ -97,7 +97,7 @@ public interface Network extends AutoCloseable, TestRule {
         }
 
         @Override
-        public void close() {
+        public synchronized void close() {
             if (initialized.getAndSet(false)) {
                 ResourceReaper.instance().removeNetworkById(id);
             }
