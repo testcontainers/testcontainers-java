@@ -2,6 +2,7 @@ apply plugin: 'maven-publish'
 
 task sourceJar(type: Jar) {
     classifier = 'sources'
+    from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
