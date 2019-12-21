@@ -7,11 +7,17 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class InfluxDBContainerTest {
 
     @ClassRule
     public static InfluxDBContainer influxDBContainer = new InfluxDBContainer();
+
+    @Test
+    public void isHealthy() {
+        assertTrue(influxDBContainer.isHealthy());
+    }
 
     @Test
     public void getUrl() {
