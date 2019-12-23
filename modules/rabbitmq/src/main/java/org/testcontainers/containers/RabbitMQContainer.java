@@ -263,6 +263,15 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    public RabbitMQContainer withPolicy(String vhost, String name, String pattern, Map<String, Object> definition) {
+        values.add(asList("rabbitmqadmin", "declare", "policy",
+                "--vhost=" + vhost,
+                "name=" + name,
+                "pattern=" + pattern,
+                "definition=" + toJson(definition)));
+        return self();
+    }
+
     public RabbitMQContainer withPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
         values.add(asList("rabbitmqadmin", "declare", "policy",
                 "name=" + name,
