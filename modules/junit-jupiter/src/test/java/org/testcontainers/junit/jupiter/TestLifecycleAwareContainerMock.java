@@ -4,18 +4,16 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-
-import static java.lang.System.currentTimeMillis;
-import static java.lang.Thread.sleep;
 
 public class TestLifecycleAwareContainerMock extends GenericContainer implements TestLifecycleAware {
 
-    private int numBeforeTestsCalls = 0;
-    private int numAfterTestsCalls = 0;
+    static final String BEFORE_TEST = "beforeTest";
+    static final String AFTER_TEST = "afterTest";
 
-    private long beforeTestCalledAtMillis = 0;
-    private long afterTestCalledAtMillis = 0;
+    private List<String> lifecycleMethodCalls = new ArrayList<>();
 
     private Throwable capturedThrowable;
 
@@ -26,40 +24,17 @@ public class TestLifecycleAwareContainerMock extends GenericContainer implements
 
     @Override
     public void beforeTest(TestDescription description) {
-        numBeforeTestsCalls++;
-        beforeTestCalledAtMillis = currentTimeMillis();
-        ensureMillisHavePassed();
+        lifecycleMethodCalls.add(BEFORE_TEST);
     }
 
     @Override
     public void afterTest(TestDescription description, Optional<Throwable> throwable) {
-        numAfterTestsCalls++;
-        afterTestCalledAtMillis = currentTimeMillis();
+        lifecycleMethodCalls.add(AFTER_TEST);
         throwable.ifPresent(capturedThrowable -> this.capturedThrowable = capturedThrowable);
     }
 
-    private void ensureMillisHavePassed() {
-        try {
-            sleep(5);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to sleep for 10ms");
-        }
-    }
-
-    int getNumBeforeTestsCalls() {
-        return numBeforeTestsCalls;
-    }
-
-    int getNumAfterTestsCalls() {
-        return numAfterTestsCalls;
-    }
-
-    long getBeforeTestCalledAtMillis() {
-        return beforeTestCalledAtMillis;
-    }
-
-    long getAfterTestCalledAtMillis() {
-        return afterTestCalledAtMillis;
+    List<String> getLifecycleMethodCalls() {
+        return lifecycleMethodCalls;
     }
 
     Throwable getCapturedThrowable() {
