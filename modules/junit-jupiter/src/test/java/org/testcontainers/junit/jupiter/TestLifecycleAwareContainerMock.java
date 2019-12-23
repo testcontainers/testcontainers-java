@@ -1,6 +1,6 @@
 package org.testcontainers.junit.jupiter;
 
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
@@ -8,19 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TestLifecycleAwareContainerMock extends GenericContainer implements TestLifecycleAware {
+public class TestLifecycleAwareContainerMock implements Startable, TestLifecycleAware {
 
     static final String BEFORE_TEST = "beforeTest";
     static final String AFTER_TEST = "afterTest";
 
-    private List<String> lifecycleMethodCalls = new ArrayList<>();
+    private final List<String> lifecycleMethodCalls = new ArrayList<>();
 
     private Throwable capturedThrowable;
-
-    TestLifecycleAwareContainerMock() {
-        super("alpine:3.2");
-        setCommand("top");
-    }
 
     @Override
     public void beforeTest(TestDescription description) {
@@ -39,5 +34,15 @@ public class TestLifecycleAwareContainerMock extends GenericContainer implements
 
     Throwable getCapturedThrowable() {
         return capturedThrowable;
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
     }
 }
