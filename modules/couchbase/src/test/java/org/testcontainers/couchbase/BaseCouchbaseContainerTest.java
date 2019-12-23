@@ -11,6 +11,9 @@ import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.runner.Description;
+import org.testcontainers.containers.FailureDetectingExternalResource;
 import org.testcontainers.testsupport.Flaky;
 import org.testcontainers.testsupport.FlakyTestJUnit4RetryRule;
 
@@ -29,7 +32,19 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
     private static final String DOCUMENT = "{\"name\":\"toto\"}";
 
     @Rule
-    public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
+    public RuleChain ruleChain = RuleChain.emptyRuleChain()
+        .around(new FlakyTestJUnit4RetryRule())
+        .around(new FailureDetectingExternalResource() {
+            @Override
+            protected void starting(Description description) {
+                getCouchbaseContainer().start();
+            }
+
+            @Override
+            protected void failed(Throwable e, Description description) {
+                getCouchbaseContainer().stop();
+            }
+        });
 
     @Test
     @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2019-12-01")

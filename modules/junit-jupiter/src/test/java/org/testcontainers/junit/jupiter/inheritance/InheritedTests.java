@@ -6,7 +6,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Testcontainers
 class InheritedTests extends AbstractTestBase {
 
     @Container

@@ -6,9 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarConstants;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.UnstableAPI;
 import org.testcontainers.images.builder.Transferable;
 
 import java.io.File;
@@ -361,9 +363,21 @@ public class MountableFile implements Transferable {
         if (this.forcedFileMode != null) {
             return this.getModeValue(path);
         }
+        return getUnixFileMode(path);
+    }
 
+    @UnstableAPI
+    public static int getUnixFileMode(final Path path) {
         try {
-            return (int) Files.getAttribute(path, "unix:mode");
+            int unixMode = (int) Files.readAttributes(path, "unix:mode").get("mode");
+            // Truncate mode bits for z/OS
+            if ("OS/390".equals(SystemUtils.OS_NAME) || 
+                "z/OS".equals(SystemUtils.OS_NAME) || 
+                "zOS".equals(SystemUtils.OS_NAME) ) {
+                unixMode &= TarConstants.MAXID;
+                unixMode |= Files.isDirectory(path) ? 040000 : 0100000;
+            }
+            return unixMode;
         } catch (IOException | UnsupportedOperationException e) {
             // fallback for non-posix environments
             int mode = DEFAULT_FILE_MODE;

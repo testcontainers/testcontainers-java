@@ -25,6 +25,7 @@ nav:
     - Home: index.md
     - Quickstart:
           - quickstart/junit_4_quickstart.md
+          - quickstart/junit_5_quickstart.md
           - quickstart/spock_quickstart.md
     - Features:
           - features/creating_container.md
@@ -83,4 +84,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.12.2
+    latest_version: 1.12.3

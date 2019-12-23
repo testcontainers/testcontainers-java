@@ -6,10 +6,12 @@ import org.junit.ClassRule;
 
 import com.couchbase.client.java.cluster.UserRole;
 import com.couchbase.client.java.cluster.UserSettings;
+import org.junit.Rule;
 
 public class CouchbaseCommunity5_1Test extends BaseCouchbaseContainerTest {
-    @ClassRule
-    public static CouchbaseContainer container = initCouchbaseContainer();
+
+    @Rule
+    public CouchbaseContainer container = initCouchbaseContainer();
 
     private static CouchbaseContainer initCouchbaseContainer() {
         CouchbaseContainer couchbaseContainer = new CouchbaseContainer("couchbase/server:community-5.1.1");
@@ -20,7 +22,6 @@ public class CouchbaseCommunity5_1Test extends BaseCouchbaseContainerTest {
                 .roles(Collections.singletonList(new UserRole("admin")));
 
         couchbaseContainer.withNewBucket(getDefaultBucketSettings(), communityAdminUserSettings);
-        couchbaseContainer.start();
         return couchbaseContainer;
     }
 
