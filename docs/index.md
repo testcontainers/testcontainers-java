@@ -75,6 +75,7 @@ You can also [check the latest version available on Maven Central](https://searc
 * [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
 * [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
 * [Micronaut Data](https://github.com/micronaut-projects/micronaut-data/) - Testing of Micronaut Data JDBC, a database access toolkit
+* [Vert.x SQL Client](https://github.com/eclipse-vertx/vertx-sql-client) - Testing with PostgreSQL, MySQL, MariaDB, SQL Server, etc.
 * [JHipster](https://www.jhipster.tech/) - Couchbase and Cassandra integration testing
 * [wescale](https://www.wescale.com) - Integration testing against HTTP service mocks and various data stores
 * [Marquez](https://marquezproject.github.io/marquez) - PostgreSQL integration testing
