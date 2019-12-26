@@ -16,7 +16,7 @@ public class DockerImageNameTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static String[] getNames() {
-            return new String[]{"myname:latest",
+            return new String[]{
                 "myname:latest",
                 "repo/my-name:1.0",
                 "registry.foo.com:1234/my-name:1.0",

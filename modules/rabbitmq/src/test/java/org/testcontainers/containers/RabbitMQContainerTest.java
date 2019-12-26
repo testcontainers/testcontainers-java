@@ -154,21 +154,22 @@ public class RabbitMQContainerTest {
     {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
             container
-                .withVhost("vhost1")
-                .withVhostLimit("vhost1", "max-connections", 1)
-                .withVhost("vhost2", true)
-                .withExchange("direct-exchange", "direct")
-                .withExchange("topic-exchange", "topic")
-                .withQueue("queue1")
-                .withQueue("queue2", true, false, ImmutableMap.of("x-message-ttl", 1000))
-                .withBinding("direct-exchange", "queue1")
-                .withUser("user1", "password1")
-                .withUser("user2", "password2", ImmutableSet.of("administrator"))
-                .withPermission("vhost1", "user1", ".*", ".*", ".*")
-                .withPolicy("max length policy", "^dog", ImmutableMap.of("max-length", 1), 1, "queues")
-                .withPolicy("alternate exchange policy", "^direct-exchange", ImmutableMap.of("alternate-exchange", "amq.direct"))
-                .withOperatorPolicy("operator policy 1", "^queue1", ImmutableMap.of("message-ttl", 1000), 1, "queues")
-                .withPluginsEnabled("rabbitmq_shovel", "rabbitmq_random_exchange");
+                    .withVhost("vhost1")
+                    .withVhostLimit("vhost1", "max-connections", 1)
+                    .withVhost("vhost2", true)
+                    .withExchange("direct-exchange", "direct")
+                    .withExchange("topic-exchange", "topic")
+                    .withQueue("queue1")
+                    .withQueue("queue2", true, false, ImmutableMap.of("x-message-ttl", 1000))
+                    .withBinding("direct-exchange", "queue1")
+                    .withUser("user1", "password1")
+                    .withUser("user2", "password2", ImmutableSet.of("administrator"))
+                    .withPermission("vhost1", "user1", ".*", ".*", ".*")
+                    .withPolicy("max length policy", "^dog", ImmutableMap.of("max-length", 1), 1, "queues")
+                    .withPolicy("alternate exchange policy", "^direct-exchange", ImmutableMap.of("alternate-exchange", "amq.direct"))
+                    .withPolicy("vhost2", "ha-all", ".*", ImmutableMap.of("ha-mode", "all", "ha-sync-mode", "automatic"))
+                    .withOperatorPolicy("operator policy 1", "^queue1", ImmutableMap.of("message-ttl", 1000), 1, "queues")
+                    .withPluginsEnabled("rabbitmq_shovel", "rabbitmq_random_exchange");
 
             container.start();
 
@@ -191,6 +192,10 @@ public class RabbitMQContainerTest {
             assertThat(container.execInContainer("rabbitmqadmin", "list", "policies")
                 .getStdout())
                 .contains("max length policy", "alternate exchange policy");
+
+            assertThat(container.execInContainer("rabbitmqadmin", "list", "policies", "--vhost=vhost2")
+                    .getStdout())
+                    .contains("ha-all", "ha-sync-mode");
 
             assertThat(container.execInContainer("rabbitmqadmin", "list", "operator_policies")
                 .getStdout())
