@@ -26,10 +26,12 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
 
     @Override
     protected boolean isApplicable() {
+        boolean correctScheme = SOCKET_LOCATION.startsWith("unix://");
+
         final boolean nettyDoesSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
             ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
 
-        return SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets;
+        return correctScheme && (SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets);
     }
 
     @Override

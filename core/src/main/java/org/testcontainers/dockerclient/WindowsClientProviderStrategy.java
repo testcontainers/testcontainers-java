@@ -14,7 +14,9 @@ public class WindowsClientProviderStrategy extends DockerClientProviderStrategy 
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_WINDOWS;
+        boolean correctScheme = SOCKET_LOCATION.startsWith("tcp://");
+
+        return correctScheme && SystemUtils.IS_OS_WINDOWS;
     }
 
     @Override

@@ -22,7 +22,9 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_WINDOWS;
+        boolean correctScheme = SOCKET_LOCATION.startsWith("npipe://");
+
+        return correctScheme && SystemUtils.IS_OS_WINDOWS;
     }
 
     @Override

@@ -14,7 +14,9 @@ public class ProxiedUnixSocketClientProviderStrategy extends UnixSocketClientPro
 
     @Override
     protected boolean isApplicable() {
-        return socketFile.exists();
+        boolean correctScheme = SOCKET_LOCATION.startsWith("unix://");
+
+        return correctScheme && socketFile.exists();
     }
 
     @Override
