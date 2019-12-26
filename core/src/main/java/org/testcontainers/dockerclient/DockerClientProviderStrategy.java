@@ -1,8 +1,10 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -17,6 +19,7 @@ import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
 import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -32,6 +35,8 @@ public abstract class DockerClientProviderStrategy {
 
     protected DockerClient client;
     protected DockerClientConfig config;
+
+    private String dockerHostIpAddress;
 
     private static final RateLimiter PING_RATE_LIMITER = RateLimiterBuilder.newBuilder()
             .withRate(2, TimeUnit.SECONDS)
@@ -188,8 +193,38 @@ public abstract class DockerClientProviderStrategy {
         }
     }
 
-    public String getDockerHostIpAddress() {
-        return DockerClientConfigUtils.getDockerHostIpAddress(this.config);
+    public synchronized String getDockerHostIpAddress() {
+        if (dockerHostIpAddress == null) {
+            dockerHostIpAddress = resolveDockerHostIpAddress(client, config.getDockerHost());
+        }
+        return dockerHostIpAddress;
+    }
+
+    @VisibleForTesting
+    static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost) {
+        switch (dockerHost.getScheme()) {
+            case "http":
+            case "https":
+            case "tcp":
+                return dockerHost.getHost();
+            case "unix":
+            case "npipe":
+                if (DockerClientConfigUtils.IN_A_CONTAINER) {
+                    return client.inspectNetworkCmd()
+                        .withNetworkId("bridge")
+                        .exec()
+                        .getIpam()
+                        .getConfig()
+                        .stream()
+                        .filter(it -> it.getGateway() != null)
+                        .findAny()
+                        .map(Network.Ipam.Config::getGateway)
+                        .orElse("localhost");
+                }
+                return "localhost";
+            default:
+                return null;
+        }
     }
 
     protected void checkOSType() {
