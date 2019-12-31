@@ -5,9 +5,10 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.Network;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.testcontainers.containers.Network.newNetwork;
 
 @RunWith(Enclosed.class)
@@ -20,19 +21,19 @@ public class NetworkTest {
 
         @Rule
         public GenericContainer foo = new GenericContainer()
-                .withNetwork(network)
-                .withNetworkAliases("foo")
-                .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
+            .withNetwork(network)
+            .withNetworkAliases("foo")
+            .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
 
         @Rule
         public GenericContainer bar = new GenericContainer()
-                .withNetwork(network)
-                .withCommand("top");
+            .withNetwork(network)
+            .withCommand("top");
 
         @Test
         public void testNetworkSupport() throws Exception {
             String response = bar.execInContainer("wget", "-O", "-", "http://foo:8080").getStdout();
-            assertEquals("received response", "yay", response);
+            assertEquals("yay", response);
         }
     }
 
@@ -40,77 +41,72 @@ public class NetworkTest {
 
         @Test
         public void testNetworkSupport() throws Exception {
-            // useCustomNetwork {
             try (
-                    Network network = Network.newNetwork();
+                Network network = Network.newNetwork();
 
-                    GenericContainer foo = new GenericContainer()
-                            .withNetwork(network)
-                            .withNetworkAliases("foo")
-                            .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
+                GenericContainer foo = new GenericContainer()
+                    .withNetwork(network)
+                    .withNetworkAliases("foo")
+                    .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
 
-                    GenericContainer bar = new GenericContainer()
-                            .withNetwork(network)
-                            .withCommand("top")
+                GenericContainer bar = new GenericContainer()
+                    .withNetwork(network)
+                    .withCommand("top")
             ) {
                 foo.start();
                 bar.start();
 
                 String response = bar.execInContainer("wget", "-O", "-", "http://foo:8080").getStdout();
-                assertEquals("received response", "yay", response);
+                assertEquals("yay", response);
             }
-            // }
         }
 
         @Test
-        public void testBuilder() throws Exception {
+        public void testBuilder() {
             try (
-                    Network network = Network.builder()
-                            .driver("macvlan")
-                            .build();
+                Network network = Network.builder()
+                    .driver("macvlan")
+                    .build();
             ) {
                 String id = network.getId();
                 assertEquals(
-                        "Flag is set",
-                        "macvlan",
-                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
+                    "macvlan",
+                    DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
                 );
             }
         }
 
         @Test
-        public void testModifiers() throws Exception {
+        public void testModifiers() {
             try (
-                    Network network = Network.builder()
-                            .createNetworkCmdModifier(cmd -> cmd.withDriver("macvlan"))
-                            .build();
+                Network network = Network.builder()
+                    .createNetworkCmdModifier(cmd -> cmd.withDriver("macvlan"))
+                    .build();
             ) {
                 String id = network.getId();
                 assertEquals(
-                        "Flag is set",
-                        "macvlan",
-                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
+                    "macvlan",
+                    DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
                 );
             }
         }
 
         @Test
-        public void testReusability() throws Exception {
+        public void testReusability() {
             try (Network network = Network.newNetwork()) {
                 String firstId = network.getId();
                 assertNotNull(
-                        "Network exists",
-                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(firstId).exec()
+                    DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(firstId).exec()
                 );
 
                 network.close();
 
                 assertNotEquals(
-                        "New network created",
-                        firstId,
-                        DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getId()).exec().getId()
+                    firstId,
+                    DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getId()).exec().getId()
                 );
             }
         }
     }
 }
+
