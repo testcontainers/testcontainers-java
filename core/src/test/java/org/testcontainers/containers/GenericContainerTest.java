@@ -17,8 +17,22 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
 
 public class GenericContainerTest {
+
+    @Test
+    public void shouldNameContainer() {
+        try (
+            GenericContainer<?> container = new GenericContainer("alpine:3.6")
+                .withCommand("true")
+                .withName("xxyzyzys")
+        ) {
+            container.start();
+            assertEquals("/xxyzyzys", container.getContainerInfo().getName());
+            assertEquals("/xxyzyzys", container.getContainerName());
+        }
+    }
 
     @Test
     public void shouldReportOOMAfterWait() {

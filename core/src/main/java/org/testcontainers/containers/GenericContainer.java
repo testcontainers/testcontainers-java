@@ -149,6 +149,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private RemoteDockerImage image;
 
+    @Nullable
+    private String name;
+
     @NonNull
     private Map<String, String> env = new HashMap<>();
 
@@ -723,6 +726,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withCmd(commandParts);
         }
 
+        if (name != null) {
+            createCommand.withName(name);
+        }
+
         String[] envArray = env.entrySet().stream()
                 .filter(it -> it.getValue() != null)
                 .map(it -> it.getKey() + "=" + it.getValue())
@@ -891,6 +898,33 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setCommand(@NonNull String... commandParts) {
         this.commandParts = commandParts;
+    }
+
+    /**
+     * Name of the container.
+     */
+    @Nullable
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set the name of the container.
+     * <p>
+     * Note: using a fixed container name decreases test isolation. Use this option judiciously.
+     */
+    public void setName(@Nullable String name) {
+        this.name = name;
+    }
+
+    /**
+     * Set the name of the container.
+     * <p>
+     * Note: using a fixed container name decreases test isolation. Use this option judiciously.
+     */
+    public SELF withName(@Nullable String name) {
+        this.name = name;
+        return self();
     }
 
     @Override
