@@ -1083,6 +1083,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param protocol
      */
     protected void addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
+        addExposedPort(containerPort);
         portBindings.add(String.format("%d:%d/%s", hostPort, containerPort, protocol.toDockerNotation()));
     }
 
