@@ -27,4 +27,16 @@ public class HostPortWaitStrategyTest {
     public void testWaiting() {
         pass("Container starts after waiting");
     }
+
+    @Test
+    public void testWaitingForSpecificPort() {
+        try (GenericContainer<?> container = new GenericContainer<>(IMAGE_NAME)) {
+            container
+                .withCommand("sh", "-c", "while true; do nc -lp 8080; done")
+                .withExposedPorts(8080, 12345, 5432)
+                .waitingFor(Wait.forListeningPort(8080).withStartupTimeout(Duration.ofSeconds(10)))
+                .start();
+            pass("Container starts after waiting");
+        }
+    }
 }

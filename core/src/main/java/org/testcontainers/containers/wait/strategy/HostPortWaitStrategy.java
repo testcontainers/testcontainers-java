@@ -1,5 +1,6 @@
 package org.testcontainers.containers.wait.strategy;
 
+import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -7,6 +8,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.containers.wait.internal.InternalCommandPortListeningCheck;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -21,6 +23,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
+    private List<Integer> expectedExposedPorts = new ArrayList<>();
+
     @Override
     protected void waitUntilReady() {
         final Set<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
@@ -31,14 +35,18 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
             return;
         }
 
-        @SuppressWarnings("unchecked")
-        List<Integer> exposedPorts = waitStrategyTarget.getExposedPorts();
+        List<Integer> exposedPorts;
+        if (expectedExposedPorts.isEmpty()) {
+            exposedPorts = waitStrategyTarget.getExposedPorts();
+        } else {
+            exposedPorts = expectedExposedPorts;
+        }
 
         final Set<Integer> internalPorts = getInternalPorts(externalLivenessCheckPorts, exposedPorts);
 
         Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(waitStrategyTarget, internalPorts);
 
-        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(waitStrategyTarget, externalLivenessCheckPorts);
+        Callable<Boolean> externalCheck = new ExternalPortListeningCheck(waitStrategyTarget, ImmutableSet.copyOf(exposedPorts));
 
         try {
             Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS,
@@ -48,9 +56,14 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
                     waitStrategyTarget.getContainerIpAddress() +
                     " ports: " +
-                    externalLivenessCheckPorts +
+                    exposedPorts +
                     " should be listening)");
         }
+    }
+
+    public HostPortWaitStrategy withExpectedExposedPort(int exposedPort) {
+        expectedExposedPorts.add(exposedPort);
+        return this;
     }
 
     private Set<Integer> getInternalPorts(Set<Integer> externalLivenessCheckPorts, List<Integer> exposedPorts) {
