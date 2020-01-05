@@ -29,6 +29,12 @@ public class VaultContainerTest {
             "secret_three=password3",
             "secret_four=password4");
 
+    @Test(expected = IllegalArgumentException.class)
+    public void configureContainerWithInvalidToken() {
+        new VaultContainer<>()
+                .withVaultToken("s.6w3CpXn5vChbnpLtBlCJCUxs");
+    }
+
     @Test
     public void readFirstSecretPathWithCli() throws IOException, InterruptedException {
         GenericContainer.ExecResult result = vaultContainer.execInContainer("vault", "kv", "get", "-format=json", "secret/testing1");

@@ -1,6 +1,7 @@
 package org.testcontainers.vault;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -74,6 +75,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @return this
      */
     public SELF withVaultToken(String token) {
+        Preconditions.check("custom token ID cannot have the 's.' prefix", !token.startsWith("s."));
         withEnv("VAULT_DEV_ROOT_TOKEN_ID", token);
         withEnv("VAULT_TOKEN", token);
         return self();
