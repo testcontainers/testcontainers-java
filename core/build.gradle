@@ -97,7 +97,7 @@ dependencies {
 
     shaded "org.yaml:snakeyaml:1.25"
 
-    shaded 'com.squareup.okhttp3:okhttp:3.14.4'
+    shaded 'com.squareup.okhttp3:okhttp:3.14.5'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
