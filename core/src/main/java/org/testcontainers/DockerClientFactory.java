@@ -77,8 +77,6 @@ public class DockerClientFactory {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
     }
 
-    private String ryukContainerId = null;
-
     @VisibleForTesting
     DockerClientFactory() {
 
@@ -141,16 +139,24 @@ public class DockerClientFactory {
                 "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
+        final String ryukContainerId;
+
         boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
-        if (useRyuk && ryukContainerId == null) {
+        if (useRyuk) {
+            log.debug("Ryuk is enabled");
             ryukContainerId = ResourceReaper.start(hostIpAddress, client);
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
+        } else {
+            log.debug("Ryuk is disabled");
+            ryukContainerId = null;
         }
 
         boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (checksEnabled) {
+            log.debug("Checks are enabled");
             // fail-fast if checks have failed previously
             if (cachedChecksFailure != null) {
+                log.debug("There is a cached checks failure - throwing", cachedChecksFailure);
                 throw cachedChecksFailure;
             }
 
@@ -177,6 +183,8 @@ public class DockerClientFactory {
                 cachedChecksFailure = e;
                 throw e;
             }
+        } else {
+            log.debug("Checks are disabled");
         }
 
         dockerClient = client;
