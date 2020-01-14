@@ -194,7 +194,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         if(Strings.isNullOrEmpty(servicesWithScalingSettings)) {
             runWithCompose("up " + flags);
         } else {
-            runWithCompose("up " + flags + " " + servicesWithScalingSettings);
+            runWithCompose("up " + flags + " " + servicesWithScalingSettings + " " + String.join(" ", this.services));
         }
     }
 
@@ -253,7 +253,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         ));
     }
 
-    private List<Container> listChildContainers() {
+    public List<Container> listChildContainers() {
         return dockerClient.listContainersCmd()
                 .withShowAll(true)
                 .exec().stream()
