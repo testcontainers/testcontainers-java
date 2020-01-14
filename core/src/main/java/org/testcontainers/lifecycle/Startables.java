@@ -83,7 +83,7 @@ public class Startables {
             f.handle((__, ex) -> ex == null || result.completeExceptionally(ex));
         }
 
-        CompletableFuture.allOf(futures).thenAccept(__ -> result.complete(null));
+        CompletableFuture.allOf(futures).thenRun(() -> result.complete(null));
 
         return result;
     }
