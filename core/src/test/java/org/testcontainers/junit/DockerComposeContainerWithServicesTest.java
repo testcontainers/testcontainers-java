@@ -13,7 +13,7 @@ import java.util.Set;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 
-public class DockerComposeContainerWithServicesTest extends BaseDockerComposeTest {
+public class DockerComposeContainerWithServicesTest {
 
     private static final String[] listOfServices = new String[]{"redis"/*, "db"*/};
 
@@ -21,7 +21,6 @@ public class DockerComposeContainerWithServicesTest extends BaseDockerComposeTes
     public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
         .withServices(listOfServices);
 
-    @Override
     protected DockerComposeContainer getEnvironment() {
         return environment;
     }
