@@ -79,7 +79,11 @@ public class Startables {
         CompletableFuture<Void> result = new CompletableFuture<>();
 
         for (CompletableFuture<?> f : futures) {
-            f.handle((__, ex) -> ex == null || result.completeExceptionally(ex));
+            f.whenComplete((__, ex) -> {
+                if (ex != null) {
+                    result.completeExceptionally(ex);
+                }
+            });
         }
 
         CompletableFuture.allOf(futures).thenRun(() -> result.complete(null));
