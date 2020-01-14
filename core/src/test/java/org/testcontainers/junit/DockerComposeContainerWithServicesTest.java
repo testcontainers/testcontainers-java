@@ -21,10 +21,6 @@ public class DockerComposeContainerWithServicesTest {
     public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
         .withServices(listOfServices);
 
-    protected DockerComposeContainer getEnvironment() {
-        return environment;
-    }
-
     @Test
     public void testGivenDockerCompose_WhenSublistOfServicesSelected_ThenOnlyThoseServicesAreStarted() {
         Set<String> runningList = new HashSet<>();
@@ -36,7 +32,9 @@ public class DockerComposeContainerWithServicesTest {
                     runningList.add(service);
                 }
         }
-        assertEquals("List of assigned services is equal to list of running services of the docker-compose",
+        assertEquals("number of running services of docker-compose is the same as length of listOfServices",
+            listOfServices.length, environment.listChildContainers().size());
+        assertEquals("Running services are the same as the requested listOfServices",
             listOfServices.length, runningList.size());
     }
 }
