@@ -4,7 +4,6 @@ import lombok.experimental.UtilityClass;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -73,10 +72,10 @@ public class Startables {
             })
             .toArray(CompletableFuture[]::new);
 
-        return allOfShortcircuiting(futures);
+        return firstFailing(futures);
     }
 
-    private static CompletableFuture<Void> allOfShortcircuiting(CompletableFuture[] futures) {
+    private static CompletableFuture<Void> firstFailing(CompletableFuture[] futures) {
         CompletableFuture<Void> result = new CompletableFuture<>();
 
         for (CompletableFuture<?> f : futures) {
