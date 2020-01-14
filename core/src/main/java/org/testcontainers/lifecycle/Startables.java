@@ -76,7 +76,7 @@ public class Startables {
     }
 
     private static CompletableFuture<Void> firstFailing(CompletableFuture[] futures) {
-        CompletableFuture<Void> result = new CompletableFuture<>();
+        CompletableFuture<Void> result = CompletableFuture.allOf(futures);
 
         for (CompletableFuture<?> f : futures) {
             f.whenComplete((__, ex) -> {
@@ -85,8 +85,6 @@ public class Startables {
                 }
             });
         }
-
-        CompletableFuture.allOf(futures).thenRun(() -> result.complete(null));
 
         return result;
     }
