@@ -25,9 +25,6 @@ import java.util.stream.Collectors;
 @Value
 class OkHttpWebTarget implements WebTarget {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-        .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-
     OkHttpClient okHttpClient;
 
     HttpUrl baseUrl;
@@ -35,6 +32,8 @@ class OkHttpWebTarget implements WebTarget {
     ImmutableList<String> path;
 
     SetMultimap<String, String> queryParams;
+
+    ObjectMapper objectMapper;
 
     @Override
     @SneakyThrows
@@ -56,7 +55,7 @@ class OkHttpWebTarget implements WebTarget {
         }
 
         return new OkHttpInvocationBuilder(
-            MAPPER,
+            objectMapper,
             okHttpClient,
             baseUrlBuilder.build()
         );
@@ -110,6 +109,6 @@ class OkHttpWebTarget implements WebTarget {
         }
 
         // when param value is JSON string
-        return queryParam(name, MAPPER.writeValueAsString(values));
+        return queryParam(name, objectMapper.writeValueAsString(values));
     }
 }

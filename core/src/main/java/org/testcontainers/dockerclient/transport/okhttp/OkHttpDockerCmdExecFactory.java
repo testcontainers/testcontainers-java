@@ -108,7 +108,8 @@ public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
             okHttpClient,
             baseUrl,
             ImmutableList.of(),
-            MultimapBuilder.hashKeys().hashSetValues().build()
+            MultimapBuilder.hashKeys().hashSetValues().build(),
+            getDockerClientConfig().getObjectMapper()
         );
     }
 

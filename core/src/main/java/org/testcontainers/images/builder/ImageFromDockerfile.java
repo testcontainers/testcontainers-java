@@ -2,11 +2,8 @@ package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
-import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
-import com.google.common.collect.Sets;
-import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -31,7 +28,10 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPOutputStream;
 
 @Slf4j
@@ -43,9 +43,20 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         StringsTrait<ImageFromDockerfile>,
         DockerfileTrait<ImageFromDockerfile> {
 
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+        private final AtomicLong COUNTER = new AtomicLong(0);
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r, "testcontainers-image-from-dockerfile-" + COUNTER.getAndIncrement());
+            thread.setDaemon(true);
+            return thread;
+        }
+    });
+
     private final String dockerImageName;
 
-    private boolean deleteOnExit = true;
+    private final boolean deleteOnExit;
 
     private final Map<String, Transferable> transferables = new HashMap<>();
     private final Map<String, String> buildArgs = new HashMap<>();
@@ -81,59 +92,66 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
-        try {
-            if (deleteOnExit) {
-                ResourceReaper.instance().registerImageForCleanup(dockerImageName);
-            }
+        if (deleteOnExit) {
+            ResourceReaper.instance().registerImageForCleanup(dockerImageName);
+        }
 
-            BuildImageResultCallback resultCallback = new BuildImageResultCallback() {
-                @Override
-                public void onNext(BuildResponseItem item) {
-                    super.onNext(item);
+        BuildImageResultCallback resultCallback = new BuildImageResultCallback() {
+            @Override
+            public void onNext(BuildResponseItem item) {
+                super.onNext(item);
 
-                    if (item.isErrorIndicated()) {
-                        logger.error(item.getErrorDetail().getMessage());
-                    } else {
-                        logger.debug(StringUtils.chomp(item.getStream(), "\n"));
-                    }
+                if (item.isErrorIndicated()) {
+                    logger.error(item.getErrorDetail().getMessage());
+                } else {
+                    logger.debug(StringUtils.chomp(item.getStream(), "\n"));
                 }
-            };
+            }
+        };
 
-            // We have to use pipes to avoid high memory consumption since users might want to build really big images
-            @Cleanup PipedInputStream in = new PipedInputStream();
-            @Cleanup PipedOutputStream out = new PipedOutputStream(in);
+        // We have to use pipes to avoid high memory consumption since users might want to build really big images
+        try (PipedInputStream in = new PipedInputStream()) {
+            EXECUTOR.submit(() -> {
+                try (PipedOutputStream out = new PipedOutputStream(in)) {
+                    saveTransferableToTarStream(out);
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            });
 
             BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(in);
             configure(buildImageCmd);
 
             BuildImageResultCallback exec = buildImageCmd.exec(resultCallback);
 
-            long bytesToDockerDaemon = 0;
-
-            // To build an image, we have to send the context to Docker in TAR archive format
-            try (TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(new GZIPOutputStream(out))) {
-                tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-
-                for (Map.Entry<String, Transferable> entry : transferables.entrySet()) {
-                    Transferable transferable = entry.getValue();
-                    final String destination = entry.getKey();
-                    transferable.transferTo(tarArchive, destination);
-                    bytesToDockerDaemon += transferable.getSize();
-                }
-                tarArchive.finish();
-            }
-
-            log.info("Transferred {} to Docker daemon", FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
-            if (bytesToDockerDaemon > FileUtils.ONE_MB * 50) // warn if >50MB sent to docker daemon
-                log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.",
-                        FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
-
             exec.awaitImageId();
 
             return dockerImageName;
-        } catch(IOException e) {
-            throw new RuntimeException("Can't close DockerClient", e);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
+    }
+
+    private void saveTransferableToTarStream(PipedOutputStream out) throws IOException {
+        long bytesToDockerDaemon = 0;
+
+        // To build an image, we have to send the context to Docker in TAR archive format
+        try (TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(new GZIPOutputStream(out))) {
+            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+
+            for (Map.Entry<String, Transferable> entry : transferables.entrySet()) {
+                Transferable transferable = entry.getValue();
+                final String destination = entry.getKey();
+                transferable.transferTo(tarArchive, destination);
+                bytesToDockerDaemon += transferable.getSize();
+            }
+            tarArchive.finish();
+        }
+
+        log.info("Transferred {} to Docker daemon", FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
+        if (bytesToDockerDaemon > FileUtils.ONE_MB * 50) // warn if >50MB sent to docker daemon
+            log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.",
+                FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
     }
 
     protected void configure(BuildImageCmd buildImageCmd) {

@@ -45,12 +45,19 @@ public class DockerfileBuildTest {
                     .withDockerfilePath("./Dockerfile-buildarg")
                     .withBuildArg("CUSTOM_ARG", "test7890")
             },
-            
+
            // Dockerfile build using withDockerfile(File)
             new Object[]{"test4567",
                 new ImageFromDockerfile()
                     .withFileFromPath(".", RESOURCE_PATH)
                     .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-alt"))
+            },
+
+            // build with Dockerfile from specified location and build context resources (multiple tar streams)
+            new Object[]{"test111",
+                new ImageFromDockerfile()
+                    .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-multitar"))
+                    .withFileFromPath(".", RESOURCE_PATH)
             },
         };
     }
@@ -71,5 +78,4 @@ public class DockerfileBuildTest {
             assertTrue("expected file content indicates that dockerfile build steps have been run", logs.contains(expectedFileContent));
         }
     }
-    
 }

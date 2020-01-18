@@ -21,6 +21,8 @@ subprojects {
     compileTestJava.options.encoding = 'UTF-8'
 
     repositories {
+        // TODO REMOVE
+        mavenLocal()
         jcenter()
         mavenCentral()
     }
@@ -59,6 +61,8 @@ subprojects {
     }
 
     test {
+        // TODO REMOVE
+        enabled = true
         defaultCharacterEncoding = "UTF-8"
         testLogging {
             displayGranularity 1
