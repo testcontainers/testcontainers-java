@@ -62,8 +62,12 @@ public class DockerClientFactory {
     private static DockerClientFactory instance;
 
     // Cached client configuration
-    private DockerClientProviderStrategy strategy;
-    private boolean initialized = false;
+    @VisibleForTesting
+    DockerClientProviderStrategy strategy;
+
+    @VisibleForTesting
+    DockerClient dockerClient;
+
     private String activeApiVersion;
     private String activeExecutionDriver;
 
@@ -74,11 +78,13 @@ public class DockerClientFactory {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
     }
 
-    /**
-     * Private constructor
-     */
-    private DockerClientFactory() {
+    @VisibleForTesting
+    DockerClientFactory() {
 
+    }
+
+    public static DockerClient lazyClient() {
+        return LazyDockerClient.INSTANCE;
     }
 
     /**
@@ -94,6 +100,19 @@ public class DockerClientFactory {
         return instance;
     }
 
+    @Synchronized
+    private DockerClientProviderStrategy getOrInitializeStrategy() {
+        if (strategy != null) {
+            return strategy;
+        }
+
+        List<DockerClientProviderStrategy> configurationStrategies = new ArrayList<>();
+        ServiceLoader.load(DockerClientProviderStrategy.class).forEach(configurationStrategies::add);
+
+        strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
+        return strategy;
+    }
+
     /**
      *
      * @return a new initialized Docker client
@@ -101,63 +120,57 @@ public class DockerClientFactory {
     @Synchronized
     public DockerClient client() {
 
-        if (strategy != null) {
-            return strategy.getClient();
+        if (dockerClient != null) {
+            return dockerClient;
         }
 
-        List<DockerClientProviderStrategy> configurationStrategies = new ArrayList<DockerClientProviderStrategy>();
-        ServiceLoader.load(DockerClientProviderStrategy.class).forEach( cs -> configurationStrategies.add( cs ) );
-
-        strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
+        final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
         log.info("Docker host IP address is {}", hostIpAddress);
-        DockerClient client = strategy.getClient();
+        final DockerClient client = strategy.getClient();
 
-        if (!initialized) {
-            Info dockerInfo = client.infoCmd().exec();
-            Version version = client.versionCmd().exec();
-            activeApiVersion = version.getApiVersion();
-            activeExecutionDriver = dockerInfo.getExecutionDriver();
-            log.info("Connected to docker: \n" +
-                    "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
-                    "  API Version: " + activeApiVersion + "\n" +
-                    "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
-                    "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
+        Info dockerInfo = client.infoCmd().exec();
+        Version version = client.versionCmd().exec();
+        activeApiVersion = version.getApiVersion();
+        activeExecutionDriver = dockerInfo.getExecutionDriver();
+        log.info("Connected to docker: \n" +
+                "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
+                "  API Version: " + activeApiVersion + "\n" +
+                "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
+                "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-            String ryukContainerId = null;
-            boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
-            if (useRyuk) {
-                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
-                log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
-            }
-
-            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
-            if (checksEnabled) {
-                VisibleAssertions.info("Checking the system...");
-                checkDockerVersion(version.getVersion());
-                if (ryukContainerId != null) {
-                    checkDiskSpace(client, ryukContainerId);
-                } else {
-                    runInsideDocker(
-                        client,
-                        createContainerCmd -> {
-                            createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
-                            createContainerCmd.getHostConfig().withAutoRemove(true);
-                            createContainerCmd.withCmd("tail", "-f", "/dev/null");
-                        },
-                        (__, containerId) -> {
-                            checkDiskSpace(client, containerId);
-                            return "";
-                        }
-                    );
-                }
-            }
-
-            initialized = true;
+        String ryukContainerId = null;
+        boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+        if (useRyuk) {
+            ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
         }
 
-        return client;
+        boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
+        if (checksEnabled) {
+            VisibleAssertions.info("Checking the system...");
+            checkDockerVersion(version.getVersion());
+            if (ryukContainerId != null) {
+                checkDiskSpace(client, ryukContainerId);
+            } else {
+                runInsideDocker(
+                    client,
+                    createContainerCmd -> {
+                        createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
+                        createContainerCmd.getHostConfig().withAutoRemove(true);
+                        createContainerCmd.withCmd("tail", "-f", "/dev/null");
+                    },
+                    (__, containerId) -> {
+                        checkDiskSpace(client, containerId);
+                        return "";
+                    }
+                );
+            }
+        }
+
+        dockerClient = client;
+        return dockerClient;
     }
 
     private void checkDockerVersion(String dockerVersion) {
@@ -233,15 +246,12 @@ public class DockerClientFactory {
      * @return the IP address of the host running Docker
      */
     public String dockerHostIpAddress() {
-        return strategy.getDockerHostIpAddress();
+        return getOrInitializeStrategy().getDockerHostIpAddress();
     }
 
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-        if (strategy == null) {
-            client();
-        }
         // We can't use client() here because it might create an infinite loop
-        return runInsideDocker(strategy.getClient(), createContainerCmdConsumer, block);
+        return runInsideDocker(getOrInitializeStrategy().getClient(), createContainerCmdConsumer, block);
     }
 
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
@@ -289,9 +299,7 @@ public class DockerClientFactory {
      * @return the docker API version of the daemon that we have connected to
      */
     public String getActiveApiVersion() {
-        if (!initialized) {
-            client();
-        }
+        client();
         return activeApiVersion;
     }
 
@@ -299,9 +307,7 @@ public class DockerClientFactory {
      * @return the docker execution driver of the daemon that we have connected to
      */
     public String getActiveExecutionDriver() {
-        if (!initialized) {
-            client();
-        }
+        client();
         return activeExecutionDriver;
     }
 
@@ -310,7 +316,7 @@ public class DockerClientFactory {
      * @return whether or not the currently active strategy is of the provided type
      */
     public boolean isUsing(Class<? extends DockerClientProviderStrategy> providerStrategyClass) {
-        return providerStrategyClass.isAssignableFrom(this.strategy.getClass());
+        return strategy != null && providerStrategyClass.isAssignableFrom(this.strategy.getClass());
     }
 
     private static class NotEnoughDiskSpaceException extends RuntimeException {

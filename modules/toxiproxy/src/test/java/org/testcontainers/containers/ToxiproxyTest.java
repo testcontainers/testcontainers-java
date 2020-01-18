@@ -45,7 +45,7 @@ public class ToxiproxyTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2019-12-01")
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2020-03-01")
     public void testLatencyViaProxy() throws IOException {
         // obtainProxyObject {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
@@ -72,7 +72,7 @@ public class ToxiproxyTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2019-12-01")
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2020-03-01")
     public void testConnectionCut() {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
         final Jedis jedis = new Jedis(proxy.getContainerIpAddress(), proxy.getProxyPort());
@@ -97,7 +97,7 @@ public class ToxiproxyTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2019-12-01")
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2020-03-01")
     public void testMultipleProxiesCanBeCreated() {
         try (GenericContainer secondRedis = new GenericContainer("redis:5.0.4")
             .withExposedPorts(6379)
