@@ -20,7 +20,7 @@ public class DatabaseDriverTmpfsTest {
     public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1687", reviewDate = "2019-12-01")
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1687", reviewDate = "2020-03-01")
     public void tmpfs() throws IOException, InterruptedException, SQLException {
         final String jdbcUrl = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_TMPFS=/testtmpfs:rw";
         try (Connection ignored = DriverManager.getConnection(jdbcUrl)) {
