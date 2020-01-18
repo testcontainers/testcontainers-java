@@ -2,12 +2,15 @@ package org.testcontainers.lifecycle;
 
 import lombok.experimental.UtilityClass;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @UtilityClass
 public class Startables {
@@ -27,8 +30,8 @@ public class Startables {
     /**
      * @see #deepStart(Stream)
      */
-    public CompletableFuture<Void> deepStart(Collection<? extends Startable> startables) {
-        return deepStart(startables.stream());
+    public CompletableFuture<Void> deepStart(Iterable<? extends Startable> startables) {
+        return deepStart(StreamSupport.stream(startables.spliterator(), false));
     }
 
     /**
