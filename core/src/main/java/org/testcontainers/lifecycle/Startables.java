@@ -27,7 +27,7 @@ public class Startables {
     /**
      * @see #deepStart(Stream)
      */
-    public CompletableFuture<Void> deepStart(Collection<Startable> startables) {
+    public CompletableFuture<Void> deepStart(Collection<? extends Startable> startables) {
         return deepStart(startables.stream());
     }
 
@@ -49,7 +49,7 @@ public class Startables {
      * @param startables a {@link Stream} of {@link Startable}s to start and scan for transitive dependencies.
      * @return a {@link CompletableFuture} that resolves once all {@link Startable}s have started.
      */
-    public CompletableFuture<Void> deepStart(Stream<Startable> startables) {
+    public CompletableFuture<Void> deepStart(Stream<? extends Startable> startables) {
         return deepStart(new HashMap<>(), startables);
     }
 
@@ -58,7 +58,7 @@ public class Startables {
      * @param started an intermediate storage for already started {@link Startable}s to prevent multiple starts.
      * @param startables a {@link Stream} of {@link Startable}s to start and scan for transitive dependencies.
      */
-    private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<Startable> startables) {
+    private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<? extends Startable> startables) {
         CompletableFuture[] futures = startables
             .sequential()
             .map(it -> {
