@@ -9,11 +9,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import java.util.Collections;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jupiter.TestLifecycleAwareContainerMock.AFTER_TEST;
 import static org.testcontainers.junit.jupiter.TestLifecycleAwareContainerMock.BEFORE_TEST;
 
@@ -32,7 +28,8 @@ class TestLifecycleAwareMethodTest {
 
     @BeforeAll
     static void beforeAll() {
-        assertEquals(singletonList(BEFORE_TEST), SHARED_CONTAINER.getLifecycleMethodCalls());
+        assertThat(SHARED_CONTAINER.getLifecycleMethodCalls()).containsExactly(BEFORE_TEST);
+
     }
 
     @Test
@@ -45,14 +42,14 @@ class TestLifecycleAwareMethodTest {
     @Test
     @Order(2)
     void should_call_beforeTest_first_afterTest_later() {
-        assertEquals(asList(BEFORE_TEST, AFTER_TEST), startedTestContainer.getLifecycleMethodCalls());
+        assertThat(startedTestContainer.getLifecycleMethodCalls()).containsExactly(BEFORE_TEST, AFTER_TEST);
     }
 
     static class SharedContainerAfterAllTestExtension implements AfterAllCallback {
         // Unfortunately it's not possible to write a @Test that is run after all tests
         @Override
         public void afterAll(ExtensionContext context) {
-            assertEquals(asList(BEFORE_TEST, AFTER_TEST), SHARED_CONTAINER.getLifecycleMethodCalls());
+            assertThat(SHARED_CONTAINER.getLifecycleMethodCalls()).containsExactly(BEFORE_TEST, AFTER_TEST);
         }
     }
 }
