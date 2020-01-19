@@ -183,6 +183,11 @@ public class TestcontainersConfiguration {
         return getEnvVarOrProperty("image.substitutor", null);
     }
 
+    public Boolean isDisabledWithoutDocker() {
+        final String value = getEnvVarOrProperty("disabled.without.docker", null);
+        return value == null ? null : Boolean.parseBoolean(value);
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {

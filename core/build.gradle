@@ -114,6 +114,9 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
         "org.testcontainers.dockerclient.transport.okhttp.UnixSocketFactory",
         "org.testcontainers.containers.output.FrameConsumerResultCallback",
         "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
+
+        // 'METHOD_NEW_DEFAULT', added withFileSystemBind and withFileSystemBind methods with Supplier<String> for hostPath
+        "org.testcontainers.containers.Container",
     ]
 
     methodExcludes = [
