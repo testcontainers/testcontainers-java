@@ -66,9 +66,10 @@ public class DockerClientFactoryTest {
     public void failedChecksFailFast() {
         Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).isDisableChecks();
 
-        DockerClientFactory instance = new DockerClientFactory();
-        assertThat(instance.client()).isNotNull();
+        // Make sure that Ryuk is started
+        assertThat(DockerClientFactory.instance().client()).isNotNull();
 
+        DockerClientFactory instance = new DockerClientFactory();
         DockerClient dockerClient = instance.dockerClient;
         assertThat(instance.cachedChecksFailure).isNull();
         try {
