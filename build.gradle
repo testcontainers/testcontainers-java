@@ -36,6 +36,7 @@ subprojects {
             inputs.dir(srcDir)
             args(srcDir, "-d", outputDir)
         }
+        encoding = "UTF-8"
     }
     delombok.onlyIf {
         project.sourceSets.main.java.srcDirs.find { it.exists() }
