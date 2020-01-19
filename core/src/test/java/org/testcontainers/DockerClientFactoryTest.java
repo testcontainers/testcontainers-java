@@ -1,7 +1,7 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.exception.ConflictException;
+import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,7 +77,7 @@ public class DockerClientFactoryTest {
             instance.dockerClient = null;
 
             // Ryuk should fail to start twice due to the name conflict (equal to the session id)
-            assertThatThrownBy(instance::client).isInstanceOf(ConflictException.class);
+            assertThatThrownBy(instance::client).isInstanceOf(DockerException.class);
 
             RuntimeException failure = new IllegalStateException("Boom!");
             instance.cachedChecksFailure = failure;
