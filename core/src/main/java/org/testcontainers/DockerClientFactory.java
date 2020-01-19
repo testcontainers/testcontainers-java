@@ -17,9 +17,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
@@ -68,11 +65,15 @@ public class DockerClientFactory {
     @VisibleForTesting
     DockerClient dockerClient;
 
+    @VisibleForTesting
+    RuntimeException cachedChecksFailure;
+
     private String activeApiVersion;
     private String activeExecutionDriver;
 
     @Getter(lazy = true)
     private final boolean fileMountingSupported = checkMountableFile();
+
 
     static {
         System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
@@ -124,6 +125,12 @@ public class DockerClientFactory {
             return dockerClient;
         }
 
+        // fail-fast if checks have failed previously
+        if (cachedChecksFailure != null) {
+            log.debug("There is a cached checks failure - throwing", cachedChecksFailure);
+            throw cachedChecksFailure;
+        }
+
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
@@ -140,33 +147,47 @@ public class DockerClientFactory {
                 "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-        String ryukContainerId = null;
+        final String ryukContainerId;
+
         boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
         if (useRyuk) {
+            log.debug("Ryuk is enabled");
             ryukContainerId = ResourceReaper.start(hostIpAddress, client);
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
+        } else {
+            log.debug("Ryuk is disabled");
+            ryukContainerId = null;
         }
 
         boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (checksEnabled) {
-            VisibleAssertions.info("Checking the system...");
-            checkDockerVersion(version.getVersion());
-            if (ryukContainerId != null) {
-                checkDiskSpace(client, ryukContainerId);
-            } else {
-                runInsideDocker(
-                    client,
-                    createContainerCmd -> {
-                        createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
-                        createContainerCmd.getHostConfig().withAutoRemove(true);
-                        createContainerCmd.withCmd("tail", "-f", "/dev/null");
-                    },
-                    (__, containerId) -> {
-                        checkDiskSpace(client, containerId);
-                        return "";
-                    }
-                );
+            log.debug("Checks are enabled");
+
+            try {
+                log.info("Checking the system...");
+                checkDockerVersion(version.getVersion());
+                if (ryukContainerId != null) {
+                    checkDiskSpace(client, ryukContainerId);
+                } else {
+                    runInsideDocker(
+                        client,
+                        createContainerCmd -> {
+                            createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
+                            createContainerCmd.getHostConfig().withAutoRemove(true);
+                            createContainerCmd.withCmd("tail", "-f", "/dev/null");
+                        },
+                        (__, containerId) -> {
+                            checkDiskSpace(client, containerId);
+                            return "";
+                        }
+                    );
+                }
+            } catch (RuntimeException e) {
+                cachedChecksFailure = e;
+                throw e;
             }
+        } else {
+            log.debug("Checks are disabled");
         }
 
         dockerClient = client;
@@ -174,17 +195,8 @@ public class DockerClientFactory {
     }
 
     private void checkDockerVersion(String dockerVersion) {
-        VisibleAssertions.assertThat("Docker version", dockerVersion, new BaseMatcher<String>() {
-            @Override
-            public boolean matches(Object o) {
-                return new ComparableVersion(o.toString()).compareTo(new ComparableVersion("1.6.0")) >= 0;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("should be at least 1.6.0");
-            }
-        });
+        boolean versionIsSufficient = new ComparableVersion(dockerVersion).compareTo(new ComparableVersion("1.6.0")) >= 0;
+        check("Docker server version should be at least 1.6.0", versionIsSufficient);
     }
 
     private void checkDiskSpace(DockerClient dockerClient, String id) {
@@ -201,10 +213,19 @@ public class DockerClientFactory {
 
         DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
 
-        VisibleAssertions.assertTrue(
+        check(
                 "Docker environment should have more than 2GB free disk space",
                 df.availableMB.map(it -> it >= 2048).orElse(true)
         );
+    }
+
+    private void check(String message, boolean isSuccessful) {
+        if (isSuccessful) {
+            log.info("✔︎ {}", message);
+        } else {
+            log.error("❌ {}", message);
+            throw new IllegalStateException("Check failed: " + message);
+        }
     }
 
     private boolean checkMountableFile() {
@@ -267,8 +288,8 @@ public class DockerClientFactory {
         } finally {
             try {
                 client.removeContainerCmd(id).withRemoveVolumes(true).withForce(true).exec();
-            } catch (NotFoundException | InternalServerErrorException ignored) {
-                log.debug("", ignored);
+            } catch (NotFoundException | InternalServerErrorException e) {
+                log.debug("Swallowed exception while removing container", e);
             }
         }
     }
@@ -286,7 +307,7 @@ public class DockerClientFactory {
         for (String line : lines) {
             String[] fields = line.split("\\s+");
             if (fields.length > 5 && fields[5].equals("/")) {
-                long availableKB = Long.valueOf(fields[3]);
+                long availableKB = Long.parseLong(fields[3]);
                 df.availableMB = Optional.of(availableKB / 1024L);
                 df.usedPercent = Optional.of(Integer.valueOf(fields[4].replace("%", "")));
                 break;
@@ -317,11 +338,5 @@ public class DockerClientFactory {
      */
     public boolean isUsing(Class<? extends DockerClientProviderStrategy> providerStrategyClass) {
         return strategy != null && providerStrategyClass.isAssignableFrom(this.strategy.getClass());
-    }
-
-    private static class NotEnoughDiskSpaceException extends RuntimeException {
-        NotEnoughDiskSpaceException(String message) {
-            super(message);
-        }
     }
 }
