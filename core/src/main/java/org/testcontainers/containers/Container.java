@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface Container<SELF extends Container<SELF>> extends LinkableContainer, ContainerState {
 
@@ -96,6 +97,18 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     }
 
     /**
+     * Adds a file system binding. Consider using {@link #withFileSystemBind(Supplier, String, BindMode)}
+     * for building a container in a fluent style.
+     *
+     * @param hostPath      the file system path on the host supplier
+     * @param containerPath the file system path inside the container
+     * @param mode          the bind mode
+     */
+    default void addFileSystemBind(final Supplier<String> hostPath, final String containerPath, final BindMode mode) {
+        addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.NONE);
+    }
+
+    /**
      * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
      * for building a container in a fluent style.
      *
@@ -105,6 +118,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param selinuxContext selinux context argument to use for this file
      */
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
+
+    /**
+     * Adds a file system binding. Consider using {@link #withFileSystemBind(Supplier, String, BindMode)}
+     * for building a container in a fluent style.
+     *
+     * @param hostPath      the file system path on the host supplier
+     * @param containerPath the file system path inside the container
+     * @param mode          the bind mode
+     * @param selinuxContext selinux context argument to use for this file
+     */
+    void addFileSystemBind(Supplier<String> hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
      * Add a link to another container.
@@ -153,6 +177,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     }
 
     /**
+     * Adds a file system binding. Host-path will be evaluated when processing binds.
+     *
+     * @param hostPath the file system path on the host supplier
+     * @param containerPath the file system path inside the container
+     * @return this
+     */
+    default SELF withFileSystemBind(Supplier<String> hostPath, String containerPath) {
+        return withFileSystemBind(hostPath, containerPath, BindMode.READ_WRITE);
+    }
+
+    /**
      * Adds a file system binding.
      *
      * @param hostPath the file system path on the host
@@ -161,6 +196,16 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
+
+    /**
+     * Adds a file system binding. Host-path will be evaluated when processing binds.
+     *
+     * @param hostPath the file system path on the host supplier
+     * @param containerPath the file system path inside the container
+     * @param mode the bind mode
+     * @return this
+     */
+    SELF withFileSystemBind(Supplier<String> hostPath, String containerPath, BindMode mode);
 
     /**
      * Adds container volumes.

@@ -21,9 +21,9 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.testcontainers.junit.jupiter.FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf;
 
-class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
+public class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
@@ -120,14 +120,21 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
 
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-        return findTestcontainers(context).map(this::evaluate)
-            .orElseThrow(() -> new ExtensionConfigurationException("@Testcontainers not found"));
+        final Boolean disabledWithoutDockerConfig = TestcontainersConfiguration.getInstance().disabledWithoutDocker();
+        if (disabledWithoutDockerConfig == null) {
+            return findTestcontainers(context).map(this::evaluate)
+                .orElseGet(() -> ConditionEvaluationResult.enabled("disabledWithoutDocker is not set, assume enabled"));
+        } else if (disabledWithoutDockerConfig) {
+            return enableWhenDockerAvailable();
+        } else {
+            return ConditionEvaluationResult.enabled("disabledWithoutDocker config is false");
+        }
     }
 
     private Optional<Testcontainers> findTestcontainers(ExtensionContext context) {
         Optional<ExtensionContext> current = Optional.of(context);
         while (current.isPresent()) {
-            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(current.get().getRequiredTestClass(), Testcontainers.class);
+            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(current.get().getTestClass(), Testcontainers.class);
             if (testcontainers.isPresent()) {
                 return testcontainers;
             }
@@ -138,10 +145,7 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
 
     private ConditionEvaluationResult evaluate(Testcontainers testcontainers) {
         if (testcontainers.disabledWithoutDocker()) {
-            if (isDockerAvailable()) {
-                return ConditionEvaluationResult.enabled("Docker is available");
-            }
-            return ConditionEvaluationResult.disabled("disabledWithoutDocker is true and Docker is not available");
+            return enableWhenDockerAvailable();
         }
         return ConditionEvaluationResult.enabled("disabledWithoutDocker is false");
     }
@@ -153,6 +157,12 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
         } catch (Throwable ex) {
             return false;
         }
+    }
+
+    private ConditionEvaluationResult enableWhenDockerAvailable() {
+        return isDockerAvailable()
+            ? ConditionEvaluationResult.enabled("Docker is available")
+            : ConditionEvaluationResult.disabled("disabledWithoutDocker is true and Docker is not available");
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {

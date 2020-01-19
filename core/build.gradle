@@ -98,6 +98,9 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
 
         // 'METHOD_RETURN_TYPE_CHANGED', exposed `com.github.dockerjava.core.command.PullImageResultCallback` to the public API
         "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
+
+        // 'METHOD_NEW_DEFAULT', added withFileSystemBind and withFileSystemBind methods with Supplier<String> for hostPath
+        "org.testcontainers.containers.Container",
     ]
 
     onlyBinaryIncompatibleModified = true
