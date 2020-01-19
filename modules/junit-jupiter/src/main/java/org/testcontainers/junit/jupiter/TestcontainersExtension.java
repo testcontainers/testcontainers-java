@@ -16,6 +16,7 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -99,17 +100,16 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
     }
 
     private TestDescription testDescriptionFrom(ExtensionContext context) {
-        return new TestDescription() {
-            @Override
-            public String getTestId() {
-                return context.getUniqueId();
-            }
+        return new TestcontainersTestDescription(
+            context.getUniqueId(),
+            filesystemFriendlyNameOf(context)
+        );
+    }
 
-            @Override
-            public String getFilesystemFriendlyName() {
-                return context.getDisplayName();
-            }
-        };
+    private String filesystemFriendlyNameOf(ExtensionContext context) {
+        return context.getRequiredTestClass().getName()
+            + "-"
+            + context.getTestMethod().map(Method::getName).orElse("static");
     }
 
     private boolean isTestLifecycleAware(StoreAdapter adapter) {

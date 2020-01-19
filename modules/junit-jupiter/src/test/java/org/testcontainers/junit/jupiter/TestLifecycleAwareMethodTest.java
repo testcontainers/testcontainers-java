@@ -41,15 +41,27 @@ class TestLifecycleAwareMethodTest {
 
     @Test
     @Order(2)
-    void should_call_beforeTest_first_afterTest_later() {
-        assertThat(startedTestContainer.getLifecycleMethodCalls()).containsExactly(BEFORE_TEST, AFTER_TEST);
+    void should_call_beforeTest_first_afterTest_later_with_filesystem_friendly_name() {
+        assertThat(startedTestContainer.getLifecycleMethodCalls())
+            .containsExactly(BEFORE_TEST, AFTER_TEST);
+        // Usually this would be a separate test, but due to the complex setup this is done here as well
+        assertThat(startedTestContainer.getLifecycleFilesystemFriendlyNames())
+            .containsExactly(
+                "org.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest-should_prepare_before_and_after_test"
+            );
     }
 
     static class SharedContainerAfterAllTestExtension implements AfterAllCallback {
         // Unfortunately it's not possible to write a @Test that is run after all tests
         @Override
         public void afterAll(ExtensionContext context) {
-            assertThat(SHARED_CONTAINER.getLifecycleMethodCalls()).containsExactly(BEFORE_TEST, AFTER_TEST);
+            assertThat(SHARED_CONTAINER.getLifecycleMethodCalls())
+                .containsExactly(BEFORE_TEST, AFTER_TEST);
+            // Usually this would be a separate test, but due to the complex setup this is done here as well
+            assertThat(SHARED_CONTAINER.getLifecycleFilesystemFriendlyNames())
+                .containsExactly(
+                    "org.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest-static"
+                );
         }
     }
 }

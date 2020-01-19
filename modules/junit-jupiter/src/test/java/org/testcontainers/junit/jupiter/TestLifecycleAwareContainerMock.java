@@ -14,12 +14,14 @@ public class TestLifecycleAwareContainerMock implements Startable, TestLifecycle
     static final String AFTER_TEST = "afterTest";
 
     private final List<String> lifecycleMethodCalls = new ArrayList<>();
+    private final List<String> lifecycleFilesystemFriendlyNames = new ArrayList<>();
 
     private Throwable capturedThrowable;
 
     @Override
     public void beforeTest(TestDescription description) {
         lifecycleMethodCalls.add(BEFORE_TEST);
+        lifecycleFilesystemFriendlyNames.add(description.getFilesystemFriendlyName());
     }
 
     @Override
@@ -34,6 +36,10 @@ public class TestLifecycleAwareContainerMock implements Startable, TestLifecycle
 
     Throwable getCapturedThrowable() {
         return capturedThrowable;
+    }
+
+    public List<String> getLifecycleFilesystemFriendlyNames() {
+        return lifecycleFilesystemFriendlyNames;
     }
 
     @Override
