@@ -65,9 +65,11 @@ public class DockerClientFactory {
     @VisibleForTesting
     DockerClient dockerClient;
 
+    @VisibleForTesting
+    RuntimeException cachedChecksFailure;
+
     private String activeApiVersion;
     private String activeExecutionDriver;
-    private RuntimeException cachedChecksFailure;
 
     @Getter(lazy = true)
     private final boolean fileMountingSupported = checkMountableFile();
@@ -123,6 +125,12 @@ public class DockerClientFactory {
             return dockerClient;
         }
 
+        // fail-fast if checks have failed previously
+        if (cachedChecksFailure != null) {
+            log.debug("There is a cached checks failure - throwing", cachedChecksFailure);
+            throw cachedChecksFailure;
+        }
+
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
@@ -154,11 +162,6 @@ public class DockerClientFactory {
         boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (checksEnabled) {
             log.debug("Checks are enabled");
-            // fail-fast if checks have failed previously
-            if (cachedChecksFailure != null) {
-                log.debug("There is a cached checks failure - throwing", cachedChecksFailure);
-                throw cachedChecksFailure;
-            }
 
             try {
                 log.info("Checking the system...");

@@ -1,18 +1,27 @@
 package org.testcontainers;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory.DiskSpaceUsage;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
+import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Test for {@link DockerClientFactory}.
  */
 public class DockerClientFactoryTest {
+
+    @Rule
+    public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
 
     @Test
     public void runCommandInsideDockerShouldNotFailIfImageDoesNotExistsLocally() {
@@ -51,5 +60,31 @@ public class DockerClientFactoryTest {
         DockerClientFactory instance = new DockerClientFactory();
         instance.strategy = null;
         assertThat(instance.dockerHostIpAddress()).isNotNull();
+    }
+
+    @Test
+    public void failedChecksFailFast() {
+        Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).isDisableChecks();
+
+        DockerClientFactory instance = new DockerClientFactory();
+        assertThat(instance.client()).isNotNull();
+
+        DockerClient dockerClient = instance.dockerClient;
+        assertThat(instance.cachedChecksFailure).isNull();
+        try {
+            // Remove cached client to force the initialization logic
+            instance.dockerClient = null;
+
+            // Ryuk should fail to start twice due to the name conflict (equal to the session id)
+            assertThatThrownBy(instance::client).isInstanceOf(ConflictException.class);
+
+            RuntimeException failure = new IllegalStateException("Boom!");
+            instance.cachedChecksFailure = failure;
+            // Fail fast
+            assertThatThrownBy(instance::client).isEqualTo(failure);
+        } finally {
+            instance.dockerClient = dockerClient;
+            instance.cachedChecksFailure = null;
+        }
     }
 }
