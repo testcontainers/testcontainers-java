@@ -1,4 +1,4 @@
-if: branch = master AND tag is present
+if: tag is present
 
 language: java
 jdk:
