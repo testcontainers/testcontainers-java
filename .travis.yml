@@ -10,8 +10,6 @@ services:
 
 jobs:
   include:
-    - stage: before_deploy
-      script: .github/workflows/scripts/check_ci_status.sh $TRAVIS_COMMIT
 
     - stage: deploy
       sudo: false
