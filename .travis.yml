@@ -1,0 +1,26 @@
+if: branch = master AND tag is present
+
+language: java
+jdk:
+  - openjdk8
+
+sudo: required
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: before_deploy
+      script: .github/workflows/scripts/check_ci_status.sh $TRAVIS_COMMIT
+
+    - stage: deploy
+      sudo: false
+      services: []
+      install: skip
+      script: skip
+      deploy:
+        provider: script
+        script: ./gradlew -Pversion=$TRAVIS_TAG release --scan --no-daemon -i
+        on:
+          tags: true
+          branch: master
