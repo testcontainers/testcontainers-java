@@ -1,8 +1,15 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.utility.Base58;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.core.command.ExecStartResultCallback;
+import lombok.SneakyThrows;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -11,23 +18,28 @@ import java.util.stream.Stream;
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
+    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
+
     public static final int KAFKA_PORT = 9093;
 
     public static final int ZOOKEEPER_PORT = 2181;
 
+    private static final int PORT_NOT_ASSIGNED = -1;
+
     protected String externalZookeeperConnect = null;
 
-    protected SocatContainer proxy;
+    private int port = PORT_NOT_ASSIGNED;
+
+    private boolean useImplicitNetwork = true;
 
     public KafkaContainer() {
-        this("4.0.0");
+        this("5.2.1");
     }
 
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
-        withNetwork(Network.newNetwork());
-        withNetworkAliases("kafka-" + Base58.randomString(6));
+        super.withNetwork(Network.SHARED);
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
@@ -43,6 +55,26 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
     }
 
+    @Override
+    public KafkaContainer withNetwork(Network network) {
+        useImplicitNetwork = false;
+        return super.withNetwork(network);
+    }
+
+    @Override
+    public Network getNetwork() {
+        if (useImplicitNetwork) {
+            // TODO Only for backward compatibility, to be removed soon
+            logger().warn(
+                "Deprecation warning! " +
+                    "KafkaContainer#getNetwork without an explicitly set network. " +
+                    "Consider using KafkaContainer#withNetwork",
+                new Exception("Deprecated method")
+            );
+        }
+        return super.getNetwork();
+    }
+
     public KafkaContainer withEmbeddedZookeeper() {
         externalZookeeperConnect = null;
         return self();
@@ -54,40 +86,72 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     public String getBootstrapServers() {
-        return String.format("PLAINTEXT://%s:%s", proxy.getContainerIpAddress(), proxy.getFirstMappedPort());
+        if (port == PORT_NOT_ASSIGNED) {
+            throw new IllegalStateException("You should start Kafka container first");
+        }
+        return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
     }
 
     @Override
     protected void doStart() {
-        String networkAlias = getNetworkAliases().get(0);
-        proxy = new SocatContainer()
-                .withNetwork(getNetwork())
-                .withTarget(KAFKA_PORT, networkAlias)
-                .withTarget(ZOOKEEPER_PORT, networkAlias);
+        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
 
-        proxy.start();
-        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + networkAlias + ":9092" + "," + getBootstrapServers());
-
-        if (externalZookeeperConnect != null) {
-            withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
-        } else {
+        if (externalZookeeperConnect == null) {
             addExposedPort(ZOOKEEPER_PORT);
-            withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:2181");
-            withCommand(
-                "sh",
-                "-c",
-                // Use command to create the file to avoid file mounting (useful when you run your tests against a remote Docker daemon)
-                "printf 'clientPort=2181\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties" +
-                    " && zookeeper-server-start /zookeeper.properties" +
-                    " & /etc/confluent/docker/run"
-            );
         }
 
         super.doStart();
     }
 
     @Override
-    public void stop() {
-        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
+    @SneakyThrows
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        super.containerIsStarting(containerInfo, reused);
+
+        port = getMappedPort(KAFKA_PORT);
+
+        if (reused) {
+            return;
+        }
+
+        final String zookeeperConnect;
+        if (externalZookeeperConnect != null) {
+            zookeeperConnect = externalZookeeperConnect;
+        } else {
+            zookeeperConnect = startZookeeper();
+        }
+
+        String command = "#!/bin/bash \n";
+        command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
+        command += "export KAFKA_ADVERTISED_LISTENERS='" + Stream
+            .concat(
+                Stream.of(getBootstrapServers()),
+                containerInfo.getNetworkSettings().getNetworks().values().stream()
+                    .map(it -> "BROKER://" + it.getIpAddress() + ":9092")
+            )
+            .collect(Collectors.joining(",")) + "'\n";
+
+        command += ". /etc/confluent/docker/bash-config \n";
+        command += "/etc/confluent/docker/configure \n";
+        command += "/etc/confluent/docker/launch \n";
+
+        copyFileToContainer(
+            Transferable.of(command.getBytes(StandardCharsets.UTF_8), 700),
+            STARTER_SCRIPT
+        );
+    }
+
+    @SneakyThrows(InterruptedException.class)
+    private String startZookeeper() {
+        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId())
+            .withCmd("sh", "-c", "" +
+                "printf 'clientPort=" + ZOOKEEPER_PORT + "\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties\n" +
+                "zookeeper-server-start /zookeeper.properties\n"
+            )
+            .exec();
+
+        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(new ExecStartResultCallback()).awaitStarted(10, TimeUnit.SECONDS);
+
+        return "localhost:" + ZOOKEEPER_PORT;
     }
 }

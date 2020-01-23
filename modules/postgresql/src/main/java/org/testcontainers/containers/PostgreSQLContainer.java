@@ -15,7 +15,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
-    public static final String DEFAULT_TAG = "9.6.8";
+    public static final String DEFAULT_TAG = "9.6.12";
 
     public static final Integer POSTGRESQL_PORT = 5432;
     private String databaseName = "test";
@@ -34,6 +34,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
                 .withRegEx(".*database system is ready to accept connections.*\\s")
                 .withTimes(2)
                 .withStartupTimeout(Duration.of(60, SECONDS));
+        this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
     }
 
     @NotNull
@@ -44,12 +45,10 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void configure() {
-
         addExposedPort(POSTGRESQL_PORT);
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
-        setCommand("postgres", "-c", FSYNC_OFF_OPTION);
     }
 
     @Override
@@ -59,7 +58,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName;
+        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
+        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT) + "/" + databaseName + "?loggerLevel=OFF";
     }
 
     @Override

@@ -6,4 +6,6 @@ dependencies {
 
     testCompile 'redis.clients:jedis:3.0.1'
     testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+
+    testCompile project(':test-support')
 }

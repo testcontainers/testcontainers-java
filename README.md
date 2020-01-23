@@ -14,10 +14,10 @@ See [LICENSE](LICENSE).
 
 ## Copyright
 
-Copyright (c) 2015 - 2018 Richard North and other authors.
+Copyright (c) 2015 - 2019 Richard North and other authors.
 
-MS SQL Server module is (c) 2017 - 2018 G DATA Software AG and other authors.
+MS SQL Server module is (c) 2017 - 2019 G DATA Software AG and other authors.
 
-Hashicorp Vault module is (c) 2017 Capital One Services, LLC and other authors.
+Hashicorp Vault module is (c) 2017 - 2019 Capital One Services, LLC and other authors.
 
 See [contributors](https://github.com/testcontainers/testcontainers-java/graphs/contributors) for all contributors.

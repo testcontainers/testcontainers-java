@@ -11,8 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class RegistryAuthLocatorTest {
     @Test
@@ -38,6 +37,17 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
+    public void lookupAuthConfigWithJsonKeyCredentials() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-json-key.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+
+        assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
+        assertEquals("Username is set", "_json_key", authConfig.getUsername());
+        assertNotNull("Password is set", authConfig.getPassword());
+    }
+
+    @Test
     public void lookupAuthConfigUsingStore() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store.json");
 
@@ -57,6 +67,15 @@ public class RegistryAuthLocatorTest {
         assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
         assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
         assertEquals("Correct secret is obtained from a credential store", "secret", authConfig.getPassword());
+    }
+
+    @Test
+    public void lookupAuthConfigUsingHelperWithToken() throws URISyntaxException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper-using-token.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registrytoken.example.com/org/repo"), new AuthConfig());
+
+        assertEquals("Correct identitytoken is obtained from a credential store", "secret", authConfig.getIdentitytoken());
     }
 
     @Test

@@ -93,6 +93,7 @@ public class ContainerDatabaseDriver implements Driver {
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
                     if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
                         container = candidateContainerType.newInstance(connectionUrl);
+                        container.withTmpFs(connectionUrl.getTmpfsOptions());
                         delegate = container.getJdbcDriverInstance();
                     }
                 }
@@ -150,7 +151,7 @@ public class ContainerDatabaseDriver implements Driver {
      */
     private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final ConnectionUrl connectionUrl) {
 
-        final boolean isDaemon = connectionUrl.isInDaemonMode();
+        final boolean isDaemon = connectionUrl.isInDaemonMode() || connectionUrl.isReusable();
 
         Set<Connection> connections = containerConnections.computeIfAbsent(container.getContainerId(), k -> new HashSet<>());
 
