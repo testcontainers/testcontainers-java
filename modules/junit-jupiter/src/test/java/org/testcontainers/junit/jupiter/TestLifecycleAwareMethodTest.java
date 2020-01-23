@@ -44,10 +44,21 @@ class TestLifecycleAwareMethodTest {
     void should_call_beforeTest_first_afterTest_later_with_filesystem_friendly_name() {
         assertThat(startedTestContainer.getLifecycleMethodCalls())
             .containsExactly(BEFORE_TEST, AFTER_TEST);
-        // Usually this would be a separate test, but due to the complex setup this is done here as well
+    }
+
+    @Test
+    void should_have_a_filesystem_friendly_name_container_has_started() {
         assertThat(startedTestContainer.getLifecycleFilesystemFriendlyNames())
             .containsExactly(
                 "org.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest-should_prepare_before_and_after_test"
+            );
+    }
+
+    @Test
+    void static_container_should_have_a_filesystem_friendly_name_after_container_has_started() {
+        assertThat(SHARED_CONTAINER.getLifecycleFilesystemFriendlyNames())
+            .containsExactly(
+                "org.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest-static"
             );
     }
 
@@ -57,11 +68,6 @@ class TestLifecycleAwareMethodTest {
         public void afterAll(ExtensionContext context) {
             assertThat(SHARED_CONTAINER.getLifecycleMethodCalls())
                 .containsExactly(BEFORE_TEST, AFTER_TEST);
-            // Usually this would be a separate test, but due to the complex setup this is done here as well
-            assertThat(SHARED_CONTAINER.getLifecycleFilesystemFriendlyNames())
-                .containsExactly(
-                    "org.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest-static"
-                );
         }
     }
 }
