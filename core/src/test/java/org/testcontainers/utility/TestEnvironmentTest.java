@@ -11,7 +11,7 @@ public class TestEnvironmentTest {
 
     @Test
     public void testCompareVersionGreaterThanSameMajor() {
-        assertTrue("1.22 > 1.20", new ComparableVersion("1.22").compareTo(new ComparableVersion("1.20")) == 1);
+        assertTrue("1.22 > 1.20", new ComparableVersion("1.22").compareTo(new ComparableVersion("1.20")) > 0);
     }
 
     @Test
@@ -21,7 +21,7 @@ public class TestEnvironmentTest {
 
     @Test
     public void testCompareVersionGreaterThan() {
-        assertTrue("2.10 > 1.20", new ComparableVersion("2.10").compareTo(new ComparableVersion("1.20")) == 1);
+        assertTrue("2.10 > 1.20", new ComparableVersion("2.10").compareTo(new ComparableVersion("1.20")) > 0);
     }
 
     @Test

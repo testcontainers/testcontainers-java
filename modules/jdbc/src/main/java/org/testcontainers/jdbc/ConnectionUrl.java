@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.testcontainers.UnstableAPI;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -48,6 +49,9 @@ public class ConnectionUrl {
     private Optional<String> databaseName = Optional.empty();
 
     private Optional<String> initScriptPath = Optional.empty();
+
+    @UnstableAPI
+    private boolean reusable = false;
 
     private Optional<InitFunctionDef> initFunction = Optional.empty();
 
@@ -131,6 +135,8 @@ public class ConnectionUrl {
 
 
         initScriptPath = Optional.ofNullable(containerParameters.get("TC_INITSCRIPT"));
+
+        reusable = Boolean.parseBoolean(containerParameters.get("TC_REUSABLE"));
 
         Matcher funcMatcher = Patterns.INITFUNCTION_MATCHING_PATTERN.matcher(this.getUrl());
         if (funcMatcher.matches()) {
@@ -222,7 +228,7 @@ public class ConnectionUrl {
 
         Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile(TC_PARAM_NAME_PATTERN + "=([^\\?&]+)");
 
-        Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^\\?&=]+)=([^\\?&]+)");
+        Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^\\?&=]+)=([^\\?&]*)");
 
     }
 

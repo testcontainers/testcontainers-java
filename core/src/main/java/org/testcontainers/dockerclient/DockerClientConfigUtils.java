@@ -43,8 +43,10 @@ public class DockerClientConfigUtils {
             .map(StringUtils::trimToEmpty)
             .filter(StringUtils::isNotBlank);
 
-
-
+    /**
+     * Use {@link DockerClientFactory#dockerHostIpAddress()}
+     */
+    @Deprecated
     public static String getDockerHostIpAddress(DockerClientConfig config) {
         switch (config.getDockerHost().getScheme()) {
             case "http":
