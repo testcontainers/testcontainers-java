@@ -12,6 +12,7 @@ bintray {
         name = 'testcontainers'
 
         publish = true
+        override = true
 
         version {
             name = project.version

@@ -123,7 +123,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                 tarArchive.finish();
             }
 
-            log.info("Transferred {} KB to Docker daemon", FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
+            log.info("Transferred {} to Docker daemon", FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
             if (bytesToDockerDaemon > FileUtils.ONE_MB * 50) // warn if >50MB sent to docker daemon
                 log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.",
                         FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
