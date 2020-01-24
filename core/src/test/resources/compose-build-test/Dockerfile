@@ -1,3 +1,3 @@
-FROM redis:5.0.7-buster
+FROM redis:2.6.17
 
 CMD ["redis-server"]
