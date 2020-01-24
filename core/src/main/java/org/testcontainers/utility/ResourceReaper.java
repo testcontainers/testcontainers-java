@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -137,6 +136,14 @@ public final class ResourceReaper {
                             }
                         } catch (IOException e) {
                             log.warn("Can not connect to Ryuk at {}:{}", hostIpAddress, ryukPort, e);
+
+                            try {
+                                // sleep for a moment to avoid excessive log spam
+                                Thread.sleep(500);
+                            } catch (InterruptedException interrupted) {
+                                Thread.currentThread().interrupt();
+                                throw new RuntimeException(interrupted);
+                            }
                         }
                     }
                 },
@@ -341,12 +348,12 @@ public final class ResourceReaper {
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
     }
-    
+
     public void registerImageForCleanup(String dockerImageName) {
         setHook();
         registeredImages.add(dockerImageName);
     }
-    
+
     private void removeImage(String dockerImageName) {
         LOGGER.trace("Removing image tagged {}", dockerImageName);
         try {
