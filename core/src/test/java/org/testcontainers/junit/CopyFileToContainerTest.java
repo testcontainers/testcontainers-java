@@ -1,11 +1,13 @@
 package org.testcontainers.junit;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Map;
