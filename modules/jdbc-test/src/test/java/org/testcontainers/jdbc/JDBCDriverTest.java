@@ -41,32 +41,9 @@ public class JDBCDriverTest {
     public static Iterable<Object[]> data() {
         return asList(
             new Object[][]{
-                {"jdbc:tc:mysql://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:mysql://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=file:sql/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?useSSL=false", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:postgresql:9.6.8://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
-                {"jdbc:tc:postgis://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
-                {"jdbc:tc:postgis:9.6://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
-                {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", EnumSet.of(Options.CustomIniFile)},
-                {"jdbc:tc:mariadb://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:mariadb://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
-                {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
-                {"jdbc:tc:sqlserver:2017-CU12://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:cockroach://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class)}
+                {"jdbc:tc:mysqlserver://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
+                {"jdbc:tc:myownmysql://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
+                
             });
     }
 
@@ -87,7 +64,10 @@ public class JDBCDriverTest {
 
     @Test
     public void test() throws SQLException {
-        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
+    	ContainerDatabaseDriver.registerAlias("mysqlserver", "sqlserver", "mcmoe/mssqldocker", "latest");
+    	ContainerDatabaseDriver.registerAlias("myownmysql", "mysql", "mysql");
+        
+    	try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
             performSimpleTest(dataSource);
 
             if (options.contains(Options.ScriptedSchema)) {

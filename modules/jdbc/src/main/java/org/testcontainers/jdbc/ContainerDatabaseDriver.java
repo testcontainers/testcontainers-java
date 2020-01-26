@@ -6,6 +6,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -40,8 +41,11 @@ public class ContainerDatabaseDriver implements Driver {
     private Driver delegate;
     private static final Map<String, Set<Connection>> containerConnections = new HashMap<>();
     private static final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
+    private static final Map<String, HashMap<String, String>> jdbcAliasMap = new HashMap<String, HashMap<String,String>>();
+	
     private static final Set<String> initializedContainers = new HashSet<>();
     private static final String FILE_PATH_PREFIX = "file:";
+    private static final String JDBC_ALIAS_PREFIX = "jdbc.alias.";
 
     static {
         load();
@@ -73,6 +77,27 @@ public class ContainerDatabaseDriver implements Driver {
         ConnectionUrl connectionUrl = ConnectionUrl.newInstance(url);
 
         synchronized (jdbcUrlContainerCache) {
+        	
+        	Properties p = TestcontainersConfiguration.getInstance().getProperties();
+        	for (String key : p.stringPropertyNames()) {
+        		
+        		if (key.startsWith(JDBC_ALIAS_PREFIX)) {
+        			
+        			String value = p.getProperty(key);
+        			
+        			String relevantKeyPart = key.replaceFirst(JDBC_ALIAS_PREFIX, ""); //remove prefix
+        			String[] relevantKeyParts = relevantKeyPart.split("."); //0 is alias, 1 is type,image or tag
+        			
+        			if (jdbcAliasMap.containsKey(relevantKeyParts[0])) { //alias already registered
+        				jdbcAliasMap.get(relevantKeyParts[0]).put(relevantKeyParts[1], value);
+        			} else {
+        				HashMap<String, String> childMap = new HashMap<String,String> ();
+        				childMap.put(relevantKeyParts[1], value);
+        				jdbcAliasMap.put(relevantKeyParts[0], childMap);
+        			}        			
+        		}
+        		
+        	}
 
             String queryString = connectionUrl.getQueryString().orElse("");
             /*
@@ -91,9 +116,32 @@ public class ContainerDatabaseDriver implements Driver {
                  */
                 ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
-                    if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
-                        container = candidateContainerType.newInstance(connectionUrl);
-                        container.withTmpFs(connectionUrl.getTmpfsOptions());
+                	
+                	String type = connectionUrl.getDatabaseType();
+                	boolean wasAlias = false;
+                	HashMap<String, String> aliasMap = new HashMap<String, String>();
+                	if (jdbcAliasMap.containsKey(type)) { //this is an alias
+                		aliasMap = jdbcAliasMap.get(type);
+                		type = aliasMap.get("type"); //overwrite type from url with type from alias definition
+                		wasAlias = true;
+                	}     	 
+                	
+                	
+                    if (candidateContainerType.supports(type)) {
+                    	
+                    	container = candidateContainerType.newInstance(connectionUrl);
+                    	
+                    	if (wasAlias) { //start with connection URL
+                    		String tag = aliasMap.get("tag");
+                    		if (tag == null) { // no tag was set, so use the default one
+                    			String[] array = container.getDockerImageName().split(":");
+                    			tag = array[1];
+                    			
+                    		}
+                    		container.setDockerImageName(aliasMap.get("image")+":"+tag);                        	
+                    	}
+                    	System.out.println(container.getDockerImageName());
+                    	container.withTmpFs(connectionUrl.getTmpfsOptions());
                         delegate = container.getJdbcDriverInstance();
                     }
                 }
@@ -242,6 +290,32 @@ public class ContainerDatabaseDriver implements Driver {
     public int getMinorVersion() {
         return delegate.getMinorVersion();
     }
+    
+    /**
+     * 
+     * @param alias
+     * @param type
+     * @param image
+     * @param tag
+     */
+    public static void registerAlias(String alias, String type, String image, String tag) {
+		
+    	HashMap<String, String> valueMap = new HashMap<String, String>();
+    	valueMap.put("type", type);
+    	valueMap.put("image", image);
+    	valueMap.put("tag", tag);
+    	    	
+    	ContainerDatabaseDriver.jdbcAliasMap.put(alias, valueMap);
+	}
+    
+    public static void registerAlias(String alias, String type, String image) {
+		
+    	HashMap<String, String> valueMap = new HashMap<String, String>();
+    	valueMap.put("type", type);
+    	valueMap.put("image", image);
+    	    	
+    	ContainerDatabaseDriver.jdbcAliasMap.put(alias, valueMap);
+	}
 
     @Override
     public boolean jdbcCompliant() {
