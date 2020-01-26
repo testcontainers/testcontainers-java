@@ -21,8 +21,16 @@ new GenericContainer(...)
 
 ## Copying files to and from containers
 
-Files can be copied into the container only before creation and files can be copied from the container only after container has started.
+Files can be copied into the container before startup, or can be copied from the container after the container has started.
+
+### Copying to a container before startup
 
 <!--codeinclude-->
-[Copying files to and from container](../../core/src/test/java/org/testcontainers/junit/CopyFileToContainerTest.java) inside_block:copyToContainer
+[Copying files to a container](../../core/src/test/java/org/testcontainers/junit/CopyFileToContainerTest.java) inside_block:copyToContainer
+<!--/codeinclude-->
+
+### Copying a file from a running container
+
+<!--codeinclude-->
+[Copying files from a container](../../core/src/test/java/org/testcontainers/junit/CopyFileToContainerTest.java) inside_block:copyFromContainer
 <!--/codeinclude-->
