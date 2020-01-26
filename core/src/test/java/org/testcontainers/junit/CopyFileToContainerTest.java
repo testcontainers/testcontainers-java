@@ -40,7 +40,7 @@ public class CopyFileToContainerTest {
 
             // ...
 
-            // copyToContainer {
+            // copyFromContainer {
             container.copyFileFromContainer(directoryInContainer + fileName, destinationOnHost);
             // }
         }
