@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Assert;
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import org.junit.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -9,35 +10,45 @@ import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.Map;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class CopyFileToContainerTest {
-    private static String containerPath = "/tmp/mappable-resource/";
+    public static final String destinationOnHost = "/tmp/test-resource-in-host.txt";
+    private static String directoryInContainer = "/tmp/mappable-resource/";
     private static String fileName = "test-resource.txt";
-    private static String filePath = containerPath + fileName;
 
     @Test
     public void checkFileCopied() throws IOException, InterruptedException {
         // copyToContainer {
-
         try (
             GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
-                .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), containerPath)
+                // withCopyFileToContainer ensure that a file or directory will be copied to the container
+                // before starting. In this case, we map a classpath directory to a directory inside the container
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), directoryInContainer)
         ) {
             container.start();
-            container.copyFileFromContainer(filePath, "/tmp/test-resource-in-host.txt");
-        }
 
+            // at this point directoryInContainer should exist, and should contain copies of file(s)
+            String filesList = container.execInContainer("ls", directoryInContainer).getStdout();
+            assertTrue("file list contains the file", filesList.contains(fileName));
+
+            // ...
+
+            // copyFileFromContainer copies a file from a running container
+            container.copyFileFromContainer(directoryInContainer + fileName, destinationOnHost);
+        }
         // }
 
-        Assert.assertEquals(new RandomAccessFile(new File(filePath), "r").getChannel().size(),
-            new RandomAccessFile("/tmp/test-resource-in-host.txt", "r").getChannel().size());
+        assertArrayEquals(
+            Files.toByteArray(new File(destinationOnHost)),
+            Resources.toByteArray(CopyFileToContainerTest.class.getResource("/mappable-resource/" + fileName))
+        );
     }
 
     @Test
@@ -45,7 +56,7 @@ public class CopyFileToContainerTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
-                .withClasspathResourceMapping("/mappable-resource/", containerPath, BindMode.READ_ONLY)
+                .withClasspathResourceMapping("/mappable-resource/", directoryInContainer, BindMode.READ_ONLY)
         ) {
             container.start();
             String filesList = container.execInContainer("ls", "/tmp/mappable-resource").getStdout();
