@@ -46,7 +46,7 @@ public class GenericContainerTest {
         try (
             GenericContainer container = new GenericContainer<>()
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
-                .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
+                .update(WaitForExitedState::waitForNonZeroExit)
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
             assertThatThrownBy(container::start)
@@ -84,6 +84,11 @@ public class GenericContainerTest {
             });
 
             throw new IllegalStateException("Nope!");
+        }
+
+        public static void waitForNonZeroExit(GenericContainer container)
+        {
+            container.waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0));
         }
     }
 }

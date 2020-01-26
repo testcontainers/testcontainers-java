@@ -1379,6 +1379,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    /**
+     * Update the container configuration using the provided consumer.
+     *
+     * @param consumer the consumer of the container
+     * @return this
+     */
+    public SELF update(Consumer<SELF> consumer)
+    {
+        consumer.accept(self());
+        return self();
+    }
+
     @Override
     public boolean equals(Object o) {
         return this == o;
