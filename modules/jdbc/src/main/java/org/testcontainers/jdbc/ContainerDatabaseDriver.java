@@ -41,7 +41,7 @@ public class ContainerDatabaseDriver implements Driver {
     private Driver delegate;
     private static final Map<String, Set<Connection>> containerConnections = new HashMap<>();
     private static final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
-    private static final Map<String, HashMap<String, String>> jdbcAliasMap = new HashMap<String, HashMap<String,String>>();
+    private static final Map<String, Map<String, String>> jdbcAliasMap = new HashMap<String, Map<String,String>>();
 	
     private static final Set<String> initializedContainers = new HashSet<>();
     private static final String FILE_PATH_PREFIX = "file:";
@@ -50,6 +50,14 @@ public class ContainerDatabaseDriver implements Driver {
     static {
         load();
     }
+    
+    /**
+     * Parse properties in default constructor
+     */
+    public ContainerDatabaseDriver() {
+    	super();
+    	mapJBDCAliasProperties(TestcontainersConfiguration.getInstance().getProperties());    	
+	}
 
     private static void load() {
         try {
@@ -78,28 +86,7 @@ public class ContainerDatabaseDriver implements Driver {
 
         synchronized (jdbcUrlContainerCache) {
         	
-        	Properties p = TestcontainersConfiguration.getInstance().getProperties();
-        	for (String key : p.stringPropertyNames()) {
-        		
-        		if (key.startsWith(JDBC_ALIAS_PREFIX)) {
-        			
-        			String value = p.getProperty(key);
-        			
-        			String relevantKeyPart = key.replaceFirst(JDBC_ALIAS_PREFIX, ""); //remove prefix
-        			String[] relevantKeyParts = relevantKeyPart.split("."); //0 is alias, 1 is type,image or tag
-        			
-        			if (jdbcAliasMap.containsKey(relevantKeyParts[0])) { //alias already registered
-        				jdbcAliasMap.get(relevantKeyParts[0]).put(relevantKeyParts[1], value);
-        			} else {
-        				HashMap<String, String> childMap = new HashMap<String,String> ();
-        				childMap.put(relevantKeyParts[1], value);
-        				jdbcAliasMap.put(relevantKeyParts[0], childMap);
-        			}        			
-        		}
-        		
-        	}
-
-            String queryString = connectionUrl.getQueryString().orElse("");
+        	String queryString = connectionUrl.getQueryString().orElse("");
             /*
               If we already have a running container for this exact connection string, we want to connect
               to that rather than create a new container
@@ -119,28 +106,21 @@ public class ContainerDatabaseDriver implements Driver {
                 	
                 	String type = connectionUrl.getDatabaseType();
                 	boolean wasAlias = false;
-                	HashMap<String, String> aliasMap = new HashMap<String, String>();
+                	Map<String, String> aliasMap = new HashMap<String, String>();
                 	if (jdbcAliasMap.containsKey(type)) { //this is an alias
                 		aliasMap = jdbcAliasMap.get(type);
                 		type = aliasMap.get("type"); //overwrite type from url with type from alias definition
                 		wasAlias = true;
-                	}     	 
-                	
+                	}
                 	
                     if (candidateContainerType.supports(type)) {
                     	
                     	container = candidateContainerType.newInstance(connectionUrl);
                     	
-                    	if (wasAlias) { //start with connection URL
-                    		String tag = aliasMap.get("tag");
-                    		if (tag == null) { // no tag was set, so use the default one
-                    			String[] array = container.getDockerImageName().split(":");
-                    			tag = array[1];
-                    			
-                    		}
-                    		container.setDockerImageName(aliasMap.get("image")+":"+tag);                        	
+                    	if (wasAlias) { //overwrite image and tag
+                    		container.setDockerImageName(aliasMap.get("image")+":"+getAliasTag(aliasMap, container));                        	
                     	}
-                    	System.out.println(container.getDockerImageName());
+                    	LOGGER.debug("Starting container: "+container.getDockerImageName());
                     	container.withTmpFs(connectionUrl.getTmpfsOptions());
                         delegate = container.getJdbcDriverInstance();
                     }
@@ -275,6 +255,44 @@ public class ContainerDatabaseDriver implements Driver {
             }
         }
     }
+    
+    /**
+     * Returns the tag for a JBDC alias if set or the default one from the implementing class 
+     * @return tag
+     */
+    private String getAliasTag(Map<String, String> aliasMap, JdbcDatabaseContainer container) {
+    	String tag = aliasMap.get("tag");
+		if (tag == null) { // no tag was set, so use the default one
+			String[] array = container.getDockerImageName().split(":");
+			tag = array[1];
+			
+		}
+		return tag;
+    }
+    
+    /**
+     * Maps relevant entries from testcontainers.properties to this class
+     */
+	private void mapJBDCAliasProperties(Properties p) {
+		for (String key : p.stringPropertyNames()) {
+
+			if (key.startsWith(JDBC_ALIAS_PREFIX)) {
+
+				String value = p.getProperty(key);
+				String relevantKeyPart = key.replaceFirst(JDBC_ALIAS_PREFIX, ""); // remove prefix
+				String[] relevantKeyParts = relevantKeyPart.split("."); // 0 is alias, 1 is type,image or tag
+
+				if (jdbcAliasMap.containsKey(relevantKeyParts[0])) { // alias already registered
+					jdbcAliasMap.get(relevantKeyParts[0]).put(relevantKeyParts[1], value);
+				} else {
+					HashMap<String, String> childMap = new HashMap<String, String>();
+					childMap.put(relevantKeyParts[1], value);
+					jdbcAliasMap.put(relevantKeyParts[0], childMap);
+				}
+			}
+
+		}
+	}
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
@@ -291,32 +309,6 @@ public class ContainerDatabaseDriver implements Driver {
         return delegate.getMinorVersion();
     }
     
-    /**
-     * 
-     * @param alias
-     * @param type
-     * @param image
-     * @param tag
-     */
-    public static void registerAlias(String alias, String type, String image, String tag) {
-		
-    	HashMap<String, String> valueMap = new HashMap<String, String>();
-    	valueMap.put("type", type);
-    	valueMap.put("image", image);
-    	valueMap.put("tag", tag);
-    	    	
-    	ContainerDatabaseDriver.jdbcAliasMap.put(alias, valueMap);
-	}
-    
-    public static void registerAlias(String alias, String type, String image) {
-		
-    	HashMap<String, String> valueMap = new HashMap<String, String>();
-    	valueMap.put("type", type);
-    	valueMap.put("image", image);
-    	    	
-    	ContainerDatabaseDriver.jdbcAliasMap.put(alias, valueMap);
-	}
-
     @Override
     public boolean jdbcCompliant() {
         return delegate.jdbcCompliant();
@@ -372,4 +364,31 @@ public class ContainerDatabaseDriver implements Driver {
             return jdbcUrlContainerCache.get(jdbcUrl);
         }
     }
+    
+    /**
+     * Register JDBC alias for custom JDBC-URL 
+     * @param alias		name of the alias e.g "my-own-mysql"
+     * @param type		driver type of the alias specified e.g. "mysql", "sqlserver", ...
+     * @param image		string that represents the docker image e.g. "mysql", "customregistry/image name"
+     * @param tag		string that represents the docker image tag e.g. "mytag", "4711", ..
+     */
+    public static void registerAlias(String alias, String type, String image, String tag) {		
+    	registerAlias(alias, type, image);    	
+    	ContainerDatabaseDriver.jdbcAliasMap.get(alias).put("tag", tag);			
+	}
+    
+    /**
+     * Register JDBC alias for custom JDBC-URL 
+     * @param alias		name of the alias e.g "my-own-mysql"
+     * @param type		driver type of the alias specified e.g. "mysql", "sqlserver", ...
+     * @param image		string that represents the docker image e.g. "mysql", "customregistry/image name"
+     */
+    public static void registerAlias(String alias, String type, String image) {		
+    	Map<String, String> valueMap = new HashMap<String, String>();
+    	valueMap.put("type", type);
+    	valueMap.put("image", image);
+    	    	
+    	ContainerDatabaseDriver.jdbcAliasMap.put(alias, valueMap);
+	}
+    
 }

@@ -15,7 +15,7 @@ public class TestcontainersConfigurationTest {
 
     final Properties classpathProperties = new Properties();
 
-    //@Test
+    @Test
     public void shouldReadChecksFromEnvironmentOnly() {
         assertFalse("checks enabled by default", newConfig().isDisableChecks());
 
@@ -26,7 +26,7 @@ public class TestcontainersConfigurationTest {
         assertTrue("checks disabled", newConfig().isDisableChecks());
     }
 
-    //@Test
+    @Test
     public void shouldReadDockerClientStrategyFromEnvironmentOnly() {
         String currentValue = newConfig().getDockerClientStrategyClassName();
 
@@ -37,7 +37,7 @@ public class TestcontainersConfigurationTest {
         assertEquals("Docker client strategy is changed", "foo", newConfig().getDockerClientStrategyClassName());
     }
 
-    //@Test
+    @Test
     public void shouldReadReuseFromEnvironmentOnly() {
         assertFalse("no reuse by default", newConfig().environmentSupportsReuse());
 
@@ -47,21 +47,6 @@ public class TestcontainersConfigurationTest {
         environmentProperties.setProperty("testcontainers.reuse.enable", "true");
         assertTrue("reuse enabled", newConfig().environmentSupportsReuse());
     }
-    
-    @Test
-    public void shouldReadDatabaseAliases() {
-        String currentValue = newConfig().getDockerClientStrategyClassName();
-        
-        classpathProperties.setProperty("jdbc.alias","{\"corporate-mysql\": {\"type\":\"mysql\",\"image\":\"registry.my.corp:5000/foo/custom-mysql\"}}");
-        
-
-        classpathProperties.setProperty("docker.client.strategy", UUID.randomUUID().toString());
-        assertEquals("Docker client strategy is not affected by classpath properties", currentValue, newConfig().getDockerClientStrategyClassName());
-
-        environmentProperties.setProperty("docker.client.strategy", "foo");
-        assertEquals("Docker client strategy is changed", "foo", newConfig().getDockerClientStrategyClassName());
-    }
-    
 
     private TestcontainersConfiguration newConfig() {
         return new TestcontainersConfiguration(environmentProperties, classpathProperties);

@@ -1,2 +1,3 @@
 mcr.microsoft.com/mssql/server:2017-CU12
+mcmoe/mssqldocker:latest
 ibmcom/db2:11.5.0.0a
