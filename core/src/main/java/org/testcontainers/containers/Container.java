@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
@@ -284,6 +285,12 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withNetworkAliases(String... aliases);
 
     /**
+     * Set the image pull policy of the container
+     * @return
+     */
+    SELF withImagePullPolicy(ImagePullPolicy policy);
+
+    /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
      * This will only work if you are running your tests outside a Docker container.
      *
@@ -412,61 +419,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     @Deprecated
     Info fetchDockerDaemonInfo() throws IOException;
-
-    /**
-     * Run a command inside a running container, as though using "docker exec", and interpreting
-     * the output as UTF8.
-     * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
-     */
-    ExecResult execInContainer(String... command)
-            throws UnsupportedOperationException, IOException, InterruptedException;
-
-    /**
-     * Run a command inside a running container, as though using "docker exec".
-     * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
-     */
-    ExecResult execInContainer(Charset outputCharset, String... command)
-                    throws UnsupportedOperationException, IOException, InterruptedException;
-
-    /**
-     *
-     * Copies a file or directory to the container.
-     *
-     * @param mountableFile file or directory which is copied into the container
-     * @param containerPath destination path inside the container
-     * @throws IOException if there's an issue communicating with Docker
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     */
-    void copyFileToContainer(MountableFile mountableFile, String containerPath) throws IOException, InterruptedException;
-
-    /**
-     *
-     * Copies a file to the container.
-     *
-     * @param transferable file which is copied into the container
-     * @param containerPath destination path inside the container
-     */
-    void copyFileToContainer(Transferable transferable, String containerPath);
-
-    /**
-     * Copies a file which resides inside the container to user defined directory
-     *
-     * @param containerPath path to file which is copied from container
-     * @param destinationPath destination path to which file is copied with file name
-     * @throws IOException if there's an issue communicating with Docker or receiving entry from TarArchiveInputStream
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     */
-    void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
-
-    /**
-     * Streams a file which resides inside the container
-     *
-     * @param containerPath path to file which is copied from container
-     * @param function function that takes InputStream of the copied file
-     */
-    <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function);
 
     List<String> getPortBindings();
 
