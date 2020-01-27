@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class PostgreSQLConnectionURLTest {
@@ -19,7 +20,32 @@ public class PostgreSQLConnectionURLTest {
         assertFalse("Query String does not contain extra '?'", queryString.substring(1).contains("?"));
     }
 
-    public static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer {
+    @Test
+    public void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
+        PostgreSQLContainer postgres = new NoParamsUrlPostgreSQLContainer();
+        String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
+        String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
+
+        assertTrue("Query String contains expected params", queryString.contains("?stringtype=unspecified&stringtype=unspecified"));
+        assertEquals("Query String starts with '?'", 0, queryString.indexOf('?'));
+        assertFalse("Query String does not contain extra '?'", queryString.substring(1).contains("?"));
+    }
+
+    @Test
+    public void shouldReturnOriginalURLWhenEmptyQueryString() {
+        PostgreSQLContainer postgres = new FixedJdbcUrlPostgreSQLContainer();
+        String connectionUrl = postgres.constructUrlForConnection("");
+
+        assertTrue("Query String remains unchanged", postgres.getJdbcUrl().equals(connectionUrl));
+    }
+
+    @Test
+    public void shouldRejectInvalidQueryString() {
+        assertThrows("Fails when invalid query string provided", IllegalArgumentException.class,
+            () -> new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified"));
+    }
+
+    static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer {
 
         @Override
         public String getContainerIpAddress() {
@@ -29,6 +55,14 @@ public class PostgreSQLConnectionURLTest {
         @Override
         public Integer getMappedPort(int originalPort) {
             return 34532;
+        }
+    }
+
+    static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer {
+
+        @Override
+        public String getJdbcUrl() {
+            return "jdbc:postgresql://host:port/database";
         }
     }
 }

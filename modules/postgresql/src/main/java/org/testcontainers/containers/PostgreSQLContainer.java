@@ -67,9 +67,19 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected String constructUrlForConnection(String queryString) {
-        return "".equals(queryString)
-            ? getJdbcUrl()
-            : getJdbcUrl() + QUERY_PARAM_SEPARATOR + queryString.substring(1);
+        String baseUrl = getJdbcUrl();
+
+        if ("".equals(queryString)) {
+            return baseUrl;
+        }
+
+        if (!queryString.startsWith("?")) {
+            throw new IllegalArgumentException("The '?' character must be included");
+        }
+
+        return baseUrl.contains("?")
+            ? baseUrl + QUERY_PARAM_SEPARATOR + queryString.substring(1)
+            : baseUrl + queryString;
     }
 
     @Override
