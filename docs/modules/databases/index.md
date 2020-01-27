@@ -118,3 +118,53 @@ To pass this option to the container, add `TC_TMPFS` parameter to the URL as fol
 If you need more than one option, separate them by comma (e.g. `TC_TMPFS=key:value,key1:value1&other_parameters=foo`).
 
 For more information about `tmpfs` mount, see [the official Docker documentation](https://docs.docker.com/storage/tmpfs/).
+
+## Database container aliases
+
+It is possible to add aliases to create custom containers from a particular image with a particular tag.
+
+The alias mapping can be defined either at runtime via a static method invocation or via configuration file testcontainers.properties .
+
+The image tag part is optional. If no image tag is present, the image tag will be resolved to the default image tag, that is defined in the implementing database container class.
+
+The alias is resolved via the driver/database name in the URL e.g. (my-own-aliased-mysql):
+
+ `jdbc:tc:my-own-aliased-mysql:5.7.22:///databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
+
+#### Static Invocation
+
+The ContainerDatabaseDriver exports a public static method to define a mapping:
+
+* without specified image tag `ContainerDatabaseDriver.registerAlias("myownmysql", "mysql", "mysql");` 
+
+
+* with specified image tag `ContainerDatabaseDriver.registerAlias("myownmysql", "mysql", "mysql", "5.7.22");` 
+
+Examples/Tests:
+
+ * JDBCDriverAliasTest.java
+ 
+#### Configuration file
+
+The alias definition is also considered from <CLASSPATH>testcontainers.properties and/or <USER_HOME>.testcontainers.properties
+
+* Without specified image tag:
+
+```
+jdbc.alias.my-own-aliased-mysql.type=mysql
+jdbc.alias.my-own-aliased-mysql.image=mysql
+jdbc.alias.my-own-aliased-mysql.tag=5.7.22
+```
+
+* With specified image tag:
+
+```
+jdbc.alias.my-own-aliased-mysql.type=mysql
+jdbc.alias.my-own-aliased-mysql.image=mysql
+jdbc.alias.my-own-aliased-mysql.tag=5.7.22
+```
+
+Examples/Tests:
+
+ * JDBCDriverAliasPropertiesTest.java
+ 

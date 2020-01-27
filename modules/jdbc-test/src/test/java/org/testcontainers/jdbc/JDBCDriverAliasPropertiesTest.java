@@ -6,6 +6,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 import java.sql.SQLException;
 import java.util.EnumSet;
+import java.util.Properties;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 @RunWith(Parameterized.class)
-public class JDBCDriverAliasTest {
+public class JDBCDriverAliasPropertiesTest {
 
     private enum Options {
         ScriptedSchema,
@@ -36,21 +37,35 @@ public class JDBCDriverAliasTest {
     public static Iterable<Object[]> data() {
         return asList(
             new Object[][]{
-                {"jdbc:tc:mysqlserver://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:myownmysql://hostname/databasename", EnumSet.noneOf(Options.class)}
-                
+                {"jdbc:tc:mysqlserver://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)}                
             });
     }
     
     @Test
-    public void shouldInstanciateContainersAccordingToDynamicAliasDefinition() throws SQLException {
+    public void shouldInstanciateContainersAccordingToPropertiesWithDefaultImageTag() throws SQLException {
+    	Properties p = new Properties();
+    	p.put("jdbc.alias.mysqlserver.type", "sqlserver");
+    	p.put("jdbc.alias.mysqlserver.image", "mcr.microsoft.com/mssql/server");
     	ContainerDatabaseDriver.clearJBDCAliasProperties();
-    	ContainerDatabaseDriver.registerAlias("mysqlserver", "sqlserver", "mcmoe/mssqldocker", "latest"); //with image tag
-    	ContainerDatabaseDriver.registerAlias("myownmysql", "mysql", "mysql"); //without image tag
-        
+    	ContainerDatabaseDriver.mapJBDCAliasProperties(p);
+    	
+    	try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
+            performSimpleTest(dataSource);
+        }
+    }
+
+    @Test
+    public void shouldInstanciateContainersAccordingToPropertiesWithSpecifiedImageTag() throws SQLException {
+    	Properties p = new Properties();
+    	p.put("jdbc.alias.mysqlserver.type", "sqlserver");
+    	p.put("jdbc.alias.mysqlserver.image", "mcmoe/mssqldocker");
+    	p.put("jdbc.alias.mysqlserver.tag", "latest");
+    	ContainerDatabaseDriver.clearJBDCAliasProperties();
+    	ContainerDatabaseDriver.mapJBDCAliasProperties(p);
+    	
     	try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
     		performSimpleTest(dataSource);
-        }
+    	}
     }
     
     protected void performSimpleTest(HikariDataSource dataSource) throws SQLException {

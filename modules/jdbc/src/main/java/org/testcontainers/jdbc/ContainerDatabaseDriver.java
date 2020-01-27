@@ -273,14 +273,15 @@ public class ContainerDatabaseDriver implements Driver {
     /**
      * Maps relevant entries from testcontainers.properties to this class
      */
-	private void mapJBDCAliasProperties(Properties p) {
+	public static void mapJBDCAliasProperties(Properties p) {
 		for (String key : p.stringPropertyNames()) {
 
 			if (key.startsWith(JDBC_ALIAS_PREFIX)) {
 
 				String value = p.getProperty(key);
+				LOGGER.debug("Recognized JDBC alias mapping: "+key+" = "+value);
 				String relevantKeyPart = key.replaceFirst(JDBC_ALIAS_PREFIX, ""); // remove prefix
-				String[] relevantKeyParts = relevantKeyPart.split("."); // 0 is alias, 1 is type,image or tag
+				String[] relevantKeyParts = relevantKeyPart.split("\\."); // 0 is alias, 1 is type,image or tag
 
 				if (jdbcAliasMap.containsKey(relevantKeyParts[0])) { // alias already registered
 					jdbcAliasMap.get(relevantKeyParts[0]).put(relevantKeyParts[1], value);
@@ -292,6 +293,13 @@ public class ContainerDatabaseDriver implements Driver {
 			}
 
 		}
+	}
+	
+	/**
+	 * Clear all properties from configuration
+	 */
+	public static void clearJBDCAliasProperties() {		
+		jdbcAliasMap.clear();
 	}
 
     @Override
