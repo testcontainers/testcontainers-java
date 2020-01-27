@@ -39,6 +39,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
+        super.withNetwork(Network.SHARED);
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
@@ -70,16 +71,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                     "Consider using KafkaContainer#withNetwork",
                 new Exception("Deprecated method")
             );
-            Network network = Network.SHARED;
-            super.withNetwork(network);
-
-            if (getContainerId() != null) {
-                dockerClient.connectToNetworkCmd()
-                    .withContainerId(getContainerId())
-                    .withNetworkId(network.getId())
-                    .exec();
-            }
-            return network;
         }
         return super.getNetwork();
     }

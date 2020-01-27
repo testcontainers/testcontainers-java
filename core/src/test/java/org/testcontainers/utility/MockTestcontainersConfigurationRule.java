@@ -23,6 +23,9 @@ public class MockTestcontainersConfigurationRule implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 TestcontainersConfiguration previous = REF.get();
+                if (previous == null) {
+                    previous = TestcontainersConfiguration.getInstance();
+                }
                 REF.set(Mockito.spy(previous));
 
                 try {

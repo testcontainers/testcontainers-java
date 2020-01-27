@@ -8,7 +8,7 @@ jobs:
   in-docker_test:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Build with Gradle
         run: |
           docker run -i --rm \
@@ -18,4 +18,3 @@ jobs:
             -w "$PWD" \
             openjdk:8-jdk-alpine \
             ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
-

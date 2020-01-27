@@ -3,6 +3,6 @@ description = "Testcontainers :: InfluxDB"
 dependencies {
     compile project(':testcontainers')
 
-    compileOnly 'org.influxdb:influxdb-java:2.16'
-    testCompile 'org.influxdb:influxdb-java:2.15'
+    compileOnly 'org.influxdb:influxdb-java:2.17'
+    testCompile 'org.influxdb:influxdb-java:2.17'
 }

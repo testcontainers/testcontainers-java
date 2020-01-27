@@ -44,10 +44,8 @@ public class DockerClientConfigUtils {
             .map(StringUtils::trimToEmpty)
             .filter(StringUtils::isNotBlank);
 
-
     /**
-     *
-     * @deprecated use {@link #getDockerHostIpAddress(URI)}
+     * Use {@link DockerClientFactory#dockerHostIpAddress()}
      */
     @Deprecated
     public static String getDockerHostIpAddress(DockerClientConfig config) {
