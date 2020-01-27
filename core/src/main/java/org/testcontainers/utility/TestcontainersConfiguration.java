@@ -169,7 +169,7 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.trace("Testcontainers config override was found on {} but the file was not found", url, e);
+            log.warn("Testcontainers config override was found on {} but the file was not found", url, e);
         } catch (IOException e) {
             log.warn("Testcontainers config override was found on {} but could not be loaded", url, e);
         }
