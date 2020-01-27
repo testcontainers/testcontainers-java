@@ -3,6 +3,7 @@ package org.testcontainers.dockerclient;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.okhttp.OkHttpDockerCmdExecFactory;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +15,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
-import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;

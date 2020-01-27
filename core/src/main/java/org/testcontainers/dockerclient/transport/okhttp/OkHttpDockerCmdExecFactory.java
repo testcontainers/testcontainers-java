@@ -26,6 +26,10 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @deprecated use com.github.docker-java:docker-java-transport-okhttp
+ */
+@Deprecated
 @Slf4j
 public class OkHttpDockerCmdExecFactory extends AbstractDockerCmdExecFactory {
 
