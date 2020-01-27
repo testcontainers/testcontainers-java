@@ -2,7 +2,6 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.okhttp.OkHttpDockerCmdExecFactory;
