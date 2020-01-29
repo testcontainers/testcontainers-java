@@ -10,6 +10,8 @@ import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.consistency.ScanConsistency;
 import org.junit.After;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Basic class that can be used for couchbase tests. It will clear the database after every test.
  */
@@ -19,16 +21,21 @@ public abstract class AbstractCouchbaseTest {
 
     public static final String DEFAULT_PASSWORD = "password";
 
-    private Bucket bucket;
+    Bucket bucket;
 
     @After
     public void clear() {
-        if (getCouchbaseContainer().isIndex() && getCouchbaseContainer().isQuery() && getCouchbaseContainer().isPrimaryIndex()) {
-            getBucket().query(
-                N1qlQuery.simple(String.format("DELETE FROM `%s`", getBucket().name()),
-                    N1qlParams.build().consistency(ScanConsistency.STATEMENT_PLUS)));
-        } else {
-            getBucket().bucketManager().flush();
+        try {
+            if (getCouchbaseContainer().isIndex() && getCouchbaseContainer().isQuery() && getCouchbaseContainer().isPrimaryIndex()) {
+                getBucket().query(
+                    N1qlQuery.simple(String.format("DELETE FROM `%s`", getBucket().name()),
+                        N1qlParams.build().consistency(ScanConsistency.STATEMENT_PLUS)));
+            } else {
+                getBucket().bucketManager().flush();
+            }
+        } finally {
+            bucket.close(60, TimeUnit.SECONDS);
+            bucket = null;
         }
     }
 

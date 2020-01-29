@@ -37,7 +37,6 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.images.builder.Transferable;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ThrowingFunction;
 
 import java.io.DataOutputStream;
@@ -47,6 +46,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -107,11 +108,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         this(DOCKER_IMAGE_NAME + VERSION);
     }
 
-    public CouchbaseContainer(String containerName) {
-        super(containerName);
+    public CouchbaseContainer(String imageName) {
+        super(imageName);
 
         withNetwork(Network.SHARED);
-        withNetworkAliases("couchbase-" + Base58.randomString(6));
         setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html"));
     }
 
@@ -131,15 +131,16 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     @SneakyThrows
     protected void doStart() {
-        String networkAlias = getNetworkAliases().get(0);
-        startProxy(networkAlias);
-
-        for (CouchbasePort port : CouchbasePort.values()) {
-            exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
+        startProxy(getNetworkAliases().get(0));
+        try {
+            super.doStart();
+        } catch (Throwable e) {
+            proxy.stop();
+            throw e;
         }
-        super.doStart();
     }
 
+    @SneakyThrows
     private void startProxy(String networkAlias) {
         proxy = new SocatContainer().withNetwork(getNetwork());
 
@@ -150,18 +151,28 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 proxy.addExposedPort(port.getOriginalPort());
             }
         }
+
         proxy.setWaitStrategy(null);
         proxy.start();
-    }
 
-    private void exposePortThroughProxy(String networkAlias, int originalPort, int mappedPort) {
         ExecCreateCmdResponse createCmdResponse = dockerClient
             .execCreateCmd(proxy.getContainerId())
-            .withCmd("/usr/bin/socat", "TCP-LISTEN:" + originalPort + ",fork,reuseaddr", "TCP:" + networkAlias + ":" + mappedPort)
+            .withCmd(
+                "sh",
+                "-c",
+                Stream.of(CouchbasePort.values())
+                    .map(port -> {
+                        return "/usr/bin/socat " +
+                            "TCP-LISTEN:" + port.getOriginalPort() + ",fork,reuseaddr " +
+                            "TCP:" + networkAlias + ":" + getMappedPort(port);
+                    })
+                    .collect(Collectors.joining(" & ", "true", ""))
+            )
             .exec();
 
         dockerClient.execStartCmd(createCmdResponse.getId())
-            .exec(new ExecStartResultCallback());
+            .exec(new ExecStartResultCallback())
+            .awaitCompletion(10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -189,9 +200,15 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     public void stop() {
-        stopCluster();
-        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
+        try {
+            stopCluster();
+            ((AtomicReference<Object>) (Object) couchbaseEnvironment).set(null);
+            ((AtomicReference<Object>) (Object) couchbaseCluster).set(null);
+        } finally {
+            Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
+        }
     }
 
     private void stopCluster() {
