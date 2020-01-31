@@ -43,7 +43,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
             environment.getServiceContainerByName(existingServiceName).isPresent());
 
         String notExistingServiceName = "db_256";
-        assertFalse(format("No container found under service name %s", notExistingServiceName),
+        assertFalse(format("No container should be found under service name %s", notExistingServiceName),
             environment.getServiceContainerByName(notExistingServiceName).isPresent());
     }
 }
