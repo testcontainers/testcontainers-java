@@ -44,7 +44,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
         String existingServiceName = "db_1";
         Optional<ContainerState> result = environment.getServiceContainerByName(existingServiceName);
         assertTrue(format("Container should be found by service name %s", existingServiceName), result.isPresent());
-        assertEquals("Mapped port for result container was wrong", result.get().getExposedPorts(), singletonList(3306));
+        assertEquals("Mapped port for result container was wrong, probably wrong container found", result.get().getExposedPorts(), singletonList(3306));
     }
 
     @Test
