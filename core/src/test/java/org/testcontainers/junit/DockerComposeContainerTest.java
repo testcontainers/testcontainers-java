@@ -2,11 +2,14 @@ package org.testcontainers.junit;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
+import java.util.Optional;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
@@ -37,13 +40,17 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     }
 
     @Test
-    public void testGetContainerByServiceName() {
+    public void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db_1";
-        assertTrue(format("Container should be found by service name %s", existingServiceName),
-            environment.getServiceContainerByName(existingServiceName).isPresent());
+        Optional<ContainerState> result = environment.getServiceContainerByName(existingServiceName);
+        assertTrue(format("Container should be found by service name %s", existingServiceName), result.isPresent());
+        assertEquals("Mapped port for result container was wrong", result.get().getExposedPorts(), singletonList(3306));
+    }
 
+    @Test
+    public void shouldReturnEmptyResultOnNoneExistingService() {
         String notExistingServiceName = "db_256";
-        assertFalse(format("No container should be found under service name %s", notExistingServiceName),
-            environment.getServiceContainerByName(notExistingServiceName).isPresent());
+        Optional<ContainerState> result = environment.getServiceContainerByName(notExistingServiceName);
+        assertFalse(format("No container should be found under service name %s", notExistingServiceName), result.isPresent());
     }
 }
