@@ -1,6 +1,12 @@
 package org.testcontainers.containers.localstack;
 
 
+import com.amazonaws.services.logs.AWSLogs;
+import com.amazonaws.services.logs.AWSLogsClientBuilder;
+import com.amazonaws.services.logs.model.CreateLogGroupRequest;
+import com.amazonaws.services.logs.model.CreateLogGroupResult;
+import com.amazonaws.services.logs.model.DescribeLogGroupsRequest;
+import com.amazonaws.services.logs.model.LogGroup;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
@@ -13,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -49,7 +56,7 @@ public class LocalstackContainerTest {
         // without_network {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer()
-            .withServices(S3, SQS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS);
         // }
 
         @Test
@@ -95,6 +102,20 @@ public class LocalstackContainerTest {
                 .filter(message -> message.getBody().equals("test"))
                 .count();
             assertEquals("the sent message can be received", 1L, messageCount);
+        }
+
+        @Test
+        @Ignore("Fails due to https://github.com/localstack/localstack/issues/1434")
+        public void cloudWatchLogsTestOverBridgeNetwork() {
+            AWSLogs logs = AWSLogsClientBuilder.standard()
+                    .withEndpointConfiguration(localstack.getEndpointConfiguration(CLOUDWATCHLOGS))
+                    .withCredentials(localstack.getDefaultCredentialsProvider()).build();
+
+            logs.createLogGroup(new CreateLogGroupRequest("foo"));
+
+            List<LogGroup> groups = logs.describeLogGroups().getLogGroups();
+            assertEquals("One log group should be created", 1, groups.size());
+            assertEquals("Name of created log group is [foo]", "foo", groups.get(0).getLogGroupName());
         }
     }
 
