@@ -163,7 +163,7 @@ public class LocalstackContainerTest {
 
         @Test
         public void cloudWatchLogsTestOverDockerNetwork() throws Exception {
-        	runAwsCliAgainstDockerNetworkContainer("logs create-log-group --log-group-name foo", CLOUDWATCHLOGS.getPort());
+            runAwsCliAgainstDockerNetworkContainer("logs create-log-group --log-group-name foo", CLOUDWATCHLOGS.getPort());
         }
 
         private String runAwsCliAgainstDockerNetworkContainer(String command, final int port) throws Exception {
