@@ -31,6 +31,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
 
 /**
  * Tests for Localstack Container, used both in bridge network (exposed to host) and docker network modes.
@@ -105,7 +106,7 @@ public class LocalstackContainerTest {
         public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer()
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack")    // the last alias is used for HOSTNAME_EXTERNAL
-            .withServices(S3, SQS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS);
         // }
 
         @ClassRule
@@ -137,6 +138,11 @@ public class LocalstackContainerTest {
                 String.format("sqs receive-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz", SQS.getPort(), SQS.getPort()), SQS.getPort());
 
             assertTrue("the sent message can be received", message.contains("\"Body\": \"test\""));
+        }
+
+        @Test
+        public void cloudWatchLogsTestOverDockerNetwork() throws Exception {
+        	runAwsCliAgainstDockerNetworkContainer("logs create-log-group --log-group-name foo", CLOUDWATCHLOGS.getPort());
         }
 
         private String runAwsCliAgainstDockerNetworkContainer(String command, final int port) throws Exception {
