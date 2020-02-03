@@ -22,7 +22,7 @@ or set `client.transport.ignore_cluster_name` to `true`.
 ## Secure your Elasticsearch cluster
 
 The default distribution of Elasticsearch comes with the basic license which contains security feature.
-You can turn on security by providing some extra environment settings:
+You can turn on security by providing a password:
 
 <!--codeinclude-->
 [HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientSecuredContainer

@@ -110,9 +110,7 @@ public class ElasticsearchContainerTest {
     @Test
     public void elasticsearchSecuredTest() throws IOException {
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
-            .withEnv("ELASTIC_PASSWORD", ELASTICSEARCH_PASSWORD)
-            .withEnv("xpack.security.enabled", "true")
-        ) {
+            .withPassword(ELASTICSEARCH_PASSWORD)) {
             container.start();
 
             // The cluster should be secured so it must fail when we try to access / without credentials
@@ -191,8 +189,7 @@ public class ElasticsearchContainerTest {
         // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
             // With a password
-            .withEnv("ELASTIC_PASSWORD", ELASTICSEARCH_PASSWORD)
-            .withEnv("xpack.security.enabled", "true")) {
+            .withPassword(ELASTICSEARCH_PASSWORD)) {
             // Start the container. This step might take some time...
             container.start();
 

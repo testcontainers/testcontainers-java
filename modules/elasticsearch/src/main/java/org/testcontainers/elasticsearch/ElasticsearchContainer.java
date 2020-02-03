@@ -75,6 +75,22 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
             .withStartupTimeout(Duration.ofMinutes(2)));
     }
 
+    /**
+     * Define the Elasticsearch password to set. It enables security behind the scene.
+     * It's not possible to use security with the oss image.
+     * @param password  Password to set
+     * @return this
+     */
+    public ElasticsearchContainer withPassword(String password) {
+        if (getDockerImageName().startsWith(DEFAULT_OSS_IMAGE_NAME.getUnversionedPart())) {
+            throw new IllegalArgumentException("You can not activate security on Elastic OSS Image. " +
+                "Please switch to the default distribution");
+        }
+        withEnv("ELASTIC_PASSWORD", password);
+        withEnv("xpack.security.enabled", "true");
+        return this;
+    }
+
     public String getHttpHostAddress() {
         return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
