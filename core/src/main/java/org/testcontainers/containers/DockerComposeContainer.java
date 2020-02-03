@@ -494,7 +494,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return self();
     }
 
-    public Optional<ContainerState> getServiceContainerByName(String serviceName) {
+    public Optional<ContainerState> getContainerByServiceName(String serviceName) {
         return Optional.ofNullable(serviceInstanceMap.get(serviceName));
     }
 

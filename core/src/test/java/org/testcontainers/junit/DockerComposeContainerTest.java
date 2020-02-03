@@ -42,7 +42,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     @Test
     public void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db_1";
-        Optional<ContainerState> result = environment.getServiceContainerByName(existingServiceName);
+        Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
         assertTrue(format("Container should be found by service name %s", existingServiceName), result.isPresent());
         assertEquals("Mapped port for result container was wrong, probably wrong container found", result.get().getExposedPorts(), singletonList(3306));
     }
@@ -50,7 +50,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     @Test
     public void shouldReturnEmptyResultOnNoneExistingService() {
         String notExistingServiceName = "db_256";
-        Optional<ContainerState> result = environment.getServiceContainerByName(notExistingServiceName);
+        Optional<ContainerState> result = environment.getContainerByServiceName(notExistingServiceName);
         assertFalse(format("No container should be found under service name %s", notExistingServiceName), result.isPresent());
     }
 }
