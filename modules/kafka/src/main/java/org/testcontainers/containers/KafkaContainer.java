@@ -104,12 +104,16 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
     }
 
-    public String getJmxServiceUrl() {
+    public int getJmxServicePort() {
         if (jmxPort == PORT_NOT_ASSIGNED) {
             throw new IllegalStateException("You should start Kafka container first");
         }
 
-        return String.format("service:jmx:rmi:///jndi/rmi://%s:%s/jmxrmi", getContainerIpAddress(), jmxPort);
+        return jmxPort;
+    }
+
+    public String getJmxServiceUrl() {
+        return String.format("service:jmx:rmi:///jndi/rmi://%s:%s/jmxrmi", getContainerIpAddress(), getJmxServicePort());
     }
 
     @Override

@@ -17,6 +17,10 @@ import javax.management.*;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.rmi.server.RMISocketFactory;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -85,28 +89,35 @@ public class KafkaContainerTest {
             KafkaContainer kafka = new KafkaContainer()
                 .withRemoteJmxService()
         ) {
+            final String alias = kafka.getNetworkAliases().get(0);
             kafka.start();
+            final RMISocketFactory socketFactory = RMISocketFactory.getDefaultSocketFactory();
+
+            // Override RMISocketFactory because otherwise it will try to change the hostname to Kafka's internal host
+            // https://github.com/testcontainers/testcontainers-java/pull/2192
+            RMISocketFactory.setSocketFactory(new RMISocketFactory() {
+                @Override
+                public Socket createSocket(String host, int port) throws IOException {
+                    if (alias.equals(host)) {
+                        host = kafka.getContainerIpAddress();
+                        port = kafka.getJmxServicePort();
+                    }
+                    return socketFactory.createSocket(host, port);
+                }
+
+                @Override
+                public ServerSocket createServerSocket(int port) throws IOException {
+                    return socketFactory.createServerSocket(port);
+                }
+            });
+
             String remoteJmxServiceUrl = kafka.getJmxServiceUrl();
 
-            JMXServiceURL url = new JMXServiceURL(remoteJmxServiceUrl);
-            JMXConnector conn = JMXConnectorFactory.connect(url);
+            JMXConnector conn = JMXConnectorFactory.connect(new JMXServiceURL(remoteJmxServiceUrl));
+
             MBeanServerConnection mBeanServerConnection = conn.getMBeanServerConnection();
 
-            assertThat(mBeanServerConnection.getMBeanCount()).isGreaterThan(0);
-
-            testKafkaFunctionality(kafka.getBootstrapServers());
-
-            // assert bytes in for topic is greater than 0 after some data was produced
-            ObjectName bytesInPerSec = new ObjectName(String.format("kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec,topic=%s", TOPIC_NAME));
-            String[] attributes = {"Count"};
-
-            AttributeList attributeValues = mBeanServerConnection.getAttributes(bytesInPerSec, attributes);
-
-            assertThat(attributes.length).isEqualTo(attributeValues.size());
-
-            Attribute attr = (Attribute) attributeValues.stream().findFirst().get();
-            Long val = (Long)attr.getValue();
-            assertThat(val).isGreaterThan(0);
+            assertThat(mBeanServerConnection.getDomains()).contains("kafka.server");
         }
     }
 
