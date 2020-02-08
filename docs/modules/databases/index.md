@@ -69,6 +69,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:postgis:9.6:///databasename`
 
+### Using Presto
+
+`jdbc:tc:presto:329://localhost/memory/default`
+
 ## Using a classpath init script
 
 Testcontainers can run an init script after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
