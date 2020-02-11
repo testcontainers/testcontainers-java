@@ -112,7 +112,7 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.14.0'
+    testCompile 'org.assertj:assertj-core:3.15.0'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"

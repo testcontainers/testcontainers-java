@@ -27,6 +27,7 @@ testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
 testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
 testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
 testCompile "org.testcontainers:testcontainers:{{latest_version}}"
+testCompile "org.testcontainers:junit-jupiter:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
