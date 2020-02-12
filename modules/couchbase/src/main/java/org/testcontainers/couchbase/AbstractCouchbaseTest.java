@@ -8,6 +8,7 @@ import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.query.N1qlParams;
 import com.couchbase.client.java.query.N1qlQuery;
 import com.couchbase.client.java.query.consistency.ScanConsistency;
+import java.time.Duration;
 import org.junit.After;
 
 import java.util.concurrent.TimeUnit;
@@ -44,6 +45,7 @@ public abstract class AbstractCouchbaseTest {
     protected static CouchbaseContainer initCouchbaseContainer(String imageName) {
         CouchbaseContainer couchbaseContainer = (imageName == null) ? new CouchbaseContainer() : new CouchbaseContainer(imageName);
         couchbaseContainer.withNewBucket(getDefaultBucketSettings());
+        couchbaseContainer.withQueryServiceStartupTimeout(Duration.ofMinutes(3));
         return couchbaseContainer;
     }
 

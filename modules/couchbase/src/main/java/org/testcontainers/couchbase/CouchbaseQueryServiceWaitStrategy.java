@@ -23,9 +23,9 @@ public class CouchbaseQueryServiceWaitStrategy extends AbstractWaitStrategy {
 
     private final Bucket bucket;
 
-    public CouchbaseQueryServiceWaitStrategy(Bucket bucket) {
+    public CouchbaseQueryServiceWaitStrategy(Bucket bucket, Duration timeout) {
         this.bucket = bucket;
-        startupTimeout = Duration.ofSeconds(120);
+        this.startupTimeout = timeout;
     }
 
     @Override
