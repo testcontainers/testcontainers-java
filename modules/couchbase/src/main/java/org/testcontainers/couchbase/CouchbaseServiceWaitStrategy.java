@@ -19,18 +19,21 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
  * Created on 06/06/2017
  */
 @Slf4j
-public class CouchbaseQueryServiceWaitStrategy extends AbstractWaitStrategy {
+public class CouchbaseServiceWaitStrategy extends AbstractWaitStrategy {
 
     private final Bucket bucket;
 
-    public CouchbaseQueryServiceWaitStrategy(Bucket bucket) {
+    private final ServiceType serviceType;
+
+    public CouchbaseServiceWaitStrategy(Bucket bucket, ServiceType serviceType) {
         this.bucket = bucket;
+        this.serviceType = serviceType;
         startupTimeout = Duration.ofSeconds(120);
     }
 
     @Override
     protected void waitUntilReady() {
-        log.info("Waiting for {} seconds for QUERY service", startupTimeout.getSeconds());
+        log.info("Waiting for {} seconds for {} service", startupTimeout.getSeconds(), serviceType);
 
         // try to connect to the URL
         try {
@@ -39,11 +42,11 @@ public class CouchbaseQueryServiceWaitStrategy extends AbstractWaitStrategy {
                     GetClusterConfigResponse clusterConfig = bucket.core()
                         .<GetClusterConfigResponse>send(new GetClusterConfigRequest())
                         .toBlocking().single();
-                    boolean queryServiceEnabled = clusterConfig.config()
+                    boolean serviceEnabled = clusterConfig.config()
                         .bucketConfig(bucket.name())
-                        .serviceEnabled(ServiceType.QUERY);
-                    if (!queryServiceEnabled) {
-                        throw new ContainerLaunchException("Query service not ready yet");
+                        .serviceEnabled(serviceType);
+                    if (!serviceEnabled) {
+                        throw new ContainerLaunchException(serviceType + " service not ready yet");
                     }
                 });
                 return true;

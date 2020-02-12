@@ -15,6 +15,7 @@
  */
 package org.testcontainers.couchbase;
 
+import com.couchbase.client.core.service.ServiceType;
 import com.couchbase.client.core.utils.Base64;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.CouchbaseCluster;
@@ -289,12 +290,15 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         } catch (Exception e) {
             logger().warn("Unable to insert user '" + bucketSetting.name() + "', maybe you are using older version");
         }
+        Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name(), bucketSettings.password());
         if (index) {
-            Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name(), bucketSettings.password());
-            new CouchbaseQueryServiceWaitStrategy(bucket).waitUntilReady(this);
+            new CouchbaseServiceWaitStrategy(bucket, ServiceType.QUERY).waitUntilReady(this);
             if (primaryIndex) {
                 bucket.query(Index.createPrimaryIndex().on(bucketSetting.name()));
             }
+        }
+        if (fts) {
+            new CouchbaseServiceWaitStrategy(bucket, ServiceType.SEARCH).waitUntilReady(this);
         }
     }
 
@@ -454,7 +458,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 new UserRole("query_update", bucketName),
                 new UserRole("query_select", bucketName),
                 new UserRole("query_insert", bucketName),
-                new UserRole("query_delete", bucketName)
+                new UserRole("query_delete", bucketName),
+                new UserRole("fts_admin", bucketName)
             );
         }
 
