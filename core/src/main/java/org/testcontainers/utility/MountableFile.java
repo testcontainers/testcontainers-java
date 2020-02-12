@@ -242,7 +242,11 @@ public class MountableFile implements Transferable {
         // Mark temporary files/dirs for deletion at JVM shutdown
         deleteOnExit(tmpLocation.toPath());
 
-        return tmpLocation.getAbsolutePath();
+        try {
+            return tmpLocation.getCanonicalPath();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private File createTempDirectory() {
@@ -371,8 +375,8 @@ public class MountableFile implements Transferable {
         try {
             int unixMode = (int) Files.readAttributes(path, "unix:mode").get("mode");
             // Truncate mode bits for z/OS
-            if ("OS/390".equals(SystemUtils.OS_NAME) || 
-                "z/OS".equals(SystemUtils.OS_NAME) || 
+            if ("OS/390".equals(SystemUtils.OS_NAME) ||
+                "z/OS".equals(SystemUtils.OS_NAME) ||
                 "zOS".equals(SystemUtils.OS_NAME) ) {
                 unixMode &= TarConstants.MAXID;
                 unixMode |= Files.isDirectory(path) ? 040000 : 0100000;

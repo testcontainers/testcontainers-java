@@ -22,7 +22,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.AuditLogger;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.CommandLine;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.LogUtils;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
@@ -30,7 +37,15 @@ import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 import java.io.File;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -477,6 +492,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public SELF withRemoveImages(RemoveImages removeImages) {
         this.removeImages = removeImages;
         return self();
+    }
+
+    public Optional<ContainerState> getContainerByServiceName(String serviceName) {
+        return Optional.ofNullable(serviceInstanceMap.get(serviceName));
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
