@@ -14,12 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
-/**
- * @author ctayeb
- * Created on 06/06/2017
- */
 @Slf4j
-public class CouchbaseServiceWaitStrategy extends AbstractWaitStrategy {
+class CouchbaseServiceWaitStrategy extends AbstractWaitStrategy {
 
     private final Bucket bucket;
 

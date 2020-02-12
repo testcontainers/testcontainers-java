@@ -292,7 +292,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         }
         Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name(), bucketSettings.password());
         if (index) {
-            new CouchbaseServiceWaitStrategy(bucket, ServiceType.QUERY).waitUntilReady(this);
+            new CouchbaseQueryServiceWaitStrategy(bucket).waitUntilReady(this);
             if (primaryIndex) {
                 bucket.query(Index.createPrimaryIndex().on(bucketSetting.name()));
             }
