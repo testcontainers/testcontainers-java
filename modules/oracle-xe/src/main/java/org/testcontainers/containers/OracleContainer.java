@@ -56,6 +56,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @Override
     protected void configure() {
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
+        addEnv("ORACLE_PWD", password);
     }
 
     @Override

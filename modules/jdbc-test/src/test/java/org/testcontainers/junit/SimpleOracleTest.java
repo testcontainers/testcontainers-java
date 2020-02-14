@@ -17,7 +17,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Rule
-    public OracleContainer oracle = new OracleContainer();
+    public OracleContainer oracle = new OracleContainer().withPassword("SecretPassword15");
 
     @Test
     public void testSimple() throws SQLException {
