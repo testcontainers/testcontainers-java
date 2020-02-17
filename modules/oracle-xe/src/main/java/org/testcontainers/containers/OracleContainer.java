@@ -20,6 +20,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     private String username = "system";
     private String password = "oracle";
 
+    private String serviceName = null;
+
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()
             .getProperties().getProperty("oracle.container.image");
@@ -66,7 +68,9 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + ":" + getSid();
+        return serviceName == null 
+            ? "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + ":" + getSid()
+            : "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + "/" + getSerivceName();
     }
 
     @Override
@@ -91,9 +95,18 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return self();
     }
 
+    public OracleContainer withServiceName(String serviceName) {
+        this.serviceName = serviceName;
+        return self();
+    }
+
     @SuppressWarnings("SameReturnValue")
     public String getSid() {
         return "xe";
+    }
+
+    public String getSerivceName() {
+        return serviceName;
     }
 
     public Integer getOraclePort() {
