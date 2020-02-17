@@ -16,3 +16,9 @@ dependencies {
     testRuntime 'org.postgresql:postgresql:42.2.10'
     testRuntime 'mysql:mysql-connector-java:8.0.19'
 }
+
+sourceJar {
+    /* allJava is default (see gradle/publishing.gradle:sourceJar)
+       allSource contains both .java and .groovy files */
+    from sourceSets.main.allSource
+}
