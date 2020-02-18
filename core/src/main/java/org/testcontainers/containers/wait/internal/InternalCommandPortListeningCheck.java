@@ -29,7 +29,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
         for (int internalPort : internalPorts) {
             command += " && ";
             command += " (";
-            command += format("cat /proc/net/tcp* | awk '{print $2}' | grep -i :%x", internalPort);
+            command += format("cat /proc/net/tcp* | awk '{print $2}' | grep -i :0*%x", internalPort);
             command += " || ";
             command += format("nc -vz -w 1 localhost %d", internalPort);
             command += " || ";
