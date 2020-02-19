@@ -3,6 +3,7 @@ package org.testcontainers.containers.wait.internal;
 import com.google.common.collect.ImmutableSet;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,9 +17,6 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @RunWith(Parameterized.class)
 public class InternalCommandPortListeningCheckTest {
 
-    @Parameterized.Parameter
-    public String dockerfile;
-
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return asList(
@@ -29,20 +27,14 @@ public class InternalCommandPortListeningCheckTest {
             });
     }
 
+    @Rule
     public GenericContainer container;
 
-    @Before
-    public void setUp() {
+    public InternalCommandPortListeningCheckTest(String dockerfile) {
         container = new GenericContainer(new ImageFromDockerfile()
             .withFileFromClasspath("Dockerfile", dockerfile)
             .withFileFromClasspath("nginx.conf", "internal-port-check-dockerfile/nginx.conf")
         );
-        container.start();
-    }
-
-    @After
-    public void tearDown() {
-        container.stop();
     }
 
     @Test
