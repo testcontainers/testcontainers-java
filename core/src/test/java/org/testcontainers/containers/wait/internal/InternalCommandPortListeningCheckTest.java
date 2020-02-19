@@ -62,4 +62,13 @@ public class InternalCommandPortListeningCheckTest {
 
         assertFalse("InternalCommandPortListeningCheck detects a non-listening port among many", result);
     }
+
+    @Test
+    public void lowAndHighPortListening() {
+        final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(container, ImmutableSet.of(100, 8080));
+
+        final Boolean result = check.call();
+
+        assertTrue("InternalCommandPortListeningCheck identifies a low and a high port", result);
+    }
 }
