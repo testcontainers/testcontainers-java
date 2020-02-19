@@ -6,4 +6,4 @@ RUN if bash -c true &> /dev/null; then exit 1; fi
 # Make sure the nc check fails in this container
 RUN rm /usr/bin/nc
 
-ADD nginx_on_8080.conf /etc/nginx/conf.d/default.conf
+ADD nginx.conf /etc/nginx/conf.d/default.conf

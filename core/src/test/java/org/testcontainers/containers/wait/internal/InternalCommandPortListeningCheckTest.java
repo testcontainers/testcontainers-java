@@ -35,7 +35,7 @@ public class InternalCommandPortListeningCheckTest {
     public void setUp() {
         container = new GenericContainer(new ImageFromDockerfile()
             .withFileFromClasspath("Dockerfile", dockerfile)
-            .withFileFromClasspath("nginx_on_8080.conf", "internal-port-check-dockerfile/nginx_on_8080.conf")
+            .withFileFromClasspath("nginx.conf", "internal-port-check-dockerfile/nginx.conf")
         );
         container.start();
     }
