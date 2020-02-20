@@ -1,16 +1,17 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
@@ -26,6 +27,7 @@ import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -205,7 +207,25 @@ public class DockerClientFactory {
         try {
             dockerClient
                     .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
-                    .exec(new ExecStartResultCallback(outputStream, null))
+                    .exec(new ResultCallback.Adapter<Frame>() {
+                        @Override
+                        public void onNext(Frame frame) {
+                            if (frame == null) {
+                                return;
+                            }
+                            switch (frame.getStreamType()) {
+                                case STDOUT:
+                                case RAW:
+                                    try {
+                                        outputStream.write(frame.getPayload());
+                                        outputStream.flush();
+                                    } catch (IOException e) {
+                                        onError(e);
+                                    }
+                                    break;
+                            }
+                        }
+                    })
                     .awaitCompletion();
         } catch (Exception e) {
             log.debug("Can't exec disk checking command", e);

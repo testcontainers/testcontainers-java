@@ -2,8 +2,6 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.AuthConfig;
-import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.github.dockerjava.core.command.PushImageResultCallback;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -98,7 +96,7 @@ public class AuthenticatedImagePullTest {
         final String dummySourceImage = TestcontainersConfiguration.getInstance().getRyukImage();
 
         client.pullImageCmd(dummySourceImage)
-            .exec(new PullImageResultCallback())
+            .start()
             .awaitCompletion(1, TimeUnit.MINUTES);
 
         final String id = client.inspectImageCmd(dummySourceImage)
@@ -109,7 +107,7 @@ public class AuthenticatedImagePullTest {
         client.tagImageCmd(id, testImageName, "latest").exec();
 
         client.pushImageCmd(testImageNameWithTag)
-            .exec(new PushImageResultCallback())
+            .start()
             .awaitCompletion(1, TimeUnit.MINUTES);
 
         // remove the image tag from local docker so that it must be pulled before use

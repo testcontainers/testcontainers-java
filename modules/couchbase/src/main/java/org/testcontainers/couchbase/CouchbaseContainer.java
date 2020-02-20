@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.collect.Lists;
 import lombok.*;
 import org.apache.commons.compress.utils.Sets;
@@ -171,7 +170,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             .exec();
 
         dockerClient.execStartCmd(createCmdResponse.getId())
-            .exec(new ExecStartResultCallback())
+            .start()
             .awaitCompletion(10, TimeUnit.SECONDS);
     }
 

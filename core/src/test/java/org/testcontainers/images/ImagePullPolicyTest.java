@@ -5,8 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.github.dockerjava.core.command.PushImageResultCallback;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,7 +38,7 @@ public class ImagePullPolicyTest {
 
         DockerClient client = DockerClientFactory.instance().client();
         String dummySourceImage = "hello-world:latest";
-        client.pullImageCmd(dummySourceImage).exec(new PullImageResultCallback()).awaitCompletion();
+        client.pullImageCmd(dummySourceImage).start().awaitCompletion();
 
         String dummyImageId = client.inspectImageCmd(dummySourceImage).exec().getId();
 
@@ -48,7 +46,7 @@ public class ImagePullPolicyTest {
         client.tagImageCmd(dummyImageId, testImageName, tag).exec();
 
         client.pushImageCmd(imageName)
-            .exec(new PushImageResultCallback())
+            .start()
             .awaitCompletion(1, TimeUnit.MINUTES);
     }
 
