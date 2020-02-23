@@ -1,8 +1,8 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.Event;
+import com.github.dockerjava.core.command.EventsResultCallback;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,11 +41,11 @@ public class EventStreamTest {
 
             // Request all events between startTime and endTime for the container
             try (
-                ResultCallback.Adapter<Event> response = DockerClientFactory.instance().client().eventsCmd()
+                EventsResultCallback response = DockerClientFactory.instance().client().eventsCmd()
                     .withContainerFilter(container.getContainerId())
                     .withEventFilter("create")
                     .withSince(Instant.parse(createdAt).getEpochSecond() + "")
-                    .exec(new ResultCallback.Adapter<Event>() {
+                    .exec(new EventsResultCallback() {
                         @Override
                         public void onNext(@NotNull Event event) {
                             // Check that a create event for the container is received

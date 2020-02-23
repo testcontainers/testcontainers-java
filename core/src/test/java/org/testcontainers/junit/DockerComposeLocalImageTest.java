@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -20,7 +21,7 @@ public class DockerComposeLocalImageTest {
 
     private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
         DockerClient client = DockerClientFactory.instance().client();
-        client.pullImageCmd(sourceImage).start().awaitCompletion();
+        client.pullImageCmd(sourceImage).exec(new PullImageResultCallback()).awaitCompletion();
         client.tagImageCmd(sourceImage, targetImage, targetTag).exec();
     }
 }

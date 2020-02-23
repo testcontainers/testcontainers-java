@@ -72,10 +72,10 @@ task jarFileTest(type: Test) {
 project.tasks.check.dependsOn(jarFileTest)
 
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    dependsOn(tasks.jar)
+    dependsOn(tasks.shadowJar)
 
     oldClasspath = configurations.baseline
-    newClasspath = jar.outputs.files
+    newClasspath = shadowJar.outputs.files
     ignoreMissingClasses = true
 
     accessModifier = "protected"
@@ -90,24 +90,12 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     ]
 
     classExcludes = [
-        // Changed to a non-deprecated `ResultCallbackTemplate` from docker-java-api instead of docker-java-core
+        // 'METHOD_REMOVED_IN_SUPERCLASS'
         "org.testcontainers.containers.output.FrameConsumerResultCallback",
         "org.testcontainers.dockerclient.LogToStringContainerCallback",
 
-        // Deprecated, shouldn't be public
-        "org.testcontainers.dockerclient.AuditLoggingDockerClient",
-        "org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig",
-
-        // Deprecated docker-java-core class, should go to docker-java
-        "org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory",
-
-        // Exposed `com.github.dockerjava.core.command.PullImageResultCallback` to the public API
+        // 'METHOD_RETURN_TYPE_CHANGED', exposed `com.github.dockerjava.core.command.PullImageResultCallback` to the public API
         "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
-    ]
-
-    methodExcludes = [
-        // Was returning a type from "com.github.dockerjava.core.*" package
-        "org.testcontainers.dockerclient.*ClientProviderStrategy#tryConfiguration(java.lang.String)",
     ]
 
     onlyBinaryIncompatibleModified = true

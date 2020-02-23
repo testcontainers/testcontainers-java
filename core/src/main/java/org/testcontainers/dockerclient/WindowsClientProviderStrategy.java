@@ -26,7 +26,7 @@ public class WindowsClientProviderStrategy extends DockerClientProviderStrategy 
     }
 
     @NotNull
-    DockerClientConfig tryConfiguration(String dockerHost) {
+    protected DockerClientConfig tryConfiguration(String dockerHost) {
         config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withDockerHost(dockerHost)
                 .withDockerTlsVerify(false)

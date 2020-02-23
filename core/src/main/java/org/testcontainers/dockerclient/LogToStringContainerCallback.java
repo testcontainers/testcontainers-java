@@ -1,18 +1,15 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.model.Frame;
-import lombok.extern.slf4j.Slf4j;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
 
-@Slf4j
-public class LogToStringContainerCallback extends ResultCallbackTemplate<LogToStringContainerCallback, Frame> {
-
-    private final StringBuffer logBuffer = new StringBuffer();
+public class LogToStringContainerCallback extends LogContainerResultCallback {
+    private final StringBuffer log = new StringBuffer();
 
     @Override
     public void onNext(Frame frame) {
-        log.debug(frame.toString());
-        logBuffer.append(new String(frame.getPayload()));
+        log.append(new String(frame.getPayload()));
+        super.onNext(frame);
     }
 
     @Override
@@ -22,6 +19,6 @@ public class LogToStringContainerCallback extends ResultCallbackTemplate<LogToSt
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return logBuffer.toString();
+        return log.toString();
     }
 }
