@@ -29,6 +29,7 @@ jobs:
         testResultsFiles: '**/TEST-*.xml'
 - job: modules
   steps:
+  - script: echo "checks.disable=true" >> ~/.testcontainers.properties
   - task: Gradle@2
     displayName: Build & test
     env:
