@@ -101,7 +101,11 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     onlyBinaryIncompatibleModified = true
     htmlOutputFile = file("$buildDir/reports/japi.html")
 }
-project.tasks.check.dependsOn(japicmp)
+// do not run on Windows by default
+// TODO investigate zip issue on Windows
+if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+    project.tasks.check.dependsOn(japicmp)
+}
 
 dependencies {
     baseline 'org.testcontainers:testcontainers:1.12.5', {
