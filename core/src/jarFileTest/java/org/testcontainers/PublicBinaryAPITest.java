@@ -88,15 +88,10 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
 
     @Before
     public void setUp() {
+        Assume.assumeFalse(classNode.name.startsWith("com.github.dockerjava."));
         switch (classNode.name) {
             // TODO should go to docker-java project
             case "org/testcontainers/dockerclient/auth/AuthDelegatingDockerClientConfig":
-            // TODO should go to docker-java project
-            case "org/testcontainers/dockerclient/transport/okhttp/OkHttpDockerCmdExecFactory":
-            // TODO should remove deprecated #getDockerHostIpAddress(DockerClientConfig)
-            case "org/testcontainers/dockerclient/DockerClientConfigUtils":
-                // TODO should not have config fields of type DockerClientConfig
-            case "org/testcontainers/dockerclient/DockerClientProviderStrategy":
                 Assume.assumeTrue(false);
         }
     }
