@@ -124,7 +124,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.30'
     compile 'org.jetbrains:annotations:17.0.0'
     compile 'javax.annotation:javax.annotation-api:1.3.2'
-    compile 'org.apache.commons:commons-compress:1.19'
+    compile 'org.apache.commons:commons-compress:1.20'
     // Added for JDK9 compatibility since it's missing this package
     compile 'javax.xml.bind:jaxb-api:2.3.1'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
@@ -159,7 +159,7 @@ dependencies {
 
     shaded "org.yaml:snakeyaml:1.25"
 
-    shaded 'com.squareup.okhttp3:okhttp:3.14.4'
+    shaded 'com.squareup.okhttp3:okhttp:3.14.6'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
