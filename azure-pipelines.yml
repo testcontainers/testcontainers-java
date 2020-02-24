@@ -41,4 +41,3 @@ jobs:
         tasks: 'check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
-
