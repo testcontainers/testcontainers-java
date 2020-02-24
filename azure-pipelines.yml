@@ -52,8 +52,8 @@ jobs:
     inputs:
       gradleWrapperFile: 'gradlew'
       jdkVersionOption: '1.11'
-      options: '--continue kafka:check selenium:check elasticsearch:check'
-      tasks: 'check'
+      options: '--continue'
+      tasks: ' kafka:check selenium:check elasticsearch:check'
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
 
