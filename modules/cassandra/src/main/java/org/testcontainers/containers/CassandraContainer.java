@@ -17,7 +17,7 @@ import java.util.Optional;
 
 /**
  * Cassandra container
- *
+ * <p>
  * Supports 2.x and 3.x Cassandra versions
  *
  * @author Eugeny Karpov
@@ -33,9 +33,19 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private String configLocation;
     private String initScriptPath;
     private boolean enableJmxReporting;
+    private boolean authenticationEnabled = false;
+    private String userName;
+    private String password;
 
     public CassandraContainer() {
         this(IMAGE + ":3.11.2");
+    }
+
+    public CassandraContainer(String userName, String password) {
+        this();
+        authenticationEnabled = true;
+        this.userName = userName;
+        this.password = password;
     }
 
     public CassandraContainer(String dockerImageName) {
@@ -43,6 +53,13 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
         this.enableJmxReporting = false;
+    }
+
+    public CassandraContainer(String dockerImageName, String userName, String password) {
+        this(dockerImageName);
+        authenticationEnabled = true;
+        this.userName = userName;
+        this.password = password;
     }
 
     @Override
@@ -81,7 +98,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     /**
      * Map (effectively replace) directory in Docker with the content of resourceLocation if resource location is not null
-     *
+     * <p>
      * Protected to allow for changing implementation by extending the class
      *
      * @param pathNameInContainer path in docker
@@ -89,8 +106,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      */
     protected void optionallyMapResourceParameterAsVolume(String pathNameInContainer, String resourceLocation) {
         Optional.ofNullable(resourceLocation)
-                .map(MountableFile::forClasspathResource)
-                .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
+            .map(MountableFile::forClasspathResource)
+            .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
     }
 
     /**
@@ -128,7 +145,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     /**
      * Get username
-     *
+     * <p>
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
@@ -140,7 +157,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     /**
      * Get password
-     *
+     * <p>
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
@@ -152,28 +169,32 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     /**
      * Get configured Cluster
-     *
+     * <p>
      * Can be used to obtain connections to Cassandra in the container
      */
     public Cluster getCluster() {
-        return getCluster(this, enableJmxReporting);
+        return getCluster(this, this.enableJmxReporting, authenticationEnabled, userName, password);
     }
 
-    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
+    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting, boolean authenticationEnabled, String userName, String password) {
         final Cluster.Builder builder = Cluster.builder()
             .addContactPoint(containerState.getContainerIpAddress())
             .withPort(containerState.getMappedPort(CQL_PORT));
         if (!enableJmxReporting) {
             builder.withoutJMXReporting();
         }
+        if (authenticationEnabled) {
+            builder.withCredentials(userName, password);
+        }
+
         return builder.build();
     }
 
-    public static Cluster getCluster(ContainerState containerState) {
-        return getCluster(containerState, false);
+    public static Cluster getCluster(ContainerState containerState, boolean authenticationEnabled, String userName, String password) {
+        return getCluster(containerState, false, authenticationEnabled, userName, password);
     }
 
     private DatabaseDelegate getDatabaseDelegate() {
-        return new CassandraDatabaseDelegate(this);
+        return new CassandraDatabaseDelegate(this, authenticationEnabled, userName, password);
     }
 }

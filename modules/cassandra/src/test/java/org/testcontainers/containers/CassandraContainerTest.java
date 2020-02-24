@@ -106,6 +106,20 @@ public class CassandraContainerTest {
         }
     }
 
+    @Test
+    public void testAuthenticationSupport() {
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:3.11.4","cassandra","cassandra")
+                .withConfigurationOverride("cassandra-authentication-test-configuration")
+                .waitingFor(new CassandraQueryWaitStrategy("cassandra","cassandra"))
+        ) {
+            cassandraContainer.start();
+            ResultSet resultSetWithAuthentication = performQuery(cassandraContainer.getCluster(), "SELECT cluster_name FROM system.local");
+            assertTrue("Query was not applied", resultSetWithAuthentication.wasApplied());
+            assertEquals("Cassandra configuration is not overridden", TEST_CLUSTER_NAME_IN_CONF, resultSetWithAuthentication.one().getString(0));
+        }
+    }
+
     private void testInitScript(CassandraContainer cassandraContainer) {
         ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
         assertTrue("Query was not applied", resultSet.wasApplied());
