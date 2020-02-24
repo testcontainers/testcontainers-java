@@ -30,29 +30,15 @@ jobs:
 - job: modules
   steps:
   - task: Gradle@2
-    displayName: Build & test (no Kafka, Elasticsearch & Selenium)
+    displayName: Build & test
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
-        options: '--continue -x testcontainers:check -x jdbc-test:check -x kafka:check -x selenium:check -x elasticsearch:check'
+        options: '--continue -x testcontainers:check -x jdbc-test:check -PpostCheckCommand="docker image prune -af"'
         tasks: 'check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
-  - script: docker image prune -af
-  - script: docker volume prune -f
-  - task: Gradle@2
-    displayName: Build & test Kafka, Elasticsearch & Selenium
-    env:
-      AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
-      AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
-    inputs:
-      gradleWrapperFile: 'gradlew'
-      jdkVersionOption: '1.11'
-      options: '--continue'
-      tasks: 'kafka:check selenium:check elasticsearch:check'
-      publishJUnitResults: true
-      testResultsFiles: '**/TEST-*.xml'
 
