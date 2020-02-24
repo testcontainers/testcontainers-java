@@ -37,9 +37,7 @@ jobs:
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
-        options: '--continue -x testcontainers:check -x jdbc-test:check'
+        options: '--continue -x testcontainers:check -x jdbc-test:check -PpostCheckCommand="docker image prune -af"'
         tasks: 'check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
-
-
