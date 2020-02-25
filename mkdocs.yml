@@ -53,6 +53,7 @@ nav:
                 - modules/databases/neo4j.md
                 - modules/databases/oraclexe.md
                 - modules/databases/postgres.md
+                - modules/databases/presto.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/kafka.md
@@ -84,4 +85,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.12.3
+    latest_version: 1.12.5
