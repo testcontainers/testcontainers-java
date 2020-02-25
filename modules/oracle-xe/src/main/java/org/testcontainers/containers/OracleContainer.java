@@ -19,6 +19,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private String username = "system";
     private String password = "oracle";
+    private String serviceName = null;
 
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()
@@ -64,7 +65,10 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + ":" + getSid();
+        //Service name is more specific than SID.  If service name was provided use that, otherwise, use SID.
+        return (serviceName == null)
+        ? "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + ":" + getSid()
+        : "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + "/" + getServiceName();
     }
 
     @Override
@@ -94,9 +98,18 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         throw new UnsupportedOperationException("The OracleDb does not support this");
     }
 
+    public OracleContainer withServiceName(String serviceName) {
+        this.serviceName = serviceName;
+        return self();
+    }
+
     @SuppressWarnings("SameReturnValue")
     public String getSid() {
         return "xe";
+    }
+
+    public String getServiceName() {
+        return this.serviceName;
     }
 
     public Integer getOraclePort() {
