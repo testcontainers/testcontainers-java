@@ -3,4 +3,4 @@ services:
   customredis:
       build: .
   normalredis:
-      image: redis:latest
+      image: redis:2.6.17

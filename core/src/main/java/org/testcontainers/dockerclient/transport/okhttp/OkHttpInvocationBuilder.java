@@ -35,6 +35,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -362,23 +364,34 @@ class OkHttpInvocationBuilder implements InvocationBuilder {
             try {
                 while (!source.exhausted()) {
                     // See https://docs.docker.com/engine/api/v1.37/#operation/ContainerAttach
-                    if(!source.request(HEADER_SIZE)) {
+                    // [8]byte{STREAM_TYPE, 0, 0, 0, SIZE1, SIZE2, SIZE3, SIZE4}[]byte{OUTPUT}
+
+                    if (!source.request(HEADER_SIZE)) {
                         return;
                     }
-                    StreamType streamType = streamType(source.readByte());
-                    source.skip(3);
-                    int payloadSize = source.readInt();
+                    byte[] bytes = source.readByteArray(HEADER_SIZE);
 
-                    if (streamType != StreamType.RAW) {
-                        if (!source.request(payloadSize)) {
-                            return;
+                    StreamType streamType = streamType(bytes[0]);
+
+                    if (streamType == StreamType.RAW) {
+                        resultCallback.onNext(new Frame(StreamType.RAW, bytes));
+                        byte[] buffer = new byte[1024];
+                        while (!source.exhausted()) {
+                            int readBytes = source.read(buffer);
+                            if (readBytes != -1) {
+                                resultCallback.onNext(new Frame(StreamType.RAW, Arrays.copyOf(buffer, readBytes)));
+                            }
                         }
-                        byte[] payload = source.readByteArray(payloadSize);
-
-                        resultCallback.onNext(new Frame(streamType, payload));
-                    } else {
-                        resultCallback.onNext(new Frame(streamType, source.readByteArray()));
+                        return;
                     }
+
+                    int payloadSize = ByteBuffer.wrap(bytes, 4, 4).getInt();
+                    if (!source.request(payloadSize)) {
+                        return;
+                    }
+                    byte[] payload = source.readByteArray(payloadSize);
+
+                    resultCallback.onNext(new Frame(streamType, payload));
                 }
             } catch (Exception e) {
                 resultCallback.onError(e);

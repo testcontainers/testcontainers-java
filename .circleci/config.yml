@@ -81,7 +81,7 @@ jobs:
     steps:
     - checkout
     - run:
-        command: cd examples && ../gradlew check
+        command: cd examples && ./gradlew check
     - run:
         name: Save test results
         command: |
