@@ -23,6 +23,25 @@ effort.
 
 * WCOW is currently not supported, since Testcontainers uses auxiliary Linux containers for certain tasks and Docker for Windows does not support hybrid engine mode at the time of writing.
 
+## Windows Subsystem for Linux
+
+Testcontainers supports communicating with Docker for Windows within the Windows Subsystem for Linux *([**WSL**](https://docs.microsoft.com/en-us/windows/wsl/about))*.
+The following additional configurations steps are required:
+
++ Expose the Docker for Windows daemon on tcp port `2375` without **TLS**.
+  *(Right-click the Docker for Windows icon on the task bar, click setting and go to `General`)*.
+
++ Set the `DOCKER_HOST` environment variable inside the **WSL** shell to `tcp://localhost:2375`.
+  It is recommended to add this to your `~/.bashrc` file, so it’s available every time you open your terminal.
+
++ **Optional** - Only if volumes are required:  
+  Inside the **WSL** shell, modify the `/ect/wsl.conf` file to mount the Windows drives on `/` instead of on `/mnt/`.
+  *(Reboot required after this step)*.  
+  Remember to share the drives, on which you will store your volumes, with Docker for Windows.
+  *(Right-click the Docker for Windows icon on the task bar, click setting and go to `Shared Drives`)*.
+
+More information about running Docker within the **WSL** can be found [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly).
+
 ## Reporting issues
 
 Please report any issues with the Windows build of Testcontainers [here](https://github.com/testcontainers/testcontainers-java/issues)
