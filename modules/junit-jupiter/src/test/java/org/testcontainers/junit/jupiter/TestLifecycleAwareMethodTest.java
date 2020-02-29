@@ -50,7 +50,7 @@ class TestLifecycleAwareMethodTest {
     void should_have_a_filesystem_friendly_name_container_has_started() {
         assertThat(startedTestContainer.getLifecycleFilesystemFriendlyNames())
             .containsExactly(
-                "org.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest-should_prepare_before_and_after_test"
+                "should_prepare_before_and_after_test"
             );
     }
 
@@ -58,7 +58,7 @@ class TestLifecycleAwareMethodTest {
     void static_container_should_have_a_filesystem_friendly_name_after_container_has_started() {
         assertThat(SHARED_CONTAINER.getLifecycleFilesystemFriendlyNames())
             .containsExactly(
-                "org.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest-static"
+                "TestLifecycleAwareMethodTest"
             );
     }
 

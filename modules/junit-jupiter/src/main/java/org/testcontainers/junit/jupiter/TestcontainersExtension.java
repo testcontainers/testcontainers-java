@@ -1,7 +1,14 @@
 package org.testcontainers.junit.jupiter;
 
 import lombok.Getter;
-import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ConditionEvaluationResult;
+import org.junit.jupiter.api.extension.ExecutionCondition;
+import org.junit.jupiter.api.extension.ExtensionConfigurationException;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
@@ -25,6 +32,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.testcontainers.junit.jupiter.FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf;
 
 class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
 
@@ -104,12 +112,6 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
             context.getUniqueId(),
             filesystemFriendlyNameOf(context)
         );
-    }
-
-    private String filesystemFriendlyNameOf(ExtensionContext context) {
-        return context.getRequiredTestClass().getName()
-            + "-"
-            + context.getTestMethod().map(Method::getName).orElse("static");
     }
 
     private boolean isTestLifecycleAware(StoreAdapter adapter) {
