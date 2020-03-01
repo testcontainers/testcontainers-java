@@ -264,6 +264,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * @see #dependsOn(Iterable)
+     */
+    public SELF dependsOn(List<? extends Startable> startables) {
+        return this.dependsOn((Iterable<? extends Startable>) startables);
+    }
+
+    /**
      * Delays this container's creation and start until provided {@link Startable}s start first.
      * Note that the circular dependencies are not supported.
      *
