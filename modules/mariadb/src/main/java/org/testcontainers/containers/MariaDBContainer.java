@@ -5,7 +5,7 @@ package org.testcontainers.containers;
  *
  * @author Miguel Gonzalez Sanchez
  */
-public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class MariaDBContainer extends JdbcDatabaseContainer<MariaDBContainer> {
 
     public static final String NAME = "mariadb";
     public static final String IMAGE = "mariadb";
@@ -79,25 +79,25 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         return "SELECT 1";
     }
 
-    public SELF withConfigurationOverride(String s) {
+    public MariaDBContainer withConfigurationOverride(String s) {
         parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
         return self();
     }
     
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public MariaDBContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public MariaDBContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public MariaDBContainer withPassword(final String password) {
         this.password = password;
         return self();
     }

@@ -42,7 +42,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * <p>
  * The container should expose Selenium remote control protocol and VNC.
  */
-public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer, TestLifecycleAware {
+public class BrowserWebDriverContainer extends GenericContainer<BrowserWebDriverContainer> implements VncService, LinkableContainer, TestLifecycleAware {
 
     private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
     private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
@@ -95,7 +95,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
 
-    public SELF withCapabilities(Capabilities capabilities) {
+    public BrowserWebDriverContainer withCapabilities(Capabilities capabilities) {
         this.capabilities = capabilities;
         return self();
     }
@@ -108,7 +108,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * @return SELF
      * */
     @Deprecated
-    public SELF withDesiredCapabilities(DesiredCapabilities capabilities) {
+    public BrowserWebDriverContainer withDesiredCapabilities(DesiredCapabilities capabilities) {
         this.capabilities = capabilities;
         return self();
     }
@@ -299,18 +299,18 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
      */
     @Deprecated
-    public SELF withLinkToContainer(LinkableContainer otherContainer, String alias) {
+    public BrowserWebDriverContainer withLinkToContainer(LinkableContainer otherContainer, String alias) {
         addLink(otherContainer, alias);
         return self();
     }
 
-    public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory) {
+    public BrowserWebDriverContainer withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory) {
         this.recordingMode = recordingMode;
         this.vncRecordingDirectory = vncRecordingDirectory;
         return self();
     }
 
-    public SELF withRecordingFileFactory(RecordingFileFactory recordingFileFactory) {
+    public BrowserWebDriverContainer withRecordingFileFactory(RecordingFileFactory recordingFileFactory) {
         this.recordingFileFactory = recordingFileFactory;
         return self();
     }

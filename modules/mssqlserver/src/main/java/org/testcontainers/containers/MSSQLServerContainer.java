@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 /**
  * @author Stefan Hufschmidt
  */
-public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class MSSQLServerContainer extends JdbcDatabaseContainer<MSSQLServerContainer> {
 
     public static final String NAME = "sqlserver";
     public static final String IMAGE = "mcr.microsoft.com/mssql/server";
@@ -79,7 +79,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public MSSQLServerContainer withPassword(final String password) {
         checkPasswordStrength(password);
         this.password = password;
         return self();

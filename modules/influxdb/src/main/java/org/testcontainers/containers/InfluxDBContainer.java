@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * See <a href="https://store.docker.com/images/influxdb">https://store.docker.com/images/influxdb</a>
  */
-public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF> {
+public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
 
     public static final String VERSION = "1.4.3";
     public static final Integer INFLUXDB_PORT = 8086;
@@ -63,7 +63,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @param authEnabled Enables authentication.
      * @return a reference to this container instance
      */
-    public SELF withAuthEnabled(final boolean authEnabled) {
+    public InfluxDBContainer withAuthEnabled(final boolean authEnabled) {
         this.authEnabled = authEnabled;
         return self();
     }
@@ -74,7 +74,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @param admin The name of the admin user to be created. If this is unset, no admin user is created.
      * @return a reference to this container instance
      */
-    public SELF withAdmin(final String admin) {
+    public InfluxDBContainer withAdmin(final String admin) {
         this.admin = admin;
         return self();
     }
@@ -86,7 +86,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      *                      random password is generated and printed to standard out.
      * @return a reference to this container instance
      */
-    public SELF withAdminPassword(final String adminPassword) {
+    public InfluxDBContainer withAdminPassword(final String adminPassword) {
         this.adminPassword = adminPassword;
         return self();
     }
@@ -97,7 +97,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @param database Automatically initializes a database with the name of this environment variable.
      * @return a reference to this container instance
      */
-    public SELF withDatabase(final String database) {
+    public InfluxDBContainer withDatabase(final String database) {
         this.database = database;
         return self();
     }
@@ -109,7 +109,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      *                 be granted read and write permissions for that database.
      * @return a reference to this container instance
      */
-    public SELF withUsername(final String username) {
+    public InfluxDBContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
@@ -121,7 +121,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      *                 is generated and printed to standard out.
      * @return a reference to this container instance
      */
-    public SELF withPassword(final String password) {
+    public InfluxDBContainer withPassword(final String password) {
         this.password = password;
         return self();
     }

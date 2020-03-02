@@ -20,7 +20,7 @@ import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
  * <p>
  * Other helpful features include the withVaultPort, and withVaultToken methods for convenience.
  */
-public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
+public class VaultContainer extends GenericContainer<VaultContainer> {
 
     private static final int VAULT_PORT = 8200;
 
@@ -73,7 +73,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @param token the root token value to set for Vault.
      * @return this
      */
-    public SELF withVaultToken(String token) {
+    public VaultContainer withVaultToken(String token) {
         withEnv("VAULT_DEV_ROOT_TOKEN_ID", token);
         withEnv("VAULT_TOKEN", token);
         return self();
@@ -87,7 +87,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @deprecated the exposed port will be randomized automatically. As calling this method provides no additional value, you are recommended to remove the call. getFirstMappedPort() may be used to obtain the listening vault port.
      */
     @Deprecated
-    public SELF withVaultPort(int port) {
+    public VaultContainer withVaultPort(int port) {
         this.port = port;
         return self();
     }
@@ -104,7 +104,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @param remainingSecrets var args list of secrets to add to specified path
      * @return this
      */
-    public SELF withSecretInVault(String path, String firstSecret, String... remainingSecrets) {
+    public VaultContainer withSecretInVault(String path, String firstSecret, String... remainingSecrets) {
         List<String> list = new ArrayList<>();
         list.add(firstSecret);
         for (String secret : remainingSecrets) {

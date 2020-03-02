@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 public class PrestoContainerTest {
     @Test
     public void testSimple() throws Exception {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>()) {
+        try (PrestoContainer prestoSql = new PrestoContainer()) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement();
@@ -38,7 +38,7 @@ public class PrestoContainerTest {
     @Test
     public void testSpecificVersion() throws Exception {
         String prestoVersion = Integer.toString(parseInt(PrestoContainer.DEFAULT_TAG) - 1);
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>("prestosql/presto:" + prestoVersion)) {
+        try (PrestoContainer prestoSql = new PrestoContainer("prestosql/presto:" + prestoVersion)) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement();
@@ -51,7 +51,7 @@ public class PrestoContainerTest {
 
     @Test
     public void testQueryMemoryAndTpch() throws SQLException {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>()) {
+        try (PrestoContainer prestoSql = new PrestoContainer()) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement()) {
@@ -77,7 +77,7 @@ public class PrestoContainerTest {
 
     @Test
     public void testInitScript() throws Exception {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>()) {
+        try (PrestoContainer prestoSql = new PrestoContainer()) {
             prestoSql.withInitScript("initial.sql");
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();

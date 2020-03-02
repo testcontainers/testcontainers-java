@@ -23,7 +23,7 @@ public class SimpleNginxTest {
 
     // creatingContainer {
     @Rule
-    public NginxContainer nginx = new NginxContainer<>()
+    public NginxContainer nginx = new NginxContainer()
         .withCustomContent(tmpDirectory)
         .waitingFor(new HttpWaitStrategy());
     // }
