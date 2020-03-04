@@ -61,13 +61,13 @@ public final class DockerImageName {
             registry = "";
             remoteName = name;
         } else {
-            registry = name.substring(0, slashIndex - 1);
+            registry = name.substring(0, slashIndex);
             remoteName = name.substring(slashIndex + 1);
         }
 
         if (tag.startsWith("sha256:")) {
             repo = remoteName;
-            versioning = new Sha256Versioning(tag);
+            versioning = new Sha256Versioning(tag.replace("sha256:", ""));
         } else {
             repo = remoteName;
             versioning = new TagVersioning(tag);

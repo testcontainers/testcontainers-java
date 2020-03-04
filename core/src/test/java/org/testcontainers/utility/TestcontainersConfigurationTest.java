@@ -37,6 +37,17 @@ public class TestcontainersConfigurationTest {
         assertEquals("Docker client strategy is changed", "foo", newConfig().getDockerClientStrategyClassName());
     }
 
+    @Test
+    public void shouldReadReuseFromEnvironmentOnly() {
+        assertFalse("no reuse by default", newConfig().environmentSupportsReuse());
+
+        classpathProperties.setProperty("testcontainers.reuse.enable", "true");
+        assertFalse("reuse is not affected by classpath properties", newConfig().environmentSupportsReuse());
+
+        environmentProperties.setProperty("testcontainers.reuse.enable", "true");
+        assertTrue("reuse enabled", newConfig().environmentSupportsReuse());
+    }
+
     private TestcontainersConfiguration newConfig() {
         return new TestcontainersConfiguration(environmentProperties, classpathProperties);
     }

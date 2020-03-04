@@ -11,6 +11,9 @@ import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.runner.Description;
+import org.testcontainers.containers.FailureDetectingExternalResource;
 import org.testcontainers.testsupport.Flaky;
 import org.testcontainers.testsupport.FlakyTestJUnit4RetryRule;
 
@@ -29,10 +32,22 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
     private static final String DOCUMENT = "{\"name\":\"toto\"}";
 
     @Rule
-    public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
+    public RuleChain ruleChain = RuleChain.emptyRuleChain()
+        .around(new FlakyTestJUnit4RetryRule())
+        .around(new FailureDetectingExternalResource() {
+            @Override
+            protected void starting(Description description) {
+                getCouchbaseContainer().start();
+            }
+
+            @Override
+            protected void failed(Throwable e, Description description) {
+                getCouchbaseContainer().stop();
+            }
+        });
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2019-12-01")
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2020-03-01")
     public void shouldInsertDocument() {
         RawJsonDocument expected = RawJsonDocument.create(ID, DOCUMENT);
         getBucket().upsert(expected);
@@ -41,7 +56,7 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2019-12-01")
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2020-03-01")
     public void shouldExecuteN1ql() {
         getBucket().query(N1qlQuery.simple("INSERT INTO " + TEST_BUCKET + " (KEY, VALUE) VALUES ('" + ID + "', " + DOCUMENT + ")"));
 
@@ -54,7 +69,7 @@ public abstract class BaseCouchbaseContainerTest extends AbstractCouchbaseTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2019-12-01")
+    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1453", reviewDate = "2020-03-01")
     public void shouldCreateView() {
         View view = DefaultView.create(VIEW_NAME, VIEW_FUNCTION);
         DesignDocument document = DesignDocument.create(VIEW_NAME, Lists.newArrayList(view));
