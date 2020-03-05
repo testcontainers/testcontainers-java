@@ -3,7 +3,6 @@ package org.testcontainers.containers.delegate;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.CassandraContainer;
@@ -19,19 +18,15 @@ import org.testcontainers.ext.ScriptUtils.ScriptStatementFailedException;
  */
 @Slf4j
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session> {
 
     private final ContainerState container;
-    private boolean authenticationEnabled=false;
-    private String userName="";
-    private String password="";
 
     @Override
     protected Session createNewConnection() {
         try {
-            return CassandraContainer.getCluster(container, authenticationEnabled, userName,password)
-                .newSession();
+            return CassandraContainer.getCluster(container)
+                    .newSession();
         } catch (DriverException e) {
             log.error("Could not obtain cassandra connection");
             throw new ConnectionCreationException("Could not obtain cassandra connection", e);

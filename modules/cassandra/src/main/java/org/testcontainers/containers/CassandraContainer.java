@@ -17,7 +17,7 @@ import java.util.Optional;
 
 /**
  * Cassandra container
- * <p>
+ *
  * Supports 2.x and 3.x Cassandra versions
  *
  * @author Eugeny Karpov
@@ -27,25 +27,16 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     public static final String IMAGE = "cassandra";
     public static final Integer CQL_PORT = 9042;
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
-    private static final String USERNAME = "cassandra";
-    private static final String PASSWORD = "cassandra";
 
     private String configLocation;
     private String initScriptPath;
     private boolean enableJmxReporting;
     private boolean authenticationEnabled = false;
-    private String userName;
-    private String password;
+    private String userName = "cassandra";
+    private String password = "cassandra";
 
     public CassandraContainer() {
         this(IMAGE + ":3.11.2");
-    }
-
-    public CassandraContainer(String userName, String password) {
-        this();
-        authenticationEnabled = true;
-        this.userName = userName;
-        this.password = password;
     }
 
     public CassandraContainer(String dockerImageName) {
@@ -53,13 +44,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
         this.enableJmxReporting = false;
-    }
-
-    public CassandraContainer(String dockerImageName, String userName, String password) {
-        this(dockerImageName);
-        authenticationEnabled = true;
-        this.userName = userName;
-        this.password = password;
     }
 
     @Override
@@ -98,7 +82,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     /**
      * Map (effectively replace) directory in Docker with the content of resourceLocation if resource location is not null
-     * <p>
+     *
      * Protected to allow for changing implementation by extending the class
      *
      * @param pathNameInContainer path in docker
@@ -106,8 +90,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      */
     protected void optionallyMapResourceParameterAsVolume(String pathNameInContainer, String resourceLocation) {
         Optional.ofNullable(resourceLocation)
-            .map(MountableFile::forClasspathResource)
-            .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
+                .map(MountableFile::forClasspathResource)
+                .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
     }
 
     /**
@@ -144,57 +128,82 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
+     * Initialize Cassandra with default authentication with userName and password as cassandra.
+     */
+    public SELF withAuthentication() {
+        this.authenticationEnabled = true;
+        return self();
+    }
+
+    /**
+     * Initialize Cassandra with authentication using the supplied userName and password.
+     */
+    public SELF withAuthentication(String userName, String password) {
+        this.authenticationEnabled = true;
+        this.userName = userName;
+        this.password = password;
+        return self();
+    }
+
+    /**
      * Get username
-     * <p>
+     *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
      * user management should be modified
      */
     public String getUsername() {
-        return USERNAME;
+        return userName;
     }
 
     /**
      * Get password
-     * <p>
+     *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
      * user management should be modified
      */
     public String getPassword() {
-        return PASSWORD;
+        return password;
     }
 
     /**
      * Get configured Cluster
-     * <p>
+     *
      * Can be used to obtain connections to Cassandra in the container
      */
     public Cluster getCluster() {
-        return getCluster(this, this.enableJmxReporting, authenticationEnabled, userName, password);
+        return getCluster(this, enableJmxReporting);
     }
 
-    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting, boolean authenticationEnabled, String userName, String password) {
+    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
+        return getClusterBuilder(containerState, enableJmxReporting).build();
+    }
+
+    public static Cluster getCluster(ContainerState containerState) {
+        return getCluster(containerState, false);
+    }
+
+    private static Cluster.Builder getClusterBuilder(ContainerState containerState, boolean enableJmxReporting) {
         final Cluster.Builder builder = Cluster.builder()
             .addContactPoint(containerState.getContainerIpAddress())
             .withPort(containerState.getMappedPort(CQL_PORT));
+        if(containerState instanceof CassandraContainer) {
+            final CassandraContainer cassandraContainer = (CassandraContainer) containerState;
+            enableJmxReporting=cassandraContainer.enableJmxReporting;
+            if (cassandraContainer.authenticationEnabled) {
+                builder.withCredentials(cassandraContainer.userName, cassandraContainer.password);
+            }
+        }
         if (!enableJmxReporting) {
             builder.withoutJMXReporting();
         }
-        if (authenticationEnabled) {
-            builder.withCredentials(userName, password);
-        }
-
-        return builder.build();
-    }
-
-    public static Cluster getCluster(ContainerState containerState, boolean authenticationEnabled, String userName, String password) {
-        return getCluster(containerState, false, authenticationEnabled, userName, password);
+        return builder;
     }
 
     private DatabaseDelegate getDatabaseDelegate() {
-        return new CassandraDatabaseDelegate(this, authenticationEnabled, userName, password);
+        return new CassandraDatabaseDelegate(this);
     }
 }

@@ -107,11 +107,13 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testAuthenticationSupport() {
+    public void testAuthenticationSupportWithWaitStrategyAndInitScript() {
         try (
-            CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:3.11.4","cassandra","cassandra")
+            CassandraContainer cassandraContainer = new CassandraContainer<>()
+                .withAuthentication()
                 .withConfigurationOverride("cassandra-authentication-test-configuration")
-                .waitingFor(new CassandraQueryWaitStrategy("cassandra","cassandra"))
+                .waitingFor(new CassandraQueryWaitStrategy())
+                .withInitScript("initial.cql")
         ) {
             cassandraContainer.start();
             ResultSet resultSetWithAuthentication = performQuery(cassandraContainer.getCluster(), "SELECT cluster_name FROM system.local");
@@ -119,9 +121,8 @@ public class CassandraContainerTest {
             assertEquals("Cassandra configuration is not overridden", TEST_CLUSTER_NAME_IN_CONF, resultSetWithAuthentication.one().getString(0));
         }
     }
-
     private void testInitScript(CassandraContainer cassandraContainer) {
-        ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
+        ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT * FROM keySpaceTest.catalog_category");
         assertTrue("Query was not applied", resultSet.wasApplied());
         Row row = resultSet.one();
         assertEquals("Inserted row is not in expected state", 1, row.getLong(0));
