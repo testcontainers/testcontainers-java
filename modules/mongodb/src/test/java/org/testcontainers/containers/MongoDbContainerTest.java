@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
  */
 @ExtendWith(MockitoExtension.class)
 class MongoDbContainerTest {
+    private static final int CONTAINER_ERROR_EXIT_CODE = 252;
     @Spy
     private static MongoDbContainer MONGODB_CONTAINER = new MongoDbContainer();
 
@@ -41,7 +42,7 @@ class MongoDbContainerTest {
         //GIVEN
         Container.ExecResult mockExecResult = mock(Container.ExecResult.class);
         when(mockExecResult.getExitCode())
-            .thenReturn(MongoDbContainer.ERROR_CONTAINER_EXIT_CODE);
+            .thenReturn(CONTAINER_ERROR_EXIT_CODE);
         doReturn(mockExecResult).when(MONGODB_CONTAINER).execInContainer(any());
         final int mappedPort = 37723;
         lenient().doReturn(mappedPort).when(MONGODB_CONTAINER)
@@ -65,7 +66,7 @@ class MongoDbContainerTest {
         when(mockExecResult1.getExitCode())
             .thenReturn(0);
         when(mockExecResult2.getExitCode())
-            .thenReturn(MongoDbContainer.ERROR_CONTAINER_EXIT_CODE);
+            .thenReturn(252);
         doReturn(mockExecResult1, mockExecResult2)
             .when(MONGODB_CONTAINER).execInContainer(any());
         final int mappedPort = 37723;

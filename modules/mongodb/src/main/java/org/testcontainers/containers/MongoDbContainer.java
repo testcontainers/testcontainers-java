@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 @Slf4j
 public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
-    static final int ERROR_CONTAINER_EXIT_CODE = 1;
+    private static final int CONTAINER_EXIT_CODE_OK = 0;
     static final int MONGODB_INTERNAL_PORT = 27017;
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 30;
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
@@ -88,8 +88,8 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     }
 
     private void checkMongoNodeExitCode(final Container.ExecResult execResult) {
-        if (execResult.getExitCode() == ERROR_CONTAINER_EXIT_CODE) {
-            final String errorMessage = String.format("An error occurred: %s", execResult.getStderr());
+        if (execResult.getExitCode() != CONTAINER_EXIT_CODE_OK) {
+            final String errorMessage = String.format("An error occurred: %s", execResult.getStdout());
             log.error(errorMessage);
             throw new ReplicaSetInitializationException(errorMessage);
         }
@@ -113,7 +113,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     private void checkMongoNodeExitCodeAfterWaiting(
         final Container.ExecResult execResultWaitForMaster
     ) {
-        if (execResultWaitForMaster.getExitCode() == ERROR_CONTAINER_EXIT_CODE) {
+        if (execResultWaitForMaster.getExitCode() != CONTAINER_EXIT_CODE_OK) {
             final String errorMessage = String.format(
                 "A single node replica set was not initialized in a set timeout: %d attempts",
                 AWAIT_INIT_REPLICA_SET_ATTEMPTS
