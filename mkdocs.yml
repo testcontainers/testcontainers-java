@@ -53,6 +53,7 @@ nav:
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
                 - modules/databases/oraclexe.md
+                - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
           - modules/docker_compose.md
@@ -86,4 +87,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.12.5
+    latest_version: 1.13.0
