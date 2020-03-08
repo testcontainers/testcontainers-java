@@ -8,7 +8,9 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -66,9 +68,7 @@ public class DockerComposeContainerWithServicesTest {
 
     private DockerComposeContainer createEnvironment() {
         DockerComposeContainer baseContainer = new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-                .withServices(services)
-                .withLogConsumer("redis", outputFrame -> System.out.println(outputFrame.toString()))
-                .withLogConsumer("db", outputFrame -> System.out.println(outputFrame.toString()));
+                .withServices(services);
         Arrays.stream(exposedServices).forEach(x -> baseContainer.withExposedService(x, REDIS_PORT));
         Arrays.stream(waitForServices).forEach(x -> baseContainer.waitingFor(x, Wait.defaultWaitStrategy()));
         Arrays.stream(scaledServices).forEach(x -> baseContainer.withScaledService(x, 1));
