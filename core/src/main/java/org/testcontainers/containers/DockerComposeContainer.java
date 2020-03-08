@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,7 +91,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private static final Object MUTEX = new Object();
 
-    private List<String> services = new ArrayList<>();
+    private Set<String> services = new HashSet<>();
 
     /**
      * Properties that should be passed through to all Compose and ambassador containers (not
@@ -189,14 +190,14 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     public SELF withServices(@NonNull String... services) {
-        this.services = Arrays.asList(services);
+        this.services = new HashSet<>(Arrays.asList(services));
         return self();
     }
 
     private void createServices() {
         // Apply scaling
-        final String servicesWithScalingSettings = Stream.concat(services.stream(), scalingPreferences.keySet().stream())
-            .map(service -> "--scale " + service + "=" + scalingPreferences.getOrDefault(service, 1))
+        final String servicesWithScalingSettings = scalingPreferences.entrySet().stream()
+            .map(kv -> "--scale " + kv.getKey() + "=" + kv.getValue())
             .collect(joining(" "));
 
         String flags = "-d";
@@ -205,11 +206,23 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             flags += " --build";
         }
 
+        // if provided with specific services will run only services explicitly referred to
+        String servicesToStart = "";
+        if (!services.isEmpty()) {
+            servicesToStart = Stream.of(services.stream(), ambassadorPortMappings.keySet().stream(),
+                    waitStrategyMap.keySet().stream(), scalingPreferences.keySet().stream())
+                    .reduce(Stream::concat)
+                    .orElseGet(Stream::empty)
+                    .map(this::getServiceName)
+                    .distinct()
+                    .collect(joining(" "));
+        }
+
         // Run the docker-compose container, which starts up the services
         if(Strings.isNullOrEmpty(servicesWithScalingSettings)) {
-            runWithCompose("up " + flags);
+            runWithCompose("up " + flags + " " + servicesToStart);
         } else {
-            runWithCompose("up " + flags + " " + servicesWithScalingSettings);
+            runWithCompose("up " + flags + " " + servicesWithScalingSettings + " " + servicesToStart);
         }
     }
 
@@ -239,7 +252,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         }
     }
 
-    private String getServiceNameFromContainer(Container container) {
+    public String getServiceNameFromContainer(Container container) {
         final String containerName = container.getLabels().get("com.docker.compose.service");
         final String containerNumber = container.getLabels().get("com.docker.compose.container-number");
         return String.format("%s_%s", containerName, containerNumber);
@@ -268,7 +281,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         ));
     }
 
-    private List<Container> listChildContainers() {
+    public List<Container> listChildContainers() {
         return dockerClient.listContainersCmd()
                 .withShowAll(true)
                 .exec().stream()
@@ -348,6 +361,14 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             serviceInstanceName += "_1"; // implicit first instance of this service
         }
         return serviceInstanceName;
+    }
+
+    public String getServiceName(String serviceInstanceName) {
+        String serviceName = serviceInstanceName;
+        if (serviceInstanceName.matches(".*_[0-9]+")) {
+            serviceName = serviceInstanceName.substring(0, serviceInstanceName.lastIndexOf('_'));
+        }
+        return serviceName;
     }
 
     /*
