@@ -71,17 +71,6 @@ subprojects {
     // Ensure that Javadoc generation is always tested
     check.dependsOn(javadoc)
 
-    def postCheckCommand = properties["postCheckCommand"]
-    if (postCheckCommand) {
-        check.finalizedBy(tasks.create("postCheckExec", Exec) {
-            if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-                commandLine('cmd', '/c', postCheckCommand)
-            } else {
-                commandLine('sh', '-c', postCheckCommand)
-            }
-        })
-    }
-
     javadoc {
         dependsOn delombok
         source = delombok.outputs
