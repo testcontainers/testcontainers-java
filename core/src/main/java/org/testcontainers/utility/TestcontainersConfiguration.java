@@ -101,9 +101,22 @@ public class TestcontainersConfiguration {
 
     @UnstableAPI
     public boolean environmentSupportsReuse() {
-        return Boolean.parseBoolean((String) environmentProperties.getOrDefault("testcontainers.reuse.enable", "false"));
+        return Boolean.parseBoolean((String) environmentProperties.getOrDefault("testcontainers.reuse.enable", "false"))
+                || !isCI();
     }
-
+    
+    private boolean isCI() {
+        // Inspired by https://github.com/watson/ci-info/blob/master/index.js
+        return notFalse("CI") // Travis CI, CircleCI, Cirrus CI, Gitlab CI, Appveyor, CodeShip, dsari
+                || notFalse("CONTINUOUS_INTEGRATION") // Travis CI, Cirrus CI
+                || System.getenv("BUILD_NUMBER") != null // Jenkins, TeamCity
+                || System.getenv("RUN_ID") != null; // TaskCluster, dsari
+    }
+    
+    private static boolean notFalse(String key) {
+        return System.getenv(key) != null && !"false".equalsIgnoreCase(System.getenv(key));
+    }
+    
     public String getDockerClientStrategyClassName() {
         return (String) environmentProperties.get("docker.client.strategy");
     }
