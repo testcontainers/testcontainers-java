@@ -53,6 +53,7 @@ public class JDBCDriverTest {
                 {"jdbc:tc:postgresql:9.6.8://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
                 {"jdbc:tc:postgis://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
                 {"jdbc:tc:postgis:9.6://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
+                {"jdbc:tc:presto:329://hostname/", EnumSet.of(Options.PmdKnownBroken)},
                 {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", EnumSet.of(Options.CustomIniFile)},
                 {"jdbc:tc:mariadb://hostname/databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:mariadb://hostname/databasename?user=someuser&TC_INITSCRIPT=somepath/init_mariadb.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},

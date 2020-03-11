@@ -4,16 +4,21 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.SneakyThrows;
-import org.testcontainers.utility.Base58;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
  *
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
+
+    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     public static final int KAFKA_PORT = 9093;
 
@@ -25,6 +30,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private int port = PORT_NOT_ASSIGNED;
 
+    private boolean useImplicitNetwork = true;
+
     public KafkaContainer() {
         this("5.2.1");
     }
@@ -32,9 +39,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
-        // TODO Only for backward compatibility
-        withNetwork(Network.newNetwork());
-        withNetworkAliases("kafka-" + Base58.randomString(6));
+        super.withNetwork(Network.SHARED);
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
@@ -48,6 +53,26 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
+    }
+
+    @Override
+    public KafkaContainer withNetwork(Network network) {
+        useImplicitNetwork = false;
+        return super.withNetwork(network);
+    }
+
+    @Override
+    public Network getNetwork() {
+        if (useImplicitNetwork) {
+            // TODO Only for backward compatibility, to be removed soon
+            logger().warn(
+                "Deprecation warning! " +
+                    "KafkaContainer#getNetwork without an explicitly set network. " +
+                    "Consider using KafkaContainer#withNetwork",
+                new Exception("Deprecated method")
+            );
+        }
+        return super.getNetwork();
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
@@ -69,7 +94,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void doStart() {
-        withCommand("sleep infinity");
+        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
 
         if (externalZookeeperConnect == null) {
             addExposedPort(ZOOKEEPER_PORT);
@@ -96,17 +121,24 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             zookeeperConnect = startZookeeper();
         }
 
-        String internalIp = containerInfo.getNetworkSettings().getIpAddress();
-
-        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId())
-            .withCmd("sh", "-c", "" +
-                "export KAFKA_ZOOKEEPER_CONNECT=" + zookeeperConnect + "\n" +
-                "export KAFKA_ADVERTISED_LISTENERS=" + getBootstrapServers() + "," + String.format("BROKER://%s:9092", internalIp) + "\n" +
-                "/etc/confluent/docker/run"
+        String command = "#!/bin/bash \n";
+        command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
+        command += "export KAFKA_ADVERTISED_LISTENERS='" + Stream
+            .concat(
+                Stream.of(getBootstrapServers()),
+                containerInfo.getNetworkSettings().getNetworks().values().stream()
+                    .map(it -> "BROKER://" + it.getIpAddress() + ":9092")
             )
-            .exec();
+            .collect(Collectors.joining(",")) + "'\n";
 
-        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(new ExecStartResultCallback()).awaitStarted(10, TimeUnit.SECONDS);
+        command += ". /etc/confluent/docker/bash-config \n";
+        command += "/etc/confluent/docker/configure \n";
+        command += "/etc/confluent/docker/launch \n";
+
+        copyFileToContainer(
+            Transferable.of(command.getBytes(StandardCharsets.UTF_8), 700),
+            STARTER_SCRIPT
+        );
     }
 
     @SneakyThrows(InterruptedException.class)
