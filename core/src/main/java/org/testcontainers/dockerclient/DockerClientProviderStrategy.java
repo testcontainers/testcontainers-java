@@ -2,8 +2,9 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.okhttp.OkHttpDockerCmdExecFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
@@ -16,7 +17,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
-import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.URI;
@@ -172,10 +172,9 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
-        return DockerClientBuilder
+        return DockerClientImpl
             .getInstance(new AuthDelegatingDockerClientConfig(config))
-            .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory())
-            .build();
+            .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory());
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
