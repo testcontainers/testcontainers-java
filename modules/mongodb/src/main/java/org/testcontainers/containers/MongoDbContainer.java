@@ -69,9 +69,42 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
         );
     }
 
+    /**
+     * Gets a string to initialize MongoDB replica set.
+     *
+     * The following explains why LOCALHOST is used here.
+     * When it comes to a Single node replica set, it requires a proper
+     * port setting depending on an environment.
+     * The table below shows an example demonstrating such specific in detail:
+     *
+     * <blockquote>
+     * <table class="striped">
+     * <thead>
+     *     <tr>
+     *         <th scope="col" style="text-align:center">Difference
+     *         <th scope="col" style="text-align:center">local Docker host example
+     *         <th scope="col" style="text-align:center">local Docker host running tests from inside a container with mapping the Docker socket or <br> remote Docker daemon
+     * </thead>
+     * <tbody>
+     *     <tr>
+     *         <th scope="row" style="text-align:center"><code>a host string to initialize a replica set</code>
+     *         <td style="text-align:center">localhost:27017 <br> Despite the fact that Docker allocates 33538 (for instance) as a random port for a container
+     *         <td style="text-align:center">172.17.0.1:33542
+     *     <tr>
+     *     <tr>
+     *         <th scope="row" style="text-align:center"><code>a url to use with a Java Mongo driver </code>
+     *         <td style="text-align:center">mongodb://localhost:33538/test
+     *         <td style="text-align:center">mongodb://172.17.0.1:33542/test
+     *     <tr>
+     * </tbody>
+     * </table>
+     * </blockquote>
+     *
+     * @return String to initialize MongoDB replica set
+     */
     private String getMongoReplicaSetInitializer() {
         final String containerIpAddress = getContainerIpAddress();
-        final int containerPort = LOCALHOST.equals(containerIpAddress)
+        final int containerPort = LOCALHOST.equalsIgnoreCase(containerIpAddress)
             ? MONGODB_INTERNAL_PORT
             : getMappedPort(MONGODB_INTERNAL_PORT);
         final String initializer = String.format(
