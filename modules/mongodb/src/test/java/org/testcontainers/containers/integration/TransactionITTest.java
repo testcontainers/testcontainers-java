@@ -10,27 +10,25 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.JUnitException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.testcontainers.containers.MongoDbContainer;
-import org.testcontainers.containers.core.IntegrationTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-@IntegrationTest
-class TransactionITTest {
+
+public class TransactionITTest {
     private final MongoDbContainer mongoDbContainer = new MongoDbContainer();
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
         mongoDbContainer.start();
     }
 
-    @AfterEach
-    void tearDown() {
+    @After
+    public void tearDown() {
         mongoDbContainer.stop();
     }
 
@@ -38,7 +36,7 @@ class TransactionITTest {
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
      */
     @Test
-    void shouldExecuteTransactions() {
+    public void shouldExecuteTransactions() {
         //GIVEN
         final String mongoRsUrl = mongoDbContainer.getReplicaSetUrl();
         assertNotNull(mongoRsUrl);
@@ -73,7 +71,7 @@ class TransactionITTest {
             final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
             assertEquals(trxResult, trxResultActual);
         } catch (RuntimeException re) {
-            throw new JUnitException(re.getMessage(), re);
+            throw new IllegalStateException(re.getMessage(), re);
         } finally {
             clientSession.close();
             mongoSyncClient.close();

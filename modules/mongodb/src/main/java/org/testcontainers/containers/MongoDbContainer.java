@@ -25,10 +25,21 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     public MongoDbContainer() {
         super("mongo:" + MONGODB_VERSION_DEFAULT);
+        configureMongoDbContainer();
+
     }
 
     public MongoDbContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
+        configureMongoDbContainer();
+    }
+
+    private void configureMongoDbContainer() {
+        withExposedPorts(MONGODB_INTERNAL_PORT);
+        withCommand("--replSet", "docker-rs");
+        waitingFor(
+            Wait.forLogMessage(".*waiting for connections on port.*", 1)
+        );
     }
 
     public String getReplicaSetUrl() {
@@ -55,15 +66,6 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
         log.debug(
             "REPLICA SET STATUS:\n{}",
             execInContainer(buildMongoEvalCommand("rs.status()")).getStdout()
-        );
-    }
-
-    @Override
-    protected void configure() {
-        withExposedPorts(MONGODB_INTERNAL_PORT);
-        withCommand("--replSet", "docker-rs");
-        waitingFor(
-            Wait.forLogMessage(".*waiting for connections on port.*", 1)
         );
     }
 

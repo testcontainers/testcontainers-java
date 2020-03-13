@@ -2,15 +2,15 @@ package org.testcontainers.containers.integration;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.testcontainers.containers.MongoDbContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.core.IntegrationTest;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests both:
@@ -26,9 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @see <a href="https://hub.docker.com/r/s256/mongodb-net-utils/dockerfile">dockerfile on DockerHub</a>
  * @see <a href="https://github.com/silaev/mongodb-net-utils">mongodb-net-utils on GitHub</a>
  */
-@IntegrationTest
 @Slf4j
-class CommunicationITTest extends BaseInitializationITTest {
+public class CommunicationITTest extends BaseInitializationITTest {
     private final Network network = Network.newNetwork();
     private final MongoDbContainer mongoDbContainer1 =
         new MongoDbContainer("s256/mongodb-net-utils:4.0.10")
@@ -39,20 +38,20 @@ class CommunicationITTest extends BaseInitializationITTest {
             .withNetworkAliases("mongoDbContainer2")
             .withNetwork(network);
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
         mongoDbContainer1.start();
         mongoDbContainer2.start();
     }
 
-    @AfterEach
-    void tearDown() {
+    @After
+    public void tearDown() {
         mongoDbContainer1.stop();
         mongoDbContainer2.stop();
     }
 
     @Test
-    void shouldTestCommunication() {
+    public void shouldTestCommunication() {
         testCommunicationBetweenNodes();
         testAccessibilityFromHost();
     }

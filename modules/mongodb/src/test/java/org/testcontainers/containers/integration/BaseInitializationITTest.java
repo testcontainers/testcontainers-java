@@ -12,8 +12,9 @@ import org.testcontainers.containers.util.SubscriberHelperUtils;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 
 abstract class BaseInitializationITTest {
 
@@ -37,7 +38,7 @@ abstract class BaseInitializationITTest {
             final List<Document> mongoNodesActual =
                 document.getList("members", Document.class);
             assertEquals(1, mongoNodesActual.size());
-            assertEquals(1, mongoNodesActual.get(0).getInteger("state"));
+            assertEquals(Integer.valueOf(1), mongoNodesActual.get(0).getInteger("state"));
         } finally {
             mongoReactiveClient.close();
         }

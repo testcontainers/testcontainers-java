@@ -1,14 +1,13 @@
 package org.testcontainers.containers;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.function.Executable;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
@@ -21,23 +20,23 @@ import static org.mockito.Mockito.when;
  *
  * @author Konstantin Silaev on 9/30/2019
  */
-@ExtendWith(MockitoExtension.class)
-class MongoDbContainerTest {
+@RunWith(MockitoJUnitRunner.class)
+public class MongoDbContainerTest {
     private static final int CONTAINER_ERROR_EXIT_CODE = 252;
     @Spy
     private static MongoDbContainer MONGODB_CONTAINER = new MongoDbContainer();
 
-    @Test
-    void shouldNotGetReplicaSetUrlBecauseOfNotStartedContainer() {
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotGetReplicaSetUrlBecauseOfNotStartedContainer() {
         //WHEN
-        Executable executable = () -> MONGODB_CONTAINER.getReplicaSetUrl();
+        MONGODB_CONTAINER.getReplicaSetUrl();
 
         //THEN
-        assertThrows(IllegalStateException.class, executable);
+        //expected IllegalStateException.class
     }
 
-    @Test
-    void shouldNotInitReplicaSetBecauseOfExecInitReplicaSet()
+    @Test(expected = MongoDbContainer.ReplicaSetInitializationException.class)
+    public void shouldNotInitReplicaSetBecauseOfExecInitReplicaSet()
         throws IOException, InterruptedException {
         //GIVEN
         Container.ExecResult mockExecResult = mock(Container.ExecResult.class);
@@ -49,17 +48,14 @@ class MongoDbContainerTest {
             .getMappedPort(MongoDbContainer.MONGODB_INTERNAL_PORT);
 
         //WHEN
-        Executable executable = () -> MONGODB_CONTAINER.initReplicaSet();
+        MONGODB_CONTAINER.initReplicaSet();
 
         //THEN
-        assertThrows(
-            MongoDbContainer.ReplicaSetInitializationException.class,
-            executable
-        );
+        //expected = MongoDbContainer.ReplicaSetInitializationException.class
     }
 
-    @Test
-    void shouldNotInitReplicaSetBecauseOfWaitCommand() throws IOException, InterruptedException {
+    @Test(expected = MongoDbContainer.ReplicaSetInitializationException.class)
+    public void shouldNotInitReplicaSetBecauseOfWaitCommand() throws IOException, InterruptedException {
         //GIVEN
         final Container.ExecResult mockExecResult1 = mock(Container.ExecResult.class);
         final Container.ExecResult mockExecResult2 = mock(Container.ExecResult.class);
@@ -74,12 +70,9 @@ class MongoDbContainerTest {
             .getMappedPort(MongoDbContainer.MONGODB_INTERNAL_PORT);
 
         //WHEN
-        Executable executable = () -> MONGODB_CONTAINER.initReplicaSet();
+        MONGODB_CONTAINER.initReplicaSet();
 
         //THEN
-        assertThrows(
-            MongoDbContainer.ReplicaSetInitializationException.class,
-            executable
-        );
+        //expected = MongoDbContainer.ReplicaSetInitializationException.class
     }
 }
