@@ -82,7 +82,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     /**
      * Map (effectively replace) directory in Docker with the content of resourceLocation if resource location is not null
-     *
+     * <p>
      * Protected to allow for changing implementation by extending the class
      *
      * @param pathNameInContainer path in docker
@@ -190,9 +190,9 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         final Cluster.Builder builder = Cluster.builder()
             .addContactPoint(containerState.getContainerIpAddress())
             .withPort(containerState.getMappedPort(CQL_PORT));
-        if(containerState instanceof CassandraContainer) {
+        if (containerState instanceof CassandraContainer) {
             final CassandraContainer cassandraContainer = (CassandraContainer) containerState;
-            enableJmxReporting=cassandraContainer.enableJmxReporting;
+            enableJmxReporting = cassandraContainer.enableJmxReporting;
             if (cassandraContainer.authenticationEnabled) {
                 builder.withCredentials(cassandraContainer.userName, cassandraContainer.password);
             }
