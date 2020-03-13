@@ -20,12 +20,12 @@ import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -520,12 +520,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @SneakyThrows(JsonProcessingException.class)
     final String hash(CreateContainerCmd createCommand) {
         // TODO add Testcontainers' version to the hash
-        String commandJson = new ObjectMapper()
+        byte[] commandJson = new ObjectMapper()
             .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
-            .writeValueAsString(createCommand);
+            .writeValueAsBytes(createCommand);
 
-        return DigestUtils.sha1Hex(commandJson);
+        return Hashing.sha1().hashBytes(commandJson).toString();
     }
 
     @VisibleForTesting
