@@ -105,7 +105,6 @@ public class LocalstackContainerTest {
         }
 
         @Test
-        @Ignore("Fails due to https://github.com/localstack/localstack/issues/1434")
         public void cloudWatchLogsTestOverBridgeNetwork() {
             AWSLogs logs = AWSLogsClientBuilder.standard()
                     .withEndpointConfiguration(localstack.getEndpointConfiguration(CLOUDWATCHLOGS))
