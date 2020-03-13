@@ -5,8 +5,8 @@ import com.couchbase.client.java.Bucket;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author tchlyah
- * Created on 12/02/2020
+ * @author ctayeb
+ * Created on 06/06/2017
  */
 @Slf4j
 public class CouchbaseQueryServiceWaitStrategy extends CouchbaseServiceWaitStrategy {
