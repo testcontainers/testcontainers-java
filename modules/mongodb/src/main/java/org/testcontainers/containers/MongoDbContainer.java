@@ -20,7 +20,6 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     static final int MONGODB_INTERNAL_PORT = 27017;
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 30;
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
-    private static final String LOCALHOST = "localhost";
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
     public MongoDbContainer() {
@@ -69,55 +68,6 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
         );
     }
 
-    /**
-     * Gets a string to initialize MongoDB replica set.
-     *
-     * The following explains why LOCALHOST is used here.
-     * When it comes to a Single node replica set, it requires a proper
-     * port setting depending on an environment.
-     * The table below shows an example demonstrating such specific in detail:
-     *
-     * <blockquote>
-     * <table class="striped">
-     * <thead>
-     *     <tr>
-     *         <th scope="col" style="text-align:center">Difference
-     *         <th scope="col" style="text-align:center">local Docker host example
-     *         <th scope="col" style="text-align:center">local Docker host running tests from inside a container with mapping the Docker socket or <br> remote Docker daemon
-     * </thead>
-     * <tbody>
-     *     <tr>
-     *         <th scope="row" style="text-align:center"><code>a host string to initialize a replica set</code>
-     *         <td style="text-align:center">localhost:27017 <br> Despite the fact that Docker allocates 33538 (for instance) as a random port for a container
-     *         <td style="text-align:center">172.17.0.1:33542
-     *     <tr>
-     *     <tr>
-     *         <th scope="row" style="text-align:center"><code>a url to use with a Java Mongo driver </code>
-     *         <td style="text-align:center">mongodb://localhost:33538/test
-     *         <td style="text-align:center">mongodb://172.17.0.1:33542/test
-     *     <tr>
-     * </tbody>
-     * </table>
-     * </blockquote>
-     *
-     * @return String to initialize MongoDB replica set
-     */
-    private String getMongoReplicaSetInitializer() {
-        final String containerIpAddress = getContainerIpAddress();
-        final int containerPort = LOCALHOST.equalsIgnoreCase(containerIpAddress)
-            ? MONGODB_INTERNAL_PORT
-            : getMappedPort(MONGODB_INTERNAL_PORT);
-        final String initializer = String.format(
-            "rs.initiate({\n" +
-                "    \"_id\": \"docker-rs\",\n" +
-                "    \"members\": [\n" +
-                "        {\"_id\": %d, \"host\": \"%s:%d\"}\n    ]\n});",
-            0, containerIpAddress, containerPort
-        );
-        log.debug(initializer);
-        return initializer;
-    }
-
     private String[] buildMongoEvalCommand(final String command) {
         return new String[]{"mongo", "--eval", command};
     }
@@ -162,7 +112,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     void initReplicaSet() {
         log.debug("Initializing a single node node replica set...");
         final ExecResult execResultInitRs = execInContainer(
-            buildMongoEvalCommand(getMongoReplicaSetInitializer())
+            buildMongoEvalCommand("rs.initiate();")
         );
         log.debug(execResultInitRs.getStdout());
         checkMongoNodeExitCode(execResultInitRs);
