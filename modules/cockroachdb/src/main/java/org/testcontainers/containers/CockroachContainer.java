@@ -7,7 +7,7 @@ import java.time.Duration;
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
     public static final String NAME = "cockroach";
     public static final String IMAGE = "cockroachdb/cockroach";
-    public static final String IMAGE_TAG = "v19.1.1";
+    public static final String IMAGE_TAG = "v19.2.4";
     private static final String JDBC_DRIVER_CLASS_NAME = "org.postgresql.Driver";
     private static final String JDBC_URL_PREFIX = "jdbc:postgresql";
     private static final String TEST_QUERY_STRING = "SELECT 1";
