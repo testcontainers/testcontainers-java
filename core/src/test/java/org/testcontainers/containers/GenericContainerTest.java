@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
-import com.github.dockerjava.api.model.HostConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -51,6 +50,19 @@ public class GenericContainerTest {
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container exited with code 123");
+        }
+    }
+
+    @Test
+    public void shouldLogImageNameWhenGetDockerImageNameFails() {
+        // A docker image that doesn't exist is enough.  The NotFoundException
+        // that the ContainerFetchException wraps may contain the image name.
+        // This test verifies that the ContainerFetchException itself does.
+        String imageName = "doesnotexist";
+        try(GenericContainer container = new GenericContainer<>(imageName)) {
+            assertThatThrownBy(container::getDockerImageName)
+                .isInstanceOf(ContainerFetchException.class)
+                .hasMessageContaining(imageName);
         }
     }
 

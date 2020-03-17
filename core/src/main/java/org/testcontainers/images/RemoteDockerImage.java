@@ -28,6 +28,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
+    @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
     @Wither
@@ -54,9 +55,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     @Override
-    @SneakyThrows({InterruptedException.class, ExecutionException.class})
     protected final String resolve() {
-        final DockerImageName imageName = imageNameFuture.get();
+        final DockerImageName imageName = getImageName();
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
         try {
             if (!imagePullPolicy.shouldPull(imageName)) {
@@ -94,5 +94,11 @@ public class RemoteDockerImage extends LazyFuture<String> {
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
         }
+    }
+
+    @ToString.Include(name = "imageName", rank = 1)
+    @SneakyThrows({InterruptedException.class, ExecutionException.class})
+    DockerImageName getImageName() {
+       return imageNameFuture.get();
     }
 }
