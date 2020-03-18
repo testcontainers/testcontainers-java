@@ -53,19 +53,6 @@ public class GenericContainerTest {
         }
     }
 
-    @Test
-    public void shouldLogImageNameWhenGetDockerImageNameFails() {
-        // A docker image that doesn't exist is enough.  The NotFoundException
-        // that the ContainerFetchException wraps may contain the image name.
-        // This test verifies that the ContainerFetchException itself does.
-        String imageName = "doesnotexist";
-        try(GenericContainer container = new GenericContainer<>(imageName)) {
-            assertThatThrownBy(container::getDockerImageName)
-                .isInstanceOf(ContainerFetchException.class)
-                .hasMessageContaining(imageName);
-        }
-    }
-
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
