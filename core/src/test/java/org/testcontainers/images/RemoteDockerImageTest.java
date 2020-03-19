@@ -3,14 +3,11 @@ package org.testcontainers.images;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.testcontainers.utility.Base58;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 public class RemoteDockerImageTest {
 
@@ -23,9 +20,9 @@ public class RemoteDockerImageTest {
     }
 
     @Test
-    public void toStringWithExceptionContainsOnlyImageNameFuture() throws Exception {
-        Future<String> imageNameFuture = Mockito.mock(Future.class);
-        when(imageNameFuture.get()).thenThrow(new ExecutionException(new RuntimeException("arbitrary")));
+    public void toStringWithExceptionContainsOnlyImageNameFuture()  {
+        CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
+        imageNameFuture.completeExceptionally(new RuntimeException("arbitrary"));
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
         assertThat(remoteDockerImage.toString(), containsString("imageNameFuture"));
     }
