@@ -105,13 +105,15 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
         // Include the imageName if it's available
         DockerImageName imageName = null;
-        try {
-            imageName = getImageName();
-        } catch (InterruptedException | ExecutionException e) {
-            // Swallow this exception and use imageNameFuture instead.a
-            // Don't log this, as the whole struggle here is that we don't know
-            // the image name, and DockerLoggerFactory.getLogger takes an image
-            // name argument.
+        if (imageNameFuture.isDone()) {
+            try {
+                imageName = getImageName();
+            } catch (InterruptedException | ExecutionException e) {
+              // Swallow this exception and use imageNameFuture instead.
+              // Don't log this, as the whole struggle here is that we don't know
+              // the image name, and DockerLoggerFactory.getLogger takes an image
+              // name argument.
+            }
         }
 
         if (imageName != null) {

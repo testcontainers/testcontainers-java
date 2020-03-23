@@ -2,6 +2,7 @@ package org.testcontainers.images;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -29,4 +30,18 @@ public class RemoteDockerImageTest {
         assertThat(toString, containsString("imageNameFuture="));
         assertThat(toString, not(containsString("imageName=")));
     }
+
+    @Test(timeout=5000L)
+    public void toStringDoesntResolveImageNameFuture()  {
+        CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
+        // verify that we've set up the test properly
+        assertFalse(imageNameFuture.isDone());
+        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
+        String toString = remoteDockerImage.toString();
+        assertThat(toString, containsString("imageNameFuture="));
+        assertThat(toString, not(containsString("imageName=")));
+        // Make sure the act of calling toString doesn't resolve the imageNameFuture
+        assertFalse(imageNameFuture.isDone());
+    }
+
 }
