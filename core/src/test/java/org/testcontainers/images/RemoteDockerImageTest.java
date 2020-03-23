@@ -15,8 +15,9 @@ public class RemoteDockerImageTest {
     public void toStringContainsOnlyImageName() {
         String imageName = Base58.randomString(8).toLowerCase();
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageName);
-        assertThat(remoteDockerImage.toString(), containsString("imageName=" + imageName));
-        assertThat(remoteDockerImage.toString(), not(containsString("imageNameFuture=")));
+        String toString = remoteDockerImage.toString();
+        assertThat(toString, containsString("imageName=" + imageName));
+        assertThat(toString, not(containsString("imageNameFuture=")));
     }
 
     @Test
@@ -24,7 +25,8 @@ public class RemoteDockerImageTest {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
         imageNameFuture.completeExceptionally(new RuntimeException("arbitrary"));
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
-        assertThat(remoteDockerImage.toString(), containsString("imageNameFuture="));
-        assertThat(remoteDockerImage.toString(), not(containsString("imageName=")));
+        String toString = remoteDockerImage.toString();
+        assertThat(toString, containsString("imageNameFuture="));
+        assertThat(toString, not(containsString("imageName=")));
     }
 }
