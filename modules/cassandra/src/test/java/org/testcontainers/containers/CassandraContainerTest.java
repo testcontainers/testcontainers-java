@@ -110,54 +110,11 @@ public class CassandraContainerTest {
     public void testAuthenticationSupport() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer<>()
-                .withAuthentication()
                 .withConfigurationOverride("cassandra-authentication-test-configuration")
         ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
-        }
-    }
-
-    @Test
-    public void testAuthenticationSupportWithWaitStrategy() {
-        try (
-            CassandraContainer cassandraContainer = new CassandraContainer<>()
-                .withAuthentication()
-                .withConfigurationOverride("cassandra-authentication-test-configuration")
-                .waitingFor(new CassandraQueryWaitStrategy())
-        ) {
-            cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
-            assertTrue("Query was not applied", resultSet.wasApplied());
-        }
-    }
-
-    @Test
-    public void testAuthenticationSupportWithInitScript() {
-        try (
-            CassandraContainer cassandraContainer = new CassandraContainer<>()
-                .withAuthentication()
-                .withConfigurationOverride("cassandra-authentication-test-configuration")
-                .waitingFor(new CassandraQueryWaitStrategy())
-                .withInitScript("initial.cql")
-        ) {
-            cassandraContainer.start();
-            testInitScript(cassandraContainer);
-        }
-    }
-
-    @Test
-    public void testAuthenticationSupportWithWaitStrategyAndInitScript() {
-        try (
-            CassandraContainer cassandraContainer = new CassandraContainer<>()
-                .withAuthentication()
-                .withConfigurationOverride("cassandra-authentication-test-configuration")
-                .waitingFor(new CassandraQueryWaitStrategy())
-                .withInitScript("initial.cql")
-        ) {
-            cassandraContainer.start();
-            testInitScript(cassandraContainer);
         }
     }
 
