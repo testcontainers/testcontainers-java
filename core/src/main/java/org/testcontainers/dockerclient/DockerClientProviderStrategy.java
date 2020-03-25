@@ -218,7 +218,9 @@ public abstract class DockerClientProviderStrategy {
                         .filter(it -> it.getGateway() != null)
                         .findAny()
                         .map(Network.Ipam.Config::getGateway)
-                        .orElse("localhost");
+                        .orElseGet(() -> {
+                            return DockerClientConfigUtils.getDefaultGateway().orElse("localhost");
+                        });
                 }
                 return "localhost";
             default:
