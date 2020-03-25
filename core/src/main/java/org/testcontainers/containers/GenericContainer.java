@@ -20,15 +20,13 @@ import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +50,6 @@ import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -64,14 +61,8 @@ import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
-import org.testcontainers.utility.ThrowingFunction;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -103,6 +94,8 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.testcontainers.containers.ContainerPreserveOptions.ON_JVM_SHUTDOWN;
+import static org.testcontainers.containers.ContainerPreserveOptions.ON_TESTS_FAILURE;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -248,6 +241,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
+
+    @NonNull
+    private Set<ContainerPreserveOptions> preserveOptions = Collections.emptySet();
 
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
@@ -723,6 +719,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withCmd(commandParts);
         }
 
+        //do not register this container in ryuk so it doesn't get deleted on JVM exit
+        //or
+        //make sure that ryuk won't delete our container as we don't know at this point whether it should be removed
+        //see GenericContainer#failed for ON_TESTS_FAILURE implementation
+        if (preserveOptions.contains(ON_TESTS_FAILURE) || preserveOptions.contains(ON_JVM_SHUTDOWN)) {
+            createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL_RYUK_REMOVABLE, "false");
+        }
+
         String[] envArray = env.entrySet().stream()
                 .filter(it -> it.getValue() != null)
                 .map(it -> it.getKey() + "=" + it.getValue())
@@ -1021,6 +1025,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected void failed(Throwable e, Description description) {
         if (this instanceof TestLifecycleAware) {
             ((TestLifecycleAware) this).afterTest(toDescription(description), Optional.of(e));
+        }
+        if (getPreserveOptions().contains(ON_TESTS_FAILURE)) {
+            ResourceReaper.instance().unregisterContainer(getContainerId());
+        } else {
+            ResourceReaper.instance().registerContainerForCleanup(containerInfo.getId(), containerInfo.getImageId());
         }
     }
 
@@ -1376,6 +1385,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     public SELF withReuse(boolean reusable) {
         this.shouldBeReused = reusable;
+        return self();
+    }
+
+    @UnstableAPI
+    public SELF withPreserveOptions(ContainerPreserveOptions ...containerPreserveOptions) {
+        this.preserveOptions = Sets.newHashSet(containerPreserveOptions);
         return self();
     }
 

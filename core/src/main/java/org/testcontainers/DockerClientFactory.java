@@ -46,12 +46,14 @@ public class DockerClientFactory {
 
     public static final ThreadGroup TESTCONTAINERS_THREAD_GROUP = new ThreadGroup("testcontainers");
     public static final String TESTCONTAINERS_LABEL = DockerClientFactory.class.getPackage().getName();
+    public static final String TESTCONTAINERS_LABEL_RYUK_REMOVABLE = TESTCONTAINERS_LABEL + ".ryukRemovable";
     public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
 
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
     public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
             TESTCONTAINERS_LABEL, "true",
+            TESTCONTAINERS_LABEL_RYUK_REMOVABLE, "true",
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
