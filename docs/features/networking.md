@@ -14,7 +14,7 @@ Generally, each required port needs to be explicitly exposed. For example, we ca
 Note that this exposed port number is from the *perspective of the container*. 
 
 *From the host's perspective* Testcontainers actually exposes this on a random free port.
-This is by design, to avoid port collisions that may arise with locally running software or in between parallel test runs.
+This is by design, to avoid port collisions that may arise with locally running software or in between parallel test runs. If you are using Spring and need to bind this port to a property, please see our [Spring Boot Example](https://github.com/testcontainers/testcontainers-java/tree/master/examples/spring-boot).
 
 Because there is this layer of indirection, it is necessary to ask Testcontainers for the actual mapped port at runtime.
 This can be done using the `getMappedPort` method, which takes the original (container) port as an argument:
