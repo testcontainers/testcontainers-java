@@ -7,6 +7,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -120,11 +121,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             zookeeperConnect = startZookeeper();
         }
 
+        Optional<String> kafkaAdvertisedListeners = Optional.ofNullable(getEnvMap().get("KAFKA_ADVERTISED_LISTENERS"));
+
         String command = "#!/bin/bash \n";
         command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
         command += "export KAFKA_ADVERTISED_LISTENERS='" + Stream
             .concat(
-                Stream.of(getBootstrapServers()),
+                Stream.of(kafkaAdvertisedListeners.orElseGet(this::getBootstrapServers)),
                 containerInfo.getNetworkSettings().getNetworks().values().stream()
                     .map(it -> "BROKER://" + it.getIpAddress() + ":9092")
             )
