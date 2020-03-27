@@ -139,6 +139,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             configureIndexer();
         }
         waitUntilNodeIsReady();
+        waitUntilServicesRunning();
         createBuckets();
         waitUntilNodeIsReady();
 
@@ -298,6 +299,19 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 }
             })
             .waitUntilReady(this);
+    }
+
+    private void waitUntilServicesRunning() {
+        logger().debug("Waiting until services are accepting connections on their respective ports");
+
+        if (enabledServices.contains(CouchbaseService.QUERY)) {
+            new HttpWaitStrategy()
+                .forPath("/admin/ping")
+                .forPort(QUERY_PORT)
+                .withBasicCredentials(username, password)
+                .forStatusCode(200)
+                .waitUntilReady(this);
+        }
     }
 
     /**
