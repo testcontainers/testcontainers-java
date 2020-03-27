@@ -18,7 +18,6 @@ public class RemoteDockerImageTest {
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageName);
         String toString = remoteDockerImage.toString();
         assertThat(toString, containsString("imageName=" + imageName));
-        assertThat(toString, not(containsString("imageNameFuture=")));
     }
 
     @Test
@@ -27,8 +26,7 @@ public class RemoteDockerImageTest {
         imageNameFuture.completeExceptionally(new RuntimeException("arbitrary"));
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
         String toString = remoteDockerImage.toString();
-        assertThat(toString, containsString("imageNameFuture="));
-        assertThat(toString, not(containsString("imageName=")));
+        assertThat(toString, containsString("imageName=" + RemoteDockerImage.class.getName()));
     }
 
     @Test(timeout=5000L)
@@ -38,10 +36,8 @@ public class RemoteDockerImageTest {
         assertFalse(imageNameFuture.isDone());
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
         String toString = remoteDockerImage.toString();
-        assertThat(toString, containsString("imageNameFuture="));
-        assertThat(toString, not(containsString("imageName=")));
+        assertThat(toString, containsString("imageName=" + RemoteDockerImage.class.getName()));
         // Make sure the act of calling toString doesn't resolve the imageNameFuture
         assertFalse(imageNameFuture.isDone());
     }
-
 }

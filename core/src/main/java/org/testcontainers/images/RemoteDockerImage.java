@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.experimental.Wither;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
@@ -22,16 +23,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+@ToString
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class RemoteDockerImage extends LazyFuture<String> {
 
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
+    @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
     @Wither
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
+    @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     public RemoteDockerImage(String dockerImageName) {
@@ -99,15 +103,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
        return imageNameFuture.get();
     }
 
-    @Override
-    public String toString() {
-        MoreObjects.ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
-
+    @ToString.Include(name = "imageName", rank = 1)
+    public String imageNameToString() {
         // Include the imageName if it's available
         DockerImageName imageName = null;
         if (imageNameFuture.isDone()) {
             try {
-                imageName = getImageName();
+                return getImageName().toString();
             } catch (InterruptedException | ExecutionException e) {
               // Swallow this exception and use imageNameFuture instead.
               // Don't log this, as the whole struggle here is that we don't know
@@ -116,15 +118,6 @@ public class RemoteDockerImage extends LazyFuture<String> {
             }
         }
 
-        if (imageName != null) {
-            toStringHelper.add("imageName", imageName);
-        } else {
-            toStringHelper.add("imageNameFuture", imageNameFuture);
-        }
-
-        return toStringHelper
-            .add("imagePullPolicy", imagePullPolicy)
-            .add("dockerClient", dockerClient)
-            .toString();
+        return imageNameFuture.toString();
     }
 }
