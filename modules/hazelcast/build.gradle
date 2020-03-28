@@ -1,0 +1,9 @@
+description = "Testcontainers :: Hazelcast IMDG"
+
+dependencies {
+    compile project(':testcontainers')
+
+    compileOnly 'com.hazelcast:hazelcast:4.0'
+    testCompile 'com.hazelcast:hazelcast:4.0'
+    testCompile 'org.assertj:assertj-core:3.15.0'
+}

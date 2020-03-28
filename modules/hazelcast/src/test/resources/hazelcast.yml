@@ -1,0 +1,5 @@
+hazelcast:
+  network:
+    port:
+      auto-increment: false
+      port: 5701
