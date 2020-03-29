@@ -34,25 +34,31 @@ public class CouchbaseContainerTest {
     public void testBasicContainerUsage() {
         BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
 
-        CouchbaseContainer container = new CouchbaseContainer().withBucket(bucketDefinition);
-        container.start();
+        try (CouchbaseContainer container = new CouchbaseContainer().withBucket(bucketDefinition)) {
+            container.start();
 
-        CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
-            .builder()
-            .bootstrapCarrierDirectPort(container.getMappedPort(11210))
-            .bootstrapHttpDirectPort(container.getMappedPort(8091))
-            .build();
+            CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
+                .builder()
+                .bootstrapCarrierDirectPort(container.getMappedPort(11210))
+                .bootstrapHttpDirectPort(container.getMappedPort(8091))
+                .build();
 
-        Cluster cluster = CouchbaseCluster.create(environment, container.getContainerIpAddress());
-        cluster.authenticate(container.getUsername(), container.getPassword());
-        Bucket bucket = cluster.openBucket(bucketDefinition.getName());
+            Cluster cluster = CouchbaseCluster.create(environment, container.getContainerIpAddress());
 
-        bucket.upsert(JsonDocument.create("foo", JsonObject.empty()));
-        assertTrue(bucket.exists("foo"));
-        assertNotNull(cluster.clusterManager().getBucket(bucketDefinition.getName()));
+            try {
+                cluster.authenticate(container.getUsername(), container.getPassword());
 
-        cluster.disconnect();
-        environment.shutdown();
+                Bucket bucket = cluster.openBucket(bucketDefinition.getName());
+
+                bucket.upsert(JsonDocument.create("foo", JsonObject.empty()));
+
+                assertTrue(bucket.exists("foo"));
+                assertNotNull(cluster.clusterManager().getBucket(bucketDefinition.getName()));
+            } finally {
+                cluster.disconnect();
+                environment.shutdown();
+            }
+        }
     }
 
 }

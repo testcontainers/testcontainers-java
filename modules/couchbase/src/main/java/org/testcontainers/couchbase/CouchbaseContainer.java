@@ -15,18 +15,19 @@
  */
 package org.testcontainers.couchbase;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.ContainerNetwork;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import okhttp3.Credentials;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -43,40 +44,54 @@ import java.util.stream.Collectors;
  * The couchbase container initializes and configures a Couchbase Server single node cluster.
  * <p>
  * Note that it does not depend on a specific couchbase SDK, so it can be used with both the Java SDK 2 and 3 as well
- * as the Scala SDK 1 (and later. We recommend using the latest and greatest SDKs for the best experience.
+ * as the Scala SDK 1 or newer. We recommend using the latest and greatest SDKs for the best experience.
  */
 public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
+    private static final int MGMT_PORT = 8091;
+
+    private static final int MGMT_SSL_PORT = 18091;
+
+    private static final int VIEW_PORT = 8092;
+
+    private static final int VIEW_SSL_PORT = 18092;
+
+    private static final int QUERY_PORT = 8093;
+
+    private static final int QUERY_SSL_PORT = 18093;
+
+    private static final int SEARCH_PORT = 8094;
+
+    private static final int SEARCH_SSL_PORT = 18094;
+
+    private static final int KV_PORT = 11210;
+
+    private static final int KV_SSL_PORT = 11207;
+
+    private static final String DOCKER_IMAGE_NAME = "couchbase/server";
+
+    private static final String VERSION = "6.5.0";
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient()
         .newBuilder()
         .readTimeout(Duration.ofMinutes(1))
         .build();
 
-    public static final int MGMT_PORT = 8091;
-    public static final int MGMT_SSL_PORT = 18091;
-    public static final int VIEW_PORT = 8092;
-    public static final int VIEW_SSL_PORT = 18092;
-    public static final int QUERY_PORT = 8093;
-    public static final int QUERY_SSL_PORT = 18093;
-    public static final int SEARCH_PORT = 8094;
-    public static final int SEARCH_SSL_PORT = 18094;
-    public static final int KV_PORT = 11210;
-    public static final int KV_SSL_PORT = 11207;
-
-    public static final String VERSION = "6.5.0";
-    public static final String DOCKER_IMAGE_NAME = "couchbase/server:";
-
     private String username = "Administrator";
+
     private String password = "password";
+
     private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
-    private List<BucketDefinition> buckets = new ArrayList<>();
+
+    private final List<BucketDefinition> buckets = new ArrayList<>();
 
     /**
      * Creates a new couchbase container with the default image and version.
      */
     public CouchbaseContainer() {
-        this(DOCKER_IMAGE_NAME + VERSION);
+        this(DOCKER_IMAGE_NAME + ":" + VERSION);
     }
 
     /**
@@ -114,21 +129,61 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return this;
     }
 
-    public String getUsername() {
+    public final String getUsername() {
         return username;
     }
 
-    public String getPassword() {
+    public final String getPassword() {
         return password;
     }
 
     public String getConnectionString() {
-        return "couchbase://" + getContainerIpAddress() + ":" + getMappedPort(KV_PORT);
+        return String.format("couchbase://%s:%d", getContainerIpAddress(), getMappedPort(KV_PORT));
     }
 
     @Override
-    protected void containerIsStarted(final InspectContainerResponse containerInfo) {
-        logger().info("Couchbase container started, performing configuration.");
+    protected void configure() {
+        super.configure();
+
+        WaitAllStrategy waitStrategy = new WaitAllStrategy();
+
+        // Makes sure that all nodes in the cluster are healthy.
+        waitStrategy = waitStrategy.withStrategy(
+            new HttpWaitStrategy()
+                .forPath("/pools/default")
+                .forPort(MGMT_PORT)
+                .withBasicCredentials(username, password)
+                .forStatusCode(200)
+                .forResponsePredicate(response -> {
+                    try {
+                        return Optional.of(MAPPER.readTree(response))
+                            .map(n -> n.at("/nodes/0/status"))
+                            .map(JsonNode::asText)
+                            .map("healthy"::equals)
+                            .orElse(false);
+                    } catch (IOException e) {
+                        logger().error("Unable to parse response {}", response);
+                        return false;
+                    }
+                })
+        );
+
+        if (enabledServices.contains(CouchbaseService.QUERY)) {
+            waitStrategy = waitStrategy.withStrategy(
+                new HttpWaitStrategy()
+                    .forPath("/admin/ping")
+                    .forPort(QUERY_PORT)
+                    .withBasicCredentials(username, password)
+                    .forStatusCode(200)
+            );
+        }
+
+        waitingFor(waitStrategy);
+    }
+
+    @Override
+    protected void containerIsStarting(final InspectContainerResponse containerInfo) {
+        logger().debug("Couchbase container is starting, performing configuration.");
 
         waitUntilNodeIsOnline();
         renameNode();
@@ -138,15 +193,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         if (enabledServices.contains(CouchbaseService.INDEX)) {
             configureIndexer();
         }
-        waitUntilNodeIsReady();
-        waitUntilServicesRunning();
-        createBuckets();
-        waitUntilNodeIsReady();
+    }
 
-        logger().info("Couchbase container is ready! UI available at "
-            + getContainerIpAddress() + ":"
-            + getMappedPort(MGMT_PORT)
-        );
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        createBuckets();
+        logger().info("Couchbase container is ready! UI available at http://{}:{}", getContainerIpAddress(), getMappedPort(MGMT_PORT));
     }
 
     /**
@@ -273,45 +325,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         );
 
         checkSuccessfulResponse(response, "Could not configure the indexing service");
-    }
-
-    /**
-     * Makes sure that all nodes in the cluster are healthy.
-     */
-    private void waitUntilNodeIsReady() {
-        logger().debug("Waiting until the couchbase node is ready and healthy");
-
-        new HttpWaitStrategy()
-            .forPath("/pools/default")
-            .forPort(MGMT_PORT)
-            .withBasicCredentials(username, password)
-            .forStatusCode(200)
-            .forResponsePredicate(response -> {
-                try {
-                    return Optional.of(MAPPER.readTree(response))
-                        .map(n -> n.at("/nodes/0/status"))
-                        .map(JsonNode::asText)
-                        .map("healthy"::equals)
-                        .orElse(false);
-                } catch (IOException e) {
-                    logger().error("Unable to parse response {}", response);
-                    return false;
-                }
-            })
-            .waitUntilReady(this);
-    }
-
-    private void waitUntilServicesRunning() {
-        logger().debug("Waiting until services are accepting connections on their respective ports");
-
-        if (enabledServices.contains(CouchbaseService.QUERY)) {
-            new HttpWaitStrategy()
-                .forPath("/admin/ping")
-                .forPort(QUERY_PORT)
-                .withBasicCredentials(username, password)
-                .forStatusCode(200)
-                .waitUntilReady(this);
-        }
     }
 
     /**
