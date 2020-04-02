@@ -14,7 +14,6 @@ public class JarFileShadingTest extends AbstractJarFileTest {
     @Test
     public void testPackages() throws Exception {
         assertThatFileList(root).containsOnly(
-                "docker-java.properties",
                 "org",
                 "META-INF",
                 "com"

@@ -8,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URI;
-
 @Slf4j
 public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrategy {
 
@@ -38,19 +36,12 @@ public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrat
 
     @NotNull
     private DockerClientConfig tryConfiguration() {
-        URI dockerHost = URI.create(SOCKET_LOCATION);
-
         config = new DelegatingDockerClientConfig(
             DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost("tcp://localhost:0")
+                .withDockerHost(SOCKET_LOCATION)
                 .withDockerTlsVerify(false)
                 .build()
-        ) {
-            @Override
-            public URI getDockerHost() {
-                return dockerHost;
-            }
-        };
+        );
         client = getClientForConfig(config);
 
         final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
