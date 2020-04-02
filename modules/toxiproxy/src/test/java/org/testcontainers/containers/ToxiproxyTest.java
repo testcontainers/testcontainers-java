@@ -125,6 +125,17 @@ public class ToxiproxyTest {
         }
     }
 
+    @Test
+    public void testOriginalAndMappedPorts() {
+        final ToxiproxyContainer.ContainerProxy proxy1 = toxiproxy.getProxy("hostname1", 8080);
+        assertEquals("original port is correct", 8666, proxy1.getOriginalProxyPort());
+        assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy1.getOriginalProxyPort()), proxy1.getProxyPort());
+
+        final ToxiproxyContainer.ContainerProxy proxy2 = toxiproxy.getProxy("hostname2", 9090);
+        assertEquals("original port is correct", 8667, proxy2.getOriginalProxyPort());
+        assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy2.getOriginalProxyPort()), proxy2.getProxyPort());
+    }
+
     private void checkCallWithLatency(Jedis jedis, final String description, int expectedMinLatency, long expectedMaxLatency) {
         final long start = System.currentTimeMillis();
         String s = jedis.get("somekey");
