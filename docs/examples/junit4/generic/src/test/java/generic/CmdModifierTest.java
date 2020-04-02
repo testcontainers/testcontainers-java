@@ -18,10 +18,13 @@ public class CmdModifierTest {
     // }
 
     // memory {
+    private HostConfig hostConfig = HostConfig.newHostConfig()
+        .withMemory((long) 8 * 1024 * 1024)
+        .withMemorySwap((long) 12 * 1024 * 1024);
+
     @Rule
     public GenericContainer memoryLimitedRedis = new GenericContainer<>("redis:3.0.2")
-            .withCreateContainerCmdModifier(cmd -> cmd.withMemory((long) 8 * 1024 * 1024))
-            .withCreateContainerCmdModifier(cmd -> cmd.withMemorySwap((long) 12 * 1024 * 1024));
+            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(hostConfig);
     // }
 
 
