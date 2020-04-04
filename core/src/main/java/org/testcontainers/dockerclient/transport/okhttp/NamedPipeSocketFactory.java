@@ -13,6 +13,10 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @deprecated use com.github.docker-java:docker-java-transport-okhttp
+ */
+@Deprecated
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class NamedPipeSocketFactory extends SocketFactory {
