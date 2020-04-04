@@ -19,7 +19,7 @@ class FilesystemFriendlyNameGeneratorTest {
     void should_generate_filesystem_friendly_name(String displayName, String expectedName) {
         ExtensionContext context = mock(ExtensionContext.class);
         doReturn(displayName)
-            .when(context).getDisplayName();
+            .when(context).getUniqueId();
 
         String filesystemFriendlyName = filesystemFriendlyNameOf(context);
 
@@ -30,11 +30,16 @@ class FilesystemFriendlyNameGeneratorTest {
         return Stream.of(
             Arguments.of("", "unknown"),
             Arguments.of("  ", "unknown"),
-            Arguments.of("not blank", "not blank"),
-            Arguments.of("abc ABC 1234567890", "abc ABC 1234567890"),
-            Arguments.of("no_umlauts_äöüÄÖÜéáíó", "no_umlauts_"),
-            Arguments.of("no\ttabs", "notabs"),
-            Arguments.of("no_special_[]{}/?<>!@#$%^&*()+=\\|'\";:`~", "no_special_")
+            Arguments.of("not blank", "not+blank"),
+            Arguments.of("abc ABC 1234567890", "abc+ABC+1234567890"),
+            Arguments.of(
+                "no_umlauts_äöüÄÖÜéáíó",
+                "no_umlauts_%C3%A4%C3%B6%C3%BC%C3%84%C3%96%C3%9C%C3%A9%C3%A1%C3%AD%C3%B3"
+            ),
+            Arguments.of(
+                "[engine:junit-jupiter]/[class:com.example.MyTest]/[test-factory:parameterizedTest()]/[dynamic-test:#3]",
+                "%5Bengine%3Ajunit-jupiter%5D%2F%5Bclass%3Acom.example.MyTest%5D%2F%5Btest-factory%3AparameterizedTest%28%29%5D%2F%5Bdynamic-test%3A%233%5D"
+            )
         );
     }
 }
