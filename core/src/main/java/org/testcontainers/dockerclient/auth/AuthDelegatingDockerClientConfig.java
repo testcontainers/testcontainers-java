@@ -14,8 +14,11 @@ import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
  * configuration is obtained. A delegate {@link DockerClientConfig} will be called first
  * to try and obtain auth credentials, but after that {@link RegistryAuthLocator} will be
  * used to try and improve the auth resolution (e.g. using credential helpers).
+ *
+ * @deprecated should not be used publicly, to be moved to docker-java
  */
 @Slf4j
+@Deprecated
 public class AuthDelegatingDockerClientConfig implements DockerClientConfig {
 
     @Delegate(excludes = DelegateExclusions.class)

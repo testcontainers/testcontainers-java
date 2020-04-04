@@ -47,9 +47,10 @@ public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageRes
     }
 
     @Override
-    public PullImageResultCallback awaitCompletion() throws InterruptedException {
+    public TimeLimitedLoggedPullImageResultCallback awaitCompletion() throws InterruptedException {
         waitingThreads.add(Thread.currentThread());
-        return super.awaitCompletion();
+        super.awaitCompletion();
+        return this;
     }
 
     @Override

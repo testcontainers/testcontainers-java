@@ -2,6 +2,8 @@ package org.testcontainers;
 
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.Assertions;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -83,6 +85,16 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
     private final String fileName;
 
     private final ClassNode classNode;
+
+    @Before
+    public void setUp() {
+        Assume.assumeFalse(classNode.name.startsWith("com.github.dockerjava."));
+        switch (classNode.name) {
+            // TODO should go to docker-java project
+            case "org/testcontainers/dockerclient/auth/AuthDelegatingDockerClientConfig":
+                Assume.assumeTrue(false);
+        }
+    }
 
     @Test
     public void testSuperClass() {
