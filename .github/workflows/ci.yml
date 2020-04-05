@@ -18,7 +18,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-core_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-core_check-
@@ -37,7 +37,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_selenium_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_selenium_check-
@@ -56,7 +56,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_neo4j_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_neo4j_check-
@@ -75,7 +75,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_clickhouse_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_clickhouse_check-
@@ -94,7 +94,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_postgresql_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_postgresql_check-
@@ -113,7 +113,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_dynalite_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_dynalite_check-
@@ -132,7 +132,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_presto_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_presto_check-
@@ -151,7 +151,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_jdbc-test_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_jdbc-test_check-
@@ -170,7 +170,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_mariadb_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_mariadb_check-
@@ -189,7 +189,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_mockserver_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_mockserver_check-
@@ -208,7 +208,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_oracle-xe_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_oracle-xe_check-
@@ -227,7 +227,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_rabbitmq_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_rabbitmq_check-
@@ -246,7 +246,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_jdbc_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_jdbc_check-
@@ -265,7 +265,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_influxdb_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_influxdb_check-
@@ -284,7 +284,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_nginx_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_nginx_check-
@@ -303,7 +303,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_kafka_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_kafka_check-
@@ -322,7 +322,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_cassandra_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_cassandra_check-
@@ -341,7 +341,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_mysql_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_mysql_check-
@@ -360,7 +360,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_junit-jupiter_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_junit-jupiter_check-
@@ -379,7 +379,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_mssqlserver_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_mssqlserver_check-
@@ -398,7 +398,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_spock_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_spock_check-
@@ -417,7 +417,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_db2_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_db2_check-
@@ -436,7 +436,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_localstack_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_localstack_check-
@@ -455,7 +455,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_cockroachdb_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_cockroachdb_check-
@@ -474,7 +474,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_pulsar_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_pulsar_check-
@@ -493,7 +493,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_database-commons_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_database-commons_check-
@@ -512,7 +512,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_toxiproxy_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_toxiproxy_check-
@@ -531,7 +531,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_elasticsearch_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_elasticsearch_check-
@@ -550,7 +550,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_orientdb_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_orientdb_check-
@@ -569,7 +569,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_vault_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_vault_check-
@@ -588,7 +588,7 @@ jobs:
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: ${{ runner.os }}-gradle-home-module_couchbase_check-${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             ${{ runner.os }}-gradle-home-module_couchbase_check-

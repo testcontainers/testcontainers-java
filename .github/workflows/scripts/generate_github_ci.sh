@@ -21,7 +21,7 @@ generate_job () {
           - name: Cache Gradle Home files
             uses: actions/cache@v1
             with:
-              path: ~/.gradle
+              path: ~/.gradle/caches
               key: \${{ runner.os }}-gradle-home-$NAME-\${{ hashFiles('**/*.gradle') }}
               restore-keys: |
                             \${{ runner.os }}-gradle-home-$NAME-
