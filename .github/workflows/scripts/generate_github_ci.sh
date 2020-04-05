@@ -23,10 +23,10 @@ generate_job () {
             with:
               path: ~/.gradle
               key: \${{ runner.os }}-gradle-home-$NAME-\${{ hashFiles('**/*.gradle') }}
-              restore-keys:
-               - \${{ runner.os }}-gradle-home-$NAME-
-               - \${{ runner.os }}-gradle-home-core_check-
-               - \${{ runner.os }}-gradle-home-
+              restore-keys: |
+                            \${{ runner.os }}-gradle-home-$NAME-
+                            \${{ runner.os }}-gradle-home-core_check-
+                            \${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info ${GRADLE_ARGS}
