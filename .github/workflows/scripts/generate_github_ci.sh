@@ -26,12 +26,6 @@ generate_job () {
               path: ~/.gradle
               key: \${{ runner.os }}-gradle-home-\${{ hashFiles('**/*.gradle') }}
               restore-keys: \${{ runner.os }}-gradle-home
-          - name: Cache Gradle Local files
-            uses: actions/cache@v1
-            with:
-              path: .gradle
-              key: \${{ runner.os }}-gradle-local-\${{ hashFiles('**/*.gradle') }}
-              restore-keys: \${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info ${GRADLE_ARGS}
