@@ -2,10 +2,8 @@ package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
-import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
-import com.google.common.collect.Sets;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.images.ParsedDockerfile;
 import org.testcontainers.images.builder.traits.BuildContextBuilderTrait;
 import org.testcontainers.images.builder.traits.ClasspathTrait;
 import org.testcontainers.images.builder.traits.DockerfileTrait;
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -51,6 +51,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private final Map<String, String> buildArgs = new HashMap<>();
     private Optional<String> dockerFilePath = Optional.empty();
     private Optional<Path> dockerfile = Optional.empty();
+    private Set<String> dependencyImageNames = Collections.emptySet();
 
     public ImageFromDockerfile() {
         this("testcontainers/" + Base58.randomString(16).toLowerCase());
@@ -81,6 +82,17 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
+
+        dependencyImageNames.forEach(imageName -> {
+            try {
+                log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
+                DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+            } catch (Exception e) {
+                log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
+            }
+        });
+
+
         try {
             if (deleteOnExit) {
                 ResourceReaper.instance().registerImageForCleanup(dockerImageName);
@@ -139,7 +151,11 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     protected void configure(BuildImageCmd buildImageCmd) {
         buildImageCmd.withTag(this.getDockerImageName());
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
-        this.dockerfile.ifPresent(p -> buildImageCmd.withDockerfile(p.toFile()));
+        this.dockerfile.ifPresent(p -> {
+            buildImageCmd.withDockerfile(p.toFile());
+            dependencyImageNames = new ParsedDockerfile(p).getDependencyImageNames();
+        });
+
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
     }
 
