@@ -29,7 +29,7 @@ generate_job () {
                             \${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info ${GRADLE_ARGS}
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache ${GRADLE_ARGS}
 END
 }
 

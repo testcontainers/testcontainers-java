@@ -26,7 +26,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info testcontainers:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache testcontainers:check
     module_selenium_check:
         runs-on: ubuntu-18.04
         steps:
@@ -45,7 +45,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info selenium:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache selenium:check
     module_neo4j_check:
         runs-on: ubuntu-18.04
         steps:
@@ -64,7 +64,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info neo4j:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache neo4j:check
     module_clickhouse_check:
         runs-on: ubuntu-18.04
         steps:
@@ -83,7 +83,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info clickhouse:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache clickhouse:check
     module_postgresql_check:
         runs-on: ubuntu-18.04
         steps:
@@ -102,7 +102,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info postgresql:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache postgresql:check
     module_dynalite_check:
         runs-on: ubuntu-18.04
         steps:
@@ -121,7 +121,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info dynalite:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache dynalite:check
     module_presto_check:
         runs-on: ubuntu-18.04
         steps:
@@ -140,7 +140,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info presto:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache presto:check
     module_jdbc-test_check:
         runs-on: ubuntu-18.04
         steps:
@@ -159,7 +159,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info jdbc-test:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache jdbc-test:check
     module_mariadb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -178,7 +178,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info mariadb:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache mariadb:check
     module_mockserver_check:
         runs-on: ubuntu-18.04
         steps:
@@ -197,7 +197,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info mockserver:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache mockserver:check
     module_oracle-xe_check:
         runs-on: ubuntu-18.04
         steps:
@@ -216,7 +216,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info oracle-xe:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache oracle-xe:check
     module_rabbitmq_check:
         runs-on: ubuntu-18.04
         steps:
@@ -235,7 +235,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info rabbitmq:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache rabbitmq:check
     module_jdbc_check:
         runs-on: ubuntu-18.04
         steps:
@@ -254,7 +254,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info jdbc:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache jdbc:check
     module_influxdb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -273,7 +273,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info influxdb:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache influxdb:check
     module_nginx_check:
         runs-on: ubuntu-18.04
         steps:
@@ -292,7 +292,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info nginx:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache nginx:check
     module_kafka_check:
         runs-on: ubuntu-18.04
         steps:
@@ -311,7 +311,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info kafka:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache kafka:check
     module_cassandra_check:
         runs-on: ubuntu-18.04
         steps:
@@ -330,7 +330,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info cassandra:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache cassandra:check
     module_mysql_check:
         runs-on: ubuntu-18.04
         steps:
@@ -349,7 +349,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info mysql:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache mysql:check
     module_junit-jupiter_check:
         runs-on: ubuntu-18.04
         steps:
@@ -368,7 +368,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info junit-jupiter:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache junit-jupiter:check
     module_mssqlserver_check:
         runs-on: ubuntu-18.04
         steps:
@@ -387,7 +387,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info mssqlserver:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache mssqlserver:check
     module_spock_check:
         runs-on: ubuntu-18.04
         steps:
@@ -406,7 +406,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info spock:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache spock:check
     module_db2_check:
         runs-on: ubuntu-18.04
         steps:
@@ -425,7 +425,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info db2:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache db2:check
     module_localstack_check:
         runs-on: ubuntu-18.04
         steps:
@@ -444,7 +444,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info localstack:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache localstack:check
     module_cockroachdb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -463,7 +463,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info cockroachdb:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache cockroachdb:check
     module_pulsar_check:
         runs-on: ubuntu-18.04
         steps:
@@ -482,7 +482,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info pulsar:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache pulsar:check
     module_database-commons_check:
         runs-on: ubuntu-18.04
         steps:
@@ -501,7 +501,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info database-commons:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache database-commons:check
     module_toxiproxy_check:
         runs-on: ubuntu-18.04
         steps:
@@ -520,7 +520,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info toxiproxy:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache toxiproxy:check
     module_elasticsearch_check:
         runs-on: ubuntu-18.04
         steps:
@@ -539,7 +539,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info elasticsearch:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache elasticsearch:check
     module_orientdb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -558,7 +558,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info orientdb:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache orientdb:check
     module_vault_check:
         runs-on: ubuntu-18.04
         steps:
@@ -577,7 +577,7 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info vault:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache vault:check
     module_couchbase_check:
         runs-on: ubuntu-18.04
         steps:
@@ -596,4 +596,4 @@ jobs:
                             ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info couchbase:check
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache couchbase:check
