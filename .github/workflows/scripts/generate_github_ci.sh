@@ -31,7 +31,7 @@ generate_job () {
             run: docker image prune -af
           - name: Build with Gradle (${GRADLE_ARGS})
             run: |
-                ./gradlew --no-daemon --continue --scan --info --no-build-cache ${GRADLE_ARGS}
+                ./gradlew --no-daemon --continue --scan --info ${GRADLE_ARGS}
 END
 }
 
