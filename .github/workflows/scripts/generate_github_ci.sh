@@ -27,7 +27,9 @@ generate_job () {
                             \${{ runner.os }}-gradle-home-$NAME-
                             \${{ runner.os }}-gradle-home-core_check-
                             \${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (${GRADLE_ARGS})
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache ${GRADLE_ARGS}
 END

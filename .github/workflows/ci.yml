@@ -24,7 +24,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (testcontainers:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache testcontainers:check
     module_selenium_check:
@@ -43,7 +45,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_selenium_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (selenium:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache selenium:check
     module_neo4j_check:
@@ -62,7 +66,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_neo4j_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (neo4j:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache neo4j:check
     module_clickhouse_check:
@@ -81,7 +87,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_clickhouse_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (clickhouse:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache clickhouse:check
     module_postgresql_check:
@@ -100,7 +108,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_postgresql_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (postgresql:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache postgresql:check
     module_dynalite_check:
@@ -119,7 +129,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_dynalite_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (dynalite:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache dynalite:check
     module_presto_check:
@@ -138,7 +150,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_presto_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (presto:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache presto:check
     module_jdbc-test_check:
@@ -157,7 +171,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_jdbc-test_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (jdbc-test:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache jdbc-test:check
     module_mariadb_check:
@@ -176,7 +192,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_mariadb_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (mariadb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache mariadb:check
     module_mockserver_check:
@@ -195,7 +213,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_mockserver_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (mockserver:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache mockserver:check
     module_oracle-xe_check:
@@ -214,7 +234,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_oracle-xe_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (oracle-xe:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache oracle-xe:check
     module_rabbitmq_check:
@@ -233,7 +255,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_rabbitmq_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (rabbitmq:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache rabbitmq:check
     module_jdbc_check:
@@ -252,7 +276,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_jdbc_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (jdbc:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache jdbc:check
     module_influxdb_check:
@@ -271,7 +297,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_influxdb_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (influxdb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache influxdb:check
     module_nginx_check:
@@ -290,7 +318,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_nginx_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (nginx:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache nginx:check
     module_kafka_check:
@@ -309,7 +339,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_kafka_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (kafka:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache kafka:check
     module_cassandra_check:
@@ -328,7 +360,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_cassandra_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (cassandra:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache cassandra:check
     module_mysql_check:
@@ -347,7 +381,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_mysql_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (mysql:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache mysql:check
     module_junit-jupiter_check:
@@ -366,7 +402,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_junit-jupiter_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (junit-jupiter:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache junit-jupiter:check
     module_mssqlserver_check:
@@ -385,7 +423,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_mssqlserver_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (mssqlserver:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache mssqlserver:check
     module_spock_check:
@@ -404,7 +444,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_spock_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (spock:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache spock:check
     module_db2_check:
@@ -423,7 +465,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_db2_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (db2:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache db2:check
     module_localstack_check:
@@ -442,7 +486,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_localstack_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (localstack:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache localstack:check
     module_cockroachdb_check:
@@ -461,7 +507,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_cockroachdb_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (cockroachdb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache cockroachdb:check
     module_pulsar_check:
@@ -480,7 +528,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_pulsar_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (pulsar:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache pulsar:check
     module_database-commons_check:
@@ -499,7 +549,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_database-commons_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (database-commons:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache database-commons:check
     module_toxiproxy_check:
@@ -518,7 +570,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_toxiproxy_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (toxiproxy:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache toxiproxy:check
     module_elasticsearch_check:
@@ -537,7 +591,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_elasticsearch_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (elasticsearch:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache elasticsearch:check
     module_orientdb_check:
@@ -556,7 +612,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_orientdb_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (orientdb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache orientdb:check
     module_vault_check:
@@ -575,7 +633,9 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_vault_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (vault:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache vault:check
     module_couchbase_check:
@@ -594,6 +654,8 @@ jobs:
                             ${{ runner.os }}-gradle-home-module_couchbase_check-
                             ${{ runner.os }}-gradle-home-core_check-
                             ${{ runner.os }}-gradle-home-
-          - name: Build with Gradle
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (couchbase:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache couchbase:check
