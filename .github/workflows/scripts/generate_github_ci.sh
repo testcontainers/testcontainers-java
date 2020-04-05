@@ -9,12 +9,10 @@ CI_WORKFLOW_FILE=.github/workflows/ci.yml
 generate_job () {
     NAME=$1
     GRADLE_ARGS=$2
-    NEEDS=$3
 
     cat <<END >> $CI_WORKFLOW_FILE
     ${NAME}:
         runs-on: ubuntu-18.04
-        needs: ${NEEDS}
         steps:
           - uses: actions/checkout@v2
           - uses: actions/setup-java@v1
@@ -48,10 +46,9 @@ END
 }
 
 generate_preface
-generate_job all_build_without_test "build -x test" "[]"
-generate_job core_check "testcontainers:check" "[all_build_without_test]"
+generate_job core_check "testcontainers:check"
 
 find modules -type d -mindepth 1 -maxdepth 1 | while read -r MODULE_DIRECTORY; do
     MODULE=$(basename "$MODULE_DIRECTORY")
-    generate_job module_${MODULE}_check ${MODULE}:check "[all_build_without_test]"
+    generate_job module_${MODULE}_check ${MODULE}:check
 done
