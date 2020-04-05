@@ -8,7 +8,7 @@ on:
   push: { branches: [ master ] }
 
 jobs:
-    compile:
+    all_build_without_test:
         runs-on: ubuntu-18.04
         needs: []
         steps:
@@ -31,7 +31,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info build -x test
-    core:
+    core_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -54,7 +54,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info testcontainers:check
-    selenium_module_test:
+    module_selenium_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -77,7 +77,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info selenium:check
-    neo4j_module_test:
+    module_neo4j_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -100,7 +100,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info neo4j:check
-    clickhouse_module_test:
+    module_clickhouse_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -123,7 +123,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info clickhouse:check
-    postgresql_module_test:
+    module_postgresql_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -146,7 +146,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info postgresql:check
-    dynalite_module_test:
+    module_dynalite_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -169,7 +169,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info dynalite:check
-    presto_module_test:
+    module_presto_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -192,7 +192,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info presto:check
-    jdbc-test_module_test:
+    module_jdbc-test_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -215,7 +215,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info jdbc-test:check
-    mariadb_module_test:
+    module_mariadb_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -238,7 +238,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mariadb:check
-    mockserver_module_test:
+    module_mockserver_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -261,7 +261,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mockserver:check
-    oracle-xe_module_test:
+    module_oracle-xe_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -284,7 +284,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info oracle-xe:check
-    rabbitmq_module_test:
+    module_rabbitmq_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -307,7 +307,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info rabbitmq:check
-    jdbc_module_test:
+    module_jdbc_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -330,7 +330,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info jdbc:check
-    influxdb_module_test:
+    module_influxdb_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -353,7 +353,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info influxdb:check
-    nginx_module_test:
+    module_nginx_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -376,7 +376,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info nginx:check
-    kafka_module_test:
+    module_kafka_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -399,7 +399,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info kafka:check
-    cassandra_module_test:
+    module_cassandra_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -422,7 +422,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info cassandra:check
-    mysql_module_test:
+    module_mysql_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -445,7 +445,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mysql:check
-    junit-jupiter_module_test:
+    module_junit-jupiter_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -468,7 +468,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info junit-jupiter:check
-    mssqlserver_module_test:
+    module_mssqlserver_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -491,7 +491,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mssqlserver:check
-    spock_module_test:
+    module_spock_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -514,7 +514,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info spock:check
-    db2_module_test:
+    module_db2_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -537,7 +537,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info db2:check
-    localstack_module_test:
+    module_localstack_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -560,7 +560,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info localstack:check
-    cockroachdb_module_test:
+    module_cockroachdb_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -583,7 +583,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info cockroachdb:check
-    pulsar_module_test:
+    module_pulsar_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -606,7 +606,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info pulsar:check
-    database-commons_module_test:
+    module_database-commons_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -629,7 +629,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info database-commons:check
-    toxiproxy_module_test:
+    module_toxiproxy_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -652,7 +652,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info toxiproxy:check
-    elasticsearch_module_test:
+    module_elasticsearch_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -675,7 +675,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info elasticsearch:check
-    orientdb_module_test:
+    module_orientdb_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -698,7 +698,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info orientdb:check
-    vault_module_test:
+    module_vault_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:
@@ -721,7 +721,7 @@ jobs:
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info vault:check
-    couchbase_module_test:
+    module_couchbase_check:
         runs-on: ubuntu-18.04
         needs: compile
         steps:

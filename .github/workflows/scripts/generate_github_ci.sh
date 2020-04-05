@@ -54,10 +54,10 @@ END
 }
 
 generate_preface
-generate_job compile "build -x test"
-generate_job core "testcontainers:check" compile
+generate_job all_build_without_test "build -x test"
+generate_job core_check "testcontainers:check" compile
 
 find modules -type d -mindepth 1 -maxdepth 1 | while read -r MODULE_DIRECTORY; do
     MODULE=$(basename "$MODULE_DIRECTORY")
-    generate_job ${MODULE}_module_test ${MODULE}:check compile
+    generate_job module_${MODULE}_check ${MODULE}:check compile
 done
