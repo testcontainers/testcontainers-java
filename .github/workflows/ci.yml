@@ -19,8 +19,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-core_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info testcontainers:check
@@ -35,8 +38,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_selenium_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_selenium_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info selenium:check
@@ -51,8 +57,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_neo4j_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_neo4j_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info neo4j:check
@@ -67,8 +76,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_clickhouse_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_clickhouse_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info clickhouse:check
@@ -83,8 +95,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_postgresql_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_postgresql_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info postgresql:check
@@ -99,8 +114,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_dynalite_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_dynalite_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info dynalite:check
@@ -115,8 +133,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_presto_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_presto_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info presto:check
@@ -131,8 +152,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_jdbc-test_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_jdbc-test_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info jdbc-test:check
@@ -147,8 +171,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_mariadb_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_mariadb_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mariadb:check
@@ -163,8 +190,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_mockserver_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_mockserver_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mockserver:check
@@ -179,8 +209,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_oracle-xe_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_oracle-xe_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info oracle-xe:check
@@ -195,8 +228,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_rabbitmq_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_rabbitmq_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info rabbitmq:check
@@ -211,8 +247,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_jdbc_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_jdbc_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info jdbc:check
@@ -227,8 +266,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_influxdb_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_influxdb_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info influxdb:check
@@ -243,8 +285,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_nginx_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_nginx_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info nginx:check
@@ -259,8 +304,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_kafka_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_kafka_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info kafka:check
@@ -275,8 +323,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_cassandra_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_cassandra_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info cassandra:check
@@ -291,8 +342,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_mysql_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_mysql_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mysql:check
@@ -307,8 +361,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_junit-jupiter_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_junit-jupiter_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info junit-jupiter:check
@@ -323,8 +380,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_mssqlserver_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_mssqlserver_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info mssqlserver:check
@@ -339,8 +399,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_spock_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_spock_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info spock:check
@@ -355,8 +418,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_db2_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_db2_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info db2:check
@@ -371,8 +437,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_localstack_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_localstack_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info localstack:check
@@ -387,8 +456,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_cockroachdb_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_cockroachdb_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info cockroachdb:check
@@ -403,8 +475,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_pulsar_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_pulsar_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info pulsar:check
@@ -419,8 +494,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_database-commons_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_database-commons_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info database-commons:check
@@ -435,8 +513,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_toxiproxy_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_toxiproxy_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info toxiproxy:check
@@ -451,8 +532,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_elasticsearch_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_elasticsearch_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info elasticsearch:check
@@ -467,8 +551,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_orientdb_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_orientdb_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info orientdb:check
@@ -483,8 +570,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_vault_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_vault_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info vault:check
@@ -499,8 +589,11 @@ jobs:
             uses: actions/cache@v1
             with:
               path: ~/.gradle
-              key: ${{ runner.os }}-gradle-home-${{ hashFiles('**/*.gradle') }}
-              restore-keys: ${{ runner.os }}-gradle-home
+              key: ${{ runner.os }}-gradle-home-module_couchbase_check-${{ hashFiles('**/*.gradle') }}
+              restore-keys:
+               - ${{ runner.os }}-gradle-home-module_couchbase_check-
+               - ${{ runner.os }}-gradle-home-core_check-
+               - ${{ runner.os }}-gradle-home-
           - name: Build with Gradle
             run: |
                 ./gradlew --no-daemon --continue --scan --info couchbase:check
