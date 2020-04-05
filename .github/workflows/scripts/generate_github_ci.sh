@@ -34,7 +34,7 @@ generate_job () {
               restore-keys: \${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel ${GRADLE_ARGS}
+                ./gradlew --no-daemon --continue --scan --info ${GRADLE_ARGS}
 END
 }
 

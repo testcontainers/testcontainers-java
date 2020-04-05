@@ -30,7 +30,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel build -x test
+                ./gradlew --no-daemon --continue --scan --info build -x test
     core:
         runs-on: ubuntu-18.04
         needs: compile
@@ -53,7 +53,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel testcontainers:check
+                ./gradlew --no-daemon --continue --scan --info testcontainers:check
     selenium_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -76,7 +76,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel selenium:check
+                ./gradlew --no-daemon --continue --scan --info selenium:check
     neo4j_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -99,7 +99,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel neo4j:check
+                ./gradlew --no-daemon --continue --scan --info neo4j:check
     clickhouse_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -122,7 +122,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel clickhouse:check
+                ./gradlew --no-daemon --continue --scan --info clickhouse:check
     postgresql_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -145,7 +145,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel postgresql:check
+                ./gradlew --no-daemon --continue --scan --info postgresql:check
     dynalite_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -168,7 +168,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel dynalite:check
+                ./gradlew --no-daemon --continue --scan --info dynalite:check
     presto_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -191,7 +191,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel presto:check
+                ./gradlew --no-daemon --continue --scan --info presto:check
     jdbc-test_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -214,7 +214,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel jdbc-test:check
+                ./gradlew --no-daemon --continue --scan --info jdbc-test:check
     mariadb_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -237,7 +237,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel mariadb:check
+                ./gradlew --no-daemon --continue --scan --info mariadb:check
     mockserver_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -260,7 +260,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel mockserver:check
+                ./gradlew --no-daemon --continue --scan --info mockserver:check
     oracle-xe_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -283,7 +283,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel oracle-xe:check
+                ./gradlew --no-daemon --continue --scan --info oracle-xe:check
     rabbitmq_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -306,7 +306,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel rabbitmq:check
+                ./gradlew --no-daemon --continue --scan --info rabbitmq:check
     jdbc_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -329,7 +329,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel jdbc:check
+                ./gradlew --no-daemon --continue --scan --info jdbc:check
     influxdb_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -352,7 +352,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel influxdb:check
+                ./gradlew --no-daemon --continue --scan --info influxdb:check
     nginx_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -375,7 +375,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel nginx:check
+                ./gradlew --no-daemon --continue --scan --info nginx:check
     kafka_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -398,7 +398,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel kafka:check
+                ./gradlew --no-daemon --continue --scan --info kafka:check
     cassandra_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -421,7 +421,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel cassandra:check
+                ./gradlew --no-daemon --continue --scan --info cassandra:check
     mysql_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -444,7 +444,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel mysql:check
+                ./gradlew --no-daemon --continue --scan --info mysql:check
     junit-jupiter_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -467,7 +467,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel junit-jupiter:check
+                ./gradlew --no-daemon --continue --scan --info junit-jupiter:check
     mssqlserver_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -490,7 +490,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel mssqlserver:check
+                ./gradlew --no-daemon --continue --scan --info mssqlserver:check
     spock_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -513,7 +513,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel spock:check
+                ./gradlew --no-daemon --continue --scan --info spock:check
     db2_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -536,7 +536,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel db2:check
+                ./gradlew --no-daemon --continue --scan --info db2:check
     localstack_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -559,7 +559,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel localstack:check
+                ./gradlew --no-daemon --continue --scan --info localstack:check
     cockroachdb_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -582,7 +582,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel cockroachdb:check
+                ./gradlew --no-daemon --continue --scan --info cockroachdb:check
     pulsar_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -605,7 +605,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel pulsar:check
+                ./gradlew --no-daemon --continue --scan --info pulsar:check
     database-commons_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -628,7 +628,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel database-commons:check
+                ./gradlew --no-daemon --continue --scan --info database-commons:check
     toxiproxy_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -651,7 +651,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel toxiproxy:check
+                ./gradlew --no-daemon --continue --scan --info toxiproxy:check
     elasticsearch_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -674,7 +674,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel elasticsearch:check
+                ./gradlew --no-daemon --continue --scan --info elasticsearch:check
     orientdb_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -697,7 +697,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel orientdb:check
+                ./gradlew --no-daemon --continue --scan --info orientdb:check
     vault_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -720,7 +720,7 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel vault:check
+                ./gradlew --no-daemon --continue --scan --info vault:check
     couchbase_module_test:
         runs-on: ubuntu-18.04
         needs: compile
@@ -743,4 +743,4 @@ jobs:
               restore-keys: ${{ runner.os }}-gradle-local
           - name: Build with Gradle
             run: |
-                ./gradlew --no-daemon --continue --scan --info --parallel couchbase:check
+                ./gradlew --no-daemon --continue --scan --info couchbase:check
