@@ -57,3 +57,12 @@ find modules -type d -mindepth 1 -maxdepth 1 | while read -r MODULE_DIRECTORY; d
     MODULE=$(basename "$MODULE_DIRECTORY")
     generate_job module_${MODULE}_check ${MODULE}:check
 done
+
+# Examples
+generate_job examples "-p examples check"
+
+# Docs examples
+generate_job docs_examples_junit4_generic docs:examples:junit4:generic:check
+generate_job docs_examples_junit4_redis   docs:examples:junit4:redis:check
+generate_job docs_examples_junit5_redis   docs:examples:junit5:redis:check
+generate_job docs_examples_spock_redis    docs:examples:spock:redis:check

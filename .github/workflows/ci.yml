@@ -659,3 +659,108 @@ jobs:
           - name: Build with Gradle (couchbase:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info --no-build-cache couchbase:check
+    examples:
+        runs-on: ubuntu-18.04
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-java@v1
+            with:
+              java-version: '1.8'
+          - name: Cache Gradle Home files
+            uses: actions/cache@v1
+            with:
+              path: ~/.gradle/caches
+              key: ${{ runner.os }}-gradle-home-examples-${{ hashFiles('**/*.gradle') }}
+              restore-keys: |
+                            ${{ runner.os }}-gradle-home-examples-
+                            ${{ runner.os }}-gradle-home-core_check-
+                            ${{ runner.os }}-gradle-home-
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (-p examples check)
+            run: |
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache -p examples check
+    docs_examples_junit4_generic:
+        runs-on: ubuntu-18.04
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-java@v1
+            with:
+              java-version: '1.8'
+          - name: Cache Gradle Home files
+            uses: actions/cache@v1
+            with:
+              path: ~/.gradle/caches
+              key: ${{ runner.os }}-gradle-home-docs_examples_junit4_generic-${{ hashFiles('**/*.gradle') }}
+              restore-keys: |
+                            ${{ runner.os }}-gradle-home-docs_examples_junit4_generic-
+                            ${{ runner.os }}-gradle-home-core_check-
+                            ${{ runner.os }}-gradle-home-
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (docs:examples:junit4:generic:check)
+            run: |
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache docs:examples:junit4:generic:check
+    docs_examples_junit4_redis:
+        runs-on: ubuntu-18.04
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-java@v1
+            with:
+              java-version: '1.8'
+          - name: Cache Gradle Home files
+            uses: actions/cache@v1
+            with:
+              path: ~/.gradle/caches
+              key: ${{ runner.os }}-gradle-home-docs_examples_junit4_redis-${{ hashFiles('**/*.gradle') }}
+              restore-keys: |
+                            ${{ runner.os }}-gradle-home-docs_examples_junit4_redis-
+                            ${{ runner.os }}-gradle-home-core_check-
+                            ${{ runner.os }}-gradle-home-
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (docs:examples:junit4:redis:check)
+            run: |
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache docs:examples:junit4:redis:check
+    docs_examples_junit5_redis:
+        runs-on: ubuntu-18.04
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-java@v1
+            with:
+              java-version: '1.8'
+          - name: Cache Gradle Home files
+            uses: actions/cache@v1
+            with:
+              path: ~/.gradle/caches
+              key: ${{ runner.os }}-gradle-home-docs_examples_junit5_redis-${{ hashFiles('**/*.gradle') }}
+              restore-keys: |
+                            ${{ runner.os }}-gradle-home-docs_examples_junit5_redis-
+                            ${{ runner.os }}-gradle-home-core_check-
+                            ${{ runner.os }}-gradle-home-
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (docs:examples:junit5:redis:check)
+            run: |
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache docs:examples:junit5:redis:check
+    docs_examples_spock_redis:
+        runs-on: ubuntu-18.04
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-java@v1
+            with:
+              java-version: '1.8'
+          - name: Cache Gradle Home files
+            uses: actions/cache@v1
+            with:
+              path: ~/.gradle/caches
+              key: ${{ runner.os }}-gradle-home-docs_examples_spock_redis-${{ hashFiles('**/*.gradle') }}
+              restore-keys: |
+                            ${{ runner.os }}-gradle-home-docs_examples_spock_redis-
+                            ${{ runner.os }}-gradle-home-core_check-
+                            ${{ runner.os }}-gradle-home-
+          - name: Clear existing docker image cache
+            run: docker image prune -af
+          - name: Build with Gradle (docs:examples:spock:redis:check)
+            run: |
+                ./gradlew --no-daemon --continue --scan --info --no-build-cache docs:examples:spock:redis:check
