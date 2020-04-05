@@ -29,6 +29,8 @@ jobs:
           - name: Build with Gradle (testcontainers:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info testcontainers:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_selenium_check:
         runs-on: ubuntu-18.04
         steps:
@@ -50,6 +52,8 @@ jobs:
           - name: Build with Gradle (selenium:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info selenium:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_neo4j_check:
         runs-on: ubuntu-18.04
         steps:
@@ -71,6 +75,8 @@ jobs:
           - name: Build with Gradle (neo4j:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info neo4j:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_clickhouse_check:
         runs-on: ubuntu-18.04
         steps:
@@ -92,6 +98,8 @@ jobs:
           - name: Build with Gradle (clickhouse:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info clickhouse:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_postgresql_check:
         runs-on: ubuntu-18.04
         steps:
@@ -113,6 +121,8 @@ jobs:
           - name: Build with Gradle (postgresql:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info postgresql:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_dynalite_check:
         runs-on: ubuntu-18.04
         steps:
@@ -134,6 +144,8 @@ jobs:
           - name: Build with Gradle (dynalite:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info dynalite:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_presto_check:
         runs-on: ubuntu-18.04
         steps:
@@ -155,6 +167,8 @@ jobs:
           - name: Build with Gradle (presto:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info presto:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_jdbc-test_check:
         runs-on: ubuntu-18.04
         steps:
@@ -176,6 +190,8 @@ jobs:
           - name: Build with Gradle (jdbc-test:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info jdbc-test:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_mariadb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -197,6 +213,8 @@ jobs:
           - name: Build with Gradle (mariadb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info mariadb:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_mockserver_check:
         runs-on: ubuntu-18.04
         steps:
@@ -218,6 +236,8 @@ jobs:
           - name: Build with Gradle (mockserver:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info mockserver:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_oracle-xe_check:
         runs-on: ubuntu-18.04
         steps:
@@ -239,6 +259,8 @@ jobs:
           - name: Build with Gradle (oracle-xe:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info oracle-xe:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_rabbitmq_check:
         runs-on: ubuntu-18.04
         steps:
@@ -260,6 +282,8 @@ jobs:
           - name: Build with Gradle (rabbitmq:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info rabbitmq:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_jdbc_check:
         runs-on: ubuntu-18.04
         steps:
@@ -281,6 +305,8 @@ jobs:
           - name: Build with Gradle (jdbc:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info jdbc:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_influxdb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -302,6 +328,8 @@ jobs:
           - name: Build with Gradle (influxdb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info influxdb:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_nginx_check:
         runs-on: ubuntu-18.04
         steps:
@@ -323,6 +351,8 @@ jobs:
           - name: Build with Gradle (nginx:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info nginx:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_kafka_check:
         runs-on: ubuntu-18.04
         steps:
@@ -344,6 +374,8 @@ jobs:
           - name: Build with Gradle (kafka:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info kafka:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_cassandra_check:
         runs-on: ubuntu-18.04
         steps:
@@ -365,6 +397,8 @@ jobs:
           - name: Build with Gradle (cassandra:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info cassandra:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_mysql_check:
         runs-on: ubuntu-18.04
         steps:
@@ -386,6 +420,8 @@ jobs:
           - name: Build with Gradle (mysql:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info mysql:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_junit-jupiter_check:
         runs-on: ubuntu-18.04
         steps:
@@ -407,6 +443,8 @@ jobs:
           - name: Build with Gradle (junit-jupiter:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info junit-jupiter:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_mssqlserver_check:
         runs-on: ubuntu-18.04
         steps:
@@ -428,6 +466,8 @@ jobs:
           - name: Build with Gradle (mssqlserver:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info mssqlserver:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_spock_check:
         runs-on: ubuntu-18.04
         steps:
@@ -449,6 +489,8 @@ jobs:
           - name: Build with Gradle (spock:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info spock:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_db2_check:
         runs-on: ubuntu-18.04
         steps:
@@ -470,6 +512,8 @@ jobs:
           - name: Build with Gradle (db2:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info db2:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_localstack_check:
         runs-on: ubuntu-18.04
         steps:
@@ -491,6 +535,8 @@ jobs:
           - name: Build with Gradle (localstack:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info localstack:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_cockroachdb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -512,6 +558,8 @@ jobs:
           - name: Build with Gradle (cockroachdb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info cockroachdb:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_pulsar_check:
         runs-on: ubuntu-18.04
         steps:
@@ -533,6 +581,8 @@ jobs:
           - name: Build with Gradle (pulsar:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info pulsar:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_database-commons_check:
         runs-on: ubuntu-18.04
         steps:
@@ -554,6 +604,8 @@ jobs:
           - name: Build with Gradle (database-commons:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info database-commons:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_toxiproxy_check:
         runs-on: ubuntu-18.04
         steps:
@@ -575,6 +627,8 @@ jobs:
           - name: Build with Gradle (toxiproxy:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info toxiproxy:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_elasticsearch_check:
         runs-on: ubuntu-18.04
         steps:
@@ -596,6 +650,8 @@ jobs:
           - name: Build with Gradle (elasticsearch:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info elasticsearch:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_orientdb_check:
         runs-on: ubuntu-18.04
         steps:
@@ -617,6 +673,8 @@ jobs:
           - name: Build with Gradle (orientdb:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info orientdb:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_vault_check:
         runs-on: ubuntu-18.04
         steps:
@@ -638,6 +696,8 @@ jobs:
           - name: Build with Gradle (vault:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info vault:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     module_couchbase_check:
         runs-on: ubuntu-18.04
         steps:
@@ -659,6 +719,8 @@ jobs:
           - name: Build with Gradle (couchbase:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info couchbase:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     examples:
         runs-on: ubuntu-18.04
         steps:
@@ -680,6 +742,8 @@ jobs:
           - name: Build with Gradle (-p examples check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info -p examples check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     docs_examples_junit4_generic:
         runs-on: ubuntu-18.04
         steps:
@@ -701,6 +765,8 @@ jobs:
           - name: Build with Gradle (docs:examples:junit4:generic:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info docs:examples:junit4:generic:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     docs_examples_junit4_redis:
         runs-on: ubuntu-18.04
         steps:
@@ -722,6 +788,8 @@ jobs:
           - name: Build with Gradle (docs:examples:junit4:redis:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info docs:examples:junit4:redis:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     docs_examples_junit5_redis:
         runs-on: ubuntu-18.04
         steps:
@@ -743,6 +811,8 @@ jobs:
           - name: Build with Gradle (docs:examples:junit5:redis:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info docs:examples:junit5:redis:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
     docs_examples_spock_redis:
         runs-on: ubuntu-18.04
         steps:
@@ -764,3 +834,5 @@ jobs:
           - name: Build with Gradle (docs:examples:spock:redis:check)
             run: |
                 ./gradlew --no-daemon --continue --scan --info docs:examples:spock:redis:check
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC

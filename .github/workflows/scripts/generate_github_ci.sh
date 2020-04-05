@@ -32,6 +32,8 @@ generate_job () {
           - name: Build with Gradle (${GRADLE_ARGS})
             run: |
                 ./gradlew --no-daemon --continue --scan --info ${GRADLE_ARGS}
+            env:
+              TZ: /usr/share/zoneinfo/ETC/UTC
 END
 }
 
