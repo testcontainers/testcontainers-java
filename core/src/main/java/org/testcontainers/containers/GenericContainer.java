@@ -305,7 +305,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             Instant startedAt = Instant.now();
 
-            logger().debug("Starting container: {}", getDockerImageName());
             logger().debug("Trying to start container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
