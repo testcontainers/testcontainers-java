@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
@@ -101,18 +103,36 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Override
     public Db2Container withUsername(String username) {
+        Objects.requireNonNull(username, "Username must not be null");
+        if (username.length() < 1 || username.length() > 8) {
+            throw new IllegalArgumentException("Username must be between 1-8 characters");
+        }
+        if (!Pattern.matches("[^a-zA-Z0-9_]", username)) {
+            throw new IllegalArgumentException("Username must consist of characters in the range: a-zA-Z0-9_");
+        }
         this.username = username;
         return this;
     }
 
     @Override
     public Db2Container withPassword(String password) {
+        Objects.requireNonNull(password, "Password must not be null");
+        if (password.length() > 18) {
+            throw new IllegalArgumentException("Password length cannot exceed 18 characters.");
+        }
         this.password = password;
         return this;
     }
 
     @Override
     public Db2Container withDatabaseName(String dbName) {
+        Objects.requireNonNull(dbName, "Database name must not be null");
+        if (dbName.length() < 1 || dbName.length() > 8) {
+            throw new IllegalArgumentException("Database name must be between 1-8 characters");
+        }
+        if (!Pattern.matches("[^a-zA-Z0-9_]", dbName)) {
+            throw new IllegalArgumentException("Database name must consist of characters in the range: a-zA-Z0-9_");
+        }
         this.databaseName = dbName;
         return this;
     }
