@@ -9,8 +9,8 @@ jobs:
         runs-on: ubuntu-18.04
         steps:
             -   uses: actions/checkout@v2
-            -   name: Checkout master
-                run: git checkout master
+                with:
+                  ref: master
             -   name: Update latest_version property in mkdocs.yml
                 run: |
                     sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml

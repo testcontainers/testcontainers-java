@@ -4,7 +4,7 @@ dependencies {
     compile project(':testcontainers')
 
     testCompile 'com.bettercloud:vault-java-driver:5.1.0'
-    testCompile 'io.rest-assured:rest-assured:4.2.0'
+    testCompile 'io.rest-assured:rest-assured:4.3.0'
     testCompile 'org.assertj:assertj-core:3.15.0'
 
 }
