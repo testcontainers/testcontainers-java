@@ -108,6 +108,8 @@ class ConnectionPublisher implements Publisher<Connection> {
 
             private Subscription s;
 
+            private boolean cancelled = false;
+
             ProxySubscriptionState(Publisher<? extends Connection> publisher) {
                 this.publisher = publisher;
             }
@@ -123,14 +125,21 @@ class ConnectionPublisher implements Publisher<Connection> {
             }
 
             @Override
-            public void cancel() {
-                s.cancel();
+            public synchronized void cancel() {
+                cancelled = true;
+                if (s != null) {
+                    s.cancel();
+                }
             }
 
             @Override
-            public void onSubscribe(Subscription s) {
+            public synchronized void onSubscribe(Subscription s) {
                 this.s = s;
-                s.request(1);
+                if (!cancelled) {
+                    s.request(1);
+                } else {
+                    s.cancel();
+                }
             }
 
             @Override
