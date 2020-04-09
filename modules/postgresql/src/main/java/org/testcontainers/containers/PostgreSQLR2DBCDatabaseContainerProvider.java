@@ -1,12 +1,15 @@
 package org.testcontainers.containers;
 
+import com.google.auto.service.AutoService;
+import io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainerProvider;
 
+@AutoService(R2DBCDatabaseContainerProvider.class)
 public final class PostgreSQLR2DBCDatabaseContainerProvider implements R2DBCDatabaseContainerProvider {
 
-    static final String DRIVER = "postgresql";
+    static final String DRIVER = PostgresqlConnectionFactoryProvider.POSTGRESQL_DRIVER;
 
     @Override
     public boolean supports(ConnectionFactoryOptions options) {
