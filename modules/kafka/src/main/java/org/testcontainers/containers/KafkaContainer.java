@@ -50,6 +50,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_BROKER_ID", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1");
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
     }
