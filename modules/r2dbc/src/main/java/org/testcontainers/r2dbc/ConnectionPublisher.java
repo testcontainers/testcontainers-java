@@ -9,6 +9,13 @@ import org.reactivestreams.Subscription;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+/**
+ * Design notes:
+ * - ConnectionPublisher is Mono-like (0..1), the request amount is ignored
+ * - given the testing nature, the performance requirements are less strict
+ * - "synchronized" is used to avoid races
+ * - Reactive Streams spec violations are not checked (e.g. non-positive request)
+ */
 class ConnectionPublisher implements Publisher<Connection> {
 
     private final Supplier<CompletableFuture<ConnectionFactory>> futureSupplier;
@@ -22,13 +29,6 @@ class ConnectionPublisher implements Publisher<Connection> {
         actual.onSubscribe(new StateMachineSubscription(actual));
     }
 
-    /**
-     * Design notes:
-     * - ConnectionPublisher is Mono-like (0..1), the request amount is ignored
-     * - given the testing nature, the performance requirements are less strict
-     * - "synchronized" is used to avoid races
-     * - Reactive Streams spec violations are not checked (e.g. non-positive request)
-     */
     private class StateMachineSubscription implements Subscription {
 
         private final Subscriber<? super Connection> actual;
