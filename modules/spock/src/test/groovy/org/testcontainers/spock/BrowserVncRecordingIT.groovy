@@ -36,7 +36,7 @@ class BrowserWebdriverContainerIT extends Specification {
         .withRecordingMode(RECORD_ALL, new File("./build/"))
         .withRecordingFileFactory(new RecordingFileFactory() {
             @Override
-            File recordingFileForTest(File vncRecordingDirectory, Description description, boolean succeeded) {
+            File recordingFileForTest(File vncRecordingDirectory, String prefix, boolean succeeded) {
                 return new File("dummy.flv")
             }
     });
@@ -95,7 +95,7 @@ class BrowserWebdriverContainerIT extends Specification {
         .withRecordingMode(RECORD_FAILING, new File("./build/"))
         .withRecordingFileFactory(new RecordingFileFactory() {
             @Override
-            File recordingFileForTest(File vncRecordingDirectory, Description description, boolean succeeded) {
+            File recordingFileForTest(File vncRecordingDirectory, String prefix, boolean succeeded) {
                 return new File("dummy.flv")
             }
     });
@@ -154,7 +154,7 @@ class BrowserWebdriverContainerIT extends Specification {
         .withRecordingMode(RECORD_FAILING, new File("./build/"))
         .withRecordingFileFactory(new RecordingFileFactory() {
             @Override
-            File recordingFileForTest(File vncRecordingDirectory, Description description, boolean succeeded) {
+            File recordingFileForTest(File vncRecordingDirectory, String prefix, boolean succeeded) {
                 return new File("dummy.flv")
             }
     });
