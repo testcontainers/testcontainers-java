@@ -5,9 +5,9 @@ import org.spockframework.runtime.extension.AbstractMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
 import org.spockframework.runtime.model.SpecInfo
-import org.testcontainers.containers.BrowserWebDriverContainer
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.lifecycle.TestLifecycleAware
 import org.testcontainers.spock.TestcontainersExtension.ErrorListener
 
 class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
@@ -55,7 +55,7 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 
     @Override
     void interceptCleanupMethod(IMethodInvocation invocation) throws Throwable {
-        findAllBrowserWebDriverContainers(invocation).each {
+        findAllTestLifecycleAwareContainers(invocation).each {
             if (errorListener.errors.isEmpty()) {
                 it.succeeded(Description.createTestDescription(this.class, "foobar"))
             } else {
@@ -79,11 +79,11 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
         }
     }
 
-    private List<BrowserWebDriverContainer> findAllBrowserWebDriverContainers(IMethodInvocation invocation) {
+    private List<TestLifecycleAware> findAllTestLifecycleAwareContainers(IMethodInvocation invocation) {
         spec.allFields.findAll { FieldInfo f ->
-            BrowserWebDriverContainer.isAssignableFrom(f.type)
+            TestLifecycleAware.isAssignableFrom(f.type)
         }.collect {
-            readContainerFromField(it, invocation) as BrowserWebDriverContainer
+            it.readValue(invocation.instance) as TestLifecycleAware
         }
     }
 
@@ -112,14 +112,14 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
     private static void startComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
         compose.each { FieldInfo f ->
             DockerComposeContainer c = f.readValue(invocation.instance) as DockerComposeContainer
-            c.starting(null)
+            c.start()
         }
     }
 
     private static void stopComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
         compose.each { FieldInfo f ->
             DockerComposeContainer c = f.readValue(invocation.instance) as DockerComposeContainer
-            c.finished(null)
+            c.stop()
         }
     }
 
