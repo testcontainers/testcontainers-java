@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ReusableKafkaContainerTest {
 
+    // kafka_init {
     private static KafkaContainer kafka;
 
     @BeforeClass
@@ -17,6 +18,7 @@ public class ReusableKafkaContainerTest {
             .withReuse(true);
         kafka.start();
     }
+    // }
 
     @Test
     public void testKafkaContainer() {

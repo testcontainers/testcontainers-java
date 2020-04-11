@@ -43,7 +43,7 @@ example in JUnit 4 you can create a static instance of a container and use a `@B
 instantiate and start the container.
 
 <!--codeinclude-->
-[Using reusable containers](../examples/junit4/generic/src/test/java/generic/ReusableContainersTest.java) inside_block:single_label
+[Using reusable containers](../examples/junit4/generic/src/test/java/generic/ReusableContainersTest.java) inside_block:reusable_containers
 <!--/codeinclude-->
 
 After running this test once, you can see that the container survived the end of the test execution with `docker ps`.
@@ -62,7 +62,7 @@ Beside generic containers you can also use the specialized containers. Here are 
 ### Example usage with container objects
 
 <!--codeinclude-->
-[Test using the Kafka container](../examples/junit4/generic/src/test/java/generic/ReusableKafkaContainerTest.java) inside_block:single_label
+[Test using the Kafka container](../examples/junit4/generic/src/test/java/generic/ReusableKafkaContainerTest.java) inside_block:kafka_init
 <!--/codeinclude-->
 
 Here we unset the network that was implicitly created by KafkaContainer (but not used in this case), because otherwise
@@ -72,7 +72,7 @@ compatibility) and most of other containers do not set the network implicitly.
 ### Example usage with JDBC URLs
 
 <!--codeinclude-->
-[Test that uses JDBC urls](../examples/junit4/generic/src/test/java/generic/ReusableContainerWithJdbcUrlsTest.java) inside_block:single_label
+[Test that uses JDBC urls](../examples/junit4/generic/src/test/java/generic/ReusableContainerWithJdbcUrlsTest.java) inside_block:jdbc_init
 <!--/codeinclude-->
 
 ## Ongoing work

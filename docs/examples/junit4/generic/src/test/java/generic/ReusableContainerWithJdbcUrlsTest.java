@@ -16,13 +16,14 @@ import static org.junit.Assert.assertTrue;
 
 public class ReusableContainerWithJdbcUrlsTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ReusableContainerWithJdbcUrlsTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReusableContainerWithJdbcUrlsTest.class);
 
+    // jdbc_init {
     private static GenericContainer<?> database;
 
     @BeforeClass
     public static void setUp() {
-        database = new GenericContainer<>("ibmcom/db2:11.5.0.0a")
+        database = new GenericContainer<>("postgres:9.6.17")
             .withReuse(true);
         database.start();
     }
@@ -33,13 +34,14 @@ public class ReusableContainerWithJdbcUrlsTest {
 
         Instant startedAt = Instant.now();
         Connection connection = DriverManager.getConnection(
-            "jdbc:tc:db2:///?TC_REUSABLE=true"
+            "jdbc:tc:postgresql:9.6.17:///?TC_REUSABLE=true"
         );
 
-        boolean execute = connection.createStatement().execute("SELECT 1  FROM SYSIBM.SYSDUMMY1");
+        boolean execute = connection.createStatement().execute("SELECT 1");
 
-        LOG.info("Total test time: {}", Duration.between(startedAt, Instant.now()));
+        logger.info("Total test time: {}", Duration.between(startedAt, Instant.now()));
 
         assertTrue(execute);
     }
+    // }
 }

@@ -5,4 +5,7 @@ dependencies {
     testCompile project(":testcontainers")
     testCompile project(":selenium")
     testCompile "org.seleniumhq.selenium:selenium-api:3.141.59"
+    testCompile "org.testcontainers:kafka:1.13.0"
+    testCompile "org.testcontainers:postgresql:1.13.0"
+    testCompile "org.postgresql:postgresql:42.2.12"
 }
