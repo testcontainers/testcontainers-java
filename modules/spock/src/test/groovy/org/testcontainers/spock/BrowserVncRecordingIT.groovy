@@ -66,7 +66,7 @@ class BrowserWebdriverContainerIT extends Specification {
         runner.run(myTest)
 
         then:
-        temp.getRoot().list().find { it.contains("BrowserWebdriverContainerIT-should-record") }
+        temp.getRoot().list().find { it.contains("BrowserWebdriverContainerIT-should+record") }
     }
 
     def "records nothing if RECORD_FAILING and not failing"() {
@@ -170,7 +170,7 @@ class BrowserWebdriverContainerIT extends Specification {
         runner.run(myTest)
 
         then:
-        temp.getRoot().list().find { it.contains("BrowserWebdriverContainerIT-should-record") }
+        temp.getRoot().list().find { it.contains("BrowserWebdriverContainerIT-should+record") }
     }
 
 }

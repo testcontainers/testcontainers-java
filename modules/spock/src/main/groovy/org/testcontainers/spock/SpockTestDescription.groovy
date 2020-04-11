@@ -30,7 +30,7 @@ class SpockTestDescription implements TestDescription {
     @Override
     String getFilesystemFriendlyName() {
         return [specName, featureName].collect {
-            it.replaceAll(' ', '-')
+            URLEncoder.encode(it, 'UTF-8')
         }.join('-')
     }
 }
