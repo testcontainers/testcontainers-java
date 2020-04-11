@@ -5,9 +5,13 @@ import lombok.experimental.UtilityClass;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @UtilityClass
 public class Startables {
@@ -27,8 +31,15 @@ public class Startables {
     /**
      * @see #deepStart(Stream)
      */
-    public CompletableFuture<Void> deepStart(Collection<Startable> startables) {
-        return deepStart(startables.stream());
+    public CompletableFuture<Void> deepStart(Collection<? extends Startable> startables) {
+        return deepStart((Iterable<? extends Startable>) startables);
+    }
+
+    /**
+     * @see #deepStart(Stream)
+     */
+    public CompletableFuture<Void> deepStart(Iterable<? extends Startable> startables) {
+        return deepStart(StreamSupport.stream(startables.spliterator(), false));
     }
 
     /**
@@ -49,7 +60,7 @@ public class Startables {
      * @param startables a {@link Stream} of {@link Startable}s to start and scan for transitive dependencies.
      * @return a {@link CompletableFuture} that resolves once all {@link Startable}s have started.
      */
-    public CompletableFuture<Void> deepStart(Stream<Startable> startables) {
+    public CompletableFuture<Void> deepStart(Stream<? extends Startable> startables) {
         return deepStart(new HashMap<>(), startables);
     }
 
@@ -58,7 +69,7 @@ public class Startables {
      * @param started an intermediate storage for already started {@link Startable}s to prevent multiple starts.
      * @param startables a {@link Stream} of {@link Startable}s to start and scan for transitive dependencies.
      */
-    private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<Startable> startables) {
+    private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<? extends Startable> startables) {
         CompletableFuture[] futures = startables
             .sequential()
             .map(it -> {

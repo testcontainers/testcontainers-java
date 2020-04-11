@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
-    public static final String VERSION = "0.9.4";
+    public static final String VERSION = "0.10.8";
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
 
     private final List<Service> services = new ArrayList<>();
@@ -154,7 +154,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         SSM("ssm", 4583),
         SECRETSMANAGER("secretsmanager", 4584),
         STEPFUNCTIONS("stepfunctions", 4585),
-        CLOUDWATCHLOGS("cloudwatchlogs", 4586),
+        CLOUDWATCHLOGS("logs", 4586),
         STS("sts", 4592),
         IAM("iam", 4593);
 

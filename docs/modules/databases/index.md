@@ -45,7 +45,7 @@ As long as you have Testcontainers and the appropriate JDBC driver on your class
 _N.B:_
 
 * _TC needs to be on your application's classpath at runtime for this to work_
-* _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
+* _For Spring Boot (Before version `2.3.0`) you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
 **Original URL**: `jdbc:mysql:5.7.22://localhost:3306/databasename`
 
@@ -68,6 +68,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 ### Using PostGIS
 
 `jdbc:tc:postgis:9.6:///databasename`
+
+### Using Presto
+
+`jdbc:tc:presto:329://localhost/memory/default`
 
 ## Using a classpath init script
 

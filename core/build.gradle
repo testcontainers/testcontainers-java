@@ -1,3 +1,18 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        // https://github.com/melix/japicmp-gradle-plugin/issues/36
+        classpath 'com.google.guava:guava:28.2-jre'
+    }
+}
+
+plugins {
+    id 'me.champeau.gradle.japicmp' version '0.2.8'
+}
+
 apply plugin: 'com.github.johnrengelman.shadow'
 
 description = "Testcontainers Core"
@@ -9,6 +24,7 @@ sourceSets {
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 configurations {
+    baseline
     shaded
     [runtime, compileOnly, testCompile]*.extendsFrom shaded
 }
@@ -55,12 +71,52 @@ task jarFileTest(type: Test) {
 }
 project.tasks.check.dependsOn(jarFileTest)
 
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    dependsOn(tasks.shadowJar)
+
+    oldClasspath = configurations.baseline
+    newClasspath = shadowJar.outputs.files
+    ignoreMissingClasses = true
+
+    accessModifier = "protected"
+    failOnModification = true
+    failOnSourceIncompatibility = true
+
+    // TODO cleanup excludes after we release the version based on docker-java 3.2.0
+
+    packageExcludes = [
+        "com.github.dockerjava.*",
+        "org.testcontainers.shaded.*",
+    ]
+
+    classExcludes = [
+        // 'METHOD_REMOVED_IN_SUPERCLASS'
+        "org.testcontainers.containers.output.FrameConsumerResultCallback",
+        "org.testcontainers.dockerclient.LogToStringContainerCallback",
+
+        // 'METHOD_RETURN_TYPE_CHANGED', exposed `com.github.dockerjava.core.command.PullImageResultCallback` to the public API
+        "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
+    ]
+
+    onlyBinaryIncompatibleModified = true
+    htmlOutputFile = file("$buildDir/reports/japi.html")
+}
+// do not run on Windows by default
+// TODO investigate zip issue on Windows
+if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+    project.tasks.check.dependsOn(japicmp)
+}
+
 dependencies {
+    baseline 'org.testcontainers:testcontainers:1.12.5', {
+        exclude group: "*", module: "*"
+    }
+
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.30'
     compile 'org.jetbrains:annotations:17.0.0'
     compile 'javax.annotation:javax.annotation-api:1.3.2'
-    compile 'org.apache.commons:commons-compress:1.19'
+    compile 'org.apache.commons:commons-compress:1.20'
     // Added for JDK9 compatibility since it's missing this package
     compile 'javax.xml.bind:jaxb-api:2.3.1'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
@@ -82,22 +138,16 @@ dependencies {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java:docker-java:3.1.5') {
-        exclude(group: 'org.glassfish.jersey.core')
-        exclude(group: 'org.glassfish.jersey.connectors')
-        exclude(group: 'org.glassfish.jersey.inject')
-        exclude(group: 'log4j')
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.0') {
+        exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
-        exclude(group: 'com.kohlschutter.junixsocket')
-        exclude(group: 'io.netty')
-        exclude(group: 'org.apache.httpcomponents')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
     shaded "org.yaml:snakeyaml:1.25"
 
-    shaded 'com.squareup.okhttp3:okhttp:3.14.4'
+    shaded 'com.squareup.okhttp3:okhttp:3.14.6'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
@@ -108,14 +158,14 @@ dependencies {
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
     testCompile 'redis.clients:jedis:3.2.0'
     testCompile 'com.rabbitmq:amqp-client:5.8.0'
-    testCompile 'org.mongodb:mongo-java-driver:3.12.0'
-    testCompile ('org.mockito:mockito-core:3.2.4') {
+    testCompile 'org.mongodb:mongo-java-driver:3.12.1'
+    testCompile ('org.mockito:mockito-core:3.3.3') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.14.0'
+    testCompile 'org.assertj:assertj-core:3.15.0'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
