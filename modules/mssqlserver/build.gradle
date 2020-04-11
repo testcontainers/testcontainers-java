@@ -2,4 +2,7 @@ description = "Testcontainers :: MS SQL Server"
 
 dependencies {
     compile project(':jdbc')
+
+    testCompile project(':jdbc-test')
+    testCompile 'com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre8'
 }
