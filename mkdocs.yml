@@ -37,6 +37,7 @@ nav:
           - features/creating_images.md
           - features/configuration.md
           - features/advanced_options.md
+          - features/reusable_containers.md
     - Modules:
           - Databases:
                 - modules/databases/index.md
