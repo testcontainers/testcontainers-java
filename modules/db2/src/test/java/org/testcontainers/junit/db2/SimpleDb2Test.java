@@ -25,5 +25,4 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         }
     }
-
 }

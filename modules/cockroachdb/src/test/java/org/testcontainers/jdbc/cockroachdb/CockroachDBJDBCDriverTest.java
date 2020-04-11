@@ -18,5 +18,4 @@ public class CockroachDBJDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:cockroach://hostname/databasename", EnumSet.noneOf(Options.class)},
             });
     }
-
 }

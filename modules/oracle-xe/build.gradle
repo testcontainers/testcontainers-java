@@ -4,5 +4,5 @@ dependencies {
     compile project(':jdbc')
 
     testCompile project(':jdbc-test')
-    testCompile 'com.oracle.ojdbc:ojdbc10:19.3.0.0'
+    testCompile 'com.oracle.ojdbc:ojdbc8:19.3.0.0'
 }

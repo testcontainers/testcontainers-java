@@ -6,7 +6,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -19,9 +19,18 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class AbstractJDBCDriverTest {
-    @Parameterized.Parameter
+
+    protected enum Options {
+        ScriptedSchema,
+        CharacterSet,
+        CustomIniFile,
+        JDBCParams,
+        PmdKnownBroken
+    }
+
+    @Parameter
     public String jdbcUrl;
-    @Parameterized.Parameter(1)
+    @Parameter(1)
     public EnumSet<Options> options;
 
     public static void sampleInitFunction(Connection connection) throws SQLException {
@@ -180,13 +189,5 @@ public class AbstractJDBCDriverTest {
         hikariConfig.setMaximumPoolSize(poolSize);
 
         return new HikariDataSource(hikariConfig);
-    }
-
-    protected enum Options {
-        ScriptedSchema,
-        CharacterSet,
-        CustomIniFile,
-        JDBCParams,
-        PmdKnownBroken
     }
 }

@@ -27,5 +27,4 @@ public class MySQLJDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:mysql:5.6://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override", EnumSet.of(Options.CustomIniFile)},
             });
     }
-
 }

@@ -26,5 +26,4 @@ public class MariaDBJDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:mariadb:10.2.14://hostname/databasename?TC_MY_CNF=somepath/mariadb_conf_override", EnumSet.of(Options.CustomIniFile)},
             });
     }
-
 }

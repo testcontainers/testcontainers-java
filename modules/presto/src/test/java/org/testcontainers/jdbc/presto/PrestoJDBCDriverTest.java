@@ -18,5 +18,4 @@ public class PrestoJDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:presto:329://hostname/", EnumSet.of(Options.PmdKnownBroken)},
             });
     }
-
 }

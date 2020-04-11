@@ -18,5 +18,4 @@ public class ClickhouseJDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
             });
     }
-
 }

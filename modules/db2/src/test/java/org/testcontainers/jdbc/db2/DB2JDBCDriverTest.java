@@ -18,5 +18,4 @@ public class DB2JDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class)}
             });
     }
-
 }

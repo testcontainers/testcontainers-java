@@ -18,5 +18,4 @@ public class PostgreSQLJDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:postgresql:9.6.8://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
             });
     }
-
 }
