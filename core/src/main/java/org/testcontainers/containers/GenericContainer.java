@@ -26,9 +26,6 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +39,6 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -51,8 +47,8 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -64,14 +60,9 @@ import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
-import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -82,7 +73,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -266,7 +256,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * @see #dependsOn(List)
+     * @see #dependsOn(Iterable)
      */
     public SELF dependsOn(Startable... startables) {
         Collections.addAll(dependencies, startables);
@@ -274,14 +264,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * @see #dependsOn(Iterable)
+     */
+    public SELF dependsOn(List<? extends Startable> startables) {
+        return this.dependsOn((Iterable<? extends Startable>) startables);
+    }
+
+    /**
      * Delays this container's creation and start until provided {@link Startable}s start first.
      * Note that the circular dependencies are not supported.
      *
      * @param startables a list of {@link Startable} to depend on
-     * @see Startables#deepStart(Collection)
+     * @see Startables#deepStart(Iterable)
      */
-    public SELF dependsOn(List<Startable> startables) {
-        dependencies.addAll(startables);
+    public SELF dependsOn(Iterable<? extends Startable> startables) {
+        startables.forEach(dependencies::add);
         return self();
     }
 

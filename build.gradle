@@ -68,6 +68,12 @@ subprojects {
         }
     }
 
+    tasks.withType(Test).all {
+        reports {
+            junitXml.outputPerTestCase = true
+        }
+    }
+
     // Ensure that Javadoc generation is always tested
     check.dependsOn(javadoc)
 

@@ -24,6 +24,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     public MariaDBContainer(String dockerImageName) {
         super(dockerImageName);
+        addExposedPort(MARIADB_PORT);
     }
 
     @Override
@@ -35,7 +36,6 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     protected void configure() {
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d", "mariadb-default-conf");
 
-        addExposedPort(MARIADB_PORT);
         addEnv("MYSQL_DATABASE", databaseName);
         addEnv("MYSQL_USER", username);
         if (password != null && !password.isEmpty()) {

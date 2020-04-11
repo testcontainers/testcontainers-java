@@ -178,12 +178,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // (a) as a workaround for https://github.com/docker/compose/issues/5854, which prevents authenticated image pulls being possible when credential helpers are in use
         // (b) so that credential helper-based auth still works when compose is running from within a container
         parsedComposeFiles.stream()
-            .flatMap(it -> it.getServiceImageNames().stream())
+            .flatMap(it -> it.getDependencyImageNames().stream())
             .forEach(imageName -> {
                 try {
+                    log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
                     DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
                 } catch (Exception e) {
-                    log.warn("Failed to pull image '{}'. Exception message was {}", imageName, e.getMessage());
+                    log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
             });
     }
