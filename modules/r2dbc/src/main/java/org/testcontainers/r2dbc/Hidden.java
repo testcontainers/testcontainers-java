@@ -1,5 +1,6 @@
 package org.testcontainers.r2dbc;
 
+import com.google.auto.service.AutoService;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.ConnectionFactoryProvider;
@@ -8,6 +9,8 @@ import io.r2dbc.spi.ConnectionFactoryProvider;
  * Hide inner classes that must be public due to the way {@link java.util.ServiceLoader} works
  */
 class Hidden {
+
+    @AutoService(ConnectionFactoryProvider.class)
     public static final class TestcontainersR2DBCConnectionFactoryProvider implements ConnectionFactoryProvider {
 
         public static final String DRIVER = "tc";
