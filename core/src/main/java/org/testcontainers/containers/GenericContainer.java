@@ -380,9 +380,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     }
                     reusable = true;
                 } else {
-                    logger().warn("Reuse was requested but the environment does not support the reuse of containers");
-                    logger().warn("To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at {}",
-                            Paths.get(System.getProperty("user.home"), ".testcontainers.properties"));
+                    logger().warn(
+                        "" +
+                            "Reuse was requested but the environment does not support the reuse of containers\n" +
+                            "To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at {}",
+                        Paths.get(System.getProperty("user.home"), ".testcontainers.properties")
+                    );
                     reusable = false;
                 }
             } else {
