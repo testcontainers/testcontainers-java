@@ -62,7 +62,7 @@ Beside generic containers you can also use the specialized containers. Here are 
 ### Example usage with container objects
 
 <!--codeinclude-->
-[Using reusable containers](../examples/junit4/generic/src/test/java/generic/ReusableKafkaContainerTest.java) inside_block:single_label
+[Test using the Kafka container](../examples/junit4/generic/src/test/java/generic/ReusableKafkaContainerTest.java) inside_block:single_label
 <!--/codeinclude-->
 
 Here we unset the network that was implicitly created by KafkaContainer (but not used in this case), because otherwise
@@ -72,7 +72,7 @@ compatibility) and most of other containers do not set the network implicitly.
 ### Example usage with JDBC URLs
 
 <!--codeinclude-->
-[Using reusable containers](../examples/junit4/generic/src/test/java/generic/ReusableContainerWithJdbcUrlsTest.java) inside_block:single_label
+[Test that uses JDBC urls](../examples/junit4/generic/src/test/java/generic/ReusableContainerWithJdbcUrlsTest.java) inside_block:single_label
 <!--/codeinclude-->
 
 ## Ongoing work
