@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.HealthState;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -89,9 +90,12 @@ public interface ContainerState {
 
         try {
             InspectContainerResponse inspectContainerResponse = getCurrentContainerInfo();
-            String healthStatus = inspectContainerResponse.getState().getHealth().getStatus();
+            HealthState health = inspectContainerResponse.getState().getHealth();
+            if (health == null) {
+                throw new RuntimeException("This container's image does not have a healthcheck declared, so health cannot be determined. Either amend the image or use another approach to determine whether containers are healthy.");
+            }
 
-            return healthStatus.equals(STATE_HEALTHY);
+            return STATE_HEALTHY.equals(health.getStatus());
         } catch (DockerException e) {
             return false;
         }
