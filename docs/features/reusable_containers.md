@@ -15,7 +15,7 @@ reusable containers survive the end of the tests. This may speed up consecutive 
  * Check for overrides like `containerIsCreated`. // TODO: I am not quite sure if I understand what this means and what it is used for.
  * Per environment enablement. This feature has to be enabled twice, via property and local testcontainers configuration.
 
-## What reusable cannot do
+## What reusable containers cannot do
 
 Hence this is an alpha feature it is not yet fully implemented.
 
