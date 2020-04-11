@@ -16,7 +16,7 @@ import static java.lang.String.format;
  */
 public class HazelcastContainer<SELF extends HazelcastContainer<SELF>> extends GenericContainer<SELF> {
 
-    public static final String VERSION = "4.0";
+    public static final String VERSION = "4.0.1";
 
     private static final String IMAGE_NAME = "hazelcast/hazelcast";
     private static final int HAZELCAST_PORT = 5701;
