@@ -27,6 +27,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     public MySQLContainer(String dockerImageName) {
         super(dockerImageName);
+        addExposedPort(MYSQL_PORT);
     }
 
     @NotNull
@@ -40,7 +41,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d",
                 "mysql-default-conf");
 
-        addExposedPort(MYSQL_PORT);
         addEnv("MYSQL_DATABASE", databaseName);
         addEnv("MYSQL_USER", username);
         if (password != null && !password.isEmpty()) {
