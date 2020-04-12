@@ -123,7 +123,7 @@ jobs:
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
     condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
-- job: module_jdbc-test_check
+- job: module_jdbc_test_check
   steps:
   - script: docker image prune -af
   - task: Gradle@2
@@ -174,7 +174,7 @@ jobs:
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
     condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
-- job: module_oracle-xe_check
+- job: module_oracle_xe_check
   steps:
   - script: docker image prune -af
   - task: Gradle@2
@@ -310,7 +310,7 @@ jobs:
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
     condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
-- job: module_junit-jupiter_check
+- job: module_junit_jupiter_check
   steps:
   - script: docker image prune -af
   - task: Gradle@2
@@ -429,7 +429,7 @@ jobs:
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
     condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
-- job: module_database-commons_check
+- job: module_database_commons_check
   steps:
   - script: docker image prune -af
   - task: Gradle@2

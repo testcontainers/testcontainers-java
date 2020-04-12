@@ -7,7 +7,7 @@ set -o xtrace
 CI_WORKFLOW_FILE=azure-pipelines.yml
 
 generate_job () {
-    NAME=$1
+    NAME=${1/-/_}
     GRADLE_ARGS=$2
 
     cat <<END >> $CI_WORKFLOW_FILE
