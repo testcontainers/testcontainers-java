@@ -37,6 +37,7 @@ public class CouchbaseContainerTest {
         try (CouchbaseContainer container = new CouchbaseContainer().withBucket(bucketDefinition)) {
             container.start();
 
+            // basic_usage {
             CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
                 .builder()
                 .bootstrapCarrierDirectPort(container.getBootstrapCarrierDirectPort())
@@ -58,6 +59,7 @@ public class CouchbaseContainerTest {
                 cluster.disconnect();
                 environment.shutdown();
             }
+            // }
         }
     }
 
