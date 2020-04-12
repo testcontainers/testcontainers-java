@@ -17,7 +17,9 @@ The started container will be terminated when the `ConnectionFactory` is closed.
 **Original URL**: `r2dbc:mysql://localhost:3306/databasename`
 
 1. Insert `tc:` after `r2dbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value.
-1. Specify the mandatory Docker tag of database's official image that you want to use as `TC_IMAGE_TAG`
+1. Specify the mandatory Docker tag of the database's official image that you want using a `TC_IMAGE_TAG` query parameter.
+
+**Note that, unlike Testcontainers' JDBC URL support, it is not possible to specify an image tag in the 'scheme' part of the URL, and it is always necessary to specify a tag using `TC_IMAGE_TAG`.**
 
 So that the URL becomes:  
 `r2dbc:tc:mysql:///databasename?TC_IMAGE_TAG=5.7.22`
