@@ -12,7 +12,7 @@ public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
 
     @Override
     protected String createR2DBCUrl() {
-        return "r2dbc:tc:mysql:///db?TC_IMAGE=mysql:5.7.22";
+        return "r2dbc:tc:mysql:///db?TC_IMAGE_TAG=5.7.22";
     }
 
     @Override

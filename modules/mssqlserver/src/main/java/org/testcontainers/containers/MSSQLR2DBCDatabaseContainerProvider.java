@@ -18,7 +18,8 @@ public class MSSQLR2DBCDatabaseContainerProvider implements R2DBCDatabaseContain
 
     @Override
     public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
-        MSSQLServerContainer<?> container = new MSSQLServerContainer<>(options.getRequiredValue(IMAGE_OPTION));
+        String image = MSSQLServerContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
+        MSSQLServerContainer<?> container = new MSSQLServerContainer<>(image);
 
         if (Boolean.TRUE.equals(options.getValue(REUSABLE_OPTION))) {
             container.withReuse(true);

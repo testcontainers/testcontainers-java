@@ -16,6 +16,6 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
     }
 
     protected String createR2DBCUrl() {
-        return "r2dbc:tc:postgresql:///db?TC_IMAGE=postgres:10-alpine";
+        return "r2dbc:tc:postgresql:///db?TC_IMAGE_TAG=10-alpine";
     }
 }
