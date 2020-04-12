@@ -11,7 +11,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     public static final String IMAGE = "mariadb";
     public static final String DEFAULT_TAG = "10.3.6";
 
-    private static final Integer MARIADB_PORT = 3306;
+    static final Integer MARIADB_PORT = 3306;
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
