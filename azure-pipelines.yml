@@ -6,8 +6,7 @@
 jobs:
 - job: core_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (testcontainers:check)
     env:
@@ -24,8 +23,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_selenium_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (selenium:check)
     env:
@@ -42,8 +40,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_neo4j_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (neo4j:check)
     env:
@@ -60,8 +57,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_clickhouse_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (clickhouse:check)
     env:
@@ -78,8 +74,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_postgresql_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (postgresql:check)
     env:
@@ -96,8 +91,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_dynalite_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (dynalite:check)
     env:
@@ -114,8 +108,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_presto_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (presto:check)
     env:
@@ -132,8 +125,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_jdbc-test_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (jdbc-test:check)
     env:
@@ -150,8 +142,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mariadb_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (mariadb:check)
     env:
@@ -168,8 +159,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mockserver_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (mockserver:check)
     env:
@@ -186,8 +176,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_oracle-xe_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (oracle-xe:check)
     env:
@@ -204,8 +193,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_rabbitmq_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (rabbitmq:check)
     env:
@@ -222,8 +210,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_jdbc_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (jdbc:check)
     env:
@@ -240,8 +227,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_influxdb_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (influxdb:check)
     env:
@@ -258,8 +244,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_nginx_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (nginx:check)
     env:
@@ -276,8 +261,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_kafka_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (kafka:check)
     env:
@@ -294,8 +278,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_cassandra_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (cassandra:check)
     env:
@@ -312,8 +295,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mysql_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (mysql:check)
     env:
@@ -330,8 +312,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_junit-jupiter_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (junit-jupiter:check)
     env:
@@ -348,8 +329,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mssqlserver_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (mssqlserver:check)
     env:
@@ -366,8 +346,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_spock_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (spock:check)
     env:
@@ -384,8 +363,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_db2_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (db2:check)
     env:
@@ -402,8 +380,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_localstack_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (localstack:check)
     env:
@@ -420,8 +397,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_cockroachdb_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (cockroachdb:check)
     env:
@@ -438,8 +414,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_pulsar_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (pulsar:check)
     env:
@@ -456,8 +431,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_database-commons_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (database-commons:check)
     env:
@@ -474,8 +448,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_toxiproxy_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (toxiproxy:check)
     env:
@@ -492,8 +465,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_elasticsearch_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (elasticsearch:check)
     env:
@@ -510,8 +482,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_orientdb_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (orientdb:check)
     env:
@@ -528,8 +499,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_vault_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (vault:check)
     env:
@@ -546,8 +516,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_couchbase_check
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (couchbase:check)
     env:
@@ -564,8 +533,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: examples
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (-p examples check)
     env:
@@ -582,8 +550,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_junit4_generic
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (docs:examples:junit4:generic:check)
     env:
@@ -600,8 +567,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_junit4_redis
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (docs:examples:junit4:redis:check)
     env:
@@ -618,8 +584,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_junit5_redis
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (docs:examples:junit5:redis:check)
     env:
@@ -636,8 +601,7 @@ jobs:
     condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_spock_redis
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (docs:examples:spock:redis:check)
     env:

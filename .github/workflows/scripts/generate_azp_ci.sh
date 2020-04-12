@@ -13,8 +13,7 @@ generate_job () {
     cat <<END >> $CI_WORKFLOW_FILE
 - job: ${NAME}
   steps:
-  - displayName: Clear existing docker image cache
-    script: docker image prune -af
+  - script: docker image prune -af
   - task: Gradle@2
     displayName: Build and test with Gradle (${GRADLE_ARGS})
     env:
