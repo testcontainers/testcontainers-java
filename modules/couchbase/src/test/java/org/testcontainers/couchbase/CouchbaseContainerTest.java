@@ -32,22 +32,35 @@ public class CouchbaseContainerTest {
 
     @Test
     public void testBasicContainerUsage() {
+        // bucket_definition {
         BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
+        // }
 
-        try (CouchbaseContainer container = new CouchbaseContainer().withBucket(bucketDefinition)) {
+        try (
+            // container_definition {
+            CouchbaseContainer container = new CouchbaseContainer()
+                .withBucket(bucketDefinition)
+            // }
+        ) {
             container.start();
 
-            // basic_usage {
+            // cluster_creation {
             CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
                 .builder()
                 .bootstrapCarrierDirectPort(container.getBootstrapCarrierDirectPort())
                 .bootstrapHttpDirectPort(container.getBootstrapHttpDirectPort())
                 .build();
 
-            Cluster cluster = CouchbaseCluster.create(environment, container.getContainerIpAddress());
+            Cluster cluster = CouchbaseCluster.create(
+                environment,
+                container.getContainerIpAddress()
+            );
+            // }
 
             try {
+                // auth {
                 cluster.authenticate(container.getUsername(), container.getPassword());
+                // }
 
                 Bucket bucket = cluster.openBucket(bucketDefinition.getName());
 
@@ -59,7 +72,6 @@ public class CouchbaseContainerTest {
                 cluster.disconnect();
                 environment.shutdown();
             }
-            // }
         }
     }
 

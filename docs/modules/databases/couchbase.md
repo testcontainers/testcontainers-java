@@ -8,9 +8,25 @@ Testcontainers module for Couchbase. [Couchbase](https://www.couchbase.com/) is 
 
 Running Couchbase as a stand-in in a test:
 
-<!--codeinclude-->
-[Basic usage](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:basic_usage
-<!--/codeinclude-->
+1. Define a bucket:
+    <!--codeinclude-->
+    [Bucket Definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:bucket_definition
+    <!--/codeinclude-->
+
+2. define a container:
+    <!--codeinclude-->
+    [Container definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:container_definition
+    <!--/codeinclude-->
+
+3. create an environment & cluster:
+    <!--codeinclude-->
+    [Cluster creation](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:cluster_creation
+    <!--/codeinclude-->
+
+4. authenticate:
+    <!--codeinclude-->
+    [Authentication](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:auth
+    <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 
