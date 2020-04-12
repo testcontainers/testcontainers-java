@@ -222,7 +222,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * up automatically, we bind the internal hostname to the internal IP address.
      */
     private void renameNode() {
-        logger().debug("Renaming Couchbase Node from localhost to " + getContainerIpAddress());
+        logger().debug("Renaming Couchbase Node from localhost to {}", getContainerIpAddress());
 
         Response response = doHttpRequest(MGMT_PORT, "/node/controller/rename", "POST", new FormBody.Builder()
             .add("hostname", getInternalIpAddress())
@@ -236,7 +236,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Initializes services based on the configured enabled services.
      */
     private void initializeServices() {
-        logger().debug("Initializing couchbase services on host: " + enabledServices);
+        logger().debug("Initializing couchbase services on host: {}", enabledServices);
 
         final String services = enabledServices.stream().map(s -> {
             switch (s) {
@@ -262,7 +262,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * After this stage, all subsequent API calls need to have the basic auth header set.
      */
     private void configureAdminUser() {
-        logger().debug("Configuring couchbase admin user with username: \"" + username + "\"");
+        logger().debug("Configuring couchbase admin user with username: \"{}\"", username);
 
         Response response = doHttpRequest(MGMT_PORT, "/settings/web", "POST", new FormBody.Builder()
             .add("username", username)
