@@ -9,7 +9,7 @@ You can obtain a temporary database in one of two ways:
 
 As long as you have Testcontainers and the appropriate R2DBC driver on your classpath, you can simply modify regular R2DBC connection URLs to get a fresh containerized instance of the database each time your application starts up.
 
-Started container will be terminated when the `ConnectionFactory` is closed.
+The started container will be terminated when the `ConnectionFactory` is closed.
 
 !!! warning
     Both the database module (e.g. `org.testcontainers:mysql`) **and** `org.testcontainers:r2dbc` need to be on your application's classpath at runtime.
