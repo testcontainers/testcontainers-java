@@ -99,18 +99,14 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     @ToString.Include(name = "imageName", rank = 1)
     private String imageNameToString() {
-        // Include the imageName if it's available
-        if (imageNameFuture.isDone()) {
-            try {
-                return getImageName().toString();
-            } catch (InterruptedException | ExecutionException e) {
-                // Swallow this exception and use imageNameFuture instead.
-                // Don't log this, as the whole struggle here is that we don't know
-                // the image name, and DockerLoggerFactory.getLogger takes an image
-                // name argument.
-            }
+        if (!imageNameFuture.isDone()) {
+            return "<resolving>";
         }
 
-        return "<resolving>";
+        try {
+            return getImageName().toString();
+        } catch (InterruptedException | ExecutionException e) {
+            return e.getMessage();
+        }
     }
 }

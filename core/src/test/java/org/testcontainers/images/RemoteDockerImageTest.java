@@ -24,7 +24,7 @@ public class RemoteDockerImageTest {
         imageNameFuture.completeExceptionally(new RuntimeException("arbitrary"));
 
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
-        assertThat(remoteDockerImage.toString(), containsString("imageName=<resolving>"));
+        assertThat(remoteDockerImage.toString(), containsString("imageName=java.lang.RuntimeException: arbitrary"));
     }
 
     @Test(timeout=5000L)
