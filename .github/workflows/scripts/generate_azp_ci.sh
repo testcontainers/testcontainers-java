@@ -28,7 +28,7 @@ generate_job () {
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 END
 }
 

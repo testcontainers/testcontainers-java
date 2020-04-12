@@ -21,7 +21,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_selenium_check
   steps:
   - displayName: Clear existing docker image cache
@@ -39,7 +39,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_neo4j_check
   steps:
   - displayName: Clear existing docker image cache
@@ -57,7 +57,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_clickhouse_check
   steps:
   - displayName: Clear existing docker image cache
@@ -75,7 +75,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_postgresql_check
   steps:
   - displayName: Clear existing docker image cache
@@ -93,7 +93,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_dynalite_check
   steps:
   - displayName: Clear existing docker image cache
@@ -111,7 +111,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_presto_check
   steps:
   - displayName: Clear existing docker image cache
@@ -129,7 +129,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_jdbc-test_check
   steps:
   - displayName: Clear existing docker image cache
@@ -147,7 +147,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mariadb_check
   steps:
   - displayName: Clear existing docker image cache
@@ -165,7 +165,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mockserver_check
   steps:
   - displayName: Clear existing docker image cache
@@ -183,7 +183,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_oracle-xe_check
   steps:
   - displayName: Clear existing docker image cache
@@ -201,7 +201,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_rabbitmq_check
   steps:
   - displayName: Clear existing docker image cache
@@ -219,7 +219,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_jdbc_check
   steps:
   - displayName: Clear existing docker image cache
@@ -237,7 +237,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_influxdb_check
   steps:
   - displayName: Clear existing docker image cache
@@ -255,7 +255,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_nginx_check
   steps:
   - displayName: Clear existing docker image cache
@@ -273,7 +273,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_kafka_check
   steps:
   - displayName: Clear existing docker image cache
@@ -291,7 +291,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_cassandra_check
   steps:
   - displayName: Clear existing docker image cache
@@ -309,7 +309,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mysql_check
   steps:
   - displayName: Clear existing docker image cache
@@ -327,7 +327,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_junit-jupiter_check
   steps:
   - displayName: Clear existing docker image cache
@@ -345,7 +345,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_mssqlserver_check
   steps:
   - displayName: Clear existing docker image cache
@@ -363,7 +363,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_spock_check
   steps:
   - displayName: Clear existing docker image cache
@@ -381,7 +381,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_db2_check
   steps:
   - displayName: Clear existing docker image cache
@@ -399,7 +399,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_localstack_check
   steps:
   - displayName: Clear existing docker image cache
@@ -417,7 +417,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_cockroachdb_check
   steps:
   - displayName: Clear existing docker image cache
@@ -435,7 +435,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_pulsar_check
   steps:
   - displayName: Clear existing docker image cache
@@ -453,7 +453,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_database-commons_check
   steps:
   - displayName: Clear existing docker image cache
@@ -471,7 +471,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_toxiproxy_check
   steps:
   - displayName: Clear existing docker image cache
@@ -489,7 +489,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_elasticsearch_check
   steps:
   - displayName: Clear existing docker image cache
@@ -507,7 +507,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_orientdb_check
   steps:
   - displayName: Clear existing docker image cache
@@ -525,7 +525,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_vault_check
   steps:
   - displayName: Clear existing docker image cache
@@ -543,7 +543,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: module_couchbase_check
   steps:
   - displayName: Clear existing docker image cache
@@ -561,7 +561,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: examples
   steps:
   - displayName: Clear existing docker image cache
@@ -579,7 +579,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_junit4_generic
   steps:
   - displayName: Clear existing docker image cache
@@ -597,7 +597,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_junit4_redis
   steps:
   - displayName: Clear existing docker image cache
@@ -615,7 +615,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_junit5_redis
   steps:
   - displayName: Clear existing docker image cache
@@ -633,7 +633,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
 - job: docs_examples_spock_redis
   steps:
   - displayName: Clear existing docker image cache
@@ -651,4 +651,4 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
