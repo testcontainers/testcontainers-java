@@ -39,8 +39,8 @@ public class CouchbaseContainerTest {
 
             CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
                 .builder()
-                .bootstrapCarrierDirectPort(container.getMappedPort(11210))
-                .bootstrapHttpDirectPort(container.getMappedPort(8091))
+                .bootstrapCarrierDirectPort(container.getBootstrapCarrierDirectPort())
+                .bootstrapHttpDirectPort(container.getBootstrapHttpDirectPort())
                 .build();
 
             Cluster cluster = CouchbaseCluster.create(environment, container.getContainerIpAddress());

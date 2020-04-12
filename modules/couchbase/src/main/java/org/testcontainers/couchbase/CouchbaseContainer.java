@@ -30,12 +30,10 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,10 +72,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient()
-        .newBuilder()
-        .readTimeout(Duration.ofMinutes(1))
-        .build();
+    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
     private String username = "Administrator";
 
@@ -137,8 +132,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return password;
     }
 
-    public String getConnectionString() {
-        return String.format("couchbase://%s:%d", getContainerIpAddress(), getMappedPort(KV_PORT));
+    public int getBootstrapCarrierDirectPort() {
+        return getMappedPort(KV_PORT);
+    }
+
+    public int getBootstrapHttpDirectPort() {
+        return getMappedPort(MGMT_PORT);
     }
 
     @Override
@@ -368,11 +367,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Helper method to extract the internal IP address based on the network configuration.
      */
     private String getInternalIpAddress() {
-        final Map<String, ContainerNetwork> networks = getContainerInfo().getNetworkSettings().getNetworks();
-        for (ContainerNetwork network : networks.values()) {
-            return network.getIpAddress();
-        }
-        throw new IllegalStateException("No network available to extract the internal IP from!");
+        return getContainerInfo().getNetworkSettings().getNetworks().values().stream()
+            .findFirst()
+            .map(ContainerNetwork::getIpAddress)
+            .orElseThrow(() -> new IllegalStateException("No network available to extract the internal IP from!"));
     }
 
     /**
@@ -433,5 +431,4 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             throw new RuntimeException("Could not perform request against couchbase HTTP endpoint ", ex);
         }
     }
-
 }
