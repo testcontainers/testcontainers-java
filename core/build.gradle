@@ -50,6 +50,7 @@ shadowJar {
         'META-INF/services/javax.ws.rs.ext.*',
         'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
+        'module-info.class',
     ].each { exclude(it) }
 
     project.afterEvaluate {
