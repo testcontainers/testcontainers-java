@@ -93,12 +93,12 @@ public class RemoteDockerImage extends LazyFuture<String> {
         }
     }
 
-    DockerImageName getImageName() throws InterruptedException, ExecutionException {
+    private DockerImageName getImageName() throws InterruptedException, ExecutionException {
         return imageNameFuture.get();
     }
 
     @ToString.Include(name = "imageName", rank = 1)
-    public String imageNameToString() {
+    private String imageNameToString() {
         // Include the imageName if it's available
         if (imageNameFuture.isDone()) {
             try {
