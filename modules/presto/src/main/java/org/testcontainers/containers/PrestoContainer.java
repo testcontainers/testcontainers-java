@@ -32,17 +32,14 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
         this.waitStrategy = new LogMessageWaitStrategy()
             .withRegEx(".*io.prestosql.server.PrestoServer\\s+======== SERVER STARTED ========.*")
             .withStartupTimeout(Duration.of(60, SECONDS));
+
+        addExposedPort(PRESTO_PORT);
     }
 
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         return new HashSet<>(getMappedPort(PRESTO_PORT));
-    }
-
-    @Override
-    protected void configure() {
-        addExposedPort(PRESTO_PORT);
     }
 
     @Override
