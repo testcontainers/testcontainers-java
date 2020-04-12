@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
-
 public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
     @Test
