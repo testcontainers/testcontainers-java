@@ -3,7 +3,7 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
-import com.google.common.base.MoreObjects;
+import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -47,13 +47,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     public RemoteDockerImage(@NonNull Future<String> imageFuture) {
-        this.imageNameFuture = new LazyFuture<DockerImageName>() {
-            @Override
-            @SneakyThrows({InterruptedException.class, ExecutionException.class})
-            protected DockerImageName resolve() {
-                return new DockerImageName(imageFuture.get());
-            }
-        };
+        this.imageNameFuture = Futures.lazyTransform(imageFuture, DockerImageName::new);
     }
 
     @Override
@@ -100,24 +94,23 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     DockerImageName getImageName() throws InterruptedException, ExecutionException {
-       return imageNameFuture.get();
+        return imageNameFuture.get();
     }
 
     @ToString.Include(name = "imageName", rank = 1)
     public String imageNameToString() {
         // Include the imageName if it's available
-        DockerImageName imageName = null;
         if (imageNameFuture.isDone()) {
             try {
                 return getImageName().toString();
             } catch (InterruptedException | ExecutionException e) {
-              // Swallow this exception and use imageNameFuture instead.
-              // Don't log this, as the whole struggle here is that we don't know
-              // the image name, and DockerLoggerFactory.getLogger takes an image
-              // name argument.
+                // Swallow this exception and use imageNameFuture instead.
+                // Don't log this, as the whole struggle here is that we don't know
+                // the image name, and DockerLoggerFactory.getLogger takes an image
+                // name argument.
             }
         }
 
-        return imageNameFuture.toString();
+        return "<resolving>";
     }
 }
