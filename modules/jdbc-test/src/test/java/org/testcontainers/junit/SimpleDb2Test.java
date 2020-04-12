@@ -2,6 +2,7 @@ package org.testcontainers.junit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.Db2Container;
@@ -13,6 +14,7 @@ import java.sql.Statement;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 
+@Ignore("Disabled since we had problems with CI disk space filling up from images in jdbc-test module")
 public class SimpleDb2Test {
 
     @Rule
