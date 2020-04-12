@@ -30,7 +30,7 @@ public class TestcontainersR2DBCConnectionFactoryTest {
 
     @Test
     public void reusesUntilConnectionFactoryIsClosed() {
-        String url = "r2dbc:tc:postgresql:///db?TC_IMAGE=postgres:10-alpine";
+        String url = "r2dbc:tc:postgresql:///db?TC_IMAGE_TAG=10-alpine";
         ConnectionFactory connectionFactory = ConnectionFactories.get(url);
 
         Integer updated = Flux
