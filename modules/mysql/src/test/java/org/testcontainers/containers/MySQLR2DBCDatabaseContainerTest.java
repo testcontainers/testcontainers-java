@@ -1,69 +1,23 @@
 package org.testcontainers.containers;
 
-import io.r2dbc.spi.Closeable;
-import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.ConnectionFactories;
-import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.Result;
-import org.junit.Test;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
-import static org.junit.Assert.*;
+public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MySQLContainer<?>> {
 
-public class MySQLR2DBCDatabaseContainerTest {
-
-    @Test
-    public void testGetOptions() {
-        try (MySQLContainer<?> container = new MySQLContainer<>()) {
-            container.start();
-
-            long result = Flux
-                .usingWhen(
-                    Mono.just(
-                        ConnectionFactories.get(
-                            MySQLR2DBCDatabaseContainer.getOptions(container)
-                        )
-                    ),
-                    connectionFactory -> {
-                        return Flux
-                            .usingWhen(
-                                connectionFactory.create(),
-                                connection -> connection.createStatement("SELECT 42").execute(),
-                                Connection::close
-                            )
-                            .flatMap(it -> it.map((row, meta) -> (Long) row.get(0)));
-                    },
-                    it -> ((Closeable) it).close()
-                )
-                .blockFirst();
-
-            assertEquals(42, result);
-        }
+    @Override
+    protected ConnectionFactoryOptions getOptions(MySQLContainer<?> container) {
+        return MySQLR2DBCDatabaseContainer.getOptions(container);
     }
 
-    @Test
-    public void testUrlSupport() {
-        String url = "r2dbc:tc:mysql:///db?TC_IMAGE=mysql:5.7.22";
-        ConnectionFactory connectionFactory = ConnectionFactories.get(url);
-        try {
-            int updated = Flux
-                .usingWhen(
-                    connectionFactory.create(),
-                    connection -> {
-                        return Mono
-                            .from(connection.createStatement("CREATE TABLE test(id integer PRIMARY KEY)").execute())
-                            .thenMany(connection.createStatement("INSERT INTO test(id) VALUES(123)").execute())
-                            .flatMap(Result::getRowsUpdated);
-                    },
-                    Connection::close
-                )
-                .blockFirst();
+    @Override
+    protected String createR2DBCUrl() {
+        return "r2dbc:tc:mysql:///db?TC_IMAGE=mysql:5.7.22";
+    }
 
-            assertEquals(updated, 1);
-        } finally {
-            Mono.from(((Closeable) connectionFactory).close()).block();
-        }
+    @Override
+    protected MySQLContainer<?> createContainer() {
+        return new MySQLContainer<>();
     }
 
 }

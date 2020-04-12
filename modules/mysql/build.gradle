@@ -15,6 +15,6 @@ dependencies {
     testCompile 'commons-dbutils:commons-dbutils:1.7'
     testCompile 'org.vibur:vibur-dbcp:25.0'
 
-    testCompile project(':r2dbc')
+    testCompile testFixtures(project(':r2dbc'))
     testCompile 'dev.miku:r2dbc-mysql:0.8.1.RELEASE'
 }

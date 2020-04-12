@@ -13,5 +13,6 @@ dependencies {
     testCompile 'io.r2dbc:r2dbc-mssql:0.8.1.RELEASE'
 
     // MSSQL's wait strategy requires the JDBC driver
+    testCompile testFixtures(project(':r2dbc'))
     testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
 }

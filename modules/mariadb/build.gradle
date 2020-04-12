@@ -15,6 +15,6 @@ dependencies {
     testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.33'
     testCompile 'org.vibur:vibur-dbcp:25.0'
 
-    testCompile project(':r2dbc')
+    testCompile testFixtures(project(':r2dbc'))
     testCompile 'org.mariadb:r2dbc-mariadb:0.8.1-alpha1'
 }
