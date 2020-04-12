@@ -134,6 +134,8 @@ public class JDBCDriverWithPoolTest {
         ViburDBCPDataSource ds = new ViburDBCPDataSource();
 
         ds.setJdbcUrl(URL + ";TEST=VIBUR_WITH_CLASSNAME");
+        ds.setUsername("any");  // Recent versions of Vibur require a username, even though it will not be used
+        ds.setPassword("");
         ds.setPoolInitialSize(3);
         ds.setPoolMaxSize(10);
         ds.setTestConnectionQuery("SELECT 1");
@@ -147,6 +149,8 @@ public class JDBCDriverWithPoolTest {
     private static DataSource getViburDataSource() {
         ViburDBCPDataSource ds = new ViburDBCPDataSource();
         ds.setJdbcUrl(URL + ";TEST=VIBUR");
+        ds.setUsername("any");  // Recent versions of Vibur require a username, even though it will not be used
+        ds.setPassword("");
         ds.setPoolInitialSize(3);
         ds.setPoolMaxSize(10);
         ds.setTestConnectionQuery("SELECT 1");
