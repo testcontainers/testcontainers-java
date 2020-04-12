@@ -32,8 +32,14 @@ generate_job () {
           - name: Build with Gradle (${GRADLE_ARGS})
             run: |
                 ./gradlew --no-daemon --continue --scan --info ${GRADLE_ARGS}
+          - name: Aggregate test reports with ciMate
+            if: always()
             env:
-              TZ: /usr/share/zoneinfo/ETC/UTC
+                CIMATE_PROJECT_ID: 2348n4vl
+            run: |
+                wget -q https://get.cimate.io/release/linux/cimate
+                chmod +x cimate
+                ./cimate "**/TEST-*.xml"
 END
 }
 
