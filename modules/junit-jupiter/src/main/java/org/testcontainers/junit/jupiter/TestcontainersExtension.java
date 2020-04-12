@@ -1,32 +1,50 @@
 package org.testcontainers.junit.jupiter;
 
 import lombok.Getter;
-import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ConditionEvaluationResult;
+import org.junit.jupiter.api.extension.ExecutionCondition;
+import org.junit.jupiter.api.extension.ExtensionConfigurationException;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, ExecutionCondition, TestInstancePostProcessor {
+import static java.util.stream.Collectors.toList;
+import static org.testcontainers.junit.jupiter.FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf;
+
+class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
     private static final String TEST_INSTANCE = "testInstance";
+    private static final String SHARED_LIFECYCLE_AWARE_CONTAINERS = "sharedLifecycleAwareContainers";
+    private static final String LOCAL_LIFECYCLE_AWARE_CONTAINERS = "localLifecycleAwareContainers";
 
     @Override
     public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
-        ExtensionContext.Store store = context.getStore(NAMESPACE);
+        Store store = context.getStore(NAMESPACE);
         store.put(TEST_INSTANCE, testInstance);
     }
 
@@ -35,19 +53,69 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
         Class<?> testClass = context.getTestClass()
             .orElseThrow(() -> new ExtensionConfigurationException("TestcontainersExtension is only supported for classes."));
 
-        ExtensionContext.Store store = context.getStore(NAMESPACE);
+        Store store = context.getStore(NAMESPACE);
+        List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
-        findSharedContainers(testClass)
-            .forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
+        sharedContainersStoreAdapters.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
+
+        List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters
+            .stream()
+            .filter(this::isTestLifecycleAware)
+            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
+            .collect(toList());
+
+        store.put(SHARED_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
+        signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        signalAfterTestToContainersFor(SHARED_LIFECYCLE_AWARE_CONTAINERS, context);
     }
 
     @Override
     public void beforeEach(final ExtensionContext context) {
-        collectParentTestInstances(context)
-            .parallelStream()
+        Store store = context.getStore(NAMESPACE);
+
+        List<TestLifecycleAware> lifecycleAwareContainers = collectParentTestInstances(context).parallelStream()
             .flatMap(this::findRestartContainers)
-            .forEach(adapter -> context.getStore(NAMESPACE)
-                .getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
+            .peek(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()))
+            .filter(this::isTestLifecycleAware)
+            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
+            .collect(toList());
+
+        store.put(LOCAL_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
+        signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
+    }
+
+    @Override
+    public void afterEach(ExtensionContext context) {
+        signalAfterTestToContainersFor(LOCAL_LIFECYCLE_AWARE_CONTAINERS, context);
+    }
+
+    private void signalBeforeTestToContainers(List<TestLifecycleAware> lifecycleAwareContainers, TestDescription testDescription) {
+        lifecycleAwareContainers.forEach(container -> container.beforeTest(testDescription));
+    }
+
+    private void signalAfterTestToContainersFor(String storeKey, ExtensionContext context) {
+        List<TestLifecycleAware> lifecycleAwareContainers =
+            (List<TestLifecycleAware>) context.getStore(NAMESPACE).get(storeKey);
+        if (lifecycleAwareContainers != null) {
+            TestDescription description = testDescriptionFrom(context);
+            Optional<Throwable> throwable = context.getExecutionException();
+            lifecycleAwareContainers.forEach(container -> container.afterTest(description, throwable));
+        }
+    }
+
+    private TestDescription testDescriptionFrom(ExtensionContext context) {
+        return new TestcontainersTestDescription(
+            context.getUniqueId(),
+            filesystemFriendlyNameOf(context)
+        );
+    }
+
+    private boolean isTestLifecycleAware(StoreAdapter adapter) {
+        return adapter.container instanceof TestLifecycleAware;
     }
 
     @Override
@@ -101,13 +169,14 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
         return testInstances;
     }
 
-    private Stream<StoreAdapter> findSharedContainers(Class<?> testClass) {
+    private List<StoreAdapter> findSharedContainers(Class<?> testClass) {
         return ReflectionUtils.findFields(
                 testClass,
                 isSharedContainer(),
                 ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
             .stream()
-            .map(f -> getContainerInstance(null, f));
+            .map(f -> getContainerInstance(null, f))
+            .collect(toList());
     }
 
     private Predicate<Field> isSharedContainer() {

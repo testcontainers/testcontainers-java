@@ -50,6 +50,7 @@ shadowJar {
         'META-INF/services/javax.ws.rs.ext.*',
         'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
+        'module-info.class',
     ].each { exclude(it) }
 
     project.afterEvaluate {
@@ -135,7 +136,7 @@ dependencies {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.0') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.1') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
