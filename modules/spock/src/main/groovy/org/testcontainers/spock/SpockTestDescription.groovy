@@ -24,7 +24,7 @@ class SpockTestDescription implements TestDescription {
 
     @Override
     String getTestId() {
-        return null
+        return getFilesystemFriendlyName()
     }
 
     @Override
