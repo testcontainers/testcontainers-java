@@ -12,7 +12,13 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
 
     @Override
     protected ConnectionFactoryOptions getOptions(PostgreSQLContainer<?> container) {
-        return PostgreSQLR2DBCDatabaseContainer.getOptions(container);
+        // get_options {
+        ConnectionFactoryOptions options = PostgreSQLR2DBCDatabaseContainer.getOptions(
+            container
+        );
+        // }
+
+        return options;
     }
 
     protected String createR2DBCUrl() {
