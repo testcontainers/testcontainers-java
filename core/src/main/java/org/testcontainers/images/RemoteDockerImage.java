@@ -3,6 +3,7 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.google.common.base.MoreObjects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -28,11 +29,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
+    @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
     @Wither
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
+    @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     public RemoteDockerImage(String dockerImageName) {
@@ -56,7 +59,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @Override
     @SneakyThrows({InterruptedException.class, ExecutionException.class})
     protected final String resolve() {
-        final DockerImageName imageName = imageNameFuture.get();
+        final DockerImageName imageName = getImageName();
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
         try {
             if (!imagePullPolicy.shouldPull(imageName)) {
@@ -94,5 +97,27 @@ public class RemoteDockerImage extends LazyFuture<String> {
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
         }
+    }
+
+    DockerImageName getImageName() throws InterruptedException, ExecutionException {
+       return imageNameFuture.get();
+    }
+
+    @ToString.Include(name = "imageName", rank = 1)
+    public String imageNameToString() {
+        // Include the imageName if it's available
+        DockerImageName imageName = null;
+        if (imageNameFuture.isDone()) {
+            try {
+                return getImageName().toString();
+            } catch (InterruptedException | ExecutionException e) {
+              // Swallow this exception and use imageNameFuture instead.
+              // Don't log this, as the whole struggle here is that we don't know
+              // the image name, and DockerLoggerFactory.getLogger takes an image
+              // name argument.
+            }
+        }
+
+        return imageNameFuture.toString();
     }
 }
