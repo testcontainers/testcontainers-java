@@ -140,6 +140,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return getMappedPort(MGMT_PORT);
     }
 
+    public String getConnectionString() {
+        return String.format("couchbase://%s:%d", getContainerIpAddress(), getBootstrapCarrierDirectPort());
+    }
+
     @Override
     protected void configure() {
         super.configure();
