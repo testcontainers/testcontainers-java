@@ -20,7 +20,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_selenium_check
   steps:
   - script: docker image prune -af
@@ -37,7 +37,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_neo4j_check
   steps:
   - script: docker image prune -af
@@ -54,7 +54,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_clickhouse_check
   steps:
   - script: docker image prune -af
@@ -71,7 +71,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_postgresql_check
   steps:
   - script: docker image prune -af
@@ -88,7 +88,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_dynalite_check
   steps:
   - script: docker image prune -af
@@ -105,7 +105,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_presto_check
   steps:
   - script: docker image prune -af
@@ -122,7 +122,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_jdbc-test_check
   steps:
   - script: docker image prune -af
@@ -139,7 +139,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_mariadb_check
   steps:
   - script: docker image prune -af
@@ -156,7 +156,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_mockserver_check
   steps:
   - script: docker image prune -af
@@ -173,7 +173,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_oracle-xe_check
   steps:
   - script: docker image prune -af
@@ -190,7 +190,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_rabbitmq_check
   steps:
   - script: docker image prune -af
@@ -207,7 +207,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_jdbc_check
   steps:
   - script: docker image prune -af
@@ -224,7 +224,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_influxdb_check
   steps:
   - script: docker image prune -af
@@ -241,7 +241,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_nginx_check
   steps:
   - script: docker image prune -af
@@ -258,7 +258,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_kafka_check
   steps:
   - script: docker image prune -af
@@ -275,7 +275,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_cassandra_check
   steps:
   - script: docker image prune -af
@@ -292,7 +292,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_mysql_check
   steps:
   - script: docker image prune -af
@@ -309,7 +309,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_junit-jupiter_check
   steps:
   - script: docker image prune -af
@@ -326,7 +326,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_mssqlserver_check
   steps:
   - script: docker image prune -af
@@ -343,7 +343,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_spock_check
   steps:
   - script: docker image prune -af
@@ -360,7 +360,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_db2_check
   steps:
   - script: docker image prune -af
@@ -377,7 +377,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_localstack_check
   steps:
   - script: docker image prune -af
@@ -394,7 +394,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_cockroachdb_check
   steps:
   - script: docker image prune -af
@@ -411,7 +411,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_pulsar_check
   steps:
   - script: docker image prune -af
@@ -428,7 +428,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_database-commons_check
   steps:
   - script: docker image prune -af
@@ -445,7 +445,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_toxiproxy_check
   steps:
   - script: docker image prune -af
@@ -462,7 +462,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_elasticsearch_check
   steps:
   - script: docker image prune -af
@@ -479,7 +479,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_orientdb_check
   steps:
   - script: docker image prune -af
@@ -496,7 +496,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_vault_check
   steps:
   - script: docker image prune -af
@@ -513,7 +513,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: module_couchbase_check
   steps:
   - script: docker image prune -af
@@ -530,7 +530,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: examples
   steps:
   - script: docker image prune -af
@@ -547,7 +547,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: docs_examples_junit4_generic
   steps:
   - script: docker image prune -af
@@ -564,7 +564,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: docs_examples_junit4_redis
   steps:
   - script: docker image prune -af
@@ -581,7 +581,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: docs_examples_junit5_redis
   steps:
   - script: docker image prune -af
@@ -598,7 +598,7 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: docs_examples_spock_redis
   steps:
   - script: docker image prune -af
@@ -615,4 +615,4 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables.os, 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
