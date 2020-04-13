@@ -4,8 +4,6 @@ package org.testcontainers.containers.localstack;
 import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.AWSLogsClientBuilder;
 import com.amazonaws.services.logs.model.CreateLogGroupRequest;
-import com.amazonaws.services.logs.model.CreateLogGroupResult;
-import com.amazonaws.services.logs.model.DescribeLogGroupsRequest;
 import com.amazonaws.services.logs.model.LogGroup;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -19,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -29,16 +26,16 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
 
 /**
  * Tests for Localstack Container, used both in bridge network (exposed to host) and docker network modes.
@@ -56,7 +53,7 @@ public class LocalstackContainerTest {
         // without_network {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer()
-            .withServices(S3, SQS, CLOUDWATCHLOGS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS).withFixedPort(CLOUDWATCHLOGS, 1000);
         // }
 
         @Test
@@ -81,7 +78,7 @@ public class LocalstackContainerTest {
             assertEquals("The created bucket has 1 item in it", 1, objectListing.getObjectSummaries().size());
 
             final S3Object object = s3.getObject("foo", "bar");
-            final String content = IOUtils.toString(object.getObjectContent(), Charset.forName("UTF-8"));
+            final String content = IOUtils.toString(object.getObjectContent(), StandardCharsets.UTF_8);
             assertEquals("The object can be retrieved", "baz", content);
         }
 
@@ -115,6 +112,7 @@ public class LocalstackContainerTest {
             List<LogGroup> groups = logs.describeLogGroups().getLogGroups();
             assertEquals("One log group should be created", 1, groups.size());
             assertEquals("Name of created log group is [foo]", "foo", groups.get(0).getLogGroupName());
+            assertEquals("Should use fixed port 1000", "http://127.0.0.1:1000", localstack.getEndpointConfiguration(CLOUDWATCHLOGS).getServiceEndpoint());
         }
     }
 

@@ -16,7 +16,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +35,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
 
     private final List<Service> services = new ArrayList<>();
+    private final Map<Service, Integer> fixedPorts = new HashMap<>();
 
     public LocalStackContainer() {
         this(VERSION);
@@ -67,7 +70,11 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
 
         for (Service service : services) {
-            addExposedPort(service.getPort());
+            if (fixedPorts.containsKey(service)) {
+                addFixedExposedPort(fixedPorts.get(service), service.getPort());
+            } else {
+                addExposedPort(service.getPort());
+            }
         }
     }
 
@@ -78,6 +85,17 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     public LocalStackContainer withServices(Service... services) {
         this.services.addAll(Arrays.asList(services));
+        return self();
+    }
+
+    /**
+     * Declare the external port to be used for a given service
+     * @param service name of service to assign fixed port to
+     * @param port fix port
+     * @return this container object
+     */
+    public LocalStackContainer withFixedPort(Service service, int port) {
+        this.fixedPorts.put(service, port);
         return self();
     }
 
