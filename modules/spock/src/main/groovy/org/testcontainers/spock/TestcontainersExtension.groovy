@@ -20,7 +20,7 @@ class TestcontainersExtension extends AbstractAnnotationDrivenExtension<Testcont
 
     }
 
-    private class ErrorListener extends AbstractRunListener {
+    class ErrorListener extends AbstractRunListener {
         List<ErrorInfo> errors = []
 
         @Override

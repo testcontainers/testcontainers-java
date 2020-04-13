@@ -54,13 +54,6 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 
     @Override
     void interceptCleanupMethod(IMethodInvocation invocation) throws Throwable {
-        findAllTestLifecycleAwareContainers(invocation).each {
-            // we assume first error is the one we want
-            def maybeException = Optional.ofNullable(errorListener.errors[0]?.exception)
-            def testDescription = SpockTestDescription.fromTestDescription(invocation)
-            it.afterTest(testDescription, maybeException)
-        }
-
         def containers = findAllContainers(false)
         stopContainers(containers, invocation)
 
@@ -76,14 +69,6 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
         }
     }
 
-    private List<TestLifecycleAware> findAllTestLifecycleAwareContainers(IMethodInvocation invocation) {
-        spec.allFields.findAll { FieldInfo f ->
-            TestLifecycleAware.isAssignableFrom(f.type)
-        }.collect {
-            it.readValue(invocation.instance) as TestLifecycleAware
-        }
-    }
-
     private List<FieldInfo> findAllComposeContainers(boolean shared) {
         spec.allFields.findAll { FieldInfo f ->
             DockerComposeContainer.isAssignableFrom(f.type) && f.shared == shared
@@ -96,12 +81,25 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
             if(!container.isRunning()){
                 container.start()
             }
+
+            if (container instanceof TestLifecycleAware) {
+                def testDescription = SpockTestDescription.fromTestDescription(invocation)
+                (container as TestLifecycleAware).beforeTest(testDescription)
+            }
         }
     }
 
-    private static void stopContainers(List<FieldInfo> containers, IMethodInvocation invocation) {
+    private void stopContainers(List<FieldInfo> containers, IMethodInvocation invocation) {
         containers.each { FieldInfo f ->
             GenericContainer container = readContainerFromField(f, invocation)
+
+            if (container instanceof TestLifecycleAware) {
+                // we assume first error is the one we want
+                def maybeException = Optional.ofNullable(errorListener.errors[0]?.exception)
+                def testDescription = SpockTestDescription.fromTestDescription(invocation)
+                (container as TestLifecycleAware).afterTest(testDescription, maybeException)
+            }
+
             container.stop()
         }
     }
