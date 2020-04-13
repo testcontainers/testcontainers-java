@@ -54,7 +54,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final int VNC_PORT = 5900;
 
     private static final String NO_PROXY_KEY = "no_proxy";
-    public static final String TC_TEMP_DIR_PREFIX = "tc";
+    private static final String TC_TEMP_DIR_PREFIX = "tc";
 
     @Nullable
     private Capabilities capabilities;
