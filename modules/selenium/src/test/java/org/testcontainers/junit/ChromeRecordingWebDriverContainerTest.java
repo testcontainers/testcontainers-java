@@ -7,8 +7,10 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.DefaultRecordingFileFactory;
+import org.testcontainers.lifecycle.TestDescription;
 
 import java.io.File;
+import java.util.Optional;
 
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
 
@@ -36,8 +38,24 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 .withCapabilities(new ChromeOptions());
 
         @Test
-        public void recordingTestThatShouldBeRecordedButDeleted() {
+        public void recordingTestThatShouldBeRecordedButNotPersisted() {
             doSimpleExplore(chrome);
+        }
+
+        @Test
+        public void recordingTestThatShouldBeRecordedAndRetained() {
+            doSimpleExplore(chrome);
+            chrome.afterTest(new TestDescription() {
+                @Override
+                public String getTestId() {
+                    return getFilesystemFriendlyName();
+                }
+
+                @Override
+                public String getFilesystemFriendlyName() {
+                    return "ChromeThatRecordsFailingTests-recordingTestThatShouldBeRecordedAndRetained";
+                }
+            }, Optional.of(new RuntimeException("Force writing of video file.")));
         }
     }
 }
