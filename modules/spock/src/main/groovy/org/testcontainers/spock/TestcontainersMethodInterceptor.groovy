@@ -30,6 +30,7 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
         invocation.proceed()
     }
 
+    @Override
     void interceptCleanupSpecMethod(IMethodInvocation invocation) throws Throwable {
         def containers = findAllContainers(true)
         stopContainers(containers, invocation)

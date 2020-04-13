@@ -7,38 +7,37 @@ import spock.util.EmbeddedSpecRunner
 
 class TestLifecycleAwareIT extends Specification {
 
-    @Unroll("When failing test is #fails afterTest receives '#filesystemFriendlyNames'")
+    @Unroll("When failing test is #fails, afterTest receives '#filesystemFriendlyNames' and throwable starting with message '#errorMessageStartsWith'")
     def "lifecycle awareness"() {
         given:
 
-        //noinspection GrPackage
         @Language("groovy")
         String myTest = """
-package org.testcontainers.spock
-
+import org.testcontainers.spock.Testcontainers
 import org.testcontainers.containers.GenericContainer
 import spock.lang.Specification
 
 @Testcontainers
 class TestLifecycleAwareIT extends Specification {
 
-    GenericContainer container = System.properties["org.testcontainers.container"]
+    GenericContainer container = System.properties["org.testcontainers.container"] as GenericContainer
 
     def "perform test"() {
         expect:
-        "false" == System.getProperty("org.testcontainers.shouldFail")
+        !System.properties["org.testcontainers.shouldFail"]
     }
 }
 """
-
-        when:
+        and:
         def container = new TestLifecycleAwareContainerMock()
-        def runner = new EmbeddedSpecRunner(throwFailure: false)
         System.properties["org.testcontainers.container"] = container
-        System.setProperty("org.testcontainers.shouldFail", fails.toString())
+        System.properties["org.testcontainers.shouldFail"] = fails
+
+        when: "executing the test"
+        def runner = new EmbeddedSpecRunner(throwFailure: false)
         runner.run(myTest)
 
-        then:
+        then: "mock container received lifecycle calls as expected"
         container.lifecycleMethodCalls == ["beforeTest", "afterTest"]
         container.lifecycleFilesystemFriendlyNames.join(",") == filesystemFriendlyNames
         if (errorMessageStartsWith) {
