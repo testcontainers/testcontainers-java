@@ -6,7 +6,7 @@ dependencies {
 
     compile project(':jdbc')
     compileOnly project(':r2dbc')
-    compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.1.RELEASE'
+    compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.2.RELEASE'
 
     testCompile 'org.postgresql:postgresql:42.2.12'
     testCompile 'commons-dbutils:commons-dbutils:1.7'
