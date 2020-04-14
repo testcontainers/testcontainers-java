@@ -68,6 +68,12 @@ subprojects {
         }
     }
 
+    tasks.withType(Test).all {
+        reports {
+            junitXml.outputPerTestCase = true
+        }
+    }
+
     // Ensure that Javadoc generation is always tested
     check.dependsOn(javadoc)
 
@@ -101,7 +107,10 @@ subprojects {
                     for (entry in jf.entries()) {
                         def name = entry.name
                         if (name.endsWith(".class")) {
-                            packages.add(name.substring(0, name.lastIndexOf('/')))
+                            def index = name.lastIndexOf('/')
+                            if (index != -1) {
+                                packages.add(name.substring(0, index))
+                            }
                         }
                     }
                     jf.close()

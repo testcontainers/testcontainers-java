@@ -67,7 +67,7 @@ public class JDBCDriverTest {
                 {"jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken)},
                 {"jdbc:tc:sqlserver:2017-CU12://hostname:hostport;databaseName=databasename", EnumSet.noneOf(Options.class)},
                 {"jdbc:tc:cockroach://hostname/databasename", EnumSet.noneOf(Options.class)},
-                {"jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class)}
+//                {"jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class)}
             });
     }
 
