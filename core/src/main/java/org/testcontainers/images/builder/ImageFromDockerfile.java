@@ -148,7 +148,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             dependencyImageNames = new ParsedDockerfile(p).getDependencyImageNames();
 
             if (dependencyImageNames.size() > 0) {
-                // if we'l be pre-pulling images, disable the built-in pull as it is not necessary and will fail for
+                // if we'll be pre-pulling images, disable the built-in pull as it is not necessary and will fail for
                 // authenticated registries
                 buildImageCmd.withPull(false);
             }
