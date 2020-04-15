@@ -12,6 +12,8 @@ jobs:
     - run: &ciMate
         name: aggregate test reports with ciMate
         when: always
+        environment:
+          CIMATE_PROJECT_ID: 2348n4vl
         command: |
           wget -q https://get.cimate.io/release/linux/cimate
           chmod +x cimate
