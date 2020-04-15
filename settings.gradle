@@ -6,6 +6,7 @@ buildscript {
     }
     dependencies {
         classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.9.0"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.2.1"
     }
 
     configurations.classpath {
@@ -16,6 +17,7 @@ buildscript {
 }
 
 apply plugin: 'ch.myniva.s3-build-cache'
+apply plugin: 'com.gradle.enterprise'
 
 ext.isMasterBuild = (System.getenv("CIRCLE_BRANCH") ?: System.getenv("BUILD_SOURCEBRANCHNAME")) == "master"
 
@@ -55,3 +57,9 @@ include ':docs:examples:spock:redis'
 
 include 'test-support'
 
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+        termsOfServiceAgree = 'yes'
+    }
+}
