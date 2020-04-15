@@ -26,7 +26,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
-    private String initScriptPath;
+    private String[] initScriptPaths;
     protected Map<String, String> parameters = new HashMap<>();
 
     private int startupTimeoutSeconds = 120;
@@ -107,8 +107,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return self();
     }
 
-    public SELF withInitScript(String initScriptPath) {
-        this.initScriptPath = initScriptPath;
+    public SELF withInitScript(String... initScriptPath) {
+        this.initScriptPaths = initScriptPath;
         return self();
     }
 
@@ -236,8 +236,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * Load init script content and apply it to the database if initScriptPath is set
      */
     protected void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
-            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
+        if (initScriptPaths != null) {
+            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPaths);
         }
     }
 
