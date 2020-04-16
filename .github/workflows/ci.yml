@@ -10,6 +10,7 @@ jobs:
     outputs:
       modules: ${{ steps.set-matrix.outputs.modules }}
     steps:
+      - uses: actions/checkout@v2
       - id: set-modules
         run: echo "::set-output name=modules::$(.github/workflows/scripts/find_gradle_jobs.sh)"
   check:
