@@ -27,6 +27,13 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -83,6 +90,34 @@ public class LocalstackContainerTest {
             final S3Object object = s3.getObject("foo", "bar");
             final String content = IOUtils.toString(object.getObjectContent(), Charset.forName("UTF-8"));
             assertEquals("The object can be retrieved", "baz", content);
+        }
+
+        @Test
+        public void s3TestOverBridgeNetworkV2() throws IOException {
+            S3Client s3 = S3Client
+                .builder()
+                .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+                    localstack.getAccessKey(), localstack.getSecretKey()
+                )))
+                .region(Region.of(localstack.getRegion()))
+                .build();
+
+            s3.createBucket(b -> b.bucket("foo"));
+            s3.putObject(b -> b.bucket("foo").key("bar"), RequestBody.fromBytes("baz".getBytes()));
+
+            final List<software.amazon.awssdk.services.s3.model.Bucket> buckets = s3.listBuckets().buckets();
+            assertEquals("The created bucket is present", 1, buckets.size());
+            final software.amazon.awssdk.services.s3.model.Bucket bucket = buckets.get(0);
+
+            assertEquals("The created bucket has the right name", "foo", bucket.name());
+            assertEquals("The created bucket has the right name", "foo", bucket.name());
+
+            final ListObjectsResponse objectListing = s3.listObjects(b -> b.bucket("foo"));
+            assertEquals("The created bucket has 1 item in it", 1, objectListing.contents().size());
+
+            final GetObjectResponse object = s3.getObject(b -> b.bucket("foo").key("bar")).response();
+            assertEquals("The object can be retrieved", 3L, object.contentLength());
         }
 
         @Test
