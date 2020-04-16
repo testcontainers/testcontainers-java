@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: set-modules
-        run: echo "::set-output name=modules::$(.github/workflows/scripts/find_gradle_jobs.sh)"
+        run: echo "::set-output name=modules::{ $(.github/workflows/scripts/find_gradle_jobs.sh) }"
   check:
     needs: find_gradle_jobs
     strategy:
