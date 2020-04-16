@@ -8,16 +8,15 @@ jobs:
   find_gradle_jobs:
     runs-on: ubuntu-18.04
     outputs:
-      modules: ${{ steps.set-matrix.outputs.modules }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2
-      - id: set-modules
-        run: echo "::set-output name=modules::$(.github/workflows/scripts/find_gradle_jobs.sh)"
+      - id: set-matrix
+        run: echo "::set-output name=matrix::{\"module\":$(.github/workflows/scripts/find_gradle_jobs.sh)}"
   check:
     needs: find_gradle_jobs
     strategy:
-      matrix:
-        module: ${{ fromJson(needs.find_gradle_jobs.outputs.modules) }}
+      matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
