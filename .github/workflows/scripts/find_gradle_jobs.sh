@@ -25,5 +25,5 @@ TASKS+=("docs:examples:junit5:redis:check")
 TASKS+=("docs:examples:spock:redis:check")
 
 # Emit a JSON array of all tasks
-JOINED=$(printf ", '%s'" "${TASKS[@]}")
-echo "[${JOINED:1} ]"
+JOINED=$(printf ",\"%s\"" "${TASKS[@]}")
+echo "[${JOINED:1}]"
