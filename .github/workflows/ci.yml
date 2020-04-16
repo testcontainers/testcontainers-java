@@ -5,42 +5,18 @@ on:
   push: { branches: [ master ] }
 
 jobs:
+  find_gradle_jobs:
+    runs-on: ubuntu-18.04
+    outputs:
+      modules: ${{ steps.set-matrix.outputs.modules }}
+    steps:
+      - id: set-modules
+        run: echo "::set-output name=modules::$(.github/workflows/scripts/find_gradle_jobs.sh)"
   check:
+    needs: find_gradle_jobs
     strategy:
       matrix:
-        module:
-          - testcontainers
-          - cassandra
-          - clickhouse
-          - cockroachdb
-          - couchbase
-          - database-commons
-          - db2
-          - dynalite
-          - elasticsearch
-          - influxdb
-          - jdbc
-          - jdbc-test
-          - junit-jupiter
-          - kafka
-          - localstack
-          - mariadb
-          - mockserver
-          - mssqlserver
-          - mysql
-          - neo4j
-          - nginx
-          - oracle-xe
-          - orientdb
-          - postgresql
-          - presto
-          - pulsar
-          - r2dbc
-          - rabbitmq
-          - selenium
-          - spock
-          - toxiproxy
-          - vault
+        module: ${{ fromJson(needs.find_gradle_jobs.outputs.modules) }}
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -51,14 +27,14 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-core_check-${{ hashFiles('**/*.gradle') }}
+          key: ${{ runner.os }}-gradle-home-${{matrix.module}}_check-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-home-core_check-
-            ${{ runner.os }}-gradle-home-core_check-
+            ${{ runner.os }}-gradle-home-${{matrix.module}}_check-
+            ${{ runner.os }}-gradle-home-${{matrix.module}}_check-
             ${{ runner.os }}-gradle-home-
       - name: Clear existing docker image cache
         run: docker image prune -af
-      - name: Build and test with Gradle (testcontainers:check)
+      - name: Build and test with Gradle (${{matrix.module}}:check)
         run: |
           ./gradlew --no-daemon --continue --scan --info ${{matrix.module}}:check
       - name: Aggregate test reports with ciMate
