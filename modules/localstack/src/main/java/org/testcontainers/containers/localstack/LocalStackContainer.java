@@ -97,9 +97,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
              .builder()
              .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-                localstack.getDefaultAccessKey(), localstack.getDefaultSecretKey()
+                localstack.getAccessKey(), localstack.getSecretKey()
              )))
-             .region(Region.of(localstack.getDefaultRegion()))
+             .region(Region.of(localstack.getRegion()))
              .build()
      </code></pre>
      * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
@@ -110,7 +110,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
-        return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getDefaultRegion());
+        return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getRegion());
     }
 
     /**
@@ -120,9 +120,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
              .builder()
              .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-             localstack.getDefaultAccessKey(), localstack.getDefaultSecretKey()
+             localstack.getAccessKey(), localstack.getSecretKey()
              )))
-             .region(Region.of(localstack.getDefaultRegion()))
+             .region(Region.of(localstack.getRegion()))
              .build()
              </code></pre>
      * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
@@ -156,20 +156,20 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             .withCredentials(localstack.getDefaultCredentialsProvider())
             .build();
      </code></pre>
-     * or for AWS SDK v2 you can use {@link #getDefaultAccessKey()}, {@link #getDefaultSecretKey()} directly:
+     * or for AWS SDK v2 you can use {@link #getAccessKey()}, {@link #getSecretKey()} directly:
      * <pre><code>S3Client s3 = S3Client
              .builder()
              .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-             localstack.getDefaultAccessKey(), localstack.getDefaultSecretKey()
+             localstack.getAccessKey(), localstack.getSecretKey()
              )))
-             .region(Region.of(localstack.getDefaultRegion()))
+             .region(Region.of(localstack.getRegion()))
              .build()
      </code></pre>
      * @return an {@link AWSCredentialsProvider}
      */
     public AWSCredentialsProvider getDefaultCredentialsProvider() {
-        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getDefaultAccessKey(), getDefaultSecretKey()));
+        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getAccessKey(), getSecretKey()));
     }
 
     /**
@@ -179,14 +179,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
              .builder()
              .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-             localstack.getDefaultAccessKey(), localstack.getDefaultSecretKey()
+             localstack.getAccessKey(), localstack.getSecretKey()
              )))
-             .region(Region.of(localstack.getDefaultRegion()))
+             .region(Region.of(localstack.getRegion()))
              .build()
      </code></pre>
      * @return a default access key
      */
-    public String getDefaultAccessKey() {
+    public String getAccessKey() {
         return "accesskey";
     }
 
@@ -197,14 +197,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
              .builder()
              .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-             localstack.getDefaultAccessKey(), localstack.getDefaultSecretKey()
+             localstack.getAccessKey(), localstack.getSecretKey()
              )))
-             .region(Region.of(localstack.getDefaultRegion()))
+             .region(Region.of(localstack.getRegion()))
              .build()
      </code></pre>
      * @return a default secret key
      */
-    public String getDefaultSecretKey() {
+    public String getSecretKey() {
         return "secretkey";
     }
 
@@ -215,14 +215,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
              .builder()
              .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-             localstack.getDefaultAccessKey(), localstack.getDefaultSecretKey()
+             localstack.getAccessKey(), localstack.getSecretKey()
              )))
-             .region(Region.of(localstack.getDefaultRegion()))
+             .region(Region.of(localstack.getRegion()))
              .build()
      </code></pre>
      * @return a default region
      */
-    public String getDefaultRegion() {
+    public String getRegion() {
         return "us-east-1";
     }
 
