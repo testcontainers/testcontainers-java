@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
-        run: echo "::set-output name=matrix::{\"module\":$(.github/workflows/scripts/find_gradle_jobs.sh)}"
+        run: echo "::set-output name=matrix::{\"gradle_args\":$(.github/workflows/scripts/find_gradle_jobs.sh)}"
   check:
     needs: find_gradle_jobs
     strategy:
@@ -27,16 +27,16 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-${{matrix.module}}_check-${{ hashFiles('**/*.gradle') }}
+          key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-home-${{matrix.module}}_check-
-            ${{ runner.os }}-gradle-home-${{matrix.module}}_check-
+            ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-
+            ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-
             ${{ runner.os }}-gradle-home-
       - name: Clear existing docker image cache
         run: docker image prune -af
-      - name: Build and test with Gradle (${{matrix.module}}:check)
+      - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan --info ${{matrix.module}}:check
+          ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
       - name: Aggregate test reports with ciMate
         if: always()
         env:
