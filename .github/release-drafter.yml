@@ -5,8 +5,10 @@ template: |
 
     $CHANGES
 categories:
-  - title: 🚀 Features
-    label: type/feature
+  - title: 🚀 Features & Enhancements
+    labels:
+      - type/feature
+      - type/enhancement
   - title: 🐛 Bug Fixes
     label: type/bug
   - title: 📖 Documentation
