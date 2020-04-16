@@ -93,7 +93,7 @@ public class LocalstackContainerTest {
         }
 
         @Test
-        public void s3TestOverBridgeNetworkV2() throws IOException {
+        public void s3TestOverBridgeNetworkV2() {
             S3Client s3 = S3Client
                 .builder()
                 .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
