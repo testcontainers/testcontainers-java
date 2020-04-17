@@ -6,7 +6,6 @@ import org.testcontainers.containers.GenericContainer
 
 class ContainerPerTestListenerTest: StringSpec() {
    init {
-
        "should start container in beforeTest callback" {
           val mockContainer: GenericContainer<Nothing> = mockk(relaxed = true)
           val containerPerTestListener = ContainerPerTestListener(mockContainer)

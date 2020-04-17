@@ -6,20 +6,20 @@ import org.testcontainers.containers.GenericContainer
 
 class ContainerPerSpecListenerTest : StringSpec() {
    init {
-      "should stop container in finalizeSpec callback" {
+      "should stop container in beforeSpec callback" {
          val mockContainer: GenericContainer<Nothing> = mockk(relaxed = true)
          val containerPerSpecListener = ContainerPerSpecListener(mockContainer)
 
-         containerPerSpecListener.finalizeSpec(mockk(), emptyMap())
+         containerPerSpecListener.afterSpec(mockk())
 
          verify(exactly = 1) { mockContainer.stop() }
       }
 
-      "should start container in prepareSpec callback" {
+      "should start container in afterSpec callback" {
          val mockContainer: GenericContainer<Nothing> = mockk(relaxed = true)
          val containerPerSpecListener = ContainerPerSpecListener(mockContainer)
 
-         containerPerSpecListener.prepareSpec(mockk())
+         containerPerSpecListener.beforeSpec(mockk())
 
          verify(exactly = 1) { mockContainer.start() }
       }

@@ -14,21 +14,6 @@ import io.kotest.core.test.TestResult
  * This should be use when you want fresh container for each test.
  *
  * @see[ContainerPerSpecListener]
- * Usage:
- *
- * class RedisRepositoryTest: StringSpec() {
- *    private val redisContainer = GenericContainer<Nothing>("redis")
- *
- *    override fun listeners(): List<TestListener> {
- *       return super.listeners() + ContainerPerTestListener(redisContainer)
- *    }
- *
- *    init {
- *       "should be able to connect redis server" {
- *         // your test goes here
- *       }
- *    }
- * }
  * */
 class ContainerPerTestListener(private vararg val genericContainers: GenericContainer<Nothing>) : TestListener {
 
