@@ -143,12 +143,15 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
-            try {
-                vncRecordingDirectory = Files.createTempDirectory(TC_TEMP_DIR_PREFIX).toFile();
-            } catch (IOException e) {
-                // should never happen as per javadoc, since we use valid prefix
-                logger().error("Exception while trying to create temp directory " + vncRecordingDirectory.getAbsolutePath(), e);
-                throw new ContainerLaunchException("Exception while trying to create temp directory", e);
+
+            if (vncRecordingDirectory == null) {
+                try {
+                    vncRecordingDirectory = Files.createTempDirectory(TC_TEMP_DIR_PREFIX).toFile();
+                } catch (IOException e) {
+                    // should never happen as per javadoc, since we use valid prefix
+                    logger().error("Exception while trying to create temp directory " + vncRecordingDirectory.getAbsolutePath(), e);
+                    throw new ContainerLaunchException("Exception while trying to create temp directory", e);
+                }
             }
 
             if (getNetwork() == null) {
