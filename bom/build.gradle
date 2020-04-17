@@ -25,4 +25,4 @@ publishing {
 }
 
 // This module does not need to be 'check'ed
-tasks.remove(check)
+tasks.check.enabled = false

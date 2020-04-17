@@ -5,6 +5,7 @@ task taskMatrix {
     doLast {
         def allCheckTasks = project
             .getTasksByName("check", true)
+            .findAll { it.enabled }
             .collect { it.path }
 
         println JsonOutput.toJson(allCheckTasks)
