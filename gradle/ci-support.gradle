@@ -1,12 +1,16 @@
 import groovy.json.JsonOutput
 
 // Emit a JSON-formatted list of check tasks to be run in CI
-task testMatrix {
-    project.afterEvaluate {
-        def checkTasks = subprojects.collect {
-            it.tasks.findByName("check")
-        }.findAll { it != null }
+project.afterEvaluate {
+    def checkTasks = subprojects.collect {
+        it.tasks.findByName("check")
+    }.findAll { it != null }
 
+    checkTasks*.dependsOn*.removeIf {
+        (it as Task).name in ["javadoc"]
+    }
+
+    task testMatrix {
         dependsOn(checkTasks)
         doLast {
             def checkTaskPaths = checkTasks

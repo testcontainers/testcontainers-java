@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
       - id: set-matrix
         run: |
-          TASKS=$(./gradlew --no-daemon -q testMatrix)
+          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
