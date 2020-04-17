@@ -11,6 +11,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2
+      - id: debug
+        run: echo "debug... name=matrix::{\"gradle_args\":$(./gradlew --no-daemon -q taskMatrix)}"
       - id: set-matrix
         run: echo "::set-output name=matrix::{\"gradle_args\":$(./gradlew --no-daemon -q taskMatrix)}"
   check:
