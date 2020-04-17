@@ -1,0 +1,12 @@
+import groovy.json.JsonOutput
+
+// Emit a JSON-formatted list of check tasks to be run in CI
+task taskMatrix {
+    doLast {
+        def allCheckTasks = project
+            .getTasksByName("check", true)
+            .collect { it.path }
+
+        println JsonOutput.toJson(allCheckTasks)
+    }
+}

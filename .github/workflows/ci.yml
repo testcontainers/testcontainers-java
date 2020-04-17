@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
-        run: echo "::set-output name=matrix::{\"gradle_args\":$(.github/workflows/scripts/find_gradle_jobs.sh)}"
+        run: echo "::set-output name=matrix::{\"gradle_args\":$( ./gradlew --no-daemon -q taskMatrix )}"
   check:
     needs: find_gradle_jobs
     strategy:

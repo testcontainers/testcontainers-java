@@ -6,6 +6,8 @@ plugins {
     id "com.jfrog.bintray" version "1.8.4" apply false
 }
 
+apply from: "$rootDir/gradle/ci-support.gradle"
+
 subprojects {
     apply plugin: 'nebula.provided-base'
     apply plugin: 'java'
