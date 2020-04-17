@@ -13,6 +13,8 @@ jobs:
         tasks: 'testcontainers:check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
+  - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 - job: jdbc
   steps:
   - task: Gradle@2
@@ -27,6 +29,8 @@ jobs:
         tasks: 'jdbc-test:check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
+  - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 - job: modules
   steps:
   - task: Gradle@2
@@ -41,3 +45,5 @@ jobs:
         tasks: 'check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
+  - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))

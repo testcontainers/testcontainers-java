@@ -1,5 +1,4 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.4.2'
     id 'io.franzbecker.gradle-lombok' version '3.1.0'
     id 'nebula.provided-base' version '3.0.3'
     id 'com.github.johnrengelman.shadow' version '5.1.0'
@@ -68,6 +67,12 @@ subprojects {
         }
     }
 
+    tasks.withType(Test).all {
+        reports {
+            junitXml.outputPerTestCase = true
+        }
+    }
+
     // Ensure that Javadoc generation is always tested
     check.dependsOn(javadoc)
 
@@ -101,7 +106,10 @@ subprojects {
                     for (entry in jf.entries()) {
                         def name = entry.name
                         if (name.endsWith(".class")) {
-                            packages.add(name.substring(0, name.lastIndexOf('/')))
+                            def index = name.lastIndexOf('/')
+                            if (index != -1) {
+                                packages.add(name.substring(0, index))
+                            }
                         }
                     }
                     jf.close()
@@ -123,9 +131,4 @@ subprojects {
     dependencies {
         testCompile 'ch.qos.logback:logback-classic:1.2.3'
     }
-}
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
 }
