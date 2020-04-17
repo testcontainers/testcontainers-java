@@ -1,18 +1,31 @@
 package org.testcontainers.r2dbc;
 
+import com.github.dockerjava.api.DockerClient;
 import io.r2dbc.spi.Closeable;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.r2dbc.Hidden.TestcontainersR2DBCConnectionFactoryProvider;
+import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.TestcontainersConfiguration;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Properties;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContainer<?>> {
+
+    @Rule
+    public final MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
 
     protected abstract ConnectionFactoryOptions getOptions(T container);
 
@@ -36,6 +49,49 @@ public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContai
     public final void testUrlSupport() {
         ConnectionFactory connectionFactory = ConnectionFactories.get(createR2DBCUrl());
         runTestQuery(connectionFactory);
+    }
+
+    @Test
+    public void supportsAliases() throws Exception {
+        String alias = UUID.randomUUID().toString();
+        String testImage = "local/testcontainers/db_image";
+        String tag = UUID.randomUUID().toString();
+
+        Properties properties = new Properties(TestcontainersConfiguration.getInstance().getProperties());
+        properties.put("db.alias." + alias + ".image", testImage);
+        properties.put(
+            "db.alias." + alias + ".r2dbcDriver",
+            TestcontainersR2DBCConnectionFactoryProvider
+                .removeProxying(ConnectionFactoryOptions.parse(createR2DBCUrl()))
+                .getRequiredValue(ConnectionFactoryOptions.DRIVER)
+        );
+
+        Mockito.doReturn(properties).when(TestcontainersConfiguration.getInstance()).getProperties();
+
+        String imageId = createContainer().getDockerImageName();
+        DockerClient client = DockerClientFactory.instance().client();
+        client.tagImageCmd(imageId, testImage, tag).exec();
+
+        String image = testImage + ":" + tag;
+        imageTagged(image);
+
+        try (
+            AutoCloseable cleanup = () -> {
+                client.removeImageCmd(image).withForce(true).exec();
+            }
+        ) {
+            ConnectionFactory connectionFactory = ConnectionFactories.get(
+                ConnectionFactoryOptions.parse(createR2DBCUrl())
+                    .mutate()
+                    .option(ConnectionFactoryOptions.PROTOCOL, alias)
+                    .option(R2DBCDatabaseContainerProvider.IMAGE_TAG_OPTION, tag)
+                    .build()
+            );
+            runTestQuery(connectionFactory);
+        }
+    }
+
+    protected void imageTagged(String image) {
     }
 
     protected abstract T createContainer();

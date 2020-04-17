@@ -58,7 +58,7 @@ class TestcontainersR2DBCConnectionFactory implements ConnectionFactory, Closeab
                     }
                 }
                 return future.thenApply(it -> {
-                    return ConnectionFactories.find(
+                    return ConnectionFactories.get(
                         it.configure(options)
                     );
                 });

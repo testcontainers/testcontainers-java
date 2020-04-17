@@ -5,7 +5,9 @@ import com.google.common.io.Resources;
 import lombok.experimental.UtilityClass;
 
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Utility class to ensure that licenses have been accepted by the developer.
@@ -15,7 +17,12 @@ public class LicenseAcceptance {
 
     private static final String ACCEPTANCE_FILE_NAME = "container-license-acceptance.txt";
 
+    static final Set<String> ACCEPTED_IMAGE_NAMES = new HashSet<>();
+
     public static void assertLicenseAccepted(final String imageName) {
+        if (ACCEPTED_IMAGE_NAMES.contains(imageName)) {
+            return;
+        }
         try {
             final URL url = Resources.getResource(ACCEPTANCE_FILE_NAME);
             final List<String> acceptedLicences = Resources.readLines(url, Charsets.UTF_8);
