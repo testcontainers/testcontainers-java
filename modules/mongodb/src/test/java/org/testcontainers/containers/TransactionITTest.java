@@ -1,4 +1,4 @@
-package org.testcontainers.containers.integration;
+package org.testcontainers.containers;
 
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
@@ -13,7 +13,6 @@ import org.bson.Document;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.containers.MongoDbContainer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
