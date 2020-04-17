@@ -25,6 +25,7 @@ gradle.taskGraph.whenReady {
                 testExecuter([execute: { spec, processor -> }, stopNow:{}] as org.gradle.api.internal.tasks.testing.TestExecuter)
             }
             subproject.tasks.findByName("shadowJar").enabled = false
+            subproject.tasks.findByName("japicmp")?.enabled = false
         }
     }
 }
