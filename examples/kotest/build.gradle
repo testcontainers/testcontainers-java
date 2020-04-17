@@ -1,0 +1,38 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.3.71"
+    id "org.jetbrains.kotlin.kapt" version "1.3.71"
+}
+
+ext {
+    kotestVersion = "4.0.3"
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+}
+
+
+test {
+    useJUnitPlatform()
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        javaParameters = true
+    }
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
