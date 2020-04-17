@@ -1,16 +1,12 @@
 import groovy.json.JsonOutput
 
 // Emit a JSON-formatted list of check tasks to be run in CI
-project.afterEvaluate {
-    def checkTasks = subprojects.collect {
-        it.tasks.findByName("check")
-    }.findAll { it != null }
+task testMatrix {
+    project.afterEvaluate {
+        def checkTasks = subprojects.collect {
+            it.tasks.findByName("check")
+        }.findAll { it != null }
 
-    checkTasks*.dependsOn*.removeIf {
-        (it as Task).name in ["javadoc"]
-    }
-
-    task testMatrix {
         dependsOn(checkTasks)
         doLast {
             def checkTaskPaths = checkTasks
@@ -29,6 +25,8 @@ gradle.taskGraph.whenReady {
                 testExecuter([execute: { spec, processor -> }, stopNow:{}] as org.gradle.api.internal.tasks.testing.TestExecuter)
             }
             subproject.tasks.findByName("shadowJar").enabled = false
+            subproject.tasks.findByName("javadoc").enabled = false
+            subproject.tasks.findByName("delombok").enabled = false
             subproject.tasks.findByName("japicmp")?.enabled = false
         }
     }
