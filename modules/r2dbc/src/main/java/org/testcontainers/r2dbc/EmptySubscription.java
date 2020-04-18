@@ -12,6 +12,6 @@ enum EmptySubscription implements Subscription {
 
     @Override
     public void cancel() {
-
+        System.out.println("DON'T MERGE"); // FIXME: remove this
     }
 }
