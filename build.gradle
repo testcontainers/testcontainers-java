@@ -1,9 +1,11 @@
 plugins {
     id 'io.franzbecker.gradle-lombok' version '3.1.0'
     id 'nebula.provided-base' version '3.0.3'
-    id 'com.github.johnrengelman.shadow' version '5.1.0'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.jfrog.bintray" version "1.8.4" apply false
 }
+
+apply from: "$rootDir/gradle/ci-support.gradle"
 
 subprojects {
     apply plugin: 'nebula.provided-base'
@@ -45,10 +47,12 @@ subprojects {
         apply from: "$rootDir/gradle/publishing.gradle"
         apply from: "$rootDir/gradle/bintray.gradle"
 
+        jar.archiveClassifier.set("original")
+
         publishing {
             publications {
                 mavenJava(MavenPublication) { publication ->
-                    artifacts.removeAll { it.classifier == null }
+                    artifacts.removeAll { it.classifier == jar.archiveClassifier.get() }
                     artifact project.tasks.shadowJar
                 }
             }
