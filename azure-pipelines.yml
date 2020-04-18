@@ -20,9 +20,9 @@ jobs:
 
 # Run all tests when running the Windows CI tests
 - job: full_build_windows
-  condition: eq(variables['Agent.OS'], 'Windows_NT')
   steps:
   - task: Gradle@2
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
     displayName: Build & test (all modules)
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
