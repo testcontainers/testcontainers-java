@@ -23,9 +23,6 @@ public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<Statement> {
     public JdbcDatabaseDelegate(JdbcDatabaseContainer container, String queryString) {
         this.container = container;
         this.queryString = queryString;
-
-        // temporary change - TODO Undo
-        new Object();
     }
 
     @Override
