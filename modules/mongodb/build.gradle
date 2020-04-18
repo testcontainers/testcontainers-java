@@ -4,5 +4,4 @@ dependencies {
     compile project(':testcontainers')
 
     testCompile("org.mongodb:mongodb-driver-sync:4.0.2")
-    testCompile("org.mockito:mockito-junit-jupiter:3.3.3")
 }

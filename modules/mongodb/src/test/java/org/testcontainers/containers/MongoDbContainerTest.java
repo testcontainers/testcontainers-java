@@ -1,78 +1,79 @@
 package org.testcontainers.containers;
 
-
+import com.mongodb.ReadConcern;
+import com.mongodb.ReadPreference;
+import com.mongodb.TransactionOptions;
+import com.mongodb.WriteConcern;
+import com.mongodb.client.ClientSession;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.TransactionBody;
+import org.bson.Document;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-/**
- * Has an overhead of connecting to Docker and running Ryuk
- * only once thanks to a static class member variable MONGODB_CONTAINER.
- *
- * @author Konstantin Silaev on 9/30/2019
- */
-@RunWith(MockitoJUnitRunner.class)
 public class MongoDbContainerTest {
-    private static final int CONTAINER_ERROR_EXIT_CODE = 252;
-    @Spy
-    private static MongoDbContainer MONGODB_CONTAINER = new MongoDbContainer();
+    private final MongoDbContainer mongoDbContainer = new MongoDbContainer();
 
-    @Test(expected = IllegalStateException.class)
-    public void shouldNotGetReplicaSetUrlBecauseOfNotStartedContainer() {
-        //WHEN
-        MONGODB_CONTAINER.getReplicaSetUrl();
-
-        //THEN
-        //expected IllegalStateException.class
+    @Before
+    public void setUp() {
+        mongoDbContainer.start();
     }
 
-    @Test(expected = MongoDbContainer.ReplicaSetInitializationException.class)
-    public void shouldNotInitReplicaSetBecauseOfExecInitReplicaSet()
-        throws IOException, InterruptedException {
-        //GIVEN
-        Container.ExecResult mockExecResult = mock(Container.ExecResult.class);
-        when(mockExecResult.getExitCode())
-            .thenReturn(CONTAINER_ERROR_EXIT_CODE);
-        doReturn(mockExecResult).when(MONGODB_CONTAINER).execInContainer(any());
-        final int mappedPort = 37723;
-        lenient().doReturn(mappedPort).when(MONGODB_CONTAINER)
-            .getMappedPort(MongoDbContainer.MONGODB_INTERNAL_PORT);
-
-        //WHEN
-        MONGODB_CONTAINER.initReplicaSet();
-
-        //THEN
-        //expected = MongoDbContainer.ReplicaSetInitializationException.class
+    @After
+    public void tearDown() {
+        mongoDbContainer.stop();
     }
 
-    @Test(expected = MongoDbContainer.ReplicaSetInitializationException.class)
-    public void shouldNotInitReplicaSetBecauseOfWaitCommand() throws IOException, InterruptedException {
+    /**
+     * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
+     */
+    @Test
+    public void shouldExecuteTransactions() {
         //GIVEN
-        final Container.ExecResult mockExecResult1 = mock(Container.ExecResult.class);
-        final Container.ExecResult mockExecResult2 = mock(Container.ExecResult.class);
-        when(mockExecResult1.getExitCode())
-            .thenReturn(0);
-        when(mockExecResult2.getExitCode())
-            .thenReturn(252);
-        doReturn(mockExecResult1, mockExecResult2)
-            .when(MONGODB_CONTAINER).execInContainer(any());
-        final int mappedPort = 37723;
-        lenient().doReturn(mappedPort).when(MONGODB_CONTAINER)
-            .getMappedPort(MongoDbContainer.MONGODB_INTERNAL_PORT);
+        final String mongoRsUrl = mongoDbContainer.getReplicaSetUrl();
+        assertNotNull(mongoRsUrl);
+        final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
+        mongoSyncClient.getDatabase("mydb1").getCollection("foo")
+            .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("abc", 0));
+        mongoSyncClient.getDatabase("mydb2").getCollection("bar")
+            .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("xyz", 0));
 
-        //WHEN
-        MONGODB_CONTAINER.initReplicaSet();
+        final ClientSession clientSession = mongoSyncClient.startSession();
+        final TransactionOptions txnOptions = TransactionOptions.builder()
+            .readPreference(ReadPreference.primary())
+            .readConcern(ReadConcern.LOCAL)
+            .writeConcern(WriteConcern.MAJORITY)
+            .build();
 
-        //THEN
-        //expected = MongoDbContainer.ReplicaSetInitializationException.class
+        final String trxResult = "Inserted into collections in different databases";
+
+        //WHEN + THEN
+        TransactionBody<String> txnBody = () -> {
+            final MongoCollection<Document> coll1 =
+                mongoSyncClient.getDatabase("mydb1").getCollection("foo");
+            final MongoCollection<Document> coll2 =
+                mongoSyncClient.getDatabase("mydb2").getCollection("bar");
+
+            coll1.insertOne(clientSession, new Document("abc", 1));
+            coll2.insertOne(clientSession, new Document("xyz", 999));
+            return trxResult;
+        };
+
+        try {
+            final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
+            assertEquals(trxResult, trxResultActual);
+        } catch (RuntimeException re) {
+            throw new IllegalStateException(re.getMessage(), re);
+        } finally {
+            clientSession.close();
+            mongoSyncClient.close();
+        }
     }
 }
