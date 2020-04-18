@@ -1,10 +1,12 @@
 jobs:
 
-# Run a minimal set of tests in normal Linux pipeline builds
-- job: minimal_core
+- job: azure_pipeline_tests
   steps:
+
+  # Run a minimal set of tests in normal Linux pipeline builds
   - task: Gradle@2
-    displayName: Build & test (minimal core)
+    condition: eq(variables['Agent.OS'], 'Linux')
+    displayName: Build & test (Linux - minimal core)
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
@@ -18,12 +20,10 @@ jobs:
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
     condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 
-# Run all tests when running the Windows CI tests
-- job: full_build_windows
-  steps:
+  # Run all tests when running the Windows CI tests
   - task: Gradle@2
     condition: eq(variables['Agent.OS'], 'Windows_NT')
-    displayName: Build & test (all modules)
+    displayName: Build & test (Windows - all modules)
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
@@ -34,5 +34,3 @@ jobs:
         tasks: 'check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
-  - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
