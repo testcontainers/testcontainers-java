@@ -1,8 +1,10 @@
 jobs:
-- job: core
+
+# Run a minimal set of tests in normal Linux pipeline builds
+- job: minimal_core
   steps:
   - task: Gradle@2
-    displayName: Build & test
+    displayName: Build & test (minimal core)
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
@@ -10,15 +12,18 @@ jobs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
         options: '--no-daemon --continue'
-        tasks: 'testcontainers:check'
+        tasks: 'testcontainers:test --tests "*GenericContainerRuleTest"'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
     condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
-- job: jdbc
+
+# Run all tests when running the Windows CI tests
+- job: full_build_windows
+  condition: eq(variables['Agent.OS'], 'Windows')
   steps:
   - task: Gradle@2
-    displayName: Build & test
+    displayName: Build & test (all modules)
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
@@ -26,24 +31,8 @@ jobs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
         options: '--no-daemon --continue'
-        tasks: 'jdbc-test:check'
-        publishJUnitResults: true
-        testResultsFiles: '**/TEST-*.xml'
-  - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
-- job: modules
-  steps:
-  - task: Gradle@2
-    displayName: Build & test
-    env:
-      AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
-      AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
-    inputs:
-        gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
-        options: '--continue -x testcontainers:check -x jdbc-test:check -PpostCheckCommand="docker image prune -af"'
         tasks: 'check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
