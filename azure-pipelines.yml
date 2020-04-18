@@ -11,8 +11,8 @@ jobs:
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
-        options: '--no-daemon --continue'
-        tasks: "testcontainers:test --tests '*GenericContainerRuleTest'"
+        options: "--no-daemon --continue --tests 'org.testcontainers.junit.GenericContainerRuleTest'"
+        tasks: "testcontainers:test"
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
