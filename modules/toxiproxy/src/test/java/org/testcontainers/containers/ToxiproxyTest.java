@@ -1,10 +1,9 @@
 package org.testcontainers.containers;
 
 import eu.rekawek.toxiproxy.model.ToxicDirection;
+import java.time.Duration;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.testsupport.Flaky;
-import org.testcontainers.testsupport.FlakyTestJUnit4RetryRule;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -14,6 +13,8 @@ import static java.lang.String.format;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class ToxiproxyTest {
+
+    private static final Duration JEDIS_TIMEOUT = Duration.ofSeconds(10);
 
     // creatingProxy {
     // An alias that can be used to resolve the Toxiproxy container by name in the network it is connected to.
@@ -37,12 +38,9 @@ public class ToxiproxyTest {
         .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
     // }
 
-    @Rule
-    public FlakyTestJUnit4RetryRule retry = new FlakyTestJUnit4RetryRule();
-
     @Test
     public void testDirect() {
-        final Jedis jedis = new Jedis(redis.getContainerIpAddress(), redis.getFirstMappedPort());
+        final Jedis jedis = createJedis(redis.getContainerIpAddress(), redis.getFirstMappedPort());
         jedis.set("somekey", "somevalue");
 
         final String s = jedis.get("somekey");
@@ -50,7 +48,6 @@ public class ToxiproxyTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2020-03-01")
     public void testLatencyViaProxy() throws IOException {
         // obtainProxyObject {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
@@ -61,7 +58,7 @@ public class ToxiproxyTest {
         final int portViaToxiproxy = proxy.getProxyPort();
         // }
 
-        final Jedis jedis = new Jedis(ipAddressViaToxiproxy, portViaToxiproxy);
+        final Jedis jedis = createJedis(ipAddressViaToxiproxy, portViaToxiproxy);
         jedis.set("somekey", "somevalue");
 
         checkCallWithLatency(jedis, "without interference", 0, 250);
@@ -77,10 +74,9 @@ public class ToxiproxyTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2020-03-01")
     public void testConnectionCut() {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
-        final Jedis jedis = new Jedis(proxy.getContainerIpAddress(), proxy.getProxyPort());
+        final Jedis jedis = createJedis(proxy.getContainerIpAddress(), proxy.getProxyPort());
         jedis.set("somekey", "somevalue");
 
         assertEquals("access to the container works OK before cutting the connection", "somevalue", jedis.get("somekey"));
@@ -102,7 +98,6 @@ public class ToxiproxyTest {
     }
 
     @Test
-    @Flaky(githubIssueUrl = "https://github.com/testcontainers/testcontainers-java/issues/1769", reviewDate = "2020-03-01")
     public void testMultipleProxiesCanBeCreated() {
         try (GenericContainer secondRedis = new GenericContainer("redis:5.0.4")
             .withExposedPorts(6379)
@@ -113,8 +108,8 @@ public class ToxiproxyTest {
             final ToxiproxyContainer.ContainerProxy firstProxy = toxiproxy.getProxy(redis, 6379);
             final ToxiproxyContainer.ContainerProxy secondProxy = toxiproxy.getProxy(secondRedis, 6379);
 
-            final Jedis firstJedis = new Jedis(firstProxy.getContainerIpAddress(), firstProxy.getProxyPort());
-            final Jedis secondJedis = new Jedis(secondProxy.getContainerIpAddress(), secondProxy.getProxyPort());
+            final Jedis firstJedis = createJedis(firstProxy.getContainerIpAddress(), firstProxy.getProxyPort());
+            final Jedis secondJedis = createJedis(secondProxy.getContainerIpAddress(), secondProxy.getProxyPort());
 
             firstJedis.set("somekey", "somevalue");
             secondJedis.set("somekey", "somevalue");
@@ -158,5 +153,9 @@ public class ToxiproxyTest {
         assertEquals(format("access to the container %s works OK", description), "somevalue", s);
         assertTrue(format("%s there is at least %dms latency", description, expectedMinLatency), duration >= expectedMinLatency);
         assertTrue(format("%s there is no more than %dms latency", description, expectedMaxLatency), duration < expectedMaxLatency);
+    }
+
+    private static Jedis createJedis(String host, int port) {
+        return new Jedis(host, port, Math.toIntExact(JEDIS_TIMEOUT.toMillis()));
     }
 }
