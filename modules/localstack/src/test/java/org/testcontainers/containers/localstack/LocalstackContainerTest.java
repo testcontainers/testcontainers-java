@@ -4,8 +4,6 @@ package org.testcontainers.containers.localstack;
 import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.AWSLogsClientBuilder;
 import com.amazonaws.services.logs.model.CreateLogGroupRequest;
-import com.amazonaws.services.logs.model.CreateLogGroupResult;
-import com.amazonaws.services.logs.model.DescribeLogGroupsRequest;
 import com.amazonaws.services.logs.model.LogGroup;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -19,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -29,15 +26,13 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -74,26 +69,27 @@ public class LocalstackContainerTest {
                 .withCredentials(localstack.getDefaultCredentialsProvider())
                 .build();
 
-            s3.createBucket("foo");
-            s3.putObject("foo", "bar", "baz");
+            final String bucketName = "foo";
+            s3.createBucket(bucketName);
+            s3.putObject(bucketName, "bar", "baz");
 
             final List<Bucket> buckets = s3.listBuckets();
-            assertEquals("The created bucket is present", 1, buckets.size());
-            final Bucket bucket = buckets.get(0);
+            final Optional<Bucket> maybeBucket = buckets.stream().filter(b -> b.getName().equals(bucketName)).findFirst();
+            assertTrue("The created bucket is present", maybeBucket.isPresent());
+            final Bucket bucket = maybeBucket.get();
 
-            assertEquals("The created bucket has the right name", "foo", bucket.getName());
-            assertEquals("The created bucket has the right name", "foo", bucket.getName());
+            assertEquals("The created bucket has the right name", bucketName, bucket.getName());
 
-            final ObjectListing objectListing = s3.listObjects("foo");
+            final ObjectListing objectListing = s3.listObjects(bucketName);
             assertEquals("The created bucket has 1 item in it", 1, objectListing.getObjectSummaries().size());
 
-            final S3Object object = s3.getObject("foo", "bar");
+            final S3Object object = s3.getObject(bucketName, "bar");
             final String content = IOUtils.toString(object.getObjectContent(), Charset.forName("UTF-8"));
             assertEquals("The object can be retrieved", "baz", content);
         }
 
         @Test
-        public void s3TestOverBridgeNetworkV2() {
+        public void s3TestUsingAwsSdkV2() {
             S3Client s3 = S3Client
                 .builder()
                 .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
@@ -103,21 +99,9 @@ public class LocalstackContainerTest {
                 .region(Region.of(localstack.getRegion()))
                 .build();
 
-            s3.createBucket(b -> b.bucket("foo"));
-            s3.putObject(b -> b.bucket("foo").key("bar"), RequestBody.fromBytes("baz".getBytes()));
-
-            final List<software.amazon.awssdk.services.s3.model.Bucket> buckets = s3.listBuckets().buckets();
-            assertEquals("The created bucket is present", 1, buckets.size());
-            final software.amazon.awssdk.services.s3.model.Bucket bucket = buckets.get(0);
-
-            assertEquals("The created bucket has the right name", "foo", bucket.name());
-            assertEquals("The created bucket has the right name", "foo", bucket.name());
-
-            final ListObjectsResponse objectListing = s3.listObjects(b -> b.bucket("foo"));
-            assertEquals("The created bucket has 1 item in it", 1, objectListing.contents().size());
-
-            final GetObjectResponse object = s3.getObject(b -> b.bucket("foo").key("bar")).response();
-            assertEquals("The object can be retrieved", 3L, object.contentLength());
+            final String bucketName = "foov2";
+            s3.createBucket(b -> b.bucket(bucketName));
+            assertTrue("New bucket was created", s3.listBuckets().buckets().stream().anyMatch(b -> b.name().equals(bucketName)));
         }
 
         @Test
