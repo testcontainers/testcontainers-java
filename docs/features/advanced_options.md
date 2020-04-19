@@ -51,4 +51,4 @@ For example, this can be used to change the container hostname:
     It is recommended to use this sparingly, and follow changes to the `docker-java` API if you choose to use this. 
     It is typically quite stable, though.
 
-For what is possible, consult the [`docker-java CreateContainerCmd` source code](https://github.com/docker-java/docker-java/blob/master/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java).
+For what is possible, consult the [`docker-java CreateContainerCmd` source code](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java).
