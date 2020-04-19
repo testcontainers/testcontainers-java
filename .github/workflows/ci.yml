@@ -30,6 +30,7 @@ jobs:
   check:
     needs: find_gradle_jobs
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-18.04
     steps:
