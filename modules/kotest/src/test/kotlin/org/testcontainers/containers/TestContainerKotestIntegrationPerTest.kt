@@ -1,17 +1,15 @@
-package com.example.kotest
+package org.testcontainers.containers
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
-import org.testcontainers.containers.ContainerPerSpecListener
-import org.testcontainers.containers.GenericContainer
 
-class TestcontainerKotestIntegrationPerSpec : StringSpec({
+class TestContainerKotestIntegrationPerTest : StringSpec({
     val container = GenericContainer<Nothing>("ubuntu")
     setContainerCommand(container) // Set container command for first time to echo hello Kotest
 
     // Register the Listener
-    listeners(ContainerPerSpecListener(container))
+    listeners(container.perTest())
 
     "test should echo hello Kotest for first test" {
         container.logs.trim() shouldBe "hello Kotest"
@@ -21,8 +19,8 @@ class TestcontainerKotestIntegrationPerSpec : StringSpec({
     }
 
     "test should echo hello Kotest for second spec as well" {
-        // presence of "hello Kotest" verifies that container is not restarted.
-        container.logs.trim() shouldBe "hello Kotest"
+        // presence of hello Kotest again verifies that container is restarted.
+        container.logs.trim() shouldBe "hello Kotest again"
     }
 
 })
