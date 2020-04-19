@@ -14,11 +14,15 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     public static final String IMAGE = "mysql";
     public static final String DEFAULT_TAG = "5.7.22";
 
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
+
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
     public static final Integer MYSQL_PORT = 3306;
     private String databaseName = "test";
-    private String username = "test";
-    private String password = "test";
+    private String username = DEFAULT_USER;
+    private String password = DEFAULT_PASSWORD;
     private static final String MYSQL_ROOT_USER = "root";
 
     public MySQLContainer() {

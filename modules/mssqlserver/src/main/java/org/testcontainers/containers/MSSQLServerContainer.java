@@ -15,8 +15,12 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     public static final String DEFAULT_TAG = "2017-CU12";
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
-    private String username = "SA";
-    private String password = "A_Str0ng_Required_Password";
+
+    static final String DEFAULT_USER = "SA";
+
+    static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
+
+    private String password = DEFAULT_PASSWORD;
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
@@ -63,7 +67,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     public String getUsername() {
-        return username;
+        return DEFAULT_USER;
     }
 
     @Override
