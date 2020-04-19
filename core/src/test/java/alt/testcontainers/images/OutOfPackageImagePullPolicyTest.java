@@ -11,11 +11,11 @@ public class OutOfPackageImagePullPolicyTest {
     @Test
     public void shouldSupportCustomPoliciesOutOfTestContainersPackage() {
         try (
-            GenericContainer<?> container = new GenericContainer<>("hello-world:latest")
+            GenericContainer<?> container = new GenericContainer<>()
                 .withImagePullPolicy(new AbstractImagePullPolicy() {
                     @Override
                     protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
-                        return true;
+                        return false;
                     }
                 })
         ) {
