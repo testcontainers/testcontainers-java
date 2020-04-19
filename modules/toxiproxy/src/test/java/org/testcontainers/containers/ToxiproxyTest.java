@@ -16,11 +16,15 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
 public class ToxiproxyTest {
 
     // creatingProxy {
+    // An alias that can be used to resolve the Toxiproxy container by name in the network it is connected to.
+    // It can be used as a hostname of the Toxiproxy container by other containers in the same network.
+    private static final String TOXIPROXY_NETWORK_ALIAS = "toxiproxy";
+
     // Create a common docker network so that containers can communicate
     @Rule
     public Network network = Network.newNetwork();
 
-    // the target container - this could be anything
+    // The target container - this could be anything
     @Rule
     public GenericContainer redis = new GenericContainer("redis:5.0.4")
         .withExposedPorts(6379)
@@ -29,7 +33,8 @@ public class ToxiproxyTest {
     // Toxiproxy container, which will be used as a TCP proxy
     @Rule
     public ToxiproxyContainer toxiproxy = new ToxiproxyContainer()
-        .withNetwork(network);
+        .withNetwork(network)
+        .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
     // }
 
     @Rule
@@ -51,7 +56,7 @@ public class ToxiproxyTest {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
         // }
 
-        // obtainProxiedHostAndPort {
+        // obtainProxiedHostAndPortForHostMachine {
         final String ipAddressViaToxiproxy = proxy.getContainerIpAddress();
         final int portViaToxiproxy = proxy.getProxyPort();
         // }
@@ -127,12 +132,20 @@ public class ToxiproxyTest {
 
     @Test
     public void testOriginalAndMappedPorts() {
+        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy("hostname", 7070);
+        // obtainProxiedHostAndPortForDifferentContainer {
+        final String hostViaToxiproxy = TOXIPROXY_NETWORK_ALIAS;
+        final int portViaToxiproxy = proxy.getOriginalProxyPort();
+        // }
+        assertEquals("host is correct", TOXIPROXY_NETWORK_ALIAS, hostViaToxiproxy);
+        assertEquals("original port is correct", 8666, portViaToxiproxy);
+
         final ToxiproxyContainer.ContainerProxy proxy1 = toxiproxy.getProxy("hostname1", 8080);
-        assertEquals("original port is correct", 8666, proxy1.getOriginalProxyPort());
+        assertEquals("original port is correct", 8667, proxy1.getOriginalProxyPort());
         assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy1.getOriginalProxyPort()), proxy1.getProxyPort());
 
         final ToxiproxyContainer.ContainerProxy proxy2 = toxiproxy.getProxy("hostname2", 9090);
-        assertEquals("original port is correct", 8667, proxy2.getOriginalProxyPort());
+        assertEquals("original port is correct", 8668, proxy2.getOriginalProxyPort());
         assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy2.getOriginalProxyPort()), proxy2.getProxyPort());
     }
 

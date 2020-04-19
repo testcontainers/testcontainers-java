@@ -29,13 +29,21 @@ We do this as follows:
 [Starting proxying connections to a target container](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxyObject
 <!--/codeinclude-->
 
-Then, to establish a connection via Toxiproxy, we obtain **Toxiproxy's** proxy host IP and port:
+To establish a connection from the test code (on the host machine) to the target container via Toxiproxy, we obtain **Toxiproxy's** proxy host IP and port:
 
 <!--codeinclude-->
-[Obtaining proxied host and port](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPort
+[Obtaining proxied host and port for the host mahcine](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForHostMachine
 <!--/codeinclude-->
 
-Code under test, or other containers, should connect to this proxied host IP and port.
+Code under test should connect to this proxied host IP and port.
+
+To establish a connection from a different container on the same network to the target container via Toxiproxy, we use **Toxiproxy's** network alias and original port:
+
+<!--codeinclude-->
+[Obtaining proxied host and port for a different container](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForDifferentContainer
+<!--/codeinclude-->
+
+Other containers should connect to this proxied host and port.
 
 Having done this, it is possible to trigger failure conditions ('Toxics') through the `proxy.toxics()` object:
 
