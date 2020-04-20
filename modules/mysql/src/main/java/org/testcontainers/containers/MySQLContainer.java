@@ -22,7 +22,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private static final String MYSQL_ROOT_USER = "root";
 
     public MySQLContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        this(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public MySQLContainer(String dockerImageName) {
