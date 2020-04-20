@@ -19,6 +19,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public static final String DEFAULT_TAG = "9.6.12";
 
     public static final Integer POSTGRESQL_PORT = 5432;
+
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
+
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
