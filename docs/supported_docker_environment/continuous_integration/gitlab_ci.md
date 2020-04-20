@@ -13,7 +13,7 @@ services:
 variables:
   # Instruct Testcontainers to use the daemon of DinD.
   DOCKER_HOST: "tcp://docker:2375"
-  # Improve performance with overlayfs.
+  # Improve performance with overlays.
   DOCKER_DRIVER: overlay2
 
 test:
