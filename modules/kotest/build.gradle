@@ -18,7 +18,6 @@ dependencies {
     api("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    testImplementation("io.mockk:mockk:1.9.3")
 }
 
 
