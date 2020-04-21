@@ -6,10 +6,10 @@ import org.testcontainers.lifecycle.Startable
 
 
 /**
- * [StartablePerSpecListener] starts the given [startables] before execution of any test in the spec
+ * [StartablePerSpecListener] starts the given [startable] before execution of any test in the spec
  * and stops after execution of all tests.
  *
- * [startables] can any of [GenericContainer] [ContainerisedDockerCompose] [LocalStackContainer] etc.
+ * [startable] can any of [GenericContainer] [DockerComposeContainer] [LocalStackContainer] etc.
  *
  * This should be use when you want to a single container for all test in a single test class.
  *
@@ -17,14 +17,14 @@ import org.testcontainers.lifecycle.Startable
  * [StartablePerTestListener]
  * */
 
-class StartablePerSpecListener(private vararg val startables: Startable) : TestListener {
+private class StartablePerSpecListener(private vararg val startable: Startable) : TestListener {
     override suspend fun beforeSpec(spec: Spec) {
-        startables.forEach { it.start() }
+        startable.forEach { it.start() }
         super.beforeSpec(spec)
     }
 
     override suspend fun afterSpec(spec: Spec) {
-        startables.forEach { it.stop() }
+        startable.forEach { it.stop() }
         super.afterSpec(spec)
     }
 }
