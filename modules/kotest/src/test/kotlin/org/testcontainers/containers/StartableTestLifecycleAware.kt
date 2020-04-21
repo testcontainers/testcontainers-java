@@ -5,10 +5,10 @@ import org.testcontainers.lifecycle.TestLifecycleAware
 import java.util.*
 
 internal class StartableTestLifecycleAware : TestStartable(), TestLifecycleAware {
-    var beforeTestCount = 0
+    val testDescriptions = mutableListOf<TestDescription?>()
 
     override fun beforeTest(description: TestDescription?) {
-        beforeTestCount++
+        testDescriptions.add(description)
     }
 
     override fun afterTest(description: TestDescription?, throwable: Optional<Throwable>?) {
