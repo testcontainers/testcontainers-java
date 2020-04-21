@@ -3,6 +3,8 @@ package org.testcontainers.containers
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.testcontainers.lifecycle.Startable
 
 
@@ -16,15 +18,17 @@ import org.testcontainers.lifecycle.Startable
  *
  * @see[StartablePerSpecListener]
  * */
-class StartablePerTestListener(private vararg val startable: Startable) : TestListener {
+internal class StartablePerTestListener(private val startable: Startable) : TestListener {
 
     override suspend fun beforeTest(testCase: TestCase) {
-        startable.forEach { it.start() }
-        super.beforeTest(testCase)
+        withContext(Dispatchers.IO) {
+            startable.start()
+        }
     }
 
     override suspend fun afterTest(testCase: TestCase, result: TestResult) {
-        startable.forEach { it.stop() }
-        super.afterTest(testCase, result)
+        withContext(Dispatchers.IO) {
+            startable.stop()
+        }
     }
 }
