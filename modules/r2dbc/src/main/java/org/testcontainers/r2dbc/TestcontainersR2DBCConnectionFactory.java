@@ -68,8 +68,7 @@ class TestcontainersR2DBCConnectionFactory implements ConnectionFactory, Closeab
 
     @Override
     public ConnectionFactoryMetadata getMetadata() {
-        // TODO check whether it is fine to call it without setting the host/port and other values
-        return ConnectionFactories.find(options).getMetadata();
+        return containerProvider.getMetadata(options);
     }
 
     @Override

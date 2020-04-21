@@ -5,6 +5,7 @@ import io.r2dbc.spi.Closeable;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.ConnectionFactoryMetadata;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.junit.Rule;
 import org.junit.Test;
@@ -92,6 +93,13 @@ public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContai
     }
 
     protected void imageTagged(String image) {
+    }
+
+    @Test
+    public final void testGetMetadata() {
+        ConnectionFactory connectionFactory = ConnectionFactories.get(createR2DBCUrl());
+        ConnectionFactoryMetadata metadata = connectionFactory.getMetadata();
+        assertThat(metadata).isNotNull();
     }
 
     protected abstract T createContainer();
