@@ -13,7 +13,8 @@ import java.util.*
 
 /**
  * [StartablePerTestListener] starts the given [startable] before execution of each test in the spec
- * and stops after execution of each test.
+ * and stops after execution of each test. If the [startable] also inherit from [TestLifecycleAware]
+ * then its [beforeTest] and [afterTest] method are also called by the listener.
  *
  * [startable] can any of [GenericContainer] [DockerComposeContainer] [LocalStackContainer] etc.
  *
