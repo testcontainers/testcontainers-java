@@ -16,7 +16,7 @@ import org.testcontainers.lifecycle.Startable
  *
  * @see[StartablePerSpecListener]
  * */
-private class StartablePerTestListener(private vararg val startable: Startable) : TestListener {
+class StartablePerTestListener(private vararg val startable: Startable) : TestListener {
 
     override suspend fun beforeTest(testCase: TestCase) {
         startable.forEach { it.start() }
