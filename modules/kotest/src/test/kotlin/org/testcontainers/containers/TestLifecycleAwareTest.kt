@@ -21,4 +21,11 @@ class TestLifecycleAwareListenerTest : StringSpec({
         testDescription?.testId shouldBe "org.testcontainers.containers.TestLifecycleAwareListenerTest/test id in test" +
             " description should be combination of test name and package name"
     }
+
+    "fileSystemFriendlyName in test description should be encoded test name" {
+        val testDescription = startableTestLifecycleAware.testDescriptions[3]
+        val encodedTestName = "fileSystemFriendlyName+in+test+description+should+be+encoded+test+name"
+
+        testDescription?.filesystemFriendlyName shouldBe encodedTestName
+    }
 })

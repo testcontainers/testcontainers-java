@@ -13,7 +13,7 @@ import org.testcontainers.lifecycle.Startable
  *
  * [startable] can any of [GenericContainer] [DockerComposeContainer] [LocalStackContainer] etc.
  *
- * This should be use when you want to a single container for all test in a single test class.
+ * This listener should be used when you want to use a single container for all tests in a single spec class.
  *
  * @see
  * [StartablePerTestListener]

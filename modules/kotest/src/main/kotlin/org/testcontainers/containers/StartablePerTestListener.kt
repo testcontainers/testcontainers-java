@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import org.testcontainers.lifecycle.Startable
 import org.testcontainers.lifecycle.TestDescription
 import org.testcontainers.lifecycle.TestLifecycleAware
+import java.net.URLEncoder
 import java.util.*
 
 
@@ -18,7 +19,7 @@ import java.util.*
  *
  * [startable] can any of [GenericContainer] [DockerComposeContainer] [LocalStackContainer] etc.
  *
- * This should be use when you want fresh container for each test.
+ * This should be used when you want a fresh container for each test.
  *
  * @see[StartablePerSpecListener]
  * */
@@ -53,7 +54,7 @@ internal class StartablePerTestListener(private val startable: Startable) : Test
 private fun TestCase.toTestDescription() = object : TestDescription {
 
     override fun getFilesystemFriendlyName(): String {
-        return name.replace(" ", "-")
+        return URLEncoder.encode(name, "UTF-8")
     }
 
     override fun getTestId(): String {
