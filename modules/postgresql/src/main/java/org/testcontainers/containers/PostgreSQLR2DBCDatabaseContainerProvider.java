@@ -48,6 +48,6 @@ public final class PostgreSQLR2DBCDatabaseContainerProvider extends AbstractR2DB
         if (!options.hasOption(ConnectionFactoryOptions.PASSWORD)) {
             builder.option(ConnectionFactoryOptions.PASSWORD, PostgreSQLContainer.DEFAULT_PASSWORD);
         }
-        return R2DBCDatabaseContainerProvider.super.getMetadata(builder.build());
+        return super.getMetadata(builder.build());
     }
 }

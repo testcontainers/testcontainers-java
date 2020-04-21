@@ -47,6 +47,6 @@ public class MySQLR2DBCDatabaseContainerProvider extends AbstractR2DBCDatabaseCo
         if (!options.hasOption(ConnectionFactoryOptions.PASSWORD)) {
             builder.option(ConnectionFactoryOptions.PASSWORD, MySQLContainer.DEFAULT_PASSWORD);
         }
-        return R2DBCDatabaseContainerProvider.super.getMetadata(builder.build());
+        return super.getMetadata(builder.build());
     }
 }
