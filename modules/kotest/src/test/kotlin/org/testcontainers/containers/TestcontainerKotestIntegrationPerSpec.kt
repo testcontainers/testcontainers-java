@@ -2,9 +2,11 @@ package org.testcontainers.containers
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy
 
 class TestcontainerKotestIntegrationPerSpec : StringSpec({
-    val container = GenericContainer<Nothing>("ubuntu")
+    val container = GenericContainer<Nothing>("alpine")
+    container.withStartupCheckStrategy(OneShotStartupCheckStrategy())
     setContainerCommand(container) // Set container command for first time to echo hello Kotest
 
     // Register the Listener

@@ -2,10 +2,11 @@ package org.testcontainers.containers
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.delay
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy
 
 class TestContainerKotestIntegrationPerTest : StringSpec({
-    val container = GenericContainer<Nothing>("ubuntu")
+    val container = GenericContainer<Nothing>("alpine")
+    container.withStartupCheckStrategy(OneShotStartupCheckStrategy())
     setContainerCommand(container) // Set container command for first time to echo hello Kotest
 
     // Register the Listener
@@ -15,7 +16,6 @@ class TestContainerKotestIntegrationPerTest : StringSpec({
         container.logs.trim() shouldBe "hello Kotest"
         // Set container command so that next time when container start we will have hello Kotest again in container log
         setContainerCommand(container)
-        delay(1000)
     }
 
     "test should echo hello Kotest for second spec as well" {
