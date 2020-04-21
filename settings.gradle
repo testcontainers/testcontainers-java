@@ -5,21 +5,17 @@ buildscript {
         }
     }
     dependencies {
-        classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.9.0"
+        classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.10.0"
         classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.2.1"
-    }
-
-    configurations.classpath {
-        resolutionStrategy {
-            force 'com.amazonaws:aws-java-sdk-s3:1.11.582'
-        }
     }
 }
 
 apply plugin: 'ch.myniva.s3-build-cache'
 apply plugin: 'com.gradle.enterprise'
 
-ext.isMasterBuild = (System.getenv("CIRCLE_BRANCH") ?: System.getenv("BUILD_SOURCEBRANCHNAME")) == "master"
+ext.isMasterBuild = false ||
+    (System.getenv("GITHUB_REF") == "refs/heads/master") ||
+    (System.getenv("BUILD_SOURCEBRANCHNAME") == "master")
 
 buildCache {
     local {
@@ -31,7 +27,7 @@ buildCache {
         region = 'fra1'
         bucket = 'testcontainers'
         path = 'cache'
-        push = isMasterBuild
+        push = !(System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") || !isMasterBuild)
         headers = [
             'x-amz-acl': 'public-read'
         ]
