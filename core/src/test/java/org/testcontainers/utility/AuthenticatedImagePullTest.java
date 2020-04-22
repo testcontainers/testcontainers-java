@@ -5,6 +5,7 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -110,7 +111,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
         // Prepare a simple temporary Dockerfile which requires our custom private image
-        Path tempContext = Files.createTempDirectory(Paths.get("."), this.getClass().getSimpleName() + "-test-");
+        Path tempContext = getLocalTempDir();
         Path tempFile = Files.createTempFile(tempContext, "test", ".Dockerfile");
         String dockerFileContent = "FROM " + testImageNameWithTag;
         Files.write(tempFile, dockerFileContent.getBytes());
@@ -130,7 +131,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
         // Prepare a simple temporary Docker Compose manifest which requires our custom private image
-        Path tempContext = Files.createTempDirectory(Paths.get("."), this.getClass().getSimpleName() + "-test-");
+        Path tempContext = getLocalTempDir();
         Path tempFile = Files.createTempFile(tempContext, "test", ".docker-compose.yml");
         @Language("yaml") String composeFileContent =
             "version: '2.0'\n" +
@@ -151,6 +152,12 @@ public class AuthenticatedImagePullTest {
                     .orElse(false)
             );
         }
+    }
+
+    @NotNull
+    private Path getLocalTempDir() throws IOException {
+        Path projectRoot = Paths.get(".");
+        return Files.createTempDirectory(projectRoot, this.getClass().getSimpleName() + "-test-").relativize(projectRoot);
     }
 
     private static void putImageInRegistry() throws InterruptedException {
