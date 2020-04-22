@@ -60,7 +60,7 @@ jobs:
         if: always()
         env:
           CIMATE_PROJECT_ID: 2348n4vl
-          CIMATE_CI_KEY: "CI / ${{matrix.gradle_args}}"
+          CIMATE_CI_KEY: "CI / ${{ runner.os }} / ${{matrix.gradle_args}}"
         run: |
           wget -q https://get.cimate.io/release/linux/cimate
           chmod +x cimate
