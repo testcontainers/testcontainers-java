@@ -157,7 +157,8 @@ public class AuthenticatedImagePullTest {
     @NotNull
     private Path getLocalTempDir() throws IOException {
         Path projectRoot = Paths.get(".");
-        return Files.createTempDirectory(projectRoot, this.getClass().getSimpleName() + "-test-").relativize(projectRoot);
+        Path tempDirectory = Files.createTempDirectory(projectRoot, this.getClass().getSimpleName() + "-test-");
+        return projectRoot.relativize(tempDirectory);
     }
 
     private static void putImageInRegistry() throws InterruptedException {
