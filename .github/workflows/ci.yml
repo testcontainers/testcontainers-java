@@ -23,10 +23,6 @@ jobs:
             ${{ runner.os }}-gradle-home-testmatrix-
             ${{ runner.os }}-gradle-home-
       - id: set-matrix
-        env:
-          # Since we override the tests executor,
-          # we should not push empty results to the cache
-          READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
