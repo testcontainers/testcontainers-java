@@ -101,6 +101,19 @@ public class DockerClientFactory {
         return instance;
     }
 
+    /**
+     * Checks whether Docker is accessible and {@link #client()} is able to produce a client.
+     * @return true if Docker is available, false if not.
+     */
+    public synchronized boolean isDockerAvailable() {
+        try {
+            getOrInitializeStrategy();
+            return true;
+        } catch (IllegalStateException ex) {
+            return false;
+        }
+    }
+
     @Synchronized
     private DockerClientProviderStrategy getOrInitializeStrategy() {
         if (strategy != null) {
