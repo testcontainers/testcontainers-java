@@ -23,6 +23,10 @@ jobs:
             ${{ runner.os }}-gradle-home-testmatrix-
             ${{ runner.os }}-gradle-home-
       - id: set-matrix
+        env:
+          # Since we override the tests executor,
+          # we should not push empty results to the cache
+          READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
@@ -56,6 +60,7 @@ jobs:
         if: always()
         env:
           CIMATE_PROJECT_ID: 2348n4vl
+          CIMATE_CI_KEY: "CI / ${{ runner.os }} / ${{matrix.gradle_args}}"
         run: |
           wget -q https://get.cimate.io/release/linux/cimate
           chmod +x cimate
@@ -82,6 +87,7 @@ jobs:
         if: always()
         env:
           CIMATE_PROJECT_ID: 2348n4vl
+          CIMATE_CI_KEY: examples
         run: |
           wget -q https://get.cimate.io/release/linux/cimate
           chmod +x cimate
