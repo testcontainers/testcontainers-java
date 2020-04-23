@@ -5,7 +5,6 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -111,8 +110,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
         // Prepare a simple temporary Dockerfile which requires our custom private image
-        Path tempContext = getLocalTempDir();
-        Path tempFile = Files.createTempFile(tempContext, "test", ".Dockerfile");
+        Path tempFile = getLocalTempFile(".Dockerfile");
         String dockerFileContent = "FROM " + testImageNameWithTag;
         Files.write(tempFile, dockerFileContent.getBytes());
 
@@ -131,8 +129,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
         // Prepare a simple temporary Docker Compose manifest which requires our custom private image
-        Path tempContext = getLocalTempDir();
-        Path tempFile = Files.createTempFile(tempContext, "test", ".docker-compose.yml");
+        Path tempFile = getLocalTempFile(".docker-compose.yml");
         @Language("yaml") String composeFileContent =
             "version: '2.0'\n" +
                 "services:\n" +
@@ -154,11 +151,16 @@ public class AuthenticatedImagePullTest {
         }
     }
 
-    @NotNull
-    private Path getLocalTempDir() throws IOException {
+    private Path getLocalTempFile(String s) throws IOException {
         Path projectRoot = Paths.get(".");
         Path tempDirectory = Files.createTempDirectory(projectRoot, this.getClass().getSimpleName() + "-test-");
-        return projectRoot.relativize(tempDirectory);
+        Path relativeTempDirectory = projectRoot.relativize(tempDirectory);
+        Path tempFile = Files.createTempFile(relativeTempDirectory, "test", s);
+
+        tempDirectory.toFile().deleteOnExit();
+        tempFile.toFile().deleteOnExit();
+
+        return tempFile;
     }
 
     private static void putImageInRegistry() throws InterruptedException {
