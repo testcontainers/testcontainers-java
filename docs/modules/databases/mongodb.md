@@ -4,13 +4,7 @@
     This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
 
 # Java8 MongoDbContainer for constructing a single node MongoDB replica set. To construct a multi-node MongoDB cluster, consider the [mongodb-replica-set project](https://github.com/silaev/mongodb-replica-set/)              
-    
-#### MongoDB versions that MongoDbContainer is constantly tested against:
-version |
----------- |
-4.0.12 |
-4.2.0 |
- 
+
 ## Usage example
 
 The following example shows how to create a MongoDbContainer
@@ -32,9 +26,9 @@ MongoDB starting form version 4 supports multi-document transactions only for a 
 For instance, to initialize a single and simple node replica set on fixed ports via Docker, one has to do the following:
 
 * Run a MongoDB container of version 4 and up specifying --replSet command
-* Initializing a single replica set via executing a proper command (depending on local or remote Docker daemon usage)
-* Waiting for the initialization to complete
-* Providing a special url (without the need to modify the OS host file) for a user to employ with a MongoDB driver without specifying replicaSet
+* Initialize a single replica set via executing a proper command
+* Wait for the initialization to complete
+* Provide a special url for a user to employ with a MongoDB driver without specifying replicaSet
 
 As we can see, there is a lot of operations to execute and we even haven't touched a non-fixed port approach.
 That's where the MongoDbContainer might come in handy. 
