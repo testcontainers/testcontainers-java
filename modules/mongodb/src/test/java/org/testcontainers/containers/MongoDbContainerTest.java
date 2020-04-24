@@ -22,9 +22,11 @@ public class MongoDbContainerTest {
      */
     @Test
     public void shouldExecuteTransactions() {
-        // creatingMongoDbContainer {
-        try (MongoDbContainer mongoDbContainer = new MongoDbContainer()) {
-        // }
+        try (
+            // creatingMongoDbContainer {
+            MongoDbContainer mongoDbContainer = new MongoDbContainer()
+            // }
+        ) {
 
             // startingMongoDbContainer {
             mongoDbContainer.start();
