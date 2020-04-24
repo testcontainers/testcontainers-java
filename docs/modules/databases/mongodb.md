@@ -16,11 +16,11 @@ version |
 The following example shows how to create a MongoDbContainer
 
 <!--codeinclude-->
-[Creating a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/integration/InitializationITTest.java) inside_block:creatingMongoDbContainer
+[Creating a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDbContainerTest.java) inside_block:creatingMongoDbContainer
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting and stopping a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/integration/InitializationITTest.java) inside_block:startingStoppingMongoDbContainer
+[Starting a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDbContainerTest.java) inside_block:startingMongoDbContainer
 <!--/codeinclude-->
 
 #### Motivation

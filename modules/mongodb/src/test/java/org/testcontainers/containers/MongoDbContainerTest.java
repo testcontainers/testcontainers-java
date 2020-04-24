@@ -10,8 +10,6 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -19,61 +17,56 @@ import static org.junit.Assert.assertNotNull;
 
 
 public class MongoDbContainerTest {
-    private final MongoDbContainer mongoDbContainer = new MongoDbContainer();
-
-    @Before
-    public void setUp() {
-        mongoDbContainer.start();
-    }
-
-    @After
-    public void tearDown() {
-        mongoDbContainer.stop();
-    }
-
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
      */
     @Test
     public void shouldExecuteTransactions() {
-        //GIVEN
-        final String mongoRsUrl = mongoDbContainer.getReplicaSetUrl();
-        assertNotNull(mongoRsUrl);
-        final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
-        mongoSyncClient.getDatabase("mydb1").getCollection("foo")
-            .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("abc", 0));
-        mongoSyncClient.getDatabase("mydb2").getCollection("bar")
-            .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("xyz", 0));
+        // creatingMongoDbContainer {
+        try (MongoDbContainer mongoDbContainer = new MongoDbContainer()) {
+            // }
 
-        final ClientSession clientSession = mongoSyncClient.startSession();
-        final TransactionOptions txnOptions = TransactionOptions.builder()
-            .readPreference(ReadPreference.primary())
-            .readConcern(ReadConcern.LOCAL)
-            .writeConcern(WriteConcern.MAJORITY)
-            .build();
+            // startingMongoDbContainer
+            mongoDbContainer.start();
+            // }
 
-        final String trxResult = "Inserted into collections in different databases";
+            final String mongoRsUrl = mongoDbContainer.getReplicaSetUrl();
+            assertNotNull(mongoRsUrl);
+            final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
+            mongoSyncClient.getDatabase("mydb1").getCollection("foo")
+                .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("abc", 0));
+            mongoSyncClient.getDatabase("mydb2").getCollection("bar")
+                .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("xyz", 0));
 
-        //WHEN + THEN
-        TransactionBody<String> txnBody = () -> {
-            final MongoCollection<Document> coll1 =
-                mongoSyncClient.getDatabase("mydb1").getCollection("foo");
-            final MongoCollection<Document> coll2 =
-                mongoSyncClient.getDatabase("mydb2").getCollection("bar");
+            final ClientSession clientSession = mongoSyncClient.startSession();
+            final TransactionOptions txnOptions = TransactionOptions.builder()
+                .readPreference(ReadPreference.primary())
+                .readConcern(ReadConcern.LOCAL)
+                .writeConcern(WriteConcern.MAJORITY)
+                .build();
 
-            coll1.insertOne(clientSession, new Document("abc", 1));
-            coll2.insertOne(clientSession, new Document("xyz", 999));
-            return trxResult;
-        };
+            final String trxResult = "Inserted into collections in different databases";
 
-        try {
-            final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
-            assertEquals(trxResult, trxResultActual);
-        } catch (RuntimeException re) {
-            throw new IllegalStateException(re.getMessage(), re);
-        } finally {
-            clientSession.close();
-            mongoSyncClient.close();
+            TransactionBody<String> txnBody = () -> {
+                final MongoCollection<Document> coll1 =
+                    mongoSyncClient.getDatabase("mydb1").getCollection("foo");
+                final MongoCollection<Document> coll2 =
+                    mongoSyncClient.getDatabase("mydb2").getCollection("bar");
+
+                coll1.insertOne(clientSession, new Document("abc", 1));
+                coll2.insertOne(clientSession, new Document("xyz", 999));
+                return trxResult;
+            };
+
+            try {
+                final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
+                assertEquals(trxResult, trxResultActual);
+            } catch (RuntimeException re) {
+                throw new IllegalStateException(re.getMessage(), re);
+            } finally {
+                clientSession.close();
+                mongoSyncClient.close();
+            }
         }
     }
 }

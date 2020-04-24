@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +18,8 @@ import java.io.IOException;
 @Slf4j
 public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     private static final int CONTAINER_EXIT_CODE_OK = 0;
-    static final int MONGODB_INTERNAL_PORT = 27017;
-    private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 30;
+    private static final int MONGODB_INTERNAL_PORT = 27017;
+    private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
@@ -56,8 +57,12 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     @Override
     public void start() {
         super.start();
-        initReplicaSet();
         logReplicaSetStatus();
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        initReplicaSet();
     }
 
     @SneakyThrows(value = {IOException.class, InterruptedException.class})
@@ -87,7 +92,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
                 "(%s) " +
                 "{ " +
                 "if (attempt > %d) {quit(1);} " +
-                "print('%s ' + attempt); sleep(1000);  attempt++; " +
+                "print('%s ' + attempt); sleep(100);  attempt++; " +
                 " }",
             "db.runCommand( { isMaster: 1 } ).ismaster==false",
             AWAIT_INIT_REPLICA_SET_ATTEMPTS,
