@@ -380,6 +380,15 @@ public class GenericContainerRuleTest {
     }
 
     @Test
+    public void addingExposedPortTwiceShouldNotFail() {
+        redis.addExposedPort(8987);
+        redis.addExposedPort(8987);
+        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
+        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
+        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
     public void sharedMemorySetTest() {
         try (GenericContainer containerWithSharedMemory = new GenericContainer()
             .withSharedMemorySize(42L * FileUtils.ONE_MB)
