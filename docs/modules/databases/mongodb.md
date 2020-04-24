@@ -23,7 +23,7 @@ fixed ports to test MongoDB transactions.
   
 #### General info
 MongoDB starting form version 4 supports multi-document transactions only for a replica set.
-For instance, to initialize a single and simple node replica set on fixed ports via Docker, one has to do the following:
+For instance, to initialize a single node replica set on fixed ports via Docker, one has to do the following:
 
 * Run a MongoDB container of version 4 and up specifying --replSet command
 * Initialize a single replica set via executing a proper command
