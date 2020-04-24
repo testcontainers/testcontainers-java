@@ -11,30 +11,28 @@ import java.io.IOException;
 /**
  * Constructs a single node MongoDB replica set for testing transactions.
  * <p>To construct a multi-node MongoDB cluster, consider the <a href="https://github.com/silaev/mongodb-replica-set/">mongodb-replica-set project on GitHub</a>
- * <p>Tested on a Mongo DB version 4.0.10+ (that is the default version if not specified).
- *
- * @author Konstantin Silaev on 9/30/2019
+ * <p>Tested on a MongoDB version 4.0.10+ (that is the default version if not specified).
  */
 @Slf4j
-public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
+public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final int CONTAINER_EXIT_CODE_OK = 0;
     private static final int MONGODB_INTERNAL_PORT = 27017;
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
-    public MongoDbContainer() {
+    public MongoDBContainer() {
         super("mongo:" + MONGODB_VERSION_DEFAULT);
-        configureMongoDbContainer();
+        configureMongoDBContainer();
 
     }
 
-    public MongoDbContainer(@NonNull final String dockerImageName) {
+    public MongoDBContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
-        configureMongoDbContainer();
+        configureMongoDBContainer();
     }
 
-    private void configureMongoDbContainer() {
+    private void configureMongoDBContainer() {
         withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");
         waitingFor(
@@ -44,7 +42,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     public String getReplicaSetUrl() {
         if (!isRunning()) {
-            throw new IllegalStateException("MongoDbContainer should be started first");
+            throw new IllegalStateException("MongoDBContainer should be started first");
         }
         return String.format(
             "mongodb://%s:%d/%s",
@@ -55,22 +53,8 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     }
 
     @Override
-    public void start() {
-        super.start();
-        logReplicaSetStatus();
-    }
-
-    @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         initReplicaSet();
-    }
-
-    @SneakyThrows(value = {IOException.class, InterruptedException.class})
-    private void logReplicaSetStatus() {
-        log.debug(
-            "REPLICA SET STATUS:\n{}",
-            execInContainer(buildMongoEvalCommand("rs.status()")).getStdout()
-        );
     }
 
     private String[] buildMongoEvalCommand(final String command) {

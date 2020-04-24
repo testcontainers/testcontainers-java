@@ -16,23 +16,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 
-public class MongoDbContainerTest {
+public class MongoDBContainerTest {
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
      */
     @Test
     public void shouldExecuteTransactions() {
         try (
-            // creatingMongoDbContainer {
-            final MongoDbContainer mongoDbContainer = new MongoDbContainer()
+            // creatingMongoDBContainer {
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer()
             // }
         ) {
 
-            // startingMongoDbContainer {
-            mongoDbContainer.start();
+            // startingMongoDBContainer {
+            mongoDBContainer.start();
             // }
 
-            final String mongoRsUrl = mongoDbContainer.getReplicaSetUrl();
+            final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
             assertNotNull(mongoRsUrl);
             final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
             mongoSyncClient.getDatabase("mydb1").getCollection("foo")
