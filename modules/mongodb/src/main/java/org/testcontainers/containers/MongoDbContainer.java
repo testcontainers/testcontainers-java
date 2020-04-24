@@ -114,7 +114,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     }
 
     @SneakyThrows(value = {IOException.class, InterruptedException.class})
-    void initReplicaSet() {
+    private void initReplicaSet() {
         log.debug("Initializing a single node node replica set...");
         final ExecResult execResultInitRs = execInContainer(
             buildMongoEvalCommand("rs.initiate();")
