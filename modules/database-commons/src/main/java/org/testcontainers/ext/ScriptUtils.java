@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.delegate.DatabaseDelegate;
 
+import static org.apache.commons.lang.ArrayUtils.isEmpty;
+
 /**
  * This is a modified version of the Spring-JDBC ScriptUtils class, adapted to reduce
  * dependencies and slightly alter the API.
@@ -284,18 +286,33 @@ public abstract class ScriptUtils {
 		return false;
 	}
 
+    /**
+     * Load script from classpath and apply it to the given database
+     *
+     * @param databaseDelegate database delegate for script execution
+     * @param initScriptPath   the resource to load the init script from
+     */
+    public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
+        runMultiInitScript(databaseDelegate, initScriptPath);
+    }
+
 	/**
-	 * Load script from classpath and apply it to the given database
+	 * Loads multiple scripts from classpath and applies it to the given database
 	 *
 	 * @param databaseDelegate database delegate for script execution
-	 * @param initScriptPaths   the resource to load the init script from
+	 * @param initScriptPaths   the resources to load the init scripts from
 	 */
-	public static void runInitScript(DatabaseDelegate databaseDelegate, String... initScriptPaths) {
-	    String initScriptPath = initScriptPaths[0];
+	public static void runMultiInitScript(DatabaseDelegate databaseDelegate, String... initScriptPaths) {
+        if (isEmpty(initScriptPaths)) {
+            LOGGER.warn("No initScriptPath provided. Skipping...");
+            return;
+        }
+
+	    String initScriptPathCursor = "";
 		try {
             ClassLoader loader = ScriptUtils.class.getClassLoader();
             for (String path : initScriptPaths) {
-                initScriptPath = path;
+                initScriptPathCursor = path;
                 URL resource = loader.getResource(path);
                 if (resource == null) {
                     LOGGER.warn("Could not load classpath init script: {}", path);
@@ -305,11 +322,11 @@ public abstract class ScriptUtils {
                 executeDatabaseScript(databaseDelegate, path, scripts);
             }
 		} catch (IOException e) {
-			LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
-			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
+			LOGGER.warn("Could not load classpath init script: {}", initScriptPathCursor);
+			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPathCursor, e);
 		} catch (ScriptException e) {
-			LOGGER.error("Error while executing init script: {}", initScriptPath, e);
-			throw new UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
+			LOGGER.error("Error while executing init script: {}", initScriptPathCursor, e);
+			throw new UncategorizedScriptException("Error while executing init script: " + initScriptPathCursor, e);
 		}
 	}
 
