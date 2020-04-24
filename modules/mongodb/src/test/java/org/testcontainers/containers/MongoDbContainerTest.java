@@ -24,9 +24,9 @@ public class MongoDbContainerTest {
     public void shouldExecuteTransactions() {
         // creatingMongoDbContainer {
         try (MongoDbContainer mongoDbContainer = new MongoDbContainer()) {
-            // }
+        // }
 
-            // startingMongoDbContainer
+            // startingMongoDbContainer {
             mongoDbContainer.start();
             // }
 
