@@ -27,10 +27,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     public MongoDBContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
-        configureMongoDBContainer();
-    }
-
-    private void configureMongoDBContainer() {
         withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");
         waitingFor(
