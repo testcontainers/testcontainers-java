@@ -22,9 +22,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
     public MongoDBContainer() {
-        super("mongo:" + MONGODB_VERSION_DEFAULT);
-        configureMongoDBContainer();
-
+        this("mongo:" + MONGODB_VERSION_DEFAULT);
     }
 
     public MongoDBContainer(@NonNull final String dockerImageName) {
