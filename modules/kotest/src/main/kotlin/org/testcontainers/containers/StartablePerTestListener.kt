@@ -6,10 +6,7 @@ import io.kotest.core.test.TestResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.testcontainers.lifecycle.Startable
-import org.testcontainers.lifecycle.TestDescription
 import org.testcontainers.lifecycle.TestLifecycleAware
-import java.net.URLEncoder
-import java.util.*
 
 
 /**
@@ -24,41 +21,20 @@ import java.util.*
  * @see[StartablePerSpecListener]
  * */
 internal class StartablePerTestListener(private val startable: Startable) : TestListener {
+    private val testLifecycleAwareListener = TestLifecycleAwareListener(startable)
 
     override suspend fun beforeTest(testCase: TestCase) {
         withContext(Dispatchers.IO) {
-            runBeforeTestForTestLifecycleAware(testCase)
+            testLifecycleAwareListener.beforeTest(testCase)
             startable.start()
         }
     }
 
     override suspend fun afterTest(testCase: TestCase, result: TestResult) {
         withContext(Dispatchers.IO) {
-            runAfterTestForTestLifecycleAware(testCase, result)
+            testLifecycleAwareListener.afterTest(testCase, result)
             startable.stop()
         }
-    }
-
-    private fun runBeforeTestForTestLifecycleAware(testCase: TestCase) {
-        startable.toTestLifecycleAware()?.beforeTest(testCase.toTestDescription())
-    }
-
-    private fun runAfterTestForTestLifecycleAware(testCase: TestCase, result: TestResult) {
-        startable.toTestLifecycleAware()?.afterTest(testCase.toTestDescription(), Optional.ofNullable(result.error))
-    }
-
-    private fun Startable.toTestLifecycleAware() = this as? TestLifecycleAware
-}
-
-
-private fun TestCase.toTestDescription() = object : TestDescription {
-
-    override fun getFilesystemFriendlyName(): String {
-        return URLEncoder.encode(name, "UTF-8")
-    }
-
-    override fun getTestId(): String {
-        return description.id()
     }
 }
 
