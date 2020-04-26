@@ -101,7 +101,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
         private static final String CUT_CONNECTION_UPSTREAM = "CUT_CONNECTION_UPSTREAM";
         private final Proxy toxi;
         /**
-         * The IP address that this proxy container may be reached on.
+         * The IP address that this proxy container may be reached on from the host machine.
          */
         @Getter private final String containerIpAddress;
         /**
