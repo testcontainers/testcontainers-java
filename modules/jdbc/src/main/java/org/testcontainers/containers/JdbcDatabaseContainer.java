@@ -107,8 +107,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return self();
     }
 
-    public SELF withInitScript(String... initScriptPath) {
-        this.initScriptPaths = initScriptPath;
+    public SELF withInitScript(String initScriptPath) {
+        return withMultiInitScript(initScriptPath);
+    }
+
+    public SELF withMultiInitScript(String... initScriptPaths) {
+        this.initScriptPaths = initScriptPaths;
         return self();
     }
 
@@ -237,7 +241,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     protected void runInitScriptIfRequired() {
         if (initScriptPaths != null) {
-            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPaths);
+            ScriptUtils.runMultiInitScript(getDatabaseDelegate(), initScriptPaths);
         }
     }
 

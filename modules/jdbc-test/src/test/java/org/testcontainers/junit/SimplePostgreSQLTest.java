@@ -63,7 +63,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
     @Test
     public void testMultipleExplicitInitScript() throws SQLException {
-        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>().withInitScript("somepath/init_postgresql.sql", "somepath/init_postgresql_2.sql")) {
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>().withMultiInitScript("somepath/init_postgresql.sql", "somepath/init_postgresql_2.sql")) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT foo AS value FROM bar UNION SELECT bar AS value FROM foo");
