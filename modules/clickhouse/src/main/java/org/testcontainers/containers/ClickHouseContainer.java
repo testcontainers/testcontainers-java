@@ -4,7 +4,8 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.time.Duration;
 
-public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
+
     public static final String NAME = "clickhouse";
     public static final String IMAGE = "yandex/clickhouse-server";
     public static final String DEFAULT_TAG = "18.10.3";
@@ -55,19 +56,19 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
     }
 
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public ClickHouseContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public ClickHouseContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public ClickHouseContainer withPassword(final String password) {
         this.password = password;
         return self();
     }
