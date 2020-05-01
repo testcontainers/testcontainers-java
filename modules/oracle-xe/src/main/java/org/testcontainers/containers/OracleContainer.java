@@ -46,16 +46,12 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         super(dockerImageName);
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
+        addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
     }
 
     @Override
     protected Integer getLivenessCheckPort() {
         return getMappedPort(ORACLE_PORT);
-    }
-
-    @Override
-    protected void configure() {
-        addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
     }
 
     @Override
