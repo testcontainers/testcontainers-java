@@ -8,65 +8,25 @@ Testcontainers module for Couchbase. [Couchbase](https://www.couchbase.com/) is 
 
 Running Couchbase as a stand-in in a test:
 
-### Create your own bucket
+1. Define a bucket:
+    <!--codeinclude-->
+    [Bucket Definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:bucket_definition
+    <!--/codeinclude-->
 
-```java
-public class SomeTest {
+2. define a container:
+    <!--codeinclude-->
+    [Container definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:container_definition
+    <!--/codeinclude-->
 
-    @Rule
-    public CouchbaseContainer couchbase = new CouchbaseContainer()
-             .withClusterAdmin("admin", "secret")
-             .withNewBucket(DefaultBucketSettings.builder()
-                        .enableFlush(true)
-                        .name("bucket-name")
-                        .password("secret")
-                        .quota(100)
-                        .type(BucketType.COUCHBASE)
-                        .build());
-    
-    @Test
-    public void someTestMethod() {
-        Bucket bucket = couchbase.getCouchbaseCluster().openBucket("bucket-name");
-        
-        // ... interact with client as if using Couchbase normally
-    }
-}
-```
+3. create an environment & cluster:
+    <!--codeinclude-->
+    [Cluster creation](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:cluster_creation
+    <!--/codeinclude-->
 
-### Use preconfigured default bucket
-
-Bucket is cleared after each test
-
-```java
-public class SomeTest extends AbstractCouchbaseTest {
-
-    @Test
-    public void someTestMethod() {
-        Bucket bucket = getBucket();
-        
-        // ... interact with client as if using Couchbase normally
-    }
-}
-```
-
-### Special consideration
-
-Couchbase container is configured to use random available [ports](https://developer.couchbase.com/documentation/server/current/install/install-ports.html) for some ports only, as [Couchbase Java SDK](https://developer.couchbase.com/documentation/server/current/sdk/java/start-using-sdk.html) permit to configure only some ports: 
-
-- **8091** : REST/HTTP traffic ([bootstrapHttpDirectPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierDirectPort-int-))
-- **18091** : REST/HTTP traffic with SSL ([bootstrapHttpSslPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierSslPort-int-))
-- **11210** : memcached ([bootstrapCarrierDirectPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierDirectPort-int-))
-- **11207** : memcached SSL ([bootstrapCarrierSslPort](http://docs.couchbase.com/sdk-api/couchbase-java-client-2.4.6/com/couchbase/client/java/env/DefaultCouchbaseEnvironment.Builder.html#bootstrapCarrierSslPort-int-))
-
-All other ports cannot be changed by Java SDK, there are sadly fixed:
-
-- **8092** : Queries, views, XDCR
-- **8093** : REST/HTTP Query service
-- **8094** : REST/HTTP Search Service
-- **8095** : REST/HTTP Analytic service
-
-So if you disable Query, Search and Analytic service, you can run multiple instance of this container, otherwise, you're stuck with one instance, for now.
-
+4. authenticate:
+    <!--codeinclude-->
+    [Authentication](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:auth
+    <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 

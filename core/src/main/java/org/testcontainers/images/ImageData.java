@@ -10,7 +10,7 @@ import java.time.Instant;
 
 @Value
 @Builder
-class ImageData {
+public class ImageData {
 
     @NonNull
     Instant createdAt;

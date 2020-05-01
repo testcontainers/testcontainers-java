@@ -14,19 +14,24 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     public static final String IMAGE = "mysql";
     public static final String DEFAULT_TAG = "5.7.22";
 
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
+
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
     public static final Integer MYSQL_PORT = 3306;
     private String databaseName = "test";
-    private String username = "test";
-    private String password = "test";
+    private String username = DEFAULT_USER;
+    private String password = DEFAULT_PASSWORD;
     private static final String MYSQL_ROOT_USER = "root";
 
     public MySQLContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        this(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public MySQLContainer(String dockerImageName) {
         super(dockerImageName);
+        addExposedPort(MYSQL_PORT);
     }
 
     @NotNull
@@ -40,7 +45,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d",
                 "mysql-default-conf");
 
-        addExposedPort(MYSQL_PORT);
         addEnv("MYSQL_DATABASE", databaseName);
         addEnv("MYSQL_USER", username);
         if (password != null && !password.isEmpty()) {

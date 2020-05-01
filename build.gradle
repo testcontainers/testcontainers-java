@@ -1,10 +1,11 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.4.2'
     id 'io.franzbecker.gradle-lombok' version '3.1.0'
     id 'nebula.provided-base' version '3.0.3'
-    id 'com.github.johnrengelman.shadow' version '5.1.0'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.jfrog.bintray" version "1.8.4" apply false
 }
+
+apply from: "$rootDir/gradle/ci-support.gradle"
 
 subprojects {
     apply plugin: 'nebula.provided-base'
@@ -46,10 +47,12 @@ subprojects {
         apply from: "$rootDir/gradle/publishing.gradle"
         apply from: "$rootDir/gradle/bintray.gradle"
 
+        jar.archiveClassifier.set("original")
+
         publishing {
             publications {
                 mavenJava(MavenPublication) { publication ->
-                    artifacts.removeAll { it.classifier == null }
+                    artifacts.removeAll { it.classifier == jar.archiveClassifier.get() }
                     artifact project.tasks.shadowJar
                 }
             }
@@ -65,6 +68,12 @@ subprojects {
             showStackTraces = true
             exceptionFormat = 'full'
             events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
+    }
+
+    tasks.withType(Test).all {
+        reports {
+            junitXml.outputPerTestCase = true
         }
     }
 
@@ -101,7 +110,10 @@ subprojects {
                     for (entry in jf.entries()) {
                         def name = entry.name
                         if (name.endsWith(".class")) {
-                            packages.add(name.substring(0, name.lastIndexOf('/')))
+                            def index = name.lastIndexOf('/')
+                            if (index != -1) {
+                                packages.add(name.substring(0, index))
+                            }
                         }
                     }
                     jf.close()
@@ -123,9 +135,4 @@ subprojects {
     dependencies {
         testCompile 'ch.qos.logback:logback-classic:1.2.3'
     }
-}
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
 }
