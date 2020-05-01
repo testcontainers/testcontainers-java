@@ -45,6 +45,14 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **localstack.container.image = localstack/localstack**  
 > Used by LocalStack
 
+Another possibility is to set up a registry mirror in your environment so that all images are pulled from there and not directly from Docker Hub.
+For more information, see the [official Docker documentation about "Registry as a pull through cache"](https://docs.docker.com/registry/recipes/mirror/).
+
+!!!tip
+    Registry mirror currently only works for Docker images with image name that has no registry specified (for example, for Docker image `mariadb:10.3.6`, it works, for Docker image `quay.io/testcontainers/ryuk:0.2.3`, not).
+    Workaround is to to configure the affected Docker image in `.testcontainers.properties`.
+    For example: `ryuk.container.image = testcontainers/ryuk:0.2.3` or `ryuk.container.image = <your.docker.registry>/testcontainers/ryuk:0.2.3`
+
 ## Customizing Ryuk resource reaper
 
 > **ryuk.container.image = quay.io/testcontainers/ryuk:0.2.3**
