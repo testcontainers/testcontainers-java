@@ -1,0 +1,8 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    testImplementation project(":testcontainers")
+    testImplementation 'junit:junit:4.13'
+}
