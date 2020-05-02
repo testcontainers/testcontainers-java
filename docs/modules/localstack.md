@@ -13,6 +13,7 @@ public LocalStackContainer localstack = new LocalStackContainer()
 
 @Test
 public void someTestMethod() {
+    // AWS SDK v1
     AmazonS3 s3 = AmazonS3ClientBuilder
                     .standard()
                     .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
@@ -21,6 +22,19 @@ public void someTestMethod() {
     
             s3.createBucket("foo");
             s3.putObject("foo", "bar", "baz");
+
+    // AWS SDK v2
+    S3Client s3 = S3Client
+                .builder()
+                .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+                    localstack.getAccessKey(), localstack.getSecretKey()
+                )))
+                .region(Region.of(localstack.getRegion()))
+                .build();
+
+            s3.createBucket(b -> b.bucket("foo"));
+            s3.putObject(b -> b.bucket("foo").key("bar"), RequestBody.fromBytes("baz".getBytes()));
 ```
 
 Environment variables listed in [Localstack's README](https://github.com/localstack/localstack#configurations) may be used to customize Localstack's configuration. 

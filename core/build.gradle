@@ -110,7 +110,7 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.0', {
+    baseline 'org.testcontainers:testcontainers:1.14.1', {
         exclude group: "*", module: "*"
     }
 
@@ -133,7 +133,7 @@ dependencies {
 
     compile "net.java.dev.jna:jna-platform:5.5.0"
 
-    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
+    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.1') {
         exclude(group: "net.java.dev.jna")
     }
 
@@ -156,8 +156,9 @@ dependencies {
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
     testCompile 'redis.clients:jedis:3.2.0'
-    testCompile 'com.rabbitmq:amqp-client:5.8.0'
-    testCompile 'org.mongodb:mongo-java-driver:3.12.1'
+    testCompile 'com.rabbitmq:amqp-client:5.9.0'
+    testCompile 'org.mongodb:mongo-java-driver:3.12.3'
+
     testCompile ('org.mockito:mockito-core:3.3.3') {
         exclude(module: 'hamcrest-core')
     }
