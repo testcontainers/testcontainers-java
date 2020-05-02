@@ -36,22 +36,24 @@ buildCache {
 
 rootProject.name = 'testcontainers-java'
 
-include "bom"
+// Discover subprojects, and include in the build automatically
+rootDir.traverse(type: groovy.io.FileType.FILES, nameFilter: ~/build.gradle/) {
+    def dir = it.parentFile
 
-include "testcontainers"
-project(':testcontainers').projectDir = "$rootDir/core" as File
+    if (dir != rootDir && dir != file("core")) {  // 'core' is a special case
+        def dirName = rootDir.relativePath(dir)
+            .replaceAll(File.separator, ":")
+            // modules are a special case - should not have modules prefix in project name
+            .replaceAll("modules:", "")
 
-file('modules').eachDir { dir ->
-    include dir.name
-    project(":${dir.name}").projectDir = dir
+        include ":${dirName}"
+        project(":${dirName}").projectDir = dir
+    }
 }
 
-include ':docs:examples:junit4:generic'
-include ':docs:examples:junit4:redis'
-include ':docs:examples:junit5:redis'
-include ':docs:examples:spock:redis'
-
-include 'test-support'
+// Add 'core' subproject aliased as 'testcontainers'
+include "testcontainers"
+project(':testcontainers').projectDir = "$rootDir/core" as File
 
 gradleEnterprise {
     buildScan {

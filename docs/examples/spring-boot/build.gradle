@@ -4,10 +4,6 @@ plugins {
 }
 apply plugin: 'io.spring.dependency-management'
 
-repositories {
-    jcenter()
-}
-
 dependencies {
     compileOnly "org.projectlombok:lombok:1.18.12"
     annotationProcessor "org.projectlombok:lombok:1.18.10"
@@ -16,5 +12,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.testcontainers:postgresql'
+    testImplementation project(":postgresql")
 }

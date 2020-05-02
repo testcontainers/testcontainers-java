@@ -4,15 +4,11 @@ plugins {
 }
 apply plugin: 'io.spring.dependency-management'
 
-repositories {
-    jcenter()
-}
-
 dependencies {
     implementation 'org.seleniumhq.selenium:selenium-remote-driver'
     implementation 'org.seleniumhq.selenium:selenium-firefox-driver'
     implementation 'org.seleniumhq.selenium:selenium-chrome-driver'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.testcontainers:selenium'
+    testImplementation project(":selenium")
 }

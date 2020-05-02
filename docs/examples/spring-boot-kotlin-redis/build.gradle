@@ -6,10 +6,6 @@ plugins {
 
 apply plugin: 'io.spring.dependency-management'
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -17,7 +13,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.testcontainers:testcontainers")
+    testImplementation project(":testcontainers")
 }
 
 compileKotlin {
