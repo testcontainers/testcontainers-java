@@ -4,6 +4,10 @@ on:
   pull_request: {}
   push: { branches: [ master ] }
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 jobs:
   find_gradle_jobs:
     runs-on: ubuntu-18.04
@@ -27,8 +31,6 @@ jobs:
           # Since we override the tests executor,
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
@@ -58,9 +60,6 @@ jobs:
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Aggregate test reports with ciMate
         if: always()
         env:
@@ -88,9 +87,6 @@ jobs:
         working-directory: ./examples/
         run: |
           ./gradlew --no-daemon --scan --info check
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Aggregate test reports with ciMate
         if: always()
         env:
