@@ -11,7 +11,8 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public class NpipeSocketClientProviderStrategy extends DockerClientProviderStrategy {
 
-    private static final String SOCKET_LOCATION = System.getenv().getOrDefault("DOCKER_HOST", "npipe:////./pipe/docker_engine");
+    protected static final String DOCKER_SOCK_PATH = "//./pipe/docker_engine";
+    private static final String SOCKET_LOCATION = System.getenv().getOrDefault("DOCKER_HOST", "npipe://" + DOCKER_SOCK_PATH);
 
     private static final String PING_TIMEOUT_DEFAULT = "10";
     private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.npipesocketprovider.timeout";
