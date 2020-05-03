@@ -1,0 +1,3 @@
+---
+plugin: openapi
+specFile: petstore-simple.yaml

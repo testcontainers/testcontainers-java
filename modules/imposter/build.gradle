@@ -1,0 +1,5 @@
+description = "Testcontainers :: Imposter"
+
+dependencies {
+    compile project(':testcontainers')
+}
