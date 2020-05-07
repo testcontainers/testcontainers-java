@@ -66,10 +66,6 @@ public class ExecInContainerPattern {
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
-        dockerClient
-            .execCreateCmd(containerId)
-            .withCmd(command);
-
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
         final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
             .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();

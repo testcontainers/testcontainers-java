@@ -87,6 +87,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
             .withStrategy(waitForBolt)
             .withStrategy(waitForHttp)
             .withStartupTimeout(Duration.ofMinutes(2));
+
+        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
     }
 
     @Override
@@ -99,8 +101,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     @Override
     protected void configure() {
-
-        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 
         boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
         String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);

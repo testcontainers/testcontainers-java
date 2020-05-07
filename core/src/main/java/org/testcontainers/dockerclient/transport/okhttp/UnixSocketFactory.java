@@ -15,6 +15,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
+/**
+ * @deprecated use com.github.docker-java:docker-java-transport-okhttp
+ */
+@Deprecated
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UnixSocketFactory extends SocketFactory {
