@@ -97,7 +97,7 @@ public interface Network extends AutoCloseable, TestRule {
         }
 
         @Override
-        public void close() {
+        public synchronized void close() {
             if (initialized.getAndSet(false)) {
                 ResourceReaper.instance().removeNetworkById(id);
             }

@@ -11,15 +11,19 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     public static final String IMAGE = "mariadb";
     public static final String DEFAULT_TAG = "10.3.6";
 
-    private static final Integer MARIADB_PORT = 3306;
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
+
+    static final Integer MARIADB_PORT = 3306;
     private String databaseName = "test";
-    private String username = "test";
-    private String password = "test";
+    private String username = DEFAULT_USER;
+    private String password = DEFAULT_PASSWORD;
     private static final String MARIADB_ROOT_USER = "root";
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
 
     public MariaDBContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        this(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public MariaDBContainer(String dockerImageName) {
