@@ -69,6 +69,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -375,7 +376,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     }
                     reusable = true;
                 } else {
-                    logger().info("Reuse was requested but the environment does not support the reuse of containers");
+                    logger().warn(
+                        "" +
+                            "Reuse was requested but the environment does not support the reuse of containers\n" +
+                            "To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at {}",
+                        Paths.get(System.getProperty("user.home"), ".testcontainers.properties")
+                    );
                     reusable = false;
                 }
             } else {
