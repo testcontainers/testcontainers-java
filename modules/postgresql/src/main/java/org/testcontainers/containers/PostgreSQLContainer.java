@@ -19,6 +19,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public static final String DEFAULT_TAG = "9.6.12";
 
     public static final Integer POSTGRESQL_PORT = 5432;
+
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
+
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
@@ -38,6 +43,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
                 .withTimes(2)
                 .withStartupTimeout(Duration.of(60, SECONDS));
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
+
+        addExposedPort(POSTGRESQL_PORT);
     }
 
     @NotNull
@@ -48,7 +55,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void configure() {
-        addExposedPort(POSTGRESQL_PORT);
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);

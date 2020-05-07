@@ -1,24 +1,21 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.model.Frame;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.unreliables.Unreliables;
-import org.testcontainers.containers.output.FrameConsumerResultCallback;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.Base64;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
@@ -59,39 +56,9 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
         this.targetNetworkAlias = targetNetworkAlias;
         withNetwork(network);
-
-        waitingFor(new AbstractWaitStrategy() {
-
-            @Override
-            protected void waitUntilReady() {
-                try {
-                    Unreliables.retryUntilTrue((int) startupTimeout.toMillis(), TimeUnit.MILLISECONDS, () -> {
-                        CountDownLatch latch = new CountDownLatch(1);
-
-                        FrameConsumerResultCallback callback = new FrameConsumerResultCallback() {
-                            @Override
-                            public void onNext(Frame frame) {
-                                if (frame != null && new String(frame.getPayload()).contains("Connected")) {
-                                    latch.countDown();
-                                }
-                            }
-                        };
-
-                        try (
-                                Closeable __ = dockerClient.logContainerCmd(getContainerId())
-                                        .withFollowStream(true)
-                                        .withSince(0)
-                                        .withStdErr(true)
-                                        .exec(callback)
-                        ) {
-                            return latch.await(1, TimeUnit.SECONDS);
-                        }
-                    });
-                } catch (TimeoutException e) {
-                    throw new ContainerLaunchException("Timed out waiting for log output", e);
-                }
-            }
-        });
+        waitingFor(new LogMessageWaitStrategy()
+            .withRegEx(".*Connected.*")
+            .withStartupTimeout(Duration.of(15, SECONDS)));
     }
 
     public VncRecordingContainer withVncPassword(@NonNull String vncPassword) {
