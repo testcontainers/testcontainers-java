@@ -1,4 +1,4 @@
-name: in-container
+name: CI-DinD
 
 on:
   pull_request: {}
