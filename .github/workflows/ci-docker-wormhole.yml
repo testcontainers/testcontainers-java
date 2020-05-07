@@ -1,4 +1,4 @@
-name: CI-DinD
+name: CI-Docker-Wormhole
 
 on:
   pull_request: {}
