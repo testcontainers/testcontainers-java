@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:28.2-jre'
+        classpath 'com.google.guava:guava:29.0-jre'
     }
 }
 
@@ -44,12 +44,14 @@ shadowJar {
         'META-INF/DEPENDENCIES',
         'META-INF/maven/',
         'META-INF/proguard/',
+        'META-INF/versions/*/module-info.class',
         'META-INF/services/README.md',
         'META-INF/services/com.fasterxml.jackson.core.*',
         'META-INF/services/com.github.dockerjava.api.command.*',
         'META-INF/services/javax.ws.rs.ext.*',
         'META-INF/services/java.security.Provider',
         'mozilla/public-suffix-list.txt',
+        'module-info.class',
     ].each { exclude(it) }
 
     project.afterEvaluate {
@@ -108,17 +110,14 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.12.5', {
+    baseline 'org.testcontainers:testcontainers:1.14.1', {
         exclude group: "*", module: "*"
     }
 
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.30'
-    compile 'org.jetbrains:annotations:17.0.0'
-    compile 'javax.annotation:javax.annotation-api:1.3.2'
+    compile 'org.jetbrains:annotations:19.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
-    // Added for JDK9 compatibility since it's missing this package
-    compile 'javax.xml.bind:jaxb-api:2.3.1'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
@@ -134,11 +133,11 @@ dependencies {
 
     compile "net.java.dev.jna:jna-platform:5.5.0"
 
-    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
+    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.1') {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.0') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.1') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
@@ -156,21 +155,22 @@ dependencies {
     }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.2.0'
-    testCompile 'com.rabbitmq:amqp-client:5.8.0'
-    testCompile 'org.mongodb:mongo-java-driver:3.12.1'
+    testCompile 'redis.clients:jedis:3.3.0'
+    testCompile 'com.rabbitmq:amqp-client:5.9.0'
+    testCompile 'org.mongodb:mongo-java-driver:3.12.4'
+
     testCompile ('org.mockito:mockito-core:3.3.3') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.15.0'
+    testCompile 'org.assertj:assertj-core:3.16.0'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.14.0'
+    jarFileTestCompile 'org.assertj:assertj-core:3.16.0'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }

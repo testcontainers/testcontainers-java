@@ -1,6 +1,6 @@
 redis:
   image: redis
 db:
-  image: orchardup/mysql
+  image: mysql:5.7.22
   environment:
-    MYSQL_DATABASE: wordpress
+    MYSQL_RANDOM_ROOT_PASSWORD: "true"
