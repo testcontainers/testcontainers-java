@@ -10,10 +10,10 @@ buildscript {
     }
 }
 
-apply from: "$rootDir/../gradle/remote-cache.gradle"
+apply plugin: 'ch.myniva.s3-build-cache'
+apply plugin: 'com.gradle.enterprise'
 
 rootProject.name = 'testcontainers-examples'
-
 
 includeBuild '..'
 
@@ -29,3 +29,24 @@ include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
 include 'spock'
+
+ext.isMasterBuild = false ||
+    (System.getenv("GITHUB_REF") == "refs/heads/master") ||
+    (System.getenv("BUILD_SOURCEBRANCHNAME") == "master")
+
+buildCache {
+    local {
+        enabled = !isMasterBuild
+    }
+
+    remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
+        endpoint = 'fra1.digitaloceanspaces.com'
+        region = 'fra1'
+        bucket = 'testcontainers'
+        path = 'cache'
+        push = isMasterBuild && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
+        headers = [
+            'x-amz-acl': 'public-read'
+        ]
+    }
+}
