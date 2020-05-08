@@ -14,7 +14,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 /**
@@ -117,11 +116,6 @@ public class SolrContainer<SELF extends SolrContainer<SELF>> extends GenericCont
             execInContainer("solr", "create_core", "-c", configuration.getCollectionName());
             return;
         }
-        URIBuilder builder = new URIBuilder();
-        builder.setScheme("http");
-        builder.setHost("localhost");
-        builder.setPort(getSolrPort());
-        builder.setPath("solr");
 
         if (StringUtils.isNotEmpty(configuration.getConfigurationName())) {
             SolrClientUtils.uploadConfiguration(getSolrPort(),

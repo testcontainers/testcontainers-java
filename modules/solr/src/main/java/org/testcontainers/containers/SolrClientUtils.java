@@ -2,31 +2,23 @@ package org.testcontainers.containers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.HttpEntityWrapper;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
+
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Utils class which can create collections and configurations.
@@ -35,7 +27,7 @@ import org.apache.http.message.BasicNameValuePair;
  */
 public class SolrClientUtils {
 
-    private static HttpClient httpClient = HttpClientBuilder.create().build();
+    private static OkHttpClient httpClient = new OkHttpClient();
 
     /**
      * Creates a new configuration and uploads the solrconfig.xml and schema.xml
@@ -49,10 +41,10 @@ public class SolrClientUtils {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("action", "UPLOAD");
         parameters.put("name", configurationName);
-        URI uri = generateSolrURI(port, Arrays.asList("admin", "configs"), parameters);
+        HttpUrl url = generateSolrURL(port, Arrays.asList("admin", "configs"), parameters);
 
         byte[] configurationZipFile = generateConfigZipFile(solrConfig, solrSchema);
-        executePost(uri, configurationZipFile);
+        executePost(url, configurationZipFile);
 
     }
 
@@ -74,38 +66,40 @@ public class SolrClientUtils {
         if (configurationName != null) {
             parameters.put("collection.configName", configurationName);
         }
-        URI uri = generateSolrURI(port, Arrays.asList("admin", "collections"), parameters);
-        executePost(uri, null);
+        HttpUrl url = generateSolrURL(port, Arrays.asList("admin", "collections"), parameters);
+        executePost(url, null);
     }
 
-    private static void executePost(URI uri, byte[] data) throws IOException {
-        HttpPost request = new HttpPost(uri);
-        if (data != null) {
-            request.setEntity(new ByteArrayEntity(data, ContentType.create("application/octet-stream")));
-        }
-        HttpResponse response = httpClient.execute(request);
-        if (response.getStatusLine().getStatusCode() != 200) {
-            InputStream responseBody = ((HttpEntityWrapper) response.getEntity()).getContent();
-            String textBody = IOUtils.toString(responseBody, StandardCharsets.UTF_8);
-            throw new HttpResponseException(response.getStatusLine().getStatusCode(), "Unable to upload binary\n" + textBody);
+    private static void executePost(HttpUrl url, byte[] data) throws IOException {
+
+        RequestBody requestBody = data == null ?
+            RequestBody.create(MediaType.parse("text/plain"), "") :
+            RequestBody.create(MediaType.parse("application/octet-stream"), data);
+        ;
+
+        Request request = new Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .build();
+        Response response = httpClient.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            String responseBody = response.body() != null ? response.body().string() : "";
+            throw new SolrClientUtilsException(response.code(), "Unable to upload binary\n" + responseBody);
         }
     }
 
-    private static URI generateSolrURI(int port, List<String> pathSegments, Map<String, String> parameters) throws URISyntaxException {
-        URIBuilder builder = new URIBuilder();
-        builder.setScheme("http");
-        builder.setHost("localhost");
-        builder.setPort(port);
+    private static HttpUrl generateSolrURL(int port, List<String> pathSegments, Map<String, String> parameters) throws URISyntaxException {
+        HttpUrl.Builder builder = new HttpUrl.Builder();
+        builder.scheme("http");
+        builder.host("localhost");
+        builder.port(port);
         // Path
-        List<String> basePathSegments = new ArrayList<>();
-        basePathSegments.add("solr");
-        basePathSegments.addAll(pathSegments);
-        builder.setPathSegments(basePathSegments);
+        builder.addPathSegment("solr");
+        if (pathSegments != null) {
+            pathSegments.forEach(builder::addPathSegment);
+        }
         // Query Parameters
-        builder.setParameters(parameters.entrySet()
-            .stream()
-            .map(item -> new BasicNameValuePair(item.getKey(), item.getValue()))
-            .collect(Collectors.toList()));
+        parameters.forEach(builder::addQueryParameter);
         return builder.build();
     }
 
