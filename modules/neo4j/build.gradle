@@ -20,6 +20,10 @@ task customNeo4jPluginJar(type: Jar) {
     from sourceSets.customNeo4jPlugin.output
     archiveName = "hello-world.jar"
     destinationDir = customNeo4jPluginDestinationDir
+
+    inputs.files(sourceSets.customNeo4jPlugin.java.srcDirs)
+    outputs.cacheIf { true }
+    outputs.dir(customNeo4jPluginDestinationDir)
 }
 
 test.dependsOn customNeo4jPluginJar
@@ -30,5 +34,5 @@ dependencies {
     compile project(":testcontainers")
 
     testCompile "org.neo4j.driver:neo4j-java-driver:1.7.5"
-    testCompile 'org.assertj:assertj-core:3.14.0'
+    testCompile 'org.assertj:assertj-core:3.16.0'
 }

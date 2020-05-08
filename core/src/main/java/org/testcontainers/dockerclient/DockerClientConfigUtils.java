@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.testcontainers.DockerClientFactory;
 
 import java.io.File;
+import java.net.URI;
 import java.util.Optional;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -43,14 +44,20 @@ public class DockerClientConfigUtils {
             .map(StringUtils::trimToEmpty)
             .filter(StringUtils::isNotBlank);
 
-
-
+    /**
+     * Use {@link DockerClientFactory#dockerHostIpAddress()}
+     */
+    @Deprecated
     public static String getDockerHostIpAddress(DockerClientConfig config) {
-        switch (config.getDockerHost().getScheme()) {
+        return getDockerHostIpAddress(config.getDockerHost());
+    }
+
+    public static String getDockerHostIpAddress(URI dockerHost) {
+        switch (dockerHost.getScheme()) {
             case "http":
             case "https":
             case "tcp":
-                return config.getDockerHost().getHost();
+                return dockerHost.getHost();
             case "unix":
             case "npipe":
                 if (IN_A_CONTAINER) {

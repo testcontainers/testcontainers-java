@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
-import org.testcontainers.utility.*;
+import org.testcontainers.utility.AuditLogger;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.CommandLine;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.LogUtils;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
@@ -30,7 +38,15 @@ import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 import java.io.File;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -163,12 +179,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // (a) as a workaround for https://github.com/docker/compose/issues/5854, which prevents authenticated image pulls being possible when credential helpers are in use
         // (b) so that credential helper-based auth still works when compose is running from within a container
         parsedComposeFiles.stream()
-            .flatMap(it -> it.getServiceImageNames().stream())
+            .flatMap(it -> it.getDependencyImageNames().stream())
             .forEach(imageName -> {
                 try {
+                    log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
                     DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
                 } catch (Exception e) {
-                    log.warn("Failed to pull image '{}'. Exception message was {}", imageName, e.getMessage());
+                    log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
             });
     }
@@ -200,6 +217,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void waitUntilServiceStarted() {
         listChildContainers().forEach(this::createServiceInstance);
+
+        Set<String> servicesToWaitFor = waitStrategyMap.keySet();
+        Set<String> instantiatedServices = serviceInstanceMap.keySet();
+        Sets.SetView<String> missingServiceInstances =
+            Sets.difference(servicesToWaitFor, instantiatedServices);
+
+        if (!missingServiceInstances.isEmpty()) {
+            throw new IllegalStateException(
+                "Services named " + missingServiceInstances + " " +
+                    "do not exist, but wait conditions have been defined " +
+                    "for them. This might mean that you misspelled " +
+                    "the service name when defining the wait condition.");
+        }
+
         serviceInstanceMap.forEach(this::waitUntilServiceStarted);
     }
 
@@ -385,7 +416,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a port that can be used for accessing the service container.
      */
     public Integer getServicePort(String serviceName, Integer servicePort) {
-        return ambassadorContainer.getMappedPort(ambassadorPortMappings.get(getServiceInstanceName(serviceName)).get(servicePort));
+        Map<Integer, Integer> portMap = ambassadorPortMappings.get(getServiceInstanceName(serviceName));
+
+        if (portMap == null) {
+            throw new IllegalArgumentException("Could not get a port for '" + serviceName + "'. " +
+                "Testcontainers does not have an exposed port configured for '" + serviceName + "'. "+
+                "To fix, please ensure that the service '" + serviceName + "' has ports exposed using .withExposedService(...)");
+        } else {
+            return ambassadorContainer.getMappedPort(portMap.get(servicePort));
+        }
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
@@ -469,6 +508,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public SELF withRemoveImages(RemoveImages removeImages) {
         this.removeImages = removeImages;
         return self();
+    }
+
+    public Optional<ContainerState> getContainerByServiceName(String serviceName) {
+        return Optional.ofNullable(serviceInstanceMap.get(serviceName));
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {

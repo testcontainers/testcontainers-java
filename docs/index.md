@@ -46,6 +46,43 @@ testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 
 You can also [check the latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
 
+### Managing versions for multiple Testcontainers dependencies
+
+To avoid specifying the version of each dependency, you can use a `BOM` or `Bill Of Materials`.
+
+Using Maven you can add the following to `dependencyManagement` section in your `pom.xml`:
+
+```xml tab='Maven'
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-bom</artifactId>
+            <version>{{latest_version}}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+and then use dependencies without specifying a version:
+
+```xml tab='Maven'
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>mysql</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+Using Gradle 5.0 or higher, you can add the following to the `dependencies` section in your `build.gradle`:
+
+```groovy tab='Gradle'
+implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
+testImplementation('org.testcontainers:mysql') //no version specified
+```
+
+
 [JitPack](jitpack_dependencies.md) builds are available for pre-release versions.
 
 !!! warning "Shaded dependencies"
@@ -66,6 +103,7 @@ You can also [check the latest version available on Maven Central](https://searc
 * [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Puslar, Apache Bookeeper and Apache Heron.
 * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
 * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
+* [Infinispan](https://infinispan.org) - Testing the Infinispan Server as well as integration tests with databases, LDAP and KeyCloak
 * [Instana](https://www.instana.com) - Testing agents and stream processing backends
 * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
@@ -74,9 +112,12 @@ You can also [check the latest version available on Maven Central](https://searc
 * [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
 * [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
 * [Micronaut Data](https://github.com/micronaut-projects/micronaut-data/) - Testing of Micronaut Data JDBC, a database access toolkit
+* [Vert.x SQL Client](https://github.com/eclipse-vertx/vertx-sql-client) - Testing with PostgreSQL, MySQL, MariaDB, SQL Server, etc.
 * [JHipster](https://www.jhipster.tech/) - Couchbase and Cassandra integration testing
 * [wescale](https://www.wescale.com) - Integration testing against HTTP service mocks and various data stores
 * [Marquez](https://marquezproject.github.io/marquez) - PostgreSQL integration testing
+* [Transferwise](https://transferwise.com/) - Integration testing for different RDBMS, kafka and micro services
+* [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
 
 ## License
 
@@ -90,6 +131,6 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Copyright
 
-Copyright (c) 2015-2019 Richard North and other authors.
+Copyright (c) 2015-2020 Richard North and other authors.
 
 See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.

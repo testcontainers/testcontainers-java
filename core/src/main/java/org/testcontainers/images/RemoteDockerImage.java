@@ -1,13 +1,15 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.google.common.util.concurrent.Futures;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.ToString;
+import lombok.experimental.Wither;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -17,63 +19,44 @@ import org.testcontainers.utility.LazyFuture;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @ToString
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    /**
-     * @deprecated this field will become private in a later release
-     */
-    @Deprecated
-    public static final Set<DockerImageName> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
-    private DockerImageName imageName;
+    @ToString.Exclude
+    private Future<DockerImageName> imageNameFuture;
+
+    @Wither
+    private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+
+    @ToString.Exclude
+    private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     public RemoteDockerImage(String dockerImageName) {
-        imageName = new DockerImageName(dockerImageName);
+        this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(dockerImageName));
     }
 
     public RemoteDockerImage(@NonNull String repository, @NonNull String tag) {
-        imageName = new DockerImageName(repository, tag);
+        this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(repository, tag));
+    }
+
+    public RemoteDockerImage(@NonNull Future<String> imageFuture) {
+        this.imageNameFuture = Futures.lazyTransform(imageFuture, DockerImageName::new);
     }
 
     @Override
+    @SneakyThrows({InterruptedException.class, ExecutionException.class})
     protected final String resolve() {
+        final DockerImageName imageName = getImageName();
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
-
-        DockerClient dockerClient = DockerClientFactory.instance().client();
         try {
-            // Does our cache already know the image?
-            if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
-                logger.trace("{} is already in image name cache", imageName);
-                return imageName.toString();
-            }
-
-            // Update the cache
-            ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
-
-            if (Boolean.parseBoolean(System.getProperty("useFilter"))) {
-                listImagesCmd = listImagesCmd.withImageNameFilter(imageName.toString());
-            }
-
-            List<Image> updatedImages = listImagesCmd.exec();
-            updatedImages.stream()
-                .map(Image::getRepoTags)
-                .filter(Objects::nonNull)
-                .flatMap(Stream::of)
-                .map(DockerImageName::new)
-                .collect(Collectors.toCollection(() -> AVAILABLE_IMAGE_NAME_CACHE));
-
-            // And now?
-            if (AVAILABLE_IMAGE_NAME_CACHE.contains(imageName)) {
-                logger.trace("{} is in image name cache following listing of images", imageName);
+            if (!imagePullPolicy.shouldPull(imageName)) {
                 return imageName.toString();
             }
 
@@ -85,13 +68,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
-                    final PullImageResultCallback callback = new TimeLimitedLoggedPullImageResultCallback(logger);
                     dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())
                         .withTag(imageName.getVersionPart())
-                        .exec(callback);
-                    callback.awaitCompletion();
-                    AVAILABLE_IMAGE_NAME_CACHE.add(imageName);
+                        .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                        .awaitCompletion();
+
+                    LocalImagesCache.INSTANCE.refreshCache(imageName);
 
                     return imageName.toString();
                 } catch (InterruptedException | InternalServerErrorException e) {
@@ -107,6 +90,23 @@ public class RemoteDockerImage extends LazyFuture<String> {
             throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
+        }
+    }
+
+    private DockerImageName getImageName() throws InterruptedException, ExecutionException {
+        return imageNameFuture.get();
+    }
+
+    @ToString.Include(name = "imageName", rank = 1)
+    private String imageNameToString() {
+        if (!imageNameFuture.isDone()) {
+            return "<resolving>";
+        }
+
+        try {
+            return getImageName().toString();
+        } catch (InterruptedException | ExecutionException e) {
+            return e.getMessage();
         }
     }
 }

@@ -1,6 +1,10 @@
 package org.testcontainers.containers.localstack;
 
 
+import com.amazonaws.services.logs.AWSLogs;
+import com.amazonaws.services.logs.AWSLogsClientBuilder;
+import com.amazonaws.services.logs.model.CreateLogGroupRequest;
+import com.amazonaws.services.logs.model.LogGroup;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
@@ -20,10 +24,15 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -31,6 +40,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
 
 /**
  * Tests for Localstack Container, used both in bridge network (exposed to host) and docker network modes.
@@ -48,7 +58,7 @@ public class LocalstackContainerTest {
         // without_network {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer()
-            .withServices(S3, SQS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS);
         // }
 
         @Test
@@ -59,22 +69,39 @@ public class LocalstackContainerTest {
                 .withCredentials(localstack.getDefaultCredentialsProvider())
                 .build();
 
-            s3.createBucket("foo");
-            s3.putObject("foo", "bar", "baz");
+            final String bucketName = "foo";
+            s3.createBucket(bucketName);
+            s3.putObject(bucketName, "bar", "baz");
 
             final List<Bucket> buckets = s3.listBuckets();
-            assertEquals("The created bucket is present", 1, buckets.size());
-            final Bucket bucket = buckets.get(0);
+            final Optional<Bucket> maybeBucket = buckets.stream().filter(b -> b.getName().equals(bucketName)).findFirst();
+            assertTrue("The created bucket is present", maybeBucket.isPresent());
+            final Bucket bucket = maybeBucket.get();
 
-            assertEquals("The created bucket has the right name", "foo", bucket.getName());
-            assertEquals("The created bucket has the right name", "foo", bucket.getName());
+            assertEquals("The created bucket has the right name", bucketName, bucket.getName());
 
-            final ObjectListing objectListing = s3.listObjects("foo");
+            final ObjectListing objectListing = s3.listObjects(bucketName);
             assertEquals("The created bucket has 1 item in it", 1, objectListing.getObjectSummaries().size());
 
-            final S3Object object = s3.getObject("foo", "bar");
+            final S3Object object = s3.getObject(bucketName, "bar");
             final String content = IOUtils.toString(object.getObjectContent(), Charset.forName("UTF-8"));
             assertEquals("The object can be retrieved", "baz", content);
+        }
+
+        @Test
+        public void s3TestUsingAwsSdkV2() {
+            S3Client s3 = S3Client
+                .builder()
+                .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+                    localstack.getAccessKey(), localstack.getSecretKey()
+                )))
+                .region(Region.of(localstack.getRegion()))
+                .build();
+
+            final String bucketName = "foov2";
+            s3.createBucket(b -> b.bucket(bucketName));
+            assertTrue("New bucket was created", s3.listBuckets().buckets().stream().anyMatch(b -> b.name().equals(bucketName)));
         }
 
         @Test
@@ -95,6 +122,19 @@ public class LocalstackContainerTest {
                 .count();
             assertEquals("the sent message can be received", 1L, messageCount);
         }
+
+        @Test
+        public void cloudWatchLogsTestOverBridgeNetwork() {
+            AWSLogs logs = AWSLogsClientBuilder.standard()
+                    .withEndpointConfiguration(localstack.getEndpointConfiguration(CLOUDWATCHLOGS))
+                    .withCredentials(localstack.getDefaultCredentialsProvider()).build();
+
+            logs.createLogGroup(new CreateLogGroupRequest("foo"));
+
+            List<LogGroup> groups = logs.describeLogGroups().getLogGroups();
+            assertEquals("One log group should be created", 1, groups.size());
+            assertEquals("Name of created log group is [foo]", "foo", groups.get(0).getLogGroupName());
+        }
     }
 
     public static class WithNetwork {
@@ -105,7 +145,7 @@ public class LocalstackContainerTest {
         public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer()
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack")    // the last alias is used for HOSTNAME_EXTERNAL
-            .withServices(S3, SQS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS);
         // }
 
         @ClassRule
@@ -137,6 +177,11 @@ public class LocalstackContainerTest {
                 String.format("sqs receive-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz", SQS.getPort(), SQS.getPort()), SQS.getPort());
 
             assertTrue("the sent message can be received", message.contains("\"Body\": \"test\""));
+        }
+
+        @Test
+        public void cloudWatchLogsTestOverDockerNetwork() throws Exception {
+            runAwsCliAgainstDockerNetworkContainer("logs create-log-group --log-group-name foo", CLOUDWATCHLOGS.getPort());
         }
 
         private String runAwsCliAgainstDockerNetworkContainer(String command, final int port) throws Exception {
