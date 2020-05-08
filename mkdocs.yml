@@ -50,6 +50,7 @@ nav:
                 - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
                 - modules/databases/mariadb.md
+                - modules/databases/mongodb.md
                 - modules/databases/mssqlserver.md
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
