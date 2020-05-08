@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.containers.ceph;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -7,6 +7,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
@@ -17,6 +18,8 @@ import java.time.Duration;
 public class CephContainer extends GenericContainer<CephContainer> {
 
     public static final String IMAGE = "ceph/daemon";
+    public static final String DEFAULT_TAG = "v3.2.13-stable-3.2-mimic-centos-7";
+
     public static final int S3_PORT = 8080;
     public static final int REST_API_PORT = 5000;
 
@@ -33,7 +36,7 @@ public class CephContainer extends GenericContainer<CephContainer> {
     private NetworkAutoDetectMode networkAutoDetectMode = NetworkAutoDetectMode.IPV4_ONLY;
 
     public CephContainer() {
-        super(IMAGE + ":v3.0.5-stable-3.0-luminous-centos-7");
+        super(IMAGE + ":" + DEFAULT_TAG);
     }
 
     public CephContainer(String dockerImageName) {
@@ -52,7 +55,7 @@ public class CephContainer extends GenericContainer<CephContainer> {
         withExposedPorts(REST_API_PORT, S3_PORT);
         waitingFor(
                 new HttpWaitStrategy()
-                        .forPath("/api/v0.1/health")
+                        .forPath("/")
                         .forPort(REST_API_PORT)
                         .forStatusCode(200)
                         .withStartupTimeout(Duration.ofMinutes(5))
@@ -111,6 +114,5 @@ public class CephContainer extends GenericContainer<CephContainer> {
         IPV6_ONLY("6");
 
         private final String value;
-
     }
 }

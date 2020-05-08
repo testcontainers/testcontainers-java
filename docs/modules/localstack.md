@@ -2,6 +2,15 @@
 
 Testcontainers module for the Atlassian's [LocalStack](https://github.com/localstack/localstack), 'a fully functional local AWS cloud stack'.
 
+## Ceph vs Localstack for simulating S3
+
+One possible usage for the Localstack module is to take advantage of its S3 compatibility.
+
+For simulating S3 you may wish to also consider the [Ceph](./ceph.md) module. 
+Ceph and Localstack provide good compatibility with the S3 API, and we encourage you to evaluate both.
+
+Localstack is likely to be a better choice if you require simulation of other AWS services along with S3. 
+
 ## Usage example
 
 Running LocalStack as a stand-in for AWS S3 during a test:

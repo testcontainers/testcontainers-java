@@ -58,6 +58,7 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+          - modules/ceph.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/kafka.md

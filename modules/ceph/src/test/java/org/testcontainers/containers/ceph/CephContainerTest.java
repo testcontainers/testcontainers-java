@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.containers.ceph;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.S3Object;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -20,20 +19,26 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CephContainerTest {
 
-    @Rule
-    public CephContainer cephContainer = new CephContainer()
-            .withAwsAccessKey("test")
-            .withAwsSecretKey("test")
-            .withBucketName("test");
+    public CephContainer cephContainer;
 
     private AmazonS3 amazonS3;
 
     @Before
     public void setUp() {
+        // creating_container {
+        cephContainer = new CephContainer("v3.2.13-stable-3.2-mimic-centos-7")
+            .withAwsAccessKey("test")
+            .withAwsSecretKey("test")
+            .withBucketName("test");
+        // }
+
+        // setting_up_s3_client {
         amazonS3 = AmazonS3ClientBuilder.standard()
                 .withCredentials(cephContainer.getAWSCredentialsProvider())
                 .withEndpointConfiguration(cephContainer.getAWSEndpointConfiguration())
@@ -44,6 +49,7 @@ public class CephContainerTest {
                                 .withSignerOverride("S3SignerType")
                 )
                 .build();
+        // }
     }
 
     @Test
@@ -93,5 +99,4 @@ public class CephContainerTest {
             assertEquals(testData, IOUtils.toString(inputStream, StandardCharsets.UTF_8));
         }
     }
-
 }
