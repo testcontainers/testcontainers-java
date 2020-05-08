@@ -42,7 +42,7 @@ new KafkaContainer().withExternalZookeeper("localhost:2181")
 
 If your test needs to run some other Docker container which needs access to the Kafka, do the following:
 
-* Run you other container on the same network as Kafka container. E.g. as following:
+* Run your other container on the same network as Kafka container, e.g.:
 ```java
 new GenericContainer("myImage").withNetwork(kafka.getNetwork())
 ```

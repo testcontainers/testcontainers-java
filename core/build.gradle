@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:28.2-jre'
+        classpath 'com.google.guava:guava:29.0-jre'
     }
 }
 
@@ -110,13 +110,13 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.0', {
+    baseline 'org.testcontainers:testcontainers:1.14.1', {
         exclude group: "*", module: "*"
     }
 
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.30'
-    compile 'org.jetbrains:annotations:17.0.0'
+    compile 'org.jetbrains:annotations:19.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
@@ -133,7 +133,7 @@ dependencies {
 
     compile "net.java.dev.jna:jna-platform:5.5.0"
 
-    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.0') {
+    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.1') {
         exclude(group: "net.java.dev.jna")
     }
 
@@ -146,7 +146,7 @@ dependencies {
 
     shaded "org.yaml:snakeyaml:1.25"
 
-    shaded 'com.squareup.okhttp3:okhttp:3.14.6'
+    shaded 'com.squareup.okhttp3:okhttp:3.14.8'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
@@ -155,21 +155,22 @@ dependencies {
     }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.2.0'
-    testCompile 'com.rabbitmq:amqp-client:5.8.0'
-    testCompile 'org.mongodb:mongo-java-driver:3.12.3'
+    testCompile 'redis.clients:jedis:3.3.0'
+    testCompile 'com.rabbitmq:amqp-client:5.9.0'
+    testCompile 'org.mongodb:mongo-java-driver:3.12.4'
+
     testCompile ('org.mockito:mockito-core:3.3.3') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.15.0'
+    testCompile 'org.assertj:assertj-core:3.16.0'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.14.0'
+    jarFileTestCompile 'org.assertj:assertj-core:3.16.0'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }

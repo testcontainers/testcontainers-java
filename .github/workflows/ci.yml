@@ -4,6 +4,10 @@ on:
   pull_request: {}
   push: { branches: [ master ] }
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 jobs:
   find_gradle_jobs:
     runs-on: ubuntu-18.04
