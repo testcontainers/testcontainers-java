@@ -1,4 +1,4 @@
-package org.testcontainers.containers.ceph;
+package org.testcontainers.containers;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;

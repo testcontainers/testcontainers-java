@@ -19,13 +19,13 @@ Localstack is likely to be a better choice if you require simulation of other AW
 Creating a Ceph container:
 
 <!--codeinclude-->
-[Creating a Ceph container](../../modules/ceph/src/test/java/org/testcontainers/containers/ceph/CephContainerTest.java) inside_block:creating_container
+[Creating a Ceph container](../../modules/ceph/src/test/java/org/testcontainers/containers/CephContainerTest.java) inside_block:creating_container
 <!--/codeinclude-->
 
 Configuring an S3 Client to use Ceph:
 
 <!--codeinclude-->
-[Configuring an S3 Client to use Ceph](../../modules/ceph/src/test/java/org/testcontainers/containers/ceph/CephContainerTest.java) inside_block:setting_up_s3_client
+[Configuring an S3 Client to use Ceph](../../modules/ceph/src/test/java/org/testcontainers/containers/CephContainerTest.java) inside_block:setting_up_s3_client
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
