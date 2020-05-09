@@ -1,6 +1,9 @@
 package org.testcontainers.containers;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -13,6 +16,8 @@ public class GCloudGenericContainer<SELF extends GCloudGenericContainer<SELF>> e
 
 	public static final String DEFAULT_GCLOUD_IMAGE = "google/cloud-sdk:291.0.0-alpine";
 
+	private List<String> commands = new ArrayList<>();
+
 	public GCloudGenericContainer(String image) {
 		super(image);
 	}
@@ -23,18 +28,23 @@ public class GCloudGenericContainer<SELF extends GCloudGenericContainer<SELF>> e
 
 	@Override
 	protected void containerIsStarted(InspectContainerResponse containerInfo) {
-	//	withAdditionalCmds();
+		runAdditionalCommands();
 	}
 
-//	public void withAdditionalCmds() {
-//		try {
-//			if (cmds != null) {
-//				execInContainer(cmds);
-//			}
-//		} catch (IOException | InterruptedException e) {
-//			logger().error("Failed to execute {}. Exception message: {}", cmds, e.getMessage());
-//		}
-//	}
+	private void runAdditionalCommands() {
+		this.commands.forEach(cmd -> {
+			try {
+				execInContainer(cmd);
+			} catch (IOException | InterruptedException e) {
+				logger().error("Failed to execute {}. Exception message: {}", cmd, e.getMessage());
+			}
+		});
+	}
+
+	public SELF withAdditionalCommands(String... cmds) {
+		this.commands.addAll(Arrays.asList(cmds));
+		return self();
+	}
 
 	private static ImageFromDockerfile buildImage(String image, String mainCmd, String[] prerequisiteCmds) {
 		return new ImageFromDockerfile()
