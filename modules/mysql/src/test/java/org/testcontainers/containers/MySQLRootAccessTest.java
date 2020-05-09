@@ -26,7 +26,7 @@ public class MySQLRootAccessTest {
     public String image;
 
     @Test
-    // Fails with 8 - cannot create duplicate root account
+    // Fails with both - cannot create duplicate root account
     public void testEasyRootAccountCreation() throws SQLException {
         try (MySQLContainer<?> db = new MySQLContainer<>(image)
             .withUsername("root")
