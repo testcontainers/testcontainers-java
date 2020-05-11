@@ -23,6 +23,13 @@ public class PulsarContainerTest {
         }
     }
 
+    @Test
+    public void shouldWaitForFunctionsWorkerStarted() {
+        try (PulsarContainer pulsar = new PulsarContainer().withFunctionsWorker()) {
+            pulsar.start();
+        }
+    }
+
     protected void testPulsarFunctionality(String pulsarBrokerUrl) throws Exception {
 
         try (

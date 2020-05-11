@@ -25,6 +25,11 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         waitingFor(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
     }
 
+    public PulsarContainer withFunctionsWorker() {
+        return withCommand("/pulsar/bin/pulsar", "standalone")
+            .waitingFor(Wait.forLogMessage(".*Function worker service started.*", 1));
+    }
+
     public String getPulsarBrokerUrl() {
         return String.format("pulsar://%s:%s", getContainerIpAddress(), getMappedPort(BROKER_PORT));
     }
