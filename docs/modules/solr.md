@@ -12,20 +12,9 @@ Note that it's based on the [official Docker image](https://hub.docker.com/_/sol
 
 You can start a solr container instance from any Java application by using:
 
-```java
-// Create the solr container.
-SolrContainer container = new SolrContainer();
-
-// Start the container. This step might take some time...
-container.start();
-
-// Do whatever you want with the client ...
-SolrClient client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
-SolrPingResponse response = client.ping("dummy");
-
-// Stop the container.
-container.stop();
-```
+<!--codeinclude-->
+[Using a Solr container](../../modules/solr/src/test/java/org/testcontainers/containers/SolrContainerTest.java) inside_block:solrContainerUsage
+<!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 

@@ -7,8 +7,6 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.naming.ConfigurationException;
-
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
 import lombok.SneakyThrows;
@@ -18,10 +16,8 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 /**
  * SolrContainer allows a solr container to be launched and controlled.
- *
- * @author Simon Schneider
  */
-public class SolrContainer<SELF extends SolrContainer<SELF>> extends GenericContainer<SELF> {
+public class SolrContainer extends GenericContainer<SolrContainer> {
 
     public static final String IMAGE = "solr";
     public static final String DEFAULT_TAG = "8.3.0";
@@ -43,20 +39,20 @@ public class SolrContainer<SELF extends SolrContainer<SELF>> extends GenericCont
         this.configuration = new SolrContainerConfiguration();
     }
 
-    public SELF withZookeeper(boolean zookeeper) {
+    public SolrContainer withZookeeper(boolean zookeeper) {
         configuration.setZookeeper(zookeeper);
         return self();
     }
 
-    public SELF withCollection(String collection) {
+    public SolrContainer withCollection(String collection) {
         if (StringUtils.isEmpty(collection)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Collection name must not be empty");
         }
         configuration.setCollectionName(collection);
         return self();
     }
 
-    public SELF withConfiguration(String name, URL solrConfig) {
+    public SolrContainer withConfiguration(String name, URL solrConfig) {
         if (StringUtils.isEmpty(name) || solrConfig == null) {
             throw new IllegalArgumentException();
         }
@@ -65,7 +61,7 @@ public class SolrContainer<SELF extends SolrContainer<SELF>> extends GenericCont
         return self();
     }
 
-    public SELF withSchema(URL schema) {
+    public SolrContainer withSchema(URL schema) {
         configuration.setSolrSchema(schema);
         return self();
     }
@@ -82,7 +78,7 @@ public class SolrContainer<SELF extends SolrContainer<SELF>> extends GenericCont
     @SneakyThrows
     protected void configure() {
         if (configuration.getSolrSchema() != null && configuration.getSolrConfiguration() == null) {
-            throw new ConfigurationException("Solr needs to have a configuration is you want to use a schema");
+            throw new IllegalStateException("Solr needs to have a configuration is you want to use a schema");
         }
         // Generate Command Builder
         String command = "solr -f";
@@ -113,18 +109,27 @@ public class SolrContainer<SELF extends SolrContainer<SELF>> extends GenericCont
     @SneakyThrows
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!configuration.isZookeeper()) {
-            execInContainer("solr", "create_core", "-c", configuration.getCollectionName());
+            ExecResult result = execInContainer("solr", "create_core", "-c", configuration.getCollectionName());
+            if (result.getExitCode() != 0) {
+                throw new IllegalStateException("Unable to create solr core:\nStdout: " + result.getStdout() + "\nStderr:" + result.getStderr());
+            }
             return;
         }
 
         if (StringUtils.isNotEmpty(configuration.getConfigurationName())) {
-            SolrClientUtils.uploadConfiguration(getSolrPort(),
+            SolrClientUtils.uploadConfiguration(
+                getContainerIpAddress(),
+                getSolrPort(),
                 configuration.getConfigurationName(),
                 configuration.getSolrConfiguration(),
                 configuration.getSolrSchema());
         }
 
-        SolrClientUtils.createCollection(getSolrPort(), configuration.getCollectionName(), configuration.getConfigurationName());
+        SolrClientUtils.createCollection(
+            getContainerIpAddress(),
+            getSolrPort(),
+            configuration.getCollectionName(),
+            configuration.getConfigurationName());
     }
 }
 

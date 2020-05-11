@@ -32,16 +32,17 @@ public class SolrClientUtils {
     /**
      * Creates a new configuration and uploads the solrconfig.xml and schema.xml
      *
+     * @param hostname          the Hostname under which solr is reachable
      * @param port              the Port on which solr is running
      * @param configurationName the name of the configuration which should be created
      * @param solrConfig        the url under which the solrconfig.xml can be found
      * @param solrSchema        the url under which the schema.xml can be found or null if the default schema should be used
      */
-    public static void uploadConfiguration(int port, String configurationName, URL solrConfig, URL solrSchema) throws URISyntaxException, IOException {
+    public static void uploadConfiguration(String hostname, int port, String configurationName, URL solrConfig, URL solrSchema) throws URISyntaxException, IOException {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("action", "UPLOAD");
         parameters.put("name", configurationName);
-        HttpUrl url = generateSolrURL(port, Arrays.asList("admin", "configs"), parameters);
+        HttpUrl url = generateSolrURL(hostname, port, Arrays.asList("admin", "configs"), parameters);
 
         byte[] configurationZipFile = generateConfigZipFile(solrConfig, solrSchema);
         executePost(url, configurationZipFile);
@@ -51,12 +52,13 @@ public class SolrClientUtils {
     /**
      * Creates a new collection
      *
+     * @param hostname          the Hostname under which solr is reachable
      * @param port              The Port on which solr is running
      * @param collectionName    the name of the collection which should be created
      * @param configurationName the name of the configuration which should used to create the collection
      *                          or null if the default configuration should be used
      */
-    public static void createCollection(int port, String collectionName, String configurationName) throws URISyntaxException, IOException {
+    public static void createCollection(String hostname, int port, String collectionName, String configurationName) throws URISyntaxException, IOException {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("action", "CREATE");
         parameters.put("name", collectionName);
@@ -66,7 +68,7 @@ public class SolrClientUtils {
         if (configurationName != null) {
             parameters.put("collection.configName", configurationName);
         }
-        HttpUrl url = generateSolrURL(port, Arrays.asList("admin", "collections"), parameters);
+        HttpUrl url = generateSolrURL(hostname, port, Arrays.asList("admin", "collections"), parameters);
         executePost(url, null);
     }
 
@@ -83,15 +85,22 @@ public class SolrClientUtils {
             .build();
         Response response = httpClient.newCall(request).execute();
         if (!response.isSuccessful()) {
-            String responseBody = response.body() != null ? response.body().string() : "";
+            String responseBody = "";
+            if (response.body() != null) {
+                responseBody = response.body().string();
+                response.close();
+            }
             throw new SolrClientUtilsException(response.code(), "Unable to upload binary\n" + responseBody);
+        }
+        if (response.body() != null) {
+            response.close();
         }
     }
 
-    private static HttpUrl generateSolrURL(int port, List<String> pathSegments, Map<String, String> parameters) throws URISyntaxException {
+    private static HttpUrl generateSolrURL(String hostname, int port, List<String> pathSegments, Map<String, String> parameters) throws URISyntaxException {
         HttpUrl.Builder builder = new HttpUrl.Builder();
         builder.scheme("http");
-        builder.host("localhost");
+        builder.host(hostname);
         builder.port(port);
         // Path
         builder.addPathSegment("solr");

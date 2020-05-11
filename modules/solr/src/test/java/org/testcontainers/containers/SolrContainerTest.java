@@ -15,7 +15,7 @@ import org.junit.Test;
 
 /**
  * @author Simon Schneider
- * */
+ */
 public class SolrContainerTest {
 
     private SolrClient client = null;
@@ -48,9 +48,27 @@ public class SolrContainerTest {
         }
     }
 
+    @Test
+    public void solrCloudPingTest() throws IOException, SolrServerException {
+        // solrContainerUsage {
+        // Create the solr container.
+        SolrContainer container = new SolrContainer();
+
+        // Start the container. This step might take some time...
+        container.start();
+
+        // Do whatever you want with the client ...
+        SolrClient client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
+        SolrPingResponse response = client.ping("dummy");
+
+        // Stop the container.
+        container.stop();
+        // }
+    }
+
     private SolrClient getClient(SolrContainer container) {
         if (client == null) {
-            client = new Http2SolrClient.Builder("http://localhost:" + container.getSolrPort() + "/solr").build();
+            client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
         }
         return client;
     }
