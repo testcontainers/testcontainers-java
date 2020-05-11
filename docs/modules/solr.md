@@ -20,7 +20,7 @@ SolrContainer container = new SolrContainer();
 container.start();
 
 // Do whatever you want with the client ...
-SolrClient client = new Http2SolrClient.Builder("http://localhost:" + container.getSolrPort() + "/solr").build();
+SolrClient client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
 SolrPingResponse response = client.ping("dummy");
 
 // Stop the container.
