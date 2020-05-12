@@ -65,11 +65,22 @@ public class CassandraContainerTest {
     @Test
     public void testInitScript() {
         try (
-            CassandraContainer cassandraContainer = new CassandraContainer<>()
-                .withInitScript("initial.cql")
+            CassandraContainer cassandraContainer = new CassandraContainer<>().withInitScript("initial-1.cql")
         ) {
             cassandraContainer.start();
-            testInitScript(cassandraContainer);
+            testInitScript1(cassandraContainer);
+        }
+    }
+
+    @Test
+    public void testMultipleInitScripts() {
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>()
+                .withInitScript("initial-1.cql", "initial-2.cql")
+        ) {
+            cassandraContainer.start();
+            testInitScript1(cassandraContainer);
+            testInitScript2(cassandraContainer);
         }
     }
 
@@ -77,10 +88,10 @@ public class CassandraContainerTest {
     public void testInitScriptWithLegacyCassandra() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer<>("cassandra:2.2.11")
-                .withInitScript("initial.cql")
+                .withInitScript("initial-1.cql")
         ) {
             cassandraContainer.start();
-            testInitScript(cassandraContainer);
+            testInitScript1(cassandraContainer);
         }
     }
 
@@ -106,12 +117,20 @@ public class CassandraContainerTest {
         }
     }
 
-    private void testInitScript(CassandraContainer cassandraContainer) {
-        ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
+    private void testInitScript1(CassandraContainer cassandraContainer) {
+        ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category WHERE id = 1");
         assertTrue("Query was not applied", resultSet.wasApplied());
         Row row = resultSet.one();
         assertEquals("Inserted row is not in expected state", 1, row.getLong(0));
         assertEquals("Inserted row is not in expected state", "test_category", row.getString(1));
+    }
+
+    private void testInitScript2(CassandraContainer cassandraContainer) {
+        ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category WHERE id = 2");
+        assertTrue("Query was not applied", resultSet.wasApplied());
+        Row row = resultSet.one();
+        assertEquals("Inserted row is not in expected state", 2, row.getLong(0));
+        assertEquals("Inserted row is not in expected state", "another_test_category", row.getString(1));
     }
 
     private ResultSet performQuery(CassandraContainer cassandraContainer, String cql) {

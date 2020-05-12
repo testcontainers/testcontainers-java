@@ -2,17 +2,14 @@ package org.testcontainers.containers;
 
 import com.datastax.driver.core.Cluster;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
-import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
 import org.testcontainers.utility.MountableFile;
 
-import javax.script.ScriptException;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,7 +28,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private static final String PASSWORD = "cassandra";
 
     private String configLocation;
-    private String initScriptPath;
+    private List<String> initScriptPaths;
     private boolean enableJmxReporting;
 
     public CassandraContainer() {
@@ -43,6 +40,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
         this.enableJmxReporting = false;
+        this.initScriptPaths = new ArrayList<>();
     }
 
     @Override
@@ -52,30 +50,15 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        runInitScriptIfRequired();
+        runInitScriptsIfRequired();
     }
 
     /**
-     * Load init script content and apply it to the database if initScriptPath is set
+     * Apply all configured init scripts to the running database
      */
-    private void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
-            try {
-                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-                if (resource == null) {
-                    logger().warn("Could not load classpath init script: {}", initScriptPath);
-                    throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
-                }
-                String cql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                DatabaseDelegate databaseDelegate = getDatabaseDelegate();
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, cql);
-            } catch (IOException e) {
-                logger().warn("Could not load classpath init script: {}", initScriptPath);
-                throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
-            } catch (ScriptException e) {
-                logger().error("Error while executing init script: {}", initScriptPath, e);
-                throw new ScriptUtils.UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
-            }
+    private void runInitScriptsIfRequired() {
+        for (String initScriptPath : initScriptPaths) {
+            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
         }
     }
 
@@ -107,14 +90,16 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
-     * Initialize Cassandra with init CQL script
+     * Initialize Cassandra with one or more init CQL scripts.
      * <p>
-     * CQL script will be applied after container is started (see using WaitStrategy)
+     * The CQL scripts will be applied after container is started (see using WaitStrategy)
      *
      * @param initScriptPath relative classpath resource
      */
-    public SELF withInitScript(String initScriptPath) {
-        this.initScriptPath = initScriptPath;
+    public SELF withInitScript(String initScriptPath, String... extraInitScriptPaths) {
+        this.initScriptPaths = new ArrayList<>();
+        this.initScriptPaths.add(initScriptPath);
+        this.initScriptPaths.addAll(Arrays.asList(extraInitScriptPaths));
         return self();
     }
 
