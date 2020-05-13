@@ -84,9 +84,9 @@ enum LocalImagesCache {
                     // making toMap crash at merge time.
                     .distinct()
                     .collect(Collectors.toMap(
-                    DockerImageName::new,
-                    it -> ImageData.from(image)
-                ))
+                        DockerImageName::new,
+                        it -> ImageData.from(image)
+                    ))
             );
         }
     }
