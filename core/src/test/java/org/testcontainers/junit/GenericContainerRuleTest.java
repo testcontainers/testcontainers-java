@@ -383,7 +383,7 @@ public class GenericContainerRuleTest {
     public void addingExposedPortTwiceShouldNotFail() {
         redis.addExposedPort(8987);
         redis.addExposedPort(8987);
-        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
+        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2)); // 2 ports = de-duplicated port 8897 and original port 6379
         assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
         assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
     }
