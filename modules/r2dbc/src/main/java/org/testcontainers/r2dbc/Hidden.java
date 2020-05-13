@@ -33,7 +33,7 @@ class Hidden {
             return builder.build();
         }
 
-        private ConnectionFactoryOptions removeProxying(ConnectionFactoryOptions options) {
+        static ConnectionFactoryOptions removeProxying(ConnectionFactoryOptions options) {
             // To delegate to the next factory provider, inspect the PROTOCOL and convert it to the next DRIVER and PROTOCOL values.
             //
             // example:

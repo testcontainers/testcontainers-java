@@ -14,6 +14,8 @@ public interface R2DBCDatabaseContainerProvider {
 
     Option<String> IMAGE_TAG_OPTION = Option.valueOf("TC_IMAGE_TAG");
 
+    Option<String> IMAGE_OPTION = Option.valueOf("TC_IMAGE");
+
     boolean supports(ConnectionFactoryOptions options);
 
     R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options);

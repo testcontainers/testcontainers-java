@@ -15,6 +15,7 @@ dependencies {
     testCompile 'io.r2dbc:r2dbc-postgresql:0.8.1.RELEASE'
     testCompile project(':postgresql')
 
+    testFixturesCompile testFixtures(project(':testcontainers'))
     testFixturesCompile 'io.projectreactor:reactor-core:3.3.4.RELEASE'
     testFixturesCompile 'org.assertj:assertj-core:3.14.0'
 }

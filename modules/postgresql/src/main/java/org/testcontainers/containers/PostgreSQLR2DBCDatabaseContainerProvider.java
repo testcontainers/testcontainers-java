@@ -4,24 +4,31 @@ import com.google.auto.service.AutoService;
 import io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import lombok.NonNull;
+import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerProvider;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainerProvider;
 
 import javax.annotation.Nullable;
 
 @AutoService(R2DBCDatabaseContainerProvider.class)
-public final class PostgreSQLR2DBCDatabaseContainerProvider implements R2DBCDatabaseContainerProvider {
+public final class PostgreSQLR2DBCDatabaseContainerProvider extends AbstractR2DBCDatabaseContainerProvider {
 
     static final String DRIVER = PostgresqlConnectionFactoryProvider.POSTGRESQL_DRIVER;
 
-    @Override
-    public boolean supports(ConnectionFactoryOptions options) {
-        return DRIVER.equals(options.getRequiredValue(ConnectionFactoryOptions.DRIVER));
+    public PostgreSQLR2DBCDatabaseContainerProvider() {
+        super(DRIVER);
     }
 
     @Override
-    public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
-        String image = PostgreSQLContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
+    public R2DBCDatabaseContainer doCreateContainer(ConnectionFactoryOptions options) {
+        String image = String.format(
+            "%s:%s",
+            options.hasOption(IMAGE_OPTION)
+                ? options.getValue(IMAGE_OPTION)
+                : PostgreSQLContainer.IMAGE,
+            options.getRequiredValue(IMAGE_TAG_OPTION)
+        );
         PostgreSQLContainer<?> container = new PostgreSQLContainer<>(image)
             .withDatabaseName(options.getRequiredValue(ConnectionFactoryOptions.DATABASE));
 
@@ -41,6 +48,6 @@ public final class PostgreSQLR2DBCDatabaseContainerProvider implements R2DBCData
         if (!options.hasOption(ConnectionFactoryOptions.PASSWORD)) {
             builder.option(ConnectionFactoryOptions.PASSWORD, PostgreSQLContainer.DEFAULT_PASSWORD);
         }
-        return R2DBCDatabaseContainerProvider.super.getMetadata(builder.build());
+        return super.getMetadata(builder.build());
     }
 }

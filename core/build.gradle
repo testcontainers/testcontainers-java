@@ -11,6 +11,7 @@ buildscript {
 
 plugins {
     id 'me.champeau.gradle.japicmp' version '0.2.8'
+    id "java-test-fixtures"
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -167,6 +168,10 @@ dependencies {
 
     testCompile 'org.assertj:assertj-core:3.16.0'
     testCompile project(':test-support')
+
+    testFixturesCompile ('org.mockito:mockito-core:3.3.3') {
+        exclude(module: 'hamcrest-core')
+    }
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"

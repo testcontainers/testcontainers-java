@@ -1,9 +1,14 @@
 package org.testcontainers.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.junit.Rule;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
+import org.testcontainers.utility.MockLicenseAcceptanceRule;
 
 public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MSSQLServerContainer<?>> {
+
+    @Rule
+    public final MockLicenseAcceptanceRule licenseAcceptanceRule = new MockLicenseAcceptanceRule();
 
     @Override
     protected ConnectionFactoryOptions getOptions(MSSQLServerContainer<?> container) {
@@ -18,5 +23,10 @@ public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
     @Override
     protected MSSQLServerContainer<?> createContainer() {
         return new MSSQLServerContainer<>();
+    }
+
+    @Override
+    protected void imageTagged(String image) {
+        licenseAcceptanceRule.acceptLicense(image);
     }
 }
