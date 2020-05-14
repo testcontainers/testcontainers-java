@@ -107,7 +107,7 @@ public class DockerClientFactory {
      */
     public synchronized boolean isDockerAvailable() {
         try {
-            getOrInitializeStrategy();
+            client();
             return true;
         } catch (IllegalStateException ex) {
             return false;
