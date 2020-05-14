@@ -66,6 +66,7 @@ nav:
           - modules/nginx.md
           - modules/pulsar.md
           - modules/rabbitmq.md
+          - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
           - modules/webdriver_containers.md
