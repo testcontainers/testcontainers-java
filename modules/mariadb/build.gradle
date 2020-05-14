@@ -9,11 +9,8 @@ dependencies {
     compileOnly project(':r2dbc')
     compileOnly 'org.mariadb:r2dbc-mariadb:0.8.1-alpha1'
 
+    testCompile project(':jdbc-test')
     testCompile 'org.mariadb.jdbc:mariadb-java-client:2.6.0'
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
-    testCompile 'commons-dbutils:commons-dbutils:1.7'
-    testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.35'
-    testCompile 'org.vibur:vibur-dbcp:25.0'
 
     testCompile testFixtures(project(':r2dbc'))
     testCompile 'org.mariadb:r2dbc-mariadb:0.8.1-alpha1'
