@@ -28,7 +28,8 @@ public class LicenseAcceptance {
         }
 
         throw new IllegalStateException("The image " + imageName + " requires you to accept a license agreement. " +
-                        "Please place a file at the root of the classpath named " + ACCEPTANCE_FILE_NAME + ", e.g. at " +
+                        "Please invoke 'acceptLicense()' on the container (if the container has the method) or " + 
+                        "place a file at the root of the classpath named " + ACCEPTANCE_FILE_NAME + ", e.g. at " +
                         "src/test/resources/" + ACCEPTANCE_FILE_NAME + ". This file should contain the line:\n  " +
                         imageName);
 
