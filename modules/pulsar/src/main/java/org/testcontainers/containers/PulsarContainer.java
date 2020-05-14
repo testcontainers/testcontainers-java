@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 /**
@@ -14,6 +15,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     private static final String PULSAR_VERSION = "2.2.0";
 
+    private boolean functionsWorkerEnabled = false;
+
     public PulsarContainer() {
         this(PULSAR_VERSION);
     }
@@ -21,13 +24,28 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     public PulsarContainer(String pulsarVersion) {
         super(TestcontainersConfiguration.getInstance().getPulsarImage() + ":" + pulsarVersion);
         withExposedPorts(BROKER_PORT, BROKER_HTTP_PORT);
-        withCommand("/pulsar/bin/pulsar", "standalone", "--no-functions-worker", "-nss");
-        waitingFor(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+
+        WaitAllStrategy wait = new WaitAllStrategy()
+            .withStrategy(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
+
+        if (functionsWorkerEnabled) {
+            withCommand("/pulsar/bin/pulsar", "standalone");
+            wait.withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1));
+        } else {
+            withCommand("/pulsar/bin/pulsar", "standalone", "--no-functions-worker", "-nss");
+        }
+
+        waitingFor(wait);
     }
 
     public PulsarContainer withFunctionsWorker() {
-        return withCommand("/pulsar/bin/pulsar", "standalone")
-            .waitingFor(Wait.forLogMessage(".*Function worker service started.*", 1));
+        functionsWorkerEnabled = true;
+        return this;
     }
 
     public String getPulsarBrokerUrl() {
