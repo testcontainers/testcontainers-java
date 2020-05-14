@@ -32,27 +32,14 @@ public class PulsarContainerTest {
 
     @Test
     public void shouldWaitForFunctionsWorkerStarted() throws PulsarClientException, PulsarAdminException {
-        try (PulsarContainer pulsar = new PulsarContainer("2.3.1")
-            .withClasspathResourceMapping("functions.jar", "/functions.jar", BindMode.READ_ONLY)
-            .withFunctionsWorker()) {
-
+        try (PulsarContainer pulsar = new PulsarContainer("2.5.1").withFunctionsWorker()) {
             pulsar.start();
 
             PulsarAdmin pulsarAdmin = PulsarAdmin.builder()
                 .serviceHttpUrl(pulsar.getHttpServiceUrl())
                 .build();
 
-            pulsarAdmin.functions().createFunctionWithUrl(
-                FunctionConfig.builder()
-                    .tenant("public")
-                    .namespace("default")
-                    .name("exclamation")
-                    .inputs(Collections.singletonList(TEST_TOPIC))
-                    .output(TEST_OUTPUT_TOPIC)
-                    .className("com.example.IdentityFunction")
-                    .runtime(FunctionConfig.Runtime.JAVA).build(),
-                "file:/functions.jar"
-            );
+            assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
         }
     }
 
