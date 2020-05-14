@@ -31,6 +31,18 @@ Where:
 * `-w $PWD` will set the current directory to this volume
 * `-v /var/run/docker.sock:/var/run/docker.sock` will map the Docker socket
 
+In some cases when using Jenkins which runs your CI pipeline in a Docker container, creating a network will fail. This means you will not be able to connect Docker container in which Jenkins is running CI pipeline with Docker container that Testcontainers ran resulting in a connection issue to the component you are trying to run. This can be solved by giving your Jenkins Docker container access to the host network. Here's a snippet from the `Jenkinsfile` that runs test script:
+
+```bash
+  sh """
+      docker run --rm \
+        -v ${env.WORKSPACE}:/opt/workspace \
+        --network host \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        <private_docker_image> test_script.sh
+  """
+```
+
 ### Docker Compose example
 The same can be achieved with Docker Compose:
 ```yaml
