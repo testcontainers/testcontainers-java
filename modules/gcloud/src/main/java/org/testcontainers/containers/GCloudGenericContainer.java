@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.images.builder.dockerfile.DockerfileBuilder;
 
 /**
  * @author Eddú Meléndez
@@ -20,10 +18,6 @@ public class GCloudGenericContainer<SELF extends GCloudGenericContainer<SELF>> e
 
 	public GCloudGenericContainer(String image) {
 		super(image);
-	}
-
-	public GCloudGenericContainer(String image, String mainCmd, String[] prerequisiteCmds) {
-		super(buildImage(image, mainCmd, prerequisiteCmds));
 	}
 
 	@Override
@@ -44,23 +38,6 @@ public class GCloudGenericContainer<SELF extends GCloudGenericContainer<SELF>> e
 	public SELF withAdditionalCommands(String... cmds) {
 		this.commands.addAll(Arrays.asList(cmds));
 		return self();
-	}
-
-	private static ImageFromDockerfile buildImage(String image, String mainCmd, String[] prerequisiteCmds) {
-		return new ImageFromDockerfile()
-				.withDockerfileFromBuilder(builder -> {
-					DockerfileBuilder from = builder
-							.from(image);
-					if (prerequisiteCmds != null) {
-						from.run(parseCmds(prerequisiteCmds));
-					}
-					from.cmd(mainCmd);
-					from.build();
-				});
-	}
-
-	private static String parseCmds(String... cmds) {
-		return String.join(" && \n", Arrays.asList(cmds));
 	}
 
 }
