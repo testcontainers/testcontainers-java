@@ -345,6 +345,17 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     public RabbitMQContainer withExchange(String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
         values.add(asList("rabbitmqadmin", "declare", "exchange",
+            "name=" + name,
+            "type=" + type,
+            "auto_delete=" + autoDelete,
+            "internal=" + internal,
+            "durable=" + durable,
+            "arguments=" + toJson(arguments)));
+        return self();
+    }
+
+    public RabbitMQContainer withExchange(String vhost, String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
+        values.add(asList("rabbitmqadmin", "--vhost=" + vhost, "declare", "exchange",
                 "name=" + name,
                 "type=" + type,
                 "auto_delete=" + autoDelete,

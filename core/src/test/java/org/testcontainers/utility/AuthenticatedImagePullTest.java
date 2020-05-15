@@ -110,8 +110,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
         // Prepare a simple temporary Dockerfile which requires our custom private image
-        Path tempContext = Files.createTempDirectory(Paths.get("."), this.getClass().getSimpleName() + "-test-");
-        Path tempFile = Files.createTempFile(tempContext, "test", ".Dockerfile");
+        Path tempFile = getLocalTempFile(".Dockerfile");
         String dockerFileContent = "FROM " + testImageNameWithTag;
         Files.write(tempFile, dockerFileContent.getBytes());
 
@@ -130,8 +129,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
         // Prepare a simple temporary Docker Compose manifest which requires our custom private image
-        Path tempContext = Files.createTempDirectory(Paths.get("."), this.getClass().getSimpleName() + "-test-");
-        Path tempFile = Files.createTempFile(tempContext, "test", ".docker-compose.yml");
+        Path tempFile = getLocalTempFile(".docker-compose.yml");
         @Language("yaml") String composeFileContent =
             "version: '2.0'\n" +
                 "services:\n" +
@@ -151,6 +149,18 @@ public class AuthenticatedImagePullTest {
                     .orElse(false)
             );
         }
+    }
+
+    private Path getLocalTempFile(String s) throws IOException {
+        Path projectRoot = Paths.get(".");
+        Path tempDirectory = Files.createTempDirectory(projectRoot, this.getClass().getSimpleName() + "-test-");
+        Path relativeTempDirectory = projectRoot.relativize(tempDirectory);
+        Path tempFile = Files.createTempFile(relativeTempDirectory, "test", s);
+
+        tempDirectory.toFile().deleteOnExit();
+        tempFile.toFile().deleteOnExit();
+
+        return tempFile;
     }
 
     private static void putImageInRegistry() throws InterruptedException {

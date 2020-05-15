@@ -38,12 +38,15 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public OracleContainer(String dockerImageName) {
         super(dockerImageName);
-        withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
-        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
+        preconfigure();
     }
 
     public OracleContainer(Future<String> dockerImageName) {
         super(dockerImageName);
+        preconfigure();
+    }
+
+    private void preconfigure() {
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);

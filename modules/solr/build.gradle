@@ -1,0 +1,7 @@
+description = "Testcontainers :: Solr"
+
+dependencies {
+    compile project(':testcontainers')
+    testCompile 'org.apache.solr:solr-solrj:8.3.0'
+
+}

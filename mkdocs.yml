@@ -50,6 +50,7 @@ nav:
                 - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
                 - modules/databases/mariadb.md
+                - modules/databases/mongodb.md
                 - modules/databases/mssqlserver.md
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
@@ -65,6 +66,7 @@ nav:
           - modules/nginx.md
           - modules/pulsar.md
           - modules/rabbitmq.md
+          - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
           - modules/webdriver_containers.md
@@ -88,4 +90,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.14.0
+    latest_version: 1.14.1
