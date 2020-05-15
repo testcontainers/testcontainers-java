@@ -41,13 +41,13 @@ However, in some CI environments they may instead be reachable on a different ho
 As such, Testcontainers provides a convenience method to obtain an address on which the container should be reachable from the host machine.
 
 <!--codeinclude-->
-[Getting the container host](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getContainerHostOnly
+[Getting the container host](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostOnly
 <!--/codeinclude-->
 
 It is normally advisable to use `getHost` and `getMappedPort` together when constructing addresses - for example:
 
 <!--codeinclude-->
-[Getting the container host and mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getContainerHostAndMappedPort
+[Getting the container host and mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostAndMappedPort
 <!--/codeinclude-->
 
 !!! tip
