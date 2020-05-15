@@ -28,7 +28,7 @@ public class EmptyPasswordMysqlTest {
     public void testSimple() throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:mysql://"
-                + mysql.getContainerIpAddress()
+                + mysql.getHost()
                 + ":" + mysql.getMappedPort(MySQLContainer.MYSQL_PORT)
                 + "/" + DB_NAME);
         hikariConfig.setUsername(USER);

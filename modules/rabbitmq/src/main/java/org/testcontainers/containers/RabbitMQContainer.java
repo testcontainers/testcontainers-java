@@ -114,28 +114,28 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @return AMQP URL for use with AMQP clients.
      */
     public String getAmqpUrl() {
-        return "amqp://" + getContainerIpAddress() + ":" + getAmqpPort();
+        return "amqp://" + getHost() + ":" + getAmqpPort();
     }
 
     /**
      * @return AMQPS URL for use with AMQPS clients.
      */
     public String getAmqpsUrl() {
-        return "amqps://" + getContainerIpAddress() + ":" + getAmqpsPort();
+        return "amqps://" + getHost() + ":" + getAmqpsPort();
     }
 
     /**
      * @return URL of the HTTP management endpoint.
      */
     public String getHttpUrl() {
-        return "http://" + getContainerIpAddress() + ":" + getHttpPort();
+        return "http://" + getHost() + ":" + getHttpPort();
     }
 
     /**
      * @return URL of the HTTPS management endpoint.
      */
     public String getHttpsUrl() {
-        return "https://" + getContainerIpAddress() + ":" + getHttpsPort();
+        return "https://" + getHost() + ":" + getHttpsPort();
     }
 
     /**

@@ -31,13 +31,13 @@ public class MultiplePortsExposedTest {
     }
 
     @Test
-    public void getContainerIpAddressOnly() {
-        String ipAddress = container.getContainerIpAddress();
+    public void getHostOnly() {
+        String ipAddress = container.getHost();
     }
 
     @Test
-    public void getContainerIpAddressAndMappedPort() {
+    public void getHostAndMappedPort() {
         String address =
-            container.getContainerIpAddress() + ":" + container.getMappedPort(2424);
+            container.getHost() + ":" + container.getMappedPort(2424);
     }
 }

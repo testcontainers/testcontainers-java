@@ -37,7 +37,7 @@ public class ToxiproxyTest {
 
     @Test
     public void testDirect() {
-        final Jedis jedis = new Jedis(redis.getContainerIpAddress(), redis.getFirstMappedPort());
+        final Jedis jedis = new Jedis(redis.getHost(), redis.getFirstMappedPort());
         jedis.set("somekey", "somevalue");
 
         final String s = jedis.get("somekey");

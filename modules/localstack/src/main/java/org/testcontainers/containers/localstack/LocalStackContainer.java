@@ -61,7 +61,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1));  // use the last network alias set
             hostnameExternalReason = "to match last network alias on container with non-default network";
         } else {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getContainerIpAddress());
+            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getHost());
             hostnameExternalReason = "to match host-routable address for container";
         }
         logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
@@ -99,7 +99,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
-        final String address = getContainerIpAddress();
+        final String address = getHost();
         String ipAddress = address;
         try {
             // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3

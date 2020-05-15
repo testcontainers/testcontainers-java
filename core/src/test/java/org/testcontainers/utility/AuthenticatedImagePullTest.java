@@ -65,7 +65,7 @@ public class AuthenticatedImagePullTest {
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
         client = DockerClientFactory.instance().client();
 
-        String testRegistryAddress = authenticatedRegistry.getContainerIpAddress() + ":" + authenticatedRegistry.getFirstMappedPort();
+        String testRegistryAddress = authenticatedRegistry.getHost() + ":" + authenticatedRegistry.getFirstMappedPort();
         testImageName = testRegistryAddress + "/alpine";
         testImageNameWithTag = testImageName + ":latest";
 

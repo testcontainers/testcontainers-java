@@ -15,6 +15,6 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
     }
 
     public Jedis getJedis() {
-        return new Jedis(getContainerIpAddress(), getMappedPort(6379));
+        return new Jedis(getHost(), getMappedPort(6379));
     }
 }

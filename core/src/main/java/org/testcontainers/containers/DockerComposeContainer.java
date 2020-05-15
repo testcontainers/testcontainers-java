@@ -387,7 +387,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
-        return ambassadorContainer.getContainerIpAddress();
+        return ambassadorContainer.getHost();
     }
 
     /**

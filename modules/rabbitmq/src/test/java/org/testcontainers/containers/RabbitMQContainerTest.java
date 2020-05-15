@@ -48,13 +48,13 @@ public class RabbitMQContainerTest {
             container.start();
 
             assertThat(container.getAmqpsUrl()).isEqualTo(
-                String.format("amqps://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
+                String.format("amqps://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
             assertThat(container.getAmqpUrl()).isEqualTo(
-                String.format("amqp://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQP_PORT)));
+                String.format("amqp://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQP_PORT)));
             assertThat(container.getHttpsUrl()).isEqualTo(
-                String.format("https://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
+                String.format("https://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
             assertThat(container.getHttpUrl()).isEqualTo(
-                String.format("http://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTP_PORT)));
+                String.format("http://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTP_PORT)));
 
             assertThat(container.getHttpsPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTPS_PORT));
             assertThat(container.getHttpPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTP_PORT));

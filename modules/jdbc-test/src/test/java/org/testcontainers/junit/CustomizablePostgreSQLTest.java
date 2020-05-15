@@ -30,7 +30,7 @@ public class CustomizablePostgreSQLTest {
     public void testSimple() throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:postgresql://"
-            + postgres.getContainerIpAddress()
+            + postgres.getHost()
             + ":" + postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
             + "/" + DB_NAME);
         hikariConfig.setUsername(USER);

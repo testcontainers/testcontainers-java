@@ -43,7 +43,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     @Override
     public String getJdbcUrl() {
-        return JDBC_URL_PREFIX + "://" + getContainerIpAddress() + ":" + getMappedPort(DB_PORT) + "/" + databaseName;
+        return JDBC_URL_PREFIX + "://" + getHost() + ":" + getMappedPort(DB_PORT) + "/" + databaseName;
     }
 
     @Override

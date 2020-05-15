@@ -33,7 +33,7 @@ public class ImagePullPolicyTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        String testRegistryAddress = registry.getContainerIpAddress() + ":" + registry.getFirstMappedPort();
+        String testRegistryAddress = registry.getHost() + ":" + registry.getFirstMappedPort();
         String testImageName = testRegistryAddress + "/image-pull-policy-test";
         String tag = UUID.randomUUID().toString();
         imageName = testImageName + ":" + tag;
