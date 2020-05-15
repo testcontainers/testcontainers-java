@@ -6,21 +6,17 @@ import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
-import org.apache.pulsar.client.api.PulsarClientException;
-import org.apache.pulsar.common.functions.FunctionConfig;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class PulsarContainerTest {
 
     public static final String TEST_TOPIC = "test_topic";
-
-    public static final String TEST_OUTPUT_TOPIC = "test_output_topic";
 
     @Test
     public void testUsage() throws Exception {
@@ -31,7 +27,21 @@ public class PulsarContainerTest {
     }
 
     @Test
-    public void shouldWaitForFunctionsWorkerStarted() throws PulsarClientException, PulsarAdminException {
+    public void shouldNotEnableFunctionsWorkerByDefault() throws Exception {
+        try (PulsarContainer pulsar = new PulsarContainer("2.5.1")) {
+            pulsar.start();
+
+            PulsarAdmin pulsarAdmin = PulsarAdmin.builder()
+                .serviceHttpUrl(pulsar.getHttpServiceUrl())
+                .build();
+
+            assertThatThrownBy(() -> pulsarAdmin.functions().getFunctions("public", "default"))
+                .isInstanceOf(PulsarAdminException.class);
+        }
+    }
+
+    @Test
+    public void shouldWaitForFunctionsWorkerStarted() throws Exception {
         try (PulsarContainer pulsar = new PulsarContainer("2.5.1").withFunctionsWorker()) {
             pulsar.start();
 
