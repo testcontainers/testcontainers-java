@@ -77,6 +77,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +119,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Default settings
      */
     @NonNull
-    private List<Integer> exposedPorts = new ArrayList<>();
+    private LinkedHashSet<Integer> exposedPorts = new LinkedHashSet<>();
 
     @NonNull
     private List<String> portBindings = new ArrayList<>();
@@ -254,6 +255,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public void setImage(Future<String> image) {
         this.image = new RemoteDockerImage(image);
+    }
+
+    @Override
+    public List<Integer> getExposedPorts() {
+        return new ArrayList<>(exposedPorts);
+    }
+
+    @Override
+    public void setExposedPorts(List<Integer> exposedPorts) {
+        this.exposedPorts = new LinkedHashSet<>(exposedPorts);
     }
 
     /**
@@ -671,8 +682,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected Integer getLivenessCheckPort() {
         // legacy implementation for backwards compatibility
-        if (exposedPorts.size() > 0) {
-            return getMappedPort(exposedPorts.get(0));
+        Iterator<Integer> exposedPortsIterator = exposedPorts.iterator();
+        if (exposedPortsIterator.hasNext()) {
+            return getMappedPort(exposedPortsIterator.next());
         } else if (portBindings.size() > 0) {
             return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
         } else {
