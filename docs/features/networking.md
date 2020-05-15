@@ -38,7 +38,7 @@ There is also a `getFirstMappedPort` method for convenience, for the fairly comm
 When running with a local Docker daemon, exposed ports will usually be reachable on `localhost`.
 However, in some CI environments they may instead be reachable on a different host.
 
-As such, Testcontainers provides a convenience method to obtain an IP address on which the container should be reachable from the host machine.
+As such, Testcontainers provides a convenience method to obtain an address on which the container should be reachable from the host machine.
 
 <!--codeinclude-->
 [Getting the container host](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getContainerHostOnly
