@@ -50,6 +50,10 @@ It is normally advisable to use `getHost` and `getMappedPort` together when cons
 [Getting the container host and mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getContainerHostAndMappedPort
 <!--/codeinclude-->
 
+!!! tip
+    `getHost()` is a replacement for `getContainerIpAddress()` and returns the same result.
+    `getContainerIpAddress()` is believed to be confusingly named, and will eventually be deprecated.
+
 ## Exposing host ports to the container
 
 In some cases it is necessary to make a network connection from a container to a socket that is listening on the host machine.
