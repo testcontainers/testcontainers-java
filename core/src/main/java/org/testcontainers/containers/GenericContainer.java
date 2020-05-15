@@ -1244,7 +1244,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Deprecated
     public String getIpAddress() {
-        return getContainerIpAddress();
+        return getHost();
     }
 
     /**

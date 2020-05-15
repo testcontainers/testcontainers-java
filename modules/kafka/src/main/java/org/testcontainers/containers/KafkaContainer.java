@@ -88,7 +88,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         if (port == PORT_NOT_ASSIGNED) {
             throw new IllegalStateException("You should start Kafka container first");
         }
-        return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
+        return String.format("PLAINTEXT://%s:%s", getHost(), port);
     }
 
     @Override

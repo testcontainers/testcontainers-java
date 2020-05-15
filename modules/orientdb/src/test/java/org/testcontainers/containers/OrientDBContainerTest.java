@@ -63,7 +63,7 @@ public class OrientDBContainerTest {
             container.start();
 
             assertThat(container.getDbUrl())
-                .isEqualTo("remote:" + container.getContainerIpAddress() + ":" + container.getMappedPort(2424) + "/persons");
+                .isEqualTo("remote:" + container.getHost() + ":" + container.getMappedPort(2424) + "/persons");
 
             final ODatabaseSession session = container.getSession();
 

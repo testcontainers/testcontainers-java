@@ -84,20 +84,14 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     failOnModification = true
     failOnSourceIncompatibility = true
 
-    // TODO cleanup excludes after we release the version based on docker-java 3.2.0
-
     packageExcludes = [
         "com.github.dockerjava.*",
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = [
-        // 'METHOD_REMOVED_IN_SUPERCLASS'
-        "org.testcontainers.containers.output.FrameConsumerResultCallback",
-        "org.testcontainers.dockerclient.LogToStringContainerCallback",
-
-        // 'METHOD_RETURN_TYPE_CHANGED', exposed `com.github.dockerjava.core.command.PullImageResultCallback` to the public API
-        "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
+    methodExcludes = [
+        // METHOD_NEW_DEFAULT
+        "org.testcontainers.containers.ContainerState#getHost()"
     ]
 
     onlyBinaryIncompatibleModified = true

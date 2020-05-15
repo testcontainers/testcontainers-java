@@ -33,7 +33,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
     }
 
     public URL getBaseUrl(String scheme, int port) throws MalformedURLException {
-        return new URL(scheme + "://" + getContainerIpAddress() + ":" + getMappedPort(port));
+        return new URL(scheme + "://" + getHost() + ":" + getMappedPort(port));
     }
 
     public void setCustomContent(String htmlContentPath) {
