@@ -134,7 +134,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     public URI getEndpointOverride(Service service) {
         try {
-            final String address = getContainerIpAddress();
+            final String address = getHost();
             String ipAddress = address;
             // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
             ipAddress = InetAddress.getByName(address).getHostAddress();
