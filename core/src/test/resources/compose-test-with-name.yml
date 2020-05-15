@@ -1,0 +1,7 @@
+redis:
+  image: redis
+  container_name: redis_container
+db:
+  image: mysql:5.7.22
+  environment:
+    MYSQL_RANDOM_ROOT_PASSWORD: "true"
