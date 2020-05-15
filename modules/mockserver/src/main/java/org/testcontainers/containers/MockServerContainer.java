@@ -20,7 +20,7 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
     }
 
     public String getEndpoint() {
-        return String.format("http://%s:%d", getContainerIpAddress(), getMappedPort(PORT));
+        return String.format("http://%s:%d", getHost(), getMappedPort(PORT));
     }
 
     public Integer getServerPort() {

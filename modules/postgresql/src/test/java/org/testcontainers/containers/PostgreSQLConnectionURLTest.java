@@ -48,7 +48,7 @@ public class PostgreSQLConnectionURLTest {
     static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
 
         @Override
-        public String getContainerIpAddress() {
+        public String getHost() {
             return "localhost";
         }
 
