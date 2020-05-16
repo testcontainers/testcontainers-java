@@ -1,4 +1,4 @@
-name: in-container
+name: CI-Docker-Wormhole
 
 on:
   pull_request: {}
