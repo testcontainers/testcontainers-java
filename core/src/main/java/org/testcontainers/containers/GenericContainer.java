@@ -20,15 +20,12 @@ import com.github.dockerjava.api.model.VolumesFrom;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +39,6 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
@@ -51,8 +47,8 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.Wait;
 import org.testcontainers.containers.wait.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -64,25 +60,20 @@ import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
-import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -266,7 +257,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * @see #dependsOn(List)
+     * @see #dependsOn(Iterable)
      */
     public SELF dependsOn(Startable... startables) {
         Collections.addAll(dependencies, startables);
@@ -274,14 +265,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * @see #dependsOn(Iterable)
+     */
+    public SELF dependsOn(List<? extends Startable> startables) {
+        return this.dependsOn((Iterable<? extends Startable>) startables);
+    }
+
+    /**
      * Delays this container's creation and start until provided {@link Startable}s start first.
      * Note that the circular dependencies are not supported.
      *
      * @param startables a list of {@link Startable} to depend on
-     * @see Startables#deepStart(Collection)
+     * @see Startables#deepStart(Iterable)
      */
-    public SELF dependsOn(List<Startable> startables) {
-        dependencies.addAll(startables);
+    public SELF dependsOn(Iterable<? extends Startable> startables) {
+        startables.forEach(dependencies::add);
         return self();
     }
 
@@ -309,7 +307,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             Instant startedAt = Instant.now();
 
             logger().debug("Starting container: {}", getDockerImageName());
-            logger().debug("Trying to start container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
@@ -379,7 +376,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     }
                     reusable = true;
                 } else {
-                    logger().info("Reuse was requested but the environment does not support the reuse of containers");
+                    logger().warn(
+                        "" +
+                            "Reuse was requested but the environment does not support the reuse of containers\n" +
+                            "To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at {}",
+                        Paths.get(System.getProperty("user.home"), ".testcontainers.properties")
+                    );
                     reusable = false;
                 }
             } else {
@@ -520,12 +522,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @SneakyThrows(JsonProcessingException.class)
     final String hash(CreateContainerCmd createCommand) {
         // TODO add Testcontainers' version to the hash
-        String commandJson = new ObjectMapper()
+        byte[] commandJson = new ObjectMapper()
             .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
-            .writeValueAsString(createCommand);
+            .writeValueAsBytes(createCommand);
 
-        return DigestUtils.sha1Hex(commandJson);
+        return Hashing.sha1().hashBytes(commandJson).toString();
     }
 
     @VisibleForTesting
@@ -1324,87 +1326,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public ExecResult execInContainer(String... command)
-            throws UnsupportedOperationException, IOException, InterruptedException {
-
-        return execInContainer(UTF8, command);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void copyFileToContainer(MountableFile mountableFile, String containerPath) {
-        File sourceFile = new File(mountableFile.getResolvedPath());
-
-        if (containerPath.endsWith("/") && sourceFile.isFile()) {
-            logger().warn("folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path");
-            copyFileToContainer((Transferable) mountableFile, containerPath + sourceFile.getName());
-        } else {
-            copyFileToContainer((Transferable) mountableFile, containerPath);
-        }
-    }
-
-    @Override
-    @SneakyThrows(IOException.class)
-    public void copyFileToContainer(Transferable transferable, String containerPath) {
-        if (!isCreated()) {
-            throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
-        }
-
-        try (
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
-        ) {
-            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-
-            transferable.transferTo(tarArchive, containerPath);
-            tarArchive.finish();
-
-            dockerClient
-                .copyArchiveToContainerCmd(containerId)
-                .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath("/")
-                .exec();
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
+    @SneakyThrows
     public void copyFileFromContainer(String containerPath, String destinationPath) {
-        copyFileFromContainer(containerPath, inputStream -> {
-            try(FileOutputStream output = new FileOutputStream(destinationPath)) {
-                IOUtils.copy(inputStream, output);
-                return null;
-            }
-        });
-    }
-
-    @Override
-    @SneakyThrows(Exception.class)
-    public <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> consumer) {
-        if (!isCreated()) {
-            throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
-        }
-
-        try (
-            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(containerId, containerPath).exec();
-            TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
-        ) {
-            tarInputStream.getNextTarEntry();
-            return consumer.apply(tarInputStream);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ExecResult execInContainer(Charset outputCharset, String... command)
-            throws UnsupportedOperationException, IOException, InterruptedException {
-        return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, command);
+        Container.super.copyFileFromContainer(containerPath, destinationPath);
     }
 
     /**

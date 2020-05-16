@@ -28,8 +28,10 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
@@ -52,6 +54,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final int VNC_PORT = 5900;
 
     private static final String NO_PROXY_KEY = "no_proxy";
+    private static final String TC_TEMP_DIR_PREFIX = "tc";
 
     @Nullable
     private Capabilities capabilities;
@@ -61,7 +64,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private RemoteWebDriver driver;
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private RecordingFileFactory recordingFileFactory;
-    private File vncRecordingDirectory = new File("/tmp");
+    private File vncRecordingDirectory;
 
     private VncRecordingContainer vncRecordingContainer = null;
 
@@ -140,6 +143,17 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
+
+            if (vncRecordingDirectory == null) {
+                try {
+                    vncRecordingDirectory = Files.createTempDirectory(TC_TEMP_DIR_PREFIX).toFile();
+                } catch (IOException e) {
+                    // should never happen as per javadoc, since we use valid prefix
+                    logger().error("Exception while trying to create temp directory " + vncRecordingDirectory.getAbsolutePath(), e);
+                    throw new ContainerLaunchException("Exception while trying to create temp directory", e);
+                }
+            }
+
             if (getNetwork() == null) {
                 withNetwork(Network.SHARED);
             }

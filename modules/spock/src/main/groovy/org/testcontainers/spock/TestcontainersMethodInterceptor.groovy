@@ -6,13 +6,17 @@ import org.spockframework.runtime.model.FieldInfo
 import org.spockframework.runtime.model.SpecInfo
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.lifecycle.TestLifecycleAware
+import org.testcontainers.spock.TestcontainersExtension.ErrorListener
 
 class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 
     private final SpecInfo spec
+    private final ErrorListener errorListener
 
-    TestcontainersMethodInterceptor(SpecInfo spec) {
+    TestcontainersMethodInterceptor(SpecInfo spec, ErrorListener errorListener) {
         this.spec = spec
+        this.errorListener = errorListener
     }
 
     @Override
@@ -26,6 +30,7 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
         invocation.proceed()
     }
 
+    @Override
     void interceptCleanupSpecMethod(IMethodInvocation invocation) throws Throwable {
         def containers = findAllContainers(true)
         stopContainers(containers, invocation)
@@ -77,12 +82,25 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
             if(!container.isRunning()){
                 container.start()
             }
+
+            if (container instanceof TestLifecycleAware) {
+                def testDescription = SpockTestDescription.fromTestDescription(invocation)
+                (container as TestLifecycleAware).beforeTest(testDescription)
+            }
         }
     }
 
-    private static void stopContainers(List<FieldInfo> containers, IMethodInvocation invocation) {
+    private void stopContainers(List<FieldInfo> containers, IMethodInvocation invocation) {
         containers.each { FieldInfo f ->
             GenericContainer container = readContainerFromField(f, invocation)
+
+            if (container instanceof TestLifecycleAware) {
+                // we assume first error is the one we want
+                def maybeException = Optional.ofNullable(errorListener.errors[0]?.exception)
+                def testDescription = SpockTestDescription.fromTestDescription(invocation)
+                (container as TestLifecycleAware).afterTest(testDescription, maybeException)
+            }
+
             container.stop()
         }
     }
@@ -90,14 +108,14 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
     private static void startComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
         compose.each { FieldInfo f ->
             DockerComposeContainer c = f.readValue(invocation.instance) as DockerComposeContainer
-            c.starting(null)
+            c.start()
         }
     }
 
     private static void stopComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
         compose.each { FieldInfo f ->
             DockerComposeContainer c = f.readValue(invocation.instance) as DockerComposeContainer
-            c.finished(null)
+            c.stop()
         }
     }
 

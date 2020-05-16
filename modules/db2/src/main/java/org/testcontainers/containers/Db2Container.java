@@ -37,6 +37,8 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")
                 .withStartupTimeout(Duration.of(10, ChronoUnit.MINUTES));
+
+        addExposedPort(DB2_PORT);
     }
 
     @Override
@@ -51,8 +53,6 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
             LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
             acceptLicense();
         }
-
-        addExposedPort(DB2_PORT);
 
         addEnv("DBNAME", databaseName);
         addEnv("DB2INSTANCE", username);

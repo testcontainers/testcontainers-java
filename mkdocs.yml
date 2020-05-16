@@ -40,6 +40,8 @@ nav:
     - Modules:
           - Databases:
                 - modules/databases/index.md
+                - modules/databases/jdbc.md
+                - modules/databases/r2dbc.md
                 - modules/databases/cassandra.md
                 - modules/databases/cockroachdb.md
                 - modules/databases/couchbase.md
@@ -48,11 +50,14 @@ nav:
                 - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
                 - modules/databases/mariadb.md
+                - modules/databases/mongodb.md
                 - modules/databases/mssqlserver.md
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
                 - modules/databases/oraclexe.md
+                - modules/databases/orientdb.md
                 - modules/databases/postgres.md
+                - modules/databases/presto.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/kafka.md
@@ -84,4 +89,4 @@ nav:
           - contributing.md
           - contributing_docs.md
 extra:
-    latest_version: 1.12.3
+    latest_version: 1.14.1
