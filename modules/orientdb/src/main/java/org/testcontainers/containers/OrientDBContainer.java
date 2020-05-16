@@ -108,7 +108,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     }
 
     public String getServerUrl() {
-        return "remote:" + getContainerIpAddress() + ":" + getMappedPort(2424);
+        return "remote:" + getHost() + ":" + getMappedPort(2424);
     }
 
     public String getDbUrl() {

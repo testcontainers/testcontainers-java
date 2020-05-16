@@ -23,7 +23,7 @@ public class MySQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     @Override
     public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
         return options.mutate()
-            .option(ConnectionFactoryOptions.HOST, container.getContainerIpAddress())
+            .option(ConnectionFactoryOptions.HOST, container.getHost())
             .option(ConnectionFactoryOptions.PORT, container.getMappedPort(MySQLContainer.MYSQL_PORT))
             .option(ConnectionFactoryOptions.DATABASE, container.getDatabaseName())
             .option(ConnectionFactoryOptions.USER, container.getUsername())
