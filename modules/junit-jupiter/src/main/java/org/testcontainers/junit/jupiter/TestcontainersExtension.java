@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
-import org.junit.jupiter.api.extension.TestInstances;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
@@ -23,6 +22,7 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -149,20 +149,9 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {
-        Set<Object> testInstances = new LinkedHashSet<>();
-        Optional<ExtensionContext> current = Optional.of(context);
-        while (current.isPresent()) {
-            ExtensionContext ctx = current.get();
-            List<Object> contextTestInstances = ctx.getTestInstances()
-                .map(TestInstances::getAllInstances)
-                .orElseGet(Collections::emptyList);
-            for (int i = contextTestInstances.size() - 1; i >= 0; --i) {
-                testInstances.add(contextTestInstances.get(i));
-            }
-
-            current = ctx.getParent();
-        }
-        return testInstances;
+        List<Object> allInstances = new ArrayList<>(context.getRequiredTestInstances().getAllInstances());
+        Collections.reverse(allInstances);
+        return new LinkedHashSet<>(allInstances);
     }
 
     private List<StoreAdapter> findSharedContainers(Class<?> testClass) {
