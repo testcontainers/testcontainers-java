@@ -89,6 +89,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return self();
     }
 
+    @Override
+    public OracleContainer withUrlParam(String paramName, String paramValue) {
+        throw new UnsupportedOperationException("The OracleDb does not support this");
+    }
+
     @SuppressWarnings("SameReturnValue")
     public String getSid() {
         return "xe";

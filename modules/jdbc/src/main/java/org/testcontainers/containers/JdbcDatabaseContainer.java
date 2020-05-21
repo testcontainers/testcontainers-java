@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import static java.util.stream.Collectors.joining;
+
 /**
  * Base class for containers that expose a JDBC connection
  *
@@ -28,6 +31,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private Driver driver;
     private String initScriptPath;
     protected Map<String, String> parameters = new HashMap<>();
+    protected Map<String, String> urlParameters = new HashMap<>();
 
     private int startupTimeoutSeconds = 120;
     private int connectTimeoutSeconds = 120;
@@ -82,7 +86,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     public SELF withDatabaseName(String dbName) {
         throw new UnsupportedOperationException();
+    }
 
+    public SELF withUrlParam(String paramName, String paramValue) {
+        urlParameters.put(paramName, paramValue);
+        return self();
     }
 
     /**
@@ -221,6 +229,21 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     protected String constructUrlForConnection(String queryString) {
         return getJdbcUrl() + queryString;
+    }
+
+    protected String constructUrlParameters(String startCharacter, String delimiter) {
+        return constructUrlParameters(startCharacter, delimiter, StringUtils.EMPTY);
+    }
+
+    protected String constructUrlParameters(String startCharacter, String delimiter, String endCharacter) {
+        String urlParameters = "";
+        if (!this.urlParameters.isEmpty()) {
+            String additionalParameters = this.urlParameters.entrySet().stream()
+                .map(Object::toString)
+                .collect(joining(delimiter));
+            urlParameters = startCharacter + additionalParameters + endCharacter;
+        }
+        return urlParameters;
     }
 
     protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {

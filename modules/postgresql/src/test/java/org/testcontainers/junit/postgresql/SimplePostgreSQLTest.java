@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
 
@@ -61,6 +63,19 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
+    @Test
+    public void testWithAdditionalUrlParamInJdbcUrl() {
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>()
+            .withUrlParam("charSet", "UNICODE")) {
+
+            postgres.start();
+            String jdbcUrl = postgres.getJdbcUrl();
+            assertThat(jdbcUrl, containsString("?"));
+            assertThat(jdbcUrl, containsString("&"));
+            assertThat(jdbcUrl, containsString("charSet=UNICODE"));
         }
     }
 }
