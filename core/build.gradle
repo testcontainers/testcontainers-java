@@ -84,20 +84,14 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     failOnModification = true
     failOnSourceIncompatibility = true
 
-    // TODO cleanup excludes after we release the version based on docker-java 3.2.0
-
     packageExcludes = [
         "com.github.dockerjava.*",
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = [
-        // 'METHOD_REMOVED_IN_SUPERCLASS'
-        "org.testcontainers.containers.output.FrameConsumerResultCallback",
-        "org.testcontainers.dockerclient.LogToStringContainerCallback",
-
-        // 'METHOD_RETURN_TYPE_CHANGED', exposed `com.github.dockerjava.core.command.PullImageResultCallback` to the public API
-        "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
+    methodExcludes = [
+        // METHOD_NEW_DEFAULT
+        "org.testcontainers.containers.ContainerState#getHost()"
     ]
 
     onlyBinaryIncompatibleModified = true
@@ -110,7 +104,7 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.1', {
+    baseline 'org.testcontainers:testcontainers:1.14.2', {
         exclude group: "*", module: "*"
     }
 
@@ -165,7 +159,7 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.16.0'
+    testCompile 'org.assertj:assertj-core:3.16.1'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
