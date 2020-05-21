@@ -55,8 +55,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void configure() {
-        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
-        withUrlParam("loggerLevel", "OFF");
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
@@ -69,9 +67,25 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     public String getJdbcUrl() {
-        String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT)
-            + "/" + databaseName + additionalUrlParams;
+        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
+        return format("jdbc:postgresql://%s:%d/%s?loggerLevel=OFF", getHost(), getMappedPort(POSTGRESQL_PORT), databaseName);
+    }
+
+    @Override
+    protected String constructUrlForConnection(String queryString) {
+        String baseUrl = getJdbcUrl();
+
+        if ("".equals(queryString)) {
+            return baseUrl;
+        }
+
+        if (!queryString.startsWith("?")) {
+            throw new IllegalArgumentException("The '?' character must be included");
+        }
+
+        return baseUrl.contains("?")
+            ? baseUrl + QUERY_PARAM_SEPARATOR + queryString.substring(1)
+            : baseUrl + queryString;
     }
 
     @Override
