@@ -49,7 +49,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
 
     @Override
     public String getJdbcUrl() {
-        return format("jdbc:presto://%s:%s/%s", getContainerIpAddress(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
+        return format("jdbc:presto://%s:%s/%s", getHost(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
     }
 
     @Override

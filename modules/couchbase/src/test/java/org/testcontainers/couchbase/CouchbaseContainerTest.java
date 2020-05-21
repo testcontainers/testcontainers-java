@@ -53,7 +53,7 @@ public class CouchbaseContainerTest {
 
             Cluster cluster = CouchbaseCluster.create(
                 environment,
-                container.getContainerIpAddress()
+                container.getHost()
             );
             // }
 

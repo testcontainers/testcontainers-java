@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -216,6 +217,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void waitUntilServiceStarted() {
         listChildContainers().forEach(this::createServiceInstance);
+
+        Set<String> servicesToWaitFor = waitStrategyMap.keySet();
+        Set<String> instantiatedServices = serviceInstanceMap.keySet();
+        Sets.SetView<String> missingServiceInstances =
+            Sets.difference(servicesToWaitFor, instantiatedServices);
+
+        if (!missingServiceInstances.isEmpty()) {
+            throw new IllegalStateException(
+                "Services named " + missingServiceInstances + " " +
+                    "do not exist, but wait conditions have been defined " +
+                    "for them. This might mean that you misspelled " +
+                    "the service name when defining the wait condition.");
+        }
+
         serviceInstanceMap.forEach(this::waitUntilServiceStarted);
     }
 
@@ -387,7 +402,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
-        return ambassadorContainer.getContainerIpAddress();
+        return ambassadorContainer.getHost();
     }
 
     /**
