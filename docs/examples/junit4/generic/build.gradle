@@ -5,4 +5,5 @@ dependencies {
     testCompile project(":testcontainers")
     testCompile project(":selenium")
     testCompile "org.seleniumhq.selenium:selenium-api:3.141.59"
+    testCompile 'org.assertj:assertj-core:3.15.0'
 }
