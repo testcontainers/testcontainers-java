@@ -60,9 +60,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     @Override
     public String getJdbcUrl() {
-        String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:mariadb://" + getHost() + ":" + getMappedPort(MARIADB_PORT) +
-            "/" + databaseName + additionalUrlParams;
+        return "jdbc:mariadb://" + getHost() + ":" + getMappedPort(MARIADB_PORT) + "/" + databaseName;
     }
 
     @Override
