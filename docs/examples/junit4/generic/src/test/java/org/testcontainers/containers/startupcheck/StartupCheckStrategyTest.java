@@ -56,7 +56,7 @@ public class StartupCheckStrategyTest {
         public GenericContainer bboxWithIndefiniteOneShot = new GenericContainer("busybox:1.31.1")
             .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
             .withStartupCheckStrategy(
-                new IndefiniteWaitOneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3))
+                new IndefiniteWaitOneShotStartupCheckStrategy()
             );
         // }
 
