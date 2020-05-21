@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
@@ -25,20 +23,6 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         }
     }
-
-    @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>()
-            .withUrlParam("integratedSecurity", "false")
-            .withUrlParam("applicationName", "MyApp")) {
-
-            mssqlServer.start();
-
-            String jdbcUrl = mssqlServer.getJdbcUrl();
-            assertThat(jdbcUrl, containsString(";integratedSecurity=false;applicationName=MyApp"));
-        }
-    }
-
 
     @Test
     public void testSetupDatabase() throws SQLException {
