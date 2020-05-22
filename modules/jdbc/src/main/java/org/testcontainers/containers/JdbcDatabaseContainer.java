@@ -36,6 +36,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private int startupTimeoutSeconds = 120;
     private int connectTimeoutSeconds = 120;
 
+    private static final String QUERY_PARAM_SEPARATOR = "&";
+
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         super(dockerImageName);
     }
@@ -228,7 +230,19 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return a full JDBC URL including queryString
      */
     protected String constructUrlForConnection(String queryString) {
-        return getJdbcUrl() + queryString;
+        String baseUrl = getJdbcUrl();
+
+        if ("".equals(queryString)) {
+            return baseUrl;
+        }
+
+        if (!queryString.startsWith("?")) {
+            throw new IllegalArgumentException("The '?' character must be included");
+        }
+
+        return baseUrl.contains("?")
+            ? baseUrl + QUERY_PARAM_SEPARATOR + queryString.substring(1)
+            : baseUrl + queryString;
     }
 
     protected String constructUrlParameters(String startCharacter, String delimiter) {
