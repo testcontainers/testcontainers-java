@@ -74,3 +74,52 @@ If none of these options meet your requirements, you can create your own subclas
 appropriate wait mechanism in `waitUntilReady()`. 
 The `GenericContainer.waitingFor()` method accepts any valid [`WaitStrategy`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/wait/strategy/WaitStrategy.html).
 
+
+## Startup check Strategies
+
+Ordinarily Testcontainers will check that the container has reached the running state and has not exited.
+In order to do that inspect is executed against the container and state parameter is extracted.
+
+All logic is implemented in [`StartupCheckStrategy`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/startupcheck/StartupCheckStrategy.html) child classes.
+
+### Running startup strategy example
+
+This is the strategy used by default. Testcontainers just checks if container is running.
+
+Implemented in [`IsRunningStartupCheckStrategy`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/startupcheck/IsRunningStartupCheckStrategy.html) class.
+
+### One shot startup strategy example
+
+This strategy is intended for use with containers that only run briefly and exit of their own accord. As such, success is deemed to be when
+the container has stopped with exit code 0.
+ 
+<!--codeinclude--> 
+[Using one shot startup strategy](../examples/junit4/generic/src/test/java/org/testcontainers/containers/startupcheck/StartupCheckStrategyTest.java) inside_block:withOneShotStrategy
+<!--/codeinclude-->
+
+### Indefinite one shot startup strategy example
+
+Variant of one shot strategy that does not impose a timeout. Intended for situation such as when a long running task forms part of
+ container startup.
+
+It has to be assumed that the container will stop of its own accord, either with a success or failure exit code.
+
+<!--codeinclude--> 
+[Using indefinite one shot startup strategy](../examples/junit4/generic/src/test/java/org/testcontainers/containers/startupcheck/StartupCheckStrategyTest.java) inside_block:withIndefiniteOneShotStrategy
+<!--/codeinclude-->
+
+### Minimum duration startup strategy example
+
+Checks that the container is running and has been running for a defined minimum period of time.
+
+<!--codeinclude--> 
+[Using minimum duration strategy](../examples/junit4/generic/src/test/java/org/testcontainers/containers/startupcheck/StartupCheckStrategyTest.java) inside_block:withMinimumDurationStrategy
+<!--/codeinclude-->
+
+### Other startup  strategies
+
+If none of these options meet your requirements, you can create your own subclass of 
+[`StartupCheckStrategy`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers
+/startupcheck/StartupCheckStrategy.html) with an appropriate startup check mechanism in `waitUntilStartupSuccessful()`.
+Or you can leave it as is and just implement the `checkStartupState(DockerClient dockerClient, String containerId)` if you still want to check state
+ periodically.
