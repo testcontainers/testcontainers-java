@@ -62,7 +62,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:sqlserver://" + getContainerIpAddress() + ":" + getMappedPort(MS_SQL_SERVER_PORT);
+        return "jdbc:sqlserver://" + getHost() + ":" + getMappedPort(MS_SQL_SERVER_PORT);
     }
 
     @Override

@@ -207,7 +207,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     public URL getSeleniumAddress() {
         try {
-            return new URL("http", getContainerIpAddress(), getMappedPort(SELENIUM_PORT), "/wd/hub");
+            return new URL("http", getHost(), getMappedPort(SELENIUM_PORT), "/wd/hub");
         } catch (MalformedURLException e) {
             e.printStackTrace();// TODO
             return null;
@@ -216,7 +216,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     public String getVncAddress() {
-        return "vnc://vnc:secret@" + getContainerIpAddress() + ":" + getMappedPort(VNC_PORT);
+        return "vnc://vnc:secret@" + getHost() + ":" + getMappedPort(VNC_PORT);
     }
 
     @Override

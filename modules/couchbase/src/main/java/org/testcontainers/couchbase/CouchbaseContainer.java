@@ -141,7 +141,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     public String getConnectionString() {
-        return String.format("couchbase://%s:%d", getContainerIpAddress(), getBootstrapCarrierDirectPort());
+        return String.format("couchbase://%s:%d", getHost(), getBootstrapCarrierDirectPort());
     }
 
     @Override
@@ -201,7 +201,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         createBuckets();
-        logger().info("Couchbase container is ready! UI available at http://{}:{}", getContainerIpAddress(), getMappedPort(MGMT_PORT));
+        logger().info("Couchbase container is ready! UI available at http://{}:{}", getHost(), getMappedPort(MGMT_PORT));
     }
 
     /**
@@ -222,7 +222,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * up automatically, we bind the internal hostname to the internal IP address.
      */
     private void renameNode() {
-        logger().debug("Renaming Couchbase Node from localhost to {}", getContainerIpAddress());
+        logger().debug("Renaming Couchbase Node from localhost to {}", getHost());
 
         Response response = doHttpRequest(MGMT_PORT, "/node/controller/rename", "POST", new FormBody.Builder()
             .add("hostname", getInternalIpAddress())
@@ -284,7 +284,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         logger().debug("Mapping external ports to the alternate address configuration");
 
         final FormBody.Builder builder = new FormBody.Builder();
-        builder.add("hostname", getContainerIpAddress());
+        builder.add("hostname", getHost());
         builder.add("mgmt", Integer.toString(getMappedPort(MGMT_PORT)));
         builder.add("mgmtSSL", Integer.toString(getMappedPort(MGMT_SSL_PORT)));
 
@@ -418,7 +418,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                                    final boolean auth) {
         try {
             Request.Builder requestBuilder = new Request.Builder()
-                .url("http://" + getContainerIpAddress() + ":" + getMappedPort(port) + path);
+                .url("http://" + getHost() + ":" + getMappedPort(port) + path);
 
             if (auth) {
                 requestBuilder = requestBuilder.header("Authorization", Credentials.basic(username, password));

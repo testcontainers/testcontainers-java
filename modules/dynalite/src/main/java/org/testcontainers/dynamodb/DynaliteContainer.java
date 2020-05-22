@@ -46,7 +46,7 @@ public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration() {
         return new AwsClientBuilder.EndpointConfiguration("http://" +
-                this.getContainerIpAddress() + ":" +
+                this.getHost() + ":" +
                 this.getMappedPort(MAPPED_PORT), null);
     }
 
