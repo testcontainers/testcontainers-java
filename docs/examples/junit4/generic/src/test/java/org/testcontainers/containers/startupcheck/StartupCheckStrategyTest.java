@@ -1,8 +1,5 @@
 package org.testcontainers.containers.startupcheck;
 
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import lombok.SneakyThrows;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,6 +7,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.WaitingConsumer;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
@@ -75,7 +76,7 @@ public class StartupCheckStrategyTest {
         public GenericContainer bboxWithMinimumDuration = new GenericContainer("busybox:1.31.1")
             .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
             .withStartupCheckStrategy(
-                new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(5))
+                new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(1))
             );
         // }
 
