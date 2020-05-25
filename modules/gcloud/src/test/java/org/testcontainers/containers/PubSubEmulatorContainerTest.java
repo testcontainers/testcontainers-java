@@ -64,9 +64,6 @@ public class PubSubEmulatorContainerTest {
 		} finally {
 			channel.shutdown();
 		}
-
-
-		assertThat(emulator.getMappedPort(8085)).isNotNull();
 	}
 
 }
