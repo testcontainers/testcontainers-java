@@ -24,57 +24,57 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SpannerEmulatorContainerTest {
 
-	@Rule
-	public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer();
+    @Rule
+    public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer();
 
-	private static final String PROJECT_NAME = "test-project";
-	private static final String INSTANCE_NAME = "test-instance";
-	private static final String DATABASE_NAME = "test-database";
+    private static final String PROJECT_NAME = "test-project";
+    private static final String INSTANCE_NAME = "test-instance";
+    private static final String DATABASE_NAME = "test-database";
 
-	@Test
-	public void testSimple() throws ExecutionException, InterruptedException {
-		SpannerOptions options = SpannerOptions.newBuilder()
-				.setEmulatorHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(9010))
-				.setCredentials(NoCredentials.getInstance())
-				.build();
+    @Test
+    public void testSimple() throws ExecutionException, InterruptedException {
+        SpannerOptions options = SpannerOptions.newBuilder()
+                .setEmulatorHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(9010))
+                .setCredentials(NoCredentials.getInstance())
+                .build();
 
-		Spanner spanner = options.getService();
+        Spanner spanner = options.getService();
 
-		InstanceId instanceId = createInstance(spanner);
+        InstanceId instanceId = createInstance(spanner);
 
-		createDatabase(spanner);
+        createDatabase(spanner);
 
-		DatabaseId databaseId = DatabaseId.of(instanceId, DATABASE_NAME);
-		DatabaseClient dbClient = spanner.getDatabaseClient(databaseId);
-		dbClient.readWriteTransaction()
-				.run(tx -> {
-					String sql1 = "Delete from TestTable where 1=1";
-					tx.executeUpdate(Statement.of(sql1));
-					String sql = "INSERT INTO TestTable (Key, Value) VALUES (1, 'Java'), (2, 'Go')";
-					tx.executeUpdate(Statement.of(sql));
-					return null;
-				});
+        DatabaseId databaseId = DatabaseId.of(instanceId, DATABASE_NAME);
+        DatabaseClient dbClient = spanner.getDatabaseClient(databaseId);
+        dbClient.readWriteTransaction()
+                .run(tx -> {
+                    String sql1 = "Delete from TestTable where 1=1";
+                    tx.executeUpdate(Statement.of(sql1));
+                    String sql = "INSERT INTO TestTable (Key, Value) VALUES (1, 'Java'), (2, 'Go')";
+                    tx.executeUpdate(Statement.of(sql));
+                    return null;
+                });
 
-		ResultSet resultSet = dbClient.readOnlyTransaction()
-				.executeQuery(Statement.of("select * from TestTable order by Key"));
-		resultSet.next();
-		assertThat(resultSet.getLong(0)).isEqualTo(1);
-		assertThat(resultSet.getString(1)).isEqualTo("Java");
-	}
+        ResultSet resultSet = dbClient.readOnlyTransaction()
+                .executeQuery(Statement.of("select * from TestTable order by Key"));
+        resultSet.next();
+        assertThat(resultSet.getLong(0)).isEqualTo(1);
+        assertThat(resultSet.getString(1)).isEqualTo("Java");
+    }
 
-	private void createDatabase(Spanner spanner) throws InterruptedException, ExecutionException {
-		DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
-		Database database = dbAdminClient.createDatabase(INSTANCE_NAME, DATABASE_NAME, Arrays.asList("CREATE TABLE TestTable (Key INT64, Value STRING(MAX)) PRIMARY KEY (Key)")).get();
-		System.out.println(">>>" + database.getState());
-	}
+    private void createDatabase(Spanner spanner) throws InterruptedException, ExecutionException {
+        DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
+        Database database = dbAdminClient.createDatabase(INSTANCE_NAME, DATABASE_NAME, Arrays.asList("CREATE TABLE TestTable (Key INT64, Value STRING(MAX)) PRIMARY KEY (Key)")).get();
+        System.out.println(">>>" + database.getState());
+    }
 
-	private InstanceId createInstance(Spanner spanner) throws InterruptedException, ExecutionException {
-		InstanceConfigId instanceConfig = InstanceConfigId.of(PROJECT_NAME, "emulator-config");
-		InstanceId instanceId = InstanceId.of(PROJECT_NAME, INSTANCE_NAME);
-		InstanceAdminClient insAdminClient = spanner.getInstanceAdminClient();
-		Instance instance = insAdminClient.createInstance(InstanceInfo.newBuilder(instanceId).setInstanceConfigId(instanceConfig).build()).get();
-		System.out.println(">>>" + instance.getState());
-		return instanceId;
-	}
+    private InstanceId createInstance(Spanner spanner) throws InterruptedException, ExecutionException {
+        InstanceConfigId instanceConfig = InstanceConfigId.of(PROJECT_NAME, "emulator-config");
+        InstanceId instanceId = InstanceId.of(PROJECT_NAME, INSTANCE_NAME);
+        InstanceAdminClient insAdminClient = spanner.getInstanceAdminClient();
+        Instance instance = insAdminClient.createInstance(InstanceInfo.newBuilder(instanceId).setInstanceConfigId(instanceConfig).build()).get();
+        System.out.println(">>>" + instance.getState());
+        return instanceId;
+    }
 
 }

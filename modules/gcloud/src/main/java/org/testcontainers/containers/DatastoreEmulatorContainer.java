@@ -14,22 +14,22 @@ import org.testcontainers.containers.wait.strategy.Wait;
  */
 public class DatastoreEmulatorContainer extends GCloudGenericContainer<DatastoreEmulatorContainer> {
 
-	private static final String[] CMDS = {"apk --update add openjdk8-jre",
-			"gcloud components install beta cloud-datastore-emulator --quiet",
-			"gcloud beta emulators datastore start --project dummy-project --host-port 0.0.0.0:8081"};
+    private static final String[] CMDS = {"apk --update add openjdk8-jre",
+            "gcloud components install beta cloud-datastore-emulator --quiet",
+            "gcloud beta emulators datastore start --project dummy-project --host-port 0.0.0.0:8081"};
 
-	public DatastoreEmulatorContainer(String image) {
-		super(image);
-		withExposedPorts(8081);
-		setWaitStrategy(Wait.forHttp("/").forStatusCode(200));
-		withCommand("/bin/sh", "-c", parseCmds(CMDS));
-	}
+    public DatastoreEmulatorContainer(String image) {
+        super(image);
+        withExposedPorts(8081);
+        setWaitStrategy(Wait.forHttp("/").forStatusCode(200));
+        withCommand("/bin/sh", "-c", parseCmds(CMDS));
+    }
 
-	private static String parseCmds(String... cmds) {
-		return String.join(" && ", Arrays.asList(cmds));
-	}
+    private static String parseCmds(String... cmds) {
+        return String.join(" && ", Arrays.asList(cmds));
+    }
 
-	public DatastoreEmulatorContainer() {
-		this(DEFAULT_GCLOUD_IMAGE);
-	}
+    public DatastoreEmulatorContainer() {
+        this(DEFAULT_GCLOUD_IMAGE);
+    }
 }

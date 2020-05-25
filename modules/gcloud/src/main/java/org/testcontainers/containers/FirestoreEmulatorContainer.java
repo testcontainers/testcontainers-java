@@ -15,25 +15,25 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
  */
 public class FirestoreEmulatorContainer extends GCloudGenericContainer<FirestoreEmulatorContainer> {
 
-	private static final String[] CMDS = {"apk --update add openjdk8-jre",
-			"gcloud components install beta cloud-firestore-emulator --quiet",
-			"gcloud beta emulators firestore start --host-port 0.0.0.0:8080"};
+    private static final String[] CMDS = {"apk --update add openjdk8-jre",
+            "gcloud components install beta cloud-firestore-emulator --quiet",
+            "gcloud beta emulators firestore start --host-port 0.0.0.0:8080"};
 
-	public FirestoreEmulatorContainer(String image) {
-		super(image);
-		withExposedPorts(8080);
-		setWaitStrategy(new LogMessageWaitStrategy()
-				.withRegEx("(?s).*running.*$")
-				.withStartupTimeout(Duration.ofSeconds(120)));
-		withCommand("/bin/sh", "-c", parseCmds(CMDS));
-	}
+    public FirestoreEmulatorContainer(String image) {
+        super(image);
+        withExposedPorts(8080);
+        setWaitStrategy(new LogMessageWaitStrategy()
+                .withRegEx("(?s).*running.*$")
+                .withStartupTimeout(Duration.ofSeconds(120)));
+        withCommand("/bin/sh", "-c", parseCmds(CMDS));
+    }
 
-	private static String parseCmds(String... cmds) {
-		return String.join(" && ", Arrays.asList(cmds));
-	}
+    private static String parseCmds(String... cmds) {
+        return String.join(" && ", Arrays.asList(cmds));
+    }
 
-	public FirestoreEmulatorContainer() {
-		this(DEFAULT_GCLOUD_IMAGE);
-	}
+    public FirestoreEmulatorContainer() {
+        this(DEFAULT_GCLOUD_IMAGE);
+    }
 
 }

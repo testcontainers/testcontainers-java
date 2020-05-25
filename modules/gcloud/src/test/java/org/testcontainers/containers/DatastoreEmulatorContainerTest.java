@@ -13,27 +13,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DatastoreEmulatorContainerTest {
 
-	@Rule
-	// creatingDatastoreEmulatorContainer {
-	public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer();
-	// }
+    @Rule
+    // creatingDatastoreEmulatorContainer {
+    public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer();
+    // }
 
-	//  startingDatastoreEmulatorContainer {
-	@Test
-	public void testSimple() {
-		DatastoreOptions options = DatastoreOptions.newBuilder()
-				.setHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8081))
-				.setCredentials(NoCredentials.getInstance())
-				.setRetrySettings(ServiceOptions.getNoRetrySettings())
-				.build();
-		Datastore datastore = options.getService();
+    //  startingDatastoreEmulatorContainer {
+    @Test
+    public void testSimple() {
+        DatastoreOptions options = DatastoreOptions.newBuilder()
+                .setHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8081))
+                .setCredentials(NoCredentials.getInstance())
+                .setRetrySettings(ServiceOptions.getNoRetrySettings())
+                .build();
+        Datastore datastore = options.getService();
 
-		Key key = datastore.newKeyFactory().setKind("Task").newKey("sample");
-		Entity entity = Entity.newBuilder(key).set("description", "my description").build();
-		datastore.put(entity);
+        Key key = datastore.newKeyFactory().setKind("Task").newKey("sample");
+        Entity entity = Entity.newBuilder(key).set("description", "my description").build();
+        datastore.put(entity);
 
-		assertThat(datastore.get(key).getString("description")).isEqualTo("my description");
-	}
-	// }
+        assertThat(datastore.get(key).getString("description")).isEqualTo("my description");
+    }
+    // }
 
 }
