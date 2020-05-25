@@ -14,8 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DatastoreEmulatorContainerTest {
 
 	@Rule
+	// creatingDatastoreEmulatorContainer {
 	public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer();
+	// }
 
+	//  startingDatastoreEmulatorContainer {
 	@Test
 	public void testSimple() {
 		DatastoreOptions options = DatastoreOptions.newBuilder()
@@ -31,5 +34,6 @@ public class DatastoreEmulatorContainerTest {
 
 		assertThat(datastore.get(key).getString("description")).isEqualTo("my description");
 	}
+	// }
 
 }

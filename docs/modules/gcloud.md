@@ -16,25 +16,15 @@ Currently, the module supports `datastore`, `firestore`, `pubsub` and `spanner` 
 
 Running GCloud as a stand-in for Google Firestore during a test:
 
-```java
-@Rule
-public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer();
+<!--codeinclude-->
+[Creating a Datastore container](../../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:creatingDatastoreEmulatorContainer
+<!--/codeinclude-->
 
-@Test
-public void someTestMethod() {
-    DatastoreOptions options = DatastoreOptions.newBuilder()
-    		.setHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8081))
-    		.setCredentials(NoCredentials.getInstance())
-    		.setRetrySettings(ServiceOptions.getNoRetrySettings())
-    		.build();
-    Datastore datastore = options.getService();
+And how to start it:
 
-    Key key = datastore.newKeyFactory().setKind("Task").newKey("sample");
-    Entity entity = Entity.newBuilder(key).set("description", "my description").build();
-    datastore.put(entity);
-
-    assertThat(datastore.get(key).getString("description")).isEqualTo("my description");
-```
+<!--codeinclude-->
+[Starting a Datastore container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:startingDatastoreEmulatorContainer
+<!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 
