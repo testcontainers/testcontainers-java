@@ -1,5 +1,8 @@
 # GCloud Module
 
+!!! note
+    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
+
 Testcontainers module for the Google's [Cloud SDK](https://cloud.google.com/sdk/).
 
 Currently, the module supports `datastore`, `firestore`, `pubsub` and `spanner` emulators. In order to use it, you should use the following classes:
