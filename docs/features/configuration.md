@@ -51,7 +51,7 @@ For more information, see the [official Docker documentation about "Registry as 
 !!!tip
     Registry mirror currently only works for Docker images with image name that has no registry specified (for example, for Docker image `mariadb:10.3.6`, it works, for Docker image `quay.io/testcontainers/ryuk:0.2.3`, not).
     Workaround is to to configure the affected Docker image in `.testcontainers.properties`.
-    For example: `ryuk.container.image = testcontainers/ryuk:0.2.3` or `ryuk.container.image = <your.docker.registry>/testcontainers/ryuk:0.2.3`
+    For example: `ryuk.container.image = testcontainers/ryuk:0.2.3` or `ryuk.container.image = <your.docker.registry>/testcontainers/ryuk:0.2.3`. On macs the entry on the file `testcontainers.properties` would be `ryuk.container.image = <your.docker.registry>/testcontainers/ryuk\:0.2.3`
 
 ## Customizing Ryuk resource reaper
 
