@@ -4,7 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.okhttp.OkDockerHttpClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
@@ -175,7 +175,7 @@ public abstract class DockerClientProviderStrategy {
         config = new AuthDelegatingDockerClientConfig(config);
         return DockerClientImpl
             .getInstance(config)
-            .withHttpClient(new ApacheDockerHttpClient.Factory().dockerClientConfig(config).build());
+            .withHttpClient(new OkDockerHttpClient.Factory().dockerClientConfig(config).build());
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
