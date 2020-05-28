@@ -1,10 +1,12 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.Ports;
@@ -28,6 +30,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,6 +96,20 @@ public final class ResourceReaper {
 
         client.startContainerCmd(ryukContainerId).exec();
 
+        StringBuilder ryukLog = new StringBuilder();
+
+        client.logContainerCmd(ryukContainerId)
+            .withSince(0)
+            .withFollowStream(true)
+            .withStdOut(true)
+            .withStdErr(true)
+            .exec(new ResultCallback.Adapter<Frame>() {
+                @Override
+                public void onNext(Frame frame) {
+                    ryukLog.append(new String(frame.getPayload(), StandardCharsets.UTF_8));
+                }
+            });
+
         InspectContainerResponse inspectedContainer = client.inspectContainerCmd(ryukContainerId).exec();
 
         Integer ryukPort = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().stream()
@@ -155,7 +172,8 @@ public final class ResourceReaper {
 
         // We need to wait before we can start any containers to make sure that we delete them
         if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-            throw new IllegalStateException("Can not connect to Ryuk");
+            log.error("Timeout out waiting for Ryuk. Ryuk's log:\n{}", ryukLog);
+            throw new IllegalStateException(String.format("Can not connect to Ryuk at %s:%s", hostIpAddress, ryukPort));
         }
 
         return ryukContainerId;
