@@ -17,6 +17,12 @@ public class ParsedDockerfileTest {
     }
 
     @Test
+    public void isCaseInsensitive() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(asList("from someimage", "RUN something"));
+        assertEquals("extracts a single image name", Sets.newHashSet("someimage"), parsedDockerfile.getDependencyImageNames());
+    }
+
+    @Test
     public void handlesTags() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(asList("FROM someimage:tag", "RUN something"));
         assertEquals("retains tags in image names", Sets.newHashSet("someimage:tag"), parsedDockerfile.getDependencyImageNames());
@@ -38,6 +44,18 @@ public class ParsedDockerfileTest {
     public void ignoringBuildStageNames() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(asList("FROM someimage --as=base", "RUN something", "FROM nextimage", "RUN something"));
         assertEquals("ignores build stage names and allows multiple images to be extracted", Sets.newHashSet("someimage", "nextimage"), parsedDockerfile.getDependencyImageNames());
+    }
+
+    @Test
+    public void ignoringPlatformArgs() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(asList("FROM --platform=linux/amd64 someimage", "RUN something"));
+               assertEquals("ignores platform args", Sets.newHashSet("someimage"), parsedDockerfile.getDependencyImageNames());
+    }
+
+    @Test
+    public void ignoringExtraPlatformArgs() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(asList("FROM --platform=linux/amd64 --somethingelse=value someimage", "RUN something"));
+               assertEquals("ignores platform args", Sets.newHashSet("someimage"), parsedDockerfile.getDependencyImageNames());
     }
 
     @Test
