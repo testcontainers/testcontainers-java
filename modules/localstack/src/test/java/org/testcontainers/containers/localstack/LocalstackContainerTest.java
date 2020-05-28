@@ -140,9 +140,10 @@ public class LocalstackContainerTest {
         }
 
         @Test
-        public void name() {
+        public void kmsKeyCreationTest() {
             AWSKMS awskms = AWSKMSClientBuilder.standard()
                 .withEndpointConfiguration(localstack.getEndpointConfiguration(KMS))
+                .withCredentials(localstack.getDefaultCredentialsProvider())
                 .build();
 
             String desc = String.format("AWS CMK Description");
