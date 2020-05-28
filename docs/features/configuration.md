@@ -32,7 +32,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **tinyimage.container.image = alpine:3.5**  
 > Used by Testcontainers' core
 
-> **vncrecorder.container.image = testcontainersoffical/vnc-recorder:1.1.0**  
+> **vncrecorder.container.image = testcontainersofficial/vnc-recorder:1.1.0**  
 > Used by VNC recorder in Testcontainers' Seleniun integration
 
 > **ambassador.container.image = richnorth/ambassador:latest**  
@@ -53,7 +53,7 @@ For more information, see the [official Docker documentation about "Registry as 
 
 ## Customizing Ryuk resource reaper
 
-> **ryuk.container.image = testcontainersoffical/ryuk:0.2.3**
+> **ryuk.container.image = testcontainersofficial/ryuk:0.3.0**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
 
 > **ryuk.container.privileged = false**
