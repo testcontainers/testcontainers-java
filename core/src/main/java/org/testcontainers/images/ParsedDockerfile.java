@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ParsedDockerfile {
 
-    private static final Pattern FROM_LINE_PATTERN = Pattern.compile("FROM ([^\\s]+).*");
+    private static final Pattern FROM_LINE_PATTERN = Pattern.compile("FROM (?<arg>--[^\\s]+\\s)*(?<image>[^\\s]+).*", Pattern.CASE_INSENSITIVE);
 
     private final Path dockerFilePath;
 
@@ -57,7 +57,7 @@ public class ParsedDockerfile {
         dependencyImageNames = lines.stream()
             .map(FROM_LINE_PATTERN::matcher)
             .filter(Matcher::matches)
-            .map(matcher -> matcher.group(1))
+            .map(matcher -> matcher.group("image"))
             .collect(Collectors.toSet());
 
         if (!dependencyImageNames.isEmpty()) {
