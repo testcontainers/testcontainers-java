@@ -53,6 +53,12 @@ public class ParsedDockerfileTest {
     }
 
     @Test
+    public void ignoringExtraPlatformArgs() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(asList("FROM --platform=linux/amd64 --somethingelse=value someimage", "RUN something"));
+               assertEquals("ignores platform args", Sets.newHashSet("someimage"), parsedDockerfile.getDependencyImageNames());
+    }
+
+    @Test
     public void handlesGracefullyIfNoFromLine() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(asList("RUN something", "# is this even a valid Dockerfile?"));
         assertEquals("handles invalid Dockerfiles gracefully", Sets.newHashSet(), parsedDockerfile.getDependencyImageNames());

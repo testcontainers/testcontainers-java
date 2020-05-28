@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ParsedDockerfile {
 
-    private static final Pattern FROM_LINE_PATTERN = Pattern.compile("FROM (?<arg>--[^\\s]+\\s)?(?<image>[^\\s]+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern FROM_LINE_PATTERN = Pattern.compile("FROM (?<arg>--[^\\s]+\\s)*(?<image>[^\\s]+).*", Pattern.CASE_INSENSITIVE);
 
     private final Path dockerFilePath;
 
