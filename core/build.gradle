@@ -131,7 +131,7 @@ dependencies {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.2-rc1') {
+    shaded ('com.github.docker-java:docker-java-transport-httpclient5:3.2.2-rc1') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
