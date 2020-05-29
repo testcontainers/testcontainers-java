@@ -71,7 +71,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final String DOCKER_IMAGE_NAME = "couchbase/server";
 
-    private static final String VERSION = "6.5.0";
+    private static final String VERSION = "6.5.1";
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
