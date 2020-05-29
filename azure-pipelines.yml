@@ -13,7 +13,7 @@ jobs:
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
-        options: "--no-daemon --continue"
+        options: "--no-daemon --continue --no-build-cache"
         tasks: "clean testcontainers:test --tests GenericContainerRuleTest"
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
@@ -30,7 +30,7 @@ jobs:
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.11'
-        options: '--no-daemon --continue'
+        options: '--no-daemon --continue --no-build-cache'
         tasks: 'clean check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
