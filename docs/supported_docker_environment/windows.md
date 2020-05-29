@@ -23,6 +23,12 @@ effort.
 
 * WCOW is currently not supported, since Testcontainers uses auxiliary Linux containers for certain tasks and Docker for Windows does not support hybrid engine mode at the time of writing.
 
+## Docker for Windows with WSL2 backend
+
+WSL2 should work out of the box.
+
+However, we have observed some problems using Docker for Windows with WSL2 backend with regards to very old images from the Docker Hub that would not start, so some caution when upgrading might be in order.
+
 ## Windows Subsystem for Linux
 
 Testcontainers supports communicating with Docker for Windows within the Windows Subsystem for Linux *([**WSL**](https://docs.microsoft.com/en-us/windows/wsl/about))*.
