@@ -61,21 +61,21 @@ public class GenericContainerRuleTest {
      * Redis
      */
     @ClassRule
-    public static GenericContainer redis = new GenericContainer("redis:6.0.4")
+    public static GenericContainer redis = new GenericContainer("redis:3.0.2")
             .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
     @ClassRule
-    public static GenericContainer rabbitMq = new GenericContainer("rabbitmq:3.8.4")
+    public static GenericContainer rabbitMq = new GenericContainer("rabbitmq:3.5.3")
             .withExposedPorts(RABBITMQ_PORT);
 
     /**
      * MongoDB
      */
     @ClassRule
-    public static GenericContainer mongo = new GenericContainer("mongo:4.2.7")
+    public static GenericContainer mongo = new GenericContainer("mongo:3.1.5")
             .withExposedPorts(MONGO_PORT);
 
     /**
@@ -346,7 +346,7 @@ public class GenericContainerRuleTest {
         // Use random name to avoid the conflicts between the tests
         String randomName = Base58.randomString(5);
         try(
-                GenericContainer container = new GenericContainer<>("redis:6.0.4")
+                GenericContainer container = new GenericContainer<>("redis:3.0.2")
                         .withCommand("redis-server", "--help")
                         .withCreateContainerCmdModifier(cmd -> cmd.withName("overrideMe"))
                         // Preserves the order

@@ -32,14 +32,14 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSpecificVersion() throws SQLException {
-        try (MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>("mariadb:10.5.3")) {
+        try (MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>("mariadb:5.5.51")) {
 
             mariadbOldVersion.start();
 
             ResultSet resultSet = performQuery(mariadbOldVersion, "SELECT VERSION()");
             String resultSetString = resultSet.getString(1);
 
-            assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("10.5.3"));
+            assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5.51"));
         }
     }
 
