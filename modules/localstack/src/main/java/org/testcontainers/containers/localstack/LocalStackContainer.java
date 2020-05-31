@@ -31,10 +31,13 @@ import java.util.stream.Collectors;
  */
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
-    public static final String VERSION = "0.10.8";
+    public static final String VERSION = "0.11.2";
+    static final int PORT = 4566;
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
+    private static final String BEFORE_0_11 = "^0\\.([1-9]|10)\\.[0-9]+$";
 
     private final List<Service> services = new ArrayList<>();
+    private final String version;
 
     public LocalStackContainer() {
         this(VERSION);
@@ -42,6 +45,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     public LocalStackContainer(String version) {
         super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
+        this.version = version;
 
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
@@ -68,9 +72,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
         logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
 
-        for (Service service : services) {
-            addExposedPort(service.getPort());
-        }
+        exposePorts();
+    }
+
+    private void exposePorts() {
+        services.stream()
+            .map(this::getServicePort)
+            .distinct()
+            .forEach(this::addExposedPort);
     }
 
     /**
@@ -141,10 +150,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             return new URI("http://" +
                 ipAddress +
                 ":" +
-                getMappedPort(service.getPort()));
+                getMappedPort(getServicePort(service)));
         } catch (UnknownHostException | URISyntaxException e) {
             throw new IllegalStateException("Cannot obtain endpoint URL", e);
         }
+    }
+
+    private int getServicePort(Service service) {
+        return version.matches(BEFORE_0_11) ? service.port : PORT;
     }
 
     /**
@@ -258,5 +271,13 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         String localStackName;
 
         int port;
+
+        @Deprecated
+        /*
+            Since version 0.11, LocalStack exposes all services on a single (4566) port.
+         */
+        public int getPort() {
+            return port;
+        }
     }
 }

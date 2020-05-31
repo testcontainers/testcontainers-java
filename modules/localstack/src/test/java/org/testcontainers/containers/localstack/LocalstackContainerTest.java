@@ -43,6 +43,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.containers.localstack.LocalStackContainer.PORT;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.*;
 
 /**
@@ -117,7 +118,7 @@ public class LocalstackContainerTest {
             CreateQueueResult queueResult = sqs.createQueue("baz");
             String fooQueueUrl = queueResult.getQueueUrl();
             assertThat("Created queue has external hostname URL", fooQueueUrl,
-                containsString("http://" + DockerClientFactory.instance().dockerHostIpAddress() + ":" + localstack.getMappedPort(SQS.getPort())));
+                containsString("http://" + DockerClientFactory.instance().dockerHostIpAddress() + ":" + localstack.getMappedPort(PORT)));
 
             sqs.sendMessage(fooQueueUrl, "test");
             final long messageCount = sqs.receiveMessage(fooQueueUrl).getMessages().stream()
@@ -129,8 +130,8 @@ public class LocalstackContainerTest {
         @Test
         public void cloudWatchLogsTestOverBridgeNetwork() {
             AWSLogs logs = AWSLogsClientBuilder.standard()
-                    .withEndpointConfiguration(localstack.getEndpointConfiguration(CLOUDWATCHLOGS))
-                    .withCredentials(localstack.getDefaultCredentialsProvider()).build();
+                .withEndpointConfiguration(localstack.getEndpointConfiguration(CLOUDWATCHLOGS))
+                .withCredentials(localstack.getDefaultCredentialsProvider()).build();
 
             logs.createLogGroup(new CreateLogGroupRequest("foo"));
 
@@ -152,6 +153,19 @@ public class LocalstackContainerTest {
             CreateKeyResult key = awskms.createKey(req);
 
             assertEquals("AWS KMS Customer Managed Key should be created ", key.getKeyMetadata().getDescription(), desc);
+        }
+
+        @Test
+        public void samePortIsExposedForAllServices() {
+            assertTrue("A single port is exposed", localstack.getExposedPorts().size() == 1);
+            assertEquals(
+                "Endpoint overrides are different",
+                localstack.getEndpointOverride(S3).toString(),
+                localstack.getEndpointOverride(SQS).toString());
+            assertEquals(
+                "Endpoint configuration have different endpoints",
+                localstack.getEndpointConfiguration(S3).getServiceEndpoint(),
+                localstack.getEndpointConfiguration(SQS).getServiceEndpoint());
         }
     }
 
@@ -177,33 +191,33 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3TestOverDockerNetwork() throws Exception {
-            runAwsCliAgainstDockerNetworkContainer("s3api create-bucket --bucket foo", S3.getPort());
-            runAwsCliAgainstDockerNetworkContainer("s3api list-buckets", S3.getPort());
-            runAwsCliAgainstDockerNetworkContainer("s3 ls s3://foo", S3.getPort());
+            runAwsCliAgainstDockerNetworkContainer("s3api create-bucket --bucket foo");
+            runAwsCliAgainstDockerNetworkContainer("s3api list-buckets");
+            runAwsCliAgainstDockerNetworkContainer("s3 ls s3://foo");
         }
 
         @Test
         public void sqsTestOverDockerNetwork() throws Exception {
-            final String queueCreationResponse = runAwsCliAgainstDockerNetworkContainer("sqs create-queue --queue-name baz", SQS.getPort());
+            final String queueCreationResponse = runAwsCliAgainstDockerNetworkContainer("sqs create-queue --queue-name baz");
 
             assertThat("Created queue has external hostname URL", queueCreationResponse,
-                containsString("http://localstack:" + SQS.getPort()));
+                containsString("http://localstack:" + PORT));
 
             runAwsCliAgainstDockerNetworkContainer(
-                String.format("sqs send-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz --message-body test", SQS.getPort(), SQS.getPort()), SQS.getPort());
+                String.format("sqs send-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz --message-body test", PORT, PORT));
             final String message = runAwsCliAgainstDockerNetworkContainer(
-                String.format("sqs receive-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz", SQS.getPort(), SQS.getPort()), SQS.getPort());
+                String.format("sqs receive-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz", PORT, PORT));
 
             assertTrue("the sent message can be received", message.contains("\"Body\": \"test\""));
         }
 
         @Test
         public void cloudWatchLogsTestOverDockerNetwork() throws Exception {
-            runAwsCliAgainstDockerNetworkContainer("logs create-log-group --log-group-name foo", CLOUDWATCHLOGS.getPort());
+            runAwsCliAgainstDockerNetworkContainer("logs create-log-group --log-group-name foo");
         }
 
-        private String runAwsCliAgainstDockerNetworkContainer(String command, final int port) throws Exception {
-            final String[] commandParts = String.format("/usr/bin/aws --region eu-west-1 %s --endpoint-url http://localstack:%d --no-verify-ssl", command, port).split(" ");
+        private String runAwsCliAgainstDockerNetworkContainer(String command) throws Exception {
+            final String[] commandParts = String.format("/usr/bin/aws --region eu-west-1 %s --endpoint-url http://localstack:%d --no-verify-ssl", command, PORT).split(" ");
             final Container.ExecResult execResult = awsCliInDockerNetwork.execInContainer(commandParts);
             Assert.assertEquals(0, execResult.getExitCode());
 
