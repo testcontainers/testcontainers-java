@@ -137,7 +137,7 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-zerodep:3.2.2-rc2') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.2-rc2') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
