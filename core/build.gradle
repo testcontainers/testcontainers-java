@@ -131,11 +131,15 @@ dependencies {
         exclude(group: "net.java.dev.jna")
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-httpclient5:3.2.2-rc1') {
-        exclude(group: 'net.java.dev.jna')
+    shaded ('com.github.docker-java:docker-java-core:3.2.2-rc2') {
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
+    }
+
+    shaded ('com.github.docker-java:docker-java-transport-zerodep:3.2.2-rc2') {
+        exclude(group: 'net.java.dev.jna')
+        exclude(group: 'org.slf4j')
     }
 
     shaded "org.yaml:snakeyaml:1.25"
