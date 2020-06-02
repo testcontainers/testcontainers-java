@@ -10,9 +10,8 @@ Note that it's based on the [official Docker image](https://www.elastic.co/guide
 You can start an elasticsearch container instance from any Java application by using:
 
 <!--codeinclude-->
-[Using an Elasticsearch container](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchDocumentationTest.java) inside_block:httpClientContainerStart
-[Using an Elasticsearch container](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchDocumentationTest.java) inside_block:transportClientContainerStart
-[Using an Elasticsearch container](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchDocumentationTest.java) inside_block:httpClientContainerStop
+[HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchDocumentationTest.java) inside_block:httpClientContainer
+[TransportClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchDocumentationTest.java) inside_block:transportClientContainer
 <!--/codeinclude-->
 
 
