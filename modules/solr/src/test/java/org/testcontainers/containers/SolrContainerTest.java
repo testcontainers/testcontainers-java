@@ -13,6 +13,9 @@ import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.junit.After;
 import org.junit.Test;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+
 /**
  * @author Simon Schneider
  */
@@ -25,6 +28,36 @@ public class SolrContainerTest {
         if (client != null) {
             client.close();
             client = null;
+        }
+    }
+
+    @Test
+    public void solrCustomResourceUploadIncorrectlyTest() throws IOException {
+        testWithCustomResource("synonyms.txt", "synonyms%2Fsynonyms.txt", 404);
+    }
+
+    @Test
+    public void solrCustomResourceUploadCorrectlyTest() throws IOException {
+        testWithCustomResource("synonyms/synonyms.txt", "synonyms%2Fsynonyms.txt", 200);
+    }
+
+    private void testWithCustomResource(String customResourceUploadName, String customResourceCheckName, int expectedStatusCode) throws IOException {
+        try (SolrContainer container = new SolrContainer()) {
+            String collectionName = "dummy";
+            container.withCollection(collectionName)
+                    .withConfiguration("solrconfig.xml", SolrContainerTest.class.getResource("/solr/solrconfig.xml"))
+                    .withSchema(SolrContainerTest.class.getResource("/solr/schema.xml"))
+                    .withResource(customResourceUploadName, SolrContainerTest.class.getResource("/solr/synonyms/synonyms.txt"));
+            container.start();
+            OkHttpClient http = new OkHttpClient();
+            String url = "http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() +
+                                 "/solr/" + collectionName + "/admin/file?wt=json&file=" + customResourceCheckName;
+            Request request = new Request.Builder()
+                                      .url(url)
+                                      .get()
+                                      .build();
+            int actualStatusCode = http.newCall(request).execute().code();
+            assertThat("synonyms file is uploaded", actualStatusCode == expectedStatusCode);
         }
     }
 

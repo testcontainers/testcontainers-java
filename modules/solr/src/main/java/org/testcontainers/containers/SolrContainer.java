@@ -57,12 +57,17 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
             throw new IllegalArgumentException();
         }
         configuration.setConfigurationName(name);
-        configuration.setSolrConfiguration(solrConfig);
+        configuration.addResource(name, solrConfig);
         return self();
     }
 
     public SolrContainer withSchema(URL schema) {
-        configuration.setSolrSchema(schema);
+        configuration.addResource("schema.xml", schema);
+        return self();
+    }
+
+    public SolrContainer withResource(String name, URL resource) {
+        configuration.addResource(name, resource);
         return self();
     }
 
@@ -118,18 +123,16 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
         if (StringUtils.isNotEmpty(configuration.getConfigurationName())) {
             SolrClientUtils.uploadConfiguration(
-                getContainerIpAddress(),
-                getSolrPort(),
-                configuration.getConfigurationName(),
-                configuration.getSolrConfiguration(),
-                configuration.getSolrSchema());
+                    getContainerIpAddress(),
+                    getSolrPort(),
+                    configuration);
         }
 
         SolrClientUtils.createCollection(
-            getContainerIpAddress(),
-            getSolrPort(),
-            configuration.getCollectionName(),
-            configuration.getConfigurationName());
+                getContainerIpAddress(),
+                getSolrPort(),
+                configuration.getCollectionName(),
+                configuration.getConfigurationName());
     }
 }
 

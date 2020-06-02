@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,17 +36,15 @@ public class SolrClientUtils {
      *
      * @param hostname          the Hostname under which solr is reachable
      * @param port              the Port on which solr is running
-     * @param configurationName the name of the configuration which should be created
-     * @param solrConfig        the url under which the solrconfig.xml can be found
-     * @param solrSchema        the url under which the schema.xml can be found or null if the default schema should be used
+     * @param configuration     the configuration object for the solr container
      */
-    public static void uploadConfiguration(String hostname, int port, String configurationName, URL solrConfig, URL solrSchema) throws URISyntaxException, IOException {
+    public static void uploadConfiguration(String hostname, int port, SolrContainerConfiguration configuration) throws URISyntaxException, IOException {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("action", "UPLOAD");
-        parameters.put("name", configurationName);
+        parameters.put("name", configuration.getConfigurationName());
         HttpUrl url = generateSolrURL(hostname, port, Arrays.asList("admin", "configs"), parameters);
 
-        byte[] configurationZipFile = generateConfigZipFile(solrConfig, solrSchema);
+        byte[] configurationZipFile = generateConfigZipFile(configuration);
         executePost(url, configurationZipFile);
 
     }
@@ -112,21 +112,28 @@ public class SolrClientUtils {
         return builder.build();
     }
 
-    private static byte[] generateConfigZipFile(URL solrConfiguration, URL solrSchema) throws IOException {
+    private static byte[] generateConfigZipFile(SolrContainerConfiguration configuration) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(bos);
-        // SolrConfig
-        zipOutputStream.putNextEntry(new ZipEntry("solrconfig.xml"));
-        IOUtils.copy(solrConfiguration.openStream(), zipOutputStream);
-        zipOutputStream.closeEntry();
-
-        // Solr Schema
-        if (solrSchema != null) {
-            zipOutputStream.putNextEntry(new ZipEntry("schema.xml"));
-            IOUtils.copy(solrSchema.openStream(), zipOutputStream);
-            zipOutputStream.closeEntry();
+        Map<String, URL> resources = configuration.getResources();
+        List<String> directories = resources.keySet().stream()
+                                           .map(item -> item.split("/"))
+                                           .filter(item -> item.length >= 2)
+                                           .map(Arrays::asList)
+                                           .map(item -> item.subList(0, item.size() - 1))
+                                           .flatMap(Collection::stream)
+                                           .map(item -> item + "/")
+                                           .distinct()
+                                           .collect(Collectors.toList());
+        for (String directory : directories) {
+            zipOutputStream.putNextEntry(new ZipEntry(directory));
         }
 
+        for (Map.Entry<String, URL> entry : resources.entrySet()) {
+            zipOutputStream.putNextEntry(new ZipEntry(entry.getKey()));
+            IOUtils.copy(entry.getValue().openStream(), zipOutputStream);
+            zipOutputStream.closeEntry();
+        }
         zipOutputStream.close();
         return bos.toByteArray();
     }
