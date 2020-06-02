@@ -78,6 +78,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private boolean localCompose;
     private boolean pull = true;
     private boolean build = false;
+    private String options = StringUtils.EMPTY;
     private boolean tailChildContainers;
 
     private String project;
@@ -209,9 +210,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         // Run the docker-compose container, which starts up the services
         if(Strings.isNullOrEmpty(servicesWithScalingSettings)) {
-            runWithCompose("up " + flags);
+            runWithCompose(options + "up " + flags);
         } else {
-            runWithCompose("up " + flags + " " + servicesWithScalingSettings);
+            runWithCompose(options + "up " + flags + " " + servicesWithScalingSettings);
         }
     }
 
@@ -497,6 +498,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     public SELF withBuild(boolean build) {
         this.build = build;
+        return self();
+    }
+
+    /**
+     * Adds options to the docker-compose command, e.g. docker-compose --compatibility. Options must be space separated
+     * Options are raw strings to allow future options to be accommodated transparently.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withOptions(String options) {
+        if (options.length() != 0 && !options.endsWith(" ")) {
+            options+=" ";
+        }
+        this.options = options;
         return self();
     }
 
