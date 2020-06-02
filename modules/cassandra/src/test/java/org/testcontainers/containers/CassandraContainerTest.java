@@ -1,9 +1,9 @@
 package org.testcontainers.containers;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import java.net.InetSocketAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
@@ -107,7 +107,7 @@ public class CassandraContainerTest {
     public void testCassandraGetCluster() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer.getSession(), "SELECT release_version FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }
@@ -126,13 +126,12 @@ public class CassandraContainerTest {
             .addContactPoint(cassandraContainer.getHost())
             .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
             .build();
-        return performQuery(explicitCluster, cql);
+        return performQuery(explicitSession, cql);
     }
 
-    private ResultSet performQuery(Cluster cluster, String cql) {
-        try (Cluster closeableCluster = cluster) {
-            Session session = closeableCluster.newSession();
-            return session.execute(cql);
+    private ResultSet performQuery(CqlSession session, String cql) {
+        try (CqlSession closeableSession = session) {
+            return closeableSession.execute(cql);
         }
     }
 }

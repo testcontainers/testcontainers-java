@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
-import com.datastax.driver.core.Cluster;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
@@ -12,6 +13,7 @@ import org.testcontainers.utility.MountableFile;
 
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -32,13 +34,13 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer CQL_PORT = 9042;
+    public static final String DATACENTER = "datacenter1";
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
     private static final String USERNAME = "cassandra";
     private static final String PASSWORD = "cassandra";
 
     private String configLocation;
     private String initScriptPath;
-    private boolean enableJmxReporting;
 
     /**
      * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
@@ -59,7 +61,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
-        this.enableJmxReporting = false;
     }
 
     @Override
@@ -136,14 +137,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
-     * Initialize Cassandra client with JMX reporting enabled or disabled
-     */
-    public SELF withJmxReporting(boolean enableJmxReporting) {
-        this.enableJmxReporting = enableJmxReporting;
-        return self();
-    }
-
-    /**
      * Get username
      *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
@@ -168,26 +161,21 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
-     * Get configured Cluster
+     * Get configured Session
      *
      * Can be used to obtain connections to Cassandra in the container
+     *
+     * @return A Configured {@link CqlSession}
      */
-    public Cluster getCluster() {
-        return getCluster(this, enableJmxReporting);
+    public CqlSession getSession() {
+        return getSession(this);
     }
 
-    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
-        final Cluster.Builder builder = Cluster.builder()
-            .addContactPoint(containerState.getHost())
-            .withPort(containerState.getMappedPort(CQL_PORT));
-        if (!enableJmxReporting) {
-            builder.withoutJMXReporting();
-        }
+    public static CqlSession getSession(ContainerState containerState) {
+        final CqlSessionBuilder builder = CqlSession.builder()
+            .addContactPoint(new InetSocketAddress(containerState.getHost(), containerState.getMappedPort(CQL_PORT)))
+            .withLocalDatacenter(DATACENTER);
         return builder.build();
-    }
-
-    public static Cluster getCluster(ContainerState containerState) {
-        return getCluster(containerState, false);
     }
 
     private DatabaseDelegate getDatabaseDelegate() {
