@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,6 +79,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private boolean localCompose;
     private boolean pull = true;
     private boolean build = false;
+    private Set<String> options = new HashSet<>();
     private boolean tailChildContainers;
 
     private String project;
@@ -209,9 +211,22 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         // Run the docker-compose container, which starts up the services
         if(Strings.isNullOrEmpty(servicesWithScalingSettings)) {
-            runWithCompose("up " + flags);
+            runWithCompose(optionsAsString() + "up " + flags);
         } else {
-            runWithCompose("up " + flags + " " + servicesWithScalingSettings);
+            runWithCompose(optionsAsString() + "up " + flags + " " + servicesWithScalingSettings);
+        }
+    }
+
+    private String optionsAsString() {
+        String optionsString = options
+            .stream()
+            .collect(joining(" "));
+        if (optionsString.length() !=0 ) {
+            // ensures that there is a space between the options and 'up' if options are passed.
+            return optionsString + " ";
+        } else {
+            // otherwise two spaces would appear between 'docker-compose' and 'up'
+            return StringUtils.EMPTY;
         }
     }
 
@@ -497,6 +512,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     public SELF withBuild(boolean build) {
         this.build = build;
+        return self();
+    }
+
+    /**
+     * Adds options to the docker-compose command, e.g. docker-compose --compatibility. Options must be space separated
+     * Options are raw strings to allow future options to be accommodated transparently.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withOptions(Set<String> options) {
+        this.options = options;
         return self();
     }
 
