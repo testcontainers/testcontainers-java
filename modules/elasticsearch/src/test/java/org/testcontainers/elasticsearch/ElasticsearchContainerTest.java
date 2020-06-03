@@ -14,6 +14,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
+import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -27,6 +28,11 @@ import org.junit.After;
 import org.junit.Test;
 
 public class ElasticsearchContainerTest {
+
+    /**
+     * Elasticsearch version which should be used for the Tests
+     */
+    private static final String ELASTICSEARCH_VERSION = Version.CURRENT.toString();
 
     /**
      * Elasticsearch default username, when secured with a license > basic
@@ -72,12 +78,12 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchVersion() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:5.6.12")) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION)) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
             String responseAsString = EntityUtils.toString(response.getEntity());
-            assertThat(responseAsString, containsString("5.6.12"));
+            assertThat(responseAsString, containsString(ELASTICSEARCH_VERSION));
         }
     }
 
@@ -85,7 +91,7 @@ public class ElasticsearchContainerTest {
     public void elasticsearchOssImage() throws IOException {
         try (
             // oosContainer {
-            ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.1")
+            ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:" + ELASTICSEARCH_VERSION)
             // }
         ) {
             container.start();
