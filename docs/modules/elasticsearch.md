@@ -25,7 +25,7 @@ If you prefer to start a Docker image with the pure OSS version (which means wit
 other new and advanced features), you can use this instead:
 
 <!--codeinclude-->
-[Using an Elasticsearch container](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:oosContainer
+[Elasticsearch OSS](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:oosContainer
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
