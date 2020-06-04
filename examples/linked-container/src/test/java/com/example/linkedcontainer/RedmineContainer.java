@@ -2,7 +2,7 @@ package com.example.linkedcontainer;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.wait.Wait;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 /**
  * A Redmine container.
