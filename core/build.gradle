@@ -104,7 +104,7 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.2', {
+    baseline 'org.testcontainers:testcontainers:1.14.3', {
         exclude group: "*", module: "*"
     }
 
