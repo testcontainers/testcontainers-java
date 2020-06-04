@@ -236,7 +236,7 @@ public class DockerClientFactory {
         Volume volume = new Volume("/dummy");
         try {
             return runInsideDocker(
-                createContainerCmd -> createContainerCmd.withBinds(new Bind(mountableFile.getResolvedPath(), volume, AccessMode.ro)),
+                createContainerCmd -> createContainerCmd.withBinds(new Bind(mountableFile.getMountablePath(), volume, AccessMode.ro)),
                 (__, containerId) -> {
                     try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(containerId, volume.getPath()).exec()) {
                         stream.read();

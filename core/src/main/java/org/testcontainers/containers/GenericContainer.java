@@ -932,7 +932,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-        binds.add(new Bind(mountableFile.getFilesystemPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+        binds.add(new Bind(mountableFile.getMountablePath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
     }
 
     /**

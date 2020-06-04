@@ -48,13 +48,25 @@ public class MountableFile implements Transferable {
     private final String path;
     private final Integer forcedFileMode;
 
+    /**
+     * @deprecated Use either {@link MountableFile#getMountablePath()} or {@link MountableFile#getResolvedFile()}
+     */
     @Getter(lazy = true)
+    @Deprecated
     private final String resolvedPath = resolvePath();
 
+    /**
+     * @deprecated Use either {@link MountableFile#getMountablePath()} or {@link MountableFile#getResolvedFile()}
+     */
     @Getter(lazy = true)
-    private final String filesystemPath = resolveFilesystemPath();
+    @Deprecated
+    private final String filesystemPath = getMountablePath();
 
-    private String resourcePath;
+    /**
+     * Returns path on jvm host with targets to existing file which can be mount to docker container
+     */
+    @Getter(lazy = true)
+    private final Path resolvedFile = resolveFile();
 
     /**
      * Obtains a {@link MountableFile} corresponding to a resource on the classpath (including resources in JAR files)
@@ -94,7 +106,19 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forClasspathResource(@NotNull final String resourceName, Integer mode) {
-        return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString(), mode);
+        URL resource = getClasspathResource(resourceName, new HashSet<>());
+        String resourcePath = resource.toString();
+        if (resourcePath.contains(".jar!")) {
+            resourcePath = extractClassPathResourceToTempLocation(resourcePath);
+        } else {
+            resourcePath = unencodeResourceURIToFilePath(resourcePath);
+        }
+        // Special case for Windows
+        if (SystemUtils.IS_OS_WINDOWS && resourcePath.startsWith("/")) {
+            // Remove leading /
+            resourcePath = resourcePath.substring(1);
+        }
+        return new MountableFile(Paths.get(resourcePath).toString(), mode);
     }
 
     /**
@@ -105,7 +129,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
-        return new MountableFile(new File(path).toURI().toString(), mode);
+        return forHostPath(Paths.get(path), mode);
     }
 
     /**
@@ -118,7 +142,6 @@ public class MountableFile implements Transferable {
     public static MountableFile forHostPath(final Path path, Integer mode) {
         return new MountableFile(path.toAbsolutePath().toString(), mode);
     }
-
 
     @NotNull
     private static URL getClasspathResource(@NotNull final String resourcePath, @NotNull final Set<ClassLoader> classLoaders) {
@@ -166,44 +189,27 @@ public class MountableFile implements Transferable {
      *
      * @return a volume-mountable path.
      */
+    @Deprecated
     private String resolvePath() {
-        String result = getResourcePath();
+        return getResolvedFile().toString();
+    }
 
-        // Special case for Windows
-        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
-            // Remove leading /
-            result = result.substring(1);
-        }
-
-        return result;
+    private Path resolveFile() {
+        return Paths.get(path);
     }
 
     /**
      * Obtain a path in local filesystem that the Docker daemon should be able to use to volume mount a file/resource
-     * into a container. If this is a classpath resource residing in a JAR, it will be extracted to
-     * a temporary location so that the Docker daemon is able to access it.
-     *
-     * TODO: rename method accordingly and check if really needed like this
-     *
-     * @return
+     * into a container.
      */
-    private String resolveFilesystemPath() {
-        String result = getResourcePath();
+    public String getMountablePath() {
+        String result = getResolvedFile().toString();
 
-        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
-            result = PathUtils.createMinGWPath(result).substring(1);
+        if (SystemUtils.IS_OS_WINDOWS) {
+            result = PathUtils.createMinGWPath(result);
         }
 
         return result;
-    }
-
-    private String getResourcePath() {
-        if (path.contains(".jar!")) {
-            resourcePath = extractClassPathResourceToTempLocation(this.path);
-        } else {
-            resourcePath = unencodeResourceURIToFilePath(path);
-        }
-        return resourcePath;
     }
 
     /**
@@ -213,7 +219,7 @@ public class MountableFile implements Transferable {
      * @param hostPath the path on the host, expected to be of the format 'file:/path/to/some.jar!/classpath/path/to/resource'
      * @return the path of the temporary file/directory
      */
-    private String extractClassPathResourceToTempLocation(final String hostPath) {
+    private static String extractClassPathResourceToTempLocation(final String hostPath) {
         File tmpLocation = createTempDirectory();
         //noinspection ResultOfMethodCallIgnored
         tmpLocation.delete();
@@ -249,7 +255,7 @@ public class MountableFile implements Transferable {
         }
     }
 
-    private File createTempDirectory() {
+    private static File createTempDirectory() {
         try {
             if (SystemUtils.IS_OS_MAC) {
                 return Files.createTempDirectory(Paths.get(OS_MAC_TMP_DIR), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
@@ -261,7 +267,7 @@ public class MountableFile implements Transferable {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void copyFromJarToLocation(final JarFile jarFile,
+    private static void copyFromJarToLocation(final JarFile jarFile,
                                        final JarEntry entry,
                                        final String fromRoot,
                                        final File toRoot) throws IOException {
@@ -288,7 +294,7 @@ public class MountableFile implements Transferable {
         }
     }
 
-    private void deleteOnExit(final Path path) {
+    private static void deleteOnExit(final Path path) {
         Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> recursiveDeleteDir(path)));
     }
 
