@@ -19,11 +19,10 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.traits.VncService;
-import org.testcontainers.containers.wait.HostPortWaitStrategy;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
-import org.testcontainers.containers.wait.WaitAllStrategy;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
@@ -44,7 +43,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * <p>
  * The container should expose Selenium remote control protocol and VNC.
  */
-public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer, TestLifecycleAware {
+public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer, TestLifecycleAware {
 
     private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
     private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
@@ -214,17 +213,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
     }
 
-    @Override
     public String getVncAddress() {
         return "vnc://vnc:secret@" + getHost() + ":" + getMappedPort(VNC_PORT);
     }
 
-    @Override
+    @Deprecated
     public String getPassword() {
         return DEFAULT_PASSWORD;
     }
 
-    @Override
+    @Deprecated
     public int getPort() {
         return VNC_PORT;
     }

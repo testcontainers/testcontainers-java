@@ -127,10 +127,6 @@ dependencies {
 
     compile "net.java.dev.jna:jna-platform:5.5.0"
 
-    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.1') {
-        exclude(group: "net.java.dev.jna")
-    }
-
     shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.1') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
@@ -139,8 +135,6 @@ dependencies {
     }
 
     shaded "org.yaml:snakeyaml:1.25"
-
-    shaded 'com.squareup.okhttp3:okhttp:3.14.8'
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
