@@ -107,6 +107,12 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
             BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(in);
             configure(buildImageCmd);
+            Map<String, String> labels = new HashMap<>();
+            if (buildImageCmd.getLabels() != null) {
+                labels.putAll(buildImageCmd.getLabels());
+            }
+            labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
 
