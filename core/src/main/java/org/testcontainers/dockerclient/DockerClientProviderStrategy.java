@@ -4,6 +4,8 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.okhttp.OkDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -173,13 +175,27 @@ public abstract class DockerClientProviderStrategy {
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
         config = new AuthDelegatingDockerClientConfig(config);
-        return DockerClientImpl.getInstance(
-            config,
-            new ZerodepDockerHttpClient.Builder()
-                .dockerHost(config.getDockerHost())
-                .sslConfig(config.getSSLConfig())
-                .build()
-        );
+        final DockerHttpClient dockerHttpClient;
+
+        String transportType = TestcontainersConfiguration.getInstance().getTransportType();
+        switch (transportType) {
+            case "okhttp":
+                dockerHttpClient = new OkDockerHttpClient.Builder()
+                    .dockerHost(config.getDockerHost())
+                    .sslConfig(config.getSSLConfig())
+                    .build();
+                break;
+            case "httpclient5":
+                dockerHttpClient = new ZerodepDockerHttpClient.Builder()
+                    .dockerHost(config.getDockerHost())
+                    .sslConfig(config.getSSLConfig())
+                    .build();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
+        }
+
+        return DockerClientImpl.getInstance(config, dockerHttpClient);
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
