@@ -31,6 +31,7 @@ public class DockerComposeContainerWithOptionsTest {
     private final boolean expectError;
 
     @Parameterized.Parameters(name = "docker-compose test [compose file: {0}, local: {1}, options: {2}, expected result: {3}]")
+
     public static Object[][] params() {
         return new Object[][]{
             // Test the happy day case. THe compatibility option should be accepted by docker-compose.
@@ -46,7 +47,7 @@ public class DockerComposeContainerWithOptionsTest {
 
     @Test
     public void performTest() {
-        
+
         try (DockerComposeContainer<?> environment = new DockerComposeContainer<>(composeFile)
                 .withOptions(options.stream().toArray(String[]::new))
                 .withLocalCompose(local)) {
