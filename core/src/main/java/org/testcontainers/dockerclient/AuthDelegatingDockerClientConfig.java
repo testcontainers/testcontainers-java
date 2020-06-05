@@ -1,4 +1,4 @@
-package org.testcontainers.dockerclient.auth;
+package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -15,11 +15,10 @@ import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
  * to try and obtain auth credentials, but after that {@link RegistryAuthLocator} will be
  * used to try and improve the auth resolution (e.g. using credential helpers).
  *
- * @deprecated should not be used publicly, to be moved to docker-java
+ * TODO move to docker-java
  */
 @Slf4j
-@Deprecated
-public class AuthDelegatingDockerClientConfig implements DockerClientConfig {
+class AuthDelegatingDockerClientConfig implements DockerClientConfig {
 
     @Delegate(excludes = DelegateExclusions.class)
     private DockerClientConfig delegate;

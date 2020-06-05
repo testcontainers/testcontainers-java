@@ -70,11 +70,6 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    @Deprecated
-    public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
-        return start(hostIpAddress, client);
-    }
-
     @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
