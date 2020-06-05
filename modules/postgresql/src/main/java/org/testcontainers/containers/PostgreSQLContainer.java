@@ -1,13 +1,12 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.lang.String.format;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
