@@ -29,7 +29,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
 
     private static final String DEFAULT_IMAGE_NAME = "orientdb";
-    private static final String DEFAULT_TAG = "3.0.24-tp3";
+    private static final String DEFAULT_TAG = "3.1.0-tp3";
     private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
 
     private static final String DEFAULT_USERNAME = "admin";

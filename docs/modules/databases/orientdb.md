@@ -62,14 +62,14 @@ testCompile "org.testcontainers:orientdb:{{latest_version}}"
     Add the OrientDB Java client if you plan to access the Testcontainer:
     
     ```groovy tab='Gradle'
-    compile "com.orientechnologies:orientdb-client:3.0.24"
+    compile "com.orientechnologies:orientdb-client:3.1.0"
     ```
     
     ```xml tab='Maven'
     <dependency>
         <groupId>com.orientechnologies</groupId>
         <artifactId>orientdb-client</artifactId>
-        <version>3.0.24</version>
+        <version>3.1.0</version>
     </dependency>
     ```
     
