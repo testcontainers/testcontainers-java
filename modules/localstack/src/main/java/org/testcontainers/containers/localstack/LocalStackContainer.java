@@ -7,9 +7,11 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.InetAddress;
@@ -29,23 +31,50 @@ import java.util.stream.Collectors;
  * {@link LocalStackContainer#getDefaultCredentialsProvider()}
  * be used to obtain compatible endpoint configuration and credentials, respectively.</p>
  */
+@Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     public static final String VERSION = "0.11.2";
     static final int PORT = 4566;
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
-    private static final String BEFORE_0_11 = "^0\\.([1-9]|10)\\.[0-9]+$";
-
     private final List<Service> services = new ArrayList<>();
-    private final String version;
 
+    private final boolean legacyMode;
+
+    /**
+     * Uses default ({@value #VERSION}) version of LocalStack container
+     */
     public LocalStackContainer() {
-        this(VERSION);
+        this(VERSION, false);
     }
 
+    /**
+     * Uses provided version of LocalStack container
+     * Enables legacy mode (each AWS service is exposed on a different port) if provided version is less that 0.11
+     *
+     * @param version tag of LocalStack container to run
+     */
     public LocalStackContainer(String version) {
+        this(version, shouldRunInLegacyMode(version));
+    }
+
+    private static boolean shouldRunInLegacyMode(String version) {
+        if (version.equals("latest")) return false;
+        ComparableVersion comparableVersion = new ComparableVersion(version);
+        if (comparableVersion.isSemanticVersion())
+            return comparableVersion.isLessThan("0.11");
+        log.warn("Version {} is not a semantic version, LocalStack will run in legacy mode.", version);
+        log.warn("Consider using \"LocalStackContainer(String version, boolean legacyMode)\" constructor if you want to disable legacy mode.");
+        return true;
+    }
+
+    /**
+     * @param version    tag of LocalStack container to run
+     * @param legacyMode if true, each AWS service is exposed on a different port
+     */
+    public LocalStackContainer(String version, boolean legacyMode) {
         super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
-        this.version = version;
+        this.legacyMode = legacyMode;
 
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
@@ -157,7 +186,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     private int getServicePort(Service service) {
-        return version.matches(BEFORE_0_11) ? service.port : PORT;
+        return legacyMode ? service.port : PORT;
     }
 
     /**
