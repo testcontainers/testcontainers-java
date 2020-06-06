@@ -1,9 +1,18 @@
 description = "Testcontainers :: JDBC :: PostgreSQL"
 
 dependencies {
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
+    compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
+
     compile project(':jdbc')
 
-    testCompile 'org.postgresql:postgresql:42.2.8'
-    testCompile 'commons-dbutils:commons-dbutils:1.7'
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
+    compileOnly project(':r2dbc')
+    compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.3.RELEASE'
+
+    testCompile project(':jdbc-test')
+    testCompile project(':test-support')
+    testCompile 'org.postgresql:postgresql:42.2.13'
+
+    testCompile testFixtures(project(':r2dbc'))
+    testCompile 'io.r2dbc:r2dbc-postgresql:0.8.3.RELEASE'
 }

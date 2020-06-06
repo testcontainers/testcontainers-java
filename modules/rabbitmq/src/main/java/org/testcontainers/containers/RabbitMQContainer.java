@@ -114,28 +114,28 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @return AMQP URL for use with AMQP clients.
      */
     public String getAmqpUrl() {
-        return "amqp://" + getContainerIpAddress() + ":" + getAmqpPort();
+        return "amqp://" + getHost() + ":" + getAmqpPort();
     }
 
     /**
      * @return AMQPS URL for use with AMQPS clients.
      */
     public String getAmqpsUrl() {
-        return "amqps://" + getContainerIpAddress() + ":" + getAmqpsPort();
+        return "amqps://" + getHost() + ":" + getAmqpsPort();
     }
 
     /**
      * @return URL of the HTTP management endpoint.
      */
     public String getHttpUrl() {
-        return "http://" + getContainerIpAddress() + ":" + getHttpPort();
+        return "http://" + getHost() + ":" + getHttpPort();
     }
 
     /**
      * @return URL of the HTTPS management endpoint.
      */
     public String getHttpsUrl() {
-        return "https://" + getContainerIpAddress() + ":" + getHttpsPort();
+        return "https://" + getHost() + ":" + getHttpsPort();
     }
 
     /**
@@ -263,6 +263,15 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    public RabbitMQContainer withPolicy(String vhost, String name, String pattern, Map<String, Object> definition) {
+        values.add(asList("rabbitmqadmin", "declare", "policy",
+                "--vhost=" + vhost,
+                "name=" + name,
+                "pattern=" + pattern,
+                "definition=" + toJson(definition)));
+        return self();
+    }
+
     public RabbitMQContainer withPolicy(String name, String pattern, Map<String, Object> definition, int priority, String applyTo) {
         values.add(asList("rabbitmqadmin", "declare", "policy",
                 "name=" + name,
@@ -336,6 +345,17 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     public RabbitMQContainer withExchange(String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
         values.add(asList("rabbitmqadmin", "declare", "exchange",
+            "name=" + name,
+            "type=" + type,
+            "auto_delete=" + autoDelete,
+            "internal=" + internal,
+            "durable=" + durable,
+            "arguments=" + toJson(arguments)));
+        return self();
+    }
+
+    public RabbitMQContainer withExchange(String vhost, String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
+        values.add(asList("rabbitmqadmin", "--vhost=" + vhost, "declare", "exchange",
                 "name=" + name,
                 "type=" + type,
                 "auto_delete=" + autoDelete,

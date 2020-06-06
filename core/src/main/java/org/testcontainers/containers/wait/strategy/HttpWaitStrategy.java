@@ -2,7 +2,6 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -13,7 +12,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -41,6 +42,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private Predicate<String> responsePredicate;
     private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
+    private Duration readTimeout = Duration.ofSeconds(1);
 
     /**
      * Waits for the given status code.
@@ -109,6 +111,20 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     /**
+     * Set the HTTP connections read timeout.
+     *
+     * @param timeout the timeout (minimum 1 millisecond)
+     * @return this
+     */
+    public HttpWaitStrategy withReadTimeout(Duration timeout) {
+        if (timeout.toMillis() < 1) {
+            throw new IllegalArgumentException("you cannot specify a value smaller than 1 ms");
+        }
+        this.readTimeout = timeout;
+        return this;
+    }
+
+    /**
      * Waits for the response to pass the given predicate
      * @param responsePredicate The predicate to test the response against
      * @return this
@@ -143,6 +159,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                 getRateLimiter().doWhenReady(() -> {
                     try {
                         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
+                        connection.setReadTimeout(Math.toIntExact(readTimeout.toMillis()));
 
                         // authenticate
                         if (!Strings.isNullOrEmpty(username)) {
@@ -208,7 +225,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      */
     private URI buildLivenessUri(int livenessCheckPort) {
         final String scheme = (tlsEnabled ? "https" : "http") + "://";
-        final String host = waitStrategyTarget.getContainerIpAddress();
+        final String host = waitStrategyTarget.getHost();
 
         final String portSuffix;
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {

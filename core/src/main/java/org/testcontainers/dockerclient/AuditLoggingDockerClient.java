@@ -6,6 +6,7 @@ import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.function.BiConsumer;
 
@@ -14,10 +15,11 @@ import static org.testcontainers.utility.AuditLogger.doLog;
 /**
  * Wrapper for {@link DockerClient} to facilitate 'audit logging' of potentially destruction actions using
  * {@link org.testcontainers.utility.AuditLogger}.
+ *
  */
 @Slf4j
 @SuppressWarnings("unchecked")
-public class AuditLoggingDockerClient implements DockerClient {
+class AuditLoggingDockerClient implements DockerClient {
 
     @Delegate(excludes = InterceptedMethods.class)
     private final DockerClient wrappedClient;
@@ -99,6 +101,9 @@ public class AuditLoggingDockerClient implements DockerClient {
                             successConsumer.accept(cmd, r);
                             return r;
                         } catch (Exception e) {
+                            if (e instanceof InvocationTargetException && e.getCause() instanceof Exception) {
+                                e = (Exception) e.getCause();
+                            }
                             failureConsumer.accept(cmd, e);
                             throw e;
                         }

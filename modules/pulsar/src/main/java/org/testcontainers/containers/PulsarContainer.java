@@ -26,11 +26,11 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     }
 
     public String getPulsarBrokerUrl() {
-        return String.format("pulsar://%s:%s", getContainerIpAddress(), getMappedPort(BROKER_PORT));
+        return String.format("pulsar://%s:%s", getHost(), getMappedPort(BROKER_PORT));
     }
 
     public String getHttpServiceUrl() {
-        return String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(BROKER_HTTP_PORT));
+        return String.format("http://%s:%s", getHost(), getMappedPort(BROKER_HTTP_PORT));
     }
 }
 

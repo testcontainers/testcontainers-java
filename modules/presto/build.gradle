@@ -1,0 +1,8 @@
+description = "Testcontainers :: JDBC :: Presto"
+
+dependencies {
+    compile project(':jdbc')
+
+    testCompile project(':jdbc-test')
+    testCompile 'io.prestosql:presto-jdbc:331'
+}

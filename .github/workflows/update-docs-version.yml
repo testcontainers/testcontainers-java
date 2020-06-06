@@ -1,0 +1,27 @@
+name: Update docs version
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    build:
+        runs-on: ubuntu-18.04
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                  ref: master
+            -   name: Update latest_version property in mkdocs.yml
+                run: |
+                    sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml
+                    git diff
+            -   name: Commit changes
+                run: |
+                    git config user.email "nobody@testcontainers.org"
+                    git config user.name "GitHub Action - Update docs version"
+                    git add mkdocs.yml
+                    git commit -m "Update documentation version to ${GITHUB_REF##*/}" -m "skip-checks: true" || echo "not changed"
+            -   name: Push changes
+                uses: ad-m/github-push-action@68af9897f2b021035ca3952bf354bbb4675c1762 # v0.5.0
+                with:
+                    github_token: ${{ secrets.GITHUB_TOKEN }}
