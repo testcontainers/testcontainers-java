@@ -122,8 +122,10 @@ public class ElasticsearchContainerTest {
                 .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
+        // }}
             assertThat(response.getStatusLine().getStatusCode(), is(200));
             assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+        // httpClientContainer {{
         }
         // }
     }
@@ -133,7 +135,6 @@ public class ElasticsearchContainerTest {
         // transportClientContainer {
         // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer()) {
-
             // Start the container. This step might take some time...
             container.start();
 
@@ -145,7 +146,9 @@ public class ElasticsearchContainerTest {
                 .addTransportAddress(transportAddress)) {
                 ClusterHealthResponse healths = transportClient.admin().cluster().prepareHealth().get();
                 String clusterName = healths.getClusterName();
+                // }}}
                 assertThat(clusterName, is(expectedClusterName));
+                // transportClientContainer {{{
             }
         }
         // }
