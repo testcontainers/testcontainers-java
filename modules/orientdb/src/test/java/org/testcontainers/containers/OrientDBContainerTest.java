@@ -38,23 +38,6 @@ public class OrientDBContainerTest {
     }
 
     @Test
-    public void shouldQueryWithGremlin() {
-
-        try (OrientDBContainer container = new OrientDBContainer()) {
-            container.start();
-
-            final ODatabaseSession session = container.getSession("admin", "admin");
-
-            session.command("CREATE CLASS Person EXTENDS V");
-            session.command("INSERT INTO Person set name='john'");
-            session.command("INSERT INTO Person set name='jane'");
-
-            assertThat(session.execute("gremlin",
-                "g.V().hasLabel('Person')").stream()).hasSize(2);
-        }
-    }
-
-    @Test
     public void shouldInitializeDatabaseFromScript() {
         try (OrientDBContainer container = new OrientDBContainer()
             .withScriptPath("initscript.osql")
