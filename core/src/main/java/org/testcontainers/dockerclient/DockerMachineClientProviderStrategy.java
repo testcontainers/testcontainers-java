@@ -31,7 +31,7 @@ public class DockerMachineClientProviderStrategy extends DockerClientProviderStr
 
     @Override
     protected int getPriority() {
-        return ProxiedUnixSocketClientProviderStrategy.PRIORITY - 10;
+        return EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 100;
     }
 
     @Override
