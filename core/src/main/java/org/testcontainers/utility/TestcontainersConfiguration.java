@@ -1,11 +1,22 @@
 package org.testcontainers.utility;
 
 import com.google.common.annotations.VisibleForTesting;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.UnstableAPI;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
@@ -56,7 +67,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getVncRecordedContainerImage() {
-        return (String) properties.getOrDefault("vncrecorder.container.image", "quay.io/testcontainers/vnc-recorder:1.1.0");
+        return (String) properties.getOrDefault("vncrecorder.container.image", "testcontainersofficial/vnc-recorder:1.1.0");
     }
 
     public String getDockerComposeContainerImage() {
@@ -72,11 +83,11 @@ public class TestcontainersConfiguration {
     }
 
     public String getRyukImage() {
-        return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.3");
+        return (String) properties.getOrDefault("ryuk.container.image", "testcontainersofficial/ryuk:0.3.0");
     }
 
     public String getSSHdImage() {
-        return (String) properties.getOrDefault("sshd.container.image", "quay.io/testcontainers/sshd:1.0.0");
+        return (String) properties.getOrDefault("sshd.container.image", "testcontainersofficial/sshd:1.0.0");
     }
 
     public Integer getRyukTimeout() {

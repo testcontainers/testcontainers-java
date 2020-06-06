@@ -18,7 +18,6 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.URI;
