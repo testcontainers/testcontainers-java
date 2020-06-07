@@ -9,7 +9,12 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
@@ -103,7 +108,20 @@ public class LegacyModeTest {
 
     @SneakyThrows
     private static void run(String command) {
-        Runtime.getRuntime().exec(command);
+        Process process = Runtime.getRuntime().exec(command);
+        join(process.getInputStream(), System.out::println);
+        join(process.getErrorStream(), System.err::println);
+        process.waitFor();
+        if (process.exitValue() != 0)
+            throw new RuntimeException("Failed to execute " + command);
+    }
+
+    private static void join(InputStream stream, Consumer<String> logger) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            logger.accept(line);
+        }
     }
 
 }
