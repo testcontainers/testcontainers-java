@@ -58,6 +58,7 @@ public class TestcontainersConfiguration {
         this.properties.putAll(environmentProperties);
     }
 
+    @Deprecated
     public String getAmbassadorContainerImage() {
         return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
     }
@@ -67,7 +68,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getVncRecordedContainerImage() {
-        return (String) properties.getOrDefault("vncrecorder.container.image", "testcontainersofficial/vnc-recorder:1.1.0");
+        return (String) properties.getOrDefault("vncrecorder.container.image", "testcontainers/vnc-recorder:1.1.0");
     }
 
     public String getDockerComposeContainerImage() {
@@ -83,11 +84,11 @@ public class TestcontainersConfiguration {
     }
 
     public String getRyukImage() {
-        return (String) properties.getOrDefault("ryuk.container.image", "testcontainersofficial/ryuk:0.3.0");
+        return (String) properties.getOrDefault("ryuk.container.image", "testcontainers/ryuk:0.3.0");
     }
 
     public String getSSHdImage() {
-        return (String) properties.getOrDefault("sshd.container.image", "testcontainersofficial/sshd:1.0.0");
+        return (String) properties.getOrDefault("sshd.container.image", "testcontainers/sshd:1.0.0");
     }
 
     public Integer getRyukTimeout() {
