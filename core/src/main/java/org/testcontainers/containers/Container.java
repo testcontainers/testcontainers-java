@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Info;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -13,14 +12,9 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -48,14 +42,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
         int exitCode;
         String stdout;
         String stderr;
-
-        /**
-         * @deprecated should not be instantiated outside of the library, please migrate
-         */
-        @Deprecated
-        public ExecResult(String stdout, String stderr) {
-            this(-1, stdout, stderr);
-        }
     }
 
     /**
@@ -413,13 +399,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
-    /**
-     *
-     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
-     */
-    @Deprecated
-    Info fetchDockerDaemonInfo() throws IOException;
-
     List<String> getPortBindings();
 
     List<String> getExtraHosts();
@@ -446,13 +425,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     Map<String, LinkableContainer> getLinkedContainers();
 
     DockerClient getDockerClient();
-
-    /**
-     *
-     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
-     */
-    @Deprecated
-    Info getDockerDaemonInfo();
 
     void setExposedPorts(List<Integer> exposedPorts);
 

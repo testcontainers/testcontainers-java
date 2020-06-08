@@ -18,7 +18,7 @@ public class ExternalPortListeningCheck implements Callable<Boolean> {
 
     @Override
     public Boolean call() {
-        String address = containerState.getContainerIpAddress();
+        String address = containerState.getHost();
 
         externalLivenessCheckPorts.parallelStream().forEach(externalPort -> {
             try {

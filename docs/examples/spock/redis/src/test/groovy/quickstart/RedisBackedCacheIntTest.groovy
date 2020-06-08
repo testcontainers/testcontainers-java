@@ -15,7 +15,7 @@ class RedisBackedCacheIntTest extends Specification {
     // }
 
     void setup() {
-        String address = redis.containerIpAddress
+        String address = redis.host
         Integer port = redis.firstMappedPort
 
         // Now we have an address and port for Redis, no matter where it is running
