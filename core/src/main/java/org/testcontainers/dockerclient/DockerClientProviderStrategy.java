@@ -118,6 +118,13 @@ public abstract class DockerClientProviderStrategy {
                     try {
                         strategy.test();
                         LOGGER.info("Found Docker environment with {}", strategy.getDescription());
+                        LOGGER.debug(
+                            "Transport type: '{}', Docker host: '{}'",
+                            TestcontainersConfiguration.getInstance().getTransportType(),
+                            strategy.config != null
+                                ? strategy.config.getDockerHost()
+                                : "<unknown>"
+                        );
                         strategy.checkOSType();
 
                         if (strategy.isPersistable()) {
