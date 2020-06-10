@@ -155,10 +155,6 @@ dependencies {
         exclude(group: "net.java.dev.jna", module: "jna")
     }
 
-    compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
-        exclude(group: "log4j", module: "log4j")
-    }
-
     compile "net.java.dev.jna:jna-platform:5.5.0"
 
     shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.1') {
