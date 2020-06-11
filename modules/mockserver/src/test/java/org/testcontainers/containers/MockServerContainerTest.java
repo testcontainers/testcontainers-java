@@ -33,7 +33,7 @@ public class MockServerContainerTest {
     @Test
     public void shouldReturnExpectation() throws Exception {
         // testSimpleExpectation {
-        new MockServerClient(mockServer.getContainerIpAddress(), mockServer.getServerPort())
+        new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
             .when(request()
                 .withPath("/person")
                 .withQueryStringParameter("name", "peter"))
@@ -57,7 +57,7 @@ public class MockServerContainerTest {
 
             String expectedBody = "Hello World!";
 
-            new MockServerClient(mockServer.getContainerIpAddress(), mockServer.getServerPort())
+            new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
                 .when(request().withPath("/hello"))
                 .respond(response().withBody(expectedBody));
 

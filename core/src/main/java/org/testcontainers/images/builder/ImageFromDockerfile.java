@@ -83,16 +83,6 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
-        dependencyImageNames.forEach(imageName -> {
-            try {
-                log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
-                DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
-            } catch (Exception e) {
-                log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
-            }
-        });
-
-
         try {
             if (deleteOnExit) {
                 ResourceReaper.instance().registerImageForCleanup(dockerImageName);
@@ -117,6 +107,14 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
             BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(in);
             configure(buildImageCmd);
+            Map<String, String> labels = new HashMap<>();
+            if (buildImageCmd.getLabels() != null) {
+                labels.putAll(buildImageCmd.getLabels());
+            }
+            labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            buildImageCmd.withLabels(labels);
+
+            prePullDependencyImages(dependencyImageNames);
 
             BuildImageResultCallback exec = buildImageCmd.exec(resultCallback);
 
@@ -154,9 +152,28 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         this.dockerfile.ifPresent(p -> {
             buildImageCmd.withDockerfile(p.toFile());
             dependencyImageNames = new ParsedDockerfile(p).getDependencyImageNames();
+
+            if (dependencyImageNames.size() > 0) {
+                // if we'll be pre-pulling images, disable the built-in pull as it is not necessary and will fail for
+                // authenticated registries
+                buildImageCmd.withPull(false);
+            }
         });
 
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
+    }
+
+    private void prePullDependencyImages(Set<String> imagesToPull) {
+        final DockerClient dockerClient = DockerClientFactory.instance().client();
+
+        imagesToPull.forEach(imageName -> {
+            try {
+                log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
+                DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+            } catch (Exception e) {
+                log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
+            }
+        });
     }
 
     public ImageFromDockerfile withBuildArg(final String key, final String value) {
@@ -171,19 +188,23 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     /**
      * Sets the Dockerfile to be used for this image.
-     * @deprecated It is recommended to use {@link #withDockerfile} instead because it honors
-     * .dockerignore files and therefore will be more efficient
-     * @param relativePathFromBuildRoot
+     *
+     * @param relativePathFromBuildContextDirectory relative path to the Dockerfile, relative to the image build context directory
+     * @deprecated It is recommended to use {@link #withDockerfile} instead because it honors .dockerignore files and
+     * will therefore be more efficient. Additionally, using {@link #withDockerfile} supports Dockerfiles that depend
+     * upon images from authenticated private registries.
      */
     @Deprecated
-    public ImageFromDockerfile withDockerfilePath(String relativePathFromBuildRoot) {
-        this.dockerFilePath = Optional.of(relativePathFromBuildRoot);
+    public ImageFromDockerfile withDockerfilePath(String relativePathFromBuildContextDirectory) {
+        this.dockerFilePath = Optional.of(relativePathFromBuildContextDirectory);
         return this;
     }
 
     /**
-     * Sets the Dockerfile to be used for this image.
-     * @param dockerfile
+     * Sets the Dockerfile to be used for this image. Honors .dockerignore files for efficiency.
+     * Additionally, supports Dockerfiles that depend upon images from authenticated private registries.
+     *
+     * @param dockerfile path to Dockerfile on the test host.
      */
     public ImageFromDockerfile withDockerfile(Path dockerfile) {
         this.dockerfile = Optional.of(dockerfile);

@@ -10,8 +10,8 @@ import java.util.Objects;
 public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
     private static final String NAME = "postgis";
-    private static final String DEFAULT_TAG = "10";
-    private static final String DEFAULT_IMAGE = "mdillon/postgis";
+    private static final String DEFAULT_TAG = "12-3.0";
+    private static final String DEFAULT_IMAGE = "postgis/postgis";
     public static final String USER_PARAM = "user";
     public static final String PASSWORD_PARAM = "password";
 

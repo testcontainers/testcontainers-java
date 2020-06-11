@@ -131,7 +131,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @return a url to influxDb
      */
     public String getUrl() {
-        return "http://" + getContainerIpAddress() + ":" + getLivenessCheckPort();
+        return "http://" + getHost() + ":" + getLivenessCheckPort();
     }
 
     /**
