@@ -323,7 +323,7 @@ public class ReusabilityUnitTests {
 
             long hash1 = container.hashCopiedFiles().getValue();
 
-            container.getCopyToFileContainerPathMap().clear();
+            container.getCopyToFileContainerPathList().clear();
 
             container.withCopyFileToContainer(mountableFile, "/foo/baz");
 

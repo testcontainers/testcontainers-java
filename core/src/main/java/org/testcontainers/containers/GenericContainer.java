@@ -73,6 +73,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -182,7 +184,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Long shmSize;
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
-    private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
+    private List<Entry<MountableFile, String>> copyToFileContainerPathList = new ArrayList<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
@@ -410,7 +412,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 containerId = createCommand.exec().getId();
 
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
-                copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+                copyToFileContainerPathList.forEach(entry -> copyFileToContainer(entry.getKey(), entry.getValue()));
             }
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
@@ -504,7 +506,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Checksum hashCopiedFiles() {
         Checksum checksum = new Adler32();
-        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
+        copyToFileContainerPathList.forEach(entry -> {
             byte[] pathBytes = entry.getValue().getBytes();
             // Add path to the hash
             checksum.update(pathBytes, 0, pathBytes.length);
@@ -1249,7 +1251,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
-        copyToFileContainerPathMap.put(mountableFile, containerPath);
+        copyToFileContainerPathList.add(new SimpleEntry<>(mountableFile, containerPath));
         return self();
     }
 

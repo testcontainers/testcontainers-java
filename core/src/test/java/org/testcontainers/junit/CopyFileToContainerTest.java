@@ -8,7 +8,10 @@ import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.TestImages.TINY_IMAGE;
@@ -53,7 +56,8 @@ public class CopyFileToContainerTest {
             .withClasspathResourceMapping(resource, "/readOnlyShared", BindMode.READ_ONLY, SelinuxContext.SHARED)
             .withClasspathResourceMapping(resource, "/readWrite", BindMode.READ_WRITE);
 
-        Map<MountableFile, String> copyMap = container.getCopyToFileContainerPathMap();
+        Map<MountableFile, String> copyMap = container.getCopyToFileContainerPathList().stream()
+            .collect(toMap(Entry::getKey, Entry::getValue));
         assertTrue("uses copy for read-only", copyMap.containsValue("/readOnly"));
         assertTrue("uses copy for read-only and no Selinux", copyMap.containsValue("/readOnlyNoSelinux"));
 
