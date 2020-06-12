@@ -27,8 +27,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -264,20 +268,27 @@ public interface ContainerState {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
-        try (
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
-        ) {
-            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+        Path tarFile = Files.createTempFile("test-containers-copy-file-to-container", ".tar");
+        try {
+            try (
+                OutputStream outputStream = Files.newOutputStream(tarFile);
+                TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(outputStream)
+            ) {
+                tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
-            transferable.transferTo(tarArchive, containerPath);
-            tarArchive.finish();
+                transferable.transferTo(tarArchive, containerPath);
+                tarArchive.finish();
+            }
 
-            DockerClientFactory.instance().client()
-                .copyArchiveToContainerCmd(getContainerId())
-                .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
-                .withRemotePath("/")
-                .exec();
+            try (InputStream inputStream = Files.newInputStream(tarFile)) {
+                DockerClientFactory.instance().client()
+                    .copyArchiveToContainerCmd(getContainerId())
+                    .withTarInputStream(inputStream)
+                    .withRemotePath("/")
+                    .exec();
+            }
+        } finally {
+            Files.delete(tarFile);
         }
     }
 
