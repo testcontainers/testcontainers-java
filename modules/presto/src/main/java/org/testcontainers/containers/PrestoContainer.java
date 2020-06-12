@@ -18,7 +18,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     public static final String NAME = "presto";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("prestosql/presto");
     public static final String IMAGE = "prestosql/presto";
-    public static final String DEFAULT_TAG = "329";
+    public static final String DEFAULT_TAG = "344";
 
     public static final Integer PRESTO_PORT = 8080;
 
