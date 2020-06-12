@@ -16,7 +16,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "presto";
     public static final String IMAGE = "prestosql/presto";
-    public static final String DEFAULT_TAG = "329";
+    public static final String DEFAULT_TAG = "334";
 
     public static final Integer PRESTO_PORT = 8080;
 
