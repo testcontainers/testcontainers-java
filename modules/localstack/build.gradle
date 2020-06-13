@@ -7,7 +7,7 @@ dependencies {
     testCompile 'com.amazonaws:aws-java-sdk-s3:1.11.797'
     testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.797'
     testCompile 'com.amazonaws:aws-java-sdk-logs:1.11.797'
-    testCompile 'software.amazon.awssdk:s3:2.13.31'
+    testCompile 'software.amazon.awssdk:s3:2.13.36'
     testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.797'
     testCompile 'com.amazonaws:aws-java-sdk-logs:1.11.797'
 }
