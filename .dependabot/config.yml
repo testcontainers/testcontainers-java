@@ -115,6 +115,12 @@ update_configs:
       - match: { dependency_type: "development", update_type: "semver:minor" }
       - match: { dependency_type: "production", update_type: "semver:minor" }
   - package_manager: "java:gradle"
+    directory: "/modules/ondgb"
+    update_schedule: "weekly"
+    automerged_updates:
+      - match: { dependency_type: "development", update_type: "semver:minor" }
+      - match: { dependency_type: "production", update_type: "semver:minor" }
+  - package_manager: "java:gradle"
     directory: "/modules/oracle-xe"
     update_schedule: "weekly"
     automerged_updates:
