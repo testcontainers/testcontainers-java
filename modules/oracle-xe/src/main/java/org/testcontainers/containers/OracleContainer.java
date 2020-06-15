@@ -14,11 +14,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
 
-    private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
-    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
+    private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 900;
+    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 900;
 
     private String username = "system";
-    private String password = "oracle";
+    private String password = "Str0ngPassw0rd";
 
     private static String resolveImageName() {
         String image = TestcontainersConfiguration.getInstance()
@@ -47,9 +47,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     private void preconfigure() {
+        withEnv("ORACLE_PWD", getPassword());
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
+        withPassword(getPassword());
     }
 
     @Override
