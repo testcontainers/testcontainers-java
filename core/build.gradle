@@ -156,18 +156,19 @@ dependencies {
     }
 
     compile "net.java.dev.jna:jna-platform:5.5.0"
+    compile "com.github.docker-java:docker-java-api:3.2.2"
 
     shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.2') {
+        exclude(group: 'com.github.docker-java', module: 'docker-java-api')
+        exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
+        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-zerodep:3.2.2') {
-        exclude(group: 'net.java.dev.jna')
-        exclude(group: 'org.slf4j')
-    }
+    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.2'
 
     shaded "org.yaml:snakeyaml:1.25"
 
