@@ -120,11 +120,6 @@ public class TestcontainersConfiguration {
         return (String) environmentProperties.get("docker.client.strategy");
     }
 
-    /**
-     *
-     * @deprecated we no longer have different transport types
-     */
-    @Deprecated
     public String getTransportType() {
         return properties.getProperty("transport.type", "okhttp");
     }
