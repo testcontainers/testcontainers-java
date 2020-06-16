@@ -167,7 +167,7 @@ public final class ResourceReaper {
         try {
             // We need to wait before we can start any containers to make sure that we delete them
             if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-                log.error("Timeout out waiting for Ryuk. Ryuk's log:\n{}", ryukLog);
+                log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukLog);
                 throw new IllegalStateException(String.format("Can not connect to Ryuk at %s:%s", hostIpAddress, ryukPort));
             }
         } finally {
