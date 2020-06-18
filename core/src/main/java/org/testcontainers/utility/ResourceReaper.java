@@ -93,7 +93,7 @@ public final class ResourceReaper {
 
         StringBuilder ryukLog = new StringBuilder();
 
-        client.logContainerCmd(ryukContainerId)
+        ResultCallback.Adapter<Frame> logCallback = client.logContainerCmd(ryukContainerId)
             .withSince(0)
             .withFollowStream(true)
             .withStdOut(true)
@@ -164,11 +164,17 @@ public final class ResourceReaper {
         );
         kiraThread.setDaemon(true);
         kiraThread.start();
-
-        // We need to wait before we can start any containers to make sure that we delete them
-        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-            log.error("Timeout out waiting for Ryuk. Ryuk's log:\n{}", ryukLog);
-            throw new IllegalStateException(String.format("Can not connect to Ryuk at %s:%s", hostIpAddress, ryukPort));
+        try {
+            // We need to wait before we can start any containers to make sure that we delete them
+            if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+                log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukLog);
+                throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", hostIpAddress, ryukPort));
+            }
+        } finally {
+            try {
+                logCallback.close();
+            } catch (IOException ignored) {
+            }
         }
 
         return ryukContainerId;
