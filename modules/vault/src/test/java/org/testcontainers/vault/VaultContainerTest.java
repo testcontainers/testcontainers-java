@@ -71,7 +71,7 @@ public class VaultContainerTest {
     }
 
     private String getHostAndPort() {
-        return vaultContainer.getContainerIpAddress() + ":" + vaultContainer.getMappedPort(8200);
+        return vaultContainer.getHost() + ":" + vaultContainer.getMappedPort(8200);
     }
 
 

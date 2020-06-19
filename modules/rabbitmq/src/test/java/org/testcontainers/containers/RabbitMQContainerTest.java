@@ -19,6 +19,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Collections;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -48,13 +49,13 @@ public class RabbitMQContainerTest {
             container.start();
 
             assertThat(container.getAmqpsUrl()).isEqualTo(
-                String.format("amqps://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
+                String.format("amqps://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
             assertThat(container.getAmqpUrl()).isEqualTo(
-                String.format("amqp://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQP_PORT)));
+                String.format("amqp://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQP_PORT)));
             assertThat(container.getHttpsUrl()).isEqualTo(
-                String.format("https://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
+                String.format("https://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
             assertThat(container.getHttpUrl()).isEqualTo(
-                String.format("http://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTP_PORT)));
+                String.format("http://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTP_PORT)));
 
             assertThat(container.getHttpsPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTPS_PORT));
             assertThat(container.getHttpPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTP_PORT));
@@ -87,6 +88,20 @@ public class RabbitMQContainerTest {
             container.start();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_exchanges").getStdout())
+                .containsPattern("test-exchange\\s+direct");
+        }
+    }
+
+    @Test
+    public void shouldCreateRabbitMQContainerWithExchangeInVhost() throws IOException, InterruptedException
+    {
+        try (RabbitMQContainer container = new RabbitMQContainer()) {
+            container.withVhost("test-vhost");
+            container.withExchange("test-vhost", "test-exchange", "direct", false, false, false, Collections.emptyMap());
+
+            container.start();
+
+            assertThat(container.execInContainer("rabbitmqctl", "list_exchanges", "-p", "test-vhost").getStdout())
                 .containsPattern("test-exchange\\s+direct");
         }
     }

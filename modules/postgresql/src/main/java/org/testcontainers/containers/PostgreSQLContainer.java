@@ -1,13 +1,12 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.lang.String.format;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
@@ -19,6 +18,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public static final String DEFAULT_TAG = "9.6.12";
 
     public static final Integer POSTGRESQL_PORT = 5432;
+
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
+
     private String databaseName = "test";
     private String username = "test";
     private String password = "test";
@@ -38,6 +42,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
                 .withTimes(2)
                 .withStartupTimeout(Duration.of(60, SECONDS));
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
+
+        addExposedPort(POSTGRESQL_PORT);
     }
 
     @NotNull
@@ -48,7 +54,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void configure() {
-        addExposedPort(POSTGRESQL_PORT);
+        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
+        withUrlParam("loggerLevel", "OFF");
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
@@ -61,25 +68,9 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     public String getJdbcUrl() {
-        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
-        return format("jdbc:postgresql://%s:%d/%s?loggerLevel=OFF", getContainerIpAddress(), getMappedPort(POSTGRESQL_PORT), databaseName);
-    }
-
-    @Override
-    protected String constructUrlForConnection(String queryString) {
-        String baseUrl = getJdbcUrl();
-
-        if ("".equals(queryString)) {
-            return baseUrl;
-        }
-
-        if (!queryString.startsWith("?")) {
-            throw new IllegalArgumentException("The '?' character must be included");
-        }
-
-        return baseUrl.contains("?")
-            ? baseUrl + QUERY_PARAM_SEPARATOR + queryString.substring(1)
-            : baseUrl + queryString;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT)
+            + "/" + databaseName + additionalUrlParams;
     }
 
     @Override

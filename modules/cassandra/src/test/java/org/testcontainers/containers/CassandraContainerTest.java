@@ -116,7 +116,7 @@ public class CassandraContainerTest {
 
     private ResultSet performQuery(CassandraContainer cassandraContainer, String cql) {
         Cluster explicitCluster = Cluster.builder()
-            .addContactPoint(cassandraContainer.getContainerIpAddress())
+            .addContactPoint(cassandraContainer.getHost())
             .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
             .build();
         return performQuery(explicitCluster, cql);

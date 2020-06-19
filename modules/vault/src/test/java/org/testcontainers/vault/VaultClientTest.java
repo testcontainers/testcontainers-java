@@ -5,7 +5,6 @@ import com.bettercloud.vault.VaultConfig;
 import com.bettercloud.vault.VaultException;
 import com.bettercloud.vault.response.LogicalResponse;
 import org.junit.Test;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +25,7 @@ public class VaultClientTest {
             vaultContainer.start();
 
             final VaultConfig config = new VaultConfig()
-                .address("http://" + vaultContainer.getContainerIpAddress() + ":" + vaultContainer.getFirstMappedPort())
+                .address("http://" + vaultContainer.getHost() + ":" + vaultContainer.getFirstMappedPort())
                 .token(VAULT_TOKEN)
                 .build();
 
