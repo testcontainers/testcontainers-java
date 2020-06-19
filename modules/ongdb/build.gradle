@@ -1,0 +1,38 @@
+description = "TestContainers :: ONgDB"
+
+def generatedResourcesDir = new File(project.buildDir, "generated-resources")
+def customOngdbPluginDestinationDir = new File(generatedResourcesDir, "custom-plugins")
+
+sourceSets {
+    customOngdbPlugin {
+        java {
+            srcDir 'src/custom-ongdb-plugin/java'
+        }
+    }
+    test {
+        resources {
+            srcDir generatedResourcesDir
+        }
+    }
+}
+
+task customOngdbPluginJar(type: Jar) {
+    from sourceSets.customOngdbPlugin.output
+    archiveName = "hello-world.jar"
+    destinationDir = customOngdbPluginDestinationDir
+
+    inputs.files(sourceSets.customOngdbPlugin.java.srcDirs)
+    outputs.cacheIf { true }
+    outputs.dir(customOngdbPluginDestinationDir)
+}
+
+test.dependsOn customOngdbPluginJar
+
+dependencies {
+    customOngdbPluginCompileOnly "org.graphfoundation.ongdb:ongdb:3.6.0"
+
+    compile project(":testcontainers")
+
+    testCompile "org.neo4j.driver:neo4j-java-driver:1.7.5"
+    testCompile 'org.assertj:assertj-core:3.16.1'
+}
