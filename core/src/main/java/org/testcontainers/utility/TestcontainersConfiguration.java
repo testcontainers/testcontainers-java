@@ -121,7 +121,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getTransportType() {
-        return properties.getProperty("transport.type", "okhttp");
+        return properties.getProperty("transport.type", "httpclient5");
     }
 
     public Integer getImagePullPauseTimeout() {
