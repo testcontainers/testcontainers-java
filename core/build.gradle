@@ -195,5 +195,5 @@ dependencies {
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
     jarFileTestCompile 'org.assertj:assertj-core:3.16.0'
-    jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
+    jarFileTestCompile 'org.ow2.asm:asm-debug-all:6.0_BETA'
 }
