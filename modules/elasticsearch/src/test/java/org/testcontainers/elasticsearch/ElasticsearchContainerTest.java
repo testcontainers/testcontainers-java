@@ -1,5 +1,12 @@
 package org.testcontainers.elasticsearch;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.testcontainers.elasticsearch.ElasticsearchContainer.ELASTICSEARCH_DEFAULT_VERSION;
+
+import java.io.IOException;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -7,6 +14,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
+import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -19,15 +27,12 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 
-import java.io.IOException;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.testcontainers.elasticsearch.ElasticsearchContainer.ELASTICSEARCH_DEFAULT_VERSION;
-
 public class ElasticsearchContainerTest {
+
+    /**
+     * Elasticsearch version which should be used for the Tests
+     */
+    private static final String ELASTICSEARCH_VERSION = Version.CURRENT.toString();
 
     /**
      * Elasticsearch default username, when secured with a license > basic
@@ -51,10 +56,14 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchDefaultTest() throws IOException {
+        // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer()
             .withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
         ) {
+            // Start the container. This step might take some time...
             container.start();
+
+            // Do whatever you want with the rest client ...
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
             assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_DEFAULT_VERSION));
@@ -69,19 +78,22 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchVersion() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:5.6.12")) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION)) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
             String responseAsString = EntityUtils.toString(response.getEntity());
-            assertThat(responseAsString, containsString("5.6.12"));
+            assertThat(responseAsString, containsString(ELASTICSEARCH_VERSION));
         }
     }
 
     @Test
     public void elasticsearchOssImage() throws IOException {
-        try (ElasticsearchContainer container =
-                 new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:" + ELASTICSEARCH_DEFAULT_VERSION)) {
+        try (
+            // oosContainer {
+            ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:" + ELASTICSEARCH_VERSION)
+            // }
+        ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
@@ -93,10 +105,40 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void transportClientClusterHealth() {
+    public void restClientClusterHealth() throws IOException {
+        // httpClientContainer {
+        // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer()) {
+            // Start the container. This step might take some time...
             container.start();
 
+            // Do whatever you want with the rest client ...
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
+
+            client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
+                .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
+                .build();
+
+            Response response = client.performRequest(new Request("GET", "/_cluster/health"));
+        // }}
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+        // httpClientContainer {{
+        }
+        // }
+    }
+
+    @Test
+    public void transportClientClusterHealth() {
+        // transportClientContainer {
+        // Create the elasticsearch container.
+        try (ElasticsearchContainer container = new ElasticsearchContainer()) {
+            // Start the container. This step might take some time...
+            container.start();
+
+            // Do whatever you want with the transport client
             TransportAddress transportAddress = new TransportAddress(container.getTcpHost());
             String expectedClusterName = "docker-cluster";
             Settings settings = Settings.builder().put("cluster.name", expectedClusterName).build();
@@ -104,9 +146,12 @@ public class ElasticsearchContainerTest {
                 .addTransportAddress(transportAddress)) {
                 ClusterHealthResponse healths = transportClient.admin().cluster().prepareHealth().get();
                 String clusterName = healths.getClusterName();
+                // }}}
                 assertThat(clusterName, is(expectedClusterName));
+                // transportClientContainer {{{
             }
         }
+        // }
     }
 
     private RestClient getClient(ElasticsearchContainer container) {
