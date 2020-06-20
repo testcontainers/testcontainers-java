@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'me.champeau.gradle.japicmp' version '0.2.8'
+    id 'me.champeau.gradle.japicmp' version '0.2.9'
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
