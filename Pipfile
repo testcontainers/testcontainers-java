@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 mkdocs = "*"
-mkdocs-codeinclude-plugin = {editable = true,git = "https://github.com/rnorth/mkdocs-codeinclude-plugin"}
+mkdocs-codeinclude-plugin = "*"
 mkdocs-material = "*"
 mkdocs-markdownextradata-plugin = "*"
 

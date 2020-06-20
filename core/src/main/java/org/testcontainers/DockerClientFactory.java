@@ -239,7 +239,7 @@ public class DockerClientFactory {
 
     private void check(String message, boolean isSuccessful) {
         if (isSuccessful) {
-            log.info("\u2714︎ {}", message);
+            log.info("\u2714\ufe0e {}", message);
         } else {
             log.error("\u274c {}", message);
             throw new IllegalStateException("Check failed: " + message);
