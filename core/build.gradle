@@ -142,7 +142,7 @@ dependencies {
         exclude group: "*", module: "*"
     }
 
-    compile 'junit:junit:4.12'
+    compile 'junit:junit:4.13'
     compile 'org.slf4j:slf4j-api:1.7.30'
     compile 'org.jetbrains:annotations:19.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
