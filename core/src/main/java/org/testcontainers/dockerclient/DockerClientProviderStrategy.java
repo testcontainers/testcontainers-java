@@ -2,8 +2,11 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.okhttp.OkDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
+import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
@@ -15,8 +18,6 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig;
-import org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.URI;
@@ -117,6 +118,13 @@ public abstract class DockerClientProviderStrategy {
                     try {
                         strategy.test();
                         LOGGER.info("Found Docker environment with {}", strategy.getDescription());
+                        LOGGER.debug(
+                            "Transport type: '{}', Docker host: '{}'",
+                            TestcontainersConfiguration.getInstance().getTransportType(),
+                            strategy.config != null
+                                ? strategy.config.getDockerHost()
+                                : "<unknown>"
+                        );
                         strategy.checkOSType();
 
                         if (strategy.isPersistable()) {
@@ -172,10 +180,28 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected DockerClient getClientForConfig(DockerClientConfig config) {
-        return DockerClientBuilder
-            .getInstance(new AuthDelegatingDockerClientConfig(config))
-            .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory())
-            .build();
+        config = new AuthDelegatingDockerClientConfig(config);
+        final DockerHttpClient dockerHttpClient;
+
+        String transportType = TestcontainersConfiguration.getInstance().getTransportType();
+        switch (transportType) {
+            case "okhttp":
+                dockerHttpClient = new OkDockerHttpClient.Builder()
+                    .dockerHost(config.getDockerHost())
+                    .sslConfig(config.getSSLConfig())
+                    .build();
+                break;
+            case "httpclient5":
+                dockerHttpClient = new ZerodepDockerHttpClient.Builder()
+                    .dockerHost(config.getDockerHost())
+                    .sslConfig(config.getSSLConfig())
+                    .build();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
+        }
+
+        return DockerClientImpl.getInstance(config, dockerHttpClient);
     }
 
     protected void ping(DockerClient client, int timeoutInSeconds) {
@@ -219,7 +245,9 @@ public abstract class DockerClientProviderStrategy {
                         .filter(it -> it.getGateway() != null)
                         .findAny()
                         .map(Network.Ipam.Config::getGateway)
-                        .orElse("localhost");
+                        .orElseGet(() -> {
+                            return DockerClientConfigUtils.getDefaultGateway().orElse("localhost");
+                        });
                 }
                 return "localhost";
             default:

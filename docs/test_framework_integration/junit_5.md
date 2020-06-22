@@ -19,7 +19,7 @@ methods (methods on the `Startable` interface). Containers declared as static fi
 methods. They will be started only once before any test method is executed and stopped after the last test method has 
 executed. Containers declared as instance fields will be started and stopped for every test method.
   
-**Note:** This extension has only be tested with sequential test execution. Using it with parallel test execution is 
+**Note:** This extension has only been tested with sequential test execution. Using it with parallel test execution is 
 unsupported and may have unintended side effects.
   
 *Example:*

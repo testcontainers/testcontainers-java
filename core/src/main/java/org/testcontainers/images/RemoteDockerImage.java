@@ -3,6 +3,7 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -28,11 +29,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
+    @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
     @Wither
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
+    @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     public RemoteDockerImage(String dockerImageName) {
@@ -44,19 +47,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     public RemoteDockerImage(@NonNull Future<String> imageFuture) {
-        this.imageNameFuture = new LazyFuture<DockerImageName>() {
-            @Override
-            @SneakyThrows({InterruptedException.class, ExecutionException.class})
-            protected DockerImageName resolve() {
-                return new DockerImageName(imageFuture.get());
-            }
-        };
+        this.imageNameFuture = Futures.lazyTransform(imageFuture, DockerImageName::new);
     }
 
     @Override
     @SneakyThrows({InterruptedException.class, ExecutionException.class})
     protected final String resolve() {
-        final DockerImageName imageName = imageNameFuture.get();
+        final DockerImageName imageName = getImageName();
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
         try {
             if (!imagePullPolicy.shouldPull(imageName)) {
@@ -93,6 +90,23 @@ public class RemoteDockerImage extends LazyFuture<String> {
             throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
+        }
+    }
+
+    private DockerImageName getImageName() throws InterruptedException, ExecutionException {
+        return imageNameFuture.get();
+    }
+
+    @ToString.Include(name = "imageName", rank = 1)
+    private String imageNameToString() {
+        if (!imageNameFuture.isDone()) {
+            return "<resolving>";
+        }
+
+        try {
+            return getImageName().toString();
+        } catch (InterruptedException | ExecutionException e) {
+            return e.getMessage();
         }
     }
 }

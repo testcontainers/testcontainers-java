@@ -17,11 +17,8 @@ import org.testcontainers.containers.GenericContainer
 abstract class AbstractIntegrationTest {
 
     companion object {
-        val redisContainer = object : GenericContainer<Nothing>("redis:3-alpine") {
-            init {
-                withExposedPorts(6379)
-            }
-        }
+        val redisContainer = GenericContainer<Nothing>("redis:3-alpine")
+                .apply { withExposedPorts(6379) }
     }
 
     internal class Initializer : ApplicationContextInitializer<ConfigurableApplicationContext> {

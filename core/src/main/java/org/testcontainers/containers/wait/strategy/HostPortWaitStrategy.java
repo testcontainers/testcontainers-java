@@ -46,7 +46,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
-                    waitStrategyTarget.getContainerIpAddress() +
+                    waitStrategyTarget.getHost() +
                     " ports: " +
                     externalLivenessCheckPorts +
                     " should be listening)");

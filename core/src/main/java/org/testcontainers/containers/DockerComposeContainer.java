@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -178,12 +180,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // (a) as a workaround for https://github.com/docker/compose/issues/5854, which prevents authenticated image pulls being possible when credential helpers are in use
         // (b) so that credential helper-based auth still works when compose is running from within a container
         parsedComposeFiles.stream()
-            .flatMap(it -> it.getServiceImageNames().stream())
+            .flatMap(it -> it.getDependencyImageNames().stream())
             .forEach(imageName -> {
                 try {
+                    log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
                     DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
                 } catch (Exception e) {
-                    log.warn("Failed to pull image '{}'. Exception message was {}", imageName, e.getMessage());
+                    log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
             });
     }
@@ -228,6 +231,20 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void waitUntilServiceStarted() {
         listChildContainers().forEach(this::createServiceInstance);
+
+        Set<String> servicesToWaitFor = waitStrategyMap.keySet();
+        Set<String> instantiatedServices = serviceInstanceMap.keySet();
+        Sets.SetView<String> missingServiceInstances =
+            Sets.difference(servicesToWaitFor, instantiatedServices);
+
+        if (!missingServiceInstances.isEmpty()) {
+            throw new IllegalStateException(
+                "Services named " + missingServiceInstances + " " +
+                    "do not exist, but wait conditions have been defined " +
+                    "for them. This might mean that you misspelled " +
+                    "the service name when defining the wait condition.");
+        }
+
         serviceInstanceMap.forEach(this::waitUntilServiceStarted);
     }
 
@@ -400,7 +417,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
-        return ambassadorContainer.getContainerIpAddress();
+        return ambassadorContainer.getHost();
     }
 
     /**
@@ -506,6 +523,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public SELF withRemoveImages(RemoveImages removeImages) {
         this.removeImages = removeImages;
         return self();
+    }
+
+    public Optional<ContainerState> getContainerByServiceName(String serviceName) {
+        return Optional.ofNullable(serviceInstanceMap.get(serviceName));
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {

@@ -13,6 +13,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
-    public static final String VERSION = "0.9.4";
+    public static final String VERSION = "0.10.8";
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
 
     private final List<Service> services = new ArrayList<>();
@@ -61,7 +63,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1));  // use the last network alias set
             hostnameExternalReason = "to match last network alias on container with non-default network";
         } else {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getContainerIpAddress());
+            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getHost());
             hostnameExternalReason = "to match host-routable address for container";
         }
         logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
@@ -90,7 +92,16 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             .withCredentials(localstack.getDefaultCredentialsProvider())
             .build();
      </code></pre>
-     *
+     * or for AWS SDK v2
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+                localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+     </code></pre>
      * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
      * that are running on the test host. If other containers need to call this one, they should be configured
      * specifically to do so using a Docker network and appropriate addressing.</strong></p>
@@ -99,20 +110,41 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
-        final String address = getContainerIpAddress();
-        String ipAddress = address;
+        return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getRegion());
+    }
+
+    /**
+     * Provides an endpoint override that is preconfigured to communicate with a given simulated service.
+     * The provided endpoint override should be set in the AWS Java SDK v2 when building a client, e.g.:
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+             localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+             </code></pre>
+     * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
+     * that are running on the test host. If other containers need to call this one, they should be configured
+     * specifically to do so using a Docker network and appropriate addressing.</strong></p>
+     *
+     * @param service the service that is to be accessed
+     * @return an {@link URI} endpoint override
+     */
+    public URI getEndpointOverride(Service service) {
         try {
+            final String address = getHost();
+            String ipAddress = address;
             // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
             ipAddress = InetAddress.getByName(address).getHostAddress();
-        } catch (UnknownHostException ignored) {
-
-        }
-
-        return new AwsClientBuilder.EndpointConfiguration(
-                "http://" +
+            return new URI("http://" +
                 ipAddress +
                 ":" +
-                getMappedPort(service.getPort()), "us-east-1");
+                getMappedPort(service.getPort()));
+        } catch (UnknownHostException | URISyntaxException e) {
+            throw new IllegalStateException("Cannot obtain endpoint URL", e);
+        }
     }
 
     /**
@@ -124,10 +156,74 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             .withCredentials(localstack.getDefaultCredentialsProvider())
             .build();
      </code></pre>
+     * or for AWS SDK v2 you can use {@link #getAccessKey()}, {@link #getSecretKey()} directly:
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+             localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+     </code></pre>
      * @return an {@link AWSCredentialsProvider}
      */
     public AWSCredentialsProvider getDefaultCredentialsProvider() {
-        return new AWSStaticCredentialsProvider(new BasicAWSCredentials("accesskey", "secretkey"));
+        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getAccessKey(), getSecretKey()));
+    }
+
+    /**
+     * Provides a default access key that is preconfigured to communicate with a given simulated service.
+     * The access key can be used to construct AWS SDK v2 clients:
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+             localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+     </code></pre>
+     * @return a default access key
+     */
+    public String getAccessKey() {
+        return "accesskey";
+    }
+
+    /**
+     * Provides a default secret key that is preconfigured to communicate with a given simulated service.
+     * The secret key can be used to construct AWS SDK v2 clients:
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+             localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+     </code></pre>
+     * @return a default secret key
+     */
+    public String getSecretKey() {
+        return "secretkey";
+    }
+
+    /**
+     * Provides a default region that is preconfigured to communicate with a given simulated service.
+     * The region can be used to construct AWS SDK v2 clients:
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+             localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+     </code></pre>
+     * @return a default region
+     */
+    public String getRegion() {
+        return "us-east-1";
     }
 
     @RequiredArgsConstructor
@@ -154,9 +250,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         SSM("ssm", 4583),
         SECRETSMANAGER("secretsmanager", 4584),
         STEPFUNCTIONS("stepfunctions", 4585),
-        CLOUDWATCHLOGS("cloudwatchlogs", 4586),
+        CLOUDWATCHLOGS("logs", 4586),
         STS("sts", 4592),
-        IAM("iam", 4593);
+        IAM("iam", 4593),
+        KMS("kms", 4599);
 
         String localStackName;
 

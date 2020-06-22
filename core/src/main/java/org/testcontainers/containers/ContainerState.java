@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.HealthState;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -42,8 +43,18 @@ public interface ContainerState {
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address
+     * @see #getHost()
      */
     default String getContainerIpAddress() {
+        return getHost();
+    }
+
+    /**
+     * Get the host that this container may be reached on (may not be the local machine).
+     *
+     * @return a host
+     */
+    default String getHost() {
         return DockerClientFactory.instance().dockerHostIpAddress();
     }
 
@@ -89,9 +100,12 @@ public interface ContainerState {
 
         try {
             InspectContainerResponse inspectContainerResponse = getCurrentContainerInfo();
-            String healthStatus = inspectContainerResponse.getState().getHealth().getStatus();
+            HealthState health = inspectContainerResponse.getState().getHealth();
+            if (health == null) {
+                throw new RuntimeException("This container's image does not have a healthcheck declared, so health cannot be determined. Either amend the image or use another approach to determine whether containers are healthy.");
+            }
 
-            return healthStatus.equals(STATE_HEALTHY);
+            return STATE_HEALTHY.equals(health.getStatus());
         } catch (DockerException e) {
             return false;
         }
@@ -103,6 +117,7 @@ public interface ContainerState {
 
     /**
      * Get the actual mapped port for a first port exposed by the container.
+     * Should be used in conjunction with {@link #getHost()}.
      *
      * @return the port that the exposed port is mapped to
      * @throws IllegalStateException if there are no exposed ports
@@ -117,6 +132,7 @@ public interface ContainerState {
 
     /**
      * Get the actual mapped port for a given port exposed by the container.
+     * Should be used in conjunction with {@link #getHost()}.
      *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
@@ -294,8 +310,8 @@ public interface ContainerState {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
+        DockerClient dockerClient = DockerClientFactory.instance().client();
         try (
-            DockerClient dockerClient = DockerClientFactory.instance().client();
             InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
             TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
         ) {

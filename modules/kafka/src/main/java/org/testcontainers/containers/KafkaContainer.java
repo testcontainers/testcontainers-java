@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -89,7 +88,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         if (port == PORT_NOT_ASSIGNED) {
             throw new IllegalStateException("You should start Kafka container first");
         }
-        return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
+        return String.format("PLAINTEXT://%s:%s", getHost(), port);
     }
 
     @Override
@@ -150,7 +149,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             )
             .exec();
 
-        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(new ExecStartResultCallback()).awaitStarted(10, TimeUnit.SECONDS);
+        dockerClient.execStartCmd(execCreateCmdResponse.getId()).start().awaitStarted(10, TimeUnit.SECONDS);
 
         return "localhost:" + ZOOKEEPER_PORT;
     }

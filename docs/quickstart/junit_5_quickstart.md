@@ -27,6 +27,7 @@ testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
 testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
 testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
 testCompile "org.testcontainers:testcontainers:{{latest_version}}"
+testCompile "org.testcontainers:junit-jupiter:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
@@ -93,10 +94,10 @@ We can do this in our test `setUp` method, to set up our component under test:
 <!--/codeinclude-->
 
 !!! tip
-    Notice that we also ask Testcontainers for the container's actual address with `redis.getContainerIpAddress();`, 
+    Notice that we also ask Testcontainers for the container's actual address with `redis.getHost();`, 
     rather than hard-coding `localhost`. `localhost` may work in some environments but not others - for example it may
     not work on your current or future CI environment. As such, **avoid hard-coding** the address, and use 
-    `getContainerIpAddress()` instead.
+    `getHost()` instead.
 
 ## 4. Run the tests!
 
