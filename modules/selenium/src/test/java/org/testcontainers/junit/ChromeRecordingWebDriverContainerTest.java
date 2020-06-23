@@ -76,6 +76,8 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .withRecordingFileFactory(new CustomRecordingFileFactory())
                 // }
             ) {
+                chrome.start();
+
                 doSimpleExplore(chrome);
             }
         }

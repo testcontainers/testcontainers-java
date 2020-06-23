@@ -59,8 +59,8 @@ By default, no videos will be recorded. However, you can instruct Testcontainers
 just for failing tests.
 
 <!--codeinclude-->
-[RECORD_ALL](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordAll
-[RECORD_FAILING](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFailing
+[Record all Tests](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordAll
+[Record failing Tests](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFailing
 <!--/codeinclude-->
 
 Note that the seconds parameter to `withRecordingMode` should be a directory where recordings can be saved.
