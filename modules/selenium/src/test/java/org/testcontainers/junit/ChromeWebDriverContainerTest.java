@@ -11,9 +11,11 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
  */
 public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
+    // junitRule {
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
         .withCapabilities(new ChromeOptions());
+    // }
 
     @Before
     public void checkBrowserIsIndeedChrome() {
