@@ -47,7 +47,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        client = new ToxiproxyClient(getContainerIpAddress(), getMappedPort(TOXIPROXY_CONTROL_PORT));
+        client = new ToxiproxyClient(getHost(), getMappedPort(TOXIPROXY_CONTROL_PORT));
     }
 
     /**
@@ -88,7 +88,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
                 final Proxy proxy = client.createProxy(upstream, "0.0.0.0:" + toxiPort, upstream);
                 final int mappedPort = getMappedPort(toxiPort);
-                return new ContainerProxy(proxy, getContainerIpAddress(), mappedPort, toxiPort);
+                return new ContainerProxy(proxy, getHost(), mappedPort, toxiPort);
             } catch (IOException e) {
                 throw new RuntimeException("Proxy could not be created", e);
             }

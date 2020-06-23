@@ -44,8 +44,8 @@ import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.wait.Wait;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
@@ -77,6 +77,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +119,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Default settings
      */
     @NonNull
-    private List<Integer> exposedPorts = new ArrayList<>();
+    private LinkedHashSet<Integer> exposedPorts = new LinkedHashSet<>();
 
     @NonNull
     private List<String> portBindings = new ArrayList<>();
@@ -189,30 +190,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected DockerClient dockerClient = DockerClientFactory.lazyClient();
 
-    /*
-     * Info about the Docker server; lazily fetched.
-     */
-    @Setter(AccessLevel.NONE)
-    protected Info dockerDaemonInfo = null;
-
-    /**
-     * Set during container startup
-     * // TODO make it private
-     *
-     * @deprecated use {@link ContainerState#getContainerId()}
-     */
-    @Setter(AccessLevel.NONE)
-    @Deprecated
-    protected String containerId;
-
     /**
      * Set during container startup
      *
-     * @deprecated use {@link GenericContainer#getContainerInfo()}
      */
     @Setter(AccessLevel.NONE)
-    @Deprecated
-    protected String containerName;
+    @VisibleForTesting
+    String containerId;
 
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
@@ -254,6 +238,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public void setImage(Future<String> image) {
         this.image = new RemoteDockerImage(image);
+    }
+
+    @Override
+    public List<Integer> getExposedPorts() {
+        return new ArrayList<>(exposedPorts);
+    }
+
+    @Override
+    public void setExposedPorts(List<Integer> exposedPorts) {
+        this.exposedPorts = new LinkedHashSet<>(exposedPorts);
     }
 
     /**
@@ -415,7 +409,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
-            containerName = containerInfo.getName();
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
@@ -671,8 +664,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected Integer getLivenessCheckPort() {
         // legacy implementation for backwards compatibility
-        if (exposedPorts.size() > 0) {
-            return getMappedPort(exposedPorts.get(0));
+        Iterator<Integer> exposedPortsIterator = exposedPorts.iterator();
+        if (exposedPortsIterator.hasNext()) {
+            return getMappedPort(exposedPortsIterator.next());
         } else if (portBindings.size() > 0) {
             return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
         } else {
@@ -1244,7 +1238,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Deprecated
     public String getIpAddress() {
-        return getContainerIpAddress();
+        return getHost();
     }
 
     /**
@@ -1308,18 +1302,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.logConsumers.add(consumer);
 
         return self();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized Info fetchDockerDaemonInfo() throws IOException {
-
-        if (this.dockerDaemonInfo == null) {
-            this.dockerDaemonInfo = this.dockerClient.infoCmd().exec();
-        }
-        return this.dockerDaemonInfo;
     }
 
     /**
@@ -1391,74 +1373,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return System.identityHashCode(this);
     }
 
-    /**
-     * Convenience class with access to non-public members of GenericContainer.
-     *
-     * @deprecated use {@link org.testcontainers.containers.wait.strategy.AbstractWaitStrategy}
-     */
-    @Deprecated
-    public static abstract class AbstractWaitStrategy extends org.testcontainers.containers.wait.strategy.AbstractWaitStrategy implements WaitStrategy {
-        protected GenericContainer container;
-
-        @NonNull
-        protected Duration startupTimeout = Duration.ofSeconds(60);
-
-        /**
-         * Wait until the container has started.
-         *
-         * @param container the container for which to wait
-         */
-        @Override
-        public void waitUntilReady(GenericContainer container) {
-            this.container = container;
-            waitUntilReady();
-        }
-
-        /**
-         * Wait until {@link #container} has started.
-         */
-        protected abstract void waitUntilReady();
-
-        /**
-         * Set the duration of waiting time until container treated as started.
-         *
-         * @param startupTimeout timeout
-         * @return this
-         * @see WaitStrategy#waitUntilReady(GenericContainer)
-         */
-        public WaitStrategy withStartupTimeout(Duration startupTimeout) {
-            this.startupTimeout = startupTimeout;
-            return this;
-        }
-
-        /**
-         * @return the container's logger
-         */
-        protected Logger logger() {
-            return container.logger();
-        }
-
-        /**
-         * @return the port on which to check if the container is ready
-         * @deprecated see {@link AbstractWaitStrategy#getLivenessCheckPorts()}
-         */
-        @Deprecated
-        protected Integer getLivenessCheckPort() {
-            return container.getLivenessCheckPort();
-        }
-
-        /**
-         * @return the ports on which to check if the container is ready
-         */
-        protected Set<Integer> getLivenessCheckPorts() {
-            return container.getLivenessCheckPorts();
-        }
-
-        /**
-         * @return the rate limiter to use
-         */
-        protected RateLimiter getRateLimiter() {
-            return DOCKER_CLIENT_RATE_LIMITER;
-        }
+    @Override
+    public String getContainerName() {
+        return getContainerInfo().getName();
     }
 }

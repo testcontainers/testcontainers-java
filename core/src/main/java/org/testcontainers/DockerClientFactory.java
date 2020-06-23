@@ -101,6 +101,19 @@ public class DockerClientFactory {
         return instance;
     }
 
+    /**
+     * Checks whether Docker is accessible and {@link #client()} is able to produce a client.
+     * @return true if Docker is available, false if not.
+     */
+    public synchronized boolean isDockerAvailable() {
+        try {
+            client();
+            return true;
+        } catch (IllegalStateException ex) {
+            return false;
+        }
+    }
+
     @Synchronized
     private DockerClientProviderStrategy getOrInitializeStrategy() {
         if (strategy != null) {
@@ -135,7 +148,12 @@ public class DockerClientFactory {
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
         log.info("Docker host IP address is {}", hostIpAddress);
-        final DockerClient client = strategy.getClient();
+        final DockerClient client = new DelegatingDockerClient(strategy.getClient()) {
+            @Override
+            public void close() {
+                throw new IllegalStateException("You should never close the global DockerClient!");
+            }
+        };
 
         Info dockerInfo = client.infoCmd().exec();
         Version version = client.versionCmd().exec();
@@ -221,7 +239,7 @@ public class DockerClientFactory {
 
     private void check(String message, boolean isSuccessful) {
         if (isSuccessful) {
-            log.info("\u2714︎ {}", message);
+            log.info("\u2714\ufe0e {}", message);
         } else {
             log.error("\u274c {}", message);
             throw new IllegalStateException("Check failed: " + message);

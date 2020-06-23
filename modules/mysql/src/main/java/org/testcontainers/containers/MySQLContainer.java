@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.util.stream.Collectors.joining;
+
 /**
  * @author richardnorth
  */
@@ -70,7 +72,9 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(MYSQL_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override

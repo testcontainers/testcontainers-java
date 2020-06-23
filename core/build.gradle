@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'me.champeau.gradle.japicmp' version '0.2.8'
+    id 'me.champeau.gradle.japicmp' version '0.2.9'
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -84,20 +84,48 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     failOnModification = true
     failOnSourceIncompatibility = true
 
-    // TODO cleanup excludes after we release the version based on docker-java 3.2.0
-
     packageExcludes = [
         "com.github.dockerjava.*",
         "org.testcontainers.shaded.*",
     ]
 
+    // TODO remove once 1.15.0 is released
     classExcludes = [
-        // 'METHOD_REMOVED_IN_SUPERCLASS'
-        "org.testcontainers.containers.output.FrameConsumerResultCallback",
-        "org.testcontainers.dockerclient.LogToStringContainerCallback",
+        "org.testcontainers.containers.AmbassadorContainer",
+        "org.testcontainers.containers.traits.VncService",
+        "org.testcontainers.containers.wait.HostPortWaitStrategy",
+        "org.testcontainers.containers.wait.HttpWaitStrategy",
+        "org.testcontainers.containers.wait.LogMessageWaitStrategy",
+        "org.testcontainers.containers.wait.Wait",
+        "org.testcontainers.containers.wait.WaitAllStrategy",
+        "org.testcontainers.containers.wait.WaitStrategy",
+        "org.testcontainers.dockerclient.AuditLoggingDockerClient",
+        "org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig",
+        "org.testcontainers.containers.GenericContainer\$AbstractWaitStrategy",
+        "org.testcontainers.dockerclient.transport.okhttp.NamedPipeSocketFactory",
+        "org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory",
+        "org.testcontainers.dockerclient.transport.okhttp.UnixSocketFactory",
+    ]
 
-        // 'METHOD_RETURN_TYPE_CHANGED', exposed `com.github.dockerjava.core.command.PullImageResultCallback` to the public API
-        "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
+    methodExcludes = [
+        "org.testcontainers.dockerclient.DockerClientConfigUtils#getDetectedDockerHostIp()",
+        "org.testcontainers.dockerclient.DockerClientConfigUtils#getDockerHostIpAddress(com.github.dockerjava.core.DockerClientConfig)",
+
+        "org.testcontainers.utility.ResourceReaper#start(java.lang.String, com.github.dockerjava.api.DockerClient, boolean)",
+
+        "org.testcontainers.containers.Container#fetchDockerDaemonInfo()",
+        "org.testcontainers.containers.Container#getDockerDaemonInfo()",
+
+        "org.testcontainers.containers.GenericContainer#fetchDockerDaemonInfo()",
+        "org.testcontainers.containers.GenericContainer#getDockerDaemonInfo()",
+
+        "org.testcontainers.containers.Container\$ExecResult#Container\$ExecResult(java.lang.String, java.lang.String)",
+    ]
+
+    fieldExcludes = [
+        "org.testcontainers.containers.GenericContainer#containerId",
+        "org.testcontainers.containers.GenericContainer#containerName",
+        "org.testcontainers.containers.GenericContainer#dockerDaemonInfo",
     ]
 
     onlyBinaryIncompatibleModified = true
@@ -110,7 +138,7 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.1', {
+    baseline 'org.testcontainers:testcontainers:1.14.3', {
         exclude group: "*", module: "*"
     }
 
@@ -127,26 +155,21 @@ dependencies {
         exclude(group: "net.java.dev.jna", module: "jna")
     }
 
-    compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
-        exclude(group: "log4j", module: "log4j")
-    }
-
     compile "net.java.dev.jna:jna-platform:5.5.0"
 
-    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.1') {
-        exclude(group: "net.java.dev.jna")
-    }
-
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.1') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.3') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded "org.yaml:snakeyaml:1.25"
+    shaded ('com.github.docker-java:docker-java-transport-zerodep:3.2.3') {
+        exclude(group: 'net.java.dev.jna')
+        exclude(group: 'org.slf4j')
+    }
 
-    shaded 'com.squareup.okhttp3:okhttp:3.14.8'
+    shaded "org.yaml:snakeyaml:1.25"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
@@ -157,7 +180,7 @@ dependencies {
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
     testCompile 'redis.clients:jedis:3.3.0'
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
-    testCompile 'org.mongodb:mongo-java-driver:3.12.4'
+    testCompile 'org.mongodb:mongo-java-driver:3.12.5'
 
     testCompile ('org.mockito:mockito-core:3.3.3') {
         exclude(module: 'hamcrest-core')
@@ -165,7 +188,7 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.16.0'
+    testCompile 'org.assertj:assertj-core:3.16.1'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"

@@ -63,7 +63,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1));  // use the last network alias set
             hostnameExternalReason = "to match last network alias on container with non-default network";
         } else {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getContainerIpAddress());
+            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getHost());
             hostnameExternalReason = "to match host-routable address for container";
         }
         logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
@@ -134,7 +134,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     public URI getEndpointOverride(Service service) {
         try {
-            final String address = getContainerIpAddress();
+            final String address = getHost();
             String ipAddress = address;
             // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
             ipAddress = InetAddress.getByName(address).getHostAddress();
@@ -252,7 +252,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         STEPFUNCTIONS("stepfunctions", 4585),
         CLOUDWATCHLOGS("logs", 4586),
         STS("sts", 4592),
-        IAM("iam", 4593);
+        IAM("iam", 4593),
+        KMS("kms", 4599);
 
         String localStackName;
 
