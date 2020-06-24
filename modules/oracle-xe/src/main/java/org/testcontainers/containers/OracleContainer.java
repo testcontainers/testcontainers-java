@@ -2,7 +2,9 @@ package org.testcontainers.containers;
 
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
-
+import static java.time.temporal.ChronoUnit.SECONDS;
+import org.testcontainers.containers.wait.strategy.Wait;
+import java.time.Duration;
 import java.util.concurrent.Future;
 
 /**
@@ -14,6 +16,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
+    private static final int OEM_EXPRESS_PORT = 5500;
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
@@ -60,9 +63,10 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     private void preconfigure() {
-        withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
+        this.waitStrategy = Wait.forLogMessage(".*DATABASE IS READY TO USE!.*", 1)
+                .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, SECONDS));
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
-        addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
+        addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT, OEM_EXPRESS_PORT);
     }
 
     @Override
@@ -124,5 +128,10 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @Override
     public String getTestQueryString() {
         return "SELECT 1 FROM DUAL";
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+    	getWaitStrategy().waitUntilReady(this);
     }
 }
