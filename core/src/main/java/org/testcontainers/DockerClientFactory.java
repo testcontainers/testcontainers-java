@@ -56,14 +56,14 @@ public class DockerClientFactory {
     );
 
     private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
-    private static DockerClientFactory instance;
+    private static volatile DockerClientFactory instance;
 
     // Cached client configuration
     @VisibleForTesting
-    DockerClientProviderStrategy strategy;
+    volatile DockerClientProviderStrategy strategy;
 
     @VisibleForTesting
-    DockerClient dockerClient;
+    volatile DockerClient dockerClient;
 
     @VisibleForTesting
     RuntimeException cachedChecksFailure;
@@ -115,7 +115,7 @@ public class DockerClientFactory {
     }
 
     @Synchronized
-    private DockerClientProviderStrategy getOrInitializeStrategy() {
+    private synchronized DockerClientProviderStrategy getOrInitializeStrategy() {
         if (strategy != null) {
             return strategy;
         }
@@ -133,7 +133,6 @@ public class DockerClientFactory {
      */
     @Synchronized
     public DockerClient client() {
-
         if (dockerClient != null) {
             return dockerClient;
         }
