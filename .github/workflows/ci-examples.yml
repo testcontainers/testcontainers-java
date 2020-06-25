@@ -61,6 +61,7 @@ jobs:
           ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
       - name: Aggregate Examples test reports with ciMate
         if: always()
+        continue-on-error: true
         env:
           CIMATE_PROJECT_ID: 2348n4vl
           CIMATE_CI_KEY: "Examples / ${{ runner.os }} / ${{matrix.gradle_args}}"
