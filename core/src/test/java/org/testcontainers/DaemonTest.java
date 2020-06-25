@@ -19,10 +19,10 @@ public class DaemonTest {
     public static void main(String[] args) {
         Thread mainThread = Thread.currentThread();
 
-        GenericContainer genericContainer = null;
+        GenericContainer<?> genericContainer = null;
 
         try {
-            genericContainer = new GenericContainer().withCommand("top");
+            genericContainer = new GenericContainer<>(TINY_IMAGE).withCommand("top");
             genericContainer.start();
 
             Set<Thread> threads = new HashSet<>(Thread.getAllStackTraces().keySet());

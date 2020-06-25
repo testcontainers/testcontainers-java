@@ -9,12 +9,15 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 
 /**
@@ -23,7 +26,7 @@ import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT
 public class OutputStreamTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer("alpine:3.2")
+    public GenericContainer container = new GenericContainer(new DockerImageName("alpine:3.2"))
             .withCommand("ping -c 5 127.0.0.1");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);

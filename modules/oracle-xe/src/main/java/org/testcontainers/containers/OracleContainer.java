@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.concurrent.Future;
@@ -32,11 +33,17 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return image;
     }
 
+    @Deprecated
     public OracleContainer() {
         this(resolveImageName());
     }
 
+    @Deprecated
     public OracleContainer(String dockerImageName) {
+        this(new DockerImageName(dockerImageName));
+    }
+
+    public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         preconfigure();
     }

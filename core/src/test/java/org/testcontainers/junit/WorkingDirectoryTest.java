@@ -4,6 +4,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
@@ -13,7 +14,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 public class WorkingDirectoryTest {
 
     @ClassRule
-    public static GenericContainer container = new GenericContainer("alpine:3.2")
+    public static GenericContainer container = new GenericContainer(new DockerImageName("alpine:3.2"))
             .withWorkingDirectory("/etc")
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
             .withCommand("ls", "-al");

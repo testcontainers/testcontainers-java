@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,11 +24,17 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     private String username = "test";
     private String catalog = null;
 
+    @Deprecated
     public PrestoContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    @Deprecated
     public PrestoContainer(final String dockerImageName) {
+        this(new DockerImageName(dockerImageName));
+    }
+
+    public PrestoContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         this.waitStrategy = new LogMessageWaitStrategy()
             .withRegEx(".*io.prestosql.server.PrestoServer\\s+======== SERVER STARTED ========.*")

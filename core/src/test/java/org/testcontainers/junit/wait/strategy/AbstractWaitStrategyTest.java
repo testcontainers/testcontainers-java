@@ -7,6 +7,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,7 +68,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
 
     protected GenericContainer startContainerWithCommand(String shellCommand, WaitStrategy waitStrategy, Integer... ports) {
         // apply WaitStrategy to container
-        return new GenericContainer(IMAGE_NAME)
+        return new GenericContainer(new DockerImageName(IMAGE_NAME))
                 .withExposedPorts(ports)
                 .withCommand("sh", "-c", shellCommand)
                 .waitingFor(waitStrategy.withStartupTimeout(Duration.ofMillis(WAIT_TIMEOUT_MILLIS)));

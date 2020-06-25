@@ -4,6 +4,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -73,13 +74,13 @@ public class ContainerLogsTest {
     }
 
     private static GenericContainer shortLivedContainer() {
-        return new GenericContainer("alpine:3.3")
+        return new GenericContainer(new DockerImageName("alpine:3.3"))
             .withCommand("/bin/sh", "-c", "echo -n 'stdout' && echo -n 'stderr' 1>&2")
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy());
     }
 
     private static GenericContainer longRunningContainer() {
-        return new GenericContainer("alpine:3.3")
+        return new GenericContainer(new DockerImageName("alpine:3.3"))
             .withCommand("ping -c 100 127.0.0.1");
     }
 }

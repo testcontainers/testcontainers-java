@@ -23,7 +23,7 @@ public class DependenciesTest {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
@@ -40,7 +40,7 @@ public class DependenciesTest {
         InvocationCountingStartable startable2 = new InvocationCountingStartable();
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable1, startable2)
         ) {
@@ -56,7 +56,7 @@ public class DependenciesTest {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
@@ -83,7 +83,7 @@ public class DependenciesTest {
         startable.getDependencies().add(transitiveStartable);
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {

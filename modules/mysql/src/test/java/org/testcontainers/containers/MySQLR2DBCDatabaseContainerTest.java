@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
+import org.testcontainers.utility.DockerImageName;
 
 public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MySQLContainer<?>> {
 
@@ -17,7 +18,7 @@ public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
 
     @Override
     protected MySQLContainer<?> createContainer() {
-        return new MySQLContainer<>();
+        return new MySQLContainer<>(new DockerImageName(MySQLContainer.IMAGE, MySQLContainer.DEFAULT_TAG));
     }
 
 }

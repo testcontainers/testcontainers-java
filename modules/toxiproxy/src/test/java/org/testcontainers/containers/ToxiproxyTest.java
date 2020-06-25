@@ -1,16 +1,19 @@
 package org.testcontainers.containers;
 
 import eu.rekawek.toxiproxy.model.ToxicDirection;
-import java.time.Duration;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import static java.lang.String.format;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class ToxiproxyTest {
 
@@ -27,7 +30,7 @@ public class ToxiproxyTest {
 
     // The target container - this could be anything
     @Rule
-    public GenericContainer redis = new GenericContainer("redis:5.0.4")
+    public GenericContainer redis = new GenericContainer(new DockerImageName("redis:5.0.4"))
         .withExposedPorts(6379)
         .withNetwork(network);
 
@@ -99,7 +102,7 @@ public class ToxiproxyTest {
 
     @Test
     public void testMultipleProxiesCanBeCreated() {
-        try (GenericContainer secondRedis = new GenericContainer("redis:5.0.4")
+        try (GenericContainer secondRedis = new GenericContainer(new DockerImageName("redis:5.0.4"))
             .withExposedPorts(6379)
             .withNetwork(network)) {
 

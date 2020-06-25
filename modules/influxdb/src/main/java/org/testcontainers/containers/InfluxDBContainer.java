@@ -4,6 +4,7 @@ import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collections;
 import java.util.Set;
@@ -27,12 +28,18 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     private String password = "any";
 
 
+    @Deprecated
     public InfluxDBContainer() {
         this(VERSION);
     }
 
+    @Deprecated
     public InfluxDBContainer(final String version) {
-        super(IMAGE_NAME + ":" + version);
+        this(new DockerImageName(IMAGE_NAME + ":" + version));
+    }
+
+    public InfluxDBContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         waitStrategy = new WaitAllStrategy()
             .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
             .withStrategy(Wait.forListeningPort());

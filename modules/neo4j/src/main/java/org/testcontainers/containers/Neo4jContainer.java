@@ -1,18 +1,19 @@
 package org.testcontainers.containers;
 
-import static java.net.HttpURLConnection.*;
-import static java.util.stream.Collectors.*;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.LicenseAcceptance;
+import org.testcontainers.utility.MountableFile;
 
 import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.utility.LicenseAcceptance;
-import org.testcontainers.utility.MountableFile;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Testcontainer for Neo4j.
@@ -63,6 +64,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     /**
      * Creates a Testcontainer using the official Neo4j docker image.
      */
+    @Deprecated
     public Neo4jContainer() {
         this(DOCKER_IMAGE_NAME);
 
@@ -74,7 +76,12 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      *
      * @param dockerImageName The docker image to use.
      */
+    @Deprecated
     public Neo4jContainer(String dockerImageName) {
+        this(new DockerImageName(dockerImageName));
+    }
+
+    public Neo4jContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         WaitStrategy waitForBolt = new LogMessageWaitStrategy()

@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,7 +67,7 @@ public class CustomPasswordMSSQLServerTest {
     @Test
     public void runPasswordTests() {
         try {
-            new MSSQLServerContainer<>().withPassword(this.password);
+            new MSSQLServerContainer<>(new DockerImageName("mcr.microsoft.com/mssql/server:2017-CU12")).withPassword(this.password);
             if (!valid)
                 fail("Password " + this.password + " is not valid. Expected exception");
         } catch (IllegalArgumentException e) {

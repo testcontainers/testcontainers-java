@@ -19,7 +19,7 @@ public class CopyFileToContainerTest {
     @Test
     public void checkFileCopied() throws IOException, InterruptedException {
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
                 .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), containerPath)
         ) {
@@ -32,7 +32,7 @@ public class CopyFileToContainerTest {
     @Test
     public void shouldUseCopyForReadOnlyClasspathResources() throws Exception {
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
                 .withClasspathResourceMapping("/mappable-resource/", containerPath, BindMode.READ_ONLY)
         ) {
@@ -45,7 +45,7 @@ public class CopyFileToContainerTest {
     @Test
     public void shouldUseCopyOnlyWithReadOnlyClasspathResources() {
         String resource = "/test_copy_to_container.txt";
-        GenericContainer<?> container = new GenericContainer<>()
+        GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
             .withClasspathResourceMapping(resource, "/readOnly", BindMode.READ_ONLY)
             .withClasspathResourceMapping(resource, "/readOnlyNoSelinux", BindMode.READ_ONLY)
 
@@ -64,7 +64,7 @@ public class CopyFileToContainerTest {
     public void shouldCreateFoldersStructureWithCopy() throws Exception {
         String resource = "/test_copy_to_container.txt";
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
                 .withClasspathResourceMapping(resource, "/a/b/c/file", BindMode.READ_ONLY)
         ) {

@@ -99,7 +99,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForContainerCreation() {
         // actually start a container, which will require an authenticated pull
-        try (final GenericContainer<?> container = new GenericContainer<>(testImageNameWithTag)
+        try (final GenericContainer<?> container = new GenericContainer(new DockerImageName(testImageNameWithTag))
             .withCommand("/bin/sh", "-c", "sleep 10")) {
             container.start();
 
@@ -165,7 +165,7 @@ public class AuthenticatedImagePullTest {
 
     private static void putImageInRegistry() throws InterruptedException {
         // It doesn't matter which image we use for this test, but use one that's likely to have been pulled already
-        final String dummySourceImage = TestcontainersConfiguration.getInstance().getRyukImage();
+        final String dummySourceImage = TestcontainersConfiguration.getInstance().getRyukDockerImageName().toString();
 
         client.pullImageCmd(dummySourceImage)
             .exec(new PullImageResultCallback())

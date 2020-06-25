@@ -2,12 +2,13 @@ package org.testcontainers.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
+import org.testcontainers.utility.DockerImageName;
 
 public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<PostgreSQLContainer<?>> {
 
     @Override
     protected PostgreSQLContainer<?> createContainer() {
-        return new PostgreSQLContainer<>();
+        return new PostgreSQLContainer<>(new DockerImageName(PostgreSQLContainer.IMAGE, PostgreSQLContainer.DEFAULT_TAG));
     }
 
     @Override

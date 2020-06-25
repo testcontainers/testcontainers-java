@@ -3,7 +3,12 @@ package org.testcontainers.containers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.*;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.InspectContainerCmd;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.ListContainersCmd;
+import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
@@ -23,6 +28,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -61,8 +67,8 @@ public class ReusabilityUnitTests {
         @Parameterized.Parameters(name = "{0}")
         public static Object[][] data() {
             return new Object[][] {
-                { "generic", new GenericContainer(IMAGE_FUTURE), true },
-                { "anonymous generic", new GenericContainer(IMAGE_FUTURE) {}, true },
+                { "generic", new GenericContainer<>(new RemoteDockerImage(IMAGE_FUTURE)), true },
+                { "anonymous generic", new GenericContainer(new RemoteDockerImage(IMAGE_FUTURE)) {}, true },
                 { "custom", new CustomContainer(), true },
                 { "anonymous custom", new CustomContainer() {}, true },
                 { "custom with containerIsCreated", new CustomContainerWithContainerIsCreated(), false },
@@ -84,13 +90,13 @@ public class ReusabilityUnitTests {
             }
         }
 
-        static class CustomContainer extends GenericContainer {
+        static class CustomContainer extends GenericContainer<CustomContainer> {
             CustomContainer() {
                 super(IMAGE_FUTURE);
             }
         }
 
-        static class CustomContainerWithContainerIsCreated extends GenericContainer {
+        static class CustomContainerWithContainerIsCreated extends GenericContainer<CustomContainerWithContainerIsCreated> {
 
             CustomContainerWithContainerIsCreated() {
                 super(IMAGE_FUTURE);
@@ -109,7 +115,7 @@ public class ReusabilityUnitTests {
 
         List<String> script = new ArrayList<>();
 
-        GenericContainer<?> container = makeReusable(new GenericContainer(IMAGE_FUTURE) {
+        GenericContainer<?> container = makeReusable(new GenericContainer(new RemoteDockerImage(IMAGE_FUTURE)) {
 
             @Override
             protected boolean canBeReused() {
@@ -296,7 +302,7 @@ public class ReusabilityUnitTests {
     @RunWith(BlockJUnit4ClassRunner.class)
     @FieldDefaults(makeFinal = true)
     public static class CopyFilesHashTest {
-        GenericContainer<?> container = new GenericContainer(IMAGE_FUTURE);
+        GenericContainer<?> container = new GenericContainer<>(new RemoteDockerImage(IMAGE_FUTURE));
 
         @Test
         public void empty() {

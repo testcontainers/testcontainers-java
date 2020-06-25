@@ -1,18 +1,17 @@
 package org.testcontainers.containers;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.SneakyThrows;
+import org.apache.commons.lang.StringUtils;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-
-import lombok.SneakyThrows;
-
-import org.apache.commons.lang.StringUtils;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * SolrContainer allows a solr container to be launched and controlled.
@@ -27,11 +26,17 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private SolrContainerConfiguration configuration;
 
+    @Deprecated
     public SolrContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    @Deprecated
     public SolrContainer(final String dockerImageName) {
+        this(new DockerImageName(dockerImageName));
+    }
+
+    public SolrContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         this.waitStrategy = new LogMessageWaitStrategy()
             .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")

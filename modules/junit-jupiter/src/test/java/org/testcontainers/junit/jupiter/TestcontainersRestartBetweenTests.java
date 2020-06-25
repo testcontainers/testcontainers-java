@@ -2,6 +2,7 @@ package org.testcontainers.junit.jupiter;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -9,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 class TestcontainersRestartBetweenTests {
 
     @Container
-    private GenericContainer genericContainer = new GenericContainer("httpd:2.4-alpine")
+    private GenericContainer genericContainer = new GenericContainer(new DockerImageName("httpd:2.4-alpine"))
             .withExposedPorts(80);
 
     private static String lastContainerId;

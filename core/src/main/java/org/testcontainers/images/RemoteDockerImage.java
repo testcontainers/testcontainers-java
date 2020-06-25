@@ -38,10 +38,16 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
+    public RemoteDockerImage(DockerImageName dockerImageName) {
+        this.imageNameFuture = CompletableFuture.completedFuture(dockerImageName);
+    }
+
+    @Deprecated
     public RemoteDockerImage(String dockerImageName) {
         this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(dockerImageName));
     }
 
+    @Deprecated
     public RemoteDockerImage(@NonNull String repository, @NonNull String tag) {
         this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(repository, tag));
     }

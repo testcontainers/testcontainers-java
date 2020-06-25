@@ -13,6 +13,7 @@ import org.testcontainers.containers.DefaultRecordingFileFactory;
 import org.testcontainers.lifecycle.TestDescription;
 
 import java.util.Optional;
+
 import static org.junit.Assert.assertTrue;
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
 

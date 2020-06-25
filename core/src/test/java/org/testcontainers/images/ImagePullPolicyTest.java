@@ -1,8 +1,5 @@
 package org.testcontainers.images;
 
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.core.command.PullImageResultCallback;
@@ -23,10 +20,13 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+
 public class ImagePullPolicyTest {
 
     @ClassRule
-    public static GenericContainer<?> registry = new GenericContainer<>("registry:2")
+    public static GenericContainer<?> registry = new GenericContainer(new DockerImageName("registry:2"))
         .withExposedPorts(5000);
 
     private static String imageName;
@@ -74,7 +74,7 @@ public class ImagePullPolicyTest {
     @Test
     public void pullsByDefault() {
         try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
+            GenericContainer<?> container = new GenericContainer(new DockerImageName(imageName))
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             container.start();
@@ -84,7 +84,7 @@ public class ImagePullPolicyTest {
     @Test
     public void shouldAlwaysPull() {
         try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
+            GenericContainer<?> container = new GenericContainer(new DockerImageName(imageName))
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             container.start();
@@ -93,7 +93,7 @@ public class ImagePullPolicyTest {
         DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
 
         try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
+            GenericContainer<?> container = new GenericContainer(new DockerImageName(imageName))
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             expectToFailWithNotFoundException(container);
@@ -101,7 +101,7 @@ public class ImagePullPolicyTest {
 
         try (
             // built_in_image_pull_policy {
-            GenericContainer<?> container = new GenericContainer<>(imageName)
+            GenericContainer<?> container = new GenericContainer(new DockerImageName(imageName))
                 .withImagePullPolicy(PullPolicy.alwaysPull())
             // }
         ) {
@@ -114,7 +114,7 @@ public class ImagePullPolicyTest {
     public void shouldSupportCustomPolicies() {
         try (
             // custom_image_pull_policy {
-            GenericContainer<?> container = new GenericContainer<>(imageName)
+            GenericContainer<?> container = new GenericContainer(new DockerImageName(imageName))
                 .withImagePullPolicy(new AbstractImagePullPolicy() {
                     @Override
                     protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
@@ -137,7 +137,7 @@ public class ImagePullPolicyTest {
             }
         });
         try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
+            GenericContainer<?> container = new GenericContainer(new DockerImageName(imageName))
                 .withImagePullPolicy(policy)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
@@ -150,7 +150,7 @@ public class ImagePullPolicyTest {
     @Test
     public void shouldNotForcePulling() {
         try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
+            GenericContainer<?> container = new GenericContainer(new DockerImageName(imageName))
                 .withImagePullPolicy(__ -> false)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {

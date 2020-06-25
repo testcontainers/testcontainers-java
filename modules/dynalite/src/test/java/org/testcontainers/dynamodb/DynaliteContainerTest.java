@@ -2,9 +2,16 @@ package org.testcontainers.dynamodb;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.model.*;
+import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
+import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
+import com.amazonaws.services.dynamodbv2.model.KeyType;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
+import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
@@ -12,7 +19,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 public class DynaliteContainerTest {
 
     @Rule
-    public DynaliteContainer dynamoDB = new DynaliteContainer();
+    public DynaliteContainer dynamoDB = new DynaliteContainer(new DockerImageName("quay.io/testcontainers/dynalite:v1.2.1-1"));
 
     @Test
     public void simpleTestWithManualClientCreation() {

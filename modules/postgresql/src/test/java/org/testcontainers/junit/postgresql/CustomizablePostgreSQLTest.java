@@ -3,6 +3,7 @@ package org.testcontainers.junit.postgresql;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +20,7 @@ public class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:9.6.8")
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(new DockerImageName("postgres:9.6.8"))
                 .withDatabaseName(DB_NAME)
                 .withUsername(USER)
                 .withPassword(PWD)) {

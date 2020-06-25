@@ -54,6 +54,7 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.MountableFile;
@@ -224,10 +225,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
+
+    public GenericContainer(@NonNull final DockerImageName dockerImageName) {
+        this.image = new RemoteDockerImage(dockerImageName);
+    }
+
+    public GenericContainer(@NonNull final RemoteDockerImage image) {
+        this.image = image;
+    }
+
+
+    @Deprecated
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
+    @Deprecated
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);
     }

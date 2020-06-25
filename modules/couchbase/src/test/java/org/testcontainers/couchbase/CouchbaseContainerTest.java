@@ -24,6 +24,7 @@ import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,7 +39,7 @@ public class CouchbaseContainerTest {
 
         try (
             // container_definition {
-            CouchbaseContainer container = new CouchbaseContainer()
+            CouchbaseContainer container = new CouchbaseContainer(new DockerImageName("couchbase/server:6.5.1"))
                 .withBucket(bucketDefinition)
             // }
         ) {

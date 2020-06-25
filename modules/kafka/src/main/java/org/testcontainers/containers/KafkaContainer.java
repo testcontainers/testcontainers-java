@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.nio.charset.StandardCharsets;
@@ -31,12 +32,18 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private boolean useImplicitNetwork = true;
 
+    @Deprecated
     public KafkaContainer() {
         this("5.2.1");
     }
 
+    @Deprecated
     public KafkaContainer(String confluentPlatformVersion) {
-        super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
+        this(new DockerImageName(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion));
+    }
+
+    public KafkaContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
 
         super.withNetwork(Network.SHARED);
         withExposedPorts(KAFKA_PORT);

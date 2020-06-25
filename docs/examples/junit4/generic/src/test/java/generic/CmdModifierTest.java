@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
@@ -13,13 +14,13 @@ public class CmdModifierTest {
 
     // hostname {
     @Rule
-    public GenericContainer theCache = new GenericContainer<>("redis:3.0.2")
+    public GenericContainer theCache = new GenericContainer<>(new DockerImageName("redis:3.0.2"))
             .withCreateContainerCmdModifier(cmd -> cmd.withHostName("the-cache"));
     // }
 
     // memory {
     @Rule
-    public GenericContainer memoryLimitedRedis = new GenericContainer<>("redis:3.0.2")
+    public GenericContainer memoryLimitedRedis = new GenericContainer<>(new DockerImageName("redis:3.0.2"))
             .withCreateContainerCmdModifier(cmd -> cmd.withMemory((long) 8 * 1024 * 1024))
             .withCreateContainerCmdModifier(cmd -> cmd.withMemorySwap((long) 12 * 1024 * 1024));
     // }

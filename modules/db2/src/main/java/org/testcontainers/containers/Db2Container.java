@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
 import java.time.Duration;
@@ -19,12 +20,18 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     private String username = "db2inst1";
     private String password = "foobar1234";
 
+    @Deprecated
     public Db2Container() {
         this(DEFAULT_DB2_IMAGE_NAME + ":" + DEFAULT_TAG);
     }
 
-    public Db2Container(String imageName) {
-        super(imageName);
+    @Deprecated
+    public Db2Container(String dockerImageName) {
+        this(new DockerImageName(dockerImageName));
+    }
+
+    public Db2Container(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         withPrivilegedMode(true);
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")

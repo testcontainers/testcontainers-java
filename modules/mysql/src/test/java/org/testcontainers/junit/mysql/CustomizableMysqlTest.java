@@ -3,6 +3,7 @@ package org.testcontainers.junit.mysql;
 import org.junit.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
     @Test
     public void testSimple() throws SQLException {
         // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
-        try (MySQLContainer<?> mysql = new MySQLContainer<>("mysql:5.5")
+        try (MySQLContainer<?> mysql = new MySQLContainer<>(new DockerImageName("mysql:5.5"))
             .withDatabaseName(DB_NAME)
             .withUsername(USER)
             .withPassword(PWD)

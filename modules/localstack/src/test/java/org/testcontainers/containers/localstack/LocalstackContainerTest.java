@@ -29,6 +29,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -167,7 +168,7 @@ public class LocalstackContainerTest {
         // }
 
         @ClassRule
-        public static GenericContainer awsCliInDockerNetwork = new GenericContainer<>("atlassian/pipelines-awscli")
+        public static GenericContainer awsCliInDockerNetwork = new GenericContainer(new DockerImageName("atlassian/pipelines-awscli"))
             .withNetwork(network)
             .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("top"))
             .withEnv("AWS_ACCESS_KEY_ID", "accesskey")

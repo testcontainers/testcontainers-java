@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
+import org.testcontainers.utility.DockerImageName;
 
 public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MSSQLServerContainer<?>> {
 
@@ -17,6 +18,6 @@ public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
 
     @Override
     protected MSSQLServerContainer<?> createContainer() {
-        return new MSSQLServerContainer<>();
+        return new MSSQLServerContainer<>(new DockerImageName(MSSQLServerContainer.IMAGE, MSSQLServerContainer.DEFAULT_TAG));
     }
 }

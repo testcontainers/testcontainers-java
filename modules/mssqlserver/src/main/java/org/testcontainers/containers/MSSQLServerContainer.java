@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
 import java.util.regex.Pattern;
@@ -32,11 +33,17 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE)
     };
 
+    @Deprecated
     public MSSQLServerContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    @Deprecated
     public MSSQLServerContainer(final String dockerImageName) {
+        this(new DockerImageName(dockerImageName));
+    }
+
+    public MSSQLServerContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
