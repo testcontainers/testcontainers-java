@@ -1,6 +1,7 @@
 import com.mycompany.cache.Cache;
 import com.mycompany.cache.RedisBackedCache;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -18,7 +19,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
  */
 public class RedisBackedCacheTest {
 
-    private static GenericContainer redis = new GenericContainer(org.testcontainers.utility.DockerImageName.dockerImage("redis:3.0.6")).withExposedPorts(6379);
+    private static GenericContainer<?> redis = new GenericContainer<>(new DockerImageName("redis:3.0.6")).withExposedPorts(6379);
 
     private Cache cache;
 

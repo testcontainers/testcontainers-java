@@ -6,13 +6,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestingImages.ALPINE_IMAGE;
 
 public class FileOperationsTest {
 
@@ -22,7 +22,7 @@ public class FileOperationsTest {
     @Test
     public void copyFileToContainerFileTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(new DockerImageName("alpine:3.2"))
+            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -40,7 +40,7 @@ public class FileOperationsTest {
     @Test
     public void copyFileToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(new DockerImageName("alpine:3.2"))
+            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -58,7 +58,7 @@ public class FileOperationsTest {
     @Test
     public void copyFolderToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(new DockerImageName("alpine:3.2"))
+            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
                 .withCommand("top")
         ) {
 
@@ -77,7 +77,7 @@ public class FileOperationsTest {
     @Test(expected = NotFoundException.class)
     public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(new DockerImageName("alpine:3.2"))
+            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -88,7 +88,7 @@ public class FileOperationsTest {
     @Test
     public void shouldCopyFileFromContainerTest() throws IOException {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(new DockerImageName("alpine:3.2"))
+            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
                 .withCommand("top")
         ) {
 

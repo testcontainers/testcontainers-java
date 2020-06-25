@@ -17,7 +17,7 @@ public class NonExistentImagePullTest {
 
         assertThrows("Pulling a nonexistent container will cause an exception to be thrown",
                 ContainerFetchException.class, () -> {
-                    new GenericContainer(new DockerImageName("richnorth/nonexistent:latest")).getDockerImageName();
+                    new GenericContainer<>(new DockerImageName("testcontainers/nonexistent:latest")).getDockerImageName();
                 });
     }
 }

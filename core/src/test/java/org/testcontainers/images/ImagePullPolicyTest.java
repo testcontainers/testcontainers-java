@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 public class ImagePullPolicyTest {
 
     @ClassRule
-    public static GenericContainer<?> registry = new GenericContainer(new DockerImageName("registry:2"))
+    public static GenericContainer<?> registry = new GenericContainer<>(new DockerImageName("registry:2.7.0"))
         .withExposedPorts(5000);
 
     private static String imageName;

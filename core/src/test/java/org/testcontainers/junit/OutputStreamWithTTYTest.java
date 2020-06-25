@@ -10,7 +10,6 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -19,13 +18,14 @@ import java.util.function.Consumer;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestingImages.ALPINE_IMAGE;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 
 @Slf4j
 public class OutputStreamWithTTYTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer(new DockerImageName("alpine:3.2"))
+    public GenericContainer<?> container = new GenericContainer<>(ALPINE_IMAGE)
         .withCommand("ls -1")
         .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         .withCreateContainerCmdModifier(command -> command.withTty(true));

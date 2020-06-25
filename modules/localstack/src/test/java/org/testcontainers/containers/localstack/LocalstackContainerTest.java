@@ -168,7 +168,7 @@ public class LocalstackContainerTest {
         // }
 
         @ClassRule
-        public static GenericContainer awsCliInDockerNetwork = new GenericContainer(new DockerImageName("atlassian/pipelines-awscli"))
+        public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(new DockerImageName("atlassian/pipelines-awscli"))
             .withNetwork(network)
             .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("top"))
             .withEnv("AWS_ACCESS_KEY_ID", "accesskey")
