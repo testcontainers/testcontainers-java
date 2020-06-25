@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'me.champeau.gradle.japicmp' version '0.2.8'
+    id 'me.champeau.gradle.japicmp' version '0.2.9'
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -157,14 +157,14 @@ dependencies {
 
     compile "net.java.dev.jna:jna-platform:5.5.0"
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.2') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.5') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-zerodep:3.2.2') {
+    shaded ('com.github.docker-java:docker-java-transport-zerodep:3.2.5') {
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
