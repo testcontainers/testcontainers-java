@@ -31,28 +31,6 @@ public class KafkaContainerTest {
         }
     }
 
-    /**
-     * @deprecated the {@link Network} should be set explicitly with {@link KafkaContainer#withNetwork(Network)}.
-     */
-    @Test
-    @Deprecated
-    public void testExternalZookeeperWithKafkaNetwork() throws Exception {
-        try (
-            KafkaContainer kafka = new KafkaContainer()
-                .withExternalZookeeper("zookeeper:2181");
-
-            GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
-                .withNetwork(kafka.getNetwork())
-                .withNetworkAliases("zookeeper")
-                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
-        ) {
-            zookeeper.start();
-            kafka.start();
-
-            testKafkaFunctionality(kafka.getBootstrapServers());
-        }
-    }
-
     @Test
     public void testExternalZookeeperWithExternalNetwork() throws Exception {
         try (
