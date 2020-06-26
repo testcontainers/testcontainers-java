@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'me.champeau.gradle.japicmp' version '0.2.8'
+    id 'me.champeau.gradle.japicmp' version '0.2.9'
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -174,7 +174,7 @@ dependencies {
 
     compile "com.github.docker-java:docker-java-api:3.2.3"
 
-    shaded ('com.github.docker-java:docker-java-core:3.2.3') {
+    shaded ('com.github.docker-java:docker-java-core:3.2.5') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
         exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
         exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
@@ -183,13 +183,13 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.3') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.5') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-core')
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
 
-    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.3'
+    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.5'
 
     shaded "org.yaml:snakeyaml:1.25"
 
