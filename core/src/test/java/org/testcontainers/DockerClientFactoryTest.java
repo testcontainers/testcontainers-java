@@ -71,7 +71,7 @@ public class DockerClientFactoryTest {
 
         DockerClientFactory instance = new DockerClientFactory();
         DockerClient dockerClient = instance.dockerClient;
-        assertThat(instance.cachedChecksFailure).isNull();
+        assertThat(instance.cachedClientFailure).isNull();
         try {
             // Remove cached client to force the initialization logic
             instance.dockerClient = null;
@@ -80,12 +80,12 @@ public class DockerClientFactoryTest {
             assertThatThrownBy(instance::client).isInstanceOf(DockerException.class);
 
             RuntimeException failure = new IllegalStateException("Boom!");
-            instance.cachedChecksFailure = failure;
+            instance.cachedClientFailure = failure;
             // Fail fast
             assertThatThrownBy(instance::client).isEqualTo(failure);
         } finally {
             instance.dockerClient = dockerClient;
-            instance.cachedChecksFailure = null;
+            instance.cachedClientFailure = null;
         }
     }
 }
