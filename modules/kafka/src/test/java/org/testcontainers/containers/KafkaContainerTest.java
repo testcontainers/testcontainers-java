@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.Rule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 
@@ -23,6 +24,11 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
+    // junitRule {
+    @Rule
+    public KafkaContainer kafka = new KafkaContainer();
+    // }
+
     @Test
     public void testUsage() throws Exception {
         try (KafkaContainer kafka = new KafkaContainer()) {
@@ -31,22 +37,48 @@ public class KafkaContainerTest {
         }
     }
 
+
+    @Test
+    public void testUsageWithVersion() throws Exception {
+        try (
+            // constructorWithVersion {
+            KafkaContainer kafka = new KafkaContainer("4.1.2")
+            // }
+        ) {
+            kafka.start();
+            testKafkaFunctionality(
+              // getBootstrapServers {
+              kafka.getBootstrapServers()
+              // }
+            );
+        }
+    }
+
     @Test
     public void testExternalZookeeperWithExternalNetwork() throws Exception {
         try (
             Network network = Network.newNetwork();
 
+            // withExternalZookeeper {
             KafkaContainer kafka = new KafkaContainer()
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
+            // }
 
             GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
+
+            // withKafkaNetwork {
+            GenericContainer application = new GenericContainer("alpine").withNetwork(kafka.getNetwork())
+            // }
+                .withNetworkAliases("dummy")
+                .withCommand("sleep 10000")
         ) {
             zookeeper.start();
             kafka.start();
+            application.start();
 
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
