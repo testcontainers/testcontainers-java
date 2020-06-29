@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.DockerImageName;
 
 
 /**
@@ -25,6 +26,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     /**
      * Creates a new {@link MongoDbContainer} with the {@value DEFAULT_IMAGE_AND_TAG} image.
      */
+    @Deprecated
     public MongoDbContainer() {
         this(DEFAULT_IMAGE_AND_TAG);
     }
@@ -34,8 +36,13 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      *
      * @param image the image (e.g. {@value DEFAULT_IMAGE_AND_TAG}) to use
      */
+    @Deprecated
     public MongoDbContainer(@NotNull String image) {
-        super(image);
+        this(new DockerImageName(image));
+    }
+
+    public MongoDbContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         addExposedPort(MONGODB_PORT);
     }
 

@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.testcontainers.TestingImages.TINY_IMAGE;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 /**
  * This test forks a new JVM, otherwise it's not possible to reliably diff the threads

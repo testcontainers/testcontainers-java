@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestingImages.ALPINE_IMAGE;
+import static org.testcontainers.TestImages.ALPINE_IMAGE;
 
 public class FileOperationsTest {
 

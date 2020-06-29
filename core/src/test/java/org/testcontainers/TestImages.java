@@ -3,7 +3,7 @@ package org.testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-public interface TestingImages {
+public interface TestImages {
     DockerImageName REDIS_IMAGE = new DockerImageName("redis:3.0.2");
     DockerImageName RABBITMQ_IMAGE = new DockerImageName("rabbitmq:3.5.3");
     DockerImageName MONGODB_IMAGE = new DockerImageName("mongo:3.1.5");

@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.testcontainers.TestingImages.TINY_IMAGE;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class ExposedHostTest {
 

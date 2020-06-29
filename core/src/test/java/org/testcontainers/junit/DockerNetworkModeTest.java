@@ -8,7 +8,7 @@ import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestingImages.TINY_IMAGE;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 /**
  * Simple tests of named network modes - more may be possible, but may not be reproducible

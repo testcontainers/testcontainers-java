@@ -10,7 +10,7 @@ import org.testcontainers.utility.DockerImageName;
 @RunWith(Parameterized.class)
 public class ImagePullTest {
 
-    private String image;
+    private final String image;
 
     @Parameterized.Parameters(name = "{0}")
     public static String[] parameters() {
@@ -35,7 +35,7 @@ public class ImagePullTest {
 
     @Test
     public void test() {
-        try (final GenericContainer container = new GenericContainer(new DockerImageName(image))
+        try (final GenericContainer<?> container = new GenericContainer<>(new DockerImageName(image))
             .withCommand("/bin/sh", "-c", "sleep 0")
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {
             container.start();

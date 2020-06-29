@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestingImages.ALPINE_IMAGE;
+import static org.testcontainers.TestImages.ALPINE_IMAGE;
 import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 
 /**

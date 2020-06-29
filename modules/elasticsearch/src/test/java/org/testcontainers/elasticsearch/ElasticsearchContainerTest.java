@@ -106,6 +106,7 @@ public class ElasticsearchContainerTest {
         }
     }
 
+    @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
     @Test
     public void restClientClusterHealth() throws IOException {
         // httpClientContainer {

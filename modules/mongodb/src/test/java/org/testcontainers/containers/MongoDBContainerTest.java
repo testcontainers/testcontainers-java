@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNotNull;
 
 
 public class MongoDBContainerTest {
+
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
      */
@@ -24,7 +25,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer()
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(MongoTestImages.MONGO_IMAGE_NAME)
             // }
         ) {
 

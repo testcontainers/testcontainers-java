@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.testcontainers.TestingImages.TINY_IMAGE;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class DependenciesTest {
 

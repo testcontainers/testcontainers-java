@@ -11,7 +11,7 @@ import java.util.Map;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestingImages.TINY_IMAGE;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class CopyFileToContainerTest {
     private static String containerPath = "/tmp/mappable-resource/";

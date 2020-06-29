@@ -6,7 +6,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestingImages.ALPINE_IMAGE;
+import static org.testcontainers.TestImages.ALPINE_IMAGE;
 
 /**
  * Created by rnorth on 26/07/2016.

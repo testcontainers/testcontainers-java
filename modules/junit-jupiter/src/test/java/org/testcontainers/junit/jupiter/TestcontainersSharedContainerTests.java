@@ -3,16 +3,16 @@ package org.testcontainers.junit.jupiter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.HTTPD_IMAGE;
 
 @Testcontainers
 class TestcontainersSharedContainerTests {
 
     @Container
-    private static final GenericContainer GENERIC_CONTAINER = new GenericContainer(new DockerImageName("httpd:2.4-alpine"))
+    private static final GenericContainer<?> GENERIC_CONTAINER = new GenericContainer<>(HTTPD_IMAGE)
         .withExposedPorts(80);
 
     private static String lastContainerId;
