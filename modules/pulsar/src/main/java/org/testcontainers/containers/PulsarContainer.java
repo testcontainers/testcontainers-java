@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 /**
@@ -14,6 +15,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     private static final String PULSAR_VERSION = "2.2.0";
 
+    private boolean functionsWorkerEnabled = false;
+
     public PulsarContainer() {
         this(PULSAR_VERSION);
     }
@@ -25,6 +28,25 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         waitingFor(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+
+        if (functionsWorkerEnabled) {
+            withCommand("/pulsar/bin/pulsar", "standalone");
+            waitingFor(
+                new WaitAllStrategy()
+                    .withStrategy(waitStrategy)
+                    .withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1))
+            );
+        }
+    }
+
+    public PulsarContainer withFunctionsWorker() {
+        functionsWorkerEnabled = true;
+        return this;
+    }
+
     public String getPulsarBrokerUrl() {
         return String.format("pulsar://%s:%s", getHost(), getMappedPort(BROKER_PORT));
     }
@@ -33,4 +55,3 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         return String.format("http://%s:%s", getHost(), getMappedPort(BROKER_HTTP_PORT));
     }
 }
-
