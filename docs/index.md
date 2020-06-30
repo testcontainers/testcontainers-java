@@ -131,6 +131,7 @@ A huge thank you to our backers:
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
 * [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
+* [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
 
 
 ## License
