@@ -24,23 +24,22 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     public PulsarContainer(String pulsarVersion) {
         super(TestcontainersConfiguration.getInstance().getPulsarImage() + ":" + pulsarVersion);
         withExposedPorts(BROKER_PORT, BROKER_HTTP_PORT);
+        withCommand("/pulsar/bin/pulsar", "standalone", "--no-functions-worker", "-nss");
+        waitingFor(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
     }
 
     @Override
     protected void configure() {
         super.configure();
 
-        WaitAllStrategy wait = new WaitAllStrategy()
-            .withStrategy(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
-
         if (functionsWorkerEnabled) {
             withCommand("/pulsar/bin/pulsar", "standalone");
-            wait.withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1));
-        } else {
-            withCommand("/pulsar/bin/pulsar", "standalone", "--no-functions-worker", "-nss");
+            waitingFor(
+                new WaitAllStrategy()
+                    .withStrategy(waitStrategy)
+                    .withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1))
+            );
         }
-
-        waitingFor(wait);
     }
 
     public PulsarContainer withFunctionsWorker() {
@@ -56,4 +55,3 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         return String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(BROKER_HTTP_PORT));
     }
 }
-
