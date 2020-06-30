@@ -119,6 +119,21 @@ testImplementation('org.testcontainers:mysql') //no version specified
 * [Transferwise](https://transferwise.com/) - Integration testing for different RDBMS, kafka and micro services
 * [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
 
+## Sponsors
+
+Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain the project and help us improve it further.
+
+<iframe src="https://github.com/sponsors/testcontainers/button" title="Sponsor Testcontainers" height="35" width="107" style="border: 0;"></iframe>
+
+### Backers
+
+A huge thank you to our backers:
+
+* [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
+* [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
+* [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
+
+
 ## License
 
 See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
