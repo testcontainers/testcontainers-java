@@ -130,6 +130,7 @@ Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain t
 A huge thank you to our backers:
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
+* [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
 
 
 ## License
