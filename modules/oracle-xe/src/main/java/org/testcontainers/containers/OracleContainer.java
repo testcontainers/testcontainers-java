@@ -63,7 +63,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     private void preconfigure() {
-        this.waitStrategy = Wait.forLogMessage(".*DATABASE IS READY TO USE!.*", 1)
+        this.waitStrategy = Wait.forHealthcheck()
                 .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, SECONDS));
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT, OEM_EXPRESS_PORT);
