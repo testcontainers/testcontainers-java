@@ -38,7 +38,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public PostgreSQLContainer(final String dockerImageName) {
         super(dockerImageName);
         this.waitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*database system is ready to accept connections.*\\s")
+                .withRegEx(".*database system is ready to accept connections.*")
                 .withTimes(2)
                 .withStartupTimeout(Duration.of(60, SECONDS));
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
