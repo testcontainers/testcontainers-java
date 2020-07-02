@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
 public class ReusabilityUnitTests {
 
     static final CompletableFuture<String> IMAGE_FUTURE = CompletableFuture.completedFuture(
-        TestcontainersConfiguration.getInstance().getTinyImage()
+        TestcontainersConfiguration.getInstance().getTinyDockerImageName().toString()
     );
 
     @RunWith(Parameterized.class)

@@ -18,8 +18,10 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 
 public class DynaliteContainerTest {
 
+    private static final DockerImageName DYNALITE_IMAGE = new DockerImageName("quay.io/testcontainers/dynalite:v1.2.1-1");
+
     @Rule
-    public DynaliteContainer dynamoDB = new DynaliteContainer(new DockerImageName("quay.io/testcontainers/dynalite:v1.2.1-1"));
+    public DynaliteContainer dynamoDB = new DynaliteContainer(DYNALITE_IMAGE);
 
     @Test
     public void simpleTestWithManualClientCreation() {

@@ -31,6 +31,8 @@ import static org.junit.Assert.assertTrue;
 
 public class CouchbaseContainerTest {
 
+    private static final DockerImageName COUCHBASE_IMAGE = new DockerImageName("couchbase/server:6.5.1");
+
     @Test
     public void testBasicContainerUsage() {
         // bucket_definition {
@@ -39,7 +41,7 @@ public class CouchbaseContainerTest {
 
         try (
             // container_definition {
-            CouchbaseContainer container = new CouchbaseContainer(new DockerImageName("couchbase/server:6.5.1"))
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE)
                 .withBucket(bucketDefinition)
             // }
         ) {

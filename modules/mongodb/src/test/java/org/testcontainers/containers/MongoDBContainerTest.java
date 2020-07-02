@@ -11,12 +11,15 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 
 public class MongoDBContainerTest {
+
+    private static final DockerImageName MONGO_IMAGE = new DockerImageName("mongo:4.0.10");
 
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
@@ -25,7 +28,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(MongoTestImages.MONGO_IMAGE_NAME)
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(MONGO_IMAGE)
             // }
         ) {
 

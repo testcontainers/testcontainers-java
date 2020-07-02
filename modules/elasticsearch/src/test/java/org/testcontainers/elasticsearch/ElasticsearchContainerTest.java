@@ -34,6 +34,7 @@ public class ElasticsearchContainerTest {
      * Elasticsearch version which should be used for the Tests
      */
     private static final String ELASTICSEARCH_VERSION = Version.CURRENT.toString();
+    private static final DockerImageName ELASTICSEARCH_IMAGE = new DockerImageName("docker.elastic.co/elasticsearch/elasticsearch", ELASTICSEARCH_VERSION);
 
     /**
      * Elasticsearch default username, when secured with a license > basic
@@ -80,7 +81,7 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchVersion() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer(new DockerImageName("docker.elastic.co/elasticsearch/elasticsearch", ELASTICSEARCH_VERSION))) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));

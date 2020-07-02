@@ -12,6 +12,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -23,9 +24,12 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
+    private static final DockerImageName KAFKA_TEST_IMAGE = new DockerImageName("confluentinc/cp-kafka:5.2.1");
+    private static final DockerImageName ZOOKEEPER_TEST_IMAGE = new DockerImageName("confluentinc/cp-zookeeper:4.0.0");
+
     @Test
     public void testUsage() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer(KafkaTestImages.KAFKA_TEST_IMAGE)) {
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
@@ -41,7 +45,7 @@ public class KafkaContainerTest {
             KafkaContainer kafka = new KafkaContainer()
                 .withExternalZookeeper("zookeeper:2181");
 
-            GenericContainer<?> zookeeper = new GenericContainer<>(KafkaTestImages.ZOOKEEPER_TEST_IMAGE)
+            GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
                 .withNetwork(kafka.getNetwork())
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
@@ -58,11 +62,11 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
 
-            KafkaContainer kafka = new KafkaContainer(KafkaTestImages.KAFKA_TEST_IMAGE)
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
 
-            GenericContainer<?> zookeeper = new GenericContainer<>(KafkaTestImages.ZOOKEEPER_TEST_IMAGE)
+            GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");

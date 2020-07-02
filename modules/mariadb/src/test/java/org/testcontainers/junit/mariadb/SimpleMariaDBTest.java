@@ -4,7 +4,6 @@ import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
-import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +33,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSpecificVersion() throws SQLException {
-        try (MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>(new DockerImageName("mariadb:5.5.51"))) {
+        try (MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>(MARIADB_IMAGE.withTag("5.5.51"))) {
 
             mariadbOldVersion.start();
 
@@ -49,7 +48,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     public void testMariaDBWithCustomIniFile() throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
 
-        try (MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(MARIADB_IMAGE)
+        try (MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(MARIADB_IMAGE.withTag("10.1.16"))
             .withConfigurationOverride("somepath/mariadb_conf_override")) {
             mariadbCustomConfig.start();
 

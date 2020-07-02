@@ -59,7 +59,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
-    private boolean defaultImage = false;
+    private boolean standardImage = false;
 
     /**
      * Creates a Testcontainer using the official Neo4j docker image.
@@ -67,8 +67,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     @Deprecated
     public Neo4jContainer() {
         this(DOCKER_IMAGE_NAME);
-
-        this.defaultImage = true;
     }
 
     /**
@@ -96,6 +94,10 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
             .withStartupTimeout(Duration.ofMinutes(2));
 
         addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
+
+        if (dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME)) {
+            this.standardImage = true;
+        }
     }
 
     @Override
@@ -146,7 +148,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     public S withEnterpriseEdition() {
 
-        if (!defaultImage) {
+        if (!standardImage) {
             throw new IllegalStateException(
                 String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName()));
         }

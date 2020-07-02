@@ -3,7 +3,7 @@ package org.testcontainers.containers;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.ToxiproxyTestImages;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -28,15 +28,17 @@ public class ToxiproxyTest {
     @Rule
     public Network network = Network.newNetwork();
 
+    private static final DockerImageName REDIS_IMAGE = new DockerImageName("redis:5.0.4");
     // The target container - this could be anything
     @Rule
-    public GenericContainer<?> redis = new GenericContainer<>(ToxiproxyTestImages.REDIS_IMAGE)
+    public GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
         .withExposedPorts(6379)
         .withNetwork(network);
 
+    private static final DockerImageName TOXIPROXY_IMAGE = new DockerImageName("shopify/toxiproxy:2.1.0");
     // Toxiproxy container, which will be used as a TCP proxy
     @Rule
-    public ToxiproxyContainer toxiproxy = new ToxiproxyContainer(ToxiproxyTestImages.TOXIPROXY_IMAGE)
+    public ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE)
         .withNetwork(network)
         .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
     // }
@@ -102,7 +104,7 @@ public class ToxiproxyTest {
 
     @Test
     public void testMultipleProxiesCanBeCreated() {
-        try (GenericContainer<?> secondRedis = new GenericContainer<>(ToxiproxyTestImages.REDIS_IMAGE)
+        try (GenericContainer<?> secondRedis = new GenericContainer<>(REDIS_IMAGE)
             .withExposedPorts(6379)
             .withNetwork(network)) {
 
