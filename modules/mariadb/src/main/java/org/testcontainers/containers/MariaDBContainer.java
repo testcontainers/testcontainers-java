@@ -24,11 +24,17 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     private static final String MARIADB_ROOT_USER = "root";
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
 
+    /**
+     * @deprecated use {@link MariaDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MariaDBContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link MariaDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MariaDBContainer(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

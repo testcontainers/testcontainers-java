@@ -30,11 +30,17 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private int port = PORT_NOT_ASSIGNED;
 
+    /**
+     * @deprecated use {@link KafkaContainer(DockerImageName)} instead
+     */
     @Deprecated
     public KafkaContainer() {
         this("5.2.1");
     }
 
+    /**
+     * @deprecated use {@link KafkaContainer(DockerImageName)} instead
+     */
     @Deprecated
     public KafkaContainer(String confluentPlatformVersion) {
         this(new DockerImageName(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion));

@@ -12,7 +12,6 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
@@ -234,12 +233,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = image;
     }
 
-
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
     @Deprecated
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
     @Deprecated
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);

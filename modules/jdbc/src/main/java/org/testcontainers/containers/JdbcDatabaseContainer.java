@@ -39,6 +39,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private static final String QUERY_PARAM_SEPARATOR = "&";
 
+    /**
+     * @deprecated use {@link JdbcDatabaseContainer(DockerImageName)} instead
+     */
     @Deprecated
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         this(new DockerImageName(dockerImageName));

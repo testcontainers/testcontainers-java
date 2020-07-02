@@ -27,12 +27,17 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     private String username = "any";
     private String password = "any";
 
-
+    /**
+     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public InfluxDBContainer() {
         this(VERSION);
     }
 
+    /**
+     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public InfluxDBContainer(final String version) {
         this(new DockerImageName(IMAGE_NAME + ":" + version));

@@ -37,6 +37,9 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     protected static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
 
+    /**
+     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
+     */
     @Deprecated
     public ElasticsearchContainer() {
         this(ELASTICSEARCH_DEFAULT_IMAGE + ":" + ELASTICSEARCH_DEFAULT_VERSION);
@@ -45,6 +48,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     /**
      * Create an Elasticsearch Container by passing the full docker image name
      * @param dockerImageName Full docker image name, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
      */
     @Deprecated
     public ElasticsearchContainer(String dockerImageName) {

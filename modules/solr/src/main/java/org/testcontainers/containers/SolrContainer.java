@@ -26,11 +26,17 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private SolrContainerConfiguration configuration;
 
+    /**
+     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     */
     @Deprecated
     public SolrContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     */
     @Deprecated
     public SolrContainer(final String dockerImageName) {
         this(new DockerImageName(dockerImageName));

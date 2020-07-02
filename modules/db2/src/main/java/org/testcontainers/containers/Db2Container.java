@@ -20,11 +20,17 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     private String username = "db2inst1";
     private String password = "foobar1234";
 
+    /**
+     * @deprecated use {@link Db2Container(DockerImageName)} instead
+     */
     @Deprecated
     public Db2Container() {
         this(DEFAULT_DB2_IMAGE_NAME + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link Db2Container(DockerImageName)} instead
+     */
     @Deprecated
     public Db2Container(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

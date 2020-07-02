@@ -22,11 +22,17 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
+    /**
+     * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MongoDBContainer() {
         this("mongo:" + MONGODB_VERSION_DEFAULT);
     }
-
+    
+    /**
+     * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MongoDBContainer(@NonNull final String dockerImageName) {
         this(new DockerImageName(dockerImageName));

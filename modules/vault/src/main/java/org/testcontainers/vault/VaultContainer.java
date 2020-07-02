@@ -29,11 +29,17 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     private int port = VAULT_PORT;
 
+    /**
+     * @deprecated use {@link VaultContainer(DockerImageName)} instead
+     */
     @Deprecated
     public VaultContainer() {
         this("vault:1.1.3");
     }
 
+    /**
+     * @deprecated use {@link VaultContainer(DockerImageName)} instead
+     */
     @Deprecated
     public VaultContainer(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

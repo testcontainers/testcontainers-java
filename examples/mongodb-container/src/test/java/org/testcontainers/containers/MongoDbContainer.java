@@ -25,6 +25,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     /**
      * Creates a new {@link MongoDbContainer} with the {@value DEFAULT_IMAGE_AND_TAG} image.
+     * @deprecated use {@link MongoDbContainer(DockerImageName)} instead
      */
     @Deprecated
     public MongoDbContainer() {
@@ -35,12 +36,16 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      * Creates a new {@link MongoDbContainer} with the given {@code 'image'}.
      *
      * @param image the image (e.g. {@value DEFAULT_IMAGE_AND_TAG}) to use
+     * @deprecated use {@link MongoDbContainer(DockerImageName)} instead
      */
     @Deprecated
     public MongoDbContainer(@NotNull String image) {
         this(new DockerImageName(image));
     }
 
+    /**
+     * Creates a new {@link MongoDbContainer} with the specified image.
+     */
     public MongoDbContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         addExposedPort(MONGODB_PORT);

@@ -17,12 +17,18 @@ public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
     private static final String IMAGE_NAME = "quay.io/testcontainers/dynalite:v1.2.1-1";
     private static final int MAPPED_PORT = 4567;
 
+    /**
+     * @deprecated use {@link DynaliteContainer(DockerImageName)} instead
+     */
     @Deprecated
     public DynaliteContainer() {
         this(IMAGE_NAME);
         withExposedPorts(MAPPED_PORT);
     }
 
+    /**
+     * @deprecated use {@link DynaliteContainer(DockerImageName)} instead
+     */
     @Deprecated
     public DynaliteContainer(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

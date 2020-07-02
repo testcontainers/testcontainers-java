@@ -32,11 +32,17 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     private static final String QUERY_PARAM_SEPARATOR = "&";
 
+    /**
+     * @deprecated use {@link PostgreSQLContainer(DockerImageName)} instead
+     */
     @Deprecated
     public PostgreSQLContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link PostgreSQLContainer(DockerImageName)} instead
+     */
     @Deprecated
     public PostgreSQLContainer(final String dockerImageName) {
         this(new DockerImageName(dockerImageName));

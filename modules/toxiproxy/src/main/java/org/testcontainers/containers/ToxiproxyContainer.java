@@ -30,11 +30,17 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final Map<String, ContainerProxy> proxies = new HashMap<>();
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
+    /**
+     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     */
     @Deprecated
     public ToxiproxyContainer() {
         this(IMAGE_NAME);
     }
 
+    /**
+     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     */
     @Deprecated
     public ToxiproxyContainer(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

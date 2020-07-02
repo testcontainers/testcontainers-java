@@ -16,6 +16,9 @@ public class SocatContainer extends GenericContainer<SocatContainer> {
 
     private final Map<Integer, String> targets = new HashMap<>();
 
+    /**
+     * @deprecated use {@link SocatContainer(DockerImageName)} instead
+     */
     @Deprecated
     public SocatContainer() {
         this(new DockerImageName(TestcontainersConfiguration.getInstance().getSocatContainerImage()));

@@ -16,11 +16,17 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
 
     private static final int NGINX_DEFAULT_PORT = 80;
 
+    /**
+     * @deprecated use {@link NginxContainer(DockerImageName)} instead
+     */
     @Deprecated
     public NginxContainer() {
         this("nginx:1.9.4");
     }
 
+    /**
+     * @deprecated use {@link NginxContainer(DockerImageName)} instead
+     */
     @Deprecated
     public NginxContainer(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

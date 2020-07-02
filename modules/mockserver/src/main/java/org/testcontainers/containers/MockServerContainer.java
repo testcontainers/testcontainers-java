@@ -10,11 +10,17 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     public static final int PORT = 1080;
 
+    /**
+     * @deprecated use {@link MockServerContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MockServerContainer() {
         this(VERSION);
     }
 
+    /**
+     * @deprecated use {@link MockServerContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MockServerContainer(String version) {
         this(new DockerImageName("jamesdbloom/mockserver:mockserver-" + version));

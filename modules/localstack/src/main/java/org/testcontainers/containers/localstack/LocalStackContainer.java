@@ -37,11 +37,17 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     private final List<Service> services = new ArrayList<>();
 
+    /**
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     */
     @Deprecated
     public LocalStackContainer() {
         this(VERSION);
     }
 
+    /**
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     */
     @Deprecated
     public LocalStackContainer(String version) {
         this(new DockerImageName(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));

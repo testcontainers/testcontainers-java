@@ -63,6 +63,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     /**
      * Creates a Testcontainer using the official Neo4j docker image.
+     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
      */
     @Deprecated
     public Neo4jContainer() {
@@ -73,6 +74,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * Creates a Testcontainer using a specific docker image.
      *
      * @param dockerImageName The docker image to use.
+     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
      */
     @Deprecated
     public Neo4jContainer(String dockerImageName) {

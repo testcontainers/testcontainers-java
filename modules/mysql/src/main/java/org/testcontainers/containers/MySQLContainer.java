@@ -26,11 +26,17 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private String password = DEFAULT_PASSWORD;
     private static final String MYSQL_ROOT_USER = "root";
 
+    /**
+     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MySQLContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
+     */
     @Deprecated
     public MySQLContainer(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

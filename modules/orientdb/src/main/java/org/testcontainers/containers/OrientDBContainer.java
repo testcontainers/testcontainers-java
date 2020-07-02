@@ -49,11 +49,17 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     private OrientDB orientDB;
     private ODatabaseSession session;
 
+    /**
+     * @deprecated use {@link OrientDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public OrientDBContainer() {
         this(DOCKER_IMAGE_NAME);
     }
 
+    /**
+     * @deprecated use {@link OrientDBContainer(DockerImageName)} instead
+     */
     @Deprecated
     public OrientDBContainer(@NonNull String dockerImageName) {
         this(new DockerImageName(dockerImageName));

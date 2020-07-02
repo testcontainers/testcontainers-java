@@ -24,11 +24,17 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     private String username = "test";
     private String catalog = null;
 
+    /**
+     * @deprecated use {@link PrestoContainer(DockerImageName)} instead
+     */
     @Deprecated
     public PrestoContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link PrestoContainer(DockerImageName)} instead
+     */
     @Deprecated
     public PrestoContainer(final String dockerImageName) {
         this(new DockerImageName(dockerImageName));

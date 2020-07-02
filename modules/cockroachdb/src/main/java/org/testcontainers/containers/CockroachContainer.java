@@ -19,11 +19,17 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     private String username = "root";
     private String password = "";
 
+    /**
+     * @deprecated use {@link CockroachContainer(DockerImageName)} instead
+     */
     @Deprecated
     public CockroachContainer() {
         this(IMAGE + ":" + IMAGE_TAG);
     }
 
+    /**
+     * @deprecated use {@link CockroachContainer(DockerImageName)} instead
+     */
     @Deprecated
     public CockroachContainer(final String dockerImageName) {
         this(new DockerImageName(dockerImageName));

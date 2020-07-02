@@ -22,11 +22,17 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     private String username = "default";
     private String password = "";
 
+    /**
+     * @deprecated use {@link ClickHouseContainer(DockerImageName)} instead
+     */
     @Deprecated
     public ClickHouseContainer() {
         super(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link ClickHouseContainer(DockerImageName)} instead
+     */
     @Deprecated
     public ClickHouseContainer(String dockerImageName) {
         this(new DockerImageName(dockerImageName));

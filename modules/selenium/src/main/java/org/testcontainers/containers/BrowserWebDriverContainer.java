@@ -69,6 +69,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
     /**
+     * @deprecated use {@link BrowserWebDriverContainer(DockerImageName)} instead
      */
     public BrowserWebDriverContainer() {
         super();
@@ -87,6 +88,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     /**
      * Constructor taking a specific webdriver container name and tag
      * @param dockerImageName Name of the docker image to pull
+     * @deprecated use {@link BrowserWebDriverContainer(DockerImageName)} instead
      */
     @Deprecated
     public BrowserWebDriverContainer(String dockerImageName) {
@@ -98,6 +100,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     public BrowserWebDriverContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
+        final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+                .withStartupTimeout(Duration.of(15, SECONDS));
+
+        this.waitStrategy = new WaitAllStrategy()
+                .withStrategy(logWaitStrategy)
+                .withStrategy(new HostPortWaitStrategy())
+                .withStartupTimeout(Duration.of(15, SECONDS));
+
+        this.withRecordingFileFactory(new DefaultRecordingFileFactory());
     }
 
     public SELF withCapabilities(Capabilities capabilities) {

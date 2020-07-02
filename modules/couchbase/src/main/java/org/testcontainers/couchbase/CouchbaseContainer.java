@@ -88,6 +88,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     /**
      * Creates a new couchbase container with the default image and version.
+     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
      */
     @Deprecated
     public CouchbaseContainer() {
@@ -98,12 +99,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Creates a new couchbase container with a custom image name.
      *
      * @param dockerImageName the image name that should be used.
+     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
      */
     @Deprecated
     public CouchbaseContainer(final String dockerImageName) {
         this(new DockerImageName(dockerImageName));
     }
 
+    /**
+     * Create a new couchbase container with the specified image name.
+     * @param dockerImageName
+     */
     public CouchbaseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
     }

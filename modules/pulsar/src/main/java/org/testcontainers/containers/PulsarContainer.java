@@ -19,11 +19,17 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     private boolean functionsWorkerEnabled = false;
 
+    /**
+     * @deprecated use {@link PulsarContainer(DockerImageName)} instead
+     */
     @Deprecated
     public PulsarContainer() {
         this(DEFAULT_PULSAR_VERSION);
     }
 
+    /**
+     * @deprecated use {@link PulsarContainer(DockerImageName)} instead
+     */
     @Deprecated
     public PulsarContainer(String pulsarVersion) {
         this(TestcontainersConfiguration.getInstance().getPulsarDockerImageName().withTag(pulsarVersion));
