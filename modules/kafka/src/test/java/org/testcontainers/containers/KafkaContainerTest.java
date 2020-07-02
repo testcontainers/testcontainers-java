@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.Rule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.DockerImageName;
@@ -27,6 +28,11 @@ public class KafkaContainerTest {
     private static final DockerImageName KAFKA_TEST_IMAGE = new DockerImageName("confluentinc/cp-kafka:5.2.1");
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = new DockerImageName("confluentinc/cp-zookeeper:4.0.0");
 
+    // junitRule {
+    @Rule
+    public KafkaContainer kafka = new KafkaContainer();
+    // }
+
     @Test
     public void testUsage() throws Exception {
         try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
@@ -35,25 +41,20 @@ public class KafkaContainerTest {
         }
     }
 
-    /**
-     * @deprecated the {@link Network} should be set explicitly with {@link KafkaContainer#withNetwork(Network)}.
-     */
+
     @Test
-    @Deprecated
-    public void testExternalZookeeperWithKafkaNetwork() throws Exception {
+    public void testUsageWithVersion() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer()
-                .withExternalZookeeper("zookeeper:2181");
-
-            GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
-                .withNetwork(kafka.getNetwork())
-                .withNetworkAliases("zookeeper")
-                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
+            // constructorWithVersion {
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
+            // }
         ) {
-            zookeeper.start();
             kafka.start();
-
-            testKafkaFunctionality(kafka.getBootstrapServers());
+            testKafkaFunctionality(
+              // getBootstrapServers {
+              kafka.getBootstrapServers()
+              // }
+            );
         }
     }
 
@@ -62,17 +63,26 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
 
+            // withExternalZookeeper {
             KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
+            // }
 
             GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
+
+            // withKafkaNetwork {
+            GenericContainer application = new GenericContainer("alpine").withNetwork(kafka.getNetwork())
+            // }
+                .withNetworkAliases("dummy")
+                .withCommand("sleep 10000")
         ) {
             zookeeper.start();
             kafka.start();
+            application.start();
 
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
