@@ -62,7 +62,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
      */
     @Deprecated
     public OrientDBContainer(@NonNull String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public OrientDBContainer(final DockerImageName dockerImageName) {

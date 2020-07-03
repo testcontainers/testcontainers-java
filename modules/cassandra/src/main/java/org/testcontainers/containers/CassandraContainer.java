@@ -50,7 +50,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      */
     @Deprecated
     public CassandraContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public CassandraContainer(DockerImageName dockerImageName) {

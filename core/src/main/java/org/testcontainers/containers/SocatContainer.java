@@ -21,7 +21,7 @@ public class SocatContainer extends GenericContainer<SocatContainer> {
      */
     @Deprecated
     public SocatContainer() {
-        this(new DockerImageName(TestcontainersConfiguration.getInstance().getSocatContainerImage()));
+        this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getSocatContainerImage()));
     }
 
     public SocatContainer(final DockerImageName dockerImageName) {

@@ -78,7 +78,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     @Deprecated
     public Neo4jContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public Neo4jContainer(final DockerImageName dockerImageName) {

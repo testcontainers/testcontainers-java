@@ -35,7 +35,7 @@ public class DockerImageNameTest {
 
         @Test
         public void testValidNameAccepted() {
-            new DockerImageName(imageName).assertValid();
+            DockerImageName.parse(imageName).assertValid();
         }
     }
 
@@ -56,7 +56,7 @@ public class DockerImageNameTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void testInvalidNameRejected() {
-            new DockerImageName(imageName).assertValid();
+            DockerImageName.parse(imageName).assertValid();
         }
     }
 
@@ -118,7 +118,7 @@ public class DockerImageNameTest {
             VisibleAssertions.context("For " + combined);
             VisibleAssertions.context("Using single-arg constructor:", 2);
 
-            final DockerImageName imageName = new DockerImageName(combined);
+            final DockerImageName imageName = DockerImageName.parse(combined);
             assertEquals(combined + " has registry address: " + registry, registry, imageName.getRegistry());
             assertEquals(combined + " has unversioned part: " + unversionedPart, unversionedPart, imageName.getUnversionedPart());
             if (version != null) {

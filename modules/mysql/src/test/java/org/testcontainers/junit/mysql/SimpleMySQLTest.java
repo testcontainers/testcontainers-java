@@ -43,10 +43,10 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     public static MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_IMAGE);
 
     @ClassRule
-    public static MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>(new DockerImageName("mysql:5.5");)
+    public static MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>(DockerImageName.of("mysql:5.5");)
 
     @ClassRule
-    public static MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(new DockerImageName("mysql:5.6"))
+    public static MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(DockerImageName.of("mysql:5.6"))
                                                             .withConfigurationOverride("somepath/mysql_conf_override");
     */
 

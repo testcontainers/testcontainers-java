@@ -10,6 +10,6 @@ public class ClickHouseProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new ClickHouseContainer(new DockerImageName(ClickHouseContainer.IMAGE, tag));
+        return new ClickHouseContainer(DockerImageName.parse(ClickHouseContainer.IMAGE).withTag(tag));
     }
 }

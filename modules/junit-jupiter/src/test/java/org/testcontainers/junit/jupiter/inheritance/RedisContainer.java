@@ -7,7 +7,7 @@ import redis.clients.jedis.Jedis;
 public class RedisContainer extends GenericContainer<RedisContainer> {
 
     public RedisContainer() {
-        super(new DockerImageName("redis:3.2.11"));
+        super(DockerImageName.parse("redis:3.2.11"));
         withExposedPorts(6379);
     }
 

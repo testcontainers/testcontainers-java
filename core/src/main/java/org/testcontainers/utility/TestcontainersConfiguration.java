@@ -69,7 +69,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getSocatDockerImageName() {
-        return new DockerImageName(getSocatContainerImage());
+        return DockerImageName.parse(getSocatContainerImage());
     }
 
     @Deprecated
@@ -78,7 +78,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getVncDockerImageName() {
-        return new DockerImageName(getVncRecordedContainerImage());
+        return DockerImageName.parse(getVncRecordedContainerImage());
     }
 
     @Deprecated
@@ -87,7 +87,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getDockerComposeDockerImageName() {
-        return new DockerImageName(getDockerComposeContainerImage());
+        return DockerImageName.parse(getDockerComposeContainerImage());
     }
 
     @Deprecated
@@ -96,7 +96,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getTinyDockerImageName() {
-        return new DockerImageName(getTinyImage());
+        return DockerImageName.parse(getTinyImage());
     }
 
     public boolean isRyukPrivileged() {
@@ -109,7 +109,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getRyukDockerImageName() {
-        return new DockerImageName(getRyukImage());
+        return DockerImageName.parse(getRyukImage());
     }
 
     @Deprecated
@@ -118,7 +118,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getSSHdDockerImageName() {
-        return new DockerImageName(getSSHdImage());
+        return DockerImageName.parse(getSSHdImage());
     }
 
     public Integer getRyukTimeout() {
@@ -131,7 +131,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getKafkaDockerImageName() {
-        return new DockerImageName(getKafkaImage());
+        return DockerImageName.parse(getKafkaImage());
     }
 
     @Deprecated
@@ -140,7 +140,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getPulsarDockerImageName() {
-        return new DockerImageName(getPulsarImage());
+        return DockerImageName.parse(getPulsarImage());
     }
 
     @Deprecated
@@ -149,7 +149,7 @@ public class TestcontainersConfiguration {
     }
 
     public DockerImageName getLocalstackDockerImageName() {
-        return new DockerImageName(getLocalStackImage());
+        return DockerImageName.parse(getLocalStackImage());
     }
 
     public boolean isDisableChecks() {

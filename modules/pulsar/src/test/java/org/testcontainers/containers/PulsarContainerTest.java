@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class PulsarContainerTest {
 
     public static final String TEST_TOPIC = "test_topic";
-    private static final DockerImageName PULSAR_IMAGE = new DockerImageName("apachepulsar/pulsar:2.2.0");
+    private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:2.2.0");
 
     @Test
     public void testUsage() throws Exception {

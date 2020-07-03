@@ -38,7 +38,7 @@ public class DockerignoreTest {
                 .withFileFromPath(".", DockerfileBuildTest.RESOURCE_PATH)
                 .withDockerfile(DockerfileBuildTest.RESOURCE_PATH.resolve("Dockerfile-currentdir"));
         try(
-            final GenericContainer<?> container = new GenericContainer(new DockerImageName(img.get()))
+            final GenericContainer<?> container = new GenericContainer(DockerImageName.parse(img.get()))
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
             .withCommand("ls", "/")
         ) {

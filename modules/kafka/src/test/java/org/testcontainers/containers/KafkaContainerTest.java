@@ -25,8 +25,8 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
-    private static final DockerImageName KAFKA_TEST_IMAGE = new DockerImageName("confluentinc/cp-kafka:5.2.1");
-    private static final DockerImageName ZOOKEEPER_TEST_IMAGE = new DockerImageName("confluentinc/cp-zookeeper:4.0.0");
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:5.2.1");
+    private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
 
     // junitRule {
     @Rule

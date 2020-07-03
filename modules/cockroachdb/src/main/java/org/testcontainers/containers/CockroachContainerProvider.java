@@ -15,6 +15,6 @@ public class CockroachContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new CockroachContainer(new DockerImageName(CockroachContainer.IMAGE, tag));
+        return new CockroachContainer(DockerImageName.parse(CockroachContainer.IMAGE).withTag(tag));
     }
 }

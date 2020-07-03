@@ -22,7 +22,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.info;
 public class DisqueBackedMailSenderTest {
 
     @Rule
-    public GenericContainer<?> container = new GenericContainer<>(new DockerImageName("richnorth/disque:1.0-rc1"))
+    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.of("richnorth/disque:1.0-rc1"))
                                                 .withExposedPorts(7711);
     private DisqueClient disqueClient;
 

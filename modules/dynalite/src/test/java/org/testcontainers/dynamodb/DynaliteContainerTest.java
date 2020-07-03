@@ -18,7 +18,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 
 public class DynaliteContainerTest {
 
-    private static final DockerImageName DYNALITE_IMAGE = new DockerImageName("quay.io/testcontainers/dynalite:v1.2.1-1");
+    private static final DockerImageName DYNALITE_IMAGE = DockerImageName.parse("quay.io/testcontainers/dynalite:v1.2.1-1");
 
     @Rule
     public DynaliteContainer dynamoDB = new DynaliteContainer(DYNALITE_IMAGE);

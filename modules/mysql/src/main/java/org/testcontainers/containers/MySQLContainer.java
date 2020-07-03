@@ -39,7 +39,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
      */
     @Deprecated
     public MySQLContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public MySQLContainer(final DockerImageName dockerImageName) {

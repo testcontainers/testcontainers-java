@@ -45,7 +45,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
      */
     @Deprecated
     public PostgreSQLContainer(final String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public PostgreSQLContainer(final DockerImageName dockerImageName) {

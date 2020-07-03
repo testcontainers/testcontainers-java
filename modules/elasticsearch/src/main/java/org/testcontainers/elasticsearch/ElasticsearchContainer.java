@@ -52,7 +52,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     @Deprecated
     public ElasticsearchContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public ElasticsearchContainer(final DockerImageName dockerImageName) {

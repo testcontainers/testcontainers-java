@@ -17,7 +17,7 @@ import org.testcontainers.utility.DockerImageName;
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
-    static GenericContainer<?> redis = new GenericContainer<>(new DockerImageName("redis:3-alpine"))
+    static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.of("redis:3-alpine"))
         .withExposedPorts(6379);
 
     @DynamicPropertySource

@@ -23,7 +23,7 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
      */
     @Deprecated
     public MockServerContainer(String version) {
-        this(new DockerImageName("jamesdbloom/mockserver:mockserver-" + version));
+        this(DockerImageName.parse("jamesdbloom/mockserver:mockserver-" + version));
     }
 
     public MockServerContainer(DockerImageName dockerImageName) {

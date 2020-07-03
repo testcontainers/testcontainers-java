@@ -14,13 +14,13 @@ public class CmdModifierTest {
 
     // hostname {
     @Rule
-    public GenericContainer theCache = new GenericContainer<>(new DockerImageName("redis:3.0.2"))
+    public GenericContainer theCache = new GenericContainer<>(DockerImageName.parse("redis:3.0.2"))
             .withCreateContainerCmdModifier(cmd -> cmd.withHostName("the-cache"));
     // }
 
     // memory {
     @Rule
-    public GenericContainer memoryLimitedRedis = new GenericContainer<>(new DockerImageName("redis:3.0.2"))
+    public GenericContainer memoryLimitedRedis = new GenericContainer<>(DockerImageName.parse("redis:3.0.2"))
             .withCreateContainerCmdModifier(cmd -> cmd.withMemory((long) 8 * 1024 * 1024))
             .withCreateContainerCmdModifier(cmd -> cmd.withMemorySwap((long) 12 * 1024 * 1024));
     // }

@@ -20,7 +20,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SolrQueryTest {
 
-    private static final DockerImageName SOLR_IMAGE = new DockerImageName("solr:8.3.0");
+    private static final DockerImageName SOLR_IMAGE = DockerImageName.of("solr:8.3.0");
 
     public static final SolrContainer solrContainer = new SolrContainer(SOLR_IMAGE)
         .withCollection(COLLECTION_NAME);

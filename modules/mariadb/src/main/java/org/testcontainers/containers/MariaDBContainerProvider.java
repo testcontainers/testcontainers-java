@@ -24,7 +24,7 @@ public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new MariaDBContainer(new DockerImageName(MariaDBContainer.IMAGE, tag));
+        return new MariaDBContainer(DockerImageName.parse(MariaDBContainer.IMAGE).withTag(tag));
     }
 
     @Override

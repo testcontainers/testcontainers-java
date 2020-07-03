@@ -20,7 +20,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
 public class MockServerContainerTest {
 
-    public static final DockerImageName MOCKSERVER_IMAGE = new DockerImageName("jamesdbloom/mockserver:mockserver-5.5.4");
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("jamesdbloom/mockserver:mockserver-5.5.4");
 
     // creatingProxy {
     @Rule

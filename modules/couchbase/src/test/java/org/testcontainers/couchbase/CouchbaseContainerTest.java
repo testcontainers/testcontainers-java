@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CouchbaseContainerTest {
 
-    private static final DockerImageName COUCHBASE_IMAGE = new DockerImageName("couchbase/server:6.5.1");
+    private static final DockerImageName COUCHBASE_IMAGE = DockerImageName.parse("couchbase/server:6.5.1");
 
     @Test
     public void testBasicContainerUsage() {

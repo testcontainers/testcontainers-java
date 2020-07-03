@@ -103,7 +103,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      */
     @Deprecated
     public CouchbaseContainer(final String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     /**

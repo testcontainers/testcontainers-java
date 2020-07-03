@@ -33,7 +33,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
      */
     @Deprecated
     public Db2Container(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public Db2Container(final DockerImageName dockerImageName) {

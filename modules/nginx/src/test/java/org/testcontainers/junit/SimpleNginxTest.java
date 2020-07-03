@@ -20,7 +20,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
  */
 public class SimpleNginxTest {
 
-    private static final DockerImageName NGINX_IMAGE = new DockerImageName("nginx:1.9.4");
+    private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.9.4");
 
     private static String tmpDirectory = System.getProperty("user.home") + "/.tmp-test-container";
 

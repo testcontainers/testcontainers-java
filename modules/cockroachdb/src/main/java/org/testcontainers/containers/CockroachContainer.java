@@ -32,7 +32,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
      */
     @Deprecated
     public CockroachContainer(final String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public CockroachContainer(final DockerImageName dockerImageName) {

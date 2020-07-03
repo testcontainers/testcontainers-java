@@ -50,7 +50,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     @Deprecated
     public LocalStackContainer(String version) {
-        this(new DockerImageName(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));
+        this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));
     }
 
     public LocalStackContainer(final DockerImageName dockerImageName) {

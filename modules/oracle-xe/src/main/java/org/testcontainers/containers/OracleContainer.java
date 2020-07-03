@@ -46,7 +46,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
      */
     @Deprecated
     public OracleContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public OracleContainer(final DockerImageName dockerImageName) {

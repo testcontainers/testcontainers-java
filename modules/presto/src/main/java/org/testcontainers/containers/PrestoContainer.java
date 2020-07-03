@@ -37,7 +37,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
      */
     @Deprecated
     public PrestoContainer(final String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public PrestoContainer(final DockerImageName dockerImageName) {

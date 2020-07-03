@@ -40,7 +40,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      */
     @Deprecated
     public InfluxDBContainer(final String version) {
-        this(new DockerImageName(IMAGE_NAME + ":" + version));
+        this(DockerImageName.parse(IMAGE_NAME + ":" + version));
     }
 
     public InfluxDBContainer(final DockerImageName dockerImageName) {

@@ -15,6 +15,6 @@ public class Db2ContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new Db2Container(new DockerImageName(Db2Container.DEFAULT_DB2_IMAGE_NAME, tag));
+        return new Db2Container(DockerImageName.parse(Db2Container.DEFAULT_DB2_IMAGE_NAME).withTag(tag));
     }
 }

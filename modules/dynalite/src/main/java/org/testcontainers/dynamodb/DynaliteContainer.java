@@ -31,7 +31,7 @@ public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
      */
     @Deprecated
     public DynaliteContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public DynaliteContainer(final DockerImageName dockerImageName) {

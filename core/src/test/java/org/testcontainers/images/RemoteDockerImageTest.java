@@ -18,7 +18,7 @@ public class RemoteDockerImageTest {
     @Test
     public void toStringContainsOnlyImageName() {
         String imageName = Base58.randomString(8).toLowerCase();
-        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(new DockerImageName(imageName));
+        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(DockerImageName.parse(imageName));
         assertThat(remoteDockerImage.toString(), containsString("imageName=" + imageName));
     }
 

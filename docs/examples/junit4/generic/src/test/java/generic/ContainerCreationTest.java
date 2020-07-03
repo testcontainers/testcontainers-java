@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 public class ContainerCreationTest {
 
     // simple {
-    public static final DockerImageName REDIS_IMAGE = new DockerImageName("redis:3.0.2");
+    public static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:3.0.2");
     // }
 
     // simple {
@@ -20,7 +20,7 @@ public class ContainerCreationTest {
                 .withExposedPorts(6379);
     // }
 
-    public static final DockerImageName ALPINE_IMAGE = new DockerImageName("alpine:3.2");
+    public static final DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.2");
 
     // withOptions {
     // Set up a plain OS container and customize environment,

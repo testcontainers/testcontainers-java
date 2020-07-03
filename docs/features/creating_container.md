@@ -12,7 +12,7 @@ images as temporary test dependencies. For example, if you might use it to test 
 
 With a generic container, you set the container image using a parameter to the rule constructor, e.g.:
 ```java
-new GenericContainer(new DockerImageName("jboss/wildfly:9.0.1.Final"))
+new GenericContainer(DockerImageName.of("jboss/wildfly:9.0.1.Final"))
 ```
 
 ### Specifying an image

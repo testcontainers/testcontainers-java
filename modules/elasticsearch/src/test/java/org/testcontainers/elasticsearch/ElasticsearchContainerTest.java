@@ -34,7 +34,10 @@ public class ElasticsearchContainerTest {
      * Elasticsearch version which should be used for the Tests
      */
     private static final String ELASTICSEARCH_VERSION = Version.CURRENT.toString();
-    private static final DockerImageName ELASTICSEARCH_IMAGE = new DockerImageName("docker.elastic.co/elasticsearch/elasticsearch", ELASTICSEARCH_VERSION);
+    private static final DockerImageName ELASTICSEARCH_IMAGE =
+        DockerImageName
+            .parse("docker.elastic.co/elasticsearch/elasticsearch")
+            .withTag(ELASTICSEARCH_VERSION);
 
     /**
      * Elasticsearch default username, when secured with a license > basic
@@ -93,9 +96,13 @@ public class ElasticsearchContainerTest {
     @Test
     public void elasticsearchOssImage() throws IOException {
         try (ElasticsearchContainer container =
-                // oosContainer {
-                 new ElasticsearchContainer(new DockerImageName("docker.elastic.co/elasticsearch/elasticsearch-oss", ELASTICSEARCH_VERSION))
-                // }
+                 // oosContainer {
+                 new ElasticsearchContainer(
+                     DockerImageName
+                         .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                         .withTag(ELASTICSEARCH_VERSION)
+                 )
+             // }
         ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
@@ -126,10 +133,10 @@ public class ElasticsearchContainerTest {
                 .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-        // }}
+            // }}
             assertThat(response.getStatusLine().getStatusCode(), is(200));
             assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
-        // httpClientContainer {{
+            // httpClientContainer {{
         }
         // }
     }
@@ -138,7 +145,11 @@ public class ElasticsearchContainerTest {
     public void transportClientClusterHealth() {
         // transportClientContainer {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(new DockerImageName("docker.elastic.co/elasticsearch/elasticsearch", "6.4.1"))) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            DockerImageName
+                .parse("docker.elastic.co/elasticsearch/elasticsearch")
+                .withTag("6.4.1")
+        )){
             // Start the container. This step might take some time...
             container.start();
 

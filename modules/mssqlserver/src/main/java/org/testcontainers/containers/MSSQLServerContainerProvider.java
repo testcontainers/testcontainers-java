@@ -18,6 +18,6 @@ public class MSSQLServerContainerProvider extends JdbcDatabaseContainerProvider 
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new MSSQLServerContainer(new DockerImageName(MSSQLServerContainer.IMAGE, tag));
+        return new MSSQLServerContainer(DockerImageName.parse(MSSQLServerContainer.IMAGE).withTag(tag));
     }
 }

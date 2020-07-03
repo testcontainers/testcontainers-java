@@ -37,7 +37,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
      */
     @Deprecated
     public MariaDBContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public MariaDBContainer(final DockerImageName dockerImageName) {

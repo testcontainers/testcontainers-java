@@ -40,7 +40,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      */
     @Deprecated
     public MongoDbContainer(@NotNull String image) {
-        this(new DockerImageName(image));
+        this(DockerImageName.of(image));
     }
 
     /**

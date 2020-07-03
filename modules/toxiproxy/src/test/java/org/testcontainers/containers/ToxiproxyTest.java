@@ -28,14 +28,14 @@ public class ToxiproxyTest {
     @Rule
     public Network network = Network.newNetwork();
 
-    private static final DockerImageName REDIS_IMAGE = new DockerImageName("redis:5.0.4");
+    private static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:5.0.4");
     // The target container - this could be anything
     @Rule
     public GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
         .withExposedPorts(6379)
         .withNetwork(network);
 
-    private static final DockerImageName TOXIPROXY_IMAGE = new DockerImageName("shopify/toxiproxy:2.1.0");
+    private static final DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("shopify/toxiproxy:2.1.0");
     // Toxiproxy container, which will be used as a TCP proxy
     @Rule
     public ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE)

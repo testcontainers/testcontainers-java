@@ -43,7 +43,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
      */
     @Deprecated
     public ToxiproxyContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public ToxiproxyContainer(final DockerImageName dockerImageName) {

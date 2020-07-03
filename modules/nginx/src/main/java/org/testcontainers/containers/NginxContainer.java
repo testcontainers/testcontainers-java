@@ -29,7 +29,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
      */
     @Deprecated
     public NginxContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
 
         addExposedPort(NGINX_DEFAULT_PORT);
         setCommand("nginx", "-g", "daemon off;");

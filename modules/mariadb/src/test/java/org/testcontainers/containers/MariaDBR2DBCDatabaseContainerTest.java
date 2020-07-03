@@ -18,7 +18,7 @@ public class MariaDBR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseCont
 
     @Override
     protected MariaDBContainer<?> createContainer() {
-        return new MariaDBContainer<>(new DockerImageName("mariadb:10.3.6"));
+        return new MariaDBContainer<>(DockerImageName.parse("mariadb:10.3.6"));
     }
 
 }

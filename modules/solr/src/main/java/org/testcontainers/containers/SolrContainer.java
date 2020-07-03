@@ -39,7 +39,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
      */
     @Deprecated
     public SolrContainer(final String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public SolrContainer(final DockerImageName dockerImageName) {

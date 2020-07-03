@@ -46,7 +46,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
      */
     @Deprecated
     public MSSQLServerContainer(final String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public MSSQLServerContainer(final DockerImageName dockerImageName) {

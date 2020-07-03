@@ -32,6 +32,19 @@ public final class DockerImageName {
      *                      <code>some.registry/path/name:tag</code>,
      *                      <code>some.registry/path/name@sha256:abcdef...</code>, etc.
      */
+    public static DockerImageName parse(String fullImageName) {
+        return new DockerImageName(fullImageName);
+    }
+
+    /**
+     * Parses a docker image name from a provided string.
+     *
+     * @param fullImageName in standard Docker format, e.g. <code>name:tag</code>,
+     *                      <code>some.registry/path/name:tag</code>,
+     *                      <code>some.registry/path/name@sha256:abcdef...</code>, etc.
+     * @deprecated use {@link DockerImageName#parse(String)} instead
+     */
+    @Deprecated
     public DockerImageName(String fullImageName) {
         this.rawName = fullImageName;
         final int slashIndex = fullImageName.indexOf('/');
@@ -69,7 +82,9 @@ public final class DockerImageName {
      * @param version        a docker image version identifier, either as a tag or sha256 checksum, e.g.
      *                       <code>tag</code>,
      *                       <code>sha256:abcdef...</code>.
+     * @deprecated use {@link DockerImageName#parse(String)}.{@link DockerImageName#withTag(String)} instead
      */
+    @Deprecated
     public DockerImageName(String nameWithoutTag, @NotNull String version) {
         this.rawName = nameWithoutTag;
         final int slashIndex = nameWithoutTag.indexOf('/');

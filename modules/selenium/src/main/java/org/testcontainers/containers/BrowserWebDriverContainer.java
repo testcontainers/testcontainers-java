@@ -92,7 +92,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      */
     @Deprecated
     public BrowserWebDriverContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
         this.customImageNameIsSet = true;
         // We have to force SKIP mode for the recording by default because we don't know if the image has VNC or not
         recordingMode = VncRecordingMode.SKIP;

@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.*;
  */
 public class OrientDBContainerTest {
 
-    private static final DockerImageName ORIENTDB_IMAGE = new DockerImageName("orientdb:3.0.24-tp3");
+    private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.0.24-tp3");
 
     @Test
     public void shouldReturnTheSameSession() {

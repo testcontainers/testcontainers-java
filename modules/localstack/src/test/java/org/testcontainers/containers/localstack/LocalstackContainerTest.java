@@ -60,8 +60,8 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @RunWith(Enclosed.class)
 public class LocalstackContainerTest {
 
-    private static final DockerImageName LOCALSTACK_IMAGE = new DockerImageName("localstack/localstack:0.10.8");
-    private static final DockerImageName AWS_CLI_IMAGE = new DockerImageName("atlassian/pipelines-awscli:1.16.302");
+    private static final DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack:0.10.8");
+    private static final DockerImageName AWS_CLI_IMAGE = DockerImageName.parse("atlassian/pipelines-awscli:1.16.302");
 
     public static class WithoutNetwork {
 

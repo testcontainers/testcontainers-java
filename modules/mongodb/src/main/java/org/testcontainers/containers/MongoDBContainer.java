@@ -29,13 +29,13 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     public MongoDBContainer() {
         this("mongo:" + MONGODB_VERSION_DEFAULT);
     }
-    
+
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
      */
     @Deprecated
     public MongoDBContainer(@NonNull final String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public MongoDBContainer(final DockerImageName dockerImageName) {

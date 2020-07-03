@@ -57,7 +57,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      */
     @Deprecated
     public RabbitMQContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public RabbitMQContainer(final DockerImageName dockerImageName) {

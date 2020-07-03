@@ -42,7 +42,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      */
     @Deprecated
     public VaultContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public VaultContainer(final DockerImageName dockerImageName) {

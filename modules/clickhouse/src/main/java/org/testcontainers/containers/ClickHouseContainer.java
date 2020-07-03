@@ -35,7 +35,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
      */
     @Deprecated
     public ClickHouseContainer(String dockerImageName) {
-        this(new DockerImageName(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {

@@ -23,7 +23,7 @@ public class PrestoContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PrestoContainer(new DockerImageName(PrestoContainer.IMAGE, tag));
+        return new PrestoContainer(DockerImageName.parse(PrestoContainer.IMAGE).withTag(tag));
     }
 
     @Override
