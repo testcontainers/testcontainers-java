@@ -72,7 +72,7 @@ public final class ResourceReaper {
 
     @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
-        String ryukImage = TestcontainersConfiguration.getInstance().getRyukDockerImageName().toString();
+        String ryukImage = TestcontainersConfiguration.getInstance().getRyukDockerImageName().asCanonicalNameString();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         List<Bind> binds = new ArrayList<>();

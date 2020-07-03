@@ -55,7 +55,7 @@ public class DockerClientFactory {
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
-    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyDockerImageName().toString();
+    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyDockerImageName().asCanonicalNameString();
     private static DockerClientFactory instance;
 
     // Cached client configuration

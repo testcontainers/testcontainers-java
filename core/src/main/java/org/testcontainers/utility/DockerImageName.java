@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Pattern;
 
@@ -22,7 +23,7 @@ public final class DockerImageName {
     private final String rawName;
     private final String registry;
     private final String repo;
-    private final Versioning versioning;
+    @NotNull private final Versioning versioning;
 
     /**
      * Parses a docker image name from a provided string.
@@ -69,7 +70,7 @@ public final class DockerImageName {
      *                       <code>tag</code>,
      *                       <code>sha256:abcdef...</code>.
      */
-    public DockerImageName(String nameWithoutTag, String version) {
+    public DockerImageName(String nameWithoutTag, @NotNull String version) {
         this.rawName = nameWithoutTag;
         final int slashIndex = nameWithoutTag.indexOf('/');
 
@@ -112,13 +113,16 @@ public final class DockerImageName {
         return versioning.toString();
     }
 
+    /**
+     * @return canonical name for the image
+     */
+    public String asCanonicalNameString() {
+        return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
+    }
+
     @Override
     public String toString() {
-        if (versioning == null) {
-            return getUnversionedPart();
-        } else {
-            return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
-        }
+        return asCanonicalNameString();
     }
 
     /**
@@ -130,10 +134,6 @@ public final class DockerImageName {
         HostAndPort.fromString(registry);
         if (!REPO_NAME.matcher(repo).matches()) {
             throw new IllegalArgumentException(repo + " is not a valid Docker image name (in " + rawName + ")");
-        }
-        if (versioning == null) {
-            throw new IllegalArgumentException("No image tag was specified in docker image name " +
-                                               "(" + rawName + "). Please provide a tag; this may be 'latest' or a specific version");
         }
         if (!versioning.isValid()) {
             throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");

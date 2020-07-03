@@ -165,7 +165,7 @@ public class AuthenticatedImagePullTest {
 
     private static void putImageInRegistry() throws InterruptedException {
         // It doesn't matter which image we use for this test, but use one that's likely to have been pulled already
-        final String dummySourceImage = TestcontainersConfiguration.getInstance().getRyukDockerImageName().toString();
+        final String dummySourceImage = TestcontainersConfiguration.getInstance().getRyukDockerImageName().asCanonicalNameString();
 
         client.pullImageCmd(dummySourceImage)
             .exec(new PullImageResultCallback())
