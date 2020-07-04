@@ -1,9 +1,9 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.github.dockerjava.core.command.PushImageResultCallback;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,14 +30,14 @@ public class ImagePullPolicyTest {
     public static GenericContainer<?> registry = new GenericContainer<>(DOCKER_REGISTRY_IMAGE)
         .withExposedPorts(5000);
 
-    private static String imageName;
+    private static DockerImageName imageName;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         String testRegistryAddress = registry.getHost() + ":" + registry.getFirstMappedPort();
         String testImageName = testRegistryAddress + "/image-pull-policy-test";
         String tag = UUID.randomUUID().toString();
-        imageName = testImageName + ":" + tag;
+        imageName = DockerImageName.parse(testImageName).withTag(tag);
 
         DockerClient client = DockerClientFactory.instance().client();
         String dummySourceImage = "hello-world:latest";
@@ -48,34 +48,28 @@ public class ImagePullPolicyTest {
         // push the image to the registry
         client.tagImageCmd(dummyImageId, testImageName, tag).exec();
 
-        client.pushImageCmd(imageName)
-            .exec(new PushImageResultCallback())
+        client.pushImageCmd(imageName.asCanonicalNameString())
+            .exec(new ResultCallback.Adapter<>())
             .awaitCompletion(1, TimeUnit.MINUTES);
     }
 
     @AfterClass
     public static void afterClass() {
-        try {
-            DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
-        } catch (NotFoundException ignored) {
-        }
+        removeImage();
     }
 
     @Before
     public void setUp() {
         // Clean up local cache
-        try {
-            DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
-        } catch (NotFoundException ignored) {
-        }
+        removeImage();
 
-        LocalImagesCache.INSTANCE.cache.remove(DockerImageName.parse(imageName));
+        LocalImagesCache.INSTANCE.cache.remove(imageName);
     }
 
     @Test
     public void pullsByDefault() {
         try (
-            GenericContainer<?> container = new GenericContainer(DockerImageName.parse(imageName))
+            GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             container.start();
@@ -85,16 +79,19 @@ public class ImagePullPolicyTest {
     @Test
     public void shouldAlwaysPull() {
         try (
-            GenericContainer<?> container = new GenericContainer(DockerImageName.parse(imageName))
+            GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             container.start();
         }
 
-        DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
+        DockerClientFactory.instance().client()
+            .removeImageCmd(imageName.asCanonicalNameString())
+            .withForce(true)
+            .exec();
 
         try (
-            GenericContainer<?> container = new GenericContainer(DockerImageName.parse(imageName))
+            GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             expectToFailWithNotFoundException(container);
@@ -102,7 +99,7 @@ public class ImagePullPolicyTest {
 
         try (
             // built_in_image_pull_policy {
-            GenericContainer<?> container = new GenericContainer(DockerImageName.parse(imageName))
+            GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(PullPolicy.alwaysPull())
             // }
         ) {
@@ -115,7 +112,7 @@ public class ImagePullPolicyTest {
     public void shouldSupportCustomPolicies() {
         try (
             // custom_image_pull_policy {
-            GenericContainer<?> container = new GenericContainer(DockerImageName.parse(imageName))
+            GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(new AbstractImagePullPolicy() {
                     @Override
                     protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
@@ -138,7 +135,7 @@ public class ImagePullPolicyTest {
             }
         });
         try (
-            GenericContainer<?> container = new GenericContainer(DockerImageName.parse(imageName))
+            GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(policy)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
@@ -151,7 +148,7 @@ public class ImagePullPolicyTest {
     @Test
     public void shouldNotForcePulling() {
         try (
-            GenericContainer<?> container = new GenericContainer(DockerImageName.parse(imageName))
+            GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(__ -> false)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
@@ -176,4 +173,13 @@ public class ImagePullPolicyTest {
         }
     }
 
+    private static void removeImage() {
+        try {
+            DockerClientFactory.instance().client()
+                .removeImageCmd(imageName.asCanonicalNameString())
+                .withForce(true)
+                .exec();
+        } catch (NotFoundException ignored) {
+        }
+    }
 }
