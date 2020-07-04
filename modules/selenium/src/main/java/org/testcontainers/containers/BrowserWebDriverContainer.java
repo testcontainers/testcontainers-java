@@ -87,17 +87,18 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     /**
      * Constructor taking a specific webdriver container name and tag
-     * @param dockerImageName Name of the docker image to pull
+     * @param dockerImageName Name of the selenium docker image
      * @deprecated use {@link BrowserWebDriverContainer(DockerImageName)} instead
      */
     @Deprecated
     public BrowserWebDriverContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
-        this.customImageNameIsSet = true;
-        // We have to force SKIP mode for the recording by default because we don't know if the image has VNC or not
-        recordingMode = VncRecordingMode.SKIP;
     }
 
+    /**
+     * Constructor taking a specific webdriver container name and tag
+     * @param dockerImageName Name of the selenium docker image
+     */
     public BrowserWebDriverContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
@@ -110,6 +111,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                 .withStartupTimeout(Duration.of(15, SECONDS));
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
+
+        this.customImageNameIsSet = true;
+        // We have to force SKIP mode for the recording by default because we don't know if the image has VNC or not
+        recordingMode = VncRecordingMode.SKIP;
     }
 
     public SELF withCapabilities(Capabilities capabilities) {
