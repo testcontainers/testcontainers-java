@@ -19,8 +19,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class MongoDBContainerTest {
 
-    private static final DockerImageName MONGO_IMAGE = DockerImageName.parse("mongo:4.0.10");
-
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
      */
@@ -28,7 +26,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(MONGO_IMAGE)
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
             // }
         ) {
 
