@@ -19,7 +19,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 public class RedisBackedCacheTest {
 
     @Rule
-    public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.of("redis:3.0.6"))
+    public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
                                             .withExposedPorts(6379);
     private Cache cache;
 

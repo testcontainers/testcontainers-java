@@ -11,7 +11,7 @@ public class MongoDbContainerTest {
 
     @Test
     public void containerStartsAndPublicPortIsAvailable() {
-        try (MongoDbContainer container = new MongoDbContainer(DockerImageName.of("mongo:4.0"))) {
+        try (MongoDbContainer container = new MongoDbContainer(DockerImageName.parse("mongo:4.0"))) {
             container.start();
             assertThatPortIsAvailable(container);
         }
