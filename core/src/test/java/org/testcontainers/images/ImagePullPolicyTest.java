@@ -22,11 +22,12 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
 
 public class ImagePullPolicyTest {
 
     @ClassRule
-    public static GenericContainer<?> registry = new GenericContainer<>(DockerImageName.parse("registry:2.7.0"))
+    public static GenericContainer<?> registry = new GenericContainer<>(DOCKER_REGISTRY_IMAGE)
         .withExposedPorts(5000);
 
     private static String imageName;

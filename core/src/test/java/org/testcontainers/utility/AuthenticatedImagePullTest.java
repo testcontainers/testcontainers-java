@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
 
 /**
  * This test checks the integration between Testcontainers and an authenticated registry, but uses
@@ -45,7 +46,7 @@ public class AuthenticatedImagePullTest {
     @ClassRule
     public static GenericContainer<?> authenticatedRegistry = new GenericContainer<>(new ImageFromDockerfile()
         .withDockerfileFromBuilder(builder -> {
-            builder.from("registry:2.7.0")
+            builder.from(DOCKER_REGISTRY_IMAGE.asCanonicalNameString())
                 .run("htpasswd -Bbn testuser notasecret > /htpasswd")
                 .env("REGISTRY_AUTH", "htpasswd")
                 .env("REGISTRY_AUTH_HTPASSWD_PATH", "/htpasswd")
