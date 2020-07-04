@@ -87,7 +87,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
     private final Map<String, ComposeServiceWaitStrategyTarget> serviceInstanceMap = new ConcurrentHashMap<>();
     private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
-    private final SocatContainer ambassadorContainer = new SocatContainer(TestcontainersConfiguration.getInstance().getSocatDockerImageName());
+    private final SocatContainer ambassadorContainer = new SocatContainer();
     private final Map<String, List<Consumer<OutputFrame>>> logConsumers = new ConcurrentHashMap<>();
 
     private static final Object MUTEX = new Object();
