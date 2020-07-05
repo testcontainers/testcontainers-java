@@ -5,6 +5,7 @@
   * Docker version 17.06 is confirmed to work on Windows 10 with Hyper-V.
   * Testcontainers supports communication with Docker on Docker for Windows using named pipes.
   * WSL2 backend is supported starting with Windows 10 2004. (**Beta**)
+  * Docker on Windows Server 2019 is currently **not supported** (also note [this issue](https://github.com/testcontainers/testcontainers-java/issues/2960)).
 
 ## Limitations
 The following features are not available or do not work correctly so make sure you do not use them or use them with 
