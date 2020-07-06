@@ -23,28 +23,9 @@ executed. Containers declared as instance fields will be started and stopped for
 unsupported and may have unintended side effects.
   
 *Example:*
-```java
-@Testcontainers
-class MyTestcontainersTests {
-   
-     // will be shared between test methods
-    @Container
-    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
-    
-     // will be started before and stopped after each test method
-    @Container
-    private PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer()
-            .withDatabaseName("foo")
-            .withUsername("foo")
-            .withPassword("secret");
-    @Test
-    void test() {
-        assertTrue(MY_SQL_CONTAINER.isRunning());
-        assertTrue(postgresqlContainer.isRunning());
-    }
-}
-```
-
+<!--codeinclude-->
+[Mixed Lifecycle](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) inside_block:testClass
+<!--/codeinclude-->
 
 ## Examples
 
@@ -55,36 +36,10 @@ To use the Testcontainers extension annotate your test class with `@Testcontaine
 To define a restarted container, define an instance field inside your test class and annotate it with
 the `@Container` annotation.
 
-```java
-@Testcontainers
-class SomeTest {
+<!--codeinclude-->
+[Restarted Containers](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/TestcontainersNestedRestartedContainerTests.java) inside_block:testClass
+<!--/codeinclude-->
 
-    @Container
-    private MySQLContainer mySQLContainer = new MySQLContainer();
-
-    @Test
-    void someTestMethod() {
-        String url = mySQLContainer.getJdbcUrl();
-
-        // create a connection and run test as normal
-    }
-
-    @Nested
-    class NestedTests {
-
-        @Container
-        private final PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
-
-        void nestedTestMethod() {
-            // top level container is restarted for nested methods
-            String mySqlUrl = mySQLContainer.getJdbcUrl();
-            
-            // nested containers are only available inside their nested class
-            String postgresUrl = postgreSQLContainer.getJdbcUrl();
-        }
-    }
-}
-```
 
 ### Shared containers
 
