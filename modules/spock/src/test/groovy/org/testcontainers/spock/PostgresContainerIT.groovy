@@ -9,6 +9,7 @@ import spock.lang.Specification
 import java.sql.ResultSet
 import java.sql.Statement
 
+// PostgresContainerIT {
 @Testcontainers
 class PostgresContainerIT extends Specification {
 
@@ -42,3 +43,4 @@ class PostgresContainerIT extends Specification {
     }
 
 }
+// }

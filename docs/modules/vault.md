@@ -21,7 +21,7 @@ public class SomeTest {
        
        //There are many integration clients for Vault so let's just define a general one here:
        VaultClient client = new VaultClient(
-               vaultContainer.getContainerIpAddress(),
+               vaultContainer.getHost(),
                vaultContainer.getMappedPort(8200),
                "my-root-token");
        

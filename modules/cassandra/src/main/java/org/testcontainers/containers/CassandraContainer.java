@@ -161,7 +161,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
         final Cluster.Builder builder = Cluster.builder()
-            .addContactPoint(containerState.getContainerIpAddress())
+            .addContactPoint(containerState.getHost())
             .withPort(containerState.getMappedPort(CQL_PORT));
         if (!enableJmxReporting) {
             builder.withoutJMXReporting();

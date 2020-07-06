@@ -2,9 +2,9 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
@@ -196,23 +197,36 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void createServices() {
-        // Apply scaling
-        final String servicesWithScalingSettings = Stream.concat(services.stream(), scalingPreferences.keySet().stream())
-            .map(service -> "--scale " + service + "=" + scalingPreferences.getOrDefault(service, 1))
+        // services that have been explicitly requested to be started. If empty, all services should be started.
+        final String serviceNameArgs = Stream.concat(
+            services.stream(),                      // services that have been specified with `withServices`
+            scalingPreferences.keySet().stream()    // services that are implicitly needed via `withScaledService`
+        )
+            .distinct()
             .collect(joining(" "));
 
-        String flags = "-d";
+        // Apply scaling for the services specified using `withScaledService`
+        final String scalingOptions = scalingPreferences.entrySet().stream()
+            .map(entry -> "--scale " + entry.getKey() + "=" + entry.getValue())
+            .distinct()
+            .collect(joining(" "));
+
+        String command = "up -d";
 
         if (build) {
-            flags += " --build";
+            command += " --build";
+        }
+
+        if (!isNullOrEmpty(scalingOptions)) {
+            command += " " + scalingOptions;
+        }
+
+        if (!isNullOrEmpty(serviceNameArgs)) {
+            command += " " + serviceNameArgs;
         }
 
         // Run the docker-compose container, which starts up the services
-        if(Strings.isNullOrEmpty(servicesWithScalingSettings)) {
-            runWithCompose("up " + flags);
-        } else {
-            runWithCompose("up " + flags + " " + servicesWithScalingSettings);
-        }
+        runWithCompose(command);
     }
 
     private void waitUntilServiceStarted() {
@@ -250,7 +264,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.get(serviceName);
-        if(waitAllStrategy != null) {
+        if (waitAllStrategy != null) {
             waitAllStrategy.waitUntilReady(serviceInstance);
         }
     }
@@ -273,24 +287,25 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         }
 
         dockerCompose
-                .withCommand(cmd)
-                .withEnv(env)
-                .invoke();
+            .withCommand(cmd)
+            .withEnv(env)
+            .invoke();
     }
 
     private void registerContainersForShutdown() {
         ResourceReaper.instance().registerFilterForCleanup(Arrays.asList(
-                new SimpleEntry<>("label", "com.docker.compose.project=" + project)
+            new SimpleEntry<>("label", "com.docker.compose.project=" + project)
         ));
     }
 
-    private List<Container> listChildContainers() {
+    @VisibleForTesting
+    List<Container> listChildContainers() {
         return dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec().stream()
-                .filter(container -> Arrays.stream(container.getNames()).anyMatch(name ->
-                        name.startsWith("/" + project)))
-                .collect(toList());
+            .withShowAll(true)
+            .exec().stream()
+            .filter(container -> Arrays.stream(container.getNames()).anyMatch(name ->
+                name.startsWith("/" + project)))
+            .collect(toList());
     }
 
     private void startAmbassadorContainers() {
@@ -378,12 +393,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     /**
-     Specify the {@link WaitStrategy} to use to determine if the container is ready.
+     * Specify the {@link WaitStrategy} to use to determine if the container is ready.
      *
-     * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
-     * @param serviceName the name of the service to wait for
+     * @param serviceName  the name of the service to wait for
      * @param waitStrategy the WaitStrategy to use
      * @return this
+     * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      */
     public SELF waitingFor(String serviceName, @NonNull WaitStrategy waitStrategy) {
         String serviceInstanceName = getServiceInstanceName(serviceName);
@@ -402,7 +417,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
-        return ambassadorContainer.getContainerIpAddress();
+        return ambassadorContainer.getHost();
     }
 
     /**
@@ -420,8 +435,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         if (portMap == null) {
             throw new IllegalArgumentException("Could not get a port for '" + serviceName + "'. " +
-                "Testcontainers does not have an exposed port configured for '" + serviceName + "'. "+
-                "To fix, please ensure that the service '" + serviceName + "' has ports exposed using .withExposedService(...)");
+                                               "Testcontainers does not have an exposed port configured for '" + serviceName + "'. " +
+                                               "To fix, please ensure that the service '" + serviceName + "' has ports exposed using .withExposedService(...)");
         } else {
             return ambassadorContainer.getMappedPort(portMap.get(servicePort));
         }
@@ -479,7 +494,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * More than one consumer may be registered.
      *
      * @param serviceName the name of the service as set in the docker-compose.yml file
-     * @param consumer consumer that output frames should be sent to
+     * @param consumer    consumer that output frames should be sent to
      * @return this instance, for chaining
      */
     public SELF withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
@@ -579,10 +594,10 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         final String containerPwd = MountableFile.forHostPath(pwd).getFilesystemPath();
 
         final List<String> absoluteDockerComposeFiles = composeFiles.stream()
-                .map(File::getAbsolutePath)
-                .map(MountableFile::forHostPath)
-                .map(MountableFile::getFilesystemPath)
-                .collect(toList());
+            .map(File::getAbsolutePath)
+            .map(MountableFile::forHostPath)
+            .map(MountableFile::getFilesystemPath)
+            .collect(toList());
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
@@ -600,8 +615,8 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
     private String getDockerSocketHostPath() {
         return SystemUtils.IS_OS_WINDOWS
-                ? "/" + DOCKER_SOCKET_PATH
-                : DOCKER_SOCKET_PATH;
+            ? "/" + DOCKER_SOCKET_PATH
+            : DOCKER_SOCKET_PATH;
     }
 
     @Override
@@ -621,16 +636,16 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
         final Integer exitCode = this.dockerClient.inspectContainerCmd(getContainerId())
-                .exec()
-                .getState()
-                .getExitCode();
+            .exec()
+            .getState()
+            .getExitCode();
 
         if (exitCode == null || exitCode != 0) {
             throw new ContainerLaunchException(
-                    "Containerised Docker Compose exited abnormally with code " +
-                            exitCode +
-                            " whilst running command: " +
-                            StringUtils.join(this.getCommandParts(), ' '));
+                "Containerised Docker Compose exited abnormally with code " +
+                exitCode +
+                " whilst running command: " +
+                StringUtils.join(this.getCommandParts(), ' '));
         }
     }
 }
@@ -691,23 +706,23 @@ class LocalDockerCompose implements DockerCompose {
         logger().info("Local Docker Compose is running command: {}", cmd);
 
         final List<String> command = Splitter.onPattern(" ")
-                .omitEmptyStrings()
-                .splitToList(COMPOSE_EXECUTABLE + " " + cmd);
+            .omitEmptyStrings()
+            .splitToList(COMPOSE_EXECUTABLE + " " + cmd);
 
         try {
             new ProcessExecutor().command(command)
-                    .redirectOutput(Slf4jStream.of(logger()).asInfo())
-                    .redirectError(Slf4jStream.of(logger()).asInfo()) // docker-compose will log pull information to stderr
-                    .environment(environment)
-                    .directory(pwd)
-                    .exitValueNormal()
-                    .executeNoTimeout();
+                .redirectOutput(Slf4jStream.of(logger()).asInfo())
+                .redirectError(Slf4jStream.of(logger()).asInfo()) // docker-compose will log pull information to stderr
+                .environment(environment)
+                .directory(pwd)
+                .exitValueNormal()
+                .executeNoTimeout();
 
             logger().info("Docker Compose has finished running");
 
         } catch (InvalidExitValueException e) {
             throw new ContainerLaunchException("Local Docker Compose exited abnormally with code " +
-                    e.getExitValue() + " whilst running command: " + cmd);
+                                               e.getExitValue() + " whilst running command: " + cmd);
 
         } catch (Exception e) {
             throw new ContainerLaunchException("Error running local Docker Compose command: " + cmd, e);

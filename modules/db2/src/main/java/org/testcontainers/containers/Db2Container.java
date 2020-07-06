@@ -1,20 +1,12 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.LicenseAcceptance;
-import org.testcontainers.utility.LogUtils;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Predicate;
 
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
@@ -81,7 +73,9 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:db2://" + getContainerIpAddress() + ":" + getMappedPort(DB2_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters(":", ";", ";");
+        return "jdbc:db2://" + getHost() + ":" + getMappedPort(DB2_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override

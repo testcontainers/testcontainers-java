@@ -64,7 +64,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + ":" + getSid();
+        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + ":" + getSid();
     }
 
     @Override
@@ -87,6 +87,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     public OracleContainer withPassword(String password) {
         this.password = password;
         return self();
+    }
+
+    @Override
+    public OracleContainer withUrlParam(String paramName, String paramValue) {
+        throw new UnsupportedOperationException("The OracleDb does not support this");
     }
 
     @SuppressWarnings("SameReturnValue")
