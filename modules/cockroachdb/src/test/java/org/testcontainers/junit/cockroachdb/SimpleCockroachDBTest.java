@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
@@ -40,6 +42,24 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
+    @Test
+    public void testWithAdditionalUrlParamInJdbcUrl() {
+        CockroachContainer cockroach = new CockroachContainer()
+            .withUrlParam("sslmode", "disable")
+            .withUrlParam("application_name", "cockroach");
+
+        try {
+            cockroach.start();
+            String jdbcUrl = cockroach.getJdbcUrl();
+            assertThat(jdbcUrl, containsString("?"));
+            assertThat(jdbcUrl, containsString("&"));
+            assertThat(jdbcUrl, containsString("sslmode=disable"));
+            assertThat(jdbcUrl, containsString("application_name=cockroach"));
+        } finally {
+            cockroach.stop();
         }
     }
 }

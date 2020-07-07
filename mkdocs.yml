@@ -89,5 +89,6 @@ nav:
     - Contributing:
           - contributing.md
           - contributing_docs.md
+          - bounty.md
 extra:
-    latest_version: 1.14.1
+    latest_version: 1.14.3

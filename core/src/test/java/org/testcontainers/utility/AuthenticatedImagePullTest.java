@@ -45,7 +45,7 @@ public class AuthenticatedImagePullTest {
     @ClassRule
     public static GenericContainer<?> authenticatedRegistry = new GenericContainer<>(new ImageFromDockerfile()
         .withDockerfileFromBuilder(builder -> {
-            builder.from("registry:2")
+            builder.from("registry:2.7.0")
                 .run("htpasswd -Bbn testuser notasecret > /htpasswd")
                 .env("REGISTRY_AUTH", "htpasswd")
                 .env("REGISTRY_AUTH_HTPASSWD_PATH", "/htpasswd")

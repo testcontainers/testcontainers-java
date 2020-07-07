@@ -28,7 +28,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
     private static final String DEFAULT_IMAGE_NAME = "rabbitmq";
-    private static final String DEFAULT_TAG = "3.7-management-alpine";
+    private static final String DEFAULT_TAG = "3.7.25-management-alpine";
 
     private static final int DEFAULT_AMQP_PORT = 5672;
     private static final int DEFAULT_AMQPS_PORT = 5671;

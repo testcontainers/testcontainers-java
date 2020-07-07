@@ -31,7 +31,7 @@ import org.testcontainers.utility.MountableFile;
  */
 public class RabbitMQContainerTest {
 
-    public static final String DEFAULT_IMAGE = "rabbitmq:3.7-management-alpine";
+    public static final String DEFAULT_IMAGE = "rabbitmq:3.7.25-management-alpine";
     public static final int DEFAULT_AMQPS_PORT = 5671;
     public static final int DEFAULT_AMQP_PORT = 5672;
     public static final int DEFAULT_HTTPS_PORT = 15671;
@@ -156,7 +156,7 @@ public class RabbitMQContainerTest {
     {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
-            container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
+            container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
             assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");

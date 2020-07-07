@@ -66,7 +66,7 @@ public class DockerClientFactory {
     DockerClient dockerClient;
 
     @VisibleForTesting
-    RuntimeException cachedChecksFailure;
+    RuntimeException cachedClientFailure;
 
     private String activeApiVersion;
     private String activeExecutionDriver;
@@ -139,16 +139,21 @@ public class DockerClientFactory {
         }
 
         // fail-fast if checks have failed previously
-        if (cachedChecksFailure != null) {
-            log.debug("There is a cached checks failure - throwing", cachedChecksFailure);
-            throw cachedChecksFailure;
+        if (cachedClientFailure != null) {
+            log.debug("There is a cached checks failure - throwing", cachedClientFailure);
+            throw cachedClientFailure;
         }
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         String hostIpAddress = strategy.getDockerHostIpAddress();
         log.info("Docker host IP address is {}", hostIpAddress);
-        final DockerClient client = strategy.getClient();
+        final DockerClient client = new DelegatingDockerClient(strategy.getClient()) {
+            @Override
+            public void close() {
+                throw new IllegalStateException("You should never close the global DockerClient!");
+            }
+        };
 
         Info dockerInfo = client.infoCmd().exec();
         Version version = client.versionCmd().exec();
@@ -165,7 +170,12 @@ public class DockerClientFactory {
         boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
         if (useRyuk) {
             log.debug("Ryuk is enabled");
-            ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+            try {
+                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+            } catch (RuntimeException e) {
+                cachedClientFailure = e;
+                throw e;
+            }
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
         } else {
             log.debug("Ryuk is disabled");
@@ -196,7 +206,7 @@ public class DockerClientFactory {
                     );
                 }
             } catch (RuntimeException e) {
-                cachedChecksFailure = e;
+                cachedClientFailure = e;
                 throw e;
             }
         } else {
@@ -234,7 +244,7 @@ public class DockerClientFactory {
 
     private void check(String message, boolean isSuccessful) {
         if (isSuccessful) {
-            log.info("\u2714︎ {}", message);
+            log.info("\u2714\ufe0e {}", message);
         } else {
             log.error("\u274c {}", message);
             throw new IllegalStateException("Check failed: " + message);

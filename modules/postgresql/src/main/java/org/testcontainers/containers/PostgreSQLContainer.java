@@ -1,13 +1,12 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.lang.String.format;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
@@ -55,6 +54,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void configure() {
+        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
+        withUrlParam("loggerLevel", "OFF");
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
@@ -67,25 +68,9 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     public String getJdbcUrl() {
-        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
-        return format("jdbc:postgresql://%s:%d/%s?loggerLevel=OFF", getHost(), getMappedPort(POSTGRESQL_PORT), databaseName);
-    }
-
-    @Override
-    protected String constructUrlForConnection(String queryString) {
-        String baseUrl = getJdbcUrl();
-
-        if ("".equals(queryString)) {
-            return baseUrl;
-        }
-
-        if (!queryString.startsWith("?")) {
-            throw new IllegalArgumentException("The '?' character must be included");
-        }
-
-        return baseUrl.contains("?")
-            ? baseUrl + QUERY_PARAM_SEPARATOR + queryString.substring(1)
-            : baseUrl + queryString;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT)
+            + "/" + databaseName + additionalUrlParams;
     }
 
     @Override
