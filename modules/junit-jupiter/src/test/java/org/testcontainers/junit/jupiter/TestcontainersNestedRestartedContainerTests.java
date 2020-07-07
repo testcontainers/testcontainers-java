@@ -15,8 +15,8 @@ class TestcontainersNestedRestartedContainerTests {
     @Container
     private final GenericContainer topLevelContainer = new GenericContainer("httpd:2.4-alpine")
         .withExposedPorts(80);
-
     // }}
+
     private static String topLevelContainerId;
 
     private static String nestedContainerId;

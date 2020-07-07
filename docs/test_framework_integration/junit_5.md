@@ -47,21 +47,9 @@ Shared containers are defined as static fields in a top level test class and hav
 Note that shared containers can't be declared inside nested test classes.
 This is because nested test classes have to be defined non-static and can't therefore have static fields.
 
-```java
-@Testcontainers
-class SomeTest {
-
-    @Container
-    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
-
-    @Test
-    void someTestMethod() {
-        String url = MY_SQL_CONTAINER.getJdbcUrl();
-
-        // create a connection and run test as normal
-    }
-}
-```
+<!--codeinclude-->
+[Shared Container](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) lines:18-23,32-36
+<!--/codeinclude-->
 
 ## Singleton containers
 
