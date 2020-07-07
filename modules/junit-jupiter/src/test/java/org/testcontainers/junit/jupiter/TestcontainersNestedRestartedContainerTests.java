@@ -16,7 +16,7 @@ class TestcontainersNestedRestartedContainerTests {
     private final GenericContainer topLevelContainer = new GenericContainer("httpd:2.4-alpine")
         .withExposedPorts(80);
 
-    // }
+    // }}
     private static String topLevelContainerId;
 
     private static String nestedContainerId;
@@ -25,9 +25,9 @@ class TestcontainersNestedRestartedContainerTests {
     @Test
     void top_level_container_should_be_running() {
         assertTrue(topLevelContainer.isRunning());
-        // }
+// }}
         topLevelContainerId = topLevelContainer.getContainerId();
-        // testClass {
+// testClass {{
     }
 
     @Nested
@@ -43,14 +43,15 @@ class TestcontainersNestedRestartedContainerTests {
             assertTrue(topLevelContainer.isRunning());
             // nested containers are only available inside their nested class
             assertTrue(nestedContainer.isRunning());
-            // }
+// }}}
             if (nestedContainerId == null) {
                 nestedContainerId = nestedContainer.getContainerId();
             } else {
                 assertNotEquals(nestedContainerId, nestedContainer.getContainerId());
             }
-            // testClass {
+// testClass {{
         }
+
         // }
         @Test
         void containers_should_not_be_the_same() {
@@ -73,7 +74,7 @@ class TestcontainersNestedRestartedContainerTests {
                 assertNotEquals(nestedContainerId, nestedContainer.getContainerId());
             }
         }
-        // testClass {
+// testClass {{{
     }
 }
 // }
