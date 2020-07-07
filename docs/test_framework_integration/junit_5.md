@@ -48,7 +48,7 @@ Note that shared containers can't be declared inside nested test classes.
 This is because nested test classes have to be defined non-static and can't therefore have static fields.
 
 <!--codeinclude-->
-[Shared Container](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) lines:18-23,32-36
+[Shared Container](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) lines:18-23,32-33,35-36
 <!--/codeinclude-->
 
 ## Singleton containers
