@@ -20,6 +20,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
+    private String databaseName = MONGODB_DATABASE_NAME_DEFAULT;
 
     public MongoDBContainer() {
         this("mongo:" + MONGODB_VERSION_DEFAULT);
@@ -42,8 +43,20 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             "mongodb://%s:%d/%s",
             getContainerIpAddress(),
             getMappedPort(MONGODB_INTERNAL_PORT),
-            MONGODB_DATABASE_NAME_DEFAULT
+            databaseName
         );
+    }
+
+    /**
+     * Sets a database name for the {@link #getReplicaSetUrl()} method.
+     * Defaults to {@value #MONGODB_DATABASE_NAME_DEFAULT} if it is not called.
+     *
+     * @param databaseName a database name.
+     * @return this
+     */
+    public MongoDBContainer withDatabaseName(final String databaseName) {
+        this.databaseName = databaseName;
+        return self();
     }
 
     @Override
