@@ -31,7 +31,7 @@ import org.testcontainers.utility.MountableFile;
  */
 public class RabbitMQContainerTest {
 
-    public static final String DEFAULT_IMAGE = "rabbitmq:3.7-management-alpine";
+    public static final String DEFAULT_IMAGE = "rabbitmq:3.7.25-management-alpine";
     public static final int DEFAULT_AMQPS_PORT = 5671;
     public static final int DEFAULT_AMQP_PORT = 5672;
     public static final int DEFAULT_HTTPS_PORT = 15671;
@@ -49,13 +49,13 @@ public class RabbitMQContainerTest {
             container.start();
 
             assertThat(container.getAmqpsUrl()).isEqualTo(
-                String.format("amqps://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
+                String.format("amqps://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
             assertThat(container.getAmqpUrl()).isEqualTo(
-                String.format("amqp://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQP_PORT)));
+                String.format("amqp://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQP_PORT)));
             assertThat(container.getHttpsUrl()).isEqualTo(
-                String.format("https://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
+                String.format("https://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
             assertThat(container.getHttpUrl()).isEqualTo(
-                String.format("http://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTP_PORT)));
+                String.format("http://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTP_PORT)));
 
             assertThat(container.getHttpsPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTPS_PORT));
             assertThat(container.getHttpPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTP_PORT));
@@ -156,7 +156,7 @@ public class RabbitMQContainerTest {
     {
         try (RabbitMQContainer container = new RabbitMQContainer()) {
 
-            container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
+            container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
             assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");

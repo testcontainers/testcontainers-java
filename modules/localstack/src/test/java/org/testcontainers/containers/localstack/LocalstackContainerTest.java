@@ -1,6 +1,11 @@
 package org.testcontainers.containers.localstack;
 
 
+import com.amazonaws.services.kms.AWSKMS;
+import com.amazonaws.services.kms.AWSKMSClientBuilder;
+import com.amazonaws.services.kms.model.CreateKeyRequest;
+import com.amazonaws.services.kms.model.CreateKeyResult;
+import com.amazonaws.services.kms.model.Tag;
 import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.AWSLogsClientBuilder;
 import com.amazonaws.services.logs.model.CreateLogGroupRequest;
@@ -38,9 +43,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.*;
 
 /**
  * Tests for Localstack Container, used both in bridge network (exposed to host) and docker network modes.
@@ -58,7 +61,7 @@ public class LocalstackContainerTest {
         // without_network {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer()
-            .withServices(S3, SQS, CLOUDWATCHLOGS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS, KMS);
         // }
 
         @Test
@@ -134,6 +137,21 @@ public class LocalstackContainerTest {
             List<LogGroup> groups = logs.describeLogGroups().getLogGroups();
             assertEquals("One log group should be created", 1, groups.size());
             assertEquals("Name of created log group is [foo]", "foo", groups.get(0).getLogGroupName());
+        }
+
+        @Test
+        public void kmsKeyCreationTest() {
+            AWSKMS awskms = AWSKMSClientBuilder.standard()
+                .withEndpointConfiguration(localstack.getEndpointConfiguration(KMS))
+                .withCredentials(localstack.getDefaultCredentialsProvider())
+                .build();
+
+            String desc = String.format("AWS CMK Description");
+            Tag createdByTag = new Tag().withTagKey("CreatedBy").withTagValue("StorageService");
+            CreateKeyRequest req = new CreateKeyRequest().withDescription(desc).withTags(createdByTag);
+            CreateKeyResult key = awskms.createKey(req);
+
+            assertEquals("AWS KMS Customer Managed Key should be created ", key.getKeyMetadata().getDescription(), desc);
         }
     }
 

@@ -38,7 +38,7 @@ class TestcontainersSharedContainerIT extends Specification {
     }
 
     private CloseableHttpResponse performHttpRequest(CloseableHttpClient client) {
-        String ip = genericContainer.containerIpAddress
+        String ip = genericContainer.host
         String port = genericContainer.getMappedPort(80)
         def response = client.execute(new HttpGet("http://$ip:$port"))
         response

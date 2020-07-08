@@ -85,7 +85,7 @@ public class FixedHostPortContainerTest {
             final BufferedReader reader = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS,
                 () -> {
                     Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-                    final Socket socket = new Socket(container.getContainerIpAddress(), port);
+                    final Socket socket = new Socket(container.getHost(), port);
                     return new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 }
             )

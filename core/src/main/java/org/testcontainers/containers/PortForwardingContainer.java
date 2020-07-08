@@ -40,7 +40,7 @@ public enum PortForwardingContainer {
             );
         container.start();
 
-        Connection connection = new Connection(container.getContainerIpAddress(), container.getMappedPort(22));
+        Connection connection = new Connection(container.getHost(), container.getMappedPort(22));
 
         connection.setTCPNoDelay(true);
         connection.connect(
@@ -60,7 +60,7 @@ public enum PortForwardingContainer {
     public void exposeHostPort(int port) {
         exposeHostPort(port, port);
     }
-    
+
     @SneakyThrows
     public void exposeHostPort(int hostPort, int containerPort) {
     	if (exposedPorts.add(new AbstractMap.SimpleEntry<>(hostPort, containerPort))) {

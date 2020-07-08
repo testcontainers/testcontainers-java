@@ -29,8 +29,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private int port = PORT_NOT_ASSIGNED;
 
-    private boolean useImplicitNetwork = true;
-
     public KafkaContainer() {
         this("5.2.1");
     }
@@ -38,7 +36,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public KafkaContainer(String confluentPlatformVersion) {
         super(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion);
 
-        super.withNetwork(Network.SHARED);
         withExposedPorts(KAFKA_PORT);
 
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
@@ -52,26 +49,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
-    }
-
-    @Override
-    public KafkaContainer withNetwork(Network network) {
-        useImplicitNetwork = false;
-        return super.withNetwork(network);
-    }
-
-    @Override
-    public Network getNetwork() {
-        if (useImplicitNetwork) {
-            // TODO Only for backward compatibility, to be removed soon
-            logger().warn(
-                "Deprecation warning! " +
-                    "KafkaContainer#getNetwork without an explicitly set network. " +
-                    "Consider using KafkaContainer#withNetwork",
-                new Exception("Deprecated method")
-            );
-        }
-        return super.getNetwork();
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
@@ -88,7 +65,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         if (port == PORT_NOT_ASSIGNED) {
             throw new IllegalStateException("You should start Kafka container first");
         }
-        return String.format("PLAINTEXT://%s:%s", getContainerIpAddress(), port);
+        return String.format("PLAINTEXT://%s:%s", getHost(), port);
     }
 
     @Override

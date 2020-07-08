@@ -1,0 +1,29 @@
+name: CI-Docker-Wormhole
+
+on:
+  pull_request: {}
+  push: { branches: [ master ] }
+
+jobs:
+  in-docker_test:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build with Gradle
+        run: |
+          docker run -i --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$HOME:$HOME" \
+            -v "$PWD:$PWD" \
+            -w "$PWD" \
+            openjdk:8-jdk-alpine \
+            ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+      - name: aggregate test reports with ciMate
+        if: always()
+        continue-on-error: true
+        env:
+          CIMATE_PROJECT_ID: 2348n4vl
+        run: |
+          wget -q https://get.cimate.io/release/linux/cimate
+          chmod +x cimate
+          ./cimate "**/TEST-*.xml"

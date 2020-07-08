@@ -32,7 +32,7 @@ Where:
 * `-v /var/run/docker.sock:/var/run/docker.sock` will map the Docker socket
 
 ### Docker Compose example
-The same can be achived with Docker Compose:
+The same can be achieved with Docker Compose:
 ```yaml
 tests:
   image: maven:3

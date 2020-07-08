@@ -57,10 +57,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     }
 
     public String getHttpHostAddress() {
-        return getContainerIpAddress() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
+        return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 
     public InetSocketAddress getTcpHost() {
-        return new InetSocketAddress(getContainerIpAddress(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
+        return new InetSocketAddress(getHost(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }
 }
