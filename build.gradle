@@ -122,11 +122,6 @@ subprojects {
             for (pkg in packages) {
                 pkg = pkg.replaceAll('/', '.')
 
-                if (pkg.startsWith("com.github.dockerjava.")) {
-                    // Keep docker-java's package inside the final jar
-                    continue;
-                }
-
                 tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
             }
         }
