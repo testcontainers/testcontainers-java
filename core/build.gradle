@@ -172,7 +172,7 @@ dependencies {
 
     compile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 
-    compile "com.github.docker-java:docker-java-api:3.2.3"
+    compile "com.github.docker-java:docker-java-api:3.2.5"
 
     shaded ('com.github.docker-java:docker-java-core:3.2.5') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
