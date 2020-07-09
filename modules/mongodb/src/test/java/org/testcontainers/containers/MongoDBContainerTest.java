@@ -25,7 +25,6 @@ public class MongoDBContainerTest {
         try (
             // creatingMongoDBContainer {
             final MongoDBContainer mongoDBContainer = new MongoDBContainer()
-                .withDatabaseName("my-db")
             // }
         ) {
 
