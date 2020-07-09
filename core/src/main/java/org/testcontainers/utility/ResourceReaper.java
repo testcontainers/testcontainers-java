@@ -17,11 +17,14 @@ import com.google.common.collect.Sets;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.dockerclient.TransportConfig;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +32,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
@@ -70,13 +74,34 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    @SneakyThrows(InterruptedException.class)
+    /**
+     *
+     * @deprecated not for public usage
+     */
+    @Deprecated
     public static String start(String hostIpAddress, DockerClient client) {
+        return start(hostIpAddress, client, null);
+    }
+
+    /**
+     *
+     * @deprecated not for public usage
+     */
+    @Deprecated
+    @SneakyThrows(InterruptedException.class)
+    public static String start(String hostIpAddress, DockerClient client, @Nullable TransportConfig transportConfig) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
+        String socketPath = "//var/run/docker.sock";
+        if (transportConfig != null) {
+            URI dockerHost = transportConfig.getDockerHost();
+            if ("unix".equals(dockerHost.getScheme())) {
+                socketPath = dockerHost.getRawPath();
+            }
+        }
         List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
+        binds.add(new Bind(socketPath, new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig().withAutoRemove(true))

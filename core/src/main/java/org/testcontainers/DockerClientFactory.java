@@ -173,7 +173,7 @@ public class DockerClientFactory {
         if (useRyuk) {
             log.debug("Ryuk is enabled");
             try {
-                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+                ryukContainerId = ResourceReaper.start(hostIpAddress, client, strategy.getTransportConfig());
             } catch (RuntimeException e) {
                 cachedClientFailure = e;
                 throw e;
