@@ -106,8 +106,20 @@ public class CassandraContainerTest {
         }
     }
 
+    @Test
+    public void testAuthenticationSupport() {
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer<>()
+                .withConfigurationOverride("cassandra-authentication-test-configuration")
+        ) {
+            cassandraContainer.start();
+            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
+            assertTrue("Query was not applied", resultSet.wasApplied());
+        }
+    }
+
     private void testInitScript(CassandraContainer cassandraContainer) {
-        ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
+        ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT * FROM keySpaceTest.catalog_category");
         assertTrue("Query was not applied", resultSet.wasApplied());
         Row row = resultSet.one();
         assertEquals("Inserted row is not in expected state", 1, row.getLong(0));

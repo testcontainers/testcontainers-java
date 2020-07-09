@@ -4,6 +4,7 @@ import com.datastax.driver.core.Cluster;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
+import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
@@ -13,6 +14,8 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
@@ -27,12 +30,15 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     public static final String IMAGE = "cassandra";
     public static final Integer CQL_PORT = 9042;
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
-    private static final String USERNAME = "cassandra";
-    private static final String PASSWORD = "cassandra";
+    private static final String PASSWORD_AUTHENTICATOR = "PasswordAuthenticator";
+    private static final String CASSANDRA_CONFIG_FILE = "cassandra.yaml";
 
     private String configLocation;
     private String initScriptPath;
     private boolean enableJmxReporting;
+    private boolean authenticationEnabled = false;
+    private String userName = "cassandra";
+    private String password = "cassandra";
 
     public CassandraContainer() {
         this(IMAGE + ":3.11.2");
@@ -89,20 +95,29 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      */
     protected void optionallyMapResourceParameterAsVolume(String pathNameInContainer, String resourceLocation) {
         Optional.ofNullable(resourceLocation)
-                .map(MountableFile::forClasspathResource)
-                .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
+            .map(MountableFile::forClasspathResource)
+            .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
     }
 
     /**
      * Initialize Cassandra with the custom overridden Cassandra configuration
      * <p>
      * Be aware, that Docker effectively replaces all /etc/cassandra content with the content of config location, so if
-     * Cassandra.yaml in configLocation is absent or corrupted, then Cassandra just won't launch
+     * Cassandra.yaml in configLocation is absent or corrupted, then Cassandra just won't launch.
+     * If cassandra.yaml is not present this method will throw {@link ContainerLaunchException}
      *
      * @param configLocation relative classpath with the directory that contains cassandra.yaml and other configuration files
      */
     public SELF withConfigurationOverride(String configLocation) {
         this.configLocation = configLocation;
+        try {
+            if (getAuthenticatorValue(configLocation).equals(PASSWORD_AUTHENTICATOR)) {
+                authenticationEnabled = true;
+                waitingFor(new CassandraQueryWaitStrategy());
+            }
+        } catch (Exception e) {
+            throw new ContainerLaunchException("Error in reading configuration file", e);
+        }
         return self();
     }
 
@@ -126,6 +141,13 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return self();
     }
 
+    private String getAuthenticatorValue(String configLocation) throws IOException {
+        return Files
+            .lines(Paths.get(MountableFile.forClasspathResource(configLocation).getResolvedPath(), CASSANDRA_CONFIG_FILE))
+            .filter(s -> s.startsWith("authenticator: "))
+            .findFirst().orElse(":").split(":")[1].trim();
+    }
+
     /**
      * Get username
      *
@@ -135,7 +157,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * user management should be modified
      */
     public String getUsername() {
-        return USERNAME;
+        return userName;
     }
 
     /**
@@ -147,7 +169,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * user management should be modified
      */
     public String getPassword() {
-        return PASSWORD;
+        return password;
     }
 
     /**
@@ -160,17 +182,28 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
-        final Cluster.Builder builder = Cluster.builder()
-            .addContactPoint(containerState.getHost())
-            .withPort(containerState.getMappedPort(CQL_PORT));
-        if (!enableJmxReporting) {
-            builder.withoutJMXReporting();
-        }
-        return builder.build();
+        return getClusterBuilder(containerState, enableJmxReporting).build();
     }
 
     public static Cluster getCluster(ContainerState containerState) {
         return getCluster(containerState, false);
+    }
+
+    private static Cluster.Builder getClusterBuilder(ContainerState containerState, boolean enableJmxReporting) {
+        final Cluster.Builder builder = Cluster.builder()
+            .addContactPoint(containerState.getHost())
+            .withPort(containerState.getMappedPort(CQL_PORT));
+        if (containerState instanceof CassandraContainer) {
+            final CassandraContainer cassandraContainer = (CassandraContainer) containerState;
+            enableJmxReporting = cassandraContainer.enableJmxReporting;
+            if (cassandraContainer.authenticationEnabled) {
+                builder.withCredentials(cassandraContainer.userName, cassandraContainer.password);
+            }
+        }
+        if (!enableJmxReporting) {
+            builder.withoutJMXReporting();
+        }
+        return builder;
     }
 
     private DatabaseDelegate getDatabaseDelegate() {
