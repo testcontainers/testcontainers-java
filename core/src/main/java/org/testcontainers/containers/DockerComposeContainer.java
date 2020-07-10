@@ -688,6 +688,11 @@ class LocalDockerCompose implements DockerCompose {
         final Map<String, String> environment = Maps.newHashMap(env);
         environment.put(ENV_PROJECT_NAME, identifier);
 
+        String dockerHost = System.getenv("DOCKER_HOST");
+        if (dockerHost == null) {
+            dockerHost = "unix://" + DockerClientFactory.instance().getDockerUnixSocketPath();
+        }
+        environment.put("DOCKER_HOST", dockerHost);
 
         final Stream<String> absoluteDockerComposeFilePaths = composeFiles.stream()
             .map(File::getAbsolutePath)

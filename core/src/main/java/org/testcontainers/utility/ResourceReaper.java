@@ -17,14 +17,11 @@ import com.google.common.collect.Sets;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.dockerclient.TransportConfig;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,22 +70,8 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    /**
-     *
-     * @deprecated not for public usage
-     */
-    @Deprecated
-    public static String start(String hostIpAddress, DockerClient client) {
-        return start(hostIpAddress, client, null);
-    }
-
-    /**
-     *
-     * @deprecated not for public usage
-     */
-    @Deprecated
     @SneakyThrows(InterruptedException.class)
-    public static String start(String hostIpAddress, DockerClient client, @Nullable TransportConfig transportConfig) {
+    public static String start(String hostIpAddress, DockerClient client) {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
@@ -172,7 +155,6 @@ public final class ResourceReaper {
                                     }
                                 }
                             } catch (IOException e) {
-                                // TODO check if still running
                                 log.warn("Can not connect to Ryuk at {}:{}", hostIpAddress, ryukPort, e);
                             }
                         });
