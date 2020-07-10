@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.testcontainers.DockerClientFactory.TESTCONTAINERS_THREAD_GROUP;
 
 /**
- * {@link LoggedPullImageResultCallback} with improved logging of pull progress and a 'watchdog' which will abort the pull
+ * {@link PullImageResultCallback} with improved logging of pull progress and a 'watchdog' which will abort the pull
  * if progress is not being made, to prevent a hanging test
  */
 public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageResultCallback {
