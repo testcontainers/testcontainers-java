@@ -32,7 +32,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
@@ -93,15 +92,8 @@ public final class ResourceReaper {
         String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
-        String socketPath = "//var/run/docker.sock";
-        if (transportConfig != null) {
-            URI dockerHost = transportConfig.getDockerHost();
-            if ("unix".equals(dockerHost.getScheme())) {
-                socketPath = dockerHost.getRawPath();
-            }
-        }
         List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind(socketPath, new Volume("/var/run/docker.sock")));
+        binds.add(new Bind("/" + DockerClientFactory.instance().getDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig().withAutoRemove(true))
@@ -180,6 +172,7 @@ public final class ResourceReaper {
                                     }
                                 }
                             } catch (IOException e) {
+                                // TODO check if still running
                                 log.warn("Can not connect to Ryuk at {}:{}", hostIpAddress, ryukPort, e);
                             }
                         });

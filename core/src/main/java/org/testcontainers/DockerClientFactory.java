@@ -29,6 +29,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +128,14 @@ public class DockerClientFactory {
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
         return strategy;
+    }
+
+    @UnstableAPI
+    public String getDockerUnixSocketPath() {
+        URI dockerHost = getOrInitializeStrategy().getTransportConfig().getDockerHost();
+        return "unix".equals(dockerHost.getScheme())
+            ? dockerHost.getRawPath()
+            : "/var/run/docker.sock";
     }
 
     /**

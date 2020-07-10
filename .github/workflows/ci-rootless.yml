@@ -5,7 +5,7 @@ on:
   push: { branches: [ master ] }
 
 jobs:
-  in-docker_test:
+  test:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -18,7 +18,7 @@ jobs:
       - name: start rootless Docker
         run: PATH=$HOME/bin:$PATH XDG_RUNTIME_DIR=/tmp/docker-$(id -u) dockerd-rootless.sh --experimental --storage-driver vfs &
       - name: Build with Gradle
-        run: XDG_RUNTIME_DIR=/tmp/docker-$(id -u) ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
+        run: XDG_RUNTIME_DIR=/tmp/docker-$(id -u) ./gradlew --no-daemon --scan testcontainers:test
       - name: aggregate test reports with ciMate
         if: always()
         continue-on-error: true
