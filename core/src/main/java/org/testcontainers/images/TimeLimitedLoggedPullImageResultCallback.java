@@ -1,5 +1,6 @@
 package org.testcontainers.images;
 
+import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.PullResponseItem;
 import org.slf4j.Logger;
 import org.testcontainers.utility.TestcontainersConfiguration;
