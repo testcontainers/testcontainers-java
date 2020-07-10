@@ -28,6 +28,7 @@ class MixedLifecycleTests {
         .withDatabaseName("foo")
         .withUsername("foo")
         .withPassword("secret");
+
     @Test
     void test() {
         assertTrue(MY_SQL_CONTAINER.isRunning());
