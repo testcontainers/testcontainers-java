@@ -76,7 +76,7 @@ public final class ResourceReaper {
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind("/" + DockerClientFactory.instance().getMountableDockerSocketPath(), new Volume("/var/run/docker.sock")));
+        binds.add(new Bind("/" + DockerClientFactory.instance().getDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig().withAutoRemove(true))

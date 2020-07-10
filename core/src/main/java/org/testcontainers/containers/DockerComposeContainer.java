@@ -606,7 +606,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
         //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind(DockerClientFactory.instance().getMountableDockerSocketPath(), "/docker.sock", READ_WRITE);
+        addFileSystemBind("/" + DockerClientFactory.instance().getDockerUnixSocketPath(), "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);

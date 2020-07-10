@@ -29,6 +29,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -313,10 +314,14 @@ public class DockerClientFactory {
     }
 
     /**
-     * @return the path of the docker socket, mountable as a file from a container
+     * @return the path of the daemon unix socket, suitable for mounting into a container
      */
-    public String getMountableDockerSocketPath() {
-        return getOrInitializeStrategy().getMountableDockerSocketPath();
+    @UnstableAPI
+    public String getDockerUnixSocketPath() {
+        URI dockerHost = getOrInitializeStrategy().getTransportConfig().getDockerHost();
+        return "unix".equals(dockerHost.getScheme())
+            ? dockerHost.getRawPath()
+            : "/var/run/docker.sock";
     }
 
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {

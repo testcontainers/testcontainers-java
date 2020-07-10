@@ -44,7 +44,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     public LocalStackContainer(String version) {
         super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
 
-        withFileSystemBind(DockerClientFactory.instance().getMountableDockerSocketPath(), "/var/run/docker.sock");
+        withFileSystemBind("/" + DockerClientFactory.instance().getDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
     }
 
