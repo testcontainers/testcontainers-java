@@ -34,13 +34,4 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     public String getDescription() {
         return "Environment variables, system properties and defaults. Resolved dockerHost=" + dockerClientConfig.getDockerHost();
     }
-
-    @Override
-    protected String getDockerHostUri() {
-        if (dockerClientConfig.getDockerHost().getScheme().equals("unix")) {
-            return dockerClientConfig.getDockerHost().getPath().replace("unix://", "");
-        } else {
-            return super.getMountableDockerSocketPath();
-        }
-    }
 }
