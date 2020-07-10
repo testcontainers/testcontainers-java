@@ -55,7 +55,7 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
 
     private interface LibC extends Library {
 
-        LibC INSTANCE = Native.load("c", LibC.class);
+        LibC INSTANCE = Native.loadLibrary("c", LibC.class);
 
         int getuid();
     }
