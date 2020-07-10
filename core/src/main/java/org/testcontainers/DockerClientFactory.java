@@ -312,6 +312,13 @@ public class DockerClientFactory {
         return getOrInitializeStrategy().getDockerHostIpAddress();
     }
 
+    /**
+     * @return the path of the docker socket, mountable as a file from a container
+     */
+    public String getMountableDockerSocketPath() {
+        return getOrInitializeStrategy().getMountableDockerSocketPath();
+    }
+
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
         // We can't use client() here because it might create an infinite loop
         return runInsideDocker(getOrInitializeStrategy().getDockerClient(), createContainerCmdConsumer, block);

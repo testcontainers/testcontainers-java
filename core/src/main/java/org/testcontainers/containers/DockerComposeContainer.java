@@ -580,7 +580,6 @@ interface DockerCompose {
  */
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
-    private static final String DOCKER_SOCKET_PATH = "/var/run/docker.sock";
     public static final char UNIX_PATH_SEPERATOR = ':';
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
@@ -607,16 +606,10 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
         //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind(getDockerSocketHostPath(), "/docker.sock", READ_WRITE);
+        addFileSystemBind(DockerClientFactory.instance().getMountableDockerSocketPath(), "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
-    }
-
-    private String getDockerSocketHostPath() {
-        return SystemUtils.IS_OS_WINDOWS
-            ? "/" + DOCKER_SOCKET_PATH
-            : DOCKER_SOCKET_PATH;
     }
 
     @Override

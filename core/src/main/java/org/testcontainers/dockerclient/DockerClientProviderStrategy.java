@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -280,5 +281,15 @@ public abstract class DockerClientProviderStrategy {
             default:
                 return null;
         }
+    }
+
+    public String getMountableDockerSocketPath() {
+        return SystemUtils.IS_OS_WINDOWS
+            ? "/" + this.getDockerHostUri()
+            : this.getDockerHostUri();
+    }
+
+    protected String getDockerHostUri() {
+        return "/var/run/docker.sock";
     }
 }

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.rnorth.ducttape.Preconditions;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -43,7 +44,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     public LocalStackContainer(String version) {
         super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
 
-        withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
+        withFileSystemBind(DockerClientFactory.instance().getMountableDockerSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
     }
 

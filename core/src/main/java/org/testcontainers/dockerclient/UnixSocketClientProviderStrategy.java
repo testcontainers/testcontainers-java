@@ -55,4 +55,9 @@ public final class UnixSocketClientProviderStrategy extends DockerClientProvider
     protected int getPriority() {
         return PRIORITY;
     }
+
+    @Override
+    protected String getDockerHostUri() {
+        return DOCKER_SOCK_PATH;
+    }
 }
