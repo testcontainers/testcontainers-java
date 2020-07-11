@@ -14,8 +14,8 @@ import java.nio.file.Paths;
 @Deprecated
 public final class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
 
-    protected static final String SOCKET_LOCATION = System.getenv().getOrDefault("DOCKER_HOST", "unix:///var/run/docker.sock");
-    protected static final String DOCKER_SOCK_PATH = SOCKET_LOCATION.replace("unix://", "");
+    protected static final String SOCKET_LOCATION = "unix:///var/run/docker.sock";
+    protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
     private static final int SOCKET_FILE_MODE_MASK = 0xc000;
 
     public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 20;
@@ -41,9 +41,7 @@ public final class UnixSocketClientProviderStrategy extends DockerClientProvider
 
     @Override
     protected boolean isApplicable() {
-        boolean correctScheme = SOCKET_LOCATION.startsWith("unix://");
-
-        return correctScheme && (SystemUtils.IS_OS_LINUX);
+        return SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC_OSX;
     }
 
     @Override
