@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 @Deprecated
 public final class RootlessDockerClientProviderStrategy extends DockerClientProviderStrategy {
 
-    public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY + 20;
+    public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY + 1;
 
     private Path getSocketPath() {
         String xdgRuntimeDir = System.getenv("XDG_RUNTIME_DIR");
@@ -31,11 +31,6 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
         return TransportConfig.builder()
             .dockerHost(URI.create("unix://" + getSocketPath().toString()))
             .build();
-    }
-
-    @Override
-    public String getDockerHostIpAddress() {
-        return "localhost";
     }
 
     @Override
