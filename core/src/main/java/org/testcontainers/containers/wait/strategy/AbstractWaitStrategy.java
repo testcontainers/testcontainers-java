@@ -3,6 +3,7 @@ package org.testcontainers.containers.wait.strategy;
 import lombok.NonNull;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.testcontainers.containers.Port;
 
 import java.time.Duration;
 import java.util.Set;
@@ -57,6 +58,10 @@ public abstract class AbstractWaitStrategy implements WaitStrategy {
      */
     protected Set<Integer> getLivenessCheckPorts() {
         return waitStrategyTarget.getLivenessCheckPortNumbers();
+    }
+
+    protected Set<Port> getLivenessCheckPortsWithProtocols() {
+        return waitStrategyTarget.getLivenessCheckPortsWithProtocols();
     }
 
     /**

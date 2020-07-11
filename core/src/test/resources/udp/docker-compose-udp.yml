@@ -1,0 +1,7 @@
+version: '3.1'
+services:
+  udp-server:
+    build: .
+    environment:
+      - SERVER_PORT=33333
+      - SERVER_MESSAGE=hello

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.ExecInContainerPattern;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.time.Duration;
@@ -22,6 +23,14 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
     private final WaitStrategyTarget waitStrategyTarget;
     private final Set<Integer> internalPorts;
 
+    private final InternetProtocol internetProtocol;
+
+    public InternalCommandPortListeningCheck(WaitStrategyTarget waitStrategyTarget, Set<Integer> internalPorts) {
+        this.waitStrategyTarget = waitStrategyTarget;
+        this.internalPorts = internalPorts;
+        this.internetProtocol = InternetProtocol.TCP;
+    }
+
     @Override
     public Boolean call() {
         String command = "true";
@@ -29,11 +38,11 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
         for (int internalPort : internalPorts) {
             command += " && ";
             command += " (";
-            command += format("cat /proc/net/tcp* | awk '{print $2}' | grep -i ':0*%x'", internalPort);
+            command += format("cat /proc/net/%s* | awk '{print $2}' | grep -i ':0*%x'", internetProtocol.toDockerNotation(), internalPort);
             command += " || ";
             command += format("nc -vz -w 1 localhost %d", internalPort);
             command += " || ";
-            command += format("/bin/bash -c '</dev/tcp/localhost/%d'", internalPort);
+            command += format("/bin/bash -c '</dev/%s/localhost/%d'", internetProtocol.toDockerNotation(), internalPort);
             command += ")";
         }
 

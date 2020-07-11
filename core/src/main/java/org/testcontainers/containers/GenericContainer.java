@@ -12,7 +12,6 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
@@ -103,8 +102,8 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  */
 @Data
 public class GenericContainer<SELF extends GenericContainer<SELF>>
-        extends FailureDetectingExternalResource
-        implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
+    extends FailureDetectingExternalResource
+    implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -120,7 +119,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Default settings
      */
     @NonNull
-    private LinkedHashSet<Integer> exposedPorts = new LinkedHashSet<>();
+    private LinkedHashSet<Port> exposedPorts = new LinkedHashSet<>();
 
     @NonNull
     private List<String> portBindings = new ArrayList<>();
@@ -136,7 +135,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @NonNull
     private List<String> networkAliases = new ArrayList<>(Arrays.asList(
-            "tc-" + Base58.randomString(8)
+        "tc-" + Base58.randomString(8)
     ));
 
     @NonNull
@@ -193,7 +192,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Set during container startup
-     *
      */
     @Setter(AccessLevel.NONE)
     @VisibleForTesting
@@ -214,10 +212,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
-            .newBuilder()
-            .withRate(1, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
+        .newBuilder()
+        .withRate(1, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
     @Nullable
     private Map<String, String> tmpFsMapping;
@@ -243,11 +241,25 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public List<Integer> getExposedPorts() {
-        return new ArrayList<>(exposedPorts);
+        return exposedPorts.stream()
+            .map(Port::getValue)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public Set<Port> exposedPorts() {
+        return new LinkedHashSet<>(exposedPorts);
     }
 
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
+        this.exposedPorts = exposedPorts.stream()
+            .map(port -> Port.of(port, InternetProtocol.TCP))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    @Override
+    public void setExposedPorts(Set<Port> exposedPorts) {
         this.exposedPorts = new LinkedHashSet<>(exposedPorts);
     }
 
@@ -609,9 +621,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
         PathUtils.mkdirp(directory);
 
-        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-            PathUtils.recursiveDeleteDir(directory);
-        }));
+        if (temporary)
+            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
+                PathUtils.recursiveDeleteDir(directory);
+            }));
 
         return directory;
     }
@@ -663,14 +676,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * @return the port on which to check if the container is ready
-     * @deprecated see {@link GenericContainer#getLivenessCheckPorts()} for replacement
+     * @deprecated see {@link GenericContainer#getLivenessCheckPortsWithProtocols()} for replacement
      */
     @Deprecated
     protected Integer getLivenessCheckPort() {
         // legacy implementation for backwards compatibility
-        Iterator<Integer> exposedPortsIterator = exposedPorts.iterator();
+        Iterator<Port> exposedPortsIterator = exposedPorts.iterator();
         if (exposedPortsIterator.hasNext()) {
-            return getMappedPort(exposedPortsIterator.next());
+            Port exposedPort = exposedPortsIterator.next();
+            return getMappedPort(exposedPort.getValue(), exposedPort.getInternetProtocol());
         } else if (portBindings.size() > 0) {
             return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
         } else {
@@ -707,15 +721,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         // Set up exposed ports (where there are no host port bindings defined)
         ExposedPort[] portArray = exposedPorts.stream()
-                .map(ExposedPort::new)
-                .toArray(ExposedPort[]::new);
+            .map(Port::toDockerExposedPort)
+            .toArray(ExposedPort[]::new);
 
         createCommand.withExposedPorts(portArray);
 
         // Set up exposed ports that need host port bindings
         PortBinding[] portBindingArray = portBindings.stream()
-                .map(PortBinding::parse)
-                .toArray(PortBinding[]::new);
+            .map(PortBinding::parse)
+            .toArray(PortBinding[]::new);
 
         createCommand.withPortBindings(portBindingArray);
 
@@ -724,9 +738,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         String[] envArray = env.entrySet().stream()
-                .filter(it -> it.getValue() != null)
-                .map(it -> it.getKey() + "=" + it.getValue())
-                .toArray(String[]::new);
+            .filter(it -> it.getValue() != null)
+            .map(it -> it.getKey() + "=" + it.getValue())
+            .toArray(String[]::new);
         createCommand.withEnv(envArray);
 
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
@@ -741,11 +755,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         Bind[] bindsArray = binds.stream()
-                .toArray(Bind[]::new);
+            .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream()
-                .toArray(VolumesFrom[]::new);
+            .toArray(VolumesFrom[]::new);
         createCommand.withVolumesFrom(volumesFromsArray);
 
         Set<Link> allLinks = new HashSet<>();
@@ -760,8 +774,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (allLinks.size() == 0) {
                 throw new ContainerLaunchException("Aborting attempt to link to container " +
-                        linkableContainer.getContainerName() +
-                        " as it is not running");
+                    linkableContainer.getContainerName() +
+                    " as it is not running");
             }
 
             Set<String> linkedContainerNetworks = findAllNetworksForLinkedContainers(linkableContainer);
@@ -773,8 +787,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         allLinkedContainerNetworks.remove("bridge");
         if (allLinkedContainerNetworks.size() > 1) {
             logger().warn("Container needs to be on more than one custom network to link to other " +
-                            "containers - this is not currently supported. Required networks are: {}",
-                    allLinkedContainerNetworks);
+                    "containers - this is not currently supported. Required networks are: {}",
+                allLinkedContainerNetworks);
         }
 
         Optional<String> networkForLinks = allLinkedContainerNetworks.stream().findFirst();
@@ -790,7 +804,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         });
 
         String[] extraHostsArray = extraHosts.stream()
-                .toArray(String[]::new);
+            .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (network != null) {
@@ -821,22 +835,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
         return dockerClient.listContainersCmd()
-                .withStatusFilter(Arrays.asList("running"))
-                .exec().stream()
-                .flatMap(container -> Stream.of(container.getNames()))
-                .filter(name -> name.endsWith(linkableContainer.getContainerName()))
-                .map(name -> new Link(name, alias))
-                .collect(Collectors.toSet());
+            .withStatusFilter(Arrays.asList("running"))
+            .exec().stream()
+            .flatMap(container -> Stream.of(container.getNames()))
+            .filter(name -> name.endsWith(linkableContainer.getContainerName()))
+            .map(name -> new Link(name, alias))
+            .collect(Collectors.toSet());
     }
 
     private Set<String> findAllNetworksForLinkedContainers(LinkableContainer linkableContainer) {
         return dockerClient.listContainersCmd().exec().stream()
-                .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-                .filter(container -> container.getNetworkSettings() != null &&
-                        container.getNetworkSettings().getNetworks() != null)
-                .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
-                .distinct()
-                .collect(Collectors.toSet());
+            .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+            .filter(container -> container.getNetworkSettings() != null &&
+                container.getNetworkSettings().getNetworks() != null)
+            .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
+            .distinct()
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -904,18 +918,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public List<String> getEnv() {
         return env.entrySet().stream()
-                .map(it -> it.getKey() + "=" + it.getValue())
-                .collect(Collectors.toList());
+            .map(it -> it.getKey() + "=" + it.getValue())
+            .collect(Collectors.toList());
     }
 
     @Override
     public void setEnv(List<String> env) {
         this.env = env.stream()
-                .map(it -> it.split("="))
-                .collect(Collectors.toMap(
-                        it -> it[0],
-                        it -> it[1]
-                ));
+            .map(it -> it.split("="))
+            .collect(Collectors.toMap(
+                it -> it[0],
+                it -> it[1]
+            ));
     }
 
     /**
@@ -969,14 +983,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void addExposedPort(Integer port) {
-        exposedPorts.add(port);
+        exposedPorts.add(Port.tcp(port));
+    }
+
+    @Override
+    public void addExposedPort(Integer port, InternetProtocol internetProtocol) {
+        exposedPorts.add(Port.of(port, internetProtocol));
     }
 
     @Override
     public void addExposedPorts(int... ports) {
         for (int port : ports) {
-            exposedPorts.add(port);
+            exposedPorts.add(Port.tcp(port));
         }
+    }
+
+    @Override
+    public void addExposedPorts(Set<Integer> ports, InternetProtocol internetProtocol) {
+        ports.stream()
+            .map(integer -> Port.of(integer, internetProtocol))
+            .forEach(exposedPorts::add);
     }
 
     private TestDescription toDescription(Description description) {
@@ -1038,6 +1064,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.setExposedPorts(newArrayList(ports));
         return self();
 
+    }
+
+    @Override
+    public SELF withExposedPorts(Set<Integer> ports, InternetProtocol internetProtocol) {
+        Set<Port> collect = ports.stream()
+            .map(integer -> Port.of(integer, internetProtocol))
+            .collect(Collectors.toSet());
+
+        this.setExposedPorts(collect);
+        return self();
     }
 
     /**
@@ -1343,6 +1379,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Size of /dev/shm
+     *
      * @param bytes The number of bytes to assign the shared memory. If null, it will apply the Docker default which is 64 MB.
      * @return this
      */
@@ -1353,6 +1390,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * First class support for configuring tmpfs
+     *
      * @param mapping path and params of tmpfs/mount flag for container
      * @return this
      */

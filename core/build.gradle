@@ -98,6 +98,8 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
         "org.testcontainers.containers.wait.LogMessageWaitStrategy",
         "org.testcontainers.containers.wait.Wait",
         "org.testcontainers.containers.wait.WaitAllStrategy",
+        "org.testcontainers.containers.ContainerState",
+        "org.testcontainers.containers.wait.strategy.WaitStrategyTarget",
         "org.testcontainers.containers.wait.WaitStrategy",
         "org.testcontainers.dockerclient.AuditLoggingDockerClient",
         "org.testcontainers.dockerclient.LogToStringContainerCallback",

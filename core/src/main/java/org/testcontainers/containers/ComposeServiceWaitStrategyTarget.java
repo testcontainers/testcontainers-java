@@ -8,10 +8,11 @@ import lombok.NonNull;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -23,15 +24,15 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
     private final Container container;
     private final GenericContainer proxyContainer;
     @NonNull
-    private Map<Integer, Integer> mappedPorts;
-    @Getter(lazy=true)
+    private Map<Port, Integer> mappedPorts;
+    @Getter(lazy = true)
     private final InspectContainerResponse containerInfo = DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
 
     ComposeServiceWaitStrategyTarget(Container container, GenericContainer proxyContainer,
-                                     @NonNull Map<Integer, Integer> mappedPorts) {
+                                     @NonNull Map<Port, Integer> mappedPorts) {
         this.container = container;
         this.proxyContainer = proxyContainer;
-        this.mappedPorts = new HashMap<>(mappedPorts);
+        this.mappedPorts = mappedPorts;
     }
 
     /**
@@ -39,7 +40,15 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
      */
     @Override
     public List<Integer> getExposedPorts() {
-        return new ArrayList<>(this.mappedPorts.keySet());
+        return this.mappedPorts.keySet()
+            .stream()
+            .map(Port::getValue)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public Set<Port> exposedPorts() {
+        return new HashSet<>(mappedPorts.keySet());
     }
 
     /**
@@ -47,7 +56,12 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
      */
     @Override
     public Integer getMappedPort(int originalPort) {
-        return this.proxyContainer.getMappedPort(this.mappedPorts.get(originalPort));
+        return this.getMappedPort(originalPort, InternetProtocol.TCP);
+    }
+
+    @Override
+    public Integer getMappedPort(int originalPort, InternetProtocol internetProtocol) {
+        return this.proxyContainer.getMappedPort(this.mappedPorts.get(Port.of(originalPort, internetProtocol)), internetProtocol);
     }
 
     /**

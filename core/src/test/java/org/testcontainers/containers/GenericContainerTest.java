@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
+import com.google.common.collect.Sets;
 import com.github.dockerjava.api.model.Info;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -13,12 +14,19 @@ import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
+import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
+import java.nio.file.Paths;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class GenericContainerTest {
 
@@ -28,7 +36,7 @@ public class GenericContainerTest {
         // Poor man's rootless Docker detection :D
         Assumptions.assumeThat(info.getDriver()).doesNotContain("vfs");
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>()
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(ContainerState::getOOMKilled))
                 .withCreateContainerCmdModifier(it -> {
@@ -49,13 +57,38 @@ public class GenericContainerTest {
     @Test
     public void shouldReportErrorAfterWait() {
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>()
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container exited with code 123");
+        }
+    }
+
+    @Test
+    public void shouldHaveUdpPortExposed() throws Exception {
+        //given
+        ImageFromDockerfile imageFromDockerfile = new ImageFromDockerfile()
+            .withDockerfile(Paths.get("src/test/resources/udp/Dockerfile"));
+        final int port = 33333;
+        Set<Integer> ports = Sets.newHashSet(port);
+
+        //when
+        try (
+            GenericContainer<?> container = new GenericContainer<>(imageFromDockerfile)
+                .waitingFor(new LogMessageWaitStrategy().withRegEx(".*\\bServer listening\\b.*"))
+                .withExposedPorts(ports, InternetProtocol.UDP)
+                .withEnv("SERVER_PORT", String.valueOf(port))
+                .withEnv("SERVER_MESSAGE", "hello")
+        ) {
+            container.start();
+
+            //then
+            Integer mappedPort = container.getMappedPort(port, InternetProtocol.UDP);
+            assertThat(new ExternalPortListeningCheck(container, Sets.newHashSet(mappedPort), InternetProtocol.UDP).call()).isTrue();
+
         }
     }
 
