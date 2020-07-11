@@ -112,11 +112,6 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     }
 
     @Override
-    protected void waitUntilContainerStarted() {
-        getWaitStrategy().waitUntilReady(this);
-    }
-
-    @Override
     protected String getTestQueryString() {
         return "SELECT 1 FROM SYSIBM.SYSDUMMY1";
     }

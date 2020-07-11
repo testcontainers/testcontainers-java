@@ -101,11 +101,6 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     }
 
     @Override
-    protected void waitUntilContainerStarted() {
-        getWaitStrategy().waitUntilReady(this);
-    }
-
-    @Override
     @SneakyThrows
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!configuration.isZookeeper()) {

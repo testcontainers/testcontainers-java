@@ -277,6 +277,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
     public String getContainerId() {
         return containerId;
     }
@@ -867,7 +868,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @see #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)
      */
     protected void waitUntilContainerStarted() {
-        org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = getWaitStrategy();
         if (waitStrategy != null) {
             waitStrategy.waitUntilReady(this);
         }
