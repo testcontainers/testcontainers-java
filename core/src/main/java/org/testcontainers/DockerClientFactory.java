@@ -314,7 +314,7 @@ public class DockerClientFactory {
     }
 
     /**
-     * @return the path of the daemon unix socket, suitable for mounting into a container
+     * @return the path of the daemon unix socket on the target host, suitable for mounting into a container
      */
     @UnstableAPI
     public String getDockerUnixSocketPath() {
