@@ -82,5 +82,5 @@ However, sometimes a customization is required. For that, you can provide the fo
 > **TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = /var/run/docker-alt.sock**  
 > Used by Ryuk, Docker Compose, and a few other containers that need to mount the Docker socket
 > 
-> **TESTCONTAINERS_HOST_OVERRIDE = docker.svc.local**
+> **TESTCONTAINERS_HOST_OVERRIDE = docker.svc.local**  
 > The host on which ports are exposed by the target Docker.
