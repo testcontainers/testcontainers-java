@@ -151,16 +151,15 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
             return;
         }
         final URI rawUri = buildLivenessUri(livenessCheckPort);
+
         // Un-map the port for logging
-        int originalPort = -1;
-        for (Integer exposedPort : waitStrategyTarget.getExposedPorts()) {
-            if (rawUri.getPort() == waitStrategyTarget.getMappedPort(exposedPort)) {
-                originalPort = exposedPort;
-                break;
-            }
-        }
+        int originalPort = waitStrategyTarget.getExposedPorts().stream()
+            .filter(exposedPort -> rawUri.getPort() == waitStrategyTarget.getMappedPort(exposedPort))
+            .findFirst()
+            .orElse(-1);
+
         final String uri = rawUri.toString();
-        log.info("{}: Waiting for {} seconds for URL: {} (where {}-->{})", containerName, startupTimeout.getSeconds(), uri, rawUri.getPort(), originalPort);
+        log.info("{}: Waiting for {} seconds for URL: {} (where port {} maps to container port {})", containerName, startupTimeout.getSeconds(), uri, rawUri.getPort(), originalPort);
 
         // try to connect to the URL
         try {
