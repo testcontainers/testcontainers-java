@@ -36,12 +36,12 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
         waitStrategy = new WaitAllStrategy()
             .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
             .withStrategy(Wait.forListeningPort());
+
+        addExposedPort(INFLUXDB_PORT);
     }
 
     @Override
     protected void configure() {
-        addExposedPort(INFLUXDB_PORT);
-
         addEnv("INFLUXDB_ADMIN_USER", admin);
         addEnv("INFLUXDB_ADMIN_PASSWORD", adminPassword);
 
@@ -131,7 +131,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @return a url to influxDb
      */
     public String getUrl() {
-        return "http://" + getContainerIpAddress() + ":" + getLivenessCheckPort();
+        return "http://" + getHost() + ":" + getLivenessCheckPort();
     }
 
     /**

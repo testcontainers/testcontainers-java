@@ -15,8 +15,12 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     public static final String DEFAULT_TAG = "2017-CU12";
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
-    private String username = "SA";
-    private String password = "A_Str0ng_Required_Password";
+
+    static final String DEFAULT_USER = "SA";
+
+    static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
+
+    private String password = DEFAULT_PASSWORD;
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
@@ -36,6 +40,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         super(dockerImageName);
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
+        addExposedPort(MS_SQL_SERVER_PORT);
     }
 
     @Override
@@ -45,12 +50,22 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     protected void configure() {
-        addExposedPort(MS_SQL_SERVER_PORT);
-
-        LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
-        addEnv("ACCEPT_EULA", "Y");
+        // If license was not accepted programatically, check if it was accepted via resource file
+        if (!getEnvMap().containsKey("ACCEPT_EULA")) {
+            LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
+            acceptLicense();
+        }
 
         addEnv("SA_PASSWORD", password);
+    }
+
+    /**
+     * Accepts the license for the SQLServer container by setting the ACCEPT_EULA=Y
+     * variable as described at <a href="https://hub.docker.com/_/microsoft-mssql-server">https://hub.docker.com/_/microsoft-mssql-server</a>
+     */
+    public SELF acceptLicense() {
+        addEnv("ACCEPT_EULA", "Y");
+        return self();
     }
 
     @Override
@@ -60,12 +75,13 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:sqlserver://" + getContainerIpAddress() + ":" + getMappedPort(MS_SQL_SERVER_PORT);
+        String additionalUrlParams = constructUrlParameters(";", ";");
+        return "jdbc:sqlserver://" + getHost() + ":" + getMappedPort(MS_SQL_SERVER_PORT) + additionalUrlParams;
     }
 
     @Override
     public String getUsername() {
-        return username;
+        return DEFAULT_USER;
     }
 
     @Override
@@ -113,6 +129,5 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
                     "or percent (%)."
             );
         }
-
     }
 }

@@ -87,6 +87,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
             .withStrategy(waitForBolt)
             .withStrategy(waitForHttp)
             .withStartupTimeout(Duration.ofMinutes(2));
+
+        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
     }
 
     @Override
@@ -100,8 +102,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     @Override
     protected void configure() {
 
-        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
-
         boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
         String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);
         addEnv("NEO4J_AUTH", neo4jAuth);
@@ -111,21 +111,21 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return Bolt URL for use with Neo4j's Java-Driver.
      */
     public String getBoltUrl() {
-        return String.format("bolt://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_BOLT_PORT));
+        return String.format("bolt://" + getHost() + ":" + getMappedPort(DEFAULT_BOLT_PORT));
     }
 
     /**
      * @return URL of the transactional HTTP endpoint.
      */
     public String getHttpUrl() {
-        return String.format("http://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_HTTP_PORT));
+        return String.format("http://" + getHost() + ":" + getMappedPort(DEFAULT_HTTP_PORT));
     }
 
     /**
      * @return URL of the transactional HTTPS endpoint.
      */
     public String getHttpsUrl() {
-        return String.format("https://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_HTTPS_PORT));
+        return String.format("https://" + getHost() + ":" + getMappedPort(DEFAULT_HTTPS_PORT));
     }
 
     /**

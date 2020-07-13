@@ -1,7 +1,7 @@
 package org.testcontainers.images;
 
+import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.PullResponseItem;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.slf4j.Logger;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -47,9 +47,10 @@ public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageRes
     }
 
     @Override
-    public PullImageResultCallback awaitCompletion() throws InterruptedException {
+    public TimeLimitedLoggedPullImageResultCallback awaitCompletion() throws InterruptedException {
         waitingThreads.add(Thread.currentThread());
-        return super.awaitCompletion();
+        super.awaitCompletion();
+        return this;
     }
 
     @Override

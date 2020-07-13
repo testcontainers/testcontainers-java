@@ -162,7 +162,7 @@ public class GenericContainerRuleTest {
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(rabbitMq.getContainerIpAddress());
+        factory.setHost(rabbitMq.getHost());
         factory.setPort(rabbitMq.getMappedPort(RABBITMQ_PORT));
         Connection connection = factory.newConnection();
 
@@ -194,7 +194,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void simpleMongoDbTest() {
-        MongoClient mongoClient = new MongoClient(mongo.getContainerIpAddress(), mongo.getMappedPort(MONGO_PORT));
+        MongoClient mongoClient = new MongoClient(mongo.getHost(), mongo.getMappedPort(MONGO_PORT));
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
@@ -366,7 +366,7 @@ public class GenericContainerRuleTest {
         return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-            Socket socket = new Socket(container.getContainerIpAddress(), container.getFirstMappedPort());
+            Socket socket = new Socket(container.getHost(), container.getFirstMappedPort());
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
     }
@@ -375,6 +375,15 @@ public class GenericContainerRuleTest {
     public void addExposedPortAfterWithExposedPortsTest() {
         redis.addExposedPort(8987);
         assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
+        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
+        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
+    public void addingExposedPortTwiceShouldNotFail() {
+        redis.addExposedPort(8987);
+        redis.addExposedPort(8987);
+        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2)); // 2 ports = de-duplicated port 8897 and original port 6379
         assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
         assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
     }

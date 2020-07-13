@@ -66,11 +66,12 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
             .withStrategy(Wait.forListeningPort())
             .withStrategy(waitForHttp)
             .withStartupTimeout(Duration.ofMinutes(2));
+
+        addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }
 
     @Override
     protected void configure() {
-        addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
         addEnv("ORIENTDB_ROOT_PASSWORD", serverPassword);
     }
 
@@ -107,7 +108,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     }
 
     public String getServerUrl() {
-        return "remote:" + getContainerIpAddress() + ":" + getMappedPort(2424);
+        return "remote:" + getHost() + ":" + getMappedPort(2424);
     }
 
     public String getDbUrl() {

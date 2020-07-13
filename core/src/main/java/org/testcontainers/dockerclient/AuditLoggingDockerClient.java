@@ -15,10 +15,11 @@ import static org.testcontainers.utility.AuditLogger.doLog;
 /**
  * Wrapper for {@link DockerClient} to facilitate 'audit logging' of potentially destruction actions using
  * {@link org.testcontainers.utility.AuditLogger}.
+ *
  */
 @Slf4j
 @SuppressWarnings("unchecked")
-public class AuditLoggingDockerClient implements DockerClient {
+class AuditLoggingDockerClient implements DockerClient {
 
     @Delegate(excludes = InterceptedMethods.class)
     private final DockerClient wrappedClient;
