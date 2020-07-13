@@ -79,6 +79,9 @@ Testcontainers will attempt to detect the Docker environment and configure every
 
 However, sometimes a customization is required. For that, you can provide the following environment variables:
 
+> **DOCKER_HOST** = unix:///var/run/docker.sock  
+> See https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
+>
 > **TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = /var/run/docker-alt.sock**  
 > Used by Ryuk, Docker Compose, and a few other containers that need to mount the Docker socket
 > 
