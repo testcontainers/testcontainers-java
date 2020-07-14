@@ -51,6 +51,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         setWaitStrategy(new HttpWaitStrategy()
             .forPort(ELASTICSEARCH_DEFAULT_PORT)
+            .forPath("/_cluster/health")
             .forStatusCode(HTTP_OK)
             .withStartupTimeout(Duration.ofMinutes(2)));
     }
