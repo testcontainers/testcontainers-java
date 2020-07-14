@@ -128,6 +128,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt((String) properties.getOrDefault("pull.pause.timeout", "30"));
     }
 
+    public Integer getStartupTimeout() {
+        return Integer.parseInt((String) properties.getOrDefault("startup.timeout", "60"));
+    }
+
     @Synchronized
     public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
         try {
