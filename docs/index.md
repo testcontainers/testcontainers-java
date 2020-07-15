@@ -135,7 +135,8 @@ A huge thank you to our backers:
 * [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
 * [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
 * [Lukas Eder (@lukaseder)](https://github.com/lukaseder)
-* [Fedor Korotkov (@fedor)](https://github.com/fkorotkov)
+* [Fedor Korotkov (@fkorotkov)](https://github.com/fkorotkov)
+* [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
 
 
 ## License
