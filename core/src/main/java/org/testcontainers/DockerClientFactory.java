@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
@@ -29,6 +30,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +129,19 @@ public class DockerClientFactory {
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
         return strategy;
+    }
+
+    @UnstableAPI
+    public String getDockerUnixSocketPath() {
+        String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
+        if (!StringUtils.isBlank(dockerSocketOverride)) {
+            return dockerSocketOverride;
+        }
+
+        URI dockerHost = getOrInitializeStrategy().getTransportConfig().getDockerHost();
+        return "unix".equals(dockerHost.getScheme())
+            ? dockerHost.getRawPath()
+            : "/var/run/docker.sock";
     }
 
     /**
