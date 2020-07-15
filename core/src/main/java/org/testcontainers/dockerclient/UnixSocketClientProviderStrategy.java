@@ -41,7 +41,7 @@ public final class UnixSocketClientProviderStrategy extends DockerClientProvider
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_LINUX;
+        return SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC;
     }
 
     @Override

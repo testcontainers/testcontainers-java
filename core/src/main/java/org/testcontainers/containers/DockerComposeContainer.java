@@ -59,7 +59,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 
 /**
@@ -580,7 +579,6 @@ interface DockerCompose {
  */
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
-    private static final String DOCKER_SOCKET_PATH = "/var/run/docker.sock";
     public static final char UNIX_PATH_SEPERATOR = ':';
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
@@ -601,22 +599,16 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
-        addFileSystemBind(pwd, containerPwd, READ_ONLY);
+        addFileSystemBind(pwd, containerPwd, READ_WRITE);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
         //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind(getDockerSocketHostPath(), "/docker.sock", READ_WRITE);
+        addFileSystemBind("/" + DockerClientFactory.instance().getDockerUnixSocketPath(), "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
-    }
-
-    private String getDockerSocketHostPath() {
-        return SystemUtils.IS_OS_WINDOWS
-            ? "/" + DOCKER_SOCKET_PATH
-            : DOCKER_SOCKET_PATH;
     }
 
     @Override
@@ -681,16 +673,26 @@ class LocalDockerCompose implements DockerCompose {
         return this;
     }
 
+    @VisibleForTesting
+    static boolean executableExists() {
+        return CommandLine.executableExists(COMPOSE_EXECUTABLE);
+    }
+
     @Override
     public void invoke() {
         // bail out early
-        if (!CommandLine.executableExists(COMPOSE_EXECUTABLE)) {
+        if (!executableExists()) {
             throw new ContainerLaunchException("Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?");
         }
 
         final Map<String, String> environment = Maps.newHashMap(env);
         environment.put(ENV_PROJECT_NAME, identifier);
 
+        String dockerHost = System.getenv("DOCKER_HOST");
+        if (dockerHost == null) {
+            dockerHost = "unix://" + DockerClientFactory.instance().getDockerUnixSocketPath();
+        }
+        environment.put("DOCKER_HOST", dockerHost);
 
         final Stream<String> absoluteDockerComposeFilePaths = composeFiles.stream()
             .map(File::getAbsolutePath)
