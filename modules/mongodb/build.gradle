@@ -1,21 +1,7 @@
-plugins {
-    id 'org.springframework.boot' version '2.3.1.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
-}
-
 description = "Testcontainers :: MongoDB"
 
 dependencies {
     compile project(':testcontainers')
 
     testCompile("org.mongodb:mongodb-driver-sync:4.0.2")
-    testCompile("org.springframework.boot:spring-boot-starter")
-    testCompile("org.springframework.boot:spring-boot-starter-test") {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
-    testCompile("org.springframework.data:spring-data-mongodb:3.0.1.RELEASE")
-}
-
-bootJar {
-    enabled = false
 }
