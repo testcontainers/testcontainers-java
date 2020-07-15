@@ -17,6 +17,7 @@ import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -514,12 +515,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     @SneakyThrows(JsonProcessingException.class)
     final String hash(CreateContainerCmd createCommand) {
-        // TODO add Testcontainers' version to the hash
-        byte[] commandJson = new ObjectMapper()
+        DefaultDockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+
+        byte[] commandJson = dockerClientConfig.getObjectMapper()
+            .copy()
             .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
             .writeValueAsBytes(createCommand);
 
+        // TODO add Testcontainers' version to the hash
         return Hashing.sha1().hashBytes(commandJson).toString();
     }
 

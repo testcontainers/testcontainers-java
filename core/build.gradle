@@ -100,16 +100,32 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
         "org.testcontainers.containers.wait.WaitAllStrategy",
         "org.testcontainers.containers.wait.WaitStrategy",
         "org.testcontainers.dockerclient.AuditLoggingDockerClient",
+        "org.testcontainers.dockerclient.LogToStringContainerCallback",
+        "org.testcontainers.dockerclient.DockerMachineClientProviderStrategy",
+        "org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy",
+        "org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy",
+        "org.testcontainers.dockerclient.ProxiedUnixSocketClientProviderStrategy",
+        "org.testcontainers.dockerclient.WindowsClientProviderStrategy",
+        "org.testcontainers.dockerclient.UnixSocketClientProviderStrategy",
         "org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig",
         "org.testcontainers.containers.GenericContainer\$AbstractWaitStrategy",
         "org.testcontainers.dockerclient.transport.okhttp.NamedPipeSocketFactory",
         "org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory",
         "org.testcontainers.dockerclient.transport.okhttp.UnixSocketFactory",
+        "org.testcontainers.containers.output.FrameConsumerResultCallback",
+        "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
     ]
 
     methodExcludes = [
         "org.testcontainers.dockerclient.DockerClientConfigUtils#getDetectedDockerHostIp()",
         "org.testcontainers.dockerclient.DockerClientConfigUtils#getDockerHostIpAddress(com.github.dockerjava.core.DockerClientConfig)",
+
+        "org.testcontainers.dockerclient.DockerClientProviderStrategy#checkOSType()",
+        "org.testcontainers.dockerclient.DockerClientProviderStrategy#getClientForConfig(com.github.dockerjava.core.DockerClientConfig)",
+        "org.testcontainers.dockerclient.DockerClientProviderStrategy#ping(com.github.dockerjava.api.DockerClient, int)",
+        "org.testcontainers.dockerclient.DockerClientProviderStrategy#test()",
+
+        "org.testcontainers.dockerclient.UnixSocketClientProviderStrategy#tryConfiguration(java.lang.String)",
 
         "org.testcontainers.utility.ResourceReaper#start(java.lang.String, com.github.dockerjava.api.DockerClient, boolean)",
 
@@ -126,6 +142,10 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
         "org.testcontainers.containers.GenericContainer#containerId",
         "org.testcontainers.containers.GenericContainer#containerName",
         "org.testcontainers.containers.GenericContainer#dockerDaemonInfo",
+
+        "org.testcontainers.dockerclient.DockerClientProviderStrategy#LOGGER",
+        "org.testcontainers.dockerclient.DockerClientProviderStrategy#client",
+        "org.testcontainers.dockerclient.DockerClientProviderStrategy#config",
     ]
 
     onlyBinaryIncompatibleModified = true
@@ -150,24 +170,26 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    compile ('org.rnorth.visible-assertions:visible-assertions:2.1.2') {
-        // Excluded in favor of jna-platform below
-        exclude(group: "net.java.dev.jna", module: "jna")
-    }
+    compile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 
-    compile "net.java.dev.jna:jna-platform:5.5.0"
+    compile "com.github.docker-java:docker-java-api:3.2.5"
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.5') {
-        exclude(group: 'net.java.dev.jna')
+    shaded ('com.github.docker-java:docker-java-core:3.2.5') {
+        exclude(group: 'com.github.docker-java', module: 'docker-java-api')
+        exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
+        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-zerodep:3.2.5') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.5') {
+        exclude(group: 'com.github.docker-java', module: 'docker-java-core')
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
+
+    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.5'
 
     shaded "org.yaml:snakeyaml:1.25"
 
