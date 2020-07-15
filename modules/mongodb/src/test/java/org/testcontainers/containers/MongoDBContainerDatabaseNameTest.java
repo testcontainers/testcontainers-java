@@ -20,6 +20,7 @@ import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -33,7 +34,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @Slf4j
-@DataMongoTest
+@DataMongoTest(properties = {"spring.main.banner-mode=off", "data.mongodb.auto-index-creation=true"})
 @ContextConfiguration(initializers = MongoDBContainerDatabaseNameTest.Initializer.class)
 @RunWith(SpringRunner.class)
 public class MongoDBContainerDatabaseNameTest {
@@ -65,8 +66,8 @@ public class MongoDBContainerDatabaseNameTest {
                 isDatabaseInMongoDB(mongoSyncClient, DATABASE_NAME)
             );
 
-            //3. Perform an operation to create a new collection via mongoTemplate.
-            mongoTemplate.createCollection(Product.class);
+            //3. Perform an operation to save a new Product via mongoTemplate.
+            mongoTemplate.save(new Product(1L));
 
             //4. Now the database is created in MongoDB.
             assertTrue(
@@ -110,6 +111,7 @@ public class MongoDBContainerDatabaseNameTest {
     @NoArgsConstructor
     @Setter(AccessLevel.NONE)
     private static class Product {
+        @Indexed(unique = true)
         private Long article;
     }
 }
