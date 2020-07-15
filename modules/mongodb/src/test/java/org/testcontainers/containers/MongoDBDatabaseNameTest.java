@@ -34,9 +34,9 @@ import static org.junit.Assert.assertTrue;
 
 @Slf4j
 @DataMongoTest
-@ContextConfiguration(initializers = MongoDBContainerDatabaseNameTest.Initializer.class)
+@ContextConfiguration(initializers = MongoDBDatabaseNameTest.Initializer.class)
 @RunWith(SpringRunner.class)
-public class MongoDBContainerDatabaseNameTest {
+public class MongoDBDatabaseNameTest {
     private static final MongoDBContainer MONGO_DB_CONTAINER = new MongoDBContainer();
     private static final String DATABASE_NAME = "my-db";
 
