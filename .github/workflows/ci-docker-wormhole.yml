@@ -9,25 +9,21 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: debug
+      - name: Build with Gradle
         run: |
-          env
-          cat $GITHUB_EVENT_PATH
-#       - name: Build with Gradle
-#         run: |
-#           docker run -i --rm \
-#             -v /var/run/docker.sock:/var/run/docker.sock \
-#             -v "$HOME:$HOME" \
-#             -v "$PWD:$PWD" \
-#             -w "$PWD" \
-#             openjdk:8-jdk-alpine \
-#             ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+          docker run -i --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$HOME:$HOME" \
+            -v "$PWD:$PWD" \
+            -w "$PWD" \
+            openjdk:8-jdk-alpine \
+            ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - name: aggregate test reports with ciMate
         if: always()
         continue-on-error: true
         env:
           CIMATE_PROJECT_ID: 2348n4vl
         run: |
-          wget -q https://get.cimate.io/release/linux/cimate
+          wget -q https://get.cimate.io/next/linux/cimate
           chmod +x cimate
           ./cimate "**/TEST-*.xml"
