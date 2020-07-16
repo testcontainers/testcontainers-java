@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
+import org.testcontainers.dockerclient.TransportConfig;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.MountableFile;
@@ -132,13 +133,18 @@ public class DockerClientFactory {
     }
 
     @UnstableAPI
-    public String getDockerUnixSocketPath() {
+    public TransportConfig getTransportConfig() {
+        return getOrInitializeStrategy().getTransportConfig();
+    }
+
+    @UnstableAPI
+    public String getRemoteDockerUnixSocketPath() {
         String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
         if (!StringUtils.isBlank(dockerSocketOverride)) {
             return dockerSocketOverride;
         }
 
-        URI dockerHost = getOrInitializeStrategy().getTransportConfig().getDockerHost();
+        URI dockerHost = getTransportConfig().getDockerHost();
         return "unix".equals(dockerHost.getScheme())
             ? dockerHost.getRawPath()
             : "/var/run/docker.sock";
