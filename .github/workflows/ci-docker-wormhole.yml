@@ -26,4 +26,4 @@ jobs:
         run: |
           wget -q https://get.cimate.io/next/linux/cimate
           chmod +x cimate
-          ./cimate "**/TEST-*.xml"
+          ./cimate -v "**/TEST-*.xml"
