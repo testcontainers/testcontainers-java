@@ -698,6 +698,7 @@ class LocalDockerCompose implements DockerCompose {
             if (sslConfig != null) {
                 if (sslConfig instanceof LocalDirectorySSLConfig) {
                     environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+                    environment.put("DOCKER_TLS_VERIFY", "true");
                 } else {
                     logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
                 }
