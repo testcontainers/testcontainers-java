@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.core.LocalDirectorySSLConfig;
+import com.github.dockerjava.transport.SSLConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -22,6 +24,7 @@ import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCh
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.dockerclient.TransportConfig;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.AuditLogger;
 import org.testcontainers.utility.Base58;
@@ -605,7 +608,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
         //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind("/" + DockerClientFactory.instance().getDockerUnixSocketPath(), "/docker.sock", READ_WRITE);
+        addFileSystemBind("/" + DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);
@@ -690,7 +693,16 @@ class LocalDockerCompose implements DockerCompose {
 
         String dockerHost = System.getenv("DOCKER_HOST");
         if (dockerHost == null) {
-            dockerHost = "unix://" + DockerClientFactory.instance().getDockerUnixSocketPath();
+            TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
+            SSLConfig sslConfig = transportConfig.getSslConfig();
+            if (sslConfig != null) {
+                if (sslConfig instanceof LocalDirectorySSLConfig) {
+                    environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+                } else {
+                    logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
+                }
+            }
+            dockerHost = transportConfig.getDockerHost().toString();
         }
         environment.put("DOCKER_HOST", dockerHost);
 
