@@ -1,48 +1,27 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientConfig;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.NotNull;
-import org.testcontainers.utility.ComparableVersion;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@Slf4j
-public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
+/**
+ *
+ * @deprecated this class is used by the SPI and should not be used directly
+ */
+@Deprecated
+public final class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
     private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
     private static final int SOCKET_FILE_MODE_MASK = 0xc000;
-    private static final String PING_TIMEOUT_DEFAULT = "10";
-    private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.unixsocketprovider.timeout";
 
     public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 20;
 
     @Override
-    protected boolean isApplicable() {
-        final boolean nettyDoesSupportMacUnixSockets = SystemUtils.IS_OS_MAC_OSX &&
-                ComparableVersion.OS_VERSION.isGreaterThanOrEqualTo("10.12");
-
-        return SystemUtils.IS_OS_LINUX || nettyDoesSupportMacUnixSockets;
-    }
-
-    @Override
-    public void test() throws InvalidConfigurationException {
-        try {
-            config = tryConfiguration(SOCKET_LOCATION);
-            log.info("Accessing docker with local Unix socket");
-        } catch (Exception | UnsatisfiedLinkError e) {
-            throw new InvalidConfigurationException("ping failed", e);
-        }
-    }
-
-    @NotNull
-    protected DockerClientConfig tryConfiguration(String dockerHost) {
-
+    public TransportConfig getTransportConfig() throws InvalidConfigurationException {
         Path dockerSocketFile = Paths.get(DOCKER_SOCK_PATH);
         Integer mode;
         try {
@@ -55,16 +34,14 @@ public class UnixSocketClientProviderStrategy extends DockerClientProviderStrate
             throw new InvalidConfigurationException("Found docker unix domain socket but file mode was not as expected (expected: srwxr-xr-x). This problem is possibly due to occurrence of this issue in the past: https://github.com/docker/docker/issues/13121");
         }
 
-        config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost(dockerHost)
-                .withDockerTlsVerify(false)
-                .build();
-        client = getClientForConfig(config);
+        return TransportConfig.builder()
+            .dockerHost(URI.create(SOCKET_LOCATION))
+            .build();
+    }
 
-        final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
-        ping(client, timeout);
-
-        return config;
+    @Override
+    protected boolean isApplicable() {
+        return SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC;
     }
 
     @Override
