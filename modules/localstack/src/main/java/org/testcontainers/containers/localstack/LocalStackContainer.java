@@ -12,6 +12,7 @@ import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.InetAddress;
@@ -42,19 +43,23 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private final boolean legacyMode;
 
     /**
-     * Uses default ({@value #VERSION}) version of LocalStack container
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
      */
+    @Deprecated
     public LocalStackContainer() {
         this(VERSION, false);
     }
 
     /**
-     * Uses provided version of LocalStack container
-     * Enables legacy mode (each AWS service is exposed on a different port) if provided version is less that 0.11
-     *
-     * @param version tag of LocalStack container to run
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
      */
+    @Deprecated
     public LocalStackContainer(String version) {
+        this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));
+    }
+
+    public LocalStackContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         this(version, shouldRunInLegacyMode(version));
     }
 

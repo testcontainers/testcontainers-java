@@ -40,7 +40,7 @@ class AuthDelegatingDockerClientConfig implements DockerClientConfig {
         }
 
         // try and obtain more accurate auth config using our resolution
-        final DockerImageName parsed = new DockerImageName(imageName);
+        final DockerImageName parsed = DockerImageName.parse(imageName);
         final AuthConfig effectiveAuthConfig = RegistryAuthLocator.instance()
             .lookupAuthConfig(parsed, fallbackAuthConfig);
 

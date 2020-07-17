@@ -30,6 +30,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -87,7 +88,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     /**
      * Creates a new couchbase container with the default image and version.
+     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
      */
+    @Deprecated
     public CouchbaseContainer() {
         this(DOCKER_IMAGE_NAME + ":" + VERSION);
     }
@@ -95,10 +98,20 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     /**
      * Creates a new couchbase container with a custom image name.
      *
-     * @param imageName the image name that should be used.
+     * @param dockerImageName the image name that should be used.
+     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
      */
-    public CouchbaseContainer(final String imageName) {
-        super(imageName);
+    @Deprecated
+    public CouchbaseContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    /**
+     * Create a new couchbase container with the specified image name.
+     * @param dockerImageName
+     */
+    public CouchbaseContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
     }
 
     /**

@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,12 +30,24 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final Map<String, ContainerProxy> proxies = new HashMap<>();
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
+    /**
+     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public ToxiproxyContainer() {
         this(IMAGE_NAME);
     }
 
-    public ToxiproxyContainer(String imageName) {
-        super(imageName);
+    /**
+     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public ToxiproxyContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public ToxiproxyContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         addExposedPorts(TOXIPROXY_CONTROL_PORT);
         setWaitStrategy(new HttpWaitStrategy().forPath("/version").forPort(TOXIPROXY_CONTROL_PORT));
 

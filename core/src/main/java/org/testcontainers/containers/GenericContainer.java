@@ -12,11 +12,11 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -54,6 +54,7 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.MountableFile;
@@ -224,10 +225,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
+
+    public GenericContainer(@NonNull final DockerImageName dockerImageName) {
+        this.image = new RemoteDockerImage(dockerImageName);
+    }
+
+    public GenericContainer(@NonNull final RemoteDockerImage image) {
+        this.image = image;
+    }
+
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);
     }
@@ -514,12 +532,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     @SneakyThrows(JsonProcessingException.class)
     final String hash(CreateContainerCmd createCommand) {
-        // TODO add Testcontainers' version to the hash
-        byte[] commandJson = new ObjectMapper()
+        DefaultDockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+
+        byte[] commandJson = dockerClientConfig.getObjectMapper()
+            .copy()
             .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
             .writeValueAsBytes(createCommand);
 
+        // TODO add Testcontainers' version to the hash
         return Hashing.sha1().hashBytes(commandJson).toString();
     }
 

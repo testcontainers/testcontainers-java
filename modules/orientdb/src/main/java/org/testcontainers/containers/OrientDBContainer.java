@@ -13,6 +13,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.net.URL;
@@ -48,11 +49,23 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     private OrientDB orientDB;
     private ODatabaseSession session;
 
+    /**
+     * @deprecated use {@link OrientDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public OrientDBContainer() {
         this(DOCKER_IMAGE_NAME);
     }
 
+    /**
+     * @deprecated use {@link OrientDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public OrientDBContainer(@NonNull String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public OrientDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         serverPassword = DEFAULT_SERVER_PASSWORD;

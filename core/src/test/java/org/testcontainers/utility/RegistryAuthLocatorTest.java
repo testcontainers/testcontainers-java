@@ -18,7 +18,7 @@ public class RegistryAuthLocatorTest {
     public void lookupAuthConfigWithoutCredentials() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("unauthenticated.registry.org/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("unauthenticated.registry.org/org/repo"), new AuthConfig());
 
         assertEquals("Default docker registry URL is set on auth config", "https://index.docker.io/v1/", authConfig.getRegistryAddress());
         assertNull("No username is set", authConfig.getUsername());
@@ -29,7 +29,7 @@ public class RegistryAuthLocatorTest {
     public void lookupAuthConfigWithBasicAuthCredentials() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-basic-auth.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("registry.example.com/org/repo"), new AuthConfig());
 
         assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
         assertEquals("Username is set", "user", authConfig.getUsername());
@@ -40,7 +40,7 @@ public class RegistryAuthLocatorTest {
     public void lookupAuthConfigWithJsonKeyCredentials() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-json-key.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("registry.example.com/org/repo"), new AuthConfig());
 
         assertEquals("Default docker registry URL is set on auth config", "https://registry.example.com", authConfig.getRegistryAddress());
         assertEquals("Username is set", "_json_key", authConfig.getUsername());
@@ -51,7 +51,7 @@ public class RegistryAuthLocatorTest {
     public void lookupAuthConfigUsingStore() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("registry.example.com/org/repo"), new AuthConfig());
 
         assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
         assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
@@ -62,7 +62,7 @@ public class RegistryAuthLocatorTest {
     public void lookupAuthConfigUsingHelper() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("registry.example.com/org/repo"), new AuthConfig());
 
         assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
         assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
@@ -73,7 +73,7 @@ public class RegistryAuthLocatorTest {
     public void lookupAuthConfigUsingHelperWithToken() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper-using-token.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registrytoken.example.com/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("registrytoken.example.com/org/repo"), new AuthConfig());
 
         assertEquals("Correct identitytoken is obtained from a credential store", "secret", authConfig.getIdentitytoken());
     }
@@ -82,7 +82,7 @@ public class RegistryAuthLocatorTest {
     public void lookupUsingHelperEmptyAuth() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty-auth-with-helper.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("registry.example.com/org/repo"), new AuthConfig());
 
         assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
         assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
@@ -93,7 +93,7 @@ public class RegistryAuthLocatorTest {
     public void lookupNonEmptyAuthWithHelper() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-existing-auth-with-helper.json");
 
-        final AuthConfig authConfig = authLocator.lookupAuthConfig(new DockerImageName("registry.example.com/org/repo"), new AuthConfig());
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(DockerImageName.parse("registry.example.com/org/repo"), new AuthConfig());
 
         assertEquals("Correct server URL is obtained from a credential helper", "url", authConfig.getRegistryAddress());
         assertEquals("Correct username is obtained from a credential helper", "username", authConfig.getUsername());
@@ -105,7 +105,7 @@ public class RegistryAuthLocatorTest {
         Map<String, String> notFoundMessagesReference = new HashMap<>();
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store.json", notFoundMessagesReference);
 
-        DockerImageName dockerImageName = new DockerImageName("registry2.example.com/org/repo");
+        DockerImageName dockerImageName = DockerImageName.parse("registry2.example.com/org/repo");
         final AuthConfig authConfig = authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
 
         assertNull("No username should have been obtained from a credential store", authConfig.getUsername());
@@ -124,7 +124,7 @@ public class RegistryAuthLocatorTest {
     public void lookupAuthConfigWithCredStoreEmpty() throws URISyntaxException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store-empty.json");
 
-        DockerImageName dockerImageName = new DockerImageName("registry2.example.com/org/repo");
+        DockerImageName dockerImageName = DockerImageName.parse("registry2.example.com/org/repo");
         final AuthConfig authConfig = authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
 
         assertNull("CredStore field will be ignored, because value is blank", authConfig.getAuth());
