@@ -47,7 +47,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     @Deprecated
     public LocalStackContainer() {
-        this(VERSION, false);
+        this(VERSION);
     }
 
     /**
@@ -58,31 +58,39 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));
     }
 
+    /**
+     * @param dockerImageName    image name to use for Localstack
+     */
     public LocalStackContainer(final DockerImageName dockerImageName) {
-        super(dockerImageName);
-        this(version, shouldRunInLegacyMode(version));
-    }
-
-    private static boolean shouldRunInLegacyMode(String version) {
-        if (version.equals("latest")) return false;
-        ComparableVersion comparableVersion = new ComparableVersion(version);
-        if (comparableVersion.isSemanticVersion())
-            return comparableVersion.isLessThan("0.11");
-        log.warn("Version {} is not a semantic version, LocalStack will run in legacy mode.", version);
-        log.warn("Consider using \"LocalStackContainer(String version, boolean legacyMode)\" constructor if you want to disable legacy mode.");
-        return true;
+        this(dockerImageName, shouldRunInLegacyMode(dockerImageName.getVersionPart()));
     }
 
     /**
-     * @param version    tag of LocalStack container to run
-     * @param legacyMode if true, each AWS service is exposed on a different port
+     * @param dockerImageName    image name to use for Localstack
+     * @param useLegacyMode      if true, each AWS service is exposed on a different port
      */
-    public LocalStackContainer(String version, boolean legacyMode) {
-        super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
-        this.legacyMode = legacyMode;
+    public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
+        super(dockerImageName);
+        this.legacyMode = useLegacyMode;
 
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
+    }
+
+    private static boolean shouldRunInLegacyMode(String version) {
+        if (version.equals("latest")) {
+            return false;
+        }
+
+        ComparableVersion comparableVersion = new ComparableVersion(version);
+        if (comparableVersion.isSemanticVersion()) {
+            boolean versionRequiresLegacyMode = comparableVersion.isLessThan("0.11");
+            return versionRequiresLegacyMode;
+        }
+
+        log.warn("Version {} is not a semantic version, LocalStack will run in legacy mode.", version);
+        log.warn("Consider using \"LocalStackContainer(DockerImageName dockerImageName, boolean legacyMode)\" constructor if you want to disable legacy mode.");
+        return true;
     }
 
     @Override

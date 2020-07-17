@@ -29,7 +29,6 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -61,14 +60,11 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @RunWith(Enclosed.class)
 public class LocalstackContainerTest {
 
-    private static final DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack:0.10.8");
-    private static final DockerImageName AWS_CLI_IMAGE = DockerImageName.parse("atlassian/pipelines-awscli:1.16.302");
-
     public static class WithoutNetwork {
 
         // without_network {
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
+        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withServices(S3, SQS, CLOUDWATCHLOGS, KMS);
         // }
 
@@ -181,14 +177,14 @@ public class LocalstackContainerTest {
         private static Network network = Network.newNetwork();
 
         @ClassRule
-        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(LOCALSTACK_IMAGE)
+        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack")    // the last alias is used for HOSTNAME_EXTERNAL
             .withServices(S3, SQS, CLOUDWATCHLOGS);
         // }
 
         @ClassRule
-        public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(AWS_CLI_IMAGE)
+        public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(LocalstackTestImages.AWS_CLI_IMAGE)
             .withNetwork(network)
             .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("top"))
             .withEnv("AWS_ACCESS_KEY_ID", "accesskey")

@@ -21,6 +21,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+import static org.testcontainers.containers.localstack.LocalstackTestImages.LOCALSTACK_IMAGE;
 
 @RunWith(Enclosed.class)
 public class LegacyModeTest {
@@ -28,16 +29,16 @@ public class LegacyModeTest {
     @RunWith(Parameterized.class)
     @AllArgsConstructor
     public static class Off {
-        private final String version;
+        private final String description;
         private final LocalStackContainer localstack;
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> constructors() {
             return Arrays.asList(new Object[][]{
-                {"default constructor", new LocalStackContainer()},
-                {"latest", new LocalStackContainer("latest")},
-                {"0.11.1", new LocalStackContainer("0.11.1")},
-                {"0.7.0 with legacy = off", new LocalStackContainer("0.7.0", false)}
+                {"default constructor", new LocalStackContainer(LOCALSTACK_IMAGE)},
+                {"latest", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("latest"))},
+                {"0.11.1", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("0.11.1"))},
+                {"0.7.0 with legacy = off", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("0.7.0"), false)}
             });
         }
 
@@ -66,7 +67,7 @@ public class LegacyModeTest {
     @RunWith(Parameterized.class)
     @AllArgsConstructor
     public static class On {
-        private final String version;
+        private final String description;
         private final LocalStackContainer localstack;
 
         @BeforeClass
@@ -78,9 +79,9 @@ public class LegacyModeTest {
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> constructors() {
             return Arrays.asList(new Object[][]{
-                {"0.10.7", new LocalStackContainer("0.10.7")},
-                {"custom", new LocalStackContainer("custom")},
-                {"0.11.1 with legacy = on", new LocalStackContainer("0.11.1", true)}
+                {"0.10.7", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("0.10.7"))},
+                {"custom", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("custom"))},
+                {"0.11.1 with legacy = on", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("0.11.1"), true)}
             });
         }
 
