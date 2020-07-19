@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.vault.VaultTestImages.VAULT_IMAGE;
 
 public class VaultClientTest {
 
@@ -18,7 +19,7 @@ public class VaultClientTest {
     @Test
     public void writeAndReadMultipleValues() throws VaultException {
         try (
-            VaultContainer vaultContainer = new VaultContainer<>()
+            VaultContainer<?> vaultContainer = new VaultContainer<>(VAULT_IMAGE)
                     .withVaultToken(VAULT_TOKEN)
         ) {
 

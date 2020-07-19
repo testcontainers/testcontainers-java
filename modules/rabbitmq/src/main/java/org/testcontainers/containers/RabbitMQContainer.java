@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
@@ -41,7 +42,9 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
      * Creates a Testcontainer using the official RabbitMQ docker image.
+     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
      */
+    @Deprecated
     public RabbitMQContainer() {
         this(DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG);
     }
@@ -49,10 +52,16 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     /**
      * Creates a Testcontainer using a specific docker image.
      *
-     * @param image The docker image to use.
+     * @param dockerImageName The docker image to use.
+     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
      */
-    public RabbitMQContainer(String image) {
-        super(image);
+    @Deprecated
+    public RabbitMQContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public RabbitMQContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 

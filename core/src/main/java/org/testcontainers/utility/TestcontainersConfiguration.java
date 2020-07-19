@@ -63,48 +63,93 @@ public class TestcontainersConfiguration {
         return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
     }
 
+    @Deprecated
     public String getSocatContainerImage() {
         return (String) properties.getOrDefault("socat.container.image", "alpine/socat:latest");
     }
 
+    public DockerImageName getSocatDockerImageName() {
+        return DockerImageName.parse(getSocatContainerImage());
+    }
+
+    @Deprecated
     public String getVncRecordedContainerImage() {
         return (String) properties.getOrDefault("vncrecorder.container.image", "testcontainers/vnc-recorder:1.1.0");
     }
 
+    public DockerImageName getVncDockerImageName() {
+        return DockerImageName.parse(getVncRecordedContainerImage());
+    }
+
+    @Deprecated
     public String getDockerComposeContainerImage() {
         return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.24.1");
     }
 
+    public DockerImageName getDockerComposeDockerImageName() {
+        return DockerImageName.parse(getDockerComposeContainerImage());
+    }
+
+    @Deprecated
     public String getTinyImage() {
         return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
+    }
+
+    public DockerImageName getTinyDockerImageName() {
+        return DockerImageName.parse(getTinyImage());
     }
 
     public boolean isRyukPrivileged() {
         return Boolean.parseBoolean((String) properties.getOrDefault("ryuk.container.privileged", "false"));
     }
 
+    @Deprecated
     public String getRyukImage() {
         return (String) properties.getOrDefault("ryuk.container.image", "testcontainers/ryuk:0.3.0");
     }
 
+    public DockerImageName getRyukDockerImageName() {
+        return DockerImageName.parse(getRyukImage());
+    }
+
+    @Deprecated
     public String getSSHdImage() {
         return (String) properties.getOrDefault("sshd.container.image", "testcontainers/sshd:1.0.0");
+    }
+
+    public DockerImageName getSSHdDockerImageName() {
+        return DockerImageName.parse(getSSHdImage());
     }
 
     public Integer getRyukTimeout() {
         return Integer.parseInt((String) properties.getOrDefault("ryuk.container.timeout", "30"));
     }
 
+    @Deprecated
     public String getKafkaImage() {
         return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
     }
 
+    public DockerImageName getKafkaDockerImageName() {
+        return DockerImageName.parse(getKafkaImage());
+    }
+
+    @Deprecated
     public String getPulsarImage() {
         return (String) properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar");
     }
 
+    public DockerImageName getPulsarDockerImageName() {
+        return DockerImageName.parse(getPulsarImage());
+    }
+
+    @Deprecated
     public String getLocalStackImage() {
         return (String) properties.getOrDefault("localstack.container.image", "localstack/localstack");
+    }
+
+    public DockerImageName getLocalstackDockerImageName() {
+        return DockerImageName.parse(getLocalStackImage());
     }
 
     public boolean isDisableChecks() {

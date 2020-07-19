@@ -1,16 +1,13 @@
 package org.testcontainers.junit.jupiter.inheritance;
 
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 
 public class RedisContainer extends GenericContainer<RedisContainer> {
 
     public RedisContainer() {
-        this("redis:3.2.11");
-    }
-
-    public RedisContainer(String dockerImageName) {
-        super(dockerImageName);
+        super(DockerImageName.parse("redis:3.2.11"));
         withExposedPorts(6379);
     }
 

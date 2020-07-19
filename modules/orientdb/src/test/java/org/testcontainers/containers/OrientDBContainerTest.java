@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -10,9 +11,11 @@ import static org.assertj.core.api.Assertions.*;
  */
 public class OrientDBContainerTest {
 
+    private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.0.24-tp3");
+
     @Test
     public void shouldReturnTheSameSession() {
-        try (OrientDBContainer container = new OrientDBContainer()) {
+        try (OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)) {
             container.start();
 
             final ODatabaseSession session = container.getSession();
@@ -24,7 +27,7 @@ public class OrientDBContainerTest {
 
     @Test
     public void shouldInitializeWithCommands() {
-        try (OrientDBContainer container = new OrientDBContainer()) {
+        try (OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)) {
             container.start();
 
             final ODatabaseSession session = container.getSession();
@@ -40,7 +43,7 @@ public class OrientDBContainerTest {
     @Test
     public void shouldQueryWithGremlin() {
 
-        try (OrientDBContainer container = new OrientDBContainer()) {
+        try (OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)) {
             container.start();
 
             final ODatabaseSession session = container.getSession("admin", "admin");
@@ -56,7 +59,7 @@ public class OrientDBContainerTest {
 
     @Test
     public void shouldInitializeDatabaseFromScript() {
-        try (OrientDBContainer container = new OrientDBContainer()
+        try (OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)
             .withScriptPath("initscript.osql")
             .withDatabaseName("persons")) {
 

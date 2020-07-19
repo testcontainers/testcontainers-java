@@ -6,12 +6,13 @@ import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.HTTPD_IMAGE;
 
 @Testcontainers
 class TestcontainersNestedSharedContainerTests {
 
     @Container
-    private static final GenericContainer TOP_LEVEL_CONTAINER = new GenericContainer("httpd:2.4-alpine")
+    private static final GenericContainer<?> TOP_LEVEL_CONTAINER = new GenericContainer<>(HTTPD_IMAGE)
         .withExposedPorts(80);
 
     private static String topLevelContainerId;

@@ -3,7 +3,12 @@ package org.testcontainers.containers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.*;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.InspectContainerCmd;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.ListContainersCmd;
+import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
@@ -35,7 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -45,13 +49,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 @RunWith(Enclosed.class)
 public class ReusabilityUnitTests {
-
-    static final CompletableFuture<String> IMAGE_FUTURE = CompletableFuture.completedFuture(
-        TestcontainersConfiguration.getInstance().getTinyImage()
-    );
 
     @RunWith(Parameterized.class)
     @RequiredArgsConstructor
@@ -61,8 +62,8 @@ public class ReusabilityUnitTests {
         @Parameterized.Parameters(name = "{0}")
         public static Object[][] data() {
             return new Object[][] {
-                { "generic", new GenericContainer(IMAGE_FUTURE), true },
-                { "anonymous generic", new GenericContainer(IMAGE_FUTURE) {}, true },
+                { "generic", new GenericContainer<>(TINY_IMAGE), true },
+                { "anonymous generic", new GenericContainer(TINY_IMAGE) {}, true },
                 { "custom", new CustomContainer(), true },
                 { "anonymous custom", new CustomContainer() {}, true },
                 { "custom with containerIsCreated", new CustomContainerWithContainerIsCreated(), false },
@@ -84,16 +85,16 @@ public class ReusabilityUnitTests {
             }
         }
 
-        static class CustomContainer extends GenericContainer {
+        static class CustomContainer extends GenericContainer<CustomContainer> {
             CustomContainer() {
-                super(IMAGE_FUTURE);
+                super(TINY_IMAGE);
             }
         }
 
-        static class CustomContainerWithContainerIsCreated extends GenericContainer {
+        static class CustomContainerWithContainerIsCreated extends GenericContainer<CustomContainerWithContainerIsCreated> {
 
             CustomContainerWithContainerIsCreated() {
-                super(IMAGE_FUTURE);
+                super(TINY_IMAGE);
             }
 
             @Override
@@ -109,7 +110,7 @@ public class ReusabilityUnitTests {
 
         List<String> script = new ArrayList<>();
 
-        GenericContainer<?> container = makeReusable(new GenericContainer(IMAGE_FUTURE) {
+        GenericContainer<?> container = makeReusable(new GenericContainer(TINY_IMAGE) {
 
             @Override
             protected boolean canBeReused() {
@@ -188,7 +189,7 @@ public class ReusabilityUnitTests {
     @FieldDefaults(makeFinal = true)
     public static class HashTest extends AbstractReusabilityTest {
 
-        protected GenericContainer<?> container = makeReusable(new GenericContainer(IMAGE_FUTURE) {
+        protected GenericContainer<?> container = makeReusable(new GenericContainer(TINY_IMAGE) {
             @Override
             public void copyFileToContainer(MountableFile mountableFile, String containerPath) {
                 // NOOP
@@ -296,7 +297,7 @@ public class ReusabilityUnitTests {
     @RunWith(BlockJUnit4ClassRunner.class)
     @FieldDefaults(makeFinal = true)
     public static class CopyFilesHashTest {
-        GenericContainer<?> container = new GenericContainer(IMAGE_FUTURE);
+        GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE);
 
         @Test
         public void empty() {

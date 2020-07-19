@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
@@ -18,11 +19,23 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     private String username = "root";
     private String password = "";
 
+    /**
+     * @deprecated use {@link CockroachContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public CockroachContainer() {
         this(IMAGE + ":" + IMAGE_TAG);
     }
 
+    /**
+     * @deprecated use {@link CockroachContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public CockroachContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public CockroachContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         withExposedPorts(REST_API_PORT, DB_PORT);
