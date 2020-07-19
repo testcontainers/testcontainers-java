@@ -85,10 +85,7 @@ public class ImagePullPolicyTest {
             container.start();
         }
 
-        DockerClientFactory.instance().client()
-            .removeImageCmd(imageName.asCanonicalNameString())
-            .withForce(true)
-            .exec();
+        removeImage();
 
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
