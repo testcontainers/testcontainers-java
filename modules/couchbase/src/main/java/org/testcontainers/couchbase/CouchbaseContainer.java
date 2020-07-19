@@ -77,13 +77,15 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
-    private String username = "Administrator";
+    private String adminUsername = "Administrator";
 
-    private String password = "password";
+    private String adminPassword = "password";
 
     private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
 
     private final List<BucketDefinition> buckets = new ArrayList<>();
+
+    private final List<UserDefinition> users = new ArrayList<>();
 
     /**
      * Creates a new couchbase container with the default image and version.
@@ -102,16 +104,35 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     /**
-     * Set custom username and password for the admin user.
+     * Set custom username and password for the cluster admin user.
+     *
+     * @param username the admin username to use.
+     * @param password the password for the admin user.
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     * @deprecated please use {@link CouchbaseContainer#withAdminCredentials(String, String)} instead.
+     */
+    @Deprecated
+    public CouchbaseContainer withCredentials(final String username, final String password) {
+        return withAdminCredentials(username, password);
+    }
+
+    /**
+     * Set custom username and password for the cluster admin user.
      *
      * @param username the admin username to use.
      * @param password the password for the admin user.
      * @return this {@link CouchbaseContainer} for chaining purposes.
      */
-    public CouchbaseContainer withCredentials(final String username, final String password) {
+    public CouchbaseContainer withAdminCredentials(final String username, final String password) {
         checkNotRunning();
-        this.username = username;
-        this.password = password;
+        this.adminUsername = username;
+        this.adminPassword = password;
+        return this;
+    }
+
+    public CouchbaseContainer withUser(final UserDefinition userDefinition) {
+        checkNotRunning();
+        this.users.add(userDefinition);
         return this;
     }
 
@@ -127,12 +148,28 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return this;
     }
 
+    /**
+     * @deprecated please use {@link CouchbaseContainer#getAdminUsername()} instead.
+     */
+    @Deprecated
     public final String getUsername() {
-        return username;
+        return getAdminUsername();
     }
 
+    public final String getAdminUsername() {
+        return adminUsername;
+    }
+
+    /**
+     * @deprecated please use {@link CouchbaseContainer#getAdminUsername()} instead.
+     */
+    @Deprecated
     public final String getPassword() {
-        return password;
+        return getAdminPassword();
+    }
+
+    public final String getAdminPassword() {
+        return adminPassword;
     }
 
     public int getBootstrapCarrierDirectPort() {
@@ -158,7 +195,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             new HttpWaitStrategy()
                 .forPath("/pools/default")
                 .forPort(MGMT_PORT)
-                .withBasicCredentials(username, password)
+                .withBasicCredentials(adminUsername, adminPassword)
                 .forStatusCode(200)
                 .forResponsePredicate(response -> {
                     try {
@@ -179,7 +216,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 new HttpWaitStrategy()
                     .forPath("/admin/ping")
                     .forPort(QUERY_PORT)
-                    .withBasicCredentials(username, password)
+                    .withBasicCredentials(adminUsername, adminPassword)
                     .forStatusCode(200)
             );
         }
@@ -204,6 +241,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         createBuckets();
+        createUsers();
         logger().info("Couchbase container is ready! UI available at http://{}:{}", getHost(), getMappedPort(MGMT_PORT));
     }
 
@@ -265,11 +303,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * After this stage, all subsequent API calls need to have the basic auth header set.
      */
     private void configureAdminUser() {
-        logger().debug("Configuring couchbase admin user with username: \"{}\"", username);
+        logger().debug("Configuring couchbase admin user with username: \"{}\"", adminUsername);
 
         @Cleanup Response response = doHttpRequest(MGMT_PORT, "/settings/web", "POST", new FormBody.Builder()
-            .add("username", username)
-            .add("password", password)
+            .add("username", adminUsername)
+            .add("password", adminPassword)
             .add("port", Integer.toString(MGMT_PORT))
             .build(), false);
 
@@ -334,6 +372,33 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     /**
+     * Based on the supplied user definitions, create users as needed.
+     */
+    private void createUsers() {
+        logger().debug("Creating {} users.", users.size());
+
+        for (UserDefinition user : users) {
+            logger().debug("Creating user with username: \"{}\"", user.getUsername());
+
+            FormBody.Builder builder = new FormBody.Builder();
+            Optional.ofNullable(user.getPassword())
+                .ifPresent(p -> builder.add("password", p));
+            Optional.ofNullable(user.getRoles())
+                .ifPresent(r -> builder.add("roles", r));
+            Optional.ofNullable(user.getName())
+                .ifPresent(n -> builder.add("name", n));
+
+            @Cleanup Response response = doHttpRequest(MGMT_PORT,
+                String.format("/settings/rbac/users/local/%s", user.getUsername()),
+                "PUT",
+                builder.build(),
+                true);
+
+            checkSuccessfulResponse(response, String.format("Could not create user with username: \"%s\"", user.getUsername()));
+        }
+    }
+
+    /**
      * Based on the user-configured bucket definitions, creating buckets and corresponding indexes if needed.
      */
     private void createBuckets() {
@@ -352,7 +417,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             new HttpWaitStrategy()
                 .forPath("/pools/default/buckets/" + bucket.getName())
                 .forPort(MGMT_PORT)
-                .withBasicCredentials(username, password)
+                .withBasicCredentials(adminUsername, adminPassword)
                 .forStatusCode(200)
                 .waitUntilReady(this);
 
@@ -436,7 +501,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 .url("http://" + getHost() + ":" + getMappedPort(port) + path);
 
             if (auth) {
-                requestBuilder = requestBuilder.header("Authorization", Credentials.basic(username, password));
+                requestBuilder = requestBuilder.header("Authorization", Credentials.basic(adminUsername, adminPassword));
             }
 
             if (body == null) {
