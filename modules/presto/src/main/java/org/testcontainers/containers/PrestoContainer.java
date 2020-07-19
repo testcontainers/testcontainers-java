@@ -43,7 +43,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     public PrestoContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         this.waitStrategy = new LogMessageWaitStrategy()
-            .withRegEx(".*io.prestosql.server.PrestoServer\\s+======== SERVER STARTED ========.*")
+            .withRegEx(".*======== SERVER STARTED ========.*")
             .withStartupTimeout(Duration.of(60, SECONDS));
 
         addExposedPort(PRESTO_PORT);
