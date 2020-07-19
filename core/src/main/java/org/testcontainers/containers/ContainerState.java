@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -30,9 +31,11 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public interface ContainerState {
@@ -138,12 +141,17 @@ public interface ContainerState {
      * @return the port that the exposed port is mapped to, or null if it is not exposed
      */
     default Integer getMappedPort(int originalPort) {
+        return getMappedPort(originalPort, InternetProtocol.TCP);
+    }
+
+    default Integer getMappedPort(int originalPort, InternetProtocol internetProtocol) {
         Preconditions.checkState(this.getContainerId() != null, "Mapped port can only be obtained after the container is started");
 
         Ports.Binding[] binding = new Ports.Binding[0];
         final InspectContainerResponse containerInfo = this.getContainerInfo();
         if (containerInfo != null) {
-            binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
+            com.github.dockerjava.api.model.InternetProtocol internetProtocol1 = com.github.dockerjava.api.model.InternetProtocol.parse(internetProtocol.toDockerNotation());
+            binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort, internetProtocol1));
         }
 
         if (binding != null && binding.length > 0 && binding[0] != null) {
@@ -157,6 +165,8 @@ public interface ContainerState {
      * @return the exposed ports
      */
     List<Integer> getExposedPorts();
+
+    Set<Port> exposedPorts();
 
     /**
      * @return the port bindings
@@ -183,6 +193,21 @@ public interface ContainerState {
             .filter(Objects::nonNull)
             .map(Integer::valueOf)
             .collect(Collectors.toList());
+    }
+
+    default Set<Port> getBoundPorts() {
+        final Ports hostPortBindings = this.getContainerInfo().getHostConfig().getPortBindings();
+        Set<Port> ports = new LinkedHashSet<>();
+        for (Map.Entry<ExposedPort, Ports.Binding[]> binding : hostPortBindings.getBindings().entrySet()) {
+            for (Ports.Binding portBinding : binding.getValue()) {
+                String hostPortSpec = portBinding.getHostPortSpec();
+                if(StringUtils.isNotEmpty(hostPortSpec)) {
+                    InternetProtocol internetProtocol = InternetProtocol.fromDockerNotation(binding.getKey().getProtocol().toString());
+                    ports.add(Port.of(Integer.parseInt(hostPortSpec), internetProtocol));
+                }
+            }
+        }
+        return ports;
     }
 
 

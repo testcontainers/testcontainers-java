@@ -7,11 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -85,9 +86,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Adds a file system binding. Consider using {@link #withFileSystemBind(String, String, BindMode)}
      * for building a container in a fluent style.
      *
-     * @param hostPath      the file system path on the host
-     * @param containerPath the file system path inside the container
-     * @param mode          the bind mode
+     * @param hostPath       the file system path on the host
+     * @param containerPath  the file system path inside the container
+     * @param mode           the bind mode
      * @param selinuxContext selinux context argument to use for this file
      */
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
@@ -96,7 +97,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Add a link to another container.
      *
      * @param otherContainer the other container object to link to
-     * @param alias the alias (for the other container) that this container should be able to use
+     * @param alias          the alias (for the other container) that this container should be able to use
      * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
      */
     @Deprecated
@@ -110,6 +111,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     void addExposedPort(Integer port);
 
+    void addExposedPort(Integer port, InternetProtocol internetProtocol);
+
     /**
      * Add exposed ports. Consider using {@link #withExposedPorts(Integer...)}
      * for building a container in a fluent style.
@@ -118,19 +121,21 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     void addExposedPorts(int... ports);
 
+    void addExposedPorts(Set<Integer> ports, InternetProtocol internetProtocol);
+
     /**
      * Specify the {@link WaitStrategy} to use to determine if the container is ready.
      *
-     * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      * @param waitStrategy the WaitStrategy to use
      * @return this
+     * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      */
     SELF waitingFor(@NonNull WaitStrategy waitStrategy);
 
     /**
      * Adds a file system binding.
      *
-     * @param hostPath the file system path on the host
+     * @param hostPath      the file system path on the host
      * @param containerPath the file system path inside the container
      * @return this
      */
@@ -141,9 +146,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Adds a file system binding.
      *
-     * @param hostPath the file system path on the host
+     * @param hostPath      the file system path on the host
      * @param containerPath the file system path inside the container
-     * @param mode the bind mode
+     * @param mode          the bind mode
      * @return this
      */
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
@@ -152,7 +157,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Adds container volumes.
      *
      * @param container the container to add volumes from
-     * @param mode the bind mode
+     * @param mode      the bind mode
      * @return this
      */
     SELF withVolumesFrom(Container container, BindMode mode);
@@ -164,6 +169,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withExposedPorts(Integer... ports);
+
+    SELF withExposedPorts(Set<Integer> ports, InternetProtocol internetProtocol);
 
     /**
      * Set the file to be copied before starting a created container
@@ -186,7 +193,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     /**
      * Add an environment variable to be passed to the container.
      *
-     * @param key   environment variable key
+     * @param key    environment variable key
      * @param mapper environment variable value mapper, accepts old value as an argument
      * @return this
      */
@@ -214,6 +221,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Add labels to the container.
+     *
      * @param labels map of labels
      * @return this
      */
@@ -237,7 +245,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Add an extra host entry to be passed to the container
-     * @param hostname hostname to use for this hosts file entry
+     *
+     * @param hostname  hostname to use for this hosts file entry
      * @param ipAddress IP address to use for this hosts file entry
      * @return this
      */
@@ -272,6 +281,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Set the image pull policy of the container
+     *
      * @return
      */
     SELF withImagePullPolicy(ImagePullPolicy policy);
@@ -304,15 +314,16 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Set the duration of waiting time until container treated as started.
-     * @see WaitStrategy#waitUntilReady(org.testcontainers.containers.wait.strategy.WaitStrategyTarget)
      *
      * @param startupTimeout timeout
      * @return this
+     * @see WaitStrategy#waitUntilReady(org.testcontainers.containers.wait.strategy.WaitStrategyTarget)
      */
     SELF withStartupTimeout(Duration startupTimeout);
 
     /**
      * Set the privilegedMode mode for the container
+     *
      * @param mode boolean
      * @return this
      */
@@ -406,7 +417,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     Future<String> getImage();
 
     /**
-     *
      * @deprecated use getEnvMap
      */
     @Deprecated
@@ -427,6 +437,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     DockerClient getDockerClient();
 
     void setExposedPorts(List<Integer> exposedPorts);
+
+    void setExposedPorts(Set<Port> exposedPorts);
 
     void setPortBindings(List<String> portBindings);
 

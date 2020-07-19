@@ -127,6 +127,18 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     @Override
+    public Set<Port> getLivenessCheckPortsWithProtocols() {
+        Integer seleniumPort = getMappedPort(SELENIUM_PORT);
+        Port port = Port.of(seleniumPort, InternetProtocol.TCP);
+        if (recordingMode == VncRecordingMode.SKIP) {
+            return ImmutableSet.of(port);
+        } else {
+            Port vncPort = Port.of(getMappedPort(VNC_PORT), InternetProtocol.TCP);
+            return ImmutableSet.of(port, vncPort);
+        }
+    }
+
+    @Override
     protected void configure() {
 
         String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();

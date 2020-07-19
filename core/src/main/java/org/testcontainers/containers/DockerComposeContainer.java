@@ -86,7 +86,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private String project;
 
     private final AtomicInteger nextAmbassadorPort = new AtomicInteger(2000);
-    private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
+    private final Map<String, Map<Port, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
     private final Map<String, ComposeServiceWaitStrategyTarget> serviceInstanceMap = new ConcurrentHashMap<>();
     private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
     private final SocatContainer ambassadorContainer = new SocatContainer();
@@ -252,8 +252,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServiceInstance(Container container) {
         String serviceName = getServiceNameFromContainer(container);
-        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
-            ambassadorContainer, ambassadorPortMappings.getOrDefault(serviceName, new HashMap<>()));
+        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(
+            container,
+            ambassadorContainer,
+            ambassadorPortMappings.getOrDefault(serviceName, new HashMap<>())
+        );
 
         String containerId = containerInstance.getContainerId();
         if (tailChildContainers) {
@@ -348,7 +351,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
     }
 
-    public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
+    public SELF withExposedService(String serviceName, int servicePort, InternetProtocol internetProtocol,@NonNull WaitStrategy waitStrategy) {
 
         String serviceInstanceName = getServiceInstanceName(serviceName);
 
@@ -368,11 +371,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         // Ambassador container will be started together after docker compose has started
         int ambassadorPort = nextAmbassadorPort.getAndIncrement();
-        ambassadorPortMappings.computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>()).put(servicePort, ambassadorPort);
-        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
+        ambassadorPortMappings.computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>()).put(Port.of(servicePort, internetProtocol), ambassadorPort);
+        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort, internetProtocol);
         ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
         addWaitStrategy(serviceInstanceName, waitStrategy);
         return self();
+    }
+
+    public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
+        return withExposedService(serviceName, servicePort, InternetProtocol.TCP, waitStrategy);
     }
 
     private String getServiceInstanceName(String serviceName) {
@@ -433,14 +440,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      * @return a port that can be used for accessing the service container.
      */
     public Integer getServicePort(String serviceName, Integer servicePort) {
-        Map<Integer, Integer> portMap = ambassadorPortMappings.get(getServiceInstanceName(serviceName));
+        return getServicePort(serviceName, servicePort, InternetProtocol.TCP);
+    }
+
+    public Integer getServicePort(String serviceName, Integer servicePort, InternetProtocol internetProtocol) {
+        Map<Port, Integer> portMap = ambassadorPortMappings.get(getServiceInstanceName(serviceName));
 
         if (portMap == null) {
             throw new IllegalArgumentException("Could not get a port for '" + serviceName + "'. " +
-                                               "Testcontainers does not have an exposed port configured for '" + serviceName + "'. " +
-                                               "To fix, please ensure that the service '" + serviceName + "' has ports exposed using .withExposedService(...)");
+                "Testcontainers does not have an exposed port configured for '" + serviceName + "'. " +
+                "To fix, please ensure that the service '" + serviceName + "' has ports exposed using .withExposedService(...)");
         } else {
-            return ambassadorContainer.getMappedPort(portMap.get(servicePort));
+            Port svcPort = Port.of(servicePort, internetProtocol);
+            return ambassadorContainer.getMappedPort(portMap.get(svcPort), internetProtocol);
         }
     }
 
