@@ -586,7 +586,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 
-        super(TestcontainersConfiguration.getInstance().getDockerComposeContainerImage());
+        super(TestcontainersConfiguration.getInstance().getDockerComposeDockerImageName());
         addEnv(ENV_PROJECT_NAME, identifier);
 
         // Map the docker compose file into the container

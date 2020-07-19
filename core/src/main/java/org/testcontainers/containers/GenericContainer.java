@@ -12,7 +12,6 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
@@ -55,6 +54,7 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.MountableFile;
@@ -227,10 +227,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
+
+    public GenericContainer(@NonNull final DockerImageName dockerImageName) {
+        this.image = new RemoteDockerImage(dockerImageName);
+    }
+
+    public GenericContainer(@NonNull final RemoteDockerImage image) {
+        this.image = image;
+    }
+
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public GenericContainer() {
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);
     }

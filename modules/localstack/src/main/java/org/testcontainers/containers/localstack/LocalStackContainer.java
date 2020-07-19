@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.InetAddress;
@@ -36,12 +37,24 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     private final List<Service> services = new ArrayList<>();
 
+    /**
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public LocalStackContainer() {
         this(VERSION);
     }
 
+    /**
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public LocalStackContainer(String version) {
-        super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
+        this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));
+    }
+
+    public LocalStackContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
 
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));

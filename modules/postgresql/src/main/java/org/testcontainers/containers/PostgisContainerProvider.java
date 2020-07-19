@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.jdbc.ConnectionUrl;
-
-import java.util.Objects;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Factory for PostGIS containers, which are a special flavour of PostgreSQL.
@@ -28,7 +27,7 @@ public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PostgreSQLContainer(DEFAULT_IMAGE + ":" + tag);
+        return new PostgreSQLContainer(DockerImageName.parse(DEFAULT_IMAGE).withTag(DEFAULT_TAG));
     }
 
     @Override

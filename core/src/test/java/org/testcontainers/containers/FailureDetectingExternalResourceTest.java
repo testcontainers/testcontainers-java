@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;

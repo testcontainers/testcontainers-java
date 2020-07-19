@@ -17,13 +17,13 @@ import static org.junit.Assert.assertThat;
 
 public class InfluxDBContainerWithUserTest {
 
-    private static final String TEST_VERSION = "1.4.3";
+    private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_TEST_IMAGE.getVersionPart();
     private static final String DATABASE = "test";
     private static final String USER = "test-user";
     private static final String PASSWORD = "test-password";
 
     @Rule
-    public InfluxDBContainer influxDBContainer = new InfluxDBContainer(TEST_VERSION)
+    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_TEST_IMAGE)
         .withDatabase(DATABASE)
         .withUsername(USER)
         .withPassword(PASSWORD);

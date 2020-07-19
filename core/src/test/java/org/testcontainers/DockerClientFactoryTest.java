@@ -30,7 +30,7 @@ public class DockerClientFactoryTest {
         try {
             //remove tiny image, so it will be pulled during next command run
             dockFactory.client()
-                    .removeImageCmd(TestcontainersConfiguration.getInstance().getTinyImage())
+                    .removeImageCmd(TestcontainersConfiguration.getInstance().getTinyDockerImageName().asCanonicalNameString())
                     .withForce(true).exec();
         } catch (NotFoundException ignored) {
             // Do not fail if it's not pulled yet

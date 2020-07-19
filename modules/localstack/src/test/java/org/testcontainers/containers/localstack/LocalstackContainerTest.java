@@ -29,6 +29,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -43,7 +44,10 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.*;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.KMS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
 /**
  * Tests for Localstack Container, used both in bridge network (exposed to host) and docker network modes.
@@ -56,11 +60,14 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @RunWith(Enclosed.class)
 public class LocalstackContainerTest {
 
+    private static final DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack:0.10.8");
+    private static final DockerImageName AWS_CLI_IMAGE = DockerImageName.parse("atlassian/pipelines-awscli:1.16.302");
+
     public static class WithoutNetwork {
 
         // without_network {
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer()
+        public static LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
             .withServices(S3, SQS, CLOUDWATCHLOGS, KMS);
         // }
 
@@ -160,14 +167,14 @@ public class LocalstackContainerTest {
         private static Network network = Network.newNetwork();
 
         @ClassRule
-        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer()
+        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(LOCALSTACK_IMAGE)
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack")    // the last alias is used for HOSTNAME_EXTERNAL
             .withServices(S3, SQS, CLOUDWATCHLOGS);
         // }
 
         @ClassRule
-        public static GenericContainer awsCliInDockerNetwork = new GenericContainer<>("atlassian/pipelines-awscli")
+        public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(AWS_CLI_IMAGE)
             .withNetwork(network)
             .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("top"))
             .withEnv("AWS_ACCESS_KEY_ID", "accesskey")
