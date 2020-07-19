@@ -1,6 +1,16 @@
 package org.testcontainers.containers.localstack;
 
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.containers.localstack.LocalStackContainer.PORT;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.KMS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
@@ -18,6 +28,10 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -35,21 +49,6 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Optional;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.containers.localstack.LocalStackContainer.PORT;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.KMS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
-
 /**
  * Tests for Localstack Container, used both in bridge network (exposed to host) and docker network modes.
  * <p>
@@ -65,7 +64,9 @@ public class LocalstackContainerTest {
 
         // without_network {
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+        public static LocalStackContainer localstack = new LocalStackContainer(
+            DockerImageName.parse("localstack/localstack:0.11.0")
+        )
             .withServices(S3, SQS, CLOUDWATCHLOGS, KMS);
         // }
 
@@ -178,7 +179,9 @@ public class LocalstackContainerTest {
         private static Network network = Network.newNetwork();
 
         @ClassRule
-        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(
+            DockerImageName.parse("localstack/localstack:0.11.0")
+        )
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack")    // the last alias is used for HOSTNAME_EXTERNAL
             .withServices(S3, SQS, CLOUDWATCHLOGS);
