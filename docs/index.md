@@ -137,6 +137,8 @@ A huge thank you to our backers:
 * [Lukas Eder (@lukaseder)](https://github.com/lukaseder)
 * [Fedor Korotkov (@fkorotkov)](https://github.com/fkorotkov)
 * [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
+* [Pascal Zwick (@pas2al)](https://github.com/pas2al)
+* [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
 
 
 ## License
