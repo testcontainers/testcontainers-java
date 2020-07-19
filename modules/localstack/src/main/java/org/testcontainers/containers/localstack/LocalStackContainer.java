@@ -4,6 +4,14 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -14,15 +22,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
-
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <p>Container for Atlassian Labs Localstack, 'A fully functional local AWS cloud stack'.</p>
@@ -40,6 +39,18 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
     private final List<Service> services = new ArrayList<>();
 
+    /**
+     * Whether or to assume that all APIs run on different ports (when <code>true</code>) or are
+     * exposed on a single port (<code>false</code>). From the Localstack README:
+     *
+     * <blockquote>Note: Starting with version 0.11.0, all APIs are exposed via a single edge
+     * service [...] The API-specific endpoints below are still left for backward-compatibility but
+     * may get removed in a future release - please reconfigure your client SDKs to start using the
+     * single edge endpoint URL!</blockquote>
+     * <p>
+     * Testcontainers will use the tag of the docker image to infer whether or not the used version
+     * of Localstack supports this feature.
+     */
     private final boolean legacyMode;
 
     /**
