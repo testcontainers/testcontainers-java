@@ -79,6 +79,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -180,7 +181,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private Long shmSize;
 
-    private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
+    // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
