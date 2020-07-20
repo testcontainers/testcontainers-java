@@ -172,7 +172,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         if (memoryQuota != null) {
             final Integer minimum = SERVICE_MEMORY_QUOTA_MINIMUMS.get(service);
-            if (minimum != null) {
+            if (minimum != null && memoryQuota < minimum) {
                 throw new IllegalArgumentException(String.format("%s service's memory quota cannot be less than %dMB.",
                     service.name(), minimum));
             }
