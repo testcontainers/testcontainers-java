@@ -384,6 +384,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             Optional.ofNullable(user.getPassword())
                 .ifPresent(p -> builder.add("password", p));
             Optional.ofNullable(user.getRoles())
+                .filter(r -> !r.isEmpty())
+                .map(r -> String.join(",", r))
                 .ifPresent(r -> builder.add("roles", r));
             Optional.ofNullable(user.getName())
                 .ifPresent(n -> builder.add("name", n));
