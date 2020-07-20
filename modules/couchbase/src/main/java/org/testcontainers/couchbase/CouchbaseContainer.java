@@ -20,12 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import lombok.Cleanup;
+import lombok.NonNull;
 import okhttp3.Credentials;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -36,8 +38,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +84,14 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
+    private static final Map<CouchbaseService, Integer> SERVICE_MEMORY_QUOTA_MINIMUMS;
+    static {
+        SERVICE_MEMORY_QUOTA_MINIMUMS = new HashMap<>();
+        SERVICE_MEMORY_QUOTA_MINIMUMS.put(CouchbaseService.KV, 256);
+        SERVICE_MEMORY_QUOTA_MINIMUMS.put(CouchbaseService.INDEX, 256);
+        SERVICE_MEMORY_QUOTA_MINIMUMS.put(CouchbaseService.SEARCH, 256);
+    }
+
     private String username = "Administrator";
 
     private String password = "password";
@@ -88,15 +100,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
-    private Integer dataMemoryQuota;
-
-    private Integer indexMemoryQuota;
-
-    private Integer searchMemoryQuota;
-
-    private Integer analyticsMemoryQuota;
-
-    private Integer eventingMemoryQuota;
+    private final Map<CouchbaseService, Integer> memoryQuotas = new HashMap<>();
 
     /**
      * Creates a new couchbase container with the default image and version.
@@ -153,77 +157,33 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     /**
-     * Set a custom data service memory quota, cannot be less than 256MB.
+     * Set a custom memory quota for the specified service.
      *
-     * @param dataMemoryQuota the data service memory quota in MB.
+     * @param service the couchbase service to configure the custom memory quota for, cannot be null.
+     * @param memoryQuota the service memory quota in MB, if passed null will revert to the services default memory quota.
      * @return this {@link CouchbaseContainer} for chaining purposes.
      */
-    public CouchbaseContainer withDataMemoryQuota(final Integer dataMemoryQuota) {
-        if (dataMemoryQuota != null && dataMemoryQuota < 256) {
-            throw new IllegalArgumentException("data service memory quota cannot be less than 256MB");
-        }
+    public CouchbaseContainer withMemoryQuota(@NonNull final CouchbaseService service, final Integer memoryQuota) {
         checkNotRunning();
-        this.dataMemoryQuota = dataMemoryQuota;
-        return this;
-    }
 
-    /**
-     * Set a custom index service memory quota, cannot be less than 256MB.
-     *
-     * @param indexMemoryQuota the index service memory quota in MB.
-     * @return this {@link CouchbaseContainer} for chaining purposes.
-     */
-    public CouchbaseContainer withIndexMemoryQuota(final Integer indexMemoryQuota) {
-        if (indexMemoryQuota != null && indexMemoryQuota < 256) {
-            throw new IllegalArgumentException("index service memory quota cannot be less than 256MB");
+        if (service == CouchbaseService.QUERY) {
+            throw new IllegalArgumentException("QUERY service's memory quota cannot be specified");
         }
-        checkNotRunning();
-        this.indexMemoryQuota = indexMemoryQuota;
-        return this;
-    }
 
-    /**
-     * Set a custom search service memory quota, cannot be less than 256MB.
-     *
-     * @param searchMemoryQuota the search service memory quota in MB.
-     * @return this {@link CouchbaseContainer} for chaining purposes.
-     */
-    public CouchbaseContainer withSearchMemoryQuota(final Integer searchMemoryQuota) {
-        if (searchMemoryQuota != null && searchMemoryQuota < 256) {
-            throw new IllegalArgumentException("search service memory quota cannot be less than 256MB");
+        if (memoryQuota != null) {
+            final Integer minimum = SERVICE_MEMORY_QUOTA_MINIMUMS.get(service);
+            if (minimum != null) {
+                throw new IllegalArgumentException(String.format("%s service's memory quota cannot be less than %dMB.",
+                    service.name(), minimum));
+            }
         }
-        checkNotRunning();
-        this.searchMemoryQuota = searchMemoryQuota;
-        return this;
-    }
 
-    /**
-     * Set a custom analytics service memory quota, cannot be less than 1024MB.
-     *
-     * @param analyticsMemoryQuota the analytics service memory quota in MB.
-     * @return this {@link CouchbaseContainer} for chaining purposes.
-     */
-    public CouchbaseContainer withAnalyticsMemoryQuota(final Integer analyticsMemoryQuota) {
-        if (analyticsMemoryQuota != null && analyticsMemoryQuota < 1024) {
-            throw new IllegalArgumentException("analytics service memory quota cannot be less than 1024MB");
+        if (memoryQuota == null) {
+            this.memoryQuotas.remove(service);
+        } else {
+            this.memoryQuotas.put(service, memoryQuota);
         }
-        checkNotRunning();
-        this.analyticsMemoryQuota = analyticsMemoryQuota;
-        return this;
-    }
 
-    /**
-     * Set a custom eventing service memory quota, cannot be less than 256MB.
-     *
-     * @param eventingMemoryQuota the eventing service memory quota in MB.
-     * @return this {@link CouchbaseContainer} for chaining purposes.
-     */
-    public CouchbaseContainer withEventingMemoryQuota(final Integer eventingMemoryQuota) {
-        if (eventingMemoryQuota != null && eventingMemoryQuota < 256) {
-            throw new IllegalArgumentException("eventing service memory quota cannot be less than 256MB");
-        }
-        checkNotRunning();
-        this.eventingMemoryQuota = eventingMemoryQuota;
         return this;
     }
 
@@ -247,24 +207,15 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return String.format("couchbase://%s:%d", getHost(), getBootstrapCarrierDirectPort());
     }
 
-    public Integer getDataMemoryQuota() {
-        return dataMemoryQuota;
-    }
-
-    public Integer getIndexMemoryQuota() {
-        return indexMemoryQuota;
-    }
-
-    public Integer getSearchMemoryQuota() {
-        return searchMemoryQuota;
-    }
-
-    public Integer getAnalyticsMemoryQuota() {
-        return analyticsMemoryQuota;
-    }
-
-    public Integer getEventingMemoryQuota() {
-        return eventingMemoryQuota;
+    /**
+     * Retrieve the currently configured memory quota for a specified service.
+     *
+     * @param service the service to retrieve
+     * @return either the configured service's memory quota, or null which indicates the services "default" memory quota.
+     */
+    @Nullable
+    public Integer getMemoryQuota(final CouchbaseService service) {
+        return memoryQuotas.get(service);
     }
 
     @Override
@@ -392,27 +343,26 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Configure the various service's memory quotas, if supplied by the user.
      */
     private void configureMemoryQuotas() {
-        logger().debug("Configuring services' memory quotas");
+        logger().debug("Configuring {} service memory quotas", memoryQuotas.size());
 
-        FormBody.Builder builder = new FormBody.Builder();
-        Optional.ofNullable(dataMemoryQuota)
-            .map(String::valueOf)
-            .ifPresent(i -> builder.add("memoryQuota", i));
-        Optional.ofNullable(indexMemoryQuota)
-            .map(String::valueOf)
-            .ifPresent(i -> builder.add("indexMemoryQuota", i));
-        Optional.ofNullable(searchMemoryQuota)
-            .map(String::valueOf)
-            .ifPresent(i -> builder.add("ftsMemoryQuota", i));
-        Optional.ofNullable(analyticsMemoryQuota)
-            .map(String::valueOf)
-            .ifPresent(i -> builder.add("cbasMemoryQuota", i));
-        Optional.ofNullable(eventingMemoryQuota)
-            .map(String::valueOf)
-            .ifPresent(i -> builder.add("eventingMemoryQuota", i));
+        if (memoryQuotas.size() > 0) {
+            FormBody.Builder builder = new FormBody.Builder();
+            memoryQuotas.forEach((service, quota) -> {
+                switch (service) {
+                    case KV:
+                        builder.add("memoryQuota", quota.toString());
+                        break;
+                    case INDEX:
+                        builder.add("indexMemoryQuota", quota.toString());
+                        break;
+                    case SEARCH:
+                        builder.add("ftsMemoryQuota", quota.toString());
+                        break;
+                    default:
+                        throw new IllegalStateException(String.format("cannot configure memory quota for %s for it is not supported", service));
+                }
+            });
 
-        FormBody formBody = builder.build();
-        if (formBody.size() > 0) {
             @Cleanup Response response = doHttpRequest(MGMT_PORT,
                 "/pools/default",
                 "POST",
