@@ -1,2 +1,1 @@
-store/saplabs/hanaexpress:2.00.040.00.20190729.1
-store/saplabs/hanaexpress:2.00.036.00.20190223.1
+store/saplabs/hanaexpress:2.00.045.00.20200121.1

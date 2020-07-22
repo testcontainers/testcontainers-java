@@ -26,7 +26,7 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
 	// Image defaults
     public static final String NAME = "hana";
     public static final String IMAGE = "store/saplabs/hanaexpress";
-    public static final String DEFAULT_TAG = "2.00.040.00.20190729.1";
+    public static final String DEFAULT_TAG = "2.00.045.00.20200121.1";
     
     public static final String DB_DRIVER = "com.sap.db.jdbc.Driver";
     
@@ -52,14 +52,10 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
         };
     
     // For Jdbc overrides.
-    private int connectTimeoutSeconds = 120;
+   // private int connectTimeoutSeconds = 120;
 
-    public HANAContainer() {
-        super(DockerImageName.parse(IMAGE + ":" + DEFAULT_TAG));
-    }
-
-    public HANAContainer(String dockerImageName) {
-        super(DockerImageName.parse(dockerImageName));
+    public HANAContainer(DockerImageName image) {
+        super(image);
     }
 
     @Override
@@ -122,8 +118,10 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
     }
     
     /**
-     * Accepts the license for the SQLServer container by setting the ACCEPT_EULA=Y
-     * variable as described at <a href="https://hub.docker.com/_/microsoft-mssql-server">https://hub.docker.com/_/microsoft-mssql-server</a> TODO adapt link
+     * Accepts the license for the SAP HANA Express container by setting the ACCEPT_EULA=Y
+     * Calling this method will automatically accept the license at: https://www.sap.com/docs/download/cmp/2016/06/sap-hana-express-dev-agmt-and-exhibit.pdf
+     * 
+     * @return The container itself with an environment variable accepting the SAP HANA Express license
      */
     public SELF acceptLicense() {
         addEnv("ACCEPT_EULA", "Y");
@@ -136,17 +134,12 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
         return new HashSet<>(Arrays.asList(new Integer[] {getMappedPort(TENANT_PORT), getMappedPort(SYSTEM_PORT)}));
         
     }
-        
-    /**
-     * 
-     * Config - make sure everything works as expected.
-     * 
-     */
     
     @Override
     protected void waitUntilContainerStarted() {
         getWaitStrategy().waitUntilReady(this);
     }
+
     
     @Override
     public String getDriverClassName() {
@@ -190,9 +183,9 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
     /**
      * 
      * Ports
+     * 
      * @return the mapped port for the system / tenant port.
      */
-    
     @NotNull
     public Integer getSystemPort() {
         return getMappedPort(SYSTEM_PORT);
@@ -231,6 +224,11 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
 		return super.createConnection(queryString);
     }
     
+    /**
+     * Private function to check if a user supplied password matches the security requirements of SAP HANA
+     * 
+     * @param password
+     */
     private void checkPasswordStrength(String password) {
 
         if (password == null) {

@@ -10,52 +10,53 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 
+import org.testcontainers.utility.DockerImageName;
+
+
 public class HANAContainerTest {
 
+	private static final DockerImageName image = DockerImageName.parse("store/saplabs/hanaexpress:2.00.045.00.20200121.1");
 
     @Test	// Test if all required ports are available.
     public void containerStartsAndHANAPortsAreAvailable() {
-    	HANAContainer container = new HANAContainer("store/saplabs/hanaexpress:2.00.040.00.20190729.1");
+    	HANAContainer container = new HANAContainer(image);
         container.start();
         assertThatHANAPortsAreAvailable(container);
+        container.stop();
     }
 
 	@Test	// Test if the sap hana jdbc Driver is loaded sucessfully
     public void testDriverClassName(){
         // start container
-    	HANAContainer container = new HANAContainer();
+    	HANAContainer container = new HANAContainer(image);
         container.start();
         
         String driverClassName = container.getDriverClassName();
         
         assert(driverClassName.equals("com.sap.db.jdbc.Driver"));
+        container.stop();
     }
 
 	@Test
 	public void testConstructor() {
-		HANAContainer container = new HANAContainer();
+		HANAContainer container = new HANAContainer(image);
 		container.start();
 		assertThatHANAPortsAreAvailable(container);
-	}
-
-	@Test
-	public void testConstructorWithDifferentImageTag() {
-		HANAContainer container = new HANAContainer("store/saplabs/hanaexpress:2.00.036.00.20190223.1");
-		container.start();
-		assertThatHANAPortsAreAvailable(container);
+		container.stop();
 	}
 
 	@Test
 	public void testAcceptLicenseProgrammatically() {
-		HANAContainer container = new HANAContainer("store/saplabs/hanaexpress:2.00.045.00.20200121.1").acceptLicense();	// this image is not inside the license acceptance file.
+		HANAContainer container = new HANAContainer(DockerImageName.parse("store/saplabs/hanaexpress:2.00.040.00.20190729.1")).acceptLicense();	// this image is not inside the license acceptance file.
 		container.start();
 		assertThatHANAPortsAreAvailable(container);
+		container.stop();
 	}
 	
 	@Test
 	public void testBasicQueryOnSystemDB() {
 		try {
-			HANAContainer container = new HANAContainer();
+			HANAContainer container = new HANAContainer(image);
 			container.start();
 			
 			Connection conn = container.createConnection("?databaseName=SYSTEMDB");
@@ -68,6 +69,7 @@ public class HANAContainerTest {
 
             assertEquals("A basic SELECT query on systemDB succeeds", 1, resultSetInt);
 			
+            container.stop();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -76,7 +78,7 @@ public class HANAContainerTest {
 	@Test
 	public void testBasicQueryOnTenantDB() {
 		try {
-			HANAContainer container = new HANAContainer();
+			HANAContainer container = new HANAContainer(image);
 			container.start();
 			
 			Connection conn = container.createConnection("?databaseName=HXE");
@@ -89,6 +91,7 @@ public class HANAContainerTest {
 
             assertEquals("A basic SELECT query on tenantDB succeeds", 1, resultSetInt);
 			
+            container.stop();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -98,7 +101,7 @@ public class HANAContainerTest {
 	@Test
 	public void testQueryWithInitScript() {
 		try {
-			HANAContainer container = (HANAContainer) new HANAContainer().withInitScript("somepath/init_hana.sql");
+			HANAContainer container = new HANAContainer(image).withInitScript("somepath/init_hana.sql");
 			container.start();
 			
 			Connection connection = container.createConnection("?databaseName=HXE");
@@ -111,6 +114,7 @@ public class HANAContainerTest {
 			
 			assertEquals("A SELECT query on table from initScript succeeds", "hello world", resultSetString);
 
+			container.stop();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -118,12 +122,14 @@ public class HANAContainerTest {
 
 	@Test
 	public void testCustomPassword() {
-		HANAContainer container = new HANAContainer().withPassword("RandomPassword1");		
+		HANAContainer container = new HANAContainer(image).withPassword("RandomPassword1");		
 		container.start();
 		
 		String pw = container.getPassword();
 		
 		assertEquals("Initializing the container with a custom password worked", "RandomPassword1", pw);
+		
+		container.stop();
 	}
 
 	@Test
@@ -132,10 +138,12 @@ public class HANAContainerTest {
 		String pw;
 		
 		try {
-			HANAContainer container = new HANAContainer().withPassword("nocapitalshere");		
+			HANAContainer container = new HANAContainer(image).withPassword("nocapitalshere");		
 			container.start();
 		
 			pw = container.getPassword();
+			
+			container.stop();
 		} catch(IllegalArgumentException e) {
 			pw = e.toString();
 		}
