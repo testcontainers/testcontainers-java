@@ -12,15 +12,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.utility.LicenseAcceptance;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Ulimit;
 
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * @author Thomas Grimmeisen
- */
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
 	// Image defaults
@@ -50,35 +52,10 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
             Pattern.compile("[a-z]+"),
             Pattern.compile("[0-9]+")
         };
-    
-    // For Jdbc overrides.
-   // private int connectTimeoutSeconds = 120;
 
     public HANAContainer(DockerImageName image) {
+    	
         super(image);
-    }
-
-    @Override
-    protected void configure() {
-    	/**
-    	 * 
-    	 * Enforce that the license is accepted - do not remove.
-    	 * 
-    	 * License available at: https://www.sap.com/docs/download/cmp/2016/06/sap-hana-express-dev-agmt-and-exhibit.pdf
-    	 * 
-    	 */
-    	
-        // If license was not accepted programmatically, check if it was accepted via resource file
-        if (!getEnvMap().containsKey("ACCEPT_EULA")) {
-            LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
-            acceptLicense();
-        }
-    	
-        /**
-         * 
-         * Starting of container.
-         * 
-         */
         
         // create bindings -- using random ports on host machine. Otherwise we can crash if the ports are used: https://github.com/testcontainers/testcontainers-java/issues/256
         addExposedPorts(39013, 39017, 39041, 39042, 39043, 39044, 39045, 1128, 1129, 59013, 59014);
@@ -105,12 +82,34 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
         		"--master-password " + password + 
         		" --agree-to-sap-license");
         
-        // Specify when the container is considered as running.
-        this.waitingFor(Wait.forLogMessage(".*Startup finished!*\\s", 1)).withStartupTimeout(Duration.ofMinutes(10));
-
+        // Determine if container is ready.
+        this.waitStrategy = new LogMessageWaitStrategy()
+	        .withRegEx(".*Startup finished!*\\s")
+	        .withTimes(1)
+	        .withStartupTimeout(Duration.of(600, SECONDS));
     }
 
-    // Option for custom password.
+    @Override
+    protected void configure() {
+    	/*
+    	 * Enforce that the license is accepted - do not remove.
+    	 * 
+    	 * License available at: https://www.sap.com/docs/download/cmp/2016/06/sap-hana-express-dev-agmt-and-exhibit.pdf
+    	 * 
+    	 */
+    	
+        // If license was not accepted programmatically, check if it was accepted via resource file
+        if (!getEnvMap().containsKey("AGREE_TO_SAP_LICENSE")) {
+            LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
+            acceptLicense();
+        }
+    }
+
+    /**
+     * Set a custom password. Password policy default: Capital letter, lower case letter, number and length over 7
+     * 
+     * @param password the password you want to use for accessing the database.
+     */
     public SELF withPassword(String password) {
     	checkPasswordStrength(password);
     	this.password = password;
@@ -124,7 +123,7 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
      * @return The container itself with an environment variable accepting the SAP HANA Express license
      */
     public SELF acceptLicense() {
-        addEnv("ACCEPT_EULA", "Y");
+        addEnv("AGREE_TO_SAP_LICENSE", "Y");
         return self();
     }
 
@@ -132,35 +131,42 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         return new HashSet<>(Arrays.asList(new Integer[] {getMappedPort(TENANT_PORT), getMappedPort(SYSTEM_PORT)}));
-        
     }
-    
+
     @Override
     protected void waitUntilContainerStarted() {
         getWaitStrategy().waitUntilReady(this);
     }
 
-    
     @Override
     public String getDriverClassName() {
     	return DB_DRIVER;
     }
-    
-    /**
-     * 
-     * General stuff. 
-     * 
-     */
 
+    /**
+     * Default database name getter. Because of HANAs two databases it will return the tenant database. If you want to get the name of the system database, use 'getSystemDatabaseName'.
+     * 
+     * @return The name of the tenant database.
+     */
     @Override
     public String getDatabaseName() {
         return getTenantDatabaseName();
     }
     
+    /**
+     * Get the name of the HANA system database.
+     * 
+     * @return The name of the HANA system database.
+     */
     public String getSystemDatabaseName() {
     	return systemDBName;
     }
 
+    /**
+     * Get the name of the HANA tenant database.
+     * 
+     * @return The name of the HANA tenant database.
+     */
     public String getTenantDatabaseName() {
     	return tenantDBName;
     }
@@ -181,35 +187,47 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
     }
 
     /**
+     * Get the port for the system database and general connections.
      * 
-     * Ports
-     * 
-     * @return the mapped port for the system / tenant port.
+     * @return port of the system database.
      */
     @NotNull
     public Integer getSystemPort() {
         return getMappedPort(SYSTEM_PORT);
     }
     
+    /**
+     * Get the port for the tenant database.
+     * 
+     * @return port of the tenant database.
+     */
     @NotNull
     public Integer getTenantPort() {
         return getMappedPort(TENANT_PORT);
     }
     
     /**
+     * Get the Jdbc url used to connect to the databases.
      * 
-     * jdbc url.
-     * 
+     * @return jdbc url
      */
-
     @Override
     public String getJdbcUrl() {
     	return "jdbc:sap://" + getContainerIpAddress() + ":" + getSystemPort() + "/";
     }
     
+    /**
+     * Modification of the default connection string because of HANA specific database selection.
+     * 
+     * Query will connect to the tenant database per default. If you want to connect to the system database, supply '?databaseName=SYSTEMDB' as queryString
+     * 
+     * @param queryString your custom query attached to the connection string.
+     * @return Connection object.
+     * 
+     */
     @Override
     public Connection createConnection(String queryString) throws SQLException, NoDriverFoundException {	
-
+    	
     	if(queryString == null || queryString.trim().isEmpty()) {
     		queryString = "?databaseName=" + tenantDBName;
     	} else {
@@ -218,7 +236,6 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
         		queryString = queryString.substring(1);
         	}
         	queryString = "?databaseName=" + tenantDBName + "&" + queryString;
-        	
     	} 	
     	
 		return super.createConnection(queryString);
@@ -227,7 +244,7 @@ public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabas
     /**
      * Private function to check if a user supplied password matches the security requirements of SAP HANA
      * 
-     * @param password
+     * @param password which needs to be checked for security requirements
      */
     private void checkPasswordStrength(String password) {
 

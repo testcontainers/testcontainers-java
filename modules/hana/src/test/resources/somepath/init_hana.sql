@@ -1,4 +1,4 @@
-CREATE TABLE bar (
+CREATE TABLE system.bar (
   foo VARCHAR(255)
 );
 

@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
+
 /**
  * Factory for HANA containers.
  */
@@ -21,7 +23,7 @@ public class HANAContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         if (tag != null) {
-            return new HANAContainer(HANAContainer.IMAGE + ":" + tag);
+            return new HANAContainer(DockerImageName.parse(HANAContainer.IMAGE).withTag(tag));
         } else {
             return newInstance();
         }

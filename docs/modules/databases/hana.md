@@ -1,16 +1,19 @@
-# MS SQL Server Module
+# SAP HANA Module
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
+!!! hint
+    SAP HANA Express Edition does only work on Linux environments. It does not support Windows or Mac OS. For details see [`SAP HANA, Express Edition (database services)` image documentation](https://hub.docker.com/_/sap-hana-express-edition/plans/f2dc436a-d851-4c22-a2ba-9de07db7a9ac?tab=instructions).
+
 ## Usage example
 
-Running MS SQL Server as a stand-in for in a test:
+Running SAP HANA Express Edition as a stand-in for in a test:
 
 ```java
 public class SomeTest {
 
     @Rule
-    public HANAContainer hanaDb = new HANAContainer();
+    public HANAContainer<?> hanaDb = new HANAContainer<>(DockerImageName.parse("store/saplabs/hanaexpress:2.00.045.00.20200121.1")).acceptLicense();
     
     @Test
     public void someTestMethod() {
@@ -26,22 +29,21 @@ The HANA express edition image creates a system (SYSTEMDB) and a tenant (HXE) da
 public class SomeTest {
 
     @Rule
-    public HANAContainer hanaDb = new HANAContainer();
+    public HANAContainer<?> hanaDb = new HANAContainer<>(DockerImageName.parse("store/saplabs/hanaexpress:2.00.045.00.20200121.1")).acceptLicense();
     
     @Test
     public void someTestMethod() {
-        	HANAContainer container = new HANAContainer();
-			container.start();
+			hanaDb.start();
 			
-			Connection conn = container.createConnection("?databaseName=SYSTEMDB");
+			Connection conn = hanaDb.createConnection("?databaseName=SYSTEMDB");
 
         ... create a statement and run test as normal
 ```
 
 !!! warning "EULA Acceptance"
-    Due to licencing restrictions you are required to accept an EULA for this container image. To indicate that you accept the SAP HANA express edition image EULA, Please place a file at the root of the classpath named `container-license-acceptance.txt`, e.g. at `src/test/resources/container-license-acceptance.txt`. This file should contain the line: `store/saplabs/hanaexpress:2.00.040.00.20190729.1` (or, if you are overriding the docker image name/tag, update accordingly).
+    Due to licencing restrictions you are required to accept an EULA for this container image. To indicate that you accept the SAP HANA Express Edition EULA, please place a file at the root of the classpath named `container-license-acceptance.txt`, e.g. at `src/test/resources/container-license-acceptance.txt`. This file should contain the line: `store/saplabs/hanaexpress:2.00.045.00.20200121.1` (with the image tag reflecting your used image version). Instead of placing this file you can also programmatically confirm your acceptance by calling .acceptLicense() on the generated container (as shown in the code example above).
     
-    Please see the [`SAP HANA, express edition (database services)` image documentation](https://hub.docker.com/_/sap-hana-express-edition/plans/f2dc436a-d851-4c22-a2ba-9de07db7a9ac?tab=instructions) for a link to the EULA document.
+    Please see the [`SAP HANA, Express Edition (database services)` image documentation](https://hub.docker.com/_/sap-hana-express-edition/plans/f2dc436a-d851-4c22-a2ba-9de07db7a9ac?tab=instructions) for a link to the EULA document.
 
 ## Adding this module to your project dependencies
 
@@ -60,16 +62,13 @@ testCompile "org.testcontainers:hana:{{latest_version}}"
 </dependency>
 ```
 
-
 !!! hint
-    Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency.
+    Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency (for example `com.sap.cloud.db.jdbc:ngdbc:2.4.67`).
 
-## License ??
+## License
 
-See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/mssqlserver/LICENSE).
+See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/hana/LICENSE).
 
-## Copyright ??
+## Copyright
 
-Copyright (c) 2017 - 2019 G DATA Software AG and other authors.
-
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/mssqlserver/AUTHORS) for contributors.
+Copyright (c) 2020-2020 SAP SE.
