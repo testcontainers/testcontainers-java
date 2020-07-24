@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.Ulimit;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,18 +12,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.utility.LicenseAcceptance;
-
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Ulimit;
-
 import org.testcontainers.utility.DockerImageName;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class HANAContainer<SELF extends HANAContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
