@@ -110,4 +110,9 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         this.password = password;
         return self();
     }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
+    }
 }
