@@ -9,14 +9,26 @@ import java.util.Properties;
 public abstract class AbstractR2DBCDatabaseContainerProvider implements R2DBCDatabaseContainerProvider {
 
     final String originalDriver;
+    final String defaultImage;
 
-    protected AbstractR2DBCDatabaseContainerProvider(@NonNull String originalDriver) {
+    protected AbstractR2DBCDatabaseContainerProvider(@NonNull String originalDriver, @NonNull String defaultImage) {
         this.originalDriver = originalDriver;
+        this.defaultImage = defaultImage;
     }
 
     @Override
     public boolean supports(ConnectionFactoryOptions options) {
         return originalDriver.equals(getDriver(options));
+    }
+
+    protected String getImageString(ConnectionFactoryOptions options) {
+        return String.format(
+            "%s:%s",
+            options.hasOption(IMAGE_OPTION)
+                ? options.getValue(IMAGE_OPTION)
+                : defaultImage,
+            options.getRequiredValue(IMAGE_TAG_OPTION)
+        );
     }
 
     private String getDriver(ConnectionFactoryOptions options) {

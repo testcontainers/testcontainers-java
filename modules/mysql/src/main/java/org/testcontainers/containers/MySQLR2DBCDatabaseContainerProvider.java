@@ -16,18 +16,12 @@ public class MySQLR2DBCDatabaseContainerProvider extends AbstractR2DBCDatabaseCo
     static final String DRIVER = MySqlConnectionFactoryProvider.MYSQL_DRIVER;
 
     public MySQLR2DBCDatabaseContainerProvider() {
-        super(DRIVER);
+        super(DRIVER, MySQLContainer.IMAGE);
     }
 
     @Override
     public R2DBCDatabaseContainer doCreateContainer(ConnectionFactoryOptions options) {
-        String image = String.format(
-            "%s:%s",
-            options.hasOption(IMAGE_OPTION)
-                ? options.getValue(IMAGE_OPTION)
-                : MySQLContainer.IMAGE,
-            options.getRequiredValue(IMAGE_TAG_OPTION)
-        );
+        String image = getImageString(options);
         MySQLContainer<?> container = new MySQLContainer<>(image)
             .withDatabaseName(options.getRequiredValue(ConnectionFactoryOptions.DATABASE));
 

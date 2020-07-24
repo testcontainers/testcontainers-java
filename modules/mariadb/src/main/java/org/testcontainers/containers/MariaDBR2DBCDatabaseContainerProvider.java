@@ -16,18 +16,12 @@ public class MariaDBR2DBCDatabaseContainerProvider extends AbstractR2DBCDatabase
     static final String DRIVER = MariadbConnectionFactoryProvider.MARIADB_DRIVER;
 
     public MariaDBR2DBCDatabaseContainerProvider() {
-        super(DRIVER);
+        super(DRIVER, MariaDBContainer.IMAGE);
     }
 
     @Override
     public R2DBCDatabaseContainer doCreateContainer(ConnectionFactoryOptions options) {
-        String image = String.format(
-            "%s:%s",
-            options.hasOption(IMAGE_OPTION)
-                ? options.getValue(IMAGE_OPTION)
-                : MariaDBContainer.IMAGE,
-            options.getRequiredValue(IMAGE_TAG_OPTION)
-        );
+        String image = getImageString(options);
         MariaDBContainer<?> container = new MariaDBContainer<>(image)
             .withDatabaseName(options.getRequiredValue(ConnectionFactoryOptions.DATABASE));
 
