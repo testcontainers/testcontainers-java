@@ -10,9 +10,6 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainerProvider;
 
 import javax.annotation.Nullable;
 
-import static org.testcontainers.containers.PostgreSQLContainer.DEFAULT_PASSWORD;
-import static org.testcontainers.containers.PostgreSQLContainer.DEFAULT_USER;
-
 @AutoService(R2DBCDatabaseContainerProvider.class)
 public final class PostgreSQLR2DBCDatabaseContainerProvider extends AbstractR2DBCDatabaseContainerProvider {
 
@@ -40,10 +37,10 @@ public final class PostgreSQLR2DBCDatabaseContainerProvider extends AbstractR2DB
     public ConnectionFactoryMetadata getMetadata(ConnectionFactoryOptions options) {
         ConnectionFactoryOptions.Builder builder = options.mutate();
         if (!options.hasOption(ConnectionFactoryOptions.USER)) {
-            builder.option(ConnectionFactoryOptions.USER, DEFAULT_USER);
+            builder.option(ConnectionFactoryOptions.USER, PostgreSQLContainer.DEFAULT_USER);
         }
         if (!options.hasOption(ConnectionFactoryOptions.PASSWORD)) {
-            builder.option(ConnectionFactoryOptions.PASSWORD, DEFAULT_PASSWORD);
+            builder.option(ConnectionFactoryOptions.PASSWORD, PostgreSQLContainer.DEFAULT_PASSWORD);
         }
         return super.getMetadata(builder.build());
     }
