@@ -56,7 +56,7 @@ jobs:
         run: docker image prune -af
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
+          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
       - name: Aggregate test reports with ciMate
         if: always()
         continue-on-error: true

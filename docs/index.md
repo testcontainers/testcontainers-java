@@ -119,6 +119,7 @@ testImplementation('org.testcontainers:mysql') //no version specified
 * [Transferwise](https://transferwise.com/) - Integration testing for different RDBMS, kafka and micro services
 * [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
 * [Apache SkyWalking](http://github.com/apache/skywalking) - End-to-end testing of the Apache SkyWalking, and plugin tests of its subproject, [Apache SkyWalking Python](http://github.com/apache/skywalking-python), and of its eco-system built by the community, like [SkyAPM NodeJS Agent](http://github.com/SkyAPM/nodejs)
+* [jOOQ](https://www.jooq.org) - Integration testing all of jOOQ with a variety of RDBMS
 
 ## Sponsors
 
@@ -133,6 +134,11 @@ A huge thank you to our backers:
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
 * [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
 * [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
+* [Lukas Eder (@lukaseder)](https://github.com/lukaseder)
+* [Fedor Korotkov (@fkorotkov)](https://github.com/fkorotkov)
+* [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
+* [Pascal Zwick (@pas2al)](https://github.com/pas2al)
+* [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
 
 
 ## License

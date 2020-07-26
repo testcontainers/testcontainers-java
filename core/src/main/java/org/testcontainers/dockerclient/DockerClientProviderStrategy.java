@@ -255,6 +255,11 @@ public abstract class DockerClientProviderStrategy {
 
     @VisibleForTesting
     static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost) {
+        String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
+        if (!StringUtils.isBlank(hostOverride)) {
+            return hostOverride;
+        }
+
         switch (dockerHost.getScheme()) {
             case "http":
             case "https":

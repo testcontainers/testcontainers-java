@@ -18,6 +18,11 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     private final DockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
 
     @Override
+    protected boolean isApplicable() {
+        return System.getenv("DOCKER_HOST") != null;
+    }
+
+    @Override
     public TransportConfig getTransportConfig() {
         return TransportConfig.builder()
             .dockerHost(dockerClientConfig.getDockerHost())

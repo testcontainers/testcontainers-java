@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.junit.Assert.assertEquals;
 
@@ -14,7 +15,7 @@ public class RedisBackedCacheIntTest {
 
     // rule {
     @Rule
-    public GenericContainer redis = new GenericContainer<>("redis:5.0.3-alpine")
+    public GenericContainer redis = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
                                             .withExposedPorts(6379);
     // }
 
