@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.jdbc.ConnectionUrl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.Objects;
 
@@ -32,6 +34,8 @@ public abstract class JdbcDatabaseContainerProvider {
         return this.newInstance("latest");
     }
 
+    public abstract JdbcDatabaseContainer newInstance(DockerImageName dockerImageName);
+
     /**
      * Instantiate a new {@link JdbcDatabaseContainer} with specified image tag.
      * @param tag
@@ -45,34 +49,43 @@ public abstract class JdbcDatabaseContainerProvider {
      * @return Instance of {@link JdbcDatabaseContainer}
      */
     public JdbcDatabaseContainer newInstance(ConnectionUrl url) {
+        return basicInstance(url);
+    }
+
+    protected JdbcDatabaseContainer newInstanceFromConnectionUrl(ConnectionUrl connectionUrl, final String userParamName, final String pwdParamName) {
+        final String databaseName = connectionUrl.getDatabaseName().orElse("test");
+        final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
+        final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
+
+        final JdbcDatabaseContainer<?> instance = basicInstance(connectionUrl);
+
+        return instance
+            .withDatabaseName(databaseName)
+            .withUsername(user)
+            .withPassword(password);
+    }
+
+    private JdbcDatabaseContainer basicInstance(ConnectionUrl url) {
+        Objects.requireNonNull(url, "Connection URL cannot be null");
+
         final JdbcDatabaseContainer result;
-        if (url.getImageTag().isPresent()) {
+        if (url.getRegistry().isPresent()) {
+            StringBuilder remoteUrlBuilder = new StringBuilder()
+                .append(url.getRegistry().get())
+                .append("/")
+                .append(url.getImageName());
+            if (url.getImageTag().isPresent()) {
+                remoteUrlBuilder.append(":")
+                    .append(url.getImageTag().get());
+            }
+            result = newInstance(DockerImageName.parse(remoteUrlBuilder.toString()));
+        }
+        else if (url.getImageTag().isPresent()) {
             result = newInstance(url.getImageTag().get());
         } else {
             result = newInstance();
         }
         result.withReuse(url.isReusable());
         return result;
-    }
-
-    protected JdbcDatabaseContainer newInstanceFromConnectionUrl(ConnectionUrl connectionUrl, final String userParamName, final String pwdParamName) {
-        Objects.requireNonNull(connectionUrl, "Connection URL cannot be null");
-
-        final String databaseName = connectionUrl.getDatabaseName().orElse("test");
-        final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
-        final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
-
-        final JdbcDatabaseContainer<?> instance;
-        if (connectionUrl.getImageTag().isPresent()) {
-            instance = newInstance(connectionUrl.getImageTag().get());
-        } else {
-            instance = newInstance();
-        }
-
-        return instance
-            .withReuse(connectionUrl.isReusable())
-            .withDatabaseName(databaseName)
-            .withUsername(user)
-            .withPassword(password);
     }
 }

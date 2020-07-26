@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
+
 /**
  * Factory for Oracle containers.
  */
@@ -12,6 +14,11 @@ public class OracleContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public JdbcDatabaseContainer newInstance() {
         return new OracleContainer();
+    }
+
+    @Override
+    public JdbcDatabaseContainer newInstance(DockerImageName dockerImageName) {
+        return new OracleContainer(dockerImageName);
     }
 
     @Override
