@@ -16,11 +16,11 @@ jobs:
       - name: uninstall rootful Docker
         run: sudo apt-get -q -y --purge remove moby-engine moby-buildx && sudo rm -rf /var/run/docker.sock
       - name: install rootless Docker
-        run: curl -fsSL https://get.docker.com/rootless | sh
-      - name: start rootless Docker
         run: |
           mkdir -p $XDG_RUNTIME_DIR
-          PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
+          curl -fsSL https://get.docker.com/rootless | sh
+      - name: start rootless Docker
+        run: PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
       - name: verify the installation
         run: PATH=$HOME/bin:$PATH DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
       - name: Build with Gradle
