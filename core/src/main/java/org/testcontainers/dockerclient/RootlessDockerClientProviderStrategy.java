@@ -2,6 +2,8 @@ package org.testcontainers.dockerclient;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 import java.net.URI;
@@ -14,14 +16,16 @@ import java.nio.file.Paths;
  * @deprecated this class is used by the SPI and should not be used directly
  */
 @Deprecated
+@Slf4j
 public final class RootlessDockerClientProviderStrategy extends DockerClientProviderStrategy {
 
     public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY + 1;
 
     private Path getSocketPath() {
         String xdgRuntimeDir = System.getenv("XDG_RUNTIME_DIR");
-        if (xdgRuntimeDir == null) {
+        if (StringUtils.isBlank(xdgRuntimeDir)) {
             xdgRuntimeDir = "/run/user/" + LibC.INSTANCE.getuid();
+            log.debug("$XDG_RUNTIME_DIR is not set. Falling back to {}", xdgRuntimeDir);
         }
         return Paths.get(xdgRuntimeDir).resolve("docker.sock");
     }
