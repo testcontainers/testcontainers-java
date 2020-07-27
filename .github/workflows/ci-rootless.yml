@@ -17,6 +17,8 @@ jobs:
         run: curl -fsSL https://get.docker.com/rootless | sh
       - name: start rootless Docker
         run: PATH=$HOME/bin:$PATH XDG_RUNTIME_DIR=/tmp/docker-$(id -u) dockerd-rootless.sh --experimental --storage-driver vfs &
+      - name: verify the installation
+        run: PATH=$HOME/bin:$PATH XDG_RUNTIME_DIR=/tmp/docker-$(id -u) DOCKER_HOST=/tmp/docker-$(id -u)/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
       - name: Build with Gradle
         run: XDG_RUNTIME_DIR=/tmp/docker-$(id -u) ./gradlew --no-daemon --scan testcontainers:test
       - name: aggregate test reports with ciMate
