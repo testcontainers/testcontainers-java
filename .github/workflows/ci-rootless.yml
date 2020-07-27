@@ -13,6 +13,8 @@ jobs:
         include:
           - { XDG_RUNTIME_DIR: "" }
           - { XDG_RUNTIME_DIR: "/tmp/docker-testcontainers/" }
+    env:
+      XDG_RUNTIME_DIR: ${{ matrix.XDG_RUNTIME_DIR }}
     steps:
       - uses: actions/checkout@v2
       - name: debug
@@ -23,7 +25,7 @@ jobs:
         run: |
           mkdir -p $XDG_RUNTIME_DIR || true
           curl -fsSL https://get.docker.com/rootless | sh > init.sh
-          sh ./init.sh
+          $(sh ./init.sh)
           PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
           sleep 1
           DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
@@ -34,7 +36,7 @@ jobs:
         continue-on-error: true
         env:
           CIMATE_PROJECT_ID: 2348n4vl
-          CIMATE_CI_KEY: "CI / rootless Docker"
+          CIMATE_CI_KEY: "CI / rootless Docker (${{ matrix.XDG_RUNTIME_DIR }})"
         run: |
           wget -q https://get.cimate.io/release/linux/cimate
           chmod +x cimate
