@@ -22,7 +22,7 @@ jobs:
           mkdir -p $XDG_RUNTIME_DIR
           PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
       - name: verify the installation
-        run: PATH=$HOME/bin:$PATH DOCKER_HOST=$XDG_RUNTIME_DIR/docker.sock docker info || ls -la /tmp/docker-$(id -u)
+        run: PATH=$HOME/bin:$PATH DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test
       - name: aggregate test reports with ciMate
