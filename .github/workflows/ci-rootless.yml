@@ -13,8 +13,6 @@ jobs:
         include:
           - { XDG_RUNTIME_DIR: "" }
           - { XDG_RUNTIME_DIR: "/tmp/docker-testcontainers/" }
-    env:
-      XDG_RUNTIME_DIR: /tmp/docker-testcontainers/
     steps:
       - uses: actions/checkout@v2
       - name: debug
