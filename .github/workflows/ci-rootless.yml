@@ -7,6 +7,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { }
+          - { XDG_RUNTIME_DIR: "/tmp/docker-testcontainers/" }
     env:
       XDG_RUNTIME_DIR: /tmp/docker-testcontainers/
     steps:
@@ -17,12 +23,11 @@ jobs:
         run: sudo apt-get -q -y --purge remove moby-engine moby-buildx && sudo rm -rf /var/run/docker.sock
       - name: install rootless Docker
         run: |
-          mkdir -p $XDG_RUNTIME_DIR
-          curl -fsSL https://get.docker.com/rootless | sh
-      - name: start rootless Docker
-        run: PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
-      - name: verify the installation
-        run: PATH=$HOME/bin:$PATH DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
+          mkdir -p $XDG_RUNTIME_DIR || true
+          $(curl -fsSL https://get.docker.com/rootless | sh)
+          PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
+          sleep 1
+          DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test
       - name: aggregate test reports with ciMate
