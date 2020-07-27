@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { }
+          - { XDG_RUNTIME_DIR: "" }
           - { XDG_RUNTIME_DIR: "/tmp/docker-testcontainers/" }
     env:
       XDG_RUNTIME_DIR: /tmp/docker-testcontainers/
