@@ -31,7 +31,7 @@ jobs:
           sleep 1
           DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
       - name: Build with Gradle
-        run: ./gradlew --no-daemon --scan testcontainers:test
+        run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - name: aggregate test reports with ciMate
         if: always()
         continue-on-error: true
