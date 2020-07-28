@@ -79,7 +79,7 @@ public class MongoDBContainerTest {
     @Test
     public void shouldTestDatabaseName() {
         try (
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer()
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
         ) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
