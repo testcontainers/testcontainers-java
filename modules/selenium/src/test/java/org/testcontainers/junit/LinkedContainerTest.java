@@ -7,13 +7,17 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.testcontainers.SeleniumTestImages;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.NginxContainer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 
 /**
@@ -27,13 +31,13 @@ public class LinkedContainerTest {
     public Network network = Network.newNetwork();
 
     @Rule
-    public NginxContainer nginx = new NginxContainer<>()
+    public NginxContainer<?> nginx = new NginxContainer<>(SeleniumTestImages.NGINX_TEST_IMAGE)
             .withNetwork(network)
             .withNetworkAliases("nginx")
             .withCustomContent(contentFolder.toString());
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer<>()
+    public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
             .withNetwork(network)
             .withCapabilities(new ChromeOptions());
 

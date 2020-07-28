@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -24,6 +25,9 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:5.2.1");
+    private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
+
     // junitRule {
     @Rule
     public KafkaContainer kafka = new KafkaContainer();
@@ -31,7 +35,7 @@ public class KafkaContainerTest {
 
     @Test
     public void testUsage() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer()) {
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
@@ -42,7 +46,7 @@ public class KafkaContainerTest {
     public void testUsageWithVersion() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer("4.1.2")
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
             // }
         ) {
             kafka.start();
@@ -60,12 +64,12 @@ public class KafkaContainerTest {
             Network network = Network.newNetwork();
 
             // withExternalZookeeper {
-            KafkaContainer kafka = new KafkaContainer()
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
             // }
 
-            GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
+            GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");

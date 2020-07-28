@@ -1,6 +1,7 @@
 import com.mycompany.cache.Cache;
 import com.mycompany.cache.RedisBackedCache;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -9,14 +10,16 @@ import redis.clients.jedis.Jedis;
 
 import java.util.Optional;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 /**
  * Integration test for Redis-backed cache implementation.
  */
 public class RedisBackedCacheTest {
 
-    private static GenericContainer redis = new GenericContainer("redis:3.0.6").withExposedPorts(6379);
+    private static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6")).withExposedPorts(6379);
 
     private Cache cache;
 

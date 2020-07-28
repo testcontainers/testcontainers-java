@@ -1,12 +1,14 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
 public class ClickHouseContainer extends JdbcDatabaseContainer {
     public static final String NAME = "clickhouse";
     public static final String IMAGE = "yandex/clickhouse-server";
+    @Deprecated
     public static final String DEFAULT_TAG = "18.10.3";
 
     public static final Integer HTTP_PORT = 8123;
@@ -20,11 +22,23 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     private String username = "default";
     private String password = "";
 
+    /**
+     * @deprecated use {@link ClickHouseContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public ClickHouseContainer() {
         super(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link ClickHouseContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public ClickHouseContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         withExposedPorts(HTTP_PORT, NATIVE_PORT);

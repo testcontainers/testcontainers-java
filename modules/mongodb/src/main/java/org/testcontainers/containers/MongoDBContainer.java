@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
@@ -21,11 +22,23 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
+    /**
+     * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MongoDBContainer() {
         this("mongo:" + MONGODB_VERSION_DEFAULT);
     }
 
+    /**
+     * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MongoDBContainer(@NonNull final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public MongoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");
