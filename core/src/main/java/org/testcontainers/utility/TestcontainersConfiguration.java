@@ -38,7 +38,6 @@ public class TestcontainersConfiguration {
 
     @Getter(lazy = true)
     private static final TestcontainersConfiguration instance = loadConfiguration();
-    ;
 
     @SuppressWarnings({"ConstantConditions", "unchecked", "rawtypes"})
     @VisibleForTesting
