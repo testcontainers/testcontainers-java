@@ -46,6 +46,10 @@ public class TestcontainersConfigurationTest {
 
         environmentProperties.setProperty("testcontainers.reuse.enable", "true");
         assertTrue("reuse enabled", newConfig().environmentSupportsReuse());
+
+        environmentProperties.setProperty("ryuk.container.image", " testcontainersofficial/ryuk:0.3.0 ");
+        assertEquals("Whitespaces still exists in image property", "testcontainersofficial/ryuk:0.3.0",newConfig().getRyukImage());
+
     }
 
     private TestcontainersConfiguration newConfig() {
