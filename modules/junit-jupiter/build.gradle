@@ -16,7 +16,7 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.6.2'
 
     testRuntime 'org.postgresql:postgresql:42.2.14'
-    testRuntime 'mysql:mysql-connector-java:8.0.20'
+    testRuntime 'mysql:mysql-connector-java:8.0.21'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 }
 
