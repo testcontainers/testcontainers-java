@@ -1,6 +1,13 @@
 description = "TestContainers :: Cassandra"
 
+configurations.all {
+    resolutionStrategy {
+        force 'io.dropwizard.metrics:metrics-core:3.2.4'
+    }
+}
+
 dependencies {
     compile project(":database-commons")
-    compile "com.datastax.oss:java-driver-core:4.6.1"
+    compile "com.datastax.cassandra:cassandra-driver-core:3.10.0"
+    testCompile 'com.datastax.oss:java-driver-core:4.8.0'
 }

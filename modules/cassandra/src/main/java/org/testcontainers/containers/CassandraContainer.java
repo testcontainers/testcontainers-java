@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.CqlSessionBuilder;
+import com.datastax.driver.core.Cluster;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
@@ -34,13 +33,15 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer CQL_PORT = 9042;
-    public static final String DATACENTER = "datacenter1";
+    public static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
     private static final String USERNAME = "cassandra";
     private static final String PASSWORD = "cassandra";
 
     private String configLocation;
     private String initScriptPath;
+    private boolean enableJmxReporting;
+    private String localDatacenter;
 
     /**
      * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
@@ -61,6 +62,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
+        this.enableJmxReporting = false;
+        this.localDatacenter = DEFAULT_LOCAL_DATACENTER;
     }
 
     @Override
@@ -137,6 +140,22 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
+     * Initialize Cassandra client with JMX reporting enabled or disabled
+     */
+    public SELF withJmxReporting(boolean enableJmxReporting) {
+        this.enableJmxReporting = enableJmxReporting;
+        return self();
+    }
+
+    /**
+     * Override the default Cassandra local Datacenter name
+     */
+    public SELF withLocalDatacenter(String localDatacenter) {
+      this.localDatacenter = localDatacenter;
+      return self();
+    }
+
+    /**
      * Get username
      *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
@@ -165,19 +184,54 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * Can be used to obtain connections to Cassandra in the container
      *
-     * @return A Configured {@link CqlSession}
+     * @deprecated For Cassandra driver 3.x, use {@link #getHost()} and {@link #getMappedPort(int)} with 
+     * the driver's {@link Cluster#builder() Cluster.Builder} {@code addContactPoint(String)} and
+     * {@code withPort(int)} methods to create a Cluster object. For Cassandra driver 4.x, use
+     * {@link #getContactPoint()} and {@link #getLocalDatacenter()} with the driver's {@code CqlSession.builder()}
+     * {@code addContactPoint(InetSocketAddress)} and {@code withLocalDatacenter(String)} methods to create
+     * a Session Object. See https://docs.datastax.com/en/developer/java-driver/ for more on the driver.
      */
-    public CqlSession getSession() {
-        return getSession(this);
+    @Deprecated
+    public Cluster getCluster() {
+        return getCluster(this, enableJmxReporting);
     }
 
-    public static CqlSession getSession(ContainerState containerState) {
-        final CqlSessionBuilder builder = CqlSession.builder()
-            .addContactPoint(new InetSocketAddress(containerState.getHost(), containerState.getMappedPort(CQL_PORT)))
-            .withLocalDatacenter(DATACENTER);
+    @Deprecated
+    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
+        final Cluster.Builder builder = Cluster.builder()
+            .addContactPoint(containerState.getHost())
+            .withPort(containerState.getMappedPort(CQL_PORT));
+        if (!enableJmxReporting) {
+            builder.withoutJMXReporting();
+        }
         return builder.build();
     }
 
+    @Deprecated
+    public static Cluster getCluster(ContainerState containerState) {
+        return getCluster(containerState, false);
+    }
+
+    /**
+     * Retrieve an {@link InetSocketAddress} for connecting to the Cassandra container via the driver.
+     *
+     * @return A InetSocketAddrss representation of this Cassandra container's host and port.
+     */
+    public InetSocketAddress getContactPoint() {
+        return new InetSocketAddress(getHost(), getMappedPort(CQL_PORT));
+    }
+
+    /**
+     * Retrieve the Local Datacenter for connecting to the Cassandra container via the driver.
+     *
+     * @return The configured local Datacenter name.
+     * @see #withLocalDatacenter(java.lang.String)
+     */
+    public String getLocalDatacenter() {
+      return localDatacenter;
+    }
+
+    @Deprecated
     private DatabaseDelegate getDatabaseDelegate() {
         return new CassandraDatabaseDelegate(this);
     }
