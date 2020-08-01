@@ -172,7 +172,7 @@ public class TestcontainersConfiguration {
         } catch (FileNotFoundException e) {
             log.warn("Testcontainers config override was found on {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         } catch (IOException e) {
-            log.warn("Testcontainers config override was found on {} but could not be loaded", ExceptionUtils.getRootCauseMessage(e));
+            log.warn("Testcontainers config override was found on {} but could not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         }
         return properties;
     }
