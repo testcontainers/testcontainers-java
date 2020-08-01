@@ -30,7 +30,7 @@ public class DockerClientFactoryTest {
         try {
             //remove tiny image, so it will be pulled during next command run
             dockFactory.client()
-                    .removeImageCmd(TestcontainersConfiguration.getInstance().getTinyImage())
+                    .removeImageCmd(TestcontainersConfiguration.getInstance().getTinyDockerImageName().asCanonicalNameString())
                     .withForce(true).exec();
         } catch (NotFoundException ignored) {
             // Do not fail if it's not pulled yet
@@ -71,7 +71,7 @@ public class DockerClientFactoryTest {
 
         DockerClientFactory instance = new DockerClientFactory();
         DockerClient dockerClient = instance.dockerClient;
-        assertThat(instance.cachedChecksFailure).isNull();
+        assertThat(instance.cachedClientFailure).isNull();
         try {
             // Remove cached client to force the initialization logic
             instance.dockerClient = null;
@@ -80,12 +80,12 @@ public class DockerClientFactoryTest {
             assertThatThrownBy(instance::client).isInstanceOf(DockerException.class);
 
             RuntimeException failure = new IllegalStateException("Boom!");
-            instance.cachedChecksFailure = failure;
+            instance.cachedClientFailure = failure;
             // Fail fast
             assertThatThrownBy(instance::client).isEqualTo(failure);
         } finally {
             instance.dockerClient = dockerClient;
-            instance.cachedChecksFailure = null;
+            instance.cachedClientFailure = null;
         }
     }
 }

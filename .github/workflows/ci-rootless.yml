@@ -1,0 +1,44 @@
+name: CI-Docker-Rootless
+
+on:
+  pull_request: {}
+  push: { branches: [ master ] }
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { XDG_RUNTIME_DIR: "" }
+          - { XDG_RUNTIME_DIR: "/tmp/docker-testcontainers/" }
+    env:
+      XDG_RUNTIME_DIR: ${{ matrix.XDG_RUNTIME_DIR }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: debug
+        run: id -u; whoami
+      - name: uninstall rootful Docker
+        run: sudo apt-get -q -y --purge remove moby-engine moby-buildx && sudo rm -rf /var/run/docker.sock
+      - name: install rootless Docker
+        run: |
+          mkdir -p $XDG_RUNTIME_DIR || true
+          curl -fsSL https://get.docker.com/rootless | sh > init.sh
+          cat init.sh
+          source <(grep '^export' init.sh)
+          PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
+          sleep 1
+          DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
+      - name: Build with Gradle
+        run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
+      - name: aggregate test reports with ciMate
+        if: always()
+        continue-on-error: true
+        env:
+          CIMATE_PROJECT_ID: 2348n4vl
+          CIMATE_CI_KEY: "CI / rootless Docker (${{ matrix.XDG_RUNTIME_DIR }})"
+        run: |
+          wget -q https://get.cimate.io/release/linux/cimate
+          chmod +x cimate
+          ./cimate "**/TEST-*.xml"

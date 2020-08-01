@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.concurrent.Future;
@@ -32,18 +33,33 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return image;
     }
 
+    /**
+     * @deprecated use {@link OracleContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public OracleContainer() {
         this(resolveImageName());
     }
 
+    /**
+     * @deprecated use {@link OracleContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public OracleContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
-        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
+        preconfigure();
     }
 
     public OracleContainer(Future<String> dockerImageName) {
         super(dockerImageName);
+        preconfigure();
+    }
+
+    private void preconfigure() {
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
@@ -61,7 +77,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getContainerIpAddress() + ":" + getOraclePort() + ":" + getSid();
+        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + ":" + getSid();
     }
 
     @Override
@@ -84,6 +100,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     public OracleContainer withPassword(String password) {
         this.password = password;
         return self();
+    }
+
+    @Override
+    public OracleContainer withUrlParam(String paramName, String paramValue) {
+        throw new UnsupportedOperationException("The OracleDb does not support this");
     }
 
     @SuppressWarnings("SameReturnValue")

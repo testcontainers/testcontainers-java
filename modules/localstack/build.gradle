@@ -3,9 +3,9 @@ description = "Testcontainers :: Localstack"
 dependencies {
     compile project(':testcontainers')
 
-    compileOnly 'com.amazonaws:aws-java-sdk-s3:1.11.683'
-    testCompile 'com.amazonaws:aws-java-sdk-s3:1.11.683'
-    testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.636'
-    testCompile 'com.amazonaws:aws-java-sdk-logs:1.11.773'
-    testCompile 'software.amazon.awssdk:s3:2.13.4'
+    compileOnly 'com.amazonaws:aws-java-sdk-s3:1.11.831'
+    testCompile 'com.amazonaws:aws-java-sdk-s3:1.11.816'
+    testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.831'
+    testCompile 'com.amazonaws:aws-java-sdk-logs:1.11.807'
+    testCompile 'software.amazon.awssdk:s3:2.13.61'
 }

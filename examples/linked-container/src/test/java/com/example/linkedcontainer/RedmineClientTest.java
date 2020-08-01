@@ -15,11 +15,11 @@ public class RedmineClientTest {
     private static final String POSTGRES_USERNAME = "redmine";
     private static final String POSTGRES_PASSWORD = "secret";
 
-    private PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:9.6.2")
+    private PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>(LinkedContainerTestImages.POSTGRES_TEST_IMAGE)
             .withUsername(POSTGRES_USERNAME)
             .withPassword(POSTGRES_PASSWORD);
 
-    private RedmineContainer redmineContainer = new RedmineContainer("redmine:3.3.2")
+    private RedmineContainer redmineContainer = new RedmineContainer(LinkedContainerTestImages.REDMINE_TEST_IMAGE)
             .withLinkToContainer(postgreSQLContainer, "postgres")
             .withEnv("POSTGRES_ENV_POSTGRES_USER", POSTGRES_USERNAME)
             .withEnv("POSTGRES_ENV_POSTGRES_PASSWORD", POSTGRES_PASSWORD);

@@ -1,20 +1,13 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
-import org.testcontainers.utility.LogUtils;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Predicate;
 
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
@@ -27,12 +20,24 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     private String username = "db2inst1";
     private String password = "foobar1234";
 
+    /**
+     * @deprecated use {@link Db2Container(DockerImageName)} instead
+     */
+    @Deprecated
     public Db2Container() {
         this(DEFAULT_DB2_IMAGE_NAME + ":" + DEFAULT_TAG);
     }
 
-    public Db2Container(String imageName) {
-        super(imageName);
+    /**
+     * @deprecated use {@link Db2Container(DockerImageName)} instead
+     */
+    @Deprecated
+    public Db2Container(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public Db2Container(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         withPrivilegedMode(true);
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")
@@ -81,7 +86,9 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:db2://" + getContainerIpAddress() + ":" + getMappedPort(DB2_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters(":", ";", ";");
+        return "jdbc:db2://" + getHost() + ":" + getMappedPort(DB2_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override

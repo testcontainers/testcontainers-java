@@ -8,16 +8,16 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DemoApplication.class, webEnvironment = WebEnvironment.RANDOM_PORT, properties = {
     "spring.datasource.url=jdbc:tc:postgresql:11-alpine:///databasename",
-    "spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver"
 })
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
-    static GenericContainer redis = new GenericContainer("redis:3-alpine")
+    static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3-alpine"))
         .withExposedPorts(6379);
 
     @DynamicPropertySource

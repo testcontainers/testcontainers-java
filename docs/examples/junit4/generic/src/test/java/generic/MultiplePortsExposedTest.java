@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -14,7 +15,7 @@ public class MultiplePortsExposedTest {
 
     @Rule
     // rule {
-    public GenericContainer container = new GenericContainer("orientdb:3.0.13")
+    public GenericContainer container = new GenericContainer(DockerImageName.parse("orientdb:3.0.13"))
         .withExposedPorts(2424, 2480)
         .withLogConsumer(new Slf4jLogConsumer(log));
     // }
@@ -31,13 +32,13 @@ public class MultiplePortsExposedTest {
     }
 
     @Test
-    public void getContainerIpAddressOnly() {
-        String ipAddress = container.getContainerIpAddress();
+    public void getHostOnly() {
+        String ipAddress = container.getHost();
     }
 
     @Test
-    public void getContainerIpAddressAndMappedPort() {
+    public void getHostAndMappedPort() {
         String address =
-            container.getContainerIpAddress() + ":" + container.getMappedPort(2424);
+            container.getHost() + ":" + container.getMappedPort(2424);
     }
 }

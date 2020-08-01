@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
     private static final String DEFAULT_IMAGE_NAME = "rabbitmq";
-    private static final String DEFAULT_TAG = "3.7-management-alpine";
+    private static final String DEFAULT_TAG = "3.7.25-management-alpine";
 
     private static final int DEFAULT_AMQP_PORT = 5672;
     private static final int DEFAULT_AMQPS_PORT = 5671;
@@ -41,7 +42,9 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
      * Creates a Testcontainer using the official RabbitMQ docker image.
+     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
      */
+    @Deprecated
     public RabbitMQContainer() {
         this(DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG);
     }
@@ -49,10 +52,16 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     /**
      * Creates a Testcontainer using a specific docker image.
      *
-     * @param image The docker image to use.
+     * @param dockerImageName The docker image to use.
+     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
      */
-    public RabbitMQContainer(String image) {
-        super(image);
+    @Deprecated
+    public RabbitMQContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public RabbitMQContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 
@@ -114,28 +123,28 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @return AMQP URL for use with AMQP clients.
      */
     public String getAmqpUrl() {
-        return "amqp://" + getContainerIpAddress() + ":" + getAmqpPort();
+        return "amqp://" + getHost() + ":" + getAmqpPort();
     }
 
     /**
      * @return AMQPS URL for use with AMQPS clients.
      */
     public String getAmqpsUrl() {
-        return "amqps://" + getContainerIpAddress() + ":" + getAmqpsPort();
+        return "amqps://" + getHost() + ":" + getAmqpsPort();
     }
 
     /**
      * @return URL of the HTTP management endpoint.
      */
     public String getHttpUrl() {
-        return "http://" + getContainerIpAddress() + ":" + getHttpPort();
+        return "http://" + getHost() + ":" + getHttpPort();
     }
 
     /**
      * @return URL of the HTTPS management endpoint.
      */
     public String getHttpsUrl() {
-        return "https://" + getContainerIpAddress() + ":" + getHttpsPort();
+        return "https://" + getHost() + ":" + getHttpsPort();
     }
 
     /**
@@ -345,6 +354,17 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     public RabbitMQContainer withExchange(String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
         values.add(asList("rabbitmqadmin", "declare", "exchange",
+            "name=" + name,
+            "type=" + type,
+            "auto_delete=" + autoDelete,
+            "internal=" + internal,
+            "durable=" + durable,
+            "arguments=" + toJson(arguments)));
+        return self();
+    }
+
+    public RabbitMQContainer withExchange(String vhost, String name, String type, boolean autoDelete, boolean internal, boolean durable, Map<String, Object> arguments) {
+        values.add(asList("rabbitmqadmin", "--vhost=" + vhost, "declare", "exchange",
                 "name=" + name,
                 "type=" + type,
                 "auto_delete=" + autoDelete,

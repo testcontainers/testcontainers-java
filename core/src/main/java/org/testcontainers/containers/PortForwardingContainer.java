@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public enum PortForwardingContainer {
     INSTANCE;
 
-    private GenericContainer container;
+    private GenericContainer<?> container;
 
     private final Set<Entry<Integer, Integer>> exposedPorts = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
@@ -29,7 +29,7 @@ public enum PortForwardingContainer {
     @SneakyThrows
     private Connection createSSHSession() {
         String password = UUID.randomUUID().toString();
-        container = new GenericContainer<>(TestcontainersConfiguration.getInstance().getSSHdImage())
+        container = new GenericContainer<>(TestcontainersConfiguration.getInstance().getSSHdDockerImageName())
             .withExposedPorts(22)
             .withEnv("PASSWORD", password)
             .withCommand(
@@ -40,7 +40,7 @@ public enum PortForwardingContainer {
             );
         container.start();
 
-        Connection connection = new Connection(container.getContainerIpAddress(), container.getMappedPort(22));
+        Connection connection = new Connection(container.getHost(), container.getMappedPort(22));
 
         connection.setTCPNoDelay(true);
         connection.connect(
@@ -60,7 +60,7 @@ public enum PortForwardingContainer {
     public void exposeHostPort(int port) {
         exposeHostPort(port, port);
     }
-    
+
     @SneakyThrows
     public void exposeHostPort(int hostPort, int containerPort) {
     	if (exposedPorts.add(new AbstractMap.SimpleEntry<>(hostPort, containerPort))) {

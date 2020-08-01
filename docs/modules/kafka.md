@@ -11,41 +11,45 @@ More precisely Testcontainers uses the official Docker images for [Confluent OSS
 ## Example
 
 The following field in your JUnit test class will prepare a container running Kafka:
-```java
-@Rule
-public KafkaContainer kafka = new KafkaContainer();
-```
+<!--codeinclude-->
+[JUnit Rule](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:junitRule
+<!--/codeinclude-->
         
 Now your tests or any other process running on your machine can get access to running Kafka broker by using the following bootstrap server location:
-```java
-kafka.getBootstrapServers()
-```
+
+<!--codeinclude-->
+[Bootstrap Servers](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:getBootstrapServers
+<!--/codeinclude-->
+
 
 ## Options
 
 ### Selecting Kafka version
 
 You can select a version of Confluent Platform by passing it to the container's constructor:
-```java
-new KafkaContainer("4.1.2")
-```
+<!--codeinclude-->
+[Version Constructor](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
+<!--/codeinclude-->
+
+
 The correspondence between Confluent Platform versions and Kafka versions can be seen [in Confluent documentation](https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility)
         
 ### <a name="zookeeper"></a> Using external Zookeeper
 
 If for some reason you want to use an externally running Zookeeper, then just pass its location during construction:
-```java
-new KafkaContainer().withExternalZookeeper("localhost:2181")
-```
+<!--codeinclude-->
+[External Zookeeper](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withExternalZookeeper
+<!--/codeinclude-->
+
 
 ## Multi-container usage
 
 If your test needs to run some other Docker container which needs access to the Kafka, do the following:
 
-* Run you other container on the same network as Kafka container. E.g. as following:
-```java
-new GenericContainer("myImage").withNetwork(kafka.getNetwork())
-```
+* Run your other container on the same network as Kafka container, e.g.:
+<!--codeinclude-->
+[Network](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKafkaNetwork
+<!--/codeinclude-->
 * Use `kafka.getNetworkAliases().get(0)+":9092"` as bootstrap server location. 
 Or just give your Kafka container a network alias of your liking.
 
