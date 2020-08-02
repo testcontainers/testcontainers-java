@@ -7,6 +7,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Container for Dynalite, a DynamoDB clone.
@@ -16,14 +17,27 @@ public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
     private static final String IMAGE_NAME = "quay.io/testcontainers/dynalite:v1.2.1-1";
     private static final int MAPPED_PORT = 4567;
 
+    /**
+     * @deprecated use {@link DynaliteContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public DynaliteContainer() {
         this(IMAGE_NAME);
         withExposedPorts(MAPPED_PORT);
     }
 
-    public DynaliteContainer(String imageName) {
-        super(imageName);
+    /**
+     * @deprecated use {@link DynaliteContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public DynaliteContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
     }
+
+    public DynaliteContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+    }
+
 
     /**
      * Gets a preconfigured {@link AmazonDynamoDB} client object for connecting to this

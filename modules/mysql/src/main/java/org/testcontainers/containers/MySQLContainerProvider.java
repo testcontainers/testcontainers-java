@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.jdbc.ConnectionUrl;
-
-import java.util.Objects;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Factory for MySQL containers.
@@ -26,7 +25,7 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         if (tag != null) {
-            return new MySQLContainer(MySQLContainer.IMAGE + ":" + tag);
+            return new MySQLContainer(DockerImageName.parse(MySQLContainer.IMAGE).withTag(tag));
         } else {
             return newInstance();
         }

@@ -4,14 +4,6 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.rnorth.ducttape.Preconditions;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.TestcontainersConfiguration;
-
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,6 +12,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.rnorth.ducttape.Preconditions;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 /**
  * <p>Container for Atlassian Labs Localstack, 'A fully functional local AWS cloud stack'.</p>
@@ -29,22 +31,77 @@ import java.util.stream.Collectors;
  * {@link LocalStackContainer#getDefaultCredentialsProvider()}
  * be used to obtain compatible endpoint configuration and credentials, respectively.</p>
  */
+@Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
-    public static final String VERSION = "0.10.8";
+    public static final String VERSION = "0.11.2";
+    static final int PORT = 4566;
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
-
     private final List<Service> services = new ArrayList<>();
 
+    /**
+     * Whether or to assume that all APIs run on different ports (when <code>true</code>) or are
+     * exposed on a single port (<code>false</code>). From the Localstack README:
+     *
+     * <blockquote>Note: Starting with version 0.11.0, all APIs are exposed via a single edge
+     * service [...] The API-specific endpoints below are still left for backward-compatibility but
+     * may get removed in a future release - please reconfigure your client SDKs to start using the
+     * single edge endpoint URL!</blockquote>
+     * <p>
+     * Testcontainers will use the tag of the docker image to infer whether or not the used version
+     * of Localstack supports this feature.
+     */
+    private final boolean legacyMode;
+
+    /**
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public LocalStackContainer() {
         this(VERSION);
     }
 
+    /**
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public LocalStackContainer(String version) {
-        super(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version);
+        this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));
+    }
+
+    /**
+     * @param dockerImageName    image name to use for Localstack
+     */
+    public LocalStackContainer(final DockerImageName dockerImageName) {
+        this(dockerImageName, shouldRunInLegacyMode(dockerImageName.getVersionPart()));
+    }
+
+    /**
+     * @param dockerImageName    image name to use for Localstack
+     * @param useLegacyMode      if true, each AWS service is exposed on a different port
+     */
+    public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
+        super(dockerImageName);
+        this.legacyMode = useLegacyMode;
 
         withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
+    }
+
+    private static boolean shouldRunInLegacyMode(String version) {
+        if (version.equals("latest")) {
+            return false;
+        }
+
+        ComparableVersion comparableVersion = new ComparableVersion(version);
+        if (comparableVersion.isSemanticVersion()) {
+            boolean versionRequiresLegacyMode = comparableVersion.isLessThan("0.11");
+            return versionRequiresLegacyMode;
+        }
+
+        log.warn("Version {} is not a semantic version, LocalStack will run in legacy mode.", version);
+        log.warn("Consider using \"LocalStackContainer(DockerImageName dockerImageName, boolean legacyMode)\" constructor if you want to disable legacy mode.");
+        return true;
     }
 
     @Override
@@ -68,9 +125,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
         logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
 
-        for (Service service : services) {
-            addExposedPort(service.getPort());
-        }
+        exposePorts();
+    }
+
+    private void exposePorts() {
+        services.stream()
+            .map(this::getServicePort)
+            .distinct()
+            .forEach(this::addExposedPort);
     }
 
     /**
@@ -141,10 +203,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             return new URI("http://" +
                 ipAddress +
                 ":" +
-                getMappedPort(service.getPort()));
+                getMappedPort(getServicePort(service)));
         } catch (UnknownHostException | URISyntaxException e) {
             throw new IllegalStateException("Cannot obtain endpoint URL", e);
         }
+    }
+
+    private int getServicePort(Service service) {
+        return legacyMode ? service.port : PORT;
     }
 
     /**
@@ -258,5 +324,13 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         String localStackName;
 
         int port;
+
+        @Deprecated
+        /*
+            Since version 0.11, LocalStack exposes all services on a single (4566) port.
+         */
+        public int getPort() {
+            return port;
+        }
     }
 }

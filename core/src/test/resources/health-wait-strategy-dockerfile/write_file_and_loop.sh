@@ -1,8 +1,8 @@
 #!/bin/ash
 
-echo sleeping
+set -ex
+
 sleep 2
-echo writing file
 touch /testfile
 
 while true; do sleep 1; done

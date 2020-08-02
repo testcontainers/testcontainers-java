@@ -4,10 +4,17 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.context;
+import static org.rnorth.visibleassertions.VisibleAssertions.info;
 
 /**
  * Created by rnorth on 03/01/2016.
@@ -15,7 +22,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
 public class DisqueBackedMailSenderTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer("richnorth/disque:1.0-rc1")
+    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("richnorth/disque:1.0-rc1"))
                                                 .withExposedPorts(7711);
     private DisqueClient disqueClient;
 

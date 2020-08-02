@@ -14,7 +14,6 @@ import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -22,6 +21,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,11 +72,11 @@ public final class ResourceReaper {
 
     @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
-        String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
+        String ryukImage = TestcontainersConfiguration.getInstance().getRyukDockerImageName().asCanonicalNameString();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
+        binds.add(new Bind("/" + DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig().withAutoRemove(true))

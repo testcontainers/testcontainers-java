@@ -5,9 +5,11 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.Network;
+import org.testcontainers.TestImages;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 import static org.testcontainers.containers.Network.newNetwork;
 
 @RunWith(Enclosed.class)
@@ -19,13 +21,13 @@ public class NetworkTest {
         public Network network = newNetwork();
 
         @Rule
-        public GenericContainer foo = new GenericContainer()
+        public GenericContainer<?> foo = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases("foo")
                 .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
 
         @Rule
-        public GenericContainer bar = new GenericContainer()
+        public GenericContainer<?> bar = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withNetwork(network)
                 .withCommand("top");
 
@@ -44,12 +46,12 @@ public class NetworkTest {
             try (
                     Network network = Network.newNetwork();
 
-                    GenericContainer foo = new GenericContainer()
+                    GenericContainer<?> foo = new GenericContainer<>(TestImages.TINY_IMAGE)
                             .withNetwork(network)
                             .withNetworkAliases("foo")
                             .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
 
-                    GenericContainer bar = new GenericContainer()
+                    GenericContainer<?> bar = new GenericContainer<>(TestImages.TINY_IMAGE)
                             .withNetwork(network)
                             .withCommand("top")
             ) {
@@ -63,11 +65,11 @@ public class NetworkTest {
         }
 
         @Test
-        public void testBuilder() throws Exception {
+        public void testBuilder() {
             try (
                     Network network = Network.builder()
                             .driver("macvlan")
-                            .build();
+                            .build()
             ) {
                 String id = network.getId();
                 assertEquals(
@@ -79,11 +81,11 @@ public class NetworkTest {
         }
 
         @Test
-        public void testModifiers() throws Exception {
+        public void testModifiers() {
             try (
                     Network network = Network.builder()
                             .createNetworkCmdModifier(cmd -> cmd.withDriver("macvlan"))
-                            .build();
+                            .build()
             ) {
                 String id = network.getId();
                 assertEquals(
@@ -95,7 +97,7 @@ public class NetworkTest {
         }
 
         @Test
-        public void testReusability() throws Exception {
+        public void testReusability() {
             try (Network network = Network.newNetwork()) {
                 String firstId = network.getId();
                 assertNotNull(
