@@ -60,7 +60,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getAmbassadorContainerImage() {
-        return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
+        return String.valueOf(properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest")).trim();
     }
 
     @Deprecated
