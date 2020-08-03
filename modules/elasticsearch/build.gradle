@@ -3,5 +3,5 @@ description = "TestContainers :: elasticsearch"
 dependencies {
     compile project(':testcontainers')
     testCompile "org.elasticsearch.client:elasticsearch-rest-client:7.8.0"
-    testCompile "org.elasticsearch.client:transport:6.7.1"
+    testCompile "org.elasticsearch.client:transport:7.8.1"
 }
