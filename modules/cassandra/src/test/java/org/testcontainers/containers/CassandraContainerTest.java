@@ -10,9 +10,12 @@ import org.junit.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Eugeny Karpov
@@ -116,13 +119,17 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testMissingLocalDatacenter() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
             // Trying to build a CqlSession will fail if a Contact Point is specified,
             // but Local Datacenter is omitted.
             CqlSession.builder().addContactPoint(cassandraContainer.getContactPoint()).build();
+            fail("Session build should fail if no local Datacenter provided");
+        } catch (IllegalStateException ise) {
+            String msg = "Since you provided explicit contact points, the local DC must be explicitly set";
+            assertThat(ise.getMessage(), containsString(msg));
         }
     }
 
