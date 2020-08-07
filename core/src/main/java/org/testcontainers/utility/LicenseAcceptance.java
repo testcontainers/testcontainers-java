@@ -15,11 +15,11 @@ import java.util.Set;
 @UtilityClass
 public class LicenseAcceptance {
 
-    private static final String ACCEPTANCE_FILE_NAME = "container-license-acceptance.txt";
+    private final String ACCEPTANCE_FILE_NAME = "container-license-acceptance.txt";
 
-    static final Set<String> ACCEPTED_IMAGE_NAMES = new HashSet<>();
+    final Set<String> ACCEPTED_IMAGE_NAMES = new HashSet<>();
 
-    public static void assertLicenseAccepted(final String imageName) {
+    public void assertLicenseAccepted(final String imageName) {
         if (ACCEPTED_IMAGE_NAMES.contains(imageName)) {
             return;
         }

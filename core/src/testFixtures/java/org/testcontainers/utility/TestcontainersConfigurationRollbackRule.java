@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * This {@link TestRule} applies a spy on {@link TestcontainersConfiguration}
  * for testing features that depend on the global configuration.
  */
-public class MockTestcontainersConfigurationRule implements TestRule {
+public class TestcontainersConfigurationRollbackRule implements TestRule {
 
     static AtomicReference<TestcontainersConfiguration> REF = TestcontainersConfiguration.getInstanceField();
 

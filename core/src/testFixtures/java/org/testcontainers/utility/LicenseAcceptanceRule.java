@@ -5,7 +5,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-public class MockLicenseAcceptanceRule implements TestRule {
+public class LicenseAcceptanceRule implements TestRule {
 
     @NotNull
     @Override

@@ -3,12 +3,12 @@ package org.testcontainers.containers;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.junit.Rule;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
-import org.testcontainers.utility.MockLicenseAcceptanceRule;
+import org.testcontainers.utility.LicenseAcceptanceRule;
 
 public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MSSQLServerContainer<?>> {
 
     @Rule
-    public final MockLicenseAcceptanceRule licenseAcceptanceRule = new MockLicenseAcceptanceRule();
+    public final LicenseAcceptanceRule licenseAcceptanceRule = new LicenseAcceptanceRule();
 
     @Override
     protected ConnectionFactoryOptions getOptions(MSSQLServerContainer<?> container) {

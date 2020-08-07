@@ -13,7 +13,7 @@ import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.r2dbc.Hidden.TestcontainersR2DBCConnectionFactoryProvider;
-import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.TestcontainersConfigurationRollbackRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContainer<?>> {
 
     @Rule
-    public final MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
+    public final TestcontainersConfigurationRollbackRule configurationMock = new TestcontainersConfigurationRollbackRule();
 
     protected abstract ConnectionFactoryOptions getOptions(T container);
 

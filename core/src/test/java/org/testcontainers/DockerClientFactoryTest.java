@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory.DiskSpaceUsage;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
-import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.TestcontainersConfigurationRollbackRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class DockerClientFactoryTest {
 
     @Rule
-    public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
+    public TestcontainersConfigurationRollbackRule configurationMock = new TestcontainersConfigurationRollbackRule();
 
     @Test
     public void runCommandInsideDockerShouldNotFailIfImageDoesNotExistsLocally() {
