@@ -23,7 +23,7 @@ import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
-import org.testcontainers.utility.TestcontainersConfigurationRollbackRule;
+import org.testcontainers.utility.TestcontainersConfigurationSpyAndRollbackRule;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -443,7 +443,7 @@ public class ReusabilityUnitTests {
     public static abstract class AbstractReusabilityTest {
 
         @Rule
-        public TestcontainersConfigurationRollbackRule configurationMock = new TestcontainersConfigurationRollbackRule();
+        public TestcontainersConfigurationSpyAndRollbackRule configurationMock = new TestcontainersConfigurationSpyAndRollbackRule();
 
         protected DockerClient client = Mockito.mock(DockerClient.class);
 
