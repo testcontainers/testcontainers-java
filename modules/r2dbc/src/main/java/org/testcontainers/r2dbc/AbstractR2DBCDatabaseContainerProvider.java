@@ -2,6 +2,7 @@ package org.testcontainers.r2dbc;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.Properties;
@@ -45,23 +46,9 @@ public abstract class AbstractR2DBCDatabaseContainerProvider implements R2DBCDat
 
     @Override
     public final R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
-        String driver = options.getRequiredValue(ConnectionFactoryOptions.DRIVER);
-
-        Properties properties = TestcontainersConfiguration.getInstance().getProperties();
-        if (properties.containsKey(driverPropertyName(driver))) {
-            String imagePropertyName = String.format("db.alias.%s.image", driver);
-            String image = properties.getProperty(imagePropertyName);
-            if (image == null) {
-                throw new IllegalArgumentException(String.format("Property '%s' is not set", imagePropertyName));
-            }
-
-            options = options.mutate()
-                .option(ConnectionFactoryOptions.DRIVER, originalDriver)
-                .option(IMAGE_OPTION, image)
-                .build();
-        }
-
+        options = updateOptionsWithAliasImageIfSet(options);
         R2DBCDatabaseContainer container = doCreateContainer(options);
+
         return new R2DBCDatabaseContainer() {
             @Override
             public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
@@ -81,6 +68,25 @@ public abstract class AbstractR2DBCDatabaseContainerProvider implements R2DBCDat
                 container.stop();
             }
         };
+    }
+
+    @NotNull
+    private ConnectionFactoryOptions updateOptionsWithAliasImageIfSet(ConnectionFactoryOptions options) {
+        String driver = options.getRequiredValue(ConnectionFactoryOptions.DRIVER);
+
+        Properties properties = TestcontainersConfiguration.getInstance().getProperties();
+        if (properties.containsKey(driverPropertyName(driver))) {
+            String imagePropertyName = String.format("db.alias.%s.image", driver);
+            String image = properties.getProperty(imagePropertyName);
+            if (image == null) {
+                throw new IllegalArgumentException(String.format("Property '%s' is not set", imagePropertyName));
+            }
+
+            options = options.mutate()
+                .option(IMAGE_OPTION, image)
+                .build();
+        }
+        return options;
     }
 
     protected abstract R2DBCDatabaseContainer doCreateContainer(ConnectionFactoryOptions options);
