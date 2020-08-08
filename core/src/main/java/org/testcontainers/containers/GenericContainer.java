@@ -370,7 +370,25 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     throw new IllegalStateException("This container does not support reuse");
                 }
 
-                if (TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+                tryReuse: {
+                    if (!TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+                        logger().warn(
+                            "" +
+                                "Reuse was requested but the environment does not support the reuse of containers\n" +
+                                "To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at {}",
+                            Paths.get(System.getProperty("user.home"), ".testcontainers.properties")
+                        );
+                        reusable = false;
+                        break tryReuse;
+                    }
+
+                    if (network != null) {
+                        logger().warn("Reuse was requested but the container is using a network.\n" +
+                            "Reuse of containers with networks is not supported.");
+                        reusable = false;
+                        break tryReuse;
+                    }
+
                     createCommand.getLabels().put(
                         COPIED_FILES_HASH_LABEL,
                         Long.toHexString(hashCopiedFiles().getValue())
@@ -389,14 +407,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                         createCommand.getLabels().put(HASH_LABEL, hash);
                     }
                     reusable = true;
-                } else {
-                    logger().warn(
-                        "" +
-                            "Reuse was requested but the environment does not support the reuse of containers\n" +
-                            "To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at {}",
-                        Paths.get(System.getProperty("user.home"), ".testcontainers.properties")
-                    );
-                    reusable = false;
                 }
             } else {
                 reusable = false;
