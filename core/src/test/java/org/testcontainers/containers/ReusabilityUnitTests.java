@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.ConnectToNetworkCmd;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerCmd;
@@ -48,6 +49,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -456,6 +458,11 @@ public class ReusabilityUnitTests {
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+
+            ConnectToNetworkCmd connectToNetwork = mock(ConnectToNetworkCmd.class);
+            when(client.connectToNetworkCmd()).thenReturn(connectToNetwork);
+            when(connectToNetwork.withContainerId(any())).thenReturn(connectToNetwork);
+            when(connectToNetwork.withNetworkId(any())).thenReturn(connectToNetwork);
 
             makeReusable(container);
             container.start();
