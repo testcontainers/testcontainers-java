@@ -48,6 +48,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testcontainers.TestImages.TINY_IMAGE;
 
@@ -440,6 +442,30 @@ public class ReusabilityUnitTests {
         }
     }
 
+    @RunWith(BlockJUnit4ClassRunner.class)
+    @FieldDefaults(makeFinal = true)
+    public static class NetworkTest extends AbstractReusabilityTest {
+        GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE).withNetwork(Network.newNetwork());
+
+        @Test
+        public void containerShouldNotBeReusableWithNetwork() {
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
+            AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
+            String containerId = randomContainerId();
+            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
+            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.startContainerCmd(containerId)).then(startContainerAnswer());
+            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+
+            makeReusable(container);
+            container.start();
+
+            verify(client, never()).listContainersCmd();
+            assertThat(commandRef).isNotNull();
+            assertThat(commandRef.get().getLabels())
+                .containsKeys(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL);
+        }
+    }
     @FieldDefaults(makeFinal = true)
     public static abstract class AbstractReusabilityTest {
 
