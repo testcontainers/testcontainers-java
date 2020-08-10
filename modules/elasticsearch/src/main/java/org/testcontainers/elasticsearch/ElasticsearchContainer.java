@@ -1,5 +1,6 @@
 package org.testcontainers.elasticsearch;
 
+import lombok.NonNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
@@ -7,6 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.concurrent.Future;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
@@ -57,7 +59,16 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
+        preconfigure();
+    }
+
+    public ElasticsearchContainer(@NonNull final Future<String> image) {
+        super(image);
+        preconfigure();
+    }
+
+    private void preconfigure() {
+        logger().info("Starting an elasticsearch container using [{}]", getDockerImageName());
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
