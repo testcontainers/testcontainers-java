@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.utility.DockerImageName;
 
 
@@ -39,7 +39,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      * @deprecated use {@link MongoDbContainer(DockerImageName)} instead
      */
     @Deprecated
-    public MongoDbContainer(@NotNull String image) {
+    public MongoDbContainer(@NonNull String image) {
         this(DockerImageName.parse(image));
     }
 
@@ -57,7 +57,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      * @return the public port of this container
      * @see #getMappedPort(int)
      */
-    @NotNull
+    @NonNull
     public Integer getPort() {
         return getMappedPort(MONGODB_PORT);
     }

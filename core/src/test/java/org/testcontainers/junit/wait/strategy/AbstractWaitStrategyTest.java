@@ -1,6 +1,6 @@
 package org.testcontainers.junit.wait.strategy;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.Before;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.visibleassertions.VisibleAssertions;
@@ -34,7 +34,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * @param ready the AtomicBoolean on which to indicate success
      * @return WaitStrategy implementation
      */
-    @NotNull
+    @NonNull
     protected abstract W buildWaitStrategy(final AtomicBoolean ready);
 
     @Before

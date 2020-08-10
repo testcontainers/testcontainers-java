@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -72,7 +72,7 @@ public class CommandLine {
         return false;
     }
 
-    @NotNull
+    @NonNull
     public static String[] getSystemPath() {
         return System.getenv("PATH").split(Pattern.quote(File.pathSeparator));
     }

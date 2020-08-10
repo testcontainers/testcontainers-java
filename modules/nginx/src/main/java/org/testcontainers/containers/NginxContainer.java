@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -39,7 +39,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericCo
         super(dockerImageName);
     }
 
-    @NotNull
+    @NonNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         return Collections.singleton(getMappedPort(80));

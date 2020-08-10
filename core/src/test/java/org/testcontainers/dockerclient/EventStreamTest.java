@@ -3,7 +3,7 @@ package org.testcontainers.dockerclient;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Event;
 import com.github.dockerjava.core.command.EventsResultCallback;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -49,7 +49,7 @@ public class EventStreamTest {
                     .withSince(Instant.parse(createdAt).getEpochSecond() + "")
                     .exec(new EventsResultCallback() {
                         @Override
-                        public void onNext(@NotNull Event event) {
+                        public void onNext(@NonNull Event event) {
                             // Check that a create event for the container is received
                             if (event.getId().equals(container.getContainerId()) && event.getStatus().equals("create")) {
                                 latch.countDown();

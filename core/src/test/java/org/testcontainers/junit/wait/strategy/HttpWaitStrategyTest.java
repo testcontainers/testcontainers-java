@@ -1,6 +1,6 @@
 package org.testcontainers.junit.wait.strategy;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -145,7 +145,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * @param ready the AtomicBoolean on which to indicate success
      * @return the WaitStrategy under test
      */
-    @NotNull
+    @NonNull
     protected HttpWaitStrategy buildWaitStrategy(final AtomicBoolean ready) {
         return createHttpWaitStrategy(ready)
             .forResponsePredicate(s -> s.equals(GOOD_RESPONSE_BODY));

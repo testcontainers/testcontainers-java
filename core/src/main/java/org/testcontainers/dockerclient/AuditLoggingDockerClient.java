@@ -1,10 +1,17 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.*;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateNetworkCmd;
+import com.github.dockerjava.api.command.KillContainerCmd;
+import com.github.dockerjava.api.command.RemoveContainerCmd;
+import com.github.dockerjava.api.command.RemoveNetworkCmd;
+import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.api.command.StopContainerCmd;
+import com.github.dockerjava.api.command.SyncDockerCmd;
+import lombok.NonNull;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
@@ -29,7 +36,7 @@ class AuditLoggingDockerClient implements DockerClient {
     }
 
     @Override
-    public CreateContainerCmd createContainerCmd(@NotNull String image) {
+    public CreateContainerCmd createContainerCmd(@NonNull String image) {
         return wrappedCommand(CreateContainerCmd.class,
                 wrappedClient.createContainerCmd(image),
                 (cmd, res) -> doLog("CREATE", image, res.getId(), cmd),
@@ -38,7 +45,7 @@ class AuditLoggingDockerClient implements DockerClient {
     }
 
     @Override
-    public StartContainerCmd startContainerCmd(@NotNull String containerId) {
+    public StartContainerCmd startContainerCmd(@NonNull String containerId) {
         return wrappedCommand(StartContainerCmd.class,
                 wrappedClient.startContainerCmd(containerId),
                 (cmd, res) -> doLog("START", null, containerId, cmd),
@@ -46,7 +53,7 @@ class AuditLoggingDockerClient implements DockerClient {
     }
 
     @Override
-    public RemoveContainerCmd removeContainerCmd(@NotNull String containerId) {
+    public RemoveContainerCmd removeContainerCmd(@NonNull String containerId) {
         return wrappedCommand(RemoveContainerCmd.class,
                 wrappedClient.removeContainerCmd(containerId),
                 (cmd, res) -> doLog("REMOVE", null, containerId, cmd),
@@ -54,7 +61,7 @@ class AuditLoggingDockerClient implements DockerClient {
     }
 
     @Override
-    public StopContainerCmd stopContainerCmd(@NotNull String containerId) {
+    public StopContainerCmd stopContainerCmd(@NonNull String containerId) {
         return wrappedCommand(StopContainerCmd.class,
                 wrappedClient.stopContainerCmd(containerId),
                 (cmd, res) -> doLog("STOP", null, containerId, cmd),
@@ -62,7 +69,7 @@ class AuditLoggingDockerClient implements DockerClient {
     }
 
     @Override
-    public KillContainerCmd killContainerCmd(@NotNull String containerId) {
+    public KillContainerCmd killContainerCmd(@NonNull String containerId) {
         return wrappedCommand(KillContainerCmd.class,
                 wrappedClient.killContainerCmd(containerId),
                 (cmd, res) -> doLog("KILL", null, containerId, cmd),
@@ -78,7 +85,7 @@ class AuditLoggingDockerClient implements DockerClient {
     }
 
     @Override
-    public RemoveNetworkCmd removeNetworkCmd(@NotNull String networkId) {
+    public RemoveNetworkCmd removeNetworkCmd(@NonNull String networkId) {
         return wrappedCommand(RemoveNetworkCmd.class,
                 wrappedClient.removeNetworkCmd(networkId),
                 (cmd, res) -> doLog("REMOVE_NETWORK", null, null, cmd),

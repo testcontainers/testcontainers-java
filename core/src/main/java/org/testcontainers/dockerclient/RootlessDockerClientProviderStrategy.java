@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -25,7 +24,6 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
     public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY + 1;
 
     @Getter(lazy = true)
-    @Nullable
     private final Path socketPath = resolveSocketPath();
 
     private Path resolveSocketPath() {

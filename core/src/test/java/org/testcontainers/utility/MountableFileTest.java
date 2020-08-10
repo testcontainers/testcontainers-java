@@ -1,10 +1,10 @@
 package org.testcontainers.utility;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -15,7 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class MountableFileTest {
 
@@ -132,7 +134,7 @@ public class MountableFileTest {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    @NotNull
+    @NonNull
     private Path createTempFile(final String name) throws IOException {
         final File tempParentDir = File.createTempFile("testcontainers", "");
         tempParentDir.delete();
@@ -143,7 +145,7 @@ public class MountableFileTest {
         return file;
     }
 
-    @NotNull
+    @NonNull
     private Path createTempDir() throws IOException {
         return Files.createTempDirectory("testcontainers");
     }

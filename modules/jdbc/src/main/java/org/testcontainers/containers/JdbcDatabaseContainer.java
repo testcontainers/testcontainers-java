@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
@@ -269,7 +268,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return urlParameters;
     }
 
-    protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {
+    protected void optionallyMapResourceParameterAsVolume(@NonNull String paramName, @NonNull String pathNameInContainer, @NonNull String defaultResource) {
         String resourceName = parameters.getOrDefault(paramName, defaultResource);
 
         if (resourceName != null) {

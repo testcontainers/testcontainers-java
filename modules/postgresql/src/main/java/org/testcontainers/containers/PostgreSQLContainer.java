@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -59,7 +59,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         addExposedPort(POSTGRESQL_PORT);
     }
 
-    @NotNull
+    @NonNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         return new HashSet<>(getMappedPort(POSTGRESQL_PORT));

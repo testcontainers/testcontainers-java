@@ -1,6 +1,6 @@
 package org.testcontainers.junit;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -44,7 +44,7 @@ public class BaseWebDriverContainerTest {
             actual.equals(expectedName));
     }
 
-    @NotNull
+    @NonNull
     private static RemoteWebDriver setupDriverFromRule(BrowserWebDriverContainer rule) {
         RemoteWebDriver driver = rule.getWebDriver();
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);

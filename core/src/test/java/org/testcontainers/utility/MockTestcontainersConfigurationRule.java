@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -16,9 +16,9 @@ public class MockTestcontainersConfigurationRule implements TestRule {
 
     static AtomicReference<TestcontainersConfiguration> REF = TestcontainersConfiguration.getInstanceField();
 
-    @NotNull
+    @NonNull
     @Override
-    public Statement apply(@NotNull Statement base, @NotNull Description description) {
+    public Statement apply(@NonNull Statement base, @NonNull Description description) {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {

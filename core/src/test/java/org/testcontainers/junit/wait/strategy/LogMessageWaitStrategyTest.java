@@ -1,6 +1,6 @@
 package org.testcontainers.junit.wait.strategy;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,7 +46,7 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
                 "sleep 300");
     }
 
-    @NotNull
+    @NonNull
     @Override
     protected LogMessageWaitStrategy buildWaitStrategy(AtomicBoolean ready) {
 

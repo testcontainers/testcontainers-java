@@ -3,11 +3,10 @@ package org.testcontainers.utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.DockerCmd;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.MDC;
 
 import java.util.List;
@@ -25,24 +24,24 @@ import static com.google.common.base.Strings.nullToEmpty;
 @UtilityClass
 public class AuditLogger {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    public static final String MDC_PREFIX = AuditLogger.class.getCanonicalName();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    public final String MDC_PREFIX = AuditLogger.class.getCanonicalName();
 
-    public static void doLog(@NotNull String action,
-                             @Nullable String image,
-                             @Nullable String containerId,
-                             @NotNull DockerCmd<?> cmd) {
+    public static void doLog(@NonNull String action,
+                             String image,
+                             String containerId,
+                             @NonNull DockerCmd<?> cmd) {
 
         doLog(action, image, containerId, cmd, null);
     }
 
-    public static void doLog(@NotNull String action,
-                             @Nullable String image,
-                             @Nullable String containerId,
-                             @NotNull DockerCmd<?> cmd,
-                             @Nullable Exception e) {
+    public static void doLog(@NonNull String action,
+                             String image,
+                             String containerId,
+                             @NonNull DockerCmd<?> cmd,
+                             Exception e) {
 
-        if (! log.isTraceEnabled()) {
+        if (!log.isTraceEnabled()) {
             return;
         }
 
@@ -69,10 +68,10 @@ public class AuditLogger {
         MDC.remove(MDC_PREFIX + ".Exception");
     }
 
-    public static void doComposeLog(@NotNull String[] commandParts,
-                                    @Nullable List<String> env) {
+    public static void doComposeLog(@NonNull String[] commandParts,
+                                    List<String> env) {
 
-        if (! log.isTraceEnabled()) {
+        if (!log.isTraceEnabled()) {
             return;
         }
 

@@ -2,8 +2,8 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.base.MoreObjects;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -27,7 +27,7 @@ public class AuthConfigUtil {
             .toString();
     }
 
-    @NotNull
+    @NonNull
     private static String obfuscated(String value) {
         return isNullOrEmpty(value) ? "blank" : "hidden non-blank value";
     }

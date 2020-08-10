@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -21,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
+import jdk.internal.jline.internal.Nullable;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
@@ -28,8 +28,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -171,14 +169,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private int startupAttempts = 1;
 
-    @Nullable
     private String workingDirectory = null;
 
     /**
      * The shared memory size to use when starting the container.
      * This value is in bytes.
      */
-    @Nullable
     private Long shmSize;
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
@@ -701,7 +697,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return the ports on which to check if the container is ready
      * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
      */
-    @NotNull
     @NonNull
     @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {

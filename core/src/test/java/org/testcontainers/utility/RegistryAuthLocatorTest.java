@@ -2,8 +2,8 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.io.Resources;
+import lombok.NonNull;
 import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.io.File;
@@ -11,7 +11,9 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
 
 public class RegistryAuthLocatorTest {
     @Test
@@ -130,12 +132,12 @@ public class RegistryAuthLocatorTest {
         assertNull("CredStore field will be ignored, because value is blank", authConfig.getAuth());
     }
 
-    @NotNull
+    @NonNull
     private RegistryAuthLocator createTestAuthLocator(String configName) throws URISyntaxException {
         return createTestAuthLocator(configName, new HashMap<>());
     }
 
-    @NotNull
+    @NonNull
     private RegistryAuthLocator createTestAuthLocator(String configName, Map<String, String> notFoundMessagesReference) throws URISyntaxException {
         final File configFile = new File(Resources.getResource("auth-config/" + configName).toURI());
 

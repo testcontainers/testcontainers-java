@@ -2,13 +2,13 @@ package org.testcontainers.utility;
 
 import com.google.common.base.Charsets;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
 import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.NotNull;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.images.builder.Transferable;
@@ -62,7 +62,7 @@ public class MountableFile implements Transferable {
      * @param resourceName the classpath path to the resource
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forClasspathResource(@NotNull final String resourceName) {
+    public static MountableFile forClasspathResource(@NonNull final String resourceName) {
         return forClasspathResource(resourceName, null);
     }
 
@@ -72,7 +72,7 @@ public class MountableFile implements Transferable {
      * @param path the path to the resource
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forHostPath(@NotNull final String path) {
+    public static MountableFile forHostPath(@NonNull final String path) {
         return forHostPath(path, null);
     }
 
@@ -93,7 +93,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forClasspathResource(@NotNull final String resourceName, Integer mode) {
+    public static MountableFile forClasspathResource(@NonNull final String resourceName, Integer mode) {
         return new MountableFile(getClasspathResource(resourceName, new HashSet<>()).toString(), mode);
     }
 
@@ -104,7 +104,7 @@ public class MountableFile implements Transferable {
      * @param mode octal value of posix file mode (000..777)
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
-    public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
+    public static MountableFile forHostPath(@NonNull final String path, Integer mode) {
         return new MountableFile(new File(path).toURI().toString(), mode);
     }
 
@@ -120,8 +120,8 @@ public class MountableFile implements Transferable {
     }
 
 
-    @NotNull
-    private static URL getClasspathResource(@NotNull final String resourcePath, @NotNull final Set<ClassLoader> classLoaders) {
+    @NonNull
+    private static URL getClasspathResource(@NonNull final String resourcePath, @NonNull final Set<ClassLoader> classLoaders) {
 
         final Set<ClassLoader> classLoadersToSearch = new HashSet<>(classLoaders);
         // try context and system classloaders as well
@@ -147,7 +147,7 @@ public class MountableFile implements Transferable {
         throw new IllegalArgumentException("Resource with path " + resourcePath + " could not be found on any of these classloaders: " + classLoadersToSearch);
     }
 
-    private static String unencodeResourceURIToFilePath(@NotNull final String resource) {
+    private static String unencodeResourceURIToFilePath(@NonNull final String resource) {
         try {
             // Convert any url-encoded characters (e.g. spaces) back into unencoded form
             return URLDecoder.decode(resource.replaceAll("\\+", "%2B"), Charsets.UTF_8.name())

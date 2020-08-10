@@ -2,7 +2,7 @@ package org.testcontainers.containers.startupcheck;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.utility.DockerStatus;
 
 import java.time.Duration;
@@ -14,10 +14,10 @@ import java.time.Instant;
  */
 public class MinimumDurationRunningStartupCheckStrategy extends StartupCheckStrategy {
 
-    @NotNull
+    @NonNull
     private final Duration minimumRunningDuration;
 
-    public MinimumDurationRunningStartupCheckStrategy(@NotNull Duration minimumRunningDuration) {
+    public MinimumDurationRunningStartupCheckStrategy(@NonNull Duration minimumRunningDuration) {
         this.minimumRunningDuration = minimumRunningDuration;
     }
 

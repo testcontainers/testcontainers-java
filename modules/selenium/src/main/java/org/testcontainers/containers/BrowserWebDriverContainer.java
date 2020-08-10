@@ -5,8 +5,7 @@ import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import lombok.NonNull;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.BrowserType;
@@ -54,11 +53,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final String NO_PROXY_KEY = "no_proxy";
     private static final String TC_TEMP_DIR_PREFIX = "tc";
 
-    @Nullable
     private Capabilities capabilities;
     private boolean customImageNameIsSet = false;
 
-    @Nullable
     private RemoteWebDriver driver;
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private RecordingFileFactory recordingFileFactory;
@@ -135,7 +132,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         return self();
     }
 
-    @NotNull
+    @NonNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         Integer seleniumPort = getMappedPort(SELENIUM_PORT);

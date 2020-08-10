@@ -3,7 +3,7 @@ package org.testcontainers.containers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -411,7 +411,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.config");
     }
 
-    @NotNull
+    @NonNull
     private String toJson(Map<String, Object> arguments) {
         try {
             return new ObjectMapper().writeValueAsString(arguments);

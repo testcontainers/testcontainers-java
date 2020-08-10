@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 
 /**
  * Variant of {@link GenericContainer} that allows a fixed port on the docker host to be mapped to a container port.
@@ -17,7 +17,7 @@ public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericCont
      * @deprecated it is highly recommended that {@link FixedHostPortGenericContainer} not be used, as it risks port conflicts.
      */
     @Deprecated
-    public FixedHostPortGenericContainer(@NotNull String dockerImageName) {
+    public FixedHostPortGenericContainer(@NonNull String dockerImageName) {
         super(dockerImageName);
     }
 

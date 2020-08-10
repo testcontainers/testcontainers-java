@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashSet;
@@ -48,7 +48,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     }
 
 
-    @NotNull
+    @NonNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         return new HashSet<>(getMappedPort(MYSQL_PORT));

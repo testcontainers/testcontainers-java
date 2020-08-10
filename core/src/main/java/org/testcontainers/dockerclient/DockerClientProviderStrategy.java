@@ -14,7 +14,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
@@ -176,10 +175,10 @@ public abstract class DockerClientProviderStrategy {
 
                         return Stream.of(strategy);
                     } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
-                        @Nullable String throwableMessage = e.getMessage();
+                        String throwableMessage = e.getMessage();
                         @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
                         Throwable rootCause = Throwables.getRootCause(e);
-                        @Nullable String rootCauseMessage = rootCause.getMessage();
+                        String rootCauseMessage = rootCause.getMessage();
 
                         String failureDescription;
                         if (throwableMessage != null && throwableMessage.equals(rootCauseMessage)) {

@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 
 import java.util.regex.Pattern;
 
@@ -23,7 +23,7 @@ public final class DockerImageName {
     private final String rawName;
     private final String registry;
     private final String repo;
-    @NotNull private final Versioning versioning;
+    @NonNull private final Versioning versioning;
 
     /**
      * Parses a docker image name from a provided string.
@@ -85,7 +85,7 @@ public final class DockerImageName {
      * @deprecated use {@link DockerImageName#parse(String)}.{@link DockerImageName#withTag(String)} instead
      */
     @Deprecated
-    public DockerImageName(String nameWithoutTag, @NotNull String version) {
+    public DockerImageName(String nameWithoutTag, @NonNull String version) {
         this.rawName = nameWithoutTag;
         final int slashIndex = nameWithoutTag.indexOf('/');
 

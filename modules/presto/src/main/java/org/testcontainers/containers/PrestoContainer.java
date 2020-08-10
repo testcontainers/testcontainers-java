@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -49,7 +49,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
         addExposedPort(PRESTO_PORT);
     }
 
-    @NotNull
+    @NonNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
         return new HashSet<>(getMappedPort(PRESTO_PORT));
