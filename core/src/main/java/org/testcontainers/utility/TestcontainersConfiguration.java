@@ -56,11 +56,13 @@ public class TestcontainersConfiguration {
 
         this.properties.putAll(classpathProperties);
         this.properties.putAll(environmentProperties);
+        properties.keySet()
+            .forEach(key -> properties.replace(key, properties.getProperty(String.valueOf(key)).trim()));
     }
 
     @Deprecated
     public String getAmbassadorContainerImage() {
-        return String.valueOf(properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest")).trim();
+        return String.valueOf(properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest"));
     }
 
     public String getSocatContainerImage() {
@@ -68,15 +70,15 @@ public class TestcontainersConfiguration {
     }
 
     public String getVncRecordedContainerImage() {
-        return String.valueOf(properties.getOrDefault("vncrecorder.container.image", "testcontainers/vnc-recorder:1.1.0")).trim();
+        return String.valueOf(properties.getOrDefault("vncrecorder.container.image", "testcontainers/vnc-recorder:1.1.0"));
     }
 
     public String getDockerComposeContainerImage() {
-        return String.valueOf(properties.getOrDefault("compose.container.image", "docker/compose:1.24.1")).trim();
+        return String.valueOf(properties.getOrDefault("compose.container.image", "docker/compose:1.24.1"));
     }
 
     public String getTinyImage() {
-        return String.valueOf(properties.getOrDefault("tinyimage.container.image", "alpine:3.5")).trim();
+        return String.valueOf(properties.getOrDefault("tinyimage.container.image", "alpine:3.5"));
     }
 
     public boolean isRyukPrivileged() {
@@ -84,11 +86,11 @@ public class TestcontainersConfiguration {
     }
 
     public String getRyukImage() {
-        return String.valueOf(properties.getOrDefault("ryuk.container.image", "testcontainers/ryuk:0.3.0")).trim();
+        return String.valueOf(properties.getOrDefault("ryuk.container.image", "testcontainers/ryuk:0.3.0"));
     }
 
     public String getSSHdImage() {
-        return String.valueOf(properties.getOrDefault("sshd.container.image", "testcontainers/sshd:1.0.0")).trim();
+        return String.valueOf(properties.getOrDefault("sshd.container.image", "testcontainers/sshd:1.0.0"));
     }
 
     public Integer getRyukTimeout() {
@@ -96,15 +98,15 @@ public class TestcontainersConfiguration {
     }
 
     public String getKafkaImage() {
-        return String.valueOf(properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka")).trim();
+        return String.valueOf(properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka"));
     }
 
     public String getPulsarImage() {
-        return String.valueOf(properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar")).trim();
+        return String.valueOf(properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar"));
     }
 
     public String getLocalStackImage() {
-        return String.valueOf(properties.getOrDefault("localstack.container.image", "localstack/localstack")).trim();
+        return String.valueOf(properties.getOrDefault("localstack.container.image", "localstack/localstack"));
     }
 
     public boolean isDisableChecks() {
