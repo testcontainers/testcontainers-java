@@ -33,6 +33,7 @@ public class ElasticsearchContainerTest {
     /**
      * Elasticsearch version which should be used for the Tests
      */
+    private final int HTTP_STATUS_OK = 200;
     private static final String ELASTICSEARCH_VERSION = Version.CURRENT.toString();
     private static final DockerImageName ELASTICSEARCH_IMAGE =
         DockerImageName
@@ -71,12 +72,12 @@ public class ElasticsearchContainerTest {
 
             // Do whatever you want with the rest client ...
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode(), is(HTTP_STATUS_OK));
             assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_DEFAULT_VERSION));
 
             // The default image is running with the features under Elastic License
             response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode(), is(HTTP_STATUS_OK));
             // For now we test that we have the monitoring feature available
             assertThat(EntityUtils.toString(response.getEntity()), containsString("monitoring"));
         }
@@ -87,7 +88,7 @@ public class ElasticsearchContainerTest {
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode(), is(HTTP_STATUS_OK));
             String responseAsString = EntityUtils.toString(response.getEntity());
             assertThat(responseAsString, containsString(ELASTICSEARCH_VERSION));
         }
@@ -106,7 +107,7 @@ public class ElasticsearchContainerTest {
         ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode(), is(HTTP_STATUS_OK));
             // The OSS image does not have any feature under Elastic License
             assertThrows("We should not have /_xpack endpoint with an OSS License",
                 ResponseException.class,
