@@ -29,12 +29,11 @@ public class BaseWebDriverContainerTest {
         search.sendKeys("testcontainers");
         search.submit();
 
-        List<WebElement> results = new WebDriverWait(driver, 15)
-            .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("#search h3")));
+        List<WebElement> results = driver.findElements(By.cssSelector("#search h3"));
 
         assertTrue("the word 'testcontainers' appears in search results",
             results.stream()
-                .anyMatch(el -> el.getText().contains("testcontainers")));
+                .anyMatch(el -> el.getText().toLowerCase().contains("testcontainers")));
     }
 
     protected void assertBrowserNameIs(BrowserWebDriverContainer rule, String expectedName) {

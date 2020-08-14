@@ -44,8 +44,8 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  */
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer, TestLifecycleAware {
 
-    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
-    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
+    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
+    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
 
     private static final String DEFAULT_PASSWORD = "secret";
     private static final int SELENIUM_PORT = 4444;
@@ -56,7 +56,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Nullable
     private Capabilities capabilities;
-    private boolean customImageNameIsSet = false;
+    private DockerImageName customImageName = null;
 
     @Nullable
     private RemoteWebDriver driver;
@@ -68,9 +68,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
-    /**
-     * @deprecated use {@link BrowserWebDriverContainer(DockerImageName)} instead
-     */
     public BrowserWebDriverContainer() {
         super();
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
@@ -88,9 +85,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     /**
      * Constructor taking a specific webdriver container name and tag
      * @param dockerImageName Name of the selenium docker image
-     * @deprecated use {@link BrowserWebDriverContainer(DockerImageName)} instead
      */
-    @Deprecated
     public BrowserWebDriverContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
@@ -101,6 +96,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      */
     public BrowserWebDriverContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        // we assert compatibility with the chrome/firefox image later, after capabilities are processed
+
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
@@ -112,7 +110,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
 
-        this.customImageNameIsSet = true;
+        this.customImageName = dockerImageName;
         // We have to force SKIP mode for the recording by default because we don't know if the image has VNC or not
         recordingMode = VncRecordingMode.SKIP;
     }
@@ -182,8 +180,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                     .withVncPort(VNC_PORT);
         }
 
-        if (!customImageNameIsSet) {
-            super.setDockerImageName(getImageForCapabilities(capabilities, seleniumVersion));
+        DockerImageName standardImageForCapabilities = getImageForCapabilities(capabilities, seleniumVersion);
+        if (customImageName != null) {
+            customImageName.assertCompatibleWith(standardImageForCapabilities.withTag("latest"));
+            super.setDockerImageName(customImageName.asCanonicalNameString());
+        } else {
+            super.setDockerImageName(standardImageForCapabilities.asCanonicalNameString());
         }
 
         String timeZone = System.getProperty("user.timezone");
@@ -211,14 +213,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setStartupAttempts(3);
     }
 
-    public static String getImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
-
+    private static DockerImageName getImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
         String browserName = capabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
-                return String.format(CHROME_IMAGE, seleniumVersion);
+                return CHROME_IMAGE.withTag(seleniumVersion);
             case BrowserType.FIREFOX:
-                return String.format(FIREFOX_IMAGE, seleniumVersion);
+                return FIREFOX_IMAGE.withTag(seleniumVersion);
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }

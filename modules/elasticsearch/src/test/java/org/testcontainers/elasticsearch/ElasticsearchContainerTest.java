@@ -26,7 +26,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.testcontainers.elasticsearch.ElasticsearchContainer.ELASTICSEARCH_DEFAULT_VERSION;
+import static org.testcontainers.elasticsearch.ElasticsearchContainer.DEFAULT_TAG;
 
 public class ElasticsearchContainerTest {
 
@@ -72,7 +72,7 @@ public class ElasticsearchContainerTest {
             // Do whatever you want with the rest client ...
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_DEFAULT_VERSION));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString(DEFAULT_TAG));
 
             // The default image is running with the features under Elastic License
             response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
@@ -101,6 +101,7 @@ public class ElasticsearchContainerTest {
                      DockerImageName
                          .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
                          .withTag(ELASTICSEARCH_VERSION)
+                         .asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch")
                  )
              // }
         ) {

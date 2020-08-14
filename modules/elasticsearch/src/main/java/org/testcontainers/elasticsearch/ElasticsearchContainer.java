@@ -28,35 +28,40 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     private static final int ELASTICSEARCH_DEFAULT_TCP_PORT = 9300;
 
     /**
-     * Elasticsearch Docker base URL
+     * Elasticsearch Docker base image
      */
-    private static final String ELASTICSEARCH_DEFAULT_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
 
     /**
      * Elasticsearch Default version
      */
-    protected static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
+    protected static final String DEFAULT_TAG = "6.4.1";
 
     /**
      * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
      */
     @Deprecated
     public ElasticsearchContainer() {
-        this(ELASTICSEARCH_DEFAULT_IMAGE + ":" + ELASTICSEARCH_DEFAULT_VERSION);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
+     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
      */
-    @Deprecated
     public ElasticsearchContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
+    /**
+     * Create an Elasticsearch Container by passing the full docker image name
+     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+     */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
