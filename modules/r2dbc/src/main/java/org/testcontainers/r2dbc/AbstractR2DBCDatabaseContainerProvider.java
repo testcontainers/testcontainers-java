@@ -36,7 +36,7 @@ public abstract class AbstractR2DBCDatabaseContainerProvider implements R2DBCDat
         Properties properties = TestcontainersConfiguration.getInstance().getProperties();
         return properties.getProperty(
             driverPropertyName(options.getRequiredValue(ConnectionFactoryOptions.DRIVER)),
-            originalDriver
+            options.getRequiredValue(ConnectionFactoryOptions.DRIVER)
         );
     }
 
