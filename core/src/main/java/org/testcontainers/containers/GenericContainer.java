@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -106,6 +105,8 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
 public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
+
+    public static final Object DUMMY_CHANGE_TO_INVALIDATE_BUILD_CACHE = new Object();
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
