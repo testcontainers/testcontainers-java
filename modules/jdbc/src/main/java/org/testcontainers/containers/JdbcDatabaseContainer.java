@@ -8,6 +8,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
@@ -38,12 +39,20 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private static final String QUERY_PARAM_SEPARATOR = "&";
 
+    /**
+     * @deprecated use {@link JdbcDatabaseContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
-        super(dockerImageName);
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public JdbcDatabaseContainer(@NonNull final Future<String> image) {
         super(image);
+    }
+
+    public JdbcDatabaseContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
     }
 
     /**

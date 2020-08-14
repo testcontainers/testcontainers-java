@@ -2,12 +2,16 @@ package org.testcontainers.utility;
 
 
 import com.google.common.net.HostAndPort;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Pattern;
 
 @EqualsAndHashCode(exclude = "rawName")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DockerImageName {
 
     /* Regex patterns used for validation */
@@ -19,22 +23,42 @@ public final class DockerImageName {
     private final String rawName;
     private final String registry;
     private final String repo;
-    private final Versioning versioning;
+    @NotNull private final Versioning versioning;
 
-    public DockerImageName(String name) {
-        this.rawName = name;
-        final int slashIndex = name.indexOf('/');
+    /**
+     * Parses a docker image name from a provided string.
+     *
+     * @param fullImageName in standard Docker format, e.g. <code>name:tag</code>,
+     *                      <code>some.registry/path/name:tag</code>,
+     *                      <code>some.registry/path/name@sha256:abcdef...</code>, etc.
+     */
+    public static DockerImageName parse(String fullImageName) {
+        return new DockerImageName(fullImageName);
+    }
+
+    /**
+     * Parses a docker image name from a provided string.
+     *
+     * @param fullImageName in standard Docker format, e.g. <code>name:tag</code>,
+     *                      <code>some.registry/path/name:tag</code>,
+     *                      <code>some.registry/path/name@sha256:abcdef...</code>, etc.
+     * @deprecated use {@link DockerImageName#parse(String)} instead
+     */
+    @Deprecated
+    public DockerImageName(String fullImageName) {
+        this.rawName = fullImageName;
+        final int slashIndex = fullImageName.indexOf('/');
 
         String remoteName;
         if (slashIndex == -1 ||
-            (!name.substring(0, slashIndex).contains(".") &&
-                !name.substring(0, slashIndex).contains(":") &&
-                !name.substring(0, slashIndex).equals("localhost"))) {
+            (!fullImageName.substring(0, slashIndex).contains(".") &&
+             !fullImageName.substring(0, slashIndex).contains(":") &&
+             !fullImageName.substring(0, slashIndex).equals("localhost"))) {
             registry = "";
-            remoteName = name;
+            remoteName = fullImageName;
         } else {
-            registry = name.substring(0, slashIndex);
-            remoteName = name.substring(slashIndex + 1);
+            registry = fullImageName.substring(0, slashIndex);
+            remoteName = fullImageName.substring(slashIndex + 1);
         }
 
         if (remoteName.contains("@sha256:")) {
@@ -49,28 +73,40 @@ public final class DockerImageName {
         }
     }
 
-    public DockerImageName(String name, String tag) {
-        this.rawName = name;
-        final int slashIndex = name.indexOf('/');
+    /**
+     * Parses a docker image name from a provided string, and uses a separate provided version.
+     *
+     * @param nameWithoutTag in standard Docker format, e.g. <code>name</code>,
+     *                       <code>some.registry/path/name</code>,
+     *                       <code>some.registry/path/name</code>, etc.
+     * @param version        a docker image version identifier, either as a tag or sha256 checksum, e.g.
+     *                       <code>tag</code>,
+     *                       <code>sha256:abcdef...</code>.
+     * @deprecated use {@link DockerImageName#parse(String)}.{@link DockerImageName#withTag(String)} instead
+     */
+    @Deprecated
+    public DockerImageName(String nameWithoutTag, @NotNull String version) {
+        this.rawName = nameWithoutTag;
+        final int slashIndex = nameWithoutTag.indexOf('/');
 
         String remoteName;
         if (slashIndex == -1 ||
-            (!name.substring(0, slashIndex).contains(".") &&
-                !name.substring(0, slashIndex).contains(":") &&
-                !name.substring(0, slashIndex).equals("localhost"))) {
+            (!nameWithoutTag.substring(0, slashIndex).contains(".") &&
+             !nameWithoutTag.substring(0, slashIndex).contains(":") &&
+             !nameWithoutTag.substring(0, slashIndex).equals("localhost"))) {
             registry = "";
-            remoteName = name;
+            remoteName = nameWithoutTag;
         } else {
-            registry = name.substring(0, slashIndex);
-            remoteName = name.substring(slashIndex + 1);
+            registry = nameWithoutTag.substring(0, slashIndex);
+            remoteName = nameWithoutTag.substring(slashIndex + 1);
         }
 
-        if (tag.startsWith("sha256:")) {
+        if (version.startsWith("sha256:")) {
             repo = remoteName;
-            versioning = new Sha256Versioning(tag.replace("sha256:", ""));
+            versioning = new Sha256Versioning(version.replace("sha256:", ""));
         } else {
             repo = remoteName;
-            versioning = new TagVersioning(tag);
+            versioning = new TagVersioning(version);
         }
     }
 
@@ -92,13 +128,16 @@ public final class DockerImageName {
         return versioning.toString();
     }
 
+    /**
+     * @return canonical name for the image
+     */
+    public String asCanonicalNameString() {
+        return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
+    }
+
     @Override
     public String toString() {
-        if (versioning == null) {
-            return getUnversionedPart();
-        } else {
-            return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
-        }
+        return asCanonicalNameString();
     }
 
     /**
@@ -111,10 +150,6 @@ public final class DockerImageName {
         if (!REPO_NAME.matcher(repo).matches()) {
             throw new IllegalArgumentException(repo + " is not a valid Docker image name (in " + rawName + ")");
         }
-        if (versioning == null) {
-            throw new IllegalArgumentException("No image tag was specified in docker image name " +
-                "(" + rawName + "). Please provide a tag; this may be 'latest' or a specific version");
-        }
         if (!versioning.isValid()) {
             throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");
         }
@@ -124,8 +159,13 @@ public final class DockerImageName {
         return registry;
     }
 
+    public DockerImageName withTag(final String newTag) {
+        return new DockerImageName(rawName, registry, repo, new TagVersioning(newTag));
+    }
+
     private interface Versioning {
         boolean isValid();
+
         String getSeparator();
     }
 
@@ -155,7 +195,7 @@ public final class DockerImageName {
     }
 
     @Data
-    private class Sha256Versioning implements Versioning {
+    private static class Sha256Versioning implements Versioning {
         public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
         private final String hash;
 

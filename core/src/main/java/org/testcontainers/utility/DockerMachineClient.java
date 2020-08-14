@@ -1,7 +1,6 @@
 package org.testcontainers.utility;
 
 import lombok.NonNull;
-
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 

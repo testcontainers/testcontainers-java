@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Simple test to check that readiness detection works correctly across major versions of the containers.
@@ -22,7 +23,8 @@ public class Selenium3xTest {
 
     @Test
     public void testAdditionalStartupString() {
-        try (BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome-debug:" + tag)
+        final DockerImageName imageName = DockerImageName.parse("selenium/standalone-chrome-debug").withTag(tag);
+        try (BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>(imageName)
                 .withCapabilities(new ChromeOptions())) {
             chrome.start();
         }

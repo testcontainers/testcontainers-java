@@ -38,12 +38,18 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
-    public RemoteDockerImage(String dockerImageName) {
-        this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(dockerImageName));
+    public RemoteDockerImage(DockerImageName dockerImageName) {
+        this.imageNameFuture = CompletableFuture.completedFuture(dockerImageName);
     }
 
+    @Deprecated
+    public RemoteDockerImage(String dockerImageName) {
+        this.imageNameFuture = CompletableFuture.completedFuture(DockerImageName.parse(dockerImageName));
+    }
+
+    @Deprecated
     public RemoteDockerImage(@NonNull String repository, @NonNull String tag) {
-        this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(repository, tag));
+        this.imageNameFuture = CompletableFuture.completedFuture(DockerImageName.parse(repository).withTag(tag));
     }
 
     public RemoteDockerImage(@NonNull Future<String> imageFuture) {
@@ -57,7 +63,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
         try {
             if (!imagePullPolicy.shouldPull(imageName)) {
-                return imageName.toString();
+                return imageName.asCanonicalNameString();
             }
 
             // The image is not available locally - pull it
@@ -76,7 +82,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 
-                    return imageName.toString();
+                    return imageName.asCanonicalNameString();
                 } catch (InterruptedException | InternalServerErrorException e) {
                     // these classes of exception often relate to timeout/connection errors so should be retried
                     lastFailure = e;
@@ -104,7 +110,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         }
 
         try {
-            return getImageName().toString();
+            return getImageName().asCanonicalNameString();
         } catch (InterruptedException | ExecutionException e) {
             return e.getMessage();
         }

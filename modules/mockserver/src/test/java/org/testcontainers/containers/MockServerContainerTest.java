@@ -4,6 +4,7 @@ import lombok.Cleanup;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockserver.client.MockServerClient;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,9 +20,11 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
 public class MockServerContainerTest {
 
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("jamesdbloom/mockserver:mockserver-5.5.4");
+
     // creatingProxy {
     @Rule
-    public MockServerContainer mockServer = new MockServerContainer();
+    public MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
     // }
 
     private static String responseFromMockserver(MockServerContainer mockServer, String path) throws IOException {
@@ -52,7 +55,7 @@ public class MockServerContainerTest {
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
         String actualVersion = MockServerClient.class.getPackage().getImplementationVersion();
-        try (MockServerContainer mockServer = new MockServerContainer(actualVersion)) {
+        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE.withTag("mockserver-" + actualVersion))) {
             mockServer.start();
 
             String expectedBody = "Hello World!";

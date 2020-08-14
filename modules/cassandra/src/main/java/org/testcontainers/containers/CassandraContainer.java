@@ -7,6 +7,7 @@ import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import javax.script.ScriptException;
@@ -24,7 +25,9 @@ import java.util.Optional;
  */
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
+    @Deprecated
     public static final String IMAGE = "cassandra";
+
     public static final Integer CQL_PORT = 9042;
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
     private static final String USERNAME = "cassandra";
@@ -34,11 +37,23 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private String initScriptPath;
     private boolean enableJmxReporting;
 
+    /**
+     * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public CassandraContainer() {
-        this(IMAGE + ":3.11.2");
+        this("cassandra:3.11.2");
     }
 
+    /**
+     * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public CassandraContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public CassandraContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);

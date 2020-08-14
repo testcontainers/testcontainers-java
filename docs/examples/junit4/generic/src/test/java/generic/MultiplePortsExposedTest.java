@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -14,7 +15,7 @@ public class MultiplePortsExposedTest {
 
     @Rule
     // rule {
-    public GenericContainer container = new GenericContainer("orientdb:3.0.13")
+    public GenericContainer container = new GenericContainer(DockerImageName.parse("orientdb:3.0.13"))
         .withExposedPorts(2424, 2480)
         .withLogConsumer(new Slf4jLogConsumer(log));
     // }

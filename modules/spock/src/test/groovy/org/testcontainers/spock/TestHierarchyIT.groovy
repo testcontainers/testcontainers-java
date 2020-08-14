@@ -10,7 +10,7 @@ import spock.lang.Shared
 class TestHierarchyIT extends MySqlContainerIT {
 
     @Shared
-    PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer()
+    PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer(SpockTestImages.POSTGRES_TEST_IMAGE)
             .withDatabaseName("foo")
             .withUsername("foo")
             .withPassword("secret")

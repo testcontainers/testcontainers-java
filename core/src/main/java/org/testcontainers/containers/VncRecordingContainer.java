@@ -52,7 +52,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
      * Create a sidekick container and attach it to another container. The VNC output of that container will be recorded.
      */
     public VncRecordingContainer(@NonNull Network network, @NonNull String targetNetworkAlias) throws IllegalStateException {
-        super(TestcontainersConfiguration.getInstance().getVncRecordedContainerImage());
+        super(TestcontainersConfiguration.getInstance().getVncDockerImageName());
 
         this.targetNetworkAlias = targetNetworkAlias;
         withNetwork(network);

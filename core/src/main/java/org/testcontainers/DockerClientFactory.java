@@ -18,8 +18,10 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
+import org.testcontainers.dockerclient.TransportConfig;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.MountableFile;
@@ -29,6 +31,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +60,7 @@ public class DockerClientFactory {
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
-    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
+    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyDockerImageName().asCanonicalNameString();
     private static DockerClientFactory instance;
 
     // Cached client configuration
@@ -127,6 +130,24 @@ public class DockerClientFactory {
 
         strategy = DockerClientProviderStrategy.getFirstValidStrategy(configurationStrategies);
         return strategy;
+    }
+
+    @UnstableAPI
+    public TransportConfig getTransportConfig() {
+        return getOrInitializeStrategy().getTransportConfig();
+    }
+
+    @UnstableAPI
+    public String getRemoteDockerUnixSocketPath() {
+        String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
+        if (!StringUtils.isBlank(dockerSocketOverride)) {
+            return dockerSocketOverride;
+        }
+
+        URI dockerHost = getTransportConfig().getDockerHost();
+        return "unix".equals(dockerHost.getScheme())
+            ? dockerHost.getRawPath()
+            : "/var/run/docker.sock";
     }
 
     /**
