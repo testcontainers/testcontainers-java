@@ -33,7 +33,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
      */
     @Deprecated
     public PulsarContainer(String pulsarVersion) {
-        this(DEFAULT_IMAGE_NAME.withTag(pulsarVersion));
+        this(TestcontainersConfiguration.getInstance().getPulsarDockerImageName().withTag(pulsarVersion));
     }
 
     public PulsarContainer(final DockerImageName dockerImageName) {
