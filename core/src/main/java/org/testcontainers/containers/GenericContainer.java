@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
-import jdk.internal.jline.internal.Nullable;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
@@ -217,7 +216,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .withConstantThroughput()
             .build();
 
-    @Nullable
     private Map<String, String> tmpFsMapping;
 
     @Setter(AccessLevel.NONE)
