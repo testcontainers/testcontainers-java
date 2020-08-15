@@ -86,7 +86,7 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testCheckMethodRejectsIncompatible() {
+    public void testAssertMethodRejectsIncompatible() {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage(containsString("Failed to verify that image 'foo' is a compatible substitute for 'bar'"));
 
