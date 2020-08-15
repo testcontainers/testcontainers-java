@@ -43,6 +43,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     /**
      * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
      */
+    @Deprecated
     public CassandraContainer() {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
