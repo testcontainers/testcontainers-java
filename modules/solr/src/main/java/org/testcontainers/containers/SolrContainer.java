@@ -42,7 +42,6 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     /**
      * @deprecated use {@link SolrContainer(DockerImageName)} instead
      */
-    @Deprecated
     public SolrContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
