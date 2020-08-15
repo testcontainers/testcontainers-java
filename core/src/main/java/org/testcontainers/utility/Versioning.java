@@ -1,6 +1,8 @@
 package org.testcontainers.utility;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 /**
  * Represents mechanisms for versioning docker images.
@@ -10,7 +12,7 @@ interface Versioning {
 
     String getSeparator();
 
-    @Data
+    @EqualsAndHashCode
     class TagVersioning implements Versioning {
         public static final String TAG_REGEX = "[\\w][\\w.\\-]{0,127}";
         private final String tag;
@@ -37,7 +39,7 @@ interface Versioning {
         static final TagVersioning LATEST = new TagVersioning("latest");
     }
 
-    @Data
+    @EqualsAndHashCode
     class Sha256Versioning implements Versioning {
         public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
         private final String hash;
