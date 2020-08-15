@@ -163,7 +163,7 @@ public final class DockerImageName {
      */
     public void assertValid() {
         //noinspection UnstableApiUsage
-        HostAndPort.fromString(registry);
+        HostAndPort.fromString(registry); // return value ignored - this throws if registry is not a valid host:port string
         if (!REPO_NAME.matcher(repo).matches()) {
             throw new IllegalArgumentException(repo + " is not a valid Docker image name (in " + rawName + ")");
         }
