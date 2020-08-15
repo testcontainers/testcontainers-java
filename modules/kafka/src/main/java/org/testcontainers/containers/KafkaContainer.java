@@ -46,7 +46,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      */
     @Deprecated
     public KafkaContainer(String confluentPlatformVersion) {
-        this(TestcontainersConfiguration.getInstance().getPulsarDockerImageName().withTag(confluentPlatformVersion));
+        this(TestcontainersConfiguration.getInstance().getKafkaDockerImageName().withTag(confluentPlatformVersion));
     }
 
     public KafkaContainer(final DockerImageName dockerImageName) {

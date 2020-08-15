@@ -10,7 +10,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.DockerImageName;
@@ -29,8 +29,8 @@ public class KafkaContainerTest {
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
 
     // junitRule {
-    @Rule
-    public KafkaContainer kafka = new KafkaContainer();
+    @ClassRule
+    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.2.1"));
     // }
 
     @Test
@@ -43,10 +43,10 @@ public class KafkaContainerTest {
 
 
     @Test
-    public void testUsageWithVersion() throws Exception {
+    public void testUsageWithSpecificImage() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.2.1"))
             // }
         ) {
             kafka.start();
@@ -55,6 +55,17 @@ public class KafkaContainerTest {
               kafka.getBootstrapServers()
               // }
             );
+        }
+    }
+
+
+    @Test
+    public void testUsageWithVersion() throws Exception {
+        try (
+            KafkaContainer kafka = new KafkaContainer("5.2.1")
+        ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
         }
     }
 
@@ -75,7 +86,8 @@ public class KafkaContainerTest {
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
 
             // withKafkaNetwork {
-            GenericContainer application = new GenericContainer("alpine").withNetwork(kafka.getNetwork())
+            GenericContainer application = new GenericContainer("alpine")
+                .withNetwork(kafka.getNetwork())
             // }
                 .withNetworkAliases("dummy")
                 .withCommand("sleep 10000")
