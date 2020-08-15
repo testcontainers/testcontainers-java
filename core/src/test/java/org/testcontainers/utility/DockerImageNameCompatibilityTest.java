@@ -37,13 +37,6 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testImageWithAutomaticCompatibility() {
-        DockerImageName subject = DockerImageName.parse("foo:1.2.3");
-
-        assertTrue("foo:1.2.3 ~= foo", subject.isCompatibleWith(DockerImageName.parse("foo")));
-    }
-
-    @Test
     public void testImageWithAutomaticCompatibilityForFullPath() {
         DockerImageName subject = DockerImageName.parse("repo/foo:1.2.3");
 
