@@ -23,7 +23,16 @@ public class DockerImageNameCompatibilityTest {
     @Test
     public void testLatestTreatedAsWildcard() {
         final DockerImageName subject = DockerImageName.parse("foo:4.5.6");
+        /*
+        foo:1.2.3 != foo:4.5.6
+        foo:1.2.3 ~= foo
+        foo:1.2.3 ~= foo:latest
 
+        The test is effectively making sure that no tag and `latest` tag are equivalent
+         */
+        assertFalse("foo:4.5.6 != foo:1.2.3", subject.isCompatibleWith(DockerImageName.parse("foo:1.2.3")));
+        assertTrue("foo:4.5.6 ~= foo", subject.isCompatibleWith(DockerImageName.parse("foo")));
+        assertTrue("foo:4.5.6 ~= foo:latest", subject.isCompatibleWith(DockerImageName.parse("foo:latest")));
         assertTrue("foo:4.5.6 ~= foo:latest", subject.isCompatibleWith(DockerImageName.parse("foo:1.2.3").withTag("latest")));
     }
 
