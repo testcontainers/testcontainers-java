@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,12 +30,24 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final Map<String, ContainerProxy> proxies = new HashMap<>();
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
+    /**
+     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public ToxiproxyContainer() {
         this(IMAGE_NAME);
     }
 
-    public ToxiproxyContainer(String imageName) {
-        super(imageName);
+    /**
+     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public ToxiproxyContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public ToxiproxyContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         addExposedPorts(TOXIPROXY_CONTROL_PORT);
         setWaitStrategy(new HttpWaitStrategy().forPath("/version").forPort(TOXIPROXY_CONTROL_PORT));
 
@@ -47,7 +60,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        client = new ToxiproxyClient(getContainerIpAddress(), getMappedPort(TOXIPROXY_CONTROL_PORT));
+        client = new ToxiproxyClient(getHost(), getMappedPort(TOXIPROXY_CONTROL_PORT));
     }
 
     /**
@@ -87,7 +100,8 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
                 }
 
                 final Proxy proxy = client.createProxy(upstream, "0.0.0.0:" + toxiPort, upstream);
-                return new ContainerProxy(proxy, getContainerIpAddress(), getMappedPort(toxiPort));
+                final int mappedPort = getMappedPort(toxiPort);
+                return new ContainerProxy(proxy, getHost(), mappedPort, toxiPort);
             } catch (IOException e) {
                 throw new RuntimeException("Proxy could not be created", e);
             }
@@ -99,8 +113,21 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
         private static final String CUT_CONNECTION_DOWNSTREAM = "CUT_CONNECTION_DOWNSTREAM";
         private static final String CUT_CONNECTION_UPSTREAM = "CUT_CONNECTION_UPSTREAM";
         private final Proxy toxi;
+        /**
+         * The IP address that this proxy container may be reached on from the host machine.
+         */
         @Getter private final String containerIpAddress;
+        /**
+         * The mapped port of this proxy. This is a port of the host machine. It can be used to
+         * access the Toxiproxy container from the host machine.
+         */
         @Getter private final int proxyPort;
+        /**
+         * The original (exposed) port of this proxy. This is a port of the Toxiproxy Docker
+         * container. It can be used to access this container from a different Docker container
+         * on the same network.
+         */
+        @Getter private final int originalProxyPort;
         private boolean isCurrentlyCut;
 
         public ToxicList toxics() {

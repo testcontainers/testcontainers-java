@@ -14,7 +14,7 @@ import spock.lang.Stepwise
 class TestcontainersSharedContainerIT extends Specification {
 
     @Shared
-    GenericContainer genericContainer = new GenericContainer("httpd:2.4-alpine")
+    GenericContainer genericContainer = new GenericContainer(SpockTestImages.HTTPD_IMAGE)
             .withExposedPorts(80)
 
     @Shared
@@ -38,7 +38,7 @@ class TestcontainersSharedContainerIT extends Specification {
     }
 
     private CloseableHttpResponse performHttpRequest(CloseableHttpClient client) {
-        String ip = genericContainer.containerIpAddress
+        String ip = genericContainer.host
         String port = genericContainer.getMappedPort(80)
         def response = client.execute(new HttpGet("http://$ip:$port"))
         response

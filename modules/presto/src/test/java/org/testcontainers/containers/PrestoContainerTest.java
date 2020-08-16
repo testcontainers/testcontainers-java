@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.testcontainers.PrestoTestImages;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,9 +24,10 @@ import static org.junit.Assert.assertTrue;
  * @author findepi
  */
 public class PrestoContainerTest {
+
     @Test
     public void testSimple() throws Exception {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>()) {
+        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement();
@@ -37,21 +40,20 @@ public class PrestoContainerTest {
 
     @Test
     public void testSpecificVersion() throws Exception {
-        String prestoVersion = Integer.toString(parseInt(PrestoContainer.DEFAULT_TAG) - 1);
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>("prestosql/presto:" + prestoVersion)) {
+        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE)) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement();
                  ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")) {
                 assertTrue("No result", resultSet.next());
-                assertEquals("Presto version", prestoVersion, resultSet.getString("node_version"));
+                assertEquals("Presto version", PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE.getVersionPart(), resultSet.getString("node_version"));
             }
         }
     }
 
     @Test
     public void testQueryMemoryAndTpch() throws SQLException {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>()) {
+        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement()) {
@@ -77,7 +79,7 @@ public class PrestoContainerTest {
 
     @Test
     public void testInitScript() throws Exception {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>()) {
+        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.withInitScript("initial.sql");
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();

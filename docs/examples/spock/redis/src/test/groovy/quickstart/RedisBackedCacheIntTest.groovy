@@ -10,12 +10,12 @@ class RedisBackedCacheIntTest extends Specification {
     private RedisBackedCache underTest
 
     // init {
-    public GenericContainer redis = new GenericContainer<>("redis:5.0.3-alpine")
+    GenericContainer redis = new GenericContainer<>("redis:5.0.3-alpine")
         .withExposedPorts(6379)
     // }
 
     void setup() {
-        String address = redis.containerIpAddress
+        String address = redis.host
         Integer port = redis.firstMappedPort
 
         // Now we have an address and port for Redis, no matter where it is running

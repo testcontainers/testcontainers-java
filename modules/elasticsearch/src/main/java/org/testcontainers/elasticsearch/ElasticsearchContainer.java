@@ -3,6 +3,7 @@ package org.testcontainers.elasticsearch;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
@@ -36,6 +37,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     protected static final String ELASTICSEARCH_DEFAULT_VERSION = "6.4.1";
 
+    /**
+     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public ElasticsearchContainer() {
         this(ELASTICSEARCH_DEFAULT_IMAGE + ":" + ELASTICSEARCH_DEFAULT_VERSION);
     }
@@ -43,8 +48,14 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     /**
      * Create an Elasticsearch Container by passing the full docker image name
      * @param dockerImageName Full docker image name, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
      */
+    @Deprecated
     public ElasticsearchContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
@@ -57,10 +68,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     }
 
     public String getHttpHostAddress() {
-        return getContainerIpAddress() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
+        return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 
     public InetSocketAddress getTcpHost() {
-        return new InetSocketAddress(getContainerIpAddress(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
+        return new InetSocketAddress(getHost(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }
 }

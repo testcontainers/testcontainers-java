@@ -1,12 +1,10 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
-
-import com.github.dockerjava.api.command.InspectContainerResponse;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Capabilities;
@@ -19,17 +17,19 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.traits.VncService;
-import org.testcontainers.containers.wait.HostPortWaitStrategy;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
-import org.testcontainers.containers.wait.WaitAllStrategy;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
@@ -42,7 +42,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * <p>
  * The container should expose Selenium remote control protocol and VNC.
  */
-public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer, TestLifecycleAware {
+public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer, TestLifecycleAware {
 
     private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
     private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
@@ -52,6 +52,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final int VNC_PORT = 5900;
 
     private static final String NO_PROXY_KEY = "no_proxy";
+    private static final String TC_TEMP_DIR_PREFIX = "tc";
 
     @Nullable
     private Capabilities capabilities;
@@ -61,15 +62,17 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private RemoteWebDriver driver;
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private RecordingFileFactory recordingFileFactory;
-    private File vncRecordingDirectory = new File("/tmp");
+    private File vncRecordingDirectory;
 
     private VncRecordingContainer vncRecordingContainer = null;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
     /**
+     * @deprecated use {@link BrowserWebDriverContainer(DockerImageName)} instead
      */
     public BrowserWebDriverContainer() {
+        super();
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
@@ -84,16 +87,35 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     /**
      * Constructor taking a specific webdriver container name and tag
-     * @param dockerImageName Name of the docker image to pull
+     * @param dockerImageName Name of the selenium docker image
+     * @deprecated use {@link BrowserWebDriverContainer(DockerImageName)} instead
      */
+    @Deprecated
     public BrowserWebDriverContainer(String dockerImageName) {
-        this();
-        super.setDockerImageName(dockerImageName);
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    /**
+     * Constructor taking a specific webdriver container name and tag
+     * @param dockerImageName Name of the selenium docker image
+     */
+    public BrowserWebDriverContainer(DockerImageName dockerImageName) {
+        super(dockerImageName);
+        final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+                .withStartupTimeout(Duration.of(15, SECONDS));
+
+        this.waitStrategy = new WaitAllStrategy()
+                .withStrategy(logWaitStrategy)
+                .withStrategy(new HostPortWaitStrategy())
+                .withStartupTimeout(Duration.of(15, SECONDS));
+
+        this.withRecordingFileFactory(new DefaultRecordingFileFactory());
+
         this.customImageNameIsSet = true;
         // We have to force SKIP mode for the recording by default because we don't know if the image has VNC or not
         recordingMode = VncRecordingMode.SKIP;
     }
-
 
     public SELF withCapabilities(Capabilities capabilities) {
         this.capabilities = capabilities;
@@ -140,6 +162,17 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
+
+            if (vncRecordingDirectory == null) {
+                try {
+                    vncRecordingDirectory = Files.createTempDirectory(TC_TEMP_DIR_PREFIX).toFile();
+                } catch (IOException e) {
+                    // should never happen as per javadoc, since we use valid prefix
+                    logger().error("Exception while trying to create temp directory " + vncRecordingDirectory.getAbsolutePath(), e);
+                    throw new ContainerLaunchException("Exception while trying to create temp directory", e);
+                }
+            }
+
             if (getNetwork() == null) {
                 withNetwork(Network.SHARED);
             }
@@ -193,24 +226,23 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     public URL getSeleniumAddress() {
         try {
-            return new URL("http", getContainerIpAddress(), getMappedPort(SELENIUM_PORT), "/wd/hub");
+            return new URL("http", getHost(), getMappedPort(SELENIUM_PORT), "/wd/hub");
         } catch (MalformedURLException e) {
             e.printStackTrace();// TODO
             return null;
         }
     }
 
-    @Override
     public String getVncAddress() {
-        return "vnc://vnc:secret@" + getContainerIpAddress() + ":" + getMappedPort(VNC_PORT);
+        return "vnc://vnc:secret@" + getHost() + ":" + getMappedPort(VNC_PORT);
     }
 
-    @Override
+    @Deprecated
     public String getPassword() {
         return DEFAULT_PASSWORD;
     }
 
-    @Override
+    @Deprecated
     public int getPort() {
         return VNC_PORT;
     }

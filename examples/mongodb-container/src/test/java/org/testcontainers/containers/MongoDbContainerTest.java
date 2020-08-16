@@ -1,16 +1,17 @@
 package org.testcontainers.containers;
 
+import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
+
 import java.io.IOException;
 import java.net.Socket;
-
-import org.junit.Test;
 
 
 public class MongoDbContainerTest {
 
     @Test
     public void containerStartsAndPublicPortIsAvailable() {
-        try (MongoDbContainer container = new MongoDbContainer()) {
+        try (MongoDbContainer container = new MongoDbContainer(DockerImageName.parse("mongo:4.0"))) {
             container.start();
             assertThatPortIsAvailable(container);
         }

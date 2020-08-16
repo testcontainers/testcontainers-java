@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
+
 /**
  * Container implementation for the MariaDB project.
  *
@@ -11,19 +13,36 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     public static final String IMAGE = "mariadb";
     public static final String DEFAULT_TAG = "10.3.6";
 
-    private static final Integer MARIADB_PORT = 3306;
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
+
+    static final Integer MARIADB_PORT = 3306;
     private String databaseName = "test";
-    private String username = "test";
-    private String password = "test";
+    private String username = DEFAULT_USER;
+    private String password = DEFAULT_PASSWORD;
     private static final String MARIADB_ROOT_USER = "root";
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
 
+    /**
+     * @deprecated use {@link MariaDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MariaDBContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link MariaDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MariaDBContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public MariaDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+        addExposedPort(MARIADB_PORT);
     }
 
     @Override
@@ -35,7 +54,6 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     protected void configure() {
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d", "mariadb-default-conf");
 
-        addExposedPort(MARIADB_PORT);
         addEnv("MYSQL_DATABASE", databaseName);
         addEnv("MYSQL_USER", username);
         if (password != null && !password.isEmpty()) {
@@ -56,7 +74,9 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mariadb://" + getContainerIpAddress() + ":" + getMappedPort(MARIADB_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:mariadb://" + getHost() + ":" + getMappedPort(MARIADB_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override
@@ -83,7 +103,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
         return self();
     }
-    
+
     @Override
     public SELF withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;

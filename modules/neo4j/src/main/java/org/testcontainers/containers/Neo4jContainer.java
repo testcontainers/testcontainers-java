@@ -1,18 +1,19 @@
 package org.testcontainers.containers;
 
-import static java.net.HttpURLConnection.*;
-import static java.util.stream.Collectors.*;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.LicenseAcceptance;
+import org.testcontainers.utility.MountableFile;
 
 import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.utility.LicenseAcceptance;
-import org.testcontainers.utility.MountableFile;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Testcontainer for Neo4j.
@@ -58,23 +59,29 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
-    private boolean defaultImage = false;
+    private boolean standardImage = false;
 
     /**
      * Creates a Testcontainer using the official Neo4j docker image.
+     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
      */
+    @Deprecated
     public Neo4jContainer() {
         this(DOCKER_IMAGE_NAME);
-
-        this.defaultImage = true;
     }
 
     /**
      * Creates a Testcontainer using a specific docker image.
      *
      * @param dockerImageName The docker image to use.
+     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
      */
+    @Deprecated
     public Neo4jContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public Neo4jContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         WaitStrategy waitForBolt = new LogMessageWaitStrategy()
@@ -87,6 +94,12 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
             .withStrategy(waitForBolt)
             .withStrategy(waitForHttp)
             .withStartupTimeout(Duration.ofMinutes(2));
+
+        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
+
+        if (dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME)) {
+            this.standardImage = true;
+        }
     }
 
     @Override
@@ -100,8 +113,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     @Override
     protected void configure() {
 
-        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
-
         boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
         String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);
         addEnv("NEO4J_AUTH", neo4jAuth);
@@ -111,21 +122,21 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return Bolt URL for use with Neo4j's Java-Driver.
      */
     public String getBoltUrl() {
-        return String.format("bolt://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_BOLT_PORT));
+        return String.format("bolt://" + getHost() + ":" + getMappedPort(DEFAULT_BOLT_PORT));
     }
 
     /**
      * @return URL of the transactional HTTP endpoint.
      */
     public String getHttpUrl() {
-        return String.format("http://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_HTTP_PORT));
+        return String.format("http://" + getHost() + ":" + getMappedPort(DEFAULT_HTTP_PORT));
     }
 
     /**
      * @return URL of the transactional HTTPS endpoint.
      */
     public String getHttpsUrl() {
-        return String.format("https://" + getContainerIpAddress() + ":" + getMappedPort(DEFAULT_HTTPS_PORT));
+        return String.format("https://" + getHost() + ":" + getMappedPort(DEFAULT_HTTPS_PORT));
     }
 
     /**
@@ -139,7 +150,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     public S withEnterpriseEdition() {
 
-        if (!defaultImage) {
+        if (!standardImage) {
             throw new IllegalStateException(
                 String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName()));
         }

@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,15 +24,29 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     private String username = "test";
     private String catalog = null;
 
+    /**
+     * @deprecated use {@link PrestoContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public PrestoContainer() {
         this(IMAGE + ":" + DEFAULT_TAG);
     }
 
+    /**
+     * @deprecated use {@link PrestoContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public PrestoContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public PrestoContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         this.waitStrategy = new LogMessageWaitStrategy()
-            .withRegEx(".*io.prestosql.server.PrestoServer\\s+======== SERVER STARTED ========.*")
+            .withRegEx(".*======== SERVER STARTED ========.*")
             .withStartupTimeout(Duration.of(60, SECONDS));
+
+        addExposedPort(PRESTO_PORT);
     }
 
     @NotNull
@@ -41,18 +56,13 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     }
 
     @Override
-    protected void configure() {
-        addExposedPort(PRESTO_PORT);
-    }
-
-    @Override
     public String getDriverClassName() {
         return "io.prestosql.jdbc.PrestoDriver";
     }
 
     @Override
     public String getJdbcUrl() {
-        return format("jdbc:presto://%s:%s/%s", getContainerIpAddress(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
+        return format("jdbc:presto://%s:%s/%s", getHost(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
     }
 
     @Override

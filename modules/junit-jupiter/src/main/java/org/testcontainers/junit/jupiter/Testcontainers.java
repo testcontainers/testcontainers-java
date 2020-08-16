@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
  * the test hierarchy as well. All subclasses will automatically inherit
  * support for the extension.</p>
  *
- * <p><strong>Note:</strong> This extension has only be tested with sequential
+ * <p><strong>Note:</strong> This extension has only been tested with sequential
  * test execution. Using it with parallel test execution is unsupported and
  * may have unintended side effects.</p>
  *
