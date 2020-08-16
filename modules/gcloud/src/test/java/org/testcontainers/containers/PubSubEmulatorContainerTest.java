@@ -1,11 +1,11 @@
 package org.testcontainers.containers;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
-import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
@@ -30,24 +30,26 @@ public class PubSubEmulatorContainerTest {
     public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer();
 
     @Test
-    public void testSimple() throws IOException {
+    public void testSimple() throws IOException, ExecutionException, InterruptedException {
         String hostport = emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8085);
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
         try {
             TransportChannelProvider channelProvider =
                     FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-            CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+            NoCredentialsProvider credentialsProvider = NoCredentialsProvider.create();
 
-            TopicAdminClient topicClient =
+            TopicAdminClient topicAdminClient =
                     TopicAdminClient.create(
                             TopicAdminSettings.newBuilder()
                                     .setTransportChannelProvider(channelProvider)
                                     .setCredentialsProvider(credentialsProvider)
                                     .build());
-            Topic topic = Topic.newBuilder().setName("projects/my-project-id/topics/my-topic-id").build();
-            topicClient.createTopic(topic);
+            Topic topic = topicAdminClient.createTopic("projects/my-project-id/topics/my-topic-id");
 
-            Publisher publisher = Publisher.newBuilder(topic.getName()).build();
+            Publisher publisher = Publisher.newBuilder(topic.getName())
+                    .setChannelProvider(channelProvider)
+                    .setCredentialsProvider(credentialsProvider)
+                    .build();
             PubsubMessage message = PubsubMessage.newBuilder().setData(ByteString.copyFromUtf8("test message")).build();
             ApiFuture<String> future = publisher.publish(message);
             ApiFutures.addCallback(future, new ApiFutureCallback<String>() {
@@ -61,6 +63,7 @@ public class PubSubEmulatorContainerTest {
                     assertThat(result).isNotNull();
                 }
             }, MoreExecutors.directExecutor());
+            future.get();
         } finally {
             channel.shutdown();
         }

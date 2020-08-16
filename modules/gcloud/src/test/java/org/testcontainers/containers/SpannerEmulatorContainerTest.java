@@ -36,6 +36,7 @@ public class SpannerEmulatorContainerTest {
         SpannerOptions options = SpannerOptions.newBuilder()
                 .setEmulatorHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(9010))
                 .setCredentials(NoCredentials.getInstance())
+                .setProjectId(PROJECT_NAME)
                 .build();
 
         Spanner spanner = options.getService();
@@ -72,8 +73,7 @@ public class SpannerEmulatorContainerTest {
         InstanceConfigId instanceConfig = InstanceConfigId.of(PROJECT_NAME, "emulator-config");
         InstanceId instanceId = InstanceId.of(PROJECT_NAME, INSTANCE_NAME);
         InstanceAdminClient insAdminClient = spanner.getInstanceAdminClient();
-        Instance instance = insAdminClient.createInstance(InstanceInfo.newBuilder(instanceId).setInstanceConfigId(instanceConfig).build()).get();
-        System.out.println(">>>" + instance.getState());
+        Instance instance = insAdminClient.createInstance(InstanceInfo.newBuilder(instanceId).setNodeCount(1).setDisplayName("Test instance").setInstanceConfigId(instanceConfig).build()).get();
         return instanceId;
     }
 
