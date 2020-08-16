@@ -20,6 +20,6 @@ public class SpannerEmulatorContainer extends GCloudGenericContainer<SpannerEmul
     }
 
     public SpannerEmulatorContainer() {
-        this("gcr.io/cloud-spanner-emulator/emulator:0.7.28");
+        this("gcr.io/cloud-spanner-emulator/emulator:1.0.0");
     }
 }

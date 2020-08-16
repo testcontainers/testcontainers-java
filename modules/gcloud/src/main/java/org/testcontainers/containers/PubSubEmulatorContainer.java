@@ -15,9 +15,7 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
  */
 public class PubSubEmulatorContainer extends GCloudGenericContainer<PubSubEmulatorContainer> {
 
-    private static final String[] CMDS = {"apk --update add openjdk7-jre",
-            "gcloud components install beta pubsub-emulator --quiet",
-            "gcloud beta emulators pubsub start --host-port 0.0.0.0:8085"};
+    private static final String CMDS = "gcloud beta emulators pubsub start --host-port 0.0.0.0:8085";
 
     public PubSubEmulatorContainer(String image) {
         super(image);

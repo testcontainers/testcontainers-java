@@ -15,9 +15,7 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
  */
 public class FirestoreEmulatorContainer extends GCloudGenericContainer<FirestoreEmulatorContainer> {
 
-    private static final String[] CMDS = {"apk --update add openjdk8-jre",
-            "gcloud components install beta cloud-firestore-emulator --quiet",
-            "gcloud beta emulators firestore start --host-port 0.0.0.0:8080"};
+    private static final String CMDS = "gcloud beta emulators firestore start --host-port 0.0.0.0:8080";
 
     public FirestoreEmulatorContainer(String image) {
         super(image);

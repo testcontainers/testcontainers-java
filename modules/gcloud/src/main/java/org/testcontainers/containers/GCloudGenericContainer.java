@@ -12,7 +12,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
  */
 public class GCloudGenericContainer<SELF extends GCloudGenericContainer<SELF>> extends GenericContainer<SELF> {
 
-    public static final String DEFAULT_GCLOUD_IMAGE = "google/cloud-sdk:291.0.0-alpine";
+    public static final String DEFAULT_GCLOUD_IMAGE = "google/cloud-sdk:305.0.0";
 
     private List<String> commands = new ArrayList<>();
 

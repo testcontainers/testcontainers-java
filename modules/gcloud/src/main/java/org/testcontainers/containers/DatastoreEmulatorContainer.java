@@ -14,9 +14,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
  */
 public class DatastoreEmulatorContainer extends GCloudGenericContainer<DatastoreEmulatorContainer> {
 
-    private static final String[] CMDS = {"apk --update add openjdk8-jre",
-            "gcloud components install beta cloud-datastore-emulator --quiet",
-            "gcloud beta emulators datastore start --project dummy-project --host-port 0.0.0.0:8081"};
+    private static final String CMDS = "gcloud beta emulators datastore start --project dummy-project --host-port 0.0.0.0:8081";
 
     public DatastoreEmulatorContainer(String image) {
         super(image);
