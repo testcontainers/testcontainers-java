@@ -25,6 +25,7 @@ public class DatastoreEmulatorContainerTest {
                 .setHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8081))
                 .setCredentials(NoCredentials.getInstance())
                 .setRetrySettings(ServiceOptions.getNoRetrySettings())
+                .setProjectId("test-project")
                 .build();
         Datastore datastore = options.getService();
 
