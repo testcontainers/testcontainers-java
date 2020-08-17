@@ -164,7 +164,7 @@ dependencies {
 
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.30'
-    compile 'org.jetbrains:annotations:19.0.0'
+    compile 'org.jetbrains:annotations:20.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
