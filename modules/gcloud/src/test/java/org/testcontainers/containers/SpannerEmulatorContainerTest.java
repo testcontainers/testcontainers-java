@@ -66,7 +66,6 @@ public class SpannerEmulatorContainerTest {
     private void createDatabase(Spanner spanner) throws InterruptedException, ExecutionException {
         DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
         Database database = dbAdminClient.createDatabase(INSTANCE_NAME, DATABASE_NAME, Arrays.asList("CREATE TABLE TestTable (Key INT64, Value STRING(MAX)) PRIMARY KEY (Key)")).get();
-        System.out.println(">>>" + database.getState());
     }
 
     private InstanceId createInstance(Spanner spanner) throws InterruptedException, ExecutionException {
