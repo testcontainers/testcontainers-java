@@ -21,8 +21,7 @@ public class FirestoreEmulatorContainer extends GCloudGenericContainer<Firestore
         super(image);
         withExposedPorts(8080);
         setWaitStrategy(new LogMessageWaitStrategy()
-                .withRegEx("(?s).*running.*$")
-                .withStartupTimeout(Duration.ofSeconds(120)));
+                .withRegEx("(?s).*running.*$"));
         withCommand("/bin/sh", "-c", parseCmds(CMDS));
     }
 

@@ -21,8 +21,7 @@ public class PubSubEmulatorContainer extends GCloudGenericContainer<PubSubEmulat
         super(image);
         withExposedPorts(8085);
         setWaitStrategy(new LogMessageWaitStrategy()
-                .withRegEx("(?s).*started.*$")
-                .withStartupTimeout(Duration.ofSeconds(120)));
+                .withRegEx("(?s).*started.*$"));
         withCommand("/bin/sh", "-c", parseCmds(CMDS));
     }
 
