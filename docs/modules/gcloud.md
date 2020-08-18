@@ -5,7 +5,7 @@
 
 Testcontainers module for the Google's [Cloud SDK](https://cloud.google.com/sdk/).
 
-Currently, the module supports `datastore`, `firestore`, `pubsub` and `spanner` emulators. In order to use it, you should use the following classes:
+Currently, the module supports `Datastore`, `Firestore`, `Pub/Sub` and `Spanner` emulators. In order to use it, you should use the following classes:
 
 * DatastoreEmulatorContainer
 * FirestoreEmulatorContainer
@@ -14,7 +14,7 @@ Currently, the module supports `datastore`, `firestore`, `pubsub` and `spanner` 
 
 ## Usage example
 
-Running GCloud as a stand-in for Google Firestore during a test:
+Running GCloud as a stand-in for Google Datastore during a test:
 
 <!--codeinclude-->
 [Creating a Datastore container](../../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:creatingDatastoreEmulatorContainer
