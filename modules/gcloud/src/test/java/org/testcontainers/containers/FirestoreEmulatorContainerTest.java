@@ -27,6 +27,7 @@ public class FirestoreEmulatorContainerTest {
         FirestoreOptions options = FirestoreOptions.getDefaultInstance().toBuilder()
                 .setHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8080))
                 .setCredentials(NoCredentials.getInstance())
+                .setProjectId("test-project")
                 .build();
         Firestore firestore = options.getService();
 
@@ -36,8 +37,7 @@ public class FirestoreEmulatorContainerTest {
         data.put("first", "Ada");
         data.put("last", "Lovelace");
         ApiFuture<WriteResult> result = docRef.set(data);
-
-        System.out.println(result.get().getUpdateTime());
+        result.get();
 
         ApiFuture<QuerySnapshot> query = users.get();
         QuerySnapshot querySnapshot = query.get();
