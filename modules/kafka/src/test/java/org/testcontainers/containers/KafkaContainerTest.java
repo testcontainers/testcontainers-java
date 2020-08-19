@@ -75,7 +75,7 @@ public class KafkaContainerTest {
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
 
             // withKafkaNetwork {
-            GenericContainer application = new GenericContainer("alpine").withNetwork(kafka.getNetwork())
+            GenericContainer application = new GenericContainer("alpine").withNetwork(network)
             // }
                 .withNetworkAliases("dummy")
                 .withCommand("sleep 10000")
