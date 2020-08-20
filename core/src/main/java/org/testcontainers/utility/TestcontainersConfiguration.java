@@ -60,7 +60,7 @@ public class TestcontainersConfiguration {
 
     private DockerImageName getImage(final String key, final String defaultValue) {
         return DockerImageName
-            .parse(properties.getProperty(key, defaultValue))
+            .parse(properties.getProperty(key, defaultValue).trim())
             .asCompatibleSubstituteFor(defaultValue);
     }
 
