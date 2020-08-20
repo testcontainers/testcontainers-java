@@ -80,7 +80,7 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testCheckMethodAcceptsCompatible() {
+    public void testAssertMethodAcceptsCompatible() {
         DockerImageName subject = DockerImageName.parse("foo").asCompatibleSubstituteFor("bar");
         subject.assertCompatibleWith(DockerImageName.parse("bar"));
     }
