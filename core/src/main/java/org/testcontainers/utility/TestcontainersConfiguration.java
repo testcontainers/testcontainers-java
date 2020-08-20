@@ -37,7 +37,7 @@ public class TestcontainersConfiguration {
     private static File ENVIRONMENT_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     @Getter(lazy = true)
-    private static final TestcontainersConfiguration instance = loadConfiguration();;
+    private static final TestcontainersConfiguration instance = loadConfiguration();
 
     @SuppressWarnings({"ConstantConditions", "unchecked", "rawtypes"})
     @VisibleForTesting
@@ -56,16 +56,18 @@ public class TestcontainersConfiguration {
 
         this.properties.putAll(classpathProperties);
         this.properties.putAll(environmentProperties);
+        properties.keySet()
+            .forEach(key -> properties.replace(key, properties.getProperty(String.valueOf(key)).trim()));
     }
 
     @Deprecated
     public String getAmbassadorContainerImage() {
-        return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
+        return String.valueOf(properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest"));
     }
 
     @Deprecated
     public String getSocatContainerImage() {
-        return (String) properties.getOrDefault("socat.container.image", "alpine/socat:latest");
+        return String.valueOf(properties.getOrDefault("socat.container.image", "alpine/socat:latest"));
     }
 
     public DockerImageName getSocatDockerImageName() {
@@ -74,7 +76,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getVncRecordedContainerImage() {
-        return (String) properties.getOrDefault("vncrecorder.container.image", "testcontainers/vnc-recorder:1.1.0");
+        return String.valueOf(properties.getOrDefault("vncrecorder.container.image", "testcontainers/vnc-recorder:1.1.0"));
     }
 
     public DockerImageName getVncDockerImageName() {
@@ -83,7 +85,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getDockerComposeContainerImage() {
-        return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.24.1");
+        return String.valueOf(properties.getOrDefault("compose.container.image", "docker/compose:1.24.1"));
     }
 
     public DockerImageName getDockerComposeDockerImageName() {
@@ -92,7 +94,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getTinyImage() {
-        return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
+        return String.valueOf(properties.getOrDefault("tinyimage.container.image", "alpine:3.5"));
     }
 
     public DockerImageName getTinyDockerImageName() {
@@ -105,7 +107,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getRyukImage() {
-        return (String) properties.getOrDefault("ryuk.container.image", "testcontainers/ryuk:0.3.0");
+        return String.valueOf(properties.getOrDefault("ryuk.container.image", "testcontainers/ryuk:0.3.0"));
     }
 
     public DockerImageName getRyukDockerImageName() {
@@ -114,7 +116,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getSSHdImage() {
-        return (String) properties.getOrDefault("sshd.container.image", "testcontainers/sshd:1.0.0");
+        return String.valueOf(properties.getOrDefault("sshd.container.image", "testcontainers/sshd:1.0.0"));
     }
 
     public DockerImageName getSSHdDockerImageName() {
@@ -127,7 +129,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getKafkaImage() {
-        return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
+        return String.valueOf(properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka"));
     }
 
     public DockerImageName getKafkaDockerImageName() {
@@ -136,7 +138,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getPulsarImage() {
-        return (String) properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar");
+        return String.valueOf(properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar"));
     }
 
     public DockerImageName getPulsarDockerImageName() {
@@ -145,7 +147,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getLocalStackImage() {
-        return (String) properties.getOrDefault("localstack.container.image", "localstack/localstack");
+        return String.valueOf(properties.getOrDefault("localstack.container.image", "localstack/localstack"));
     }
 
     public DockerImageName getLocalstackDockerImageName() {
