@@ -57,6 +57,7 @@ import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.ImageId;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
@@ -140,8 +141,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             "tc-" + Base58.randomString(8)
     ));
 
-    @NonNull
     private RemoteDockerImage image;
+
+    private ImageId imageId;
 
     @NonNull
     private Map<String, String> env = new HashMap<>();
@@ -234,6 +236,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public GenericContainer(@NonNull final RemoteDockerImage image) {
         this.image = image;
+    }
+
+    public GenericContainer(@NonNull final ImageId imageId) {
+        this.imageId = imageId;
     }
 
     /**
@@ -354,11 +360,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void tryStart(Instant startedAt) {
         try {
-            String dockerImageName = getDockerImageName();
+            String dockerImageName;
+            if (imageId != null) {
+                dockerImageName = imageId.getValue();
+            } else {
+                dockerImageName = getDockerImageName();
+            }
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
+
             applyConfiguration(createCommand);
 
             createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
@@ -1279,7 +1291,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     public String getDockerImageName() {
         try {
-            return image.get();
+            return image != null ? image.get() : "";
         } catch (Exception e) {
             throw new ContainerFetchException("Can't get Docker image: " + image, e);
         }

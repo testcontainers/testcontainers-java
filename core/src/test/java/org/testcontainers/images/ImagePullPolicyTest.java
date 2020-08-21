@@ -16,6 +16,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.ImageId;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,8 @@ public class ImagePullPolicyTest {
 
     private static DockerImageName imageName;
 
+    private static String dummyImageId;
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         String testRegistryAddress = registry.getHost() + ":" + registry.getFirstMappedPort();
@@ -43,7 +46,7 @@ public class ImagePullPolicyTest {
         String dummySourceImage = "hello-world:latest";
         client.pullImageCmd(dummySourceImage).exec(new PullImageResultCallback()).awaitCompletion();
 
-        String dummyImageId = client.inspectImageCmd(dummySourceImage).exec().getId();
+        dummyImageId = client.inspectImageCmd(dummySourceImage).exec().getId();
 
         // push the image to the registry
         client.tagImageCmd(dummyImageId, testImageName, tag).exec();
@@ -150,6 +153,18 @@ public class ImagePullPolicyTest {
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             expectToFailWithNotFoundException(container);
+        }
+    }
+
+    @Test
+    public void shouldStartImageFromImageId() {
+        try (
+            // hard coded Image ID or busybox image should be replaces by an Image ID
+            // of an image that was created by the test (but not yet touched by the docker client)
+            GenericContainer<?> container = new GenericContainer<>(ImageId.fromString("018c9d7b792b"))
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+        ) {
+            container.start();
         }
     }
 
