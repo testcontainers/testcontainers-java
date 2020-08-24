@@ -4,6 +4,6 @@ dependencies {
     compile project(':testcontainers')
 
     testCompile group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.6.0'
-    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.16.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.17.0'
     testCompile group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '2.6.0'
 }
