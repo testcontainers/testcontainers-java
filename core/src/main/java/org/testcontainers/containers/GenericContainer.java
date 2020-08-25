@@ -106,7 +106,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
-    public static final Object DUMMY_CHANGE_TO_INVALIDATE_BUILD_CACHE = new Object();
+    public static final Object ANOTHER_DUMMY_CHANGE_TO_INVALIDATE_BUILD_CACHE = new Object();
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
