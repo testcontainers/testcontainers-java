@@ -136,8 +136,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             if (!isRunning()) {
                 Thread.sleep(100L);
             } else {
-                try (Connection connection = createConnection("")) {
-                    boolean testQuerySucceeded = connection.createStatement().execute(this.getTestQueryString());
+                try (Statement statement = createConnection("").createStatement()) {
+                    boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
                         logger().info("Container is started (JDBC URL: {})", JdbcDatabaseContainer.this.getJdbcUrl());
                         return;
