@@ -14,7 +14,7 @@ import java.sql.Statement
 class PostgresContainerIT extends Specification {
 
     @Shared
-    PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer()
+    PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer(SpockTestImages.POSTGRES_TEST_IMAGE)
             .withDatabaseName("foo")
             .withUsername("foo")
             .withPassword("secret")

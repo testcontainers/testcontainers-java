@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.testcontainers.TestImages.TINY_IMAGE;
+
 /**
  * Test that event streaming from the {@link DockerClient} works correctly
  */
@@ -32,7 +34,7 @@ public class EventStreamTest {
         CountDownLatch latch = new CountDownLatch(1);
 
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("true")
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {

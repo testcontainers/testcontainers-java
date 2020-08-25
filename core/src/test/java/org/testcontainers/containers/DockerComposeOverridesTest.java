@@ -1,6 +1,8 @@
-package org.testcontainers.junit;
+package org.testcontainers.containers;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.assertj.core.api.Assumptions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,6 +48,15 @@ public class DockerComposeOverridesTest {
             {false, BASE_ENV_VAR, new File[]{BASE_COMPOSE_FILE}},
             {false, OVERRIDE_ENV_VAR, new File[]{BASE_COMPOSE_FILE, OVERRIDE_COMPOSE_FILE}},
         });
+    }
+
+    @Before
+    public void setUp() {
+        if (localMode) {
+            Assumptions.assumeThat(LocalDockerCompose.executableExists())
+                .as("docker-compose executable exists")
+                .isTrue();
+        }
     }
 
     @Test

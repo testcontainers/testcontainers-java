@@ -1,13 +1,14 @@
 package generic;
 
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerLabelTest {
     // single_label {
-    public GenericContainer containerWithLabel = new GenericContainer("alpine:3.6")
+    public GenericContainer containerWithLabel = new GenericContainer(DockerImageName.parse("alpine:3.6"))
         .withLabel("key", "value");
     // }
 
@@ -16,7 +17,7 @@ public class ContainerLabelTest {
     private Map<String, String> mapOfLabels = new HashMap<>();
     // populate map, e.g. mapOfLabels.put("key1", "value1");
 
-    public GenericContainer containerWithMultipleLabels = new GenericContainer("alpine:3.6")
+    public GenericContainer containerWithMultipleLabels = new GenericContainer(DockerImageName.parse("alpine:3.6"))
         .withLabels(mapOfLabels);
     // }
 }

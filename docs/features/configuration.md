@@ -72,3 +72,20 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 
 > **pull.pause.timeout = 30**
 > By default Testcontainers will abort the pull of an image if the pull appears stalled (no data transferred) for longer than this duration (in seconds).
+
+## Customizing Docker host detection
+
+Testcontainers will attempt to detect the Docker environment and configure everything.
+
+However, sometimes a customization is required. For that, you can provide the following environment variables:
+
+> **DOCKER_HOST** = unix:///var/run/docker.sock  
+> See [Docker environment variables](https://docs.docker.com/engine/reference/commandline/cli/#environment-variables)
+>
+> **TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE**  
+> Path to Docker's socket. Used by Ryuk, Docker Compose, and a few other containers that need to perform Docker actions.  
+> Example: `/var/run/docker-alt.sock`
+> 
+> **TESTCONTAINERS_HOST_OVERRIDE**  
+> Docker's host on which ports are exposed.  
+> Example: `docker.svc.local`
