@@ -2,11 +2,10 @@ package org.testcontainers.utility;
 
 
 import com.google.common.net.HostAndPort;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.regex.Pattern;
 
 @EqualsAndHashCode(exclude = "rawName")
 public final class DockerImageName {
@@ -20,6 +19,7 @@ public final class DockerImageName {
     private final String rawName;
     private final String registry;
     private final String repo;
+    @Nullable
     private final Versioning versioning;
     @Nullable
     private final DockerImageName compatibleSubstituteFor;
@@ -237,25 +237,43 @@ public final class DockerImageName {
     }
 
     /**
-     * Behaves as {@link DockerImageName#isCompatibleWith(DockerImageName)} but throws an exception rather than
-     * returning false if a mismatch is detected.
+     * Behaves as {@link DockerImageName#isCompatibleWith(DockerImageName)} but throws an exception
+     * rather than returning false if a mismatch is detected.
      *
-     * @param other the other image that we are trying to check compatibility with
-     * @throws IllegalStateException if {@link DockerImageName#isCompatibleWith(DockerImageName)} returns false
+     * @param anyOthers the other image(s) that we are trying to check compatibility with. If more
+     *                  than one is provided, this method will check compatibility with at least one
+     *                  of them.
+     * @throws IllegalStateException if {@link DockerImageName#isCompatibleWith(DockerImageName)}
+     *                               returns false
      */
-    public void assertCompatibleWith(DockerImageName other) {
-        if (!this.isCompatibleWith(other)) {
-            throw new IllegalStateException(
-                String.format(
-                    "Failed to verify that image '%s' is a compatible substitute for '%s'. This generally means that " +
-                        "you are trying to use an image that Testcontainers has not been designed to use. If this is " +
-                        "deliberate, and if you are confident that the image is compatible, you should declare " +
-                        "compatibility in code using the `asCompatibleSubstituteFor` method. For example:\n" +
-                        "   DockerImageName myImage = DockerImageName.parse(\"%s\").asCompatibleSubstituteFor(\"%s\");\n" +
-                        "and then use `myImage` instead.",
-                    this.rawName, other.rawName, this.rawName, other.rawName
-                )
-            );
+    public void assertCompatibleWith(DockerImageName... anyOthers) {
+        if (anyOthers.length == 0) {
+            throw new IllegalArgumentException("anyOthers parameter must be non-empty");
         }
+
+        for (DockerImageName anyOther : anyOthers) {
+            if (this.isCompatibleWith(anyOther)) {
+                return;
+            }
+        }
+
+        final DockerImageName exampleOther = anyOthers[0];
+
+        throw new IllegalStateException(
+            String.format(
+                "Failed to verify that image '%s' is a compatible substitute for '%s'. This generally means that "
+                    +
+                    "you are trying to use an image that Testcontainers has not been designed to use. If this is "
+                    +
+                    "deliberate, and if you are confident that the image is compatible, you should declare "
+                    +
+                    "compatibility in code using the `asCompatibleSubstituteFor` method. For example:\n"
+                    +
+                    "   DockerImageName myImage = DockerImageName.parse(\"%s\").asCompatibleSubstituteFor(\"%s\");\n"
+                    +
+                    "and then use `myImage` instead.",
+                this.rawName, exampleOther.rawName, this.rawName, exampleOther.rawName
+            )
+        );
     }
 }

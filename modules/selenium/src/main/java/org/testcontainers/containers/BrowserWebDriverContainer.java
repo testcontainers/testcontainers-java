@@ -1,10 +1,21 @@
 package org.testcontainers.containers;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Capabilities;
@@ -25,18 +36,6 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.time.Duration;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
  * <p>
@@ -46,6 +45,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
     private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
+    private static final DockerImageName[] COMPATIBLE_IMAGES = new DockerImageName[] {
+        CHROME_IMAGE,
+        FIREFOX_IMAGE,
+        DockerImageName.parse("selenium/standalone-chrome"),
+        DockerImageName.parse("selenium/standalone-firefox")
+    };
 
     private static final String DEFAULT_PASSWORD = "secret";
     private static final int SELENIUM_PORT = 4444;
@@ -180,11 +185,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                     .withVncPort(VNC_PORT);
         }
 
-        DockerImageName standardImageForCapabilities = getImageForCapabilities(capabilities, seleniumVersion);
         if (customImageName != null) {
-            customImageName.assertCompatibleWith(standardImageForCapabilities.withTag("latest"));
+            customImageName.assertCompatibleWith(COMPATIBLE_IMAGES);
             super.setDockerImageName(customImageName.asCanonicalNameString());
         } else {
+            DockerImageName standardImageForCapabilities = getImageForCapabilities(capabilities, seleniumVersion);
             super.setDockerImageName(standardImageForCapabilities.asCanonicalNameString());
         }
 

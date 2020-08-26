@@ -1,15 +1,14 @@
 package org.testcontainers.elasticsearch;
 
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
+
+import java.net.InetSocketAddress;
+import java.time.Duration;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
-
-import java.net.InetSocketAddress;
-import java.time.Duration;
-
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
@@ -31,6 +30,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      * Elasticsearch Docker base image
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
+    private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss");
 
     /**
      * Elasticsearch Default version
@@ -60,7 +60,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
 
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));

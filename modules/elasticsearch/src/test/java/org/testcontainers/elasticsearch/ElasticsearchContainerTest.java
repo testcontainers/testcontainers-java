@@ -1,5 +1,12 @@
 package org.testcontainers.elasticsearch;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.testcontainers.elasticsearch.ElasticsearchContainer.DEFAULT_TAG;
+
+import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -19,14 +26,6 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.IOException;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.testcontainers.elasticsearch.ElasticsearchContainer.DEFAULT_TAG;
 
 public class ElasticsearchContainerTest {
 
@@ -101,7 +100,6 @@ public class ElasticsearchContainerTest {
                      DockerImageName
                          .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
                          .withTag(ELASTICSEARCH_VERSION)
-                         .asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch")
                  )
              // }
         ) {
