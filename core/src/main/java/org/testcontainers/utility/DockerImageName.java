@@ -3,11 +3,15 @@ package org.testcontainers.utility;
 
 import com.google.common.net.HostAndPort;
 import java.util.regex.Pattern;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.With;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @EqualsAndHashCode(exclude = "rawName")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DockerImageName {
 
     /* Regex patterns used for validation */
@@ -19,9 +23,9 @@ public final class DockerImageName {
     private final String rawName;
     private final String registry;
     private final String repo;
-    @Nullable
+    @Nullable @With(AccessLevel.PRIVATE)
     private final Versioning versioning;
-    @Nullable
+    @Nullable @With(AccessLevel.PRIVATE)
     private final DockerImageName compatibleSubstituteFor;
 
     /**
@@ -113,19 +117,6 @@ public final class DockerImageName {
         compatibleSubstituteFor = null;
     }
 
-    private DockerImageName(String rawName,
-                            String registry,
-                            String repo,
-                            @Nullable Versioning versioning,
-                            @Nullable DockerImageName compatibleSubstituteFor) {
-
-        this.rawName = rawName;
-        this.registry = registry;
-        this.repo = repo;
-        this.versioning = versioning;
-        this.compatibleSubstituteFor = compatibleSubstituteFor;
-    }
-
     /**
      * @return the unversioned (non 'tag') part of this name
      */
@@ -181,7 +172,7 @@ public final class DockerImageName {
      * @return an immutable copy of this {@link DockerImageName} with the new version tag
      */
     public DockerImageName withTag(final String newTag) {
-        return new DockerImageName(rawName, registry, repo, new Versioning.TagVersioning(newTag), compatibleSubstituteFor);
+        return withVersioning(new Versioning.TagVersioning(newTag));
     }
 
     /**
@@ -192,7 +183,7 @@ public final class DockerImageName {
      * @return an immutable copy of this {@link DockerImageName} with the compatibility declaration attached.
      */
     public DockerImageName asCompatibleSubstituteFor(String otherImageName) {
-        return asCompatibleSubstituteFor(DockerImageName.parse(otherImageName));
+        return withCompatibleSubstituteFor(DockerImageName.parse(otherImageName));
     }
 
     /**
@@ -203,7 +194,7 @@ public final class DockerImageName {
      * @return an immutable copy of this {@link DockerImageName} with the compatibility declaration attached.
      */
     public DockerImageName asCompatibleSubstituteFor(DockerImageName otherImageName) {
-        return new DockerImageName(rawName, registry, repo, versioning, otherImageName);
+        return withCompatibleSubstituteFor(otherImageName);
     }
 
     /**

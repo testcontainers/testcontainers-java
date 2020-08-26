@@ -27,7 +27,7 @@ subprojects {
     }
 
     lombok {
-        version = '1.18.8'
+        version = '1.18.12'
     }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
