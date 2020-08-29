@@ -17,13 +17,13 @@ Currently, the module supports `Datastore`, `Firestore`, `Pub/Sub` and `Spanner`
 Running GCloud as a stand-in for Google Datastore during a test:
 
 <!--codeinclude-->
-[Creating a Datastore container](../../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:creatingDatastoreEmulatorContainer
+[Creating a Datastore container](../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:creatingDatastoreEmulatorContainer
 <!--/codeinclude-->
 
 And how to start it:
 
 <!--codeinclude-->
-[Starting a Datastore container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:startingDatastoreEmulatorContainer
+[Starting a Datastore container](../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:startingDatastoreEmulatorContainer
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
