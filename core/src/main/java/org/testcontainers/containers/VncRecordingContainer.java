@@ -9,6 +9,7 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -52,7 +53,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
      * Create a sidekick container and attach it to another container. The VNC output of that container will be recorded.
      */
     public VncRecordingContainer(@NonNull Network network, @NonNull String targetNetworkAlias) throws IllegalStateException {
-        super(DockerImageName.parse("testcontainers/vnc-recorder:1.1.0"));
+        super(DockerImageName.parse("testcontainers/vnc-recorder:1.2.0"));
 
         this.targetNetworkAlias = targetNetworkAlias;
         withNetwork(network);
@@ -88,7 +89,16 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     }
 
     @SneakyThrows
+    public void saveRecordingToFile(File file) {
+        try(InputStream inputStream = streamRecording()) {
+            Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    @SneakyThrows
     public InputStream streamRecording() {
+        fixRecordDuration();
+
         TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
                 dockerClient.copyArchiveFromContainerCmd(getContainerId(), RECORDING_FILE_NAME).exec()
         );
@@ -96,10 +106,9 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         return archiveInputStream;
     }
 
-    @SneakyThrows
-    public void saveRecordingToFile(File file) {
-        try(InputStream inputStream = streamRecording()) {
-            Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
+    private void fixRecordDuration() throws IOException, InterruptedException {
+        String newFlvOutput = "/newScreen.flv";
+        execInContainer("ffmpeg" , "-i", RECORDING_FILE_NAME, "-vcodec", "libx264", newFlvOutput);
+        execInContainer("mv" , "-f", newFlvOutput, RECORDING_FILE_NAME);
     }
 }
