@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.Preconditions;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
@@ -93,7 +94,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         this.legacyMode = useLegacyMode;
 
-        withFileSystemBind("//var/run/docker.sock", "/var/run/docker.sock");
+        withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
     }
 

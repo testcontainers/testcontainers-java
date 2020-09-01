@@ -14,4 +14,6 @@ dependencies {
 
     testCompile testFixtures(project(':r2dbc'))
     testCompile 'dev.miku:r2dbc-mysql:0.8.1.RELEASE'
+
+    compileOnly 'org.jetbrains:annotations:20.0.0'
 }

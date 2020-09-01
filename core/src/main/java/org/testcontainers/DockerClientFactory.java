@@ -19,6 +19,7 @@ import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
@@ -145,9 +146,12 @@ public class DockerClientFactory {
         }
 
         URI dockerHost = getTransportConfig().getDockerHost();
-        return "unix".equals(dockerHost.getScheme())
+        String path = "unix".equals(dockerHost.getScheme())
             ? dockerHost.getRawPath()
             : "/var/run/docker.sock";
+        return SystemUtils.IS_OS_WINDOWS
+               ? "/" + path
+               : path;
     }
 
     /**
