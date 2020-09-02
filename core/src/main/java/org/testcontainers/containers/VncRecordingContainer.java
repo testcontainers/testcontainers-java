@@ -97,7 +97,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     @SneakyThrows
     public InputStream streamRecording() {
-        fixRecordDuration();
+        reencodeRecording();
 
         TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
                 dockerClient.copyArchiveFromContainerCmd(getContainerId(), RECORDING_FILE_NAME).exec()
@@ -106,7 +106,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         return archiveInputStream;
     }
 
-    private void fixRecordDuration() throws IOException, InterruptedException {
+    private void reencodeRecording() throws IOException, InterruptedException {
         String newFlvOutput = "/newScreen.flv";
         execInContainer("ffmpeg" , "-i", RECORDING_FILE_NAME, "-vcodec", "libx264", newFlvOutput);
         execInContainer("mv" , "-f", newFlvOutput, RECORDING_FILE_NAME);
