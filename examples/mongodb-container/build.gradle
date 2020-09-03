@@ -9,4 +9,5 @@ repositories {
 dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'junit:junit:4.13'
+    testCompileOnly 'org.jetbrains:annotations:20.0.0'
 }

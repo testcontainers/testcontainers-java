@@ -53,6 +53,8 @@ If your test needs to run some other Docker container which needs access to the 
 * Use `kafka.getNetworkAliases().get(0)+":9092"` as bootstrap server location. 
 Or just give your Kafka container a network alias of your liking.
 
+You will need to explicitly create a network and set it on the Kafka container as well as on your other containers that need to communicate with Kafka.
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
