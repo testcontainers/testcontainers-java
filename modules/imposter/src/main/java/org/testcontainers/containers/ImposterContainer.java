@@ -1,13 +1,25 @@
 package org.testcontainers.containers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Cleanup;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
+
+import static java.util.Objects.nonNull;
 
 /**
  * Mocks from OpenAPI/Swagger specifications using Imposter.
@@ -18,6 +30,10 @@ public class ImposterContainer<SELF extends ImposterContainer<SELF>> extends Gen
     public static final int IMPOSTER_DEFAULT_PORT = 8080;
     public static final String COMBINED_SPECIFICATION_URL = "/_spec/combined.json";
     public static final String SPECIFICATION_UI_URL = "/_spec/";
+    private static final String CONTAINER_CONFIG_DIR = "/opt/imposter/config";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private Path configurationDir;
+    private List<Path> specificationFiles = new ArrayList<>();
 
     public ImposterContainer() {
         this("outofcoffee/imposter-openapi:1.2.0");
@@ -28,8 +44,7 @@ public class ImposterContainer<SELF extends ImposterContainer<SELF>> extends Gen
 
         addExposedPort(IMPOSTER_DEFAULT_PORT);
         setCommand(
-            "--plugin", "openapi",
-            "--configDir", "/opt/imposter/config"
+            "--configDir", CONTAINER_CONFIG_DIR
         );
 
         // wait for the engine to parse and combine the specifications
@@ -38,8 +53,31 @@ public class ImposterContainer<SELF extends ImposterContainer<SELF>> extends Gen
 
     @Override
     protected void doStart() {
+        try {
+            if (!specificationFiles.isEmpty() && nonNull(configurationDir)) {
+                throw new IllegalStateException("Must specify only one of specification file or specification directory");
+            }
+
+            if (!specificationFiles.isEmpty()) {
+                final Path configDir = writeImposterConfig(specificationFiles);
+                this.setConfigurationDir(configDir);
+            }
+
+            if (nonNull(configurationDir)) {
+                addFileSystemBind(configurationDir.toString(), CONTAINER_CONFIG_DIR, BindMode.READ_ONLY);
+            } else {
+                throw new IllegalStateException("Must specify one of specification file or specification directory");
+            }
+
+        } catch (Exception e) {
+            throw new ContainerLaunchException("Error starting Imposter container", e);
+        }
+
         super.doStart();
-        logger().debug("Started Imposter mock engine\n  Specification UI: " + getSpecificationUiUri());
+
+        logger().info("Started Imposter mock engine" +
+            "\n  Specification UI: " + getSpecificationUiUri() +
+            "\n  Config dir: " + configurationDir);
     }
 
     @Override
@@ -51,18 +89,93 @@ public class ImposterContainer<SELF extends ImposterContainer<SELF>> extends Gen
         return new URL(scheme + "://" + getContainerIpAddress() + ":" + getMappedPort(port));
     }
 
-    /**
-     * The directory containing the OpenAPI/Swagger specification.
-     *
-     * @param specificationDir the directory
-     */
-    public void setSpecificationDir(String specificationDir) {
-        addFileSystemBind(specificationDir, "/opt/imposter/config", BindMode.READ_ONLY);
+    public URL getBaseUrl(String scheme) throws MalformedURLException {
+        return getBaseUrl(scheme, ImposterContainer.IMPOSTER_DEFAULT_PORT);
     }
 
-    public SELF withSpecificationDir(String htmlContentPath) {
-        this.setSpecificationDir(htmlContentPath);
+    public URL getBaseUrl() throws MalformedURLException {
+        return getBaseUrl("http");
+    }
+
+    /**
+     * The directory containing a valid Imposter configuration file.
+     *
+     * @param configurationDir the directory
+     */
+    public void setConfigurationDir(Path configurationDir) {
+        this.configurationDir = configurationDir;
+    }
+
+    /**
+     * The directory containing a valid Imposter configuration file.
+     *
+     * @param configurationDir the directory
+     */
+    public SELF withConfigurationDir(String configurationDir) {
+        return withConfigurationDir(Paths.get(configurationDir));
+    }
+
+    /**
+     * The directory containing a valid Imposter configuration file.
+     *
+     * @param configurationDir the directory
+     */
+    public SELF withConfigurationDir(Path configurationDir) {
+        this.setConfigurationDir(configurationDir);
         return self();
+    }
+
+    /**
+     * The path to a valid OpenAPI/Swagger specification file.
+     *
+     * @param specificationFile the directory
+     */
+    public SELF withSpecificationFile(String specificationFile) {
+        return withSpecificationFile(Paths.get(specificationFile));
+    }
+
+    /**
+     * The path to a valid OpenAPI/Swagger specification file.
+     *
+     * @param specificationFile the directory
+     */
+    public SELF withSpecificationFile(Path specificationFile) {
+        this.addSpecificationFile(specificationFile);
+        return self();
+    }
+
+    /**
+     * The path to a valid OpenAPI/Swagger specification file.
+     *
+     * @param specificationFile the directory
+     */
+    public void addSpecificationFile(Path specificationFile) {
+        this.specificationFiles.add(specificationFile);
+    }
+
+    private Path writeImposterConfig(List<Path> specificationFiles) throws IOException {
+        final Path configDir = Files.createTempDirectory("imposter");
+        specificationFiles.forEach(spec -> {
+            try {
+                // copy spec into place
+                Files.copy(spec, configDir.resolve(spec.getFileName()));
+
+                // write config file
+                final Path configFile = configDir.resolve(spec.getFileName() + "-config.json");
+                final @Cleanup FileOutputStream out = new FileOutputStream(configFile.toFile());
+
+                MAPPER.writeValue(out, new HashMap<String, Object>() {{
+                    put("plugin", "openapi");
+                    put("specFile", spec.getFileName().toString());
+                }});
+
+                logger().debug("Wrote Imposter configuration file: {}", configFile);
+
+            } catch (IOException e) {
+                throw new RuntimeException(String.format("Error generating configuration for specification file %s in %s", spec, configDir), e);
+            }
+        });
+        return configDir;
     }
 
     public URI getCombinedSpecificationUri() {
