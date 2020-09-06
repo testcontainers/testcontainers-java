@@ -2,7 +2,6 @@ package org.testcontainers.utility;
 
 
 import com.google.common.net.HostAndPort;
-import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -10,7 +9,9 @@ import lombok.With;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@EqualsAndHashCode(exclude = "rawName")
+import java.util.regex.Pattern;
+
+@EqualsAndHashCode(exclude = { "rawName", "compatibleSubstituteFor" })
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DockerImageName {
 
@@ -23,7 +24,7 @@ public final class DockerImageName {
     private final String rawName;
     private final String registry;
     private final String repo;
-    @Nullable @With(AccessLevel.PRIVATE)
+    @NotNull @With(AccessLevel.PRIVATE)
     private final Versioning versioning;
     @Nullable @With(AccessLevel.PRIVATE)
     private final DockerImageName compatibleSubstituteFor;
@@ -72,7 +73,7 @@ public final class DockerImageName {
             versioning = new Versioning.TagVersioning(remoteName.split(":")[1]);
         } else {
             repo = remoteName;
-            versioning = Versioning.TagVersioning.LATEST;
+            versioning = Versioning.ANY;
         }
 
         compatibleSubstituteFor = null;
@@ -132,14 +133,14 @@ public final class DockerImageName {
      * @return the versioned part of this name (tag or sha256)
      */
     public String getVersionPart() {
-        return versioning == null ? "latest" : versioning.toString();
+        return versioning.toString();
     }
 
     /**
      * @return canonical name for the image
      */
     public String asCanonicalNameString() {
-        return getUnversionedPart() + (versioning == null ? ":" : versioning.getSeparator()) + getVersionPart();
+        return getUnversionedPart() + versioning.getSeparator() + getVersionPart();
     }
 
     @Override
@@ -158,7 +159,7 @@ public final class DockerImageName {
         if (!REPO_NAME.matcher(repo).matches()) {
             throw new IllegalArgumentException(repo + " is not a valid Docker image name (in " + rawName + ")");
         }
-        if (versioning != null && !versioning.isValid()) {
+        if (!versioning.isValid()) {
             throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");
         }
     }
@@ -209,14 +210,8 @@ public final class DockerImageName {
      * @return whether this image has declared compatibility.
      */
     public boolean isCompatibleWith(DockerImageName other) {
-        // is this image already the same?
-        final boolean thisRegistrySame = other.registry.equals(this.registry);
-        final boolean thisRepoSame = other.repo.equals(this.repo);
-        final boolean thisVersioningNotSpecifiedOrSame = other.versioning == null ||
-            other.versioning.equals(Versioning.TagVersioning.LATEST) ||
-            other.versioning.equals(this.versioning);
-
-        if (thisRegistrySame && thisRepoSame && thisVersioningNotSpecifiedOrSame) {
+        // is this image already the same or equivalent?
+        if (other.equals(this)) {
             return true;
         }
 
