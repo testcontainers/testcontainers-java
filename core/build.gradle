@@ -164,7 +164,8 @@ dependencies {
 
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.30'
-    compile 'org.jetbrains:annotations:19.0.0'
+    compileOnly 'org.jetbrains:annotations:20.0.0'
+    testCompileOnly 'org.jetbrains:annotations:20.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
@@ -204,7 +205,7 @@ dependencies {
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
     testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.5.0') {
+    testCompile ('org.mockito:mockito-core:3.5.7') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
