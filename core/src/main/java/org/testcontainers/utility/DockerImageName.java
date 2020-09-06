@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.With;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.testcontainers.utility.Versioning.Sha256Versioning;
+import org.testcontainers.utility.Versioning.TagVersioning;
 
 import java.util.regex.Pattern;
 
@@ -67,10 +69,10 @@ public final class DockerImageName {
 
         if (remoteName.contains("@sha256:")) {
             repo = remoteName.split("@sha256:")[0];
-            versioning = new Versioning.Sha256Versioning(remoteName.split("@sha256:")[1]);
+            versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
         } else if (remoteName.contains(":")) {
             repo = remoteName.split(":")[0];
-            versioning = new Versioning.TagVersioning(remoteName.split(":")[1]);
+            versioning = new TagVersioning(remoteName.split(":")[1]);
         } else {
             repo = remoteName;
             versioning = Versioning.ANY;
@@ -109,10 +111,10 @@ public final class DockerImageName {
 
         if (version.startsWith("sha256:")) {
             repo = remoteName;
-            versioning = new Versioning.Sha256Versioning(version.replace("sha256:", ""));
+            versioning = new Sha256Versioning(version.replace("sha256:", ""));
         } else {
             repo = remoteName;
-            versioning = new Versioning.TagVersioning(version);
+            versioning = new TagVersioning(version);
         }
 
         compatibleSubstituteFor = null;
@@ -173,7 +175,7 @@ public final class DockerImageName {
      * @return an immutable copy of this {@link DockerImageName} with the new version tag
      */
     public DockerImageName withTag(final String newTag) {
-        return withVersioning(new Versioning.TagVersioning(newTag));
+        return withVersioning(new TagVersioning(newTag));
     }
 
     /**
