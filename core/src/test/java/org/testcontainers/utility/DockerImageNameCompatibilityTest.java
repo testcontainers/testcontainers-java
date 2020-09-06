@@ -21,7 +21,7 @@ public class DockerImageNameCompatibilityTest {
         assertFalse("image name foo != bar", subject.isCompatibleWith(DockerImageName.parse("bar")));
     }
     @Test
-    public void testLatestTreatedAsWildcard() {
+    public void testNoTagTreatedAsWildcard() {
         final DockerImageName subject = DockerImageName.parse("foo:4.5.6");
         /*
         foo:1.2.3 != foo:4.5.6
@@ -32,8 +32,6 @@ public class DockerImageNameCompatibilityTest {
          */
         assertFalse("foo:4.5.6 != foo:1.2.3", subject.isCompatibleWith(DockerImageName.parse("foo:1.2.3")));
         assertTrue("foo:4.5.6 ~= foo", subject.isCompatibleWith(DockerImageName.parse("foo")));
-        assertTrue("foo:4.5.6 ~= foo:latest", subject.isCompatibleWith(DockerImageName.parse("foo:latest")));
-        assertTrue("foo:4.5.6 ~= foo:latest", subject.isCompatibleWith(DockerImageName.parse("foo:1.2.3").withTag("latest")));
     }
 
     @Test
@@ -73,7 +71,6 @@ public class DockerImageNameCompatibilityTest {
 
         assertTrue("foo(bar:1.2.3) ~= bar", subject.isCompatibleWith(DockerImageName.parse("bar")));
         assertTrue("foo(bar:1.2.3) ~= bar:1.2.3", subject.isCompatibleWith(DockerImageName.parse("bar:1.2.3")));
-        assertTrue("foo(bar:1.2.3) ~= bar:latest", subject.isCompatibleWith(DockerImageName.parse("bar:latest")));
         assertFalse("foo(bar:1.2.3) != bar:0.0.1", subject.isCompatibleWith(DockerImageName.parse("bar:0.0.1")));
         assertFalse("foo(bar:1.2.3) != bar:2.0.0", subject.isCompatibleWith(DockerImageName.parse("bar:2.0.0")));
         assertFalse("foo(bar:1.2.3) != bar:1.2.4", subject.isCompatibleWith(DockerImageName.parse("bar:1.2.4")));
