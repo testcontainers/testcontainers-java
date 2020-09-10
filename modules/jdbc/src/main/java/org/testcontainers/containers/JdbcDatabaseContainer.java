@@ -31,6 +31,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private static final Object DRIVER_LOAD_MUTEX = new Object();
     private Driver driver;
     private String initScriptPath;
+    private String initScriptSeparator = ScriptUtils.DEFAULT_STATEMENT_SEPARATOR;
     protected Map<String, String> parameters = new HashMap<>();
     protected Map<String, String> urlParameters = new HashMap<>();
 
@@ -128,6 +129,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     public SELF withInitScript(String initScriptPath) {
         this.initScriptPath = initScriptPath;
+        return self();
+    }
+
+    public SELF withInitScriptSeparator(String initScriptSeparator) {
+        this.initScriptSeparator = initScriptSeparator;
         return self();
     }
 
@@ -283,7 +289,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     protected void runInitScriptIfRequired() {
         if (initScriptPath != null) {
-            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
+            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath, initScriptSeparator);
         }
     }
 

@@ -4,8 +4,13 @@ import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
+import javax.sql.DataSource;
+import java.math.BigDecimal;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
@@ -16,6 +21,8 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
 import static org.testcontainers.PostgreSQLTestImages.POSTGRES_TEST_IMAGE;
 
 public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
+
+    private static final String SEPARATOR = ";\n\n";
 
     static {
         // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
@@ -57,10 +64,42 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE).withInitScript("somepath/init_postgresql.sql")) {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE)
+            .withInitScript("somepath/init_postgresql.sql")
+            .withInitScriptSeparator(SEPARATOR)) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
+
+            String firstColumnValue = resultSet.getString(1);
+            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
+    @Test
+    public void testExplicitInitScriptCallableStatement() throws SQLException {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE)
+            .withInitScript("somepath/init_postgresql.sql")
+            .withInitScriptSeparator(SEPARATOR)) {
+            postgres.start();
+
+            DataSource dataSource = getDataSource(postgres);
+            try (Connection connection = dataSource.getConnection()) {
+                try (CallableStatement cs = connection.prepareCall("{call hi_lo(?, ?, ?, ?, ?)}")) {
+                    cs.setInt(1, 10);
+                    cs.setInt(2, 20);
+                    cs.setInt(3, 30);
+                    cs.registerOutParameter(4, Types.NUMERIC);
+                    cs.registerOutParameter(5, Types.NUMERIC);
+
+                    cs.execute();
+
+                    assertEquals("Wrong out-parameter 4 value", new BigDecimal(30), cs.getBigDecimal(4));
+                    assertEquals("Wrong out-parameter 5 value", new BigDecimal(10), cs.getBigDecimal(5));
+                }
+            }
+
+            ResultSet resultSet =  performQuery(postgres, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);

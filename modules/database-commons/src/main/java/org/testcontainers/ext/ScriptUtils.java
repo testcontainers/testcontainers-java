@@ -287,14 +287,26 @@ public abstract class ScriptUtils {
 		return false;
 	}
 
-	/**
-	 * Load script from classpath and apply it to the given database
-	 *
-	 * @param databaseDelegate database delegate for script execution
-	 * @param initScriptPath   the resource to load the init script from
-	 */
-	public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
-		try {
+    /**
+     * Load script from classpath and apply it to the given database
+     *
+     * @param databaseDelegate database delegate for script execution
+     * @param initScriptPath   the resource to load the init script from
+     */
+    public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
+        runInitScript(databaseDelegate, initScriptPath, DEFAULT_STATEMENT_SEPARATOR);
+    }
+
+    /**
+     * Load script from classpath and apply it to the given database
+     *
+     * @param databaseDelegate    database delegate for script execution
+     * @param initScriptPath      the resource to load the init script from
+     * @param initScriptSeparator separator to split script
+     */
+    public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath,
+                                     String initScriptSeparator) {
+        try {
             URL resource;
             if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
                 //relative workdir path
@@ -309,7 +321,9 @@ public abstract class ScriptUtils {
 				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
 			}
 			String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
-			executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+            executeDatabaseScript(databaseDelegate, initScriptPath, scripts, false, false,
+                DEFAULT_COMMENT_PREFIX, initScriptSeparator,
+                DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
 		} catch (IOException e) {
 			LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
