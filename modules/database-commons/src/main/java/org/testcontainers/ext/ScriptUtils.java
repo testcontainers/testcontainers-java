@@ -50,6 +50,8 @@ public abstract class ScriptUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ScriptUtils.class);
 
+    private static final String FILE_PATH_PREFIX = "file:";
+
 	/**
 	 * Default statement separator within SQL scripts.
 	 */
@@ -232,7 +234,7 @@ public abstract class ScriptUtils {
 		return new StringBuilder();
 	}
 
-	private static boolean isSeperator(char c, String separator, String commentPrefix,
+	private static boolean isSeparator(char c, String separator, String commentPrefix,
                                        String blockCommentStartDelimiter) {
 	    return c == ' ' || c == '\r' || c == '\n' || c == '\t' ||
             c == separator.charAt(0) || c == separator.charAt(separator.length() - 1) ||
@@ -251,13 +253,13 @@ public abstract class ScriptUtils {
                                                     String blockCommentStartDelimiter) {
         String lowercaseKeywords = keywords.toLowerCase();
 
-        boolean backSeperated = (offset == 0) || isSeperator(lowercaseString.charAt(offset - 1),
+        boolean backSeparated = (offset == 0) || isSeparator(lowercaseString.charAt(offset - 1),
             separator, commentPrefix, blockCommentStartDelimiter);
-        boolean frontSeperated = (offset >= (lowercaseString.length() - keywords.length())) ||
-            isSeperator(lowercaseString.charAt(offset + keywords.length()),
+        boolean frontSeparated = (offset >= (lowercaseString.length() - keywords.length())) ||
+            isSeparator(lowercaseString.charAt(offset + keywords.length()),
                 separator, commentPrefix, blockCommentStartDelimiter);
 
-        return backSeperated && frontSeperated && lowercaseString.startsWith(lowercaseKeywords, offset);
+        return backSeparated && frontSeparated && lowercaseString.startsWith(lowercaseKeywords, offset);
     }
 
 	private static void checkArgument(boolean expression, String errorMessage) {
@@ -293,7 +295,15 @@ public abstract class ScriptUtils {
 	 */
 	public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
 		try {
-			URL resource = ScriptUtils.class.getClassLoader().getResource(initScriptPath);
+            URL resource;
+            if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
+                //relative workdir path
+                resource = new URL(initScriptPath);
+            } else {
+                //classpath resource
+                resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+            }
+
 			if (resource == null) {
 				LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");

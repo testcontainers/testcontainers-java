@@ -28,7 +28,6 @@ import static org.testcontainers.MySQLTestImages.MYSQL_55_IMAGE;
 import static org.testcontainers.MySQLTestImages.MYSQL_56_IMAGE;
 import static org.testcontainers.MySQLTestImages.MYSQL_IMAGE;
 
-
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleMySQLTest.class);

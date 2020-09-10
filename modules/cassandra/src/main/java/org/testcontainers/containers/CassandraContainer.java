@@ -75,22 +75,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      */
     private void runInitScriptIfRequired() {
         if (initScriptPath != null) {
-            try {
-                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-                if (resource == null) {
-                    logger().warn("Could not load classpath init script: {}", initScriptPath);
-                    throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
-                }
-                String cql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                DatabaseDelegate databaseDelegate = getDatabaseDelegate();
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, cql);
-            } catch (IOException e) {
-                logger().warn("Could not load classpath init script: {}", initScriptPath);
-                throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
-            } catch (ScriptException e) {
-                logger().error("Error while executing init script: {}", initScriptPath, e);
-                throw new ScriptUtils.UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
-            }
+            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
         }
     }
 

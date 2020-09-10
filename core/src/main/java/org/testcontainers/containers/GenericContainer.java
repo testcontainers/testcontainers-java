@@ -107,8 +107,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
-    private static final Charset UTF8 = Charset.forName("UTF-8");
-
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
     public static final String INTERNAL_HOST_HOSTNAME = "host.testcontainers.internal";
