@@ -79,8 +79,8 @@ public class DockerMachineClient {
         }
     }
 
-    public String getDockerDaemonIpAddress(@NonNull String machineName) {
-        return runShellCommand(executableName, "ip", machineName);
+    public String getDockerDaemonUrl(@NonNull String machineName) {
+        return runShellCommand(executableName, "url", machineName);
     }
 
     public boolean isMachineRunning(String machineName) {
