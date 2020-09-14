@@ -49,11 +49,15 @@ public class LocalServerWebDriverContainerTest {
 
     @Test
     public void testConnection() {
+        // getWebDriver {
         RemoteWebDriver driver = chrome.getWebDriver();
+        // }
 
         // Construct a URL that the browser container can access
+        // getPage {
         String hostIpAddress = chrome.getTestHostIpAddress();
         driver.get("http://" + hostIpAddress + ":" + localPort);
+        // }
 
         String headingText = driver.findElement(By.cssSelector("h1")).getText().trim();
 

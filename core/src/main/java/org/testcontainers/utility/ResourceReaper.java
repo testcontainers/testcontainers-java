@@ -14,7 +14,6 @@ import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -22,6 +21,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,18 +70,13 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    @Deprecated
-    public static String start(String hostIpAddress, DockerClient client, boolean withDummyMount) {
-        return start(hostIpAddress, client);
-    }
-
     @SneakyThrows(InterruptedException.class)
     public static String start(String hostIpAddress, DockerClient client) {
-        String ryukImage = TestcontainersConfiguration.getInstance().getRyukImage();
+        String ryukImage = TestcontainersConfiguration.getInstance().getRyukDockerImageName().asCanonicalNameString();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
         List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind("//var/run/docker.sock", new Volume("/var/run/docker.sock")));
+        binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         String ryukContainerId = client.createContainerCmd(ryukImage)
                 .withHostConfig(new HostConfig().withAutoRemove(true))
@@ -98,7 +93,7 @@ public final class ResourceReaper {
 
         StringBuilder ryukLog = new StringBuilder();
 
-        client.logContainerCmd(ryukContainerId)
+        ResultCallback.Adapter<Frame> logCallback = client.logContainerCmd(ryukContainerId)
             .withSince(0)
             .withFollowStream(true)
             .withStdOut(true)
@@ -169,11 +164,17 @@ public final class ResourceReaper {
         );
         kiraThread.setDaemon(true);
         kiraThread.start();
-
-        // We need to wait before we can start any containers to make sure that we delete them
-        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-            log.error("Timeout out waiting for Ryuk. Ryuk's log:\n{}", ryukLog);
-            throw new IllegalStateException(String.format("Can not connect to Ryuk at %s:%s", hostIpAddress, ryukPort));
+        try {
+            // We need to wait before we can start any containers to make sure that we delete them
+            if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+                log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukLog);
+                throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", hostIpAddress, ryukPort));
+            }
+        } finally {
+            try {
+                logCallback.close();
+            } catch (IOException ignored) {
+            }
         }
 
         return ryukContainerId;

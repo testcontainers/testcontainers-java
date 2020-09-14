@@ -4,6 +4,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.util.Arrays;
@@ -66,7 +67,7 @@ public class CustomPasswordMSSQLServerTest {
     @Test
     public void runPasswordTests() {
         try {
-            new MSSQLServerContainer<>().withPassword(this.password);
+            new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(this.password);
             if (!valid)
                 fail("Password " + this.password + " is not valid. Expected exception");
         } catch (IllegalArgumentException e) {

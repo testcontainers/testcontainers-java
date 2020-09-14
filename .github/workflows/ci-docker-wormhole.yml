@@ -20,6 +20,7 @@ jobs:
             ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - name: aggregate test reports with ciMate
         if: always()
+        continue-on-error: true
         env:
           CIMATE_PROJECT_ID: 2348n4vl
         run: |
