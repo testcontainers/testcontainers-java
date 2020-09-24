@@ -164,8 +164,8 @@ dependencies {
 
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.30'
-    compileOnly 'org.jetbrains:annotations:20.0.0'
-    testCompileOnly 'org.jetbrains:annotations:20.0.0'
+    compileOnly 'org.jetbrains:annotations:20.1.0'
+    testCompileClasspath 'org.jetbrains:annotations:20.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
@@ -211,12 +211,12 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.16.1'
+    testCompile 'org.assertj:assertj-core:3.17.1'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.16.0'
+    jarFileTestCompile 'org.assertj:assertj-core:3.17.1'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }

@@ -4,7 +4,7 @@ dependencies {
     compile project(':database-commons')
     testCompile project(':test-support')
 
-    compileOnly 'org.jetbrains:annotations:20.0.0'
+    compileOnly 'org.jetbrains:annotations:20.1.0'
     testCompile 'commons-dbutils:commons-dbutils:1.7'
     testCompile 'org.vibur:vibur-dbcp:25.0'
     testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.37'

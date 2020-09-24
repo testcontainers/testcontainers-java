@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -81,6 +82,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private boolean localCompose;
     private boolean pull = true;
     private boolean build = false;
+    private Set<String> options = new HashSet<>();
     private boolean tailChildContainers;
 
     private String project;
@@ -213,7 +215,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .distinct()
             .collect(joining(" "));
 
-        String command = "up -d";
+        String command = optionsAsString() + "up -d";
 
         if (build) {
             command += " --build";
@@ -229,6 +231,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         // Run the docker-compose container, which starts up the services
         runWithCompose(command);
+    }
+
+    private String optionsAsString() {
+        String optionsString = options
+            .stream()
+            .collect(joining(" "));
+        if (optionsString.length() !=0 ) {
+            // ensures that there is a space between the options and 'up' if options are passed.
+            return optionsString + " ";
+        } else {
+            // otherwise two spaces would appear between 'docker-compose' and 'up'
+            return StringUtils.EMPTY;
+        }
     }
 
     private void waitUntilServiceStarted() {
@@ -514,6 +529,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     public SELF withBuild(boolean build) {
         this.build = build;
+        return self();
+    }
+
+    /**
+     * Adds options to the docker-compose command, e.g. docker-compose --compatibility.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withOptions(String... options) {
+        this.options = new HashSet<>(Arrays.asList(options));
         return self();
     }
 
