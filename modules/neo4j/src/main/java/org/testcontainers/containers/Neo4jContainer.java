@@ -1,5 +1,11 @@
 package org.testcontainers.containers;
 
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.util.stream.Collectors.toSet;
+
+import java.time.Duration;
+import java.util.Set;
+import java.util.stream.Stream;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
@@ -7,13 +13,6 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 import org.testcontainers.utility.MountableFile;
-
-import java.time.Duration;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Testcontainer for Neo4j.
@@ -32,6 +31,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * The default tag (version) to use.
      */
     private static final String DEFAULT_TAG = "3.5.0";
+    private static final String ENTERPRISE_TAG = DEFAULT_TAG + "-enterprise";
 
     /**
      * Default port for the binary Bolt protocol.
@@ -56,8 +56,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     private static final String AUTH_FORMAT = "neo4j/%s";
 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
-
-    private boolean standardImage = true;
 
     /**
      * Creates a Neo4jContainer using the official Neo4j docker image.
@@ -148,7 +146,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withEnterpriseEdition() {
-        setDockerImageName(getDockerImageName() + "-enterprise");
+        setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG).asCanonicalNameString());
         LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
 
         addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
