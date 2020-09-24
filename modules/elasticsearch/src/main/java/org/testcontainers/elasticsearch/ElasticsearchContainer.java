@@ -9,7 +9,6 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
@@ -63,7 +62,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         setWaitStrategy(new HttpWaitStrategy()
             .forPort(ELASTICSEARCH_DEFAULT_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK || response == HTTP_UNAUTHORIZED)
+            .forPath("/_cluster/health")
+            .forStatusCode(HTTP_OK)
             .withStartupTimeout(Duration.ofMinutes(2)));
     }
 
