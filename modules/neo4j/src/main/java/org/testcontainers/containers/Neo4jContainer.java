@@ -55,6 +55,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     private static final String AUTH_FORMAT = "neo4j/%s";
 
+    private final boolean standardImage;
+
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
     /**
@@ -82,6 +84,9 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     public Neo4jContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        this.standardImage = dockerImageName.getUnversionedPart()
+            .equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
@@ -146,6 +151,12 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withEnterpriseEdition() {
+        if (!standardImage) {
+            throw new IllegalStateException(
+                String.format("Cannot use enterprise version with alternative image %s.",
+                    getDockerImageName()));
+        }
+
         setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG).asCanonicalNameString());
         LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
 
