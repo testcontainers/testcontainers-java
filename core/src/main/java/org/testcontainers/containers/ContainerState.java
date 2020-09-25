@@ -84,7 +84,7 @@ public interface ContainerState {
 
         try {
             String status = getCurrentContainerInfo().getState().getStatus();
-            return "created".equalsIgnoreCase(status) || isRunning();
+            return status != null & !status.isEmpty();
         } catch (DockerException e) {
             return false;
         }
