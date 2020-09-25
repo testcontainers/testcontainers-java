@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    compile "io.lettuce:lettuce-core:5.2.0.RELEASE"
+    compile "io.lettuce:lettuce-core:6.0.0.RC2"
     testImplementation 'org.spockframework:spock-core:1.2-groovy-2.5'
     testImplementation project(":spock")
     testImplementation 'ch.qos.logback:logback-classic:1.2.3'
