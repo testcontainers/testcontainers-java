@@ -194,7 +194,7 @@ public class DockerClientFactory {
 
         final String ryukContainerId;
 
-        boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+        boolean useRyuk = isRyukEnabled();
         if (useRyuk) {
             log.debug("Ryuk is enabled");
             try {
@@ -242,6 +242,15 @@ public class DockerClientFactory {
 
         dockerClient = client;
         return dockerClient;
+    }
+
+    private boolean isRyukEnabled() {
+        String ryukEnv = System.getenv("TESTCONTAINERS_RYUK_DISABLED");
+        if (ryukEnv != null) {
+            return !Boolean.parseBoolean(ryukEnv);
+        }
+
+        return !Boolean.getBoolean("TESTCONTAINERS_RYUK_DISABLED");
     }
 
     private void checkDockerVersion(String dockerVersion) {
