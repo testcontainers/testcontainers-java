@@ -1,14 +1,16 @@
 package org.testcontainers.containers;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.session.Session;
+import java.net.InetSocketAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -89,6 +91,24 @@ public class CassandraContainerTest {
         }
     }
 
+    @Test
+    public void testKeyspace(){
+	try (CassandraContainer<?> cassandra = new CassandraContainer<>(CASSANDRA_IMAGE)) {
+            cassandra.start();
+            CqlSession session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress(cassandra.getHost(), cassandra.getMappedPort(cassandra.CQL_PORT)))
+                .withLocalDatacenter("datacenter1")
+                .build();
+            session.execute("CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
+                    "{'class':'SimpleStrategy','replication_factor':'1'};");
+            KeyspaceMetadata keyspace = session
+                    .getMetadata()
+                    .getKeyspaces()
+                    .get(CqlIdentifier.fromCql("test"));
+            assertNotNull("Failed to create test keyspace", keyspace);
+        }
+    }
+
     @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
     @Test
     public void testCassandraQueryWaitStrategy() {
@@ -102,17 +122,6 @@ public class CassandraContainerTest {
         }
     }
 
-    @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
-    @Test
-    public void testCassandraGetCluster() {
-        try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
-            cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
-            assertTrue("Query was not applied", resultSet.wasApplied());
-            assertNotNull("Result set has no release_version", resultSet.one().getString(0));
-        }
-    }
-
     private void testInitScript(CassandraContainer<?> cassandraContainer) {
         ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
         assertTrue("Query was not applied", resultSet.wasApplied());
@@ -122,17 +131,10 @@ public class CassandraContainerTest {
     }
 
     private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {
-        Cluster explicitCluster = Cluster.builder()
-            .addContactPoint(cassandraContainer.getHost())
-            .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
+        CqlSession session = CqlSession.builder()
+            .addContactPoint(new InetSocketAddress(cassandraContainer.getHost(), cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT)))
+            .withLocalDatacenter("datacenter1")
             .build();
-        return performQuery(explicitCluster, cql);
-    }
-
-    private ResultSet performQuery(Cluster cluster, String cql) {
-        try (Cluster closeableCluster = cluster) {
-            Session session = closeableCluster.newSession();
-            return session.execute(cql);
-        }
+        return session.execute(cql);
     }
 }

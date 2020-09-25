@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
-import com.datastax.driver.core.Cluster;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.session.Session;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
@@ -12,6 +13,7 @@ import org.testcontainers.utility.MountableFile;
 
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -165,28 +167,21 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return PASSWORD;
     }
 
-    /**
-     * Get configured Cluster
-     *
-     * Can be used to obtain connections to Cassandra in the container
-     */
-    public Cluster getCluster() {
-        return getCluster(this, enableJmxReporting);
+    public CqlSession getSession() {
+        return getSession(this, enableJmxReporting);
     }
 
-    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
-        final Cluster.Builder builder = Cluster.builder()
-            .addContactPoint(containerState.getHost())
-            .withPort(containerState.getMappedPort(CQL_PORT));
-        if (!enableJmxReporting) {
-            builder.withoutJMXReporting();
-        }
-        return builder.build();
+    public static CqlSession getSession(ContainerState containerState, boolean enableJmxReporting) {
+	CqlSession session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress(containerState.getHost(), containerState.getMappedPort(CQL_PORT)))
+                .withLocalDatacenter("datacenter1").build();
+        return session;
     }
 
-    public static Cluster getCluster(ContainerState containerState) {
-        return getCluster(containerState, false);
+    public static CqlSession getSession(ContainerState containerState) {
+        return getSession(containerState, false);
     }
+
 
     private DatabaseDelegate getDatabaseDelegate() {
         return new CassandraDatabaseDelegate(this);

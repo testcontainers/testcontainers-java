@@ -1,8 +1,9 @@
 package org.testcontainers.containers.delegate;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.session.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.CassandraContainer;
@@ -25,8 +26,7 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
     @Override
     protected Session createNewConnection() {
         try {
-            return CassandraContainer.getCluster(container)
-                    .newSession();
+	      return CassandraContainer.getSession(container);
         } catch (DriverException e) {
             log.error("Could not obtain cassandra connection");
             throw new ConnectionCreationException("Could not obtain cassandra connection", e);
@@ -36,7 +36,7 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
     @Override
     public void execute(String statement, String scriptPath, int lineNumber, boolean continueOnError, boolean ignoreFailedDrops) {
         try {
-            ResultSet result = getConnection().execute(statement);
+            ResultSet result = CassandraContainer.getSession(container).execute(statement);
             if (result.wasApplied()) {
                 log.debug("Statement {} was applied", statement);
             } else {
@@ -50,7 +50,7 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
     @Override
     protected void closeConnectionQuietly(Session session) {
         try {
-            session.getCluster().close();
+            session.close();
         } catch (Exception e) {
             log.error("Could not close cassandra connection", e);
         }

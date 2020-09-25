@@ -7,29 +7,27 @@ This example connects to the Cassandra Cluster, creates a keyspaces and asserts 
 ```java tab="JUnit 4 example"
 public class SomeTest {
 
-    @Rule
-    public CassandraContainer cassandra = new CassandraContainer();
-
-
     @Test
     public void test(){
-        Cluster cluster = cassandra.getCluster();
+         try (CassandraContainer<?> cassandra = new CassandraContainer<>(CASSANDRA_IMAGE)) {
+            cassandra.start();
 
-        try(Session session = cluster.connect()) {
+        CqlSession session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress(cassandra.getHost(), cassandra.getMappedPort(cassandra.CQL_PORT)))
+                .withLocalDatacenter("datacenter1")
+                .build();
 
             session.execute("CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
                     "{'class':'SimpleStrategy','replication_factor':'1'};");
 
-            List<KeyspaceMetadata> keyspaces = session.getCluster().getMetadata().getKeyspaces();
-            List<KeyspaceMetadata> filteredKeyspaces = keyspaces
-                    .stream()
-                    .filter(km -> km.getName().equals("test"))
-                    .collect(Collectors.toList());
+            KeyspaceMetadata keyspace = session
+                    .getMetadata()
+                    .getKeyspaces()
+                    .get(CqlIdentifier.fromCql("test"));
 
-            assertEquals(1, filteredKeyspaces.size());
+            assertNotNull("Failed to create test keyspace", keyspace);
         }
     }
-
 }
 ```
 
