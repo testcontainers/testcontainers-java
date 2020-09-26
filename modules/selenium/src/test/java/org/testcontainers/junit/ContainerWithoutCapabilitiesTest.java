@@ -7,7 +7,8 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 public class ContainerWithoutCapabilitiesTest extends BaseWebDriverContainerTest{
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer();
+    public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
+        .withNetwork(NETWORK);
 
     @Test
     public void chromeIsStartedIfNoCapabilitiesProvided() {
