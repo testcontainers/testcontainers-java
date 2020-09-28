@@ -8,6 +8,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -84,7 +85,7 @@ public interface ContainerState {
 
         try {
             String status = getCurrentContainerInfo().getState().getStatus();
-            return status != null & !status.isEmpty();
+            return !Strings.isNullOrEmpty(status);
         } catch (DockerException e) {
             return false;
         }
