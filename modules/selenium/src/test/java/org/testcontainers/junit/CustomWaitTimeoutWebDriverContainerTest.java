@@ -15,12 +15,13 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class CustomWaitTimeoutWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Rule
-    public BrowserWebDriverContainer chromeWithCustomTimeout = new BrowserWebDriverContainer<>()
-            .withCapabilities(new ChromeOptions())
-            .withStartupTimeout(Duration.of(30, SECONDS));
+    public BrowserWebDriverContainer<?> chromeWithCustomTimeout = new BrowserWebDriverContainer<>()
+        .withCapabilities(new ChromeOptions())
+        .withStartupTimeout(Duration.of(30, SECONDS))
+        .withNetwork(NETWORK);
 
     @Test
-    public void simpleTest() {
-        doSimpleWebdriverTest(chromeWithCustomTimeout);
+    public void simpleExploreTest() {
+        doSimpleExplore(chromeWithCustomTimeout);
     }
 }
