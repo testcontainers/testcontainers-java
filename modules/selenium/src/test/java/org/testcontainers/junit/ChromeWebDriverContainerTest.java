@@ -14,17 +14,13 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
     // junitRule {
     @Rule
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-        .withCapabilities(new ChromeOptions());
+        .withCapabilities(new ChromeOptions())
     // }
+        .withNetwork(NETWORK);
 
     @Before
     public void checkBrowserIsIndeedChrome() {
         assertBrowserNameIs(chrome, "chrome");
-    }
-
-    @Test
-    public void simpleTest() {
-        doSimpleWebdriverTest(chrome);
     }
 
     @Test
