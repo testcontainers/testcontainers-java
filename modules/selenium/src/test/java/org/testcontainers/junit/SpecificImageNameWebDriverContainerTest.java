@@ -12,12 +12,8 @@ public class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContai
 
     @Rule
     public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>(FIREFOX_IMAGE)
-        .withCapabilities(new FirefoxOptions());
-
-    @Test
-    public void simpleTest() {
-        doSimpleWebdriverTest(firefox);
-    }
+        .withCapabilities(new FirefoxOptions())
+        .withNetwork(NETWORK);
 
     @Test
     public void simpleExploreTest() {
