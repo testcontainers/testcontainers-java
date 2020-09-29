@@ -1,5 +1,12 @@
 package org.testcontainers.elasticsearch;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.testcontainers.elasticsearch.ElasticsearchContainer.DEFAULT_TAG;
+
+import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -19,14 +26,6 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.IOException;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.testcontainers.elasticsearch.ElasticsearchContainer.ELASTICSEARCH_DEFAULT_VERSION;
 
 public class ElasticsearchContainerTest {
 
@@ -72,7 +71,7 @@ public class ElasticsearchContainerTest {
             // Do whatever you want with the rest client ...
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_DEFAULT_VERSION));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString(DEFAULT_TAG));
 
             // The default image is running with the features under Elastic License
             response = getClient(container).performRequest(new Request("GET", "/_xpack/"));

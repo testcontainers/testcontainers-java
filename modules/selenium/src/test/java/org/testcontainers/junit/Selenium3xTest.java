@@ -23,7 +23,9 @@ public class Selenium3xTest {
 
     @Test
     public void testAdditionalStartupString() {
-        final DockerImageName imageName = DockerImageName.parse("selenium/standalone-chrome-debug").withTag(tag);
+        final DockerImageName imageName = DockerImageName
+            .parse("selenium/standalone-chrome-debug")
+            .withTag(tag);
         try (BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>(imageName)
                 .withCapabilities(new ChromeOptions())) {
             chrome.start();

@@ -16,7 +16,9 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
+
     public static final String DEFAULT_TAG = "9.6.12";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgres");
 
     public static final Integer POSTGRESQL_PORT = 5432;
 
@@ -37,19 +39,18 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
      */
     @Deprecated
     public PostgreSQLContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link PostgreSQLContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public PostgreSQLContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public PostgreSQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*database system is ready to accept connections.*\\s")
                 .withTimes(2)
