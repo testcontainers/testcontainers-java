@@ -9,10 +9,7 @@ task testMatrix {
 
         dependsOn(checkTasks)
         doLast {
-            // Obtain a list of check tasks that are not up-to-date, i.e.
-            //  the ones which Gradle cannot find a cached output for.
             def checkTaskPaths = checkTasks
-                .findAll { !it.state.upToDate }
                 .collect { it.path }
 
             println(JsonOutput.toJson(checkTaskPaths))
