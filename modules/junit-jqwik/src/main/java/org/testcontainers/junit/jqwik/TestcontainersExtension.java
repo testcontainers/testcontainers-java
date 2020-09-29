@@ -5,10 +5,12 @@ import net.jqwik.api.JqwikException;
 import net.jqwik.api.lifecycle.AroundPropertyHook;
 import net.jqwik.api.lifecycle.BeforeContainerHook;
 import net.jqwik.api.lifecycle.ContainerLifecycleContext;
+import net.jqwik.api.lifecycle.LifecycleContext;
 import net.jqwik.api.lifecycle.Lifespan;
 import net.jqwik.api.lifecycle.PropertyExecutionResult;
 import net.jqwik.api.lifecycle.PropertyExecutor;
 import net.jqwik.api.lifecycle.PropertyLifecycleContext;
+import net.jqwik.api.lifecycle.SkipExecutionHook;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -42,7 +44,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook, BeforeAllCallback, BeforeContainerHook, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
+class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook, BeforeAllCallback, BeforeContainerHook, AfterEachCallback, AfterAllCallback, ExecutionCondition, SkipExecutionHook, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
     private static final Object IDENTIFIER = TestcontainersExtension.class;
@@ -164,6 +166,33 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
 
     private boolean isTestLifecycleAware(StoreAdapter adapter) {
         return adapter.container instanceof TestLifecycleAware;
+    }
+
+
+    @Override
+    public SkipResult shouldBeSkipped(LifecycleContext context) {
+        return findTestcontainers(context)
+            .map(this::evaluateSkipResult)
+            .orElseThrow(() -> new ExtensionConfigurationException("@Testcontainers not found"));
+    }
+
+    private Optional<Testcontainers> findTestcontainers(LifecycleContext context) {
+        // Find closest TestContainers annotation
+        Optional<Testcontainers> first = context.findAnnotationsInContainer(Testcontainers.class).stream().findFirst();
+        if(first.isPresent())
+            return first;
+        else
+            return context.findAnnotation(Testcontainers.class);
+    }
+
+    private SkipResult evaluateSkipResult(Testcontainers testcontainers) {
+        if (testcontainers.disabledWithoutDocker()) {
+            if (isDockerAvailable()) {
+                return SkipResult.doNotSkip();
+            }
+            return SkipResult.skip("disabledWithoutDocker is true and Docker is not available");
+        }
+        return SkipResult.doNotSkip();
     }
 
     @Override

@@ -1,58 +1,66 @@
 package org.testcontainers.junit.jqwik;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ConditionEvaluationResult;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import net.jqwik.api.Example;
+import net.jqwik.api.lifecycle.LifecycleContext;
+import net.jqwik.api.lifecycle.SkipExecutionHook.SkipResult;
+
+import java.lang.annotation.Annotation;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TestcontainersExtensionTests {
 
-    @Test
+    @Example
     void whenDisabledWithoutDockerAndDockerIsAvailableTestsAreEnabled() {
-        ConditionEvaluationResult result = new TestTestcontainersExtension(true)
-            .evaluateExecutionCondition(extensionContext(DisabledWithoutDocker.class));
-        assertFalse(result.isDisabled());
+        SkipResult result = new TestTestcontainersExtension(true)
+            .shouldBeSkipped(context(createTestcontainersAnnotation(true)));
+        assertFalse(result.isSkipped());
     }
 
-    @Test
+    @Example
     void whenDisabledWithoutDockerAndDockerIsUnavailableTestsAreDisabled() {
-        ConditionEvaluationResult result = new TestTestcontainersExtension(false)
-            .evaluateExecutionCondition(extensionContext(DisabledWithoutDocker.class));
-        assertTrue(result.isDisabled());
+        SkipResult result = new TestTestcontainersExtension(false)
+            .shouldBeSkipped(context(createTestcontainersAnnotation(true)));
+        assertTrue(result.isSkipped());
     }
 
-    @Test
+    @Example
     void whenEnabledWithoutDockerAndDockerIsAvailableTestsAreEnabled() {
-        ConditionEvaluationResult result = new TestTestcontainersExtension(true)
-            .evaluateExecutionCondition(extensionContext(EnabledWithoutDocker.class));
-        assertFalse(result.isDisabled());
+        SkipResult result = new TestTestcontainersExtension(true)
+            .shouldBeSkipped(context(createTestcontainersAnnotation(false)));
+        assertFalse(result.isSkipped());
     }
 
-    @Test
+    @Example
     void whenEnabledWithoutDockerAndDockerIsUnavailableTestsAreEnabled() {
-        ConditionEvaluationResult result = new TestTestcontainersExtension(false)
-            .evaluateExecutionCondition(extensionContext(EnabledWithoutDocker.class));
-        assertFalse(result.isDisabled());
+        SkipResult result = new TestTestcontainersExtension(false)
+            .shouldBeSkipped(context(createTestcontainersAnnotation(false)));
+        assertFalse(result.isSkipped());
     }
 
-    private ExtensionContext extensionContext(Class clazz) {
-        ExtensionContext extensionContext = mock(ExtensionContext.class);
-        when(extensionContext.getRequiredTestClass()).thenReturn(clazz);
+    private LifecycleContext context(Testcontainers clazz) {
+        LifecycleContext extensionContext = mock(LifecycleContext.class);
+        when(extensionContext.findAnnotationsInContainer(any())).thenReturn(Collections.singletonList(clazz));
         return extensionContext;
     }
 
-    @Testcontainers(disabledWithoutDocker = true)
-    static final class DisabledWithoutDocker {
+    private Testcontainers createTestcontainersAnnotation(boolean disableWithoutDocker) {
+        return new Testcontainers(){
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return Annotation.class;
+            }
 
-    }
-
-    @Testcontainers
-    static final class EnabledWithoutDocker {
-
+            @Override
+            public boolean disabledWithoutDocker() {
+                return disableWithoutDocker;
+            }
+        };
     }
 
     static final class TestTestcontainersExtension extends TestcontainersExtension {
