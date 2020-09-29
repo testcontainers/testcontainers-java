@@ -1,0 +1,4 @@
+version: '2.1'
+services:
+  whoami:
+    image: emilevauge/whoami
