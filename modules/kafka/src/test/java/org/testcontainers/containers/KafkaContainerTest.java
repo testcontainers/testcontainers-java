@@ -1,6 +1,13 @@
 package org.testcontainers.containers;
 
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+
 import com.google.common.collect.ImmutableMap;
+import java.time.Duration;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -10,18 +17,10 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.DockerImageName;
-
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
@@ -29,8 +28,8 @@ public class KafkaContainerTest {
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
 
     // junitRule {
-    @Rule
-    public KafkaContainer kafka = new KafkaContainer();
+    @ClassRule
+    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.2.1"));
     // }
 
     @Test
@@ -43,10 +42,10 @@ public class KafkaContainerTest {
 
 
     @Test
-    public void testUsageWithVersion() throws Exception {
+    public void testUsageWithSpecificImage() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.2.1"))
             // }
         ) {
             kafka.start();
@@ -55,6 +54,17 @@ public class KafkaContainerTest {
               kafka.getBootstrapServers()
               // }
             );
+        }
+    }
+
+
+    @Test
+    public void testUsageWithVersion() throws Exception {
+        try (
+            KafkaContainer kafka = new KafkaContainer("5.2.1")
+        ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
         }
     }
 
@@ -75,7 +85,8 @@ public class KafkaContainerTest {
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
 
             // withKafkaNetwork {
-            GenericContainer application = new GenericContainer("alpine").withNetwork(network)
+            GenericContainer<?> application = new GenericContainer<>(DockerImageName.parse("alpine"))
+                .withNetwork(network)
             // }
                 .withNetworkAliases("dummy")
                 .withCommand("sleep 10000")
@@ -109,8 +120,8 @@ public class KafkaContainerTest {
                 new StringDeserializer()
             );
         ) {
-            String topicName = "messages";
-            consumer.subscribe(Arrays.asList(topicName));
+            String topicName = "messages-" + UUID.randomUUID();
+            consumer.subscribe(singletonList(topicName));
 
             producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
 

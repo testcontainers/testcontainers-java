@@ -4,14 +4,6 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +16,15 @@ import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * <p>Container for Atlassian Labs Localstack, 'A fully functional local AWS cloud stack'.</p>
  * <p>{@link LocalStackContainer#withServices(Service...)} should be used to select which services
@@ -35,10 +36,15 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
-    public static final String VERSION = "0.11.2";
     static final int PORT = 4566;
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
     private final List<Service> services = new ArrayList<>();
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
+    private static final String DEFAULT_TAG = "0.11.2";
+
+    @Deprecated
+    public static final String VERSION = DEFAULT_TAG;
 
     /**
      * Whether or to assume that all APIs run on different ports (when <code>true</code>) or are
@@ -59,7 +65,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     @Deprecated
     public LocalStackContainer() {
-        this(VERSION);
+        this(TestcontainersConfiguration.getInstance().getLocalstackDockerImageName().withTag(DEFAULT_TAG));
     }
 
     /**
@@ -67,7 +73,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     @Deprecated
     public LocalStackContainer(String version) {
-        this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getLocalStackImage() + ":" + version));
+        this(TestcontainersConfiguration.getInstance().getLocalstackDockerImageName().withTag(version));
     }
 
     /**
@@ -83,6 +89,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         this.legacyMode = useLegacyMode;
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
