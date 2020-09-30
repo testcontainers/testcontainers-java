@@ -130,7 +130,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         command += "/etc/confluent/docker/launch \n";
 
         copyFileToContainer(
-            Transferable.of(command.getBytes(StandardCharsets.UTF_8), 700),
+            Transferable.of(command.getBytes(StandardCharsets.UTF_8), 0777),
             STARTER_SCRIPT
         );
     }
@@ -139,8 +139,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private String startZookeeper() {
         ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId())
             .withCmd("sh", "-c", "" +
-                "printf 'clientPort=" + ZOOKEEPER_PORT + "\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties\n" +
-                "zookeeper-server-start /zookeeper.properties\n"
+                "printf 'clientPort=" + ZOOKEEPER_PORT + "\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > zookeeper.properties\n" +
+                "zookeeper-server-start zookeeper.properties\n"
             )
             .exec();
 
