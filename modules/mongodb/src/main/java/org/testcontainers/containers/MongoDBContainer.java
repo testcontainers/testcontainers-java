@@ -44,7 +44,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");
         waitingFor(
-            Wait.forLogMessage(".*waiting for connections on port.*", 1)
+            Wait.forLogMessage("(?i).*waiting for connections.*", 1)
         );
     }
 
