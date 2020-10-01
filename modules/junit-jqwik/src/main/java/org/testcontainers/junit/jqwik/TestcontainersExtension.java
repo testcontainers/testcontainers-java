@@ -27,6 +27,7 @@ import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
+import org.opentest4j.TestAbortedException;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
@@ -109,13 +110,22 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         Object testInstance = context.testInstance();
         net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = net.jqwik.api.lifecycle.Store.getOrCreate(property.hashCode(), Lifespan.PROPERTY, HashMap::new);
         store.onClose(adapters -> adapters.values().forEach(StoreAdapter::close));
-        findRestartContainers(testInstance).forEach(adapter -> store.update(storeAdapters -> {
-            HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
-            update.put(adapter.key, adapter.start());
-            return update;
-        }));
+        List<TestLifecycleAware> lifecycleAwareContainers = findRestartContainers(testInstance)
+            .peek(adapter -> store.update(storeAdapters -> {
+                HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
+                update.put(adapter.key, adapter.start());
+                return update;
+            }))
+            .filter(this::isTestLifecycleAware)
+            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
+            .collect(toList());
 
-        return property.execute();
+        TestDescription testDescription = testDescriptionFrom(context);
+        signalBeforeTestToContainers(lifecycleAwareContainers, testDescription);
+        PropertyExecutionResult executionResult = property.execute();
+        signalAfterTestToContainersFor(lifecycleAwareContainers, testDescription, executionResult);
+
+        return executionResult;
     }
 
     @Override
@@ -147,6 +157,16 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         lifecycleAwareContainers.forEach(container -> container.beforeTest(testDescription));
     }
 
+    private void signalAfterTestToContainersFor(List<TestLifecycleAware> containers, TestDescription testDescription, PropertyExecutionResult executionResult) {
+        containers.forEach(container -> {
+            if(executionResult.status() == PropertyExecutionResult.Status.ABORTED){
+                container.afterTest(testDescription, Optional.of(new TestAbortedException()));
+            } else {
+                container.afterTest(testDescription, executionResult.throwable());
+            }
+        });
+    }
+
     private void signalAfterTestToContainersFor(String storeKey, ExtensionContext context) {
         List<TestLifecycleAware> lifecycleAwareContainers =
             (List<TestLifecycleAware>) context.getStore(NAMESPACE).get(storeKey);
@@ -160,6 +180,13 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
     private TestDescription testDescriptionFrom(ExtensionContext context) {
         return new TestcontainersTestDescription(
             context.getUniqueId(),
+            FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf(context)
+        );
+    }
+
+    private TestDescription testDescriptionFrom(LifecycleContext context) {
+        return new TestcontainersTestDescription(
+            context.label(),
             FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf(context)
         );
     }

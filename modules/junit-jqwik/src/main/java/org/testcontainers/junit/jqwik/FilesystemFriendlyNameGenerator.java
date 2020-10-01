@@ -1,5 +1,6 @@
 package org.testcontainers.junit.jqwik;
 
+import net.jqwik.api.lifecycle.LifecycleContext;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.io.UnsupportedEncodingException;
@@ -13,6 +14,17 @@ class FilesystemFriendlyNameGenerator {
 
     static String filesystemFriendlyNameOf(ExtensionContext context) {
         String contextId = context.getUniqueId();
+        try {
+            return (isBlank(contextId))
+                ? UNKNOWN_NAME
+                : URLEncoder.encode(contextId, UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            return UNKNOWN_NAME;
+        }
+    }
+
+    static String filesystemFriendlyNameOf(LifecycleContext context) {
+        String contextId = context.label();
         try {
             return (isBlank(contextId))
                 ? UNKNOWN_NAME
