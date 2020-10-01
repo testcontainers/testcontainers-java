@@ -1,13 +1,12 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
-
-import java.util.Properties;
-import java.util.UUID;
-
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+
+import java.util.Properties;
+import java.util.UUID;
+import org.junit.Test;
 
 public class TestcontainersConfigurationTest {
 
@@ -46,6 +45,10 @@ public class TestcontainersConfigurationTest {
 
         environmentProperties.setProperty("testcontainers.reuse.enable", "true");
         assertTrue("reuse enabled", newConfig().environmentSupportsReuse());
+
+        environmentProperties.setProperty("ryuk.container.image", " testcontainersofficial/ryuk:0.3.0 ");
+        assertEquals("trailing whitespace was not removed from image name property", "testcontainersofficial/ryuk:0.3.0",newConfig().getRyukDockerImageName().asCanonicalNameString());
+
     }
 
     private TestcontainersConfiguration newConfig() {

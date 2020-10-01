@@ -9,8 +9,8 @@ import org.testcontainers.utility.DockerImageName;
 public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
     private static final String NAME = "postgis";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgis/postgis").asCompatibleSubstituteFor("postgres");
     private static final String DEFAULT_TAG = "12-3.0";
-    private static final String DEFAULT_IMAGE = "postgis/postgis";
     public static final String USER_PARAM = "user";
     public static final String PASSWORD_PARAM = "password";
 
@@ -27,7 +27,7 @@ public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PostgreSQLContainer(DockerImageName.parse(DEFAULT_IMAGE).withTag(DEFAULT_TAG));
+        return new PostgreSQLContainer<>(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     @Override

@@ -18,6 +18,9 @@ import java.util.stream.Stream;
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
+    private static final String DEFAULT_TAG = "5.2.1";
+
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     public static final int KAFKA_PORT = 9093;
@@ -35,7 +38,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      */
     @Deprecated
     public KafkaContainer() {
-        this("5.2.1");
+        this(TestcontainersConfiguration.getInstance().getKafkaDockerImageName().withTag(DEFAULT_TAG));
     }
 
     /**
@@ -43,11 +46,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      */
     @Deprecated
     public KafkaContainer(String confluentPlatformVersion) {
-        this(DockerImageName.parse(TestcontainersConfiguration.getInstance().getKafkaImage() + ":" + confluentPlatformVersion));
+        this(TestcontainersConfiguration.getInstance().getKafkaDockerImageName().withTag(confluentPlatformVersion));
     }
 
     public KafkaContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(KAFKA_PORT);
 
