@@ -1,5 +1,11 @@
 package org.testcontainers.junit.jqwik;
 
+import net.jqwik.api.Example;
+import net.jqwik.api.lifecycle.AddLifecycleHook;
+import net.jqwik.api.lifecycle.AfterContainerHook;
+import net.jqwik.api.lifecycle.BeforeContainer;
+import net.jqwik.api.lifecycle.BeforeProperty;
+import net.jqwik.api.lifecycle.ContainerLifecycleContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -13,10 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jqwik.TestLifecycleAwareContainerMock.AFTER_TEST;
 import static org.testcontainers.junit.jqwik.TestLifecycleAwareContainerMock.BEFORE_TEST;
 
-// The order of @ExtendsWith and @Testcontainers is crucial for the tests
-@ExtendWith({TestLifecycleAwareMethodTest.SharedContainerAfterAllTestExtension.class})
+@AddLifecycleHook(TestLifecycleAwareMethodTest.SharedContainerAfterAllTestExtension.class)
 @Testcontainers
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TestLifecycleAwareMethodTest {
     @TestContainer
     private final TestLifecycleAwareContainerMock testContainer = new TestLifecycleAwareContainerMock();
@@ -26,48 +30,52 @@ class TestLifecycleAwareMethodTest {
 
     private static TestLifecycleAwareContainerMock startedTestContainer;
 
-    @BeforeAll
+    @BeforeContainer
     static void beforeAll() {
         assertThat(SHARED_CONTAINER.getLifecycleMethodCalls()).containsExactly(BEFORE_TEST);
-
     }
 
-    @Test
-    @Order(1)
+    @BeforeProperty
     void should_prepare_before_and_after_test() {
         // we can only test for a call to afterTest() after this test has been finished.
-        startedTestContainer = testContainer;
+        if(startedTestContainer == null){
+            startedTestContainer = testContainer;
+        }
     }
 
-    @Test
-    @Order(2)
-    void should_call_beforeTest_first_afterTest_later_with_filesystem_friendly_name() {
-        assertThat(startedTestContainer.getLifecycleMethodCalls())
-            .containsExactly(BEFORE_TEST, AFTER_TEST);
+    @Example
+    void should_call_beforeTest_first() {
+        assertThat(startedTestContainer.getLifecycleMethodCalls()).contains(BEFORE_TEST);
     }
 
-    @Test
+    @Example
     void should_have_a_filesystem_friendly_name_container_has_started() {
         assertThat(startedTestContainer.getLifecycleFilesystemFriendlyNames())
             .containsExactly(
-                "%5Bengine%3Ajunit-jupiter%5D%2F%5Bclass%3Aorg.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest%5D%2F%5Bmethod%3Ashould_prepare_before_and_after_test%28%29%5D"
+                "should+have+a+filesystem+friendly+name+container+has+started"
             );
     }
 
-    @Test
+    @Example
     void static_container_should_have_a_filesystem_friendly_name_after_container_has_started() {
         assertThat(SHARED_CONTAINER.getLifecycleFilesystemFriendlyNames())
             .containsExactly(
-                "%5Bengine%3Ajunit-jupiter%5D%2F%5Bclass%3Aorg.testcontainers.junit.jupiter.TestLifecycleAwareMethodTest%5D"
+                "TestLifecycleAwareMethodTest"
             );
     }
 
-    static class SharedContainerAfterAllTestExtension implements AfterAllCallback {
-        // Unfortunately it's not possible to write a @Test that is run after all tests
+    static class SharedContainerAfterAllTestExtension implements AfterContainerHook {
+
         @Override
-        public void afterAll(ExtensionContext context) {
+        public void afterContainer(ContainerLifecycleContext context) {
             assertThat(SHARED_CONTAINER.getLifecycleMethodCalls())
                 .containsExactly(BEFORE_TEST, AFTER_TEST);
+        }
+
+        @Override
+        public int afterContainerProximity() {
+            // Run after the TestcontainersExtensions
+            return -12;
         }
     }
 }

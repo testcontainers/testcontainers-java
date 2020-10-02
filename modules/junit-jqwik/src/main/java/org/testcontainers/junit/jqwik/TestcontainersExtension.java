@@ -2,8 +2,8 @@ package org.testcontainers.junit.jqwik;
 
 import lombok.Getter;
 import net.jqwik.api.JqwikException;
+import net.jqwik.api.lifecycle.AroundContainerHook;
 import net.jqwik.api.lifecycle.AroundPropertyHook;
-import net.jqwik.api.lifecycle.BeforeContainerHook;
 import net.jqwik.api.lifecycle.ContainerLifecycleContext;
 import net.jqwik.api.lifecycle.LifecycleContext;
 import net.jqwik.api.lifecycle.Lifespan;
@@ -34,21 +34,23 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook, BeforeAllCallback, BeforeContainerHook, AfterEachCallback, AfterAllCallback, ExecutionCondition, SkipExecutionHook, TestInstancePostProcessor {
+class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook, BeforeAllCallback, AroundContainerHook, AfterEachCallback, AfterAllCallback, ExecutionCondition, SkipExecutionHook, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
     private static final Object IDENTIFIER = TestcontainersExtension.class;
+    private static final Object SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS = new Object();
 
     private static final String TEST_INSTANCE = "testInstance";
     private static final String SHARED_LIFECYCLE_AWARE_CONTAINERS = "sharedLifecycleAwareContainers";
@@ -65,18 +67,35 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         Class<?> testClass = context.optionalContainerClass().orElseThrow(() -> new IllegalStateException("TestcontainersExtension is only supported for classes."));
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
-        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = net.jqwik.api.lifecycle.Store.getOrCreate(IDENTIFIER, Lifespan.RUN, HashMap::new);
-        store.onClose(storeAdapters -> storeAdapters.values().forEach(StoreAdapter::close));
-        sharedContainersStoreAdapters.forEach(adapter -> store.update(storeAdapters -> {
-            HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
-            update.put(adapter.key, adapter.start());
-            return update;
-        }));
+        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN, HashMap::new);
+        List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters.stream()
+            .peek(adapter -> store.update(storeAdapters -> {
+                HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
+                update.put(adapter.key, adapter.start());
+                return update;
+            }))
+            .filter(this::isTestLifecycleAware)
+            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
+            .collect(toList());
+        net.jqwik.api.lifecycle.Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, () -> lifecycleAwareContainers);
+        signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
     }
 
     @Override
-    public int beforeContainerProximity() {
-        // must be run before the @BeforeContainer annotation
+    public void afterContainer(ContainerLifecycleContext context) {
+        net.jqwik.api.lifecycle.Store<List<TestLifecycleAware>> containers = net.jqwik.api.lifecycle.Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, ArrayList::new);
+        signalAfterTestToContainersFor(containers.get(), testDescriptionFrom(context));
+    }
+
+    private net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<HashMap<String, StoreAdapter>> initializer) {
+        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = net.jqwik.api.lifecycle.Store.getOrCreate(identifier, lifespan, initializer);
+        store.onClose(storeAdapters -> storeAdapters.values().forEach(StoreAdapter::close));
+        return store;
+    }
+
+    @Override
+    public int proximity() {
+        // must be run before the @BeforeContainer annotation and after @AfterContainer annotation
         return -11;
     }
 
@@ -108,8 +127,7 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
     @Override
     public PropertyExecutionResult aroundProperty(PropertyLifecycleContext context, PropertyExecutor property) {
         Object testInstance = context.testInstance();
-        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = net.jqwik.api.lifecycle.Store.getOrCreate(property.hashCode(), Lifespan.PROPERTY, HashMap::new);
-        store.onClose(adapters -> adapters.values().forEach(StoreAdapter::close));
+        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, HashMap::new);
         List<TestLifecycleAware> lifecycleAwareContainers = findRestartContainers(testInstance)
             .peek(adapter -> store.update(storeAdapters -> {
                 HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
@@ -155,6 +173,10 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
 
     private void signalBeforeTestToContainers(List<TestLifecycleAware> lifecycleAwareContainers, TestDescription testDescription) {
         lifecycleAwareContainers.forEach(container -> container.beforeTest(testDescription));
+    }
+
+    private void signalAfterTestToContainersFor(List<TestLifecycleAware> containers, TestDescription testDescription){
+        containers.forEach(container -> container.afterTest(testDescription, Optional.empty()));
     }
 
     private void signalAfterTestToContainersFor(List<TestLifecycleAware> containers, TestDescription testDescription, PropertyExecutionResult executionResult) {
