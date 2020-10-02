@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
-import static org.testcontainers.junit.jqwik.JUnitJqwikTestImages.POSTGRES_IMAGE;
+import static org.testcontainers.junit.jqwik.JqwikTestImages.POSTGRES_IMAGE;
 
 @Testcontainers
 class PostgresContainerTests {

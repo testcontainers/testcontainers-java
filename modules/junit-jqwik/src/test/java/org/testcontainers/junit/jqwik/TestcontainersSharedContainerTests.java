@@ -6,7 +6,7 @@ import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.testcontainers.junit.jqwik.JUnitJqwikTestImages.HTTPD_IMAGE;
+import static org.testcontainers.junit.jqwik.JqwikTestImages.HTTPD_IMAGE;
 
 @Testcontainers
 class TestcontainersSharedContainerTests {
