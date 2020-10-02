@@ -38,19 +38,10 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public void beforeContainer(ContainerLifecycleContext context) {
         Class<?> testClass = context.optionalContainerClass().orElseThrow(() -> new IllegalStateException("TestcontainersExtension is only supported for classes."));
-        List<Startable> sharedContainersStoreAdapters = findSharedContainers(testClass);
-
         Store<List<Startable>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN, ArrayList::new);
-        List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters.stream()
-            .peek(startable -> store.update(startables -> {
-                List<Startable> update = new ArrayList<>(startables);
-                startable.start();
-                update.add(startable);
-                return update;
-            }))
-            .filter(this::isTestLifecycleAware)
-            .map(startable -> (TestLifecycleAware) startable)
-            .collect(toList());
+
+        List<TestLifecycleAware> lifecycleAwareContainers = startContainersAndFindLifeCycleAwareOnes(store, findSharedContainers(testClass));
+
         Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, () -> lifecycleAwareContainers);
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
     }
@@ -77,16 +68,8 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     public PropertyExecutionResult aroundProperty(PropertyLifecycleContext context, PropertyExecutor property) {
         Object testInstance = context.testInstance();
         Store<List<Startable>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, ArrayList::new);
-        List<TestLifecycleAware> lifecycleAwareContainers = findRestartContainers(testInstance)
-            .peek(startable -> store.update(startables -> {
-                List<Startable> update = new ArrayList<>(startables);
-                startable.start();
-                update.add(startable);
-                return update;
-            }))
-            .filter(this::isTestLifecycleAware)
-            .map(startable -> (TestLifecycleAware) startable)
-            .collect(toList());
+
+        List<TestLifecycleAware> lifecycleAwareContainers = startContainersAndFindLifeCycleAwareOnes(store, findRestartContainers(testInstance));
 
         TestDescription testDescription = testDescriptionFrom(context);
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescription);
@@ -99,6 +82,19 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public int aroundPropertyProximity() {
         return -11; // Run before BeforeProperty and after AfterProperty
+    }
+
+    private List<TestLifecycleAware> startContainersAndFindLifeCycleAwareOnes(Store<List<Startable>> store, Stream<Startable> containers) {
+        return containers
+            .peek(startable -> store.update(startables -> {
+                List<Startable> update = new ArrayList<>(startables);
+                startable.start();
+                update.add(startable);
+                return update;
+            }))
+            .filter(this::isTestLifecycleAware)
+            .map(startable -> (TestLifecycleAware) startable)
+            .collect(toList());
     }
 
     private void signalBeforeTestToContainers(List<TestLifecycleAware> lifecycleAwareContainers, TestDescription testDescription) {
@@ -165,14 +161,13 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         }
     }
 
-    private List<Startable> findSharedContainers(Class<?> testClass) {
+    private Stream<Startable> findSharedContainers(Class<?> testClass) {
         return ReflectionUtils.findFields(
                 testClass,
                 isSharedContainer(),
                 ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
             .stream()
-            .map(f -> getContainerInstance(null, f))
-            .collect(toList());
+            .map(f -> getContainerInstance(null, f));
     }
 
     private Predicate<Field> isSharedContainer() {
