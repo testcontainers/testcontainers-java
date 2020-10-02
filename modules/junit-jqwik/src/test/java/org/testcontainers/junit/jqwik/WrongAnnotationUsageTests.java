@@ -1,9 +1,8 @@
 package org.testcontainers.junit.jqwik;
 
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
+import net.jqwik.api.Disabled;
+import net.jqwik.api.Example;
 
 @Disabled
 @Testcontainers
@@ -12,7 +11,7 @@ class WrongAnnotationUsageTests {
     @TestContainer
     private String notStartable = "foobar";
 
-    @Test
+    @Example
     void extension_throws_exception() {
         assert true;
     }
