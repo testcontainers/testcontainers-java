@@ -6,8 +6,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-// testClass {
 @Testcontainers
 class MixedLifecycleTests {
 
@@ -28,4 +26,3 @@ class MixedLifecycleTests {
         assertTrue(postgresqlContainer.isRunning());
     }
 }
-// }
