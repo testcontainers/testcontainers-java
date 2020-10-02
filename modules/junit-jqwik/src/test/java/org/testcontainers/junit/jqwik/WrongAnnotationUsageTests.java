@@ -1,6 +1,5 @@
 package org.testcontainers.junit.jqwik;
 
-
 import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 
