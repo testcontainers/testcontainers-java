@@ -1,9 +1,9 @@
 package org.testcontainers.junit.jqwik;
 
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import net.jqwik.api.Group;
 import net.jqwik.api.lifecycle.BeforeProperty;
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
