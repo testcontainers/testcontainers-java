@@ -52,12 +52,6 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         signalAfterTestToContainersFor(containers.get(), testDescriptionFrom(context));
     }
 
-    private Store<List<Startable>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<List<Startable>> initializer) {
-        Store<List<Startable>> store = Store.getOrCreate(identifier, lifespan, initializer);
-        store.onClose(startables -> startables.forEach(Startable::close));
-        return store;
-    }
-
     @Override
     public int proximity() {
         // must be run before the @BeforeContainer annotation and after @AfterContainer annotation
@@ -82,6 +76,12 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public int aroundPropertyProximity() {
         return -11; // Run before BeforeProperty and after AfterProperty
+    }
+
+    private Store<List<Startable>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<List<Startable>> initializer) {
+        Store<List<Startable>> store = Store.getOrCreate(identifier, lifespan, initializer);
+        store.onClose(startables -> startables.forEach(Startable::close));
+        return store;
     }
 
     private List<TestLifecycleAware> startContainersAndFindLifeCycleAwareOnes(Store<List<Startable>> store, Stream<Startable> containers) {
