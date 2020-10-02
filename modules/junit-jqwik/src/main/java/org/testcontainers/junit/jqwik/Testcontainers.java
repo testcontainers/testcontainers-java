@@ -58,7 +58,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith(TestcontainersExtension.class)
 @AddLifecycleHook(value = TestcontainersExtension.class, propagateTo = PropagationMode.ALL_DESCENDANTS)
 @Inherited
 public @interface Testcontainers {

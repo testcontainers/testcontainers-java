@@ -11,20 +11,7 @@ import net.jqwik.api.lifecycle.PropertyExecutionResult;
 import net.jqwik.api.lifecycle.PropertyExecutor;
 import net.jqwik.api.lifecycle.PropertyLifecycleContext;
 import net.jqwik.api.lifecycle.SkipExecutionHook;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ConditionEvaluationResult;
-import org.junit.jupiter.api.extension.ExecutionCondition;
-import org.junit.jupiter.api.extension.ExtensionConfigurationException;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
-import org.junit.jupiter.api.extension.ExtensionContext.Store;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
-import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
-import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.opentest4j.TestAbortedException;
@@ -36,31 +23,18 @@ import org.testcontainers.lifecycle.TestLifecycleAware;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook, BeforeAllCallback, AroundContainerHook, AfterEachCallback, AfterAllCallback, ExecutionCondition, SkipExecutionHook, TestInstancePostProcessor {
+class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook, SkipExecutionHook {
 
-    private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
     private static final Object IDENTIFIER = TestcontainersExtension.class;
     private static final Object SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS = new Object();
-
-    private static final String TEST_INSTANCE = "testInstance";
-    private static final String SHARED_LIFECYCLE_AWARE_CONTAINERS = "sharedLifecycleAwareContainers";
-    private static final String LOCAL_LIFECYCLE_AWARE_CONTAINERS = "localLifecycleAwareContainers";
-
-    @Override
-    public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
-        Store store = context.getStore(NAMESPACE);
-        store.put(TEST_INSTANCE, testInstance);
-    }
 
     @Override
     public void beforeContainer(ContainerLifecycleContext context) {
@@ -100,31 +74,6 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
     }
 
     @Override
-    public void beforeAll(ExtensionContext context) {
-        Class<?> testClass = context.getTestClass()
-            .orElseThrow(() -> new ExtensionConfigurationException("TestcontainersExtension is only supported for classes."));
-
-        Store store = context.getStore(NAMESPACE);
-        List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
-
-        sharedContainersStoreAdapters.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
-
-        List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters
-            .stream()
-            .filter(this::isTestLifecycleAware)
-            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
-            .collect(toList());
-
-        store.put(SHARED_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
-        signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
-    }
-
-    @Override
-    public void afterAll(ExtensionContext context) {
-        signalAfterTestToContainersFor(SHARED_LIFECYCLE_AWARE_CONTAINERS, context);
-    }
-
-    @Override
     public PropertyExecutionResult aroundProperty(PropertyLifecycleContext context, PropertyExecutor property) {
         Object testInstance = context.testInstance();
         net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, HashMap::new);
@@ -151,26 +100,6 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         return -11; // Run before BeforeProperty and after AfterProperty
     }
 
-    @Override
-    public void beforeEach(final ExtensionContext context) {
-        Store store = context.getStore(NAMESPACE);
-
-        List<TestLifecycleAware> lifecycleAwareContainers = collectParentTestInstances(context).parallelStream()
-            .flatMap(this::findRestartContainers)
-            .peek(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()))
-            .filter(this::isTestLifecycleAware)
-            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
-            .collect(toList());
-
-        store.put(LOCAL_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
-        signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
-    }
-
-    @Override
-    public void afterEach(ExtensionContext context) {
-        signalAfterTestToContainersFor(LOCAL_LIFECYCLE_AWARE_CONTAINERS, context);
-    }
-
     private void signalBeforeTestToContainers(List<TestLifecycleAware> lifecycleAwareContainers, TestDescription testDescription) {
         lifecycleAwareContainers.forEach(container -> container.beforeTest(testDescription));
     }
@@ -189,23 +118,6 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         });
     }
 
-    private void signalAfterTestToContainersFor(String storeKey, ExtensionContext context) {
-        List<TestLifecycleAware> lifecycleAwareContainers =
-            (List<TestLifecycleAware>) context.getStore(NAMESPACE).get(storeKey);
-        if (lifecycleAwareContainers != null) {
-            TestDescription description = testDescriptionFrom(context);
-            Optional<Throwable> throwable = context.getExecutionException();
-            lifecycleAwareContainers.forEach(container -> container.afterTest(description, throwable));
-        }
-    }
-
-    private TestDescription testDescriptionFrom(ExtensionContext context) {
-        return new TestcontainersTestDescription(
-            context.getUniqueId(),
-            FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf(context)
-        );
-    }
-
     private TestDescription testDescriptionFrom(LifecycleContext context) {
         return new TestcontainersTestDescription(
             context.label(),
@@ -217,12 +129,11 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         return adapter.container instanceof TestLifecycleAware;
     }
 
-
     @Override
     public SkipResult shouldBeSkipped(LifecycleContext context) {
         return findTestcontainers(context)
             .map(this::evaluateSkipResult)
-            .orElseThrow(() -> new ExtensionConfigurationException("@Testcontainers not found"));
+            .orElseThrow(() -> new JqwikException("@Testcontainers not found"));
     }
 
     private Optional<Testcontainers> findTestcontainers(LifecycleContext context) {
@@ -244,34 +155,6 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         return SkipResult.doNotSkip();
     }
 
-    @Override
-    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-        return findTestcontainers(context).map(this::evaluate)
-            .orElseThrow(() -> new ExtensionConfigurationException("@Testcontainers not found"));
-    }
-
-    private Optional<Testcontainers> findTestcontainers(ExtensionContext context) {
-        Optional<ExtensionContext> current = Optional.of(context);
-        while (current.isPresent()) {
-            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(current.get().getRequiredTestClass(), Testcontainers.class);
-            if (testcontainers.isPresent()) {
-                return testcontainers;
-            }
-            current = current.get().getParent();
-        }
-        return Optional.empty();
-    }
-
-    private ConditionEvaluationResult evaluate(Testcontainers testcontainers) {
-        if (testcontainers.disabledWithoutDocker()) {
-            if (isDockerAvailable()) {
-                return ConditionEvaluationResult.enabled("Docker is available");
-            }
-            return ConditionEvaluationResult.disabled("disabledWithoutDocker is true and Docker is not available");
-        }
-        return ConditionEvaluationResult.enabled("disabledWithoutDocker is false");
-    }
-
     boolean isDockerAvailable() {
         try {
             DockerClientFactory.instance().client();
@@ -279,20 +162,6 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
         } catch (Throwable ex) {
             return false;
         }
-    }
-
-    private Set<Object> collectParentTestInstances(final ExtensionContext context) {
-        Set<Object> testInstances = new LinkedHashSet<>();
-        Optional<ExtensionContext> current = Optional.of(context);
-        while (current.isPresent()) {
-            ExtensionContext ctx = current.get();
-            Object testInstance = ctx.getStore(NAMESPACE).remove(TEST_INSTANCE);
-            if (testInstance != null) {
-                testInstances.add(testInstance);
-            }
-            current = ctx.getParent();
-        }
-        return testInstances;
     }
 
     private List<StoreAdapter> findSharedContainers(Class<?> testClass) {
@@ -343,16 +212,16 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
             Startable containerInstance = Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
             return new StoreAdapter(field.getDeclaringClass(), field.getName(), containerInstance);
         } catch (IllegalAccessException e) {
-            throw new ExtensionConfigurationException("Can not access container defined in field " + field.getName());
+            throw new JqwikException("Can not access container defined in field " + field.getName());
         }
     }
 
     /**
-     * An adapter for {@link Startable} that implement {@link CloseableResource}
+     * An adapter for {@link Startable} that implement CloseableResource
      * thereby letting the JUnit automatically stop containers once the current
-     * {@link ExtensionContext} is closed.
+     * ExtensionContext is closed.
      */
-    private static class StoreAdapter implements CloseableResource {
+    private static class StoreAdapter {
 
         @Getter
         private String key;
@@ -369,7 +238,6 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
             return this;
         }
 
-        @Override
         public void close() {
             container.stop();
         }
