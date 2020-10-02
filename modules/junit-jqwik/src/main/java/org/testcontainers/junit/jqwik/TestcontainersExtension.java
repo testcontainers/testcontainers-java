@@ -57,7 +57,7 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
 
     @Override
     public void afterContainer(ContainerLifecycleContext context) {
-        net.jqwik.api.lifecycle.Store<List<TestLifecycleAware>> containers = Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, ArrayList::new);
+        Store<List<TestLifecycleAware>> containers = Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, ArrayList::new);
         signalAfterTestToContainersFor(containers.get(), testDescriptionFrom(context));
     }
 
