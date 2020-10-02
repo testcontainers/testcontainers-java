@@ -11,7 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@code @Testcontainers} is a JUnit Jqwik extension to activate automatic
+ * {@code @Testcontainers} is a Jqwik extension to activate automatic
  * startup and stop of containers used in a test case.
  *
  * <p>The test containers extension finds all fields that are annotated with
@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  *             .withUsername("foo")
  *             .withPassword("secret");
  *
- *     &#64;Test
+ *     &#64;Example
  *     void test() {
  *         assertTrue(MY_SQL_CONTAINER.isRunning());
  *         assertTrue(postgresqlContainer.isRunning());

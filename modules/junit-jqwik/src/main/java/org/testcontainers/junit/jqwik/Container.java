@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@code @TestContainer} annotation is used in conjunction with the {@link Testcontainers} annotation
+ * The {@code @Container} annotation is used in conjunction with the {@link Testcontainers} annotation
  * to mark test containers that should be managed by the Testcontainers extension.
  *
  * @see Testcontainers
