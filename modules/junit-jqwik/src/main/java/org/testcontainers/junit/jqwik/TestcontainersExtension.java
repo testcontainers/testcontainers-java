@@ -1,6 +1,5 @@
 package org.testcontainers.junit.jqwik;
 
-import lombok.Getter;
 import net.jqwik.api.JqwikException;
 import net.jqwik.api.lifecycle.AroundContainerHook;
 import net.jqwik.api.lifecycle.AroundPropertyHook;
@@ -23,7 +22,6 @@ import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -40,17 +38,18 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public void beforeContainer(ContainerLifecycleContext context) {
         Class<?> testClass = context.optionalContainerClass().orElseThrow(() -> new IllegalStateException("TestcontainersExtension is only supported for classes."));
-        List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
+        List<Startable> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
-        Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN, HashMap::new);
+        Store<List<Startable>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN, ArrayList::new);
         List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters.stream()
-            .peek(adapter -> store.update(storeAdapters -> {
-                HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
-                update.put(adapter.key, adapter.start());
+            .peek(startable -> store.update(startables -> {
+                List<Startable> update = new ArrayList<>(startables);
+                startable.start();
+                update.add(startable);
                 return update;
             }))
             .filter(this::isTestLifecycleAware)
-            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
+            .map(startable -> (TestLifecycleAware) startable)
             .collect(toList());
         Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, () -> lifecycleAwareContainers);
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
@@ -62,9 +61,9 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         signalAfterTestToContainersFor(containers.get(), testDescriptionFrom(context));
     }
 
-    private Store<HashMap<String, StoreAdapter>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<HashMap<String, StoreAdapter>> initializer) {
-        Store<HashMap<String, StoreAdapter>> store = Store.getOrCreate(identifier, lifespan, initializer);
-        store.onClose(storeAdapters -> storeAdapters.values().forEach(StoreAdapter::close));
+    private Store<List<Startable>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<List<Startable>> initializer) {
+        Store<List<Startable>> store = Store.getOrCreate(identifier, lifespan, initializer);
+        store.onClose(startables -> startables.forEach(Startable::close));
         return store;
     }
 
@@ -77,15 +76,16 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public PropertyExecutionResult aroundProperty(PropertyLifecycleContext context, PropertyExecutor property) {
         Object testInstance = context.testInstance();
-        Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, HashMap::new);
+        Store<List<Startable>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, ArrayList::new);
         List<TestLifecycleAware> lifecycleAwareContainers = findRestartContainers(testInstance)
-            .peek(adapter -> store.update(storeAdapters -> {
-                HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
-                update.put(adapter.key, adapter.start());
+            .peek(startable -> store.update(startables -> {
+                List<Startable> update = new ArrayList<>(startables);
+                startable.start();
+                update.add(startable);
                 return update;
             }))
             .filter(this::isTestLifecycleAware)
-            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
+            .map(startable -> (TestLifecycleAware) startable)
             .collect(toList());
 
         TestDescription testDescription = testDescriptionFrom(context);
@@ -126,8 +126,8 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         );
     }
 
-    private boolean isTestLifecycleAware(StoreAdapter adapter) {
-        return adapter.container instanceof TestLifecycleAware;
+    private boolean isTestLifecycleAware(Startable startable) {
+        return startable instanceof TestLifecycleAware;
     }
 
     @Override
@@ -165,7 +165,7 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         }
     }
 
-    private List<StoreAdapter> findSharedContainers(Class<?> testClass) {
+    private List<Startable> findSharedContainers(Class<?> testClass) {
         return ReflectionUtils.findFields(
                 testClass,
                 isSharedContainer(),
@@ -179,7 +179,7 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         return isContainer().and(ReflectionUtils::isStatic);
     }
 
-    private Stream<StoreAdapter> findRestartContainers(Object testInstance) {
+    private Stream<Startable> findRestartContainers(Object testInstance) {
         return ReflectionUtils.findFields(
                 testInstance.getClass(),
                 isRestartContainer(),
@@ -207,40 +207,12 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         };
     }
 
-    private static StoreAdapter getContainerInstance(final Object testInstance, final Field field) {
+    private static Startable getContainerInstance(final Object testInstance, final Field field) {
         try {
             field.setAccessible(true);
-            Startable containerInstance = Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
-            return new StoreAdapter(field.getDeclaringClass(), field.getName(), containerInstance);
+            return Preconditions.notNull((Startable) field.get(testInstance), "Container " + field.getName() + " needs to be initialized");
         } catch (IllegalAccessException e) {
             throw new JqwikException("Can not access container defined in field " + field.getName());
-        }
-    }
-
-    /**
-     * An adapter for {@link Startable} that implement CloseableResource
-     * thereby letting the JUnit automatically stop containers once the current
-     * ExtensionContext is closed.
-     */
-    private static class StoreAdapter {
-
-        @Getter
-        private String key;
-
-        private Startable container;
-
-        private StoreAdapter(Class<?> declaringClass, String fieldName, Startable container) {
-            this.key = declaringClass.getName() + "." + fieldName;
-            this.container = container;
-        }
-
-        private StoreAdapter start() {
-            container.start();
-            return this;
-        }
-
-        public void close() {
-            container.stop();
         }
     }
 }
