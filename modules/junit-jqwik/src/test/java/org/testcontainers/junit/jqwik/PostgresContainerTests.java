@@ -20,7 +20,7 @@ class PostgresContainerTests {
             .withUsername("foo")
             .withPassword("secret");
 
-    @Property
+    @Property(tries = 10)
     void waits_until_postgres_accepts_jdbc_connections() throws Exception {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(POSTGRE_SQL_CONTAINER.getJdbcUrl());

@@ -31,7 +31,7 @@ class ComposeContainerTests {
         port = composeContainer.getServicePort("whoami_1", 80);
     }
 
-    @Property
+    @Property(tries = 10)
     void running_compose_defined_container_is_accessible_on_configured_port() throws Exception {
         HttpClient client = HttpClientBuilder.create().build();
 
