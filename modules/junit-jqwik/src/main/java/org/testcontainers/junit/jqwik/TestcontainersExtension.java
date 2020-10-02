@@ -11,6 +11,7 @@ import net.jqwik.api.lifecycle.PropertyExecutionResult;
 import net.jqwik.api.lifecycle.PropertyExecutor;
 import net.jqwik.api.lifecycle.PropertyLifecycleContext;
 import net.jqwik.api.lifecycle.SkipExecutionHook;
+import net.jqwik.api.lifecycle.Store;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
@@ -41,7 +42,7 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         Class<?> testClass = context.optionalContainerClass().orElseThrow(() -> new IllegalStateException("TestcontainersExtension is only supported for classes."));
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
-        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN, HashMap::new);
+        Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN, HashMap::new);
         List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters.stream()
             .peek(adapter -> store.update(storeAdapters -> {
                 HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
@@ -51,18 +52,18 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
             .filter(this::isTestLifecycleAware)
             .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
             .collect(toList());
-        net.jqwik.api.lifecycle.Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, () -> lifecycleAwareContainers);
+        Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, () -> lifecycleAwareContainers);
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
     }
 
     @Override
     public void afterContainer(ContainerLifecycleContext context) {
-        net.jqwik.api.lifecycle.Store<List<TestLifecycleAware>> containers = net.jqwik.api.lifecycle.Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, ArrayList::new);
+        net.jqwik.api.lifecycle.Store<List<TestLifecycleAware>> containers = Store.getOrCreate(SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS, Lifespan.RUN, ArrayList::new);
         signalAfterTestToContainersFor(containers.get(), testDescriptionFrom(context));
     }
 
-    private net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<HashMap<String, StoreAdapter>> initializer) {
-        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = net.jqwik.api.lifecycle.Store.getOrCreate(identifier, lifespan, initializer);
+    private Store<HashMap<String, StoreAdapter>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<HashMap<String, StoreAdapter>> initializer) {
+        Store<HashMap<String, StoreAdapter>> store = Store.getOrCreate(identifier, lifespan, initializer);
         store.onClose(storeAdapters -> storeAdapters.values().forEach(StoreAdapter::close));
         return store;
     }
@@ -76,7 +77,7 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public PropertyExecutionResult aroundProperty(PropertyLifecycleContext context, PropertyExecutor property) {
         Object testInstance = context.testInstance();
-        net.jqwik.api.lifecycle.Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, HashMap::new);
+        Store<HashMap<String, StoreAdapter>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, HashMap::new);
         List<TestLifecycleAware> lifecycleAwareContainers = findRestartContainers(testInstance)
             .peek(adapter -> store.update(storeAdapters -> {
                 HashMap<String, StoreAdapter> update = new HashMap<>(storeAdapters);
