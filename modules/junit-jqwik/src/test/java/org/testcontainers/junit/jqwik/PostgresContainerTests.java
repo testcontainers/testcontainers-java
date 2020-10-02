@@ -14,7 +14,7 @@ import static org.testcontainers.junit.jqwik.JUnitJqwikTestImages.POSTGRES_IMAGE
 @Testcontainers
 class PostgresContainerTests {
 
-    @TestContainer
+    @Container
     private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(POSTGRES_IMAGE)
             .withDatabaseName("foo")
             .withUsername("foo")

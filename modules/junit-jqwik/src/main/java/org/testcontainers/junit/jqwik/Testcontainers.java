@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * startup and stop of containers used in a test case.
  *
  * <p>The test containers extension finds all fields that are annotated with
- * {@link TestContainer} and calls their container lifecycle methods. Containers
+ * {@link Container} and calls their container lifecycle methods. Containers
  * declared as static fields will be shared between properties. They will be
  * started only once before any property is tested and stopped after the
  * last try has executed. Containers declared as instance fields will
@@ -54,7 +54,7 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * @see TestContainer
+ * @see Container
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

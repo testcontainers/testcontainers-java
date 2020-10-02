@@ -1,15 +1,15 @@
 package org.testcontainers.junit.jqwik.inheritance;
 
-import org.testcontainers.junit.jqwik.TestContainer;
+import org.testcontainers.junit.jqwik.Container;
 import org.testcontainers.junit.jqwik.Testcontainers;
 
 @Testcontainers
 abstract class AbstractTestBase {
 
-    @TestContainer
+    @Container
     static RedisContainer redisPerClass = new RedisContainer();
 
-    @TestContainer
+    @Container
     RedisContainer redisPerTest = new RedisContainer();
 
 }

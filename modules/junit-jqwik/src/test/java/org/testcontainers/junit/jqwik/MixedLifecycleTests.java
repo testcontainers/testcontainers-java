@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MixedLifecycleTests {
 
     // will be shared between properties
-    @TestContainer
+    @Container
     private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
 
     // will be started before and stopped after each property
-    @TestContainer
+    @Container
     private PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer()
         .withDatabaseName("foo")
         .withUsername("foo")

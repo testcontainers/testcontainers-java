@@ -3,7 +3,6 @@ package org.testcontainers.junit.jqwik;
 import net.jqwik.api.Property;
 import net.jqwik.api.lifecycle.AfterProperty;
 import net.jqwik.api.lifecycle.BeforeProperty;
-import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +11,7 @@ import static org.testcontainers.junit.jqwik.JUnitJqwikTestImages.HTTPD_IMAGE;
 @Testcontainers
 class TestcontainersRestartBetweenTests {
 
-    @TestContainer
+    @Container
     private GenericContainer<?> genericContainer = new GenericContainer<>(HTTPD_IMAGE)
             .withExposedPorts(80);
 

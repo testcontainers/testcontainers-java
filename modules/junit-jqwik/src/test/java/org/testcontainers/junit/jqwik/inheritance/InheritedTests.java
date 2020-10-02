@@ -1,13 +1,13 @@
 package org.testcontainers.junit.jqwik.inheritance;
 
 import net.jqwik.api.Example;
-import org.testcontainers.junit.jqwik.TestContainer;
+import org.testcontainers.junit.jqwik.Container;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InheritedTests extends AbstractTestBase {
 
-    @TestContainer
+    @Container
     private RedisContainer myRedis = new RedisContainer();
 
     @Example

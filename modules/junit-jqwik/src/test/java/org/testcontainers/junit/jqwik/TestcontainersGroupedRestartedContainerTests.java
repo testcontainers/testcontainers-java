@@ -17,7 +17,7 @@ import static org.testcontainers.junit.jqwik.JUnitJqwikTestImages.HTTPD_IMAGE;
 @Testcontainers
 class TestcontainersGroupedRestartedContainerTests {
 
-    @TestContainer
+    @Container
     private final GenericContainer<?> topLevelContainer = new GenericContainer<>(HTTPD_IMAGE)
         .withExposedPorts(80);
 
@@ -38,7 +38,7 @@ class TestcontainersGroupedRestartedContainerTests {
     @Group
     class NestedTestCase {
 
-        @TestContainer
+        @Container
         private final GenericContainer<?> groupedContainer = new GenericContainer<>(HTTPD_IMAGE)
             .withExposedPorts(80);
 

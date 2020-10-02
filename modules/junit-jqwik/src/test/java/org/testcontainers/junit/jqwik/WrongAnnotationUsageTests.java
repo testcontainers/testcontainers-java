@@ -8,7 +8,7 @@ import net.jqwik.api.Example;
 @Testcontainers
 class WrongAnnotationUsageTests {
 
-    @TestContainer
+    @Container
     private String notStartable = "foobar";
 
     @Example

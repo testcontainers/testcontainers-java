@@ -324,7 +324,7 @@ class TestcontainersExtension implements BeforeEachCallback, AroundPropertyHook,
 
     private static Predicate<Field> isContainer() {
         return field -> {
-            boolean isAnnotatedWithContainer = AnnotationSupport.isAnnotated(field, TestContainer.class);
+            boolean isAnnotatedWithContainer = AnnotationSupport.isAnnotated(field, Container.class);
             if (isAnnotatedWithContainer) {
                 boolean isStartable = Startable.class.isAssignableFrom(field.getType());
 

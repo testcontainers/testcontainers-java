@@ -11,7 +11,7 @@ import static org.testcontainers.junit.jqwik.JUnitJqwikTestImages.HTTPD_IMAGE;
 @Testcontainers
 class TestcontainersSharedContainerTests {
 
-    @TestContainer
+    @Container
     private static final GenericContainer<?> GENERIC_CONTAINER = new GenericContainer<>(HTTPD_IMAGE)
         .withExposedPorts(80);
 

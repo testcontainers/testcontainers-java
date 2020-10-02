@@ -11,7 +11,7 @@ import static org.testcontainers.junit.jqwik.JUnitJqwikTestImages.HTTPD_IMAGE;
 @Testcontainers
 public class TestcontainersContainersRestartedWithinAGroupTest {
 
-    @TestContainer
+    @Container
     private final GenericContainer<?> topLevelContainer = new GenericContainer<>(HTTPD_IMAGE)
         .withExposedPorts(80);
 
@@ -23,7 +23,7 @@ public class TestcontainersContainersRestartedWithinAGroupTest {
     @Group
     public class Group1 {
 
-        @TestContainer
+        @Container
         private final GenericContainer<?> groupedContainer = new GenericContainer<>(HTTPD_IMAGE)
             .withExposedPorts(80);
 
@@ -53,7 +53,7 @@ public class TestcontainersContainersRestartedWithinAGroupTest {
     @Group
     public class Group2 {
 
-        @TestContainer
+        @Container
         private final GenericContainer<?> groupedContainer = new GenericContainer<>(HTTPD_IMAGE)
             .withExposedPorts(80);
 

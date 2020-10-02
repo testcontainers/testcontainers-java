@@ -6,14 +6,6 @@ import net.jqwik.api.lifecycle.AfterContainerHook;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import net.jqwik.api.lifecycle.BeforeProperty;
 import net.jqwik.api.lifecycle.ContainerLifecycleContext;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.ExtensionContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jqwik.TestLifecycleAwareContainerMock.AFTER_TEST;
@@ -22,10 +14,10 @@ import static org.testcontainers.junit.jqwik.TestLifecycleAwareContainerMock.BEF
 @AddLifecycleHook(TestLifecycleAwareMethodTest.SharedContainerAfterAllTestExtension.class)
 @Testcontainers
 class TestLifecycleAwareMethodTest {
-    @TestContainer
+    @Container
     private final TestLifecycleAwareContainerMock testContainer = new TestLifecycleAwareContainerMock();
 
-    @TestContainer
+    @Container
     private static final TestLifecycleAwareContainerMock SHARED_CONTAINER = new TestLifecycleAwareContainerMock();
 
     private static TestLifecycleAwareContainerMock startedTestContainer;
