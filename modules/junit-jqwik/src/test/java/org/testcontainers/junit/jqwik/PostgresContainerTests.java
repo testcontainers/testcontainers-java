@@ -8,7 +8,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jqwik.JqwikTestImages.POSTGRES_IMAGE;
 
 @Testcontainers
@@ -34,7 +34,7 @@ class PostgresContainerTests {
             resultSet.next();
 
             int resultSetInt = resultSet.getInt(1);
-            assertEquals(1, resultSetInt);
+            assertThat(resultSetInt).isEqualTo(1);
         }
     }
 

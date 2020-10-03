@@ -7,8 +7,7 @@ import net.jqwik.api.lifecycle.SkipExecutionHook.SkipResult;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,28 +18,28 @@ public class TestcontainersExtensionTests {
     void whenDisabledWithoutDockerAndDockerIsAvailableTestsAreEnabled() {
         SkipResult result = new TestTestcontainersExtension(true)
             .shouldBeSkipped(context(createTestcontainersAnnotation(true)));
-        assertFalse(result.isSkipped());
+        assertThat(result.isSkipped()).isFalse();
     }
 
     @Example
     void whenDisabledWithoutDockerAndDockerIsUnavailableTestsAreDisabled() {
         SkipResult result = new TestTestcontainersExtension(false)
             .shouldBeSkipped(context(createTestcontainersAnnotation(true)));
-        assertTrue(result.isSkipped());
+        assertThat(result.isSkipped()).isTrue();
     }
 
     @Example
     void whenEnabledWithoutDockerAndDockerIsAvailableTestsAreEnabled() {
         SkipResult result = new TestTestcontainersExtension(true)
             .shouldBeSkipped(context(createTestcontainersAnnotation(false)));
-        assertFalse(result.isSkipped());
+        assertThat(result.isSkipped()).isFalse();
     }
 
     @Example
     void whenEnabledWithoutDockerAndDockerIsUnavailableTestsAreEnabled() {
         SkipResult result = new TestTestcontainersExtension(false)
             .shouldBeSkipped(context(createTestcontainersAnnotation(false)));
-        assertFalse(result.isSkipped());
+        assertThat(result.isSkipped()).isFalse();
     }
 
     private LifecycleContext context(Testcontainers clazz) {

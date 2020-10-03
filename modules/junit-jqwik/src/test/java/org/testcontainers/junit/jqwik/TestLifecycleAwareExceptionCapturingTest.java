@@ -5,7 +5,7 @@ import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import org.opentest4j.AssertionFailedError;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Disabled("Assuming within an example based test, causes Jqwik to throw an assertion error, because the example was not" +
     "tested exhaustively. However, the exception is captured and passed to the TestLifeCycleAwareContainerMock.")
@@ -24,7 +24,7 @@ class TestLifecycleAwareExceptionCapturingTest {
         }
 
         Throwable capturedThrowable = startedTestContainer.getCapturedThrowable();
-        assertTrue(capturedThrowable instanceof AssertionFailedError);
+        assertThat(capturedThrowable).isInstanceOf(AssertionFailedError.class);
     }
 
     @Example
@@ -35,6 +35,6 @@ class TestLifecycleAwareExceptionCapturingTest {
         }
 
         Throwable capturedThrowable = startedTestContainer.getCapturedThrowable();
-        assertTrue(capturedThrowable instanceof AssertionFailedError);
+        assertThat(capturedThrowable).isInstanceOf(AssertionFailedError.class);
     }
 }

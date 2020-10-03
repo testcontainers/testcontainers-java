@@ -7,7 +7,7 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.api.Tuple;
 import net.jqwik.api.Tuple.Tuple2;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import net.jqwik.api.lifecycle.LifecycleContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -20,9 +20,8 @@ class FilesystemFriendlyNameGeneratorTest {
     void should_generate_filesystem_friendly_name(@ForAll("displayNamesAndFilesystemFriendlyNames") Tuple2<String, String> displayNameToExpectedName) {
         String displayName = displayNameToExpectedName.get1();
         String expectedName = displayNameToExpectedName.get2();
-        ExtensionContext context = mock(ExtensionContext.class);
-        doReturn(displayName)
-            .when(context).getUniqueId();
+        LifecycleContext context = mock(LifecycleContext.class);
+        doReturn(displayName).when(context).label();
 
         String filesystemFriendlyName = filesystemFriendlyNameOf(context);
 

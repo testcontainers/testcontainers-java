@@ -5,8 +5,7 @@ import net.jqwik.api.Group;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jqwik.JqwikTestImages.HTTPD_IMAGE;
 
 @Testcontainers
@@ -25,7 +24,7 @@ class TestcontainersGroupedSharedContainerTests {
 
     @Example
     void top_level_container_should_be_running() {
-        assertTrue(TOP_LEVEL_CONTAINER.isRunning());
+        assertThat(TOP_LEVEL_CONTAINER.isRunning()).isTrue();
     }
 
     @Group
@@ -33,12 +32,12 @@ class TestcontainersGroupedSharedContainerTests {
 
         @Example
         void top_level_containers_should_be_running() {
-            assertTrue(TOP_LEVEL_CONTAINER.isRunning());
+            assertThat(TOP_LEVEL_CONTAINER.isRunning()).isTrue();
         }
 
         @Example
         void ids_should_not_change() {
-            assertEquals(topLevelContainerId, TOP_LEVEL_CONTAINER.getContainerId());
+            assertThat(topLevelContainerId).isEqualTo(TOP_LEVEL_CONTAINER.getContainerId());
         }
     }
 }

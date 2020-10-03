@@ -4,7 +4,7 @@ import net.jqwik.api.Property;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class MixedLifecycleTests {
@@ -22,7 +22,7 @@ class MixedLifecycleTests {
 
     @Property
     void test() {
-        assertTrue(MY_SQL_CONTAINER.isRunning());
-        assertTrue(postgresqlContainer.isRunning());
+        assertThat(MY_SQL_CONTAINER.isRunning()).isTrue();
+        assertThat(postgresqlContainer.isRunning()).isTrue();
     }
 }

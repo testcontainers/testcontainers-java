@@ -6,8 +6,7 @@ import net.jqwik.api.Group;
 import net.jqwik.api.lifecycle.BeforeProperty;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jqwik.JqwikTestImages.HTTPD_IMAGE;
 
 @Disabled("A PropertyLifecyclyeContext does not provide the means to access the parent instance." +
@@ -32,7 +31,7 @@ class TestcontainersGroupedRestartedContainerTests {
 
     @Example
     void top_level_container_should_be_running() {
-        assertTrue(topLevelContainer.isRunning());
+        assertThat(topLevelContainer.isRunning()).isTrue();
     }
 
     @Group
@@ -45,35 +44,35 @@ class TestcontainersGroupedRestartedContainerTests {
         @Example
         void both_containers_should_be_running() {
             // top level container is restarted for nested methods
-            assertTrue(topLevelContainer.isRunning());
+            assertThat(topLevelContainer.isRunning()).isTrue();
             // nested containers are only available inside their nested class
-            assertTrue(groupedContainer.isRunning());
+            assertThat(groupedContainer.isRunning()).isTrue();
             if (groupedContainerId == null) {
                 groupedContainerId = groupedContainer.getContainerId();
             } else {
-                assertNotEquals(groupedContainerId, groupedContainer.getContainerId());
+                assertThat(groupedContainerId).isNotEqualTo(groupedContainer.getContainerId());
             }
         }
 
         @Example
         void containers_should_not_be_the_same() {
-            assertNotEquals(topLevelContainer.getContainerId(), groupedContainer.getContainerId());
+            assertThat(topLevelContainer.getContainerId()).isNotEqualTo(groupedContainer.getContainerId());
 
             if (groupedContainerId == null) {
                 groupedContainerId = groupedContainer.getContainerId();
             } else {
-                assertNotEquals(groupedContainerId, groupedContainer.getContainerId());
+                assertThat(groupedContainerId).isNotEqualTo(groupedContainer.getContainerId());
             }
         }
 
         @Example
         void ids_should_not_change() {
-            assertNotEquals(topLevelContainerId, topLevelContainer.getContainerId());
+            assertThat(topLevelContainerId).isNotEqualTo(topLevelContainer.getContainerId());
 
             if (groupedContainerId == null) {
                 groupedContainerId = groupedContainer.getContainerId();
             } else {
-                assertNotEquals(groupedContainerId, groupedContainer.getContainerId());
+                assertThat(groupedContainerId).isNotEqualTo(groupedContainer.getContainerId());
             }
         }
     }

@@ -4,8 +4,7 @@ import net.jqwik.api.Example;
 import net.jqwik.api.Group;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jqwik.JqwikTestImages.HTTPD_IMAGE;
 
 @Testcontainers
@@ -17,7 +16,7 @@ public class TestcontainersContainersRestartedWithinAGroupTest {
 
     @Example
     public void top_level_example(){
-        assertTrue(topLevelContainer.isRunning());
+        assertThat(topLevelContainer.isRunning()).isTrue();
     }
 
     @Group
@@ -31,21 +30,21 @@ public class TestcontainersContainersRestartedWithinAGroupTest {
 
         @Example
         public void example_with_grouped_container(){
-            assertTrue(groupedContainer.isRunning());
+            assertThat(groupedContainer.isRunning()).isTrue();
             if (lastGroupedContainerId == null) {
                 lastGroupedContainerId = groupedContainer.getContainerId();
             } else {
-                assertNotEquals(lastGroupedContainerId, groupedContainer.getContainerId());
+                assertThat(lastGroupedContainerId).isNotEqualTo(groupedContainer.getContainerId());
             }
         }
 
         @Example
         public void other_example_with_grouped_container(){
-            assertTrue(groupedContainer.isRunning());
+            assertThat(groupedContainer.isRunning()).isTrue();
             if (lastGroupedContainerId == null) {
                 lastGroupedContainerId = groupedContainer.getContainerId();
             } else {
-                assertNotEquals(lastGroupedContainerId, groupedContainer.getContainerId());
+                assertThat(lastGroupedContainerId).isNotEqualTo(groupedContainer.getContainerId());
             }
         }
     }
@@ -61,21 +60,21 @@ public class TestcontainersContainersRestartedWithinAGroupTest {
 
         @Example
         public void example_with_grouped_container(){
-            assertTrue(groupedContainer.isRunning());
+            assertThat(groupedContainer.isRunning()).isTrue();
             if (lastGroupedContainerId == null) {
                 lastGroupedContainerId = groupedContainer.getContainerId();
             } else {
-                assertNotEquals(lastGroupedContainerId, groupedContainer.getContainerId());
+                assertThat(lastGroupedContainerId).isNotEqualTo(groupedContainer.getContainerId());
             }
         }
 
         @Example
         public void other_example_with_grouped_container(){
-            assertTrue(groupedContainer.isRunning());
+            assertThat(groupedContainer.isRunning()).isTrue();
             if (lastGroupedContainerId == null) {
                 lastGroupedContainerId = groupedContainer.getContainerId();
             } else {
-                assertNotEquals(lastGroupedContainerId, groupedContainer.getContainerId());
+                assertThat(lastGroupedContainerId).isNotEqualTo(groupedContainer.getContainerId());
             }
         }
     }

@@ -4,8 +4,7 @@ import net.jqwik.api.Property;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.junit.jqwik.JqwikTestImages.HTTPD_IMAGE;
 
 @Testcontainers
@@ -19,7 +18,7 @@ class TestcontainersSharedContainerTests {
 
     @BeforeContainer
     static void doSomethingWithAContainer() {
-        assertTrue(GENERIC_CONTAINER.isRunning());
+        assertThat(GENERIC_CONTAINER.isRunning()).isTrue();
     }
 
     @Property
@@ -27,7 +26,7 @@ class TestcontainersSharedContainerTests {
         if (lastContainerId == null) {
             lastContainerId = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
+            assertThat(lastContainerId).isEqualTo(GENERIC_CONTAINER.getContainerId());
         }
     }
 
@@ -36,7 +35,7 @@ class TestcontainersSharedContainerTests {
         if (lastContainerId == null) {
             lastContainerId = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
+            assertThat(lastContainerId).isEqualTo(GENERIC_CONTAINER.getContainerId());
         }
     }
 

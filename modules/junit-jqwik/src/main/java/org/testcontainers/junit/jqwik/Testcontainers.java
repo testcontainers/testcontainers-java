@@ -2,7 +2,6 @@ package org.testcontainers.junit.jqwik;
 
 import net.jqwik.api.lifecycle.AddLifecycleHook;
 import net.jqwik.api.lifecycle.PropagationMode;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
