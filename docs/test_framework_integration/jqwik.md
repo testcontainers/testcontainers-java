@@ -38,7 +38,7 @@ jqwik starts shared containers before calling `@BeforeContainer` annotated metho
 stopped after calling `@AfterProperty`.
 
 <!--codeinclude-->
-[Redis Backed Cache Integration Test](../examples/jqwik/examples/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:withTestContainersAnnotation
+[Redis Backed Cache Integration Test](../examples/jqwik/examples/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:withTestContainersAnnotation
 <!--/codeinclude-->
 
 The test above uses `@Testcontainers` with two redis `@Container`s. `sharedContainer` will run for the whole test while 
@@ -53,14 +53,14 @@ maintainability of your tests. It may contain own restarted containers which wil
 examples within a group but are not shared with subgroups.
 
 <!--codeinclude-->
-[Container of group not running in subgroup](../examples/jqwik/examples/src/test/java/groups/GroupedContainersTest.java) block:notSharedWithSubgroup
+[Container not shared with subgroups](../examples/jqwik/examples/src/test/java/groups/GroupedContainersTest.java) inside_block:notSharedWithSubgroup
 <!--/codeinclude-->
 
 Example `grouped_container_should_be_running` would fail if it was not disabled. However, shared containers are running 
 for all properties and all examples of every group.
 
 <!--codeinclude-->
-[Container of group not running in subgroup](../examples/jqwik/examples/src/test/java/groups/GroupedContainersTest.java) block:sharedWithSubgroup
+[Container shared with subgroups](../examples/jqwik/examples/src/test/java/groups/GroupedContainersTest.java) inside_block:sharedWithSubgroup
 <!--/codeinclude-->
 
 ## Singleton containers
