@@ -28,7 +28,7 @@ file('modules').eachDir { dir ->
 include ':docs:examples:junit4:generic'
 include ':docs:examples:junit4:redis'
 include ':docs:examples:junit5:redis'
-include ':docs:examples:jqwik:redis'
+include ':docs:examples:jqwik:examples'
 include ':docs:examples:spock:redis'
 
 include 'test-support'
