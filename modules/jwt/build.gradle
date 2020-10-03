@@ -2,6 +2,8 @@ description = "Testcontainers :: Jwt"
 
 dependencies {
     compile project(':testcontainers')
+    compile 'com.auth0:java-jwt:3.11.0'
+    compile 'com.auth0:jwks-rsa:0.13.0'
 
     testCompile 'io.rest-assured:rest-assured:4.0.0'
 }

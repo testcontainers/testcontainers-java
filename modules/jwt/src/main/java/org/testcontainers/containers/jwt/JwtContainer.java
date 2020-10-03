@@ -1,6 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.containers.jwt;
 
 import lombok.NonNull;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -58,5 +59,9 @@ public class JwtContainer extends GenericContainer<JwtContainer> {
 
     public URL baseUrl(String scheme, int port) throws MalformedURLException {
         return new URL(scheme + "://" + getHost() + ":" + getMappedPort(port));
+    }
+
+    public TokenForgery forgery() {
+        return new TokenForgery(issuer().toString());
     }
 }
