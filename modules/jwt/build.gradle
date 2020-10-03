@@ -1,0 +1,7 @@
+description = "Testcontainers :: Jwt"
+
+dependencies {
+    compile project(':testcontainers')
+
+    testCompile 'io.rest-assured:rest-assured:4.0.0'
+}

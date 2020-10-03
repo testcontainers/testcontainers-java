@@ -58,6 +58,10 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+      directory: "/modules/jwt"
+      schedule:
+        interval: "weekly"
+  - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
       interval: "weekly"
