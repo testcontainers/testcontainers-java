@@ -1,0 +1,16 @@
+description = "Examples for docs"
+
+dependencies {
+    compile "io.lettuce:lettuce-core:5.1.1.RELEASE"
+
+    testCompile "net.jqwik:jqwik:1.3.6"
+    testCompile "org.assertj:assertj-core:3.17.2"
+    testCompile project(":testcontainers")
+    testCompile project(":junit-jqwik")
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'jqwik'
+    }
+}
