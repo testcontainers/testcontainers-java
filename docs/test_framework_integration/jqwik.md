@@ -25,7 +25,7 @@ testImplementation "org.testcontainers:junit-jqwik:{{latest_version}}"
 **Note:** This lifecycle hook has only been tested with sequential test execution. Using it with parallel test execution 
 is unsupported and may result in unintended side effects.
 
-## Testcontainers lifecycle hook
+## Testcontainers
 
 Similar to the [Jupiter integration](./junit_5), the `@Testcontainers` annotation is the entry point of this module. If
 the annotation is present on your class, jqwik will find all fields annotated with `@Container`. If any of these fields
@@ -41,10 +41,10 @@ stopped after calling `@AfterProperty`.
 [Redis Backed Cache Integration Test](../examples/jqwik/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:withTestContainersAnnotation
 <!--/codeinclude-->
 
-The test above displays an `@Example` and a `@Property`. The redis container will be restarted between both. The
-assumption about redis is, that whatever key or value is used, the value should be able to be retrieved again by the
-key. jqwik generates keys and values and tries to falsify this assumption. By default, the property will be tried 1000 
-times.
+The test above uses `@Testcontainers` with one redis `@Container`. It contains an `@Example` and a `@Property`. The 
+redis container will be restarted between both. Theassumption about redis is, that whatever key or value is used, 
+the value should be able to be retrieved again by the key. jqwik generates keys and values and tries to falsify 
+this assumption. By default, the property will be tried 1000 times.
  
 ## Examples
 
