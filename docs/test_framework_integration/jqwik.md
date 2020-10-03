@@ -1,5 +1,11 @@
 # Jqwik
 
+!!! note
+    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is 
+    possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) 
+    for more information on our incubating modules policy.
+
+
 [jqwik](https://jqwik.net/) is a Junit 5 test engine bringing Property-Based Testing (PBT) to the JVM. This module provides 
 an API based on [jqwik lifecycle hooks](https://jqwik.net/docs/current/user-guide.html#lifecycle-hooks) to automatically
 start and stop containers during a test run. It supports two lifecycles; namely a container per property falsification, 
