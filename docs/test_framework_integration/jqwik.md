@@ -76,6 +76,6 @@ This could render this module useless for future jqwik versions. At the time of 
 used. 
 
 Lifecycle hooks use proximity to determine when a hook should be run. Proximity, is an integer value with an order
-defined over it. This means, a before property hook with a proximity of 1 will be executed after a before hook with
-proximity of 2. However, these values are hard coded and there might be unwanted effects when the order of hooks is 
-messed up.
+defined over it. This means, a before property hook with a proximity of 1 will be executed after a before property hook 
+withproximity of 2. However, these values are hard coded and there might be unwanted effects when there are other 
+hooks and the order of execution is wrong.
