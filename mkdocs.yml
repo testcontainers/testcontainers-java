@@ -73,6 +73,7 @@ nav:
     - Test framework integration:
           - test_framework_integration/junit_4.md
           - test_framework_integration/junit_5.md
+          - test_framework_integration/jqwik.md
           - test_framework_integration/spock.md
           - test_framework_integration/manual_lifecycle_control.md
     - System Requirements:
