@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -38,7 +37,7 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public void beforeContainer(ContainerLifecycleContext context) {
         Class<?> testClass = context.optionalContainerClass().orElseThrow(() -> new IllegalStateException("TestcontainersExtension is only supported for classes."));
-        Store<List<Startable>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN, ArrayList::new);
+        Store<List<Startable>> store = getOrCreateContainerClosingStore(IDENTIFIER, Lifespan.RUN);
 
         List<TestLifecycleAware> lifecycleAwareContainers = startContainersAndFindLifeCycleAwareOnes(store, findSharedContainers(testClass));
 
@@ -61,7 +60,7 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public PropertyExecutionResult aroundProperty(PropertyLifecycleContext context, PropertyExecutor property) {
         Object testInstance = context.testInstance();
-        Store<List<Startable>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY, ArrayList::new);
+        Store<List<Startable>> store = getOrCreateContainerClosingStore(property.hashCode(), Lifespan.PROPERTY);
 
         List<TestLifecycleAware> lifecycleAwareContainers = startContainersAndFindLifeCycleAwareOnes(store, findRestartContainers(testInstance));
 
@@ -78,8 +77,8 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
         return -11; // Run before BeforeProperty and after AfterProperty
     }
 
-    private Store<List<Startable>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan, Supplier<List<Startable>> initializer) {
-        Store<List<Startable>> store = Store.getOrCreate(identifier, lifespan, initializer);
+    private Store<List<Startable>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan) {
+        Store<List<Startable>> store = Store.getOrCreate(identifier, lifespan, ArrayList::new);
         store.onClose(startables -> startables.forEach(Startable::close));
         return store;
     }
