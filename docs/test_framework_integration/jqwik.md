@@ -38,17 +38,30 @@ jqwik starts shared containers before calling `@BeforeContainer` annotated metho
 stopped after calling `@AfterProperty`.
 
 <!--codeinclude-->
-[Redis Backed Cache Integration Test](../examples/jqwik/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:withTestContainersAnnotation
+[Redis Backed Cache Integration Test](../examples/jqwik/examples/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:withTestContainersAnnotation
 <!--/codeinclude-->
 
 The test above uses `@Testcontainers` with one redis `@Container`. It contains an `@Example` and a `@Property`. The 
-redis container will be restarted between both. Theassumption about redis is, that whatever key or value is used, 
+redis container will be restarted between both. The assumption about redis is, that whatever key or value is used, 
 the value should be able to be retrieved again by the key. jqwik generates keys and values and tries to falsify 
 this assumption. By default, the property will be tried 1000 times.
  
-## Examples
+## Groups
 
-To use the Testcontainers extension annotate your test class with `@Testcontainers`.
+Like Jupiter, jqwik has a similar concept about grouping tests. A `@Group` is a means to improve the organization and
+maintainability of your tests. It may contain own restarted containers which will be restarted for properties and
+examples within a group but are not shared with subgroups.
+
+<!--codeinclude-->
+[Container of group not running in subgroup](../examples/jqwik/examples/src/test/java/groups/GroupedContainersTest.java) block:notSharedWithSubgroup
+<!--/codeinclude-->
+
+Example `grouped_container_should_be_running` would fail if it was not disabled. However, shared containers are running 
+for all properties and all examples of every group.
+
+<!--codeinclude-->
+[Container of group not running in subgroup](../examples/jqwik/examples/src/test/java/groups/GroupedContainersTest.java) block:sharedWithSubgroup
+<!--/codeinclude-->
 
 ### Restarted containers
 
