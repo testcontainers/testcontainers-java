@@ -83,5 +83,5 @@ used.
 
 Lifecycle hooks use proximity to determine when a hook should be run. Proximity, is an integer value with an order
 defined over it. This means, a before property hook with a proximity of 1 will be executed after a before property hook 
-withproximity of 2. However, these values are hard coded and there might be unwanted effects when there are other 
+with a proximity of 2. However, these values are hard coded and there might be unwanted effects when there are other 
 hooks and the order of execution is wrong.
