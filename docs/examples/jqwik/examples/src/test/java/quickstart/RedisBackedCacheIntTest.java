@@ -19,7 +19,11 @@ public class RedisBackedCacheIntTest {
     private RedisBackedCache underTest;
 
     @Container
-    public GenericContainer redis = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
+    public GenericContainer<?> sharedRedis = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
+        .withExposedPorts(6379);
+
+    @Container
+    public GenericContainer<?> redis = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
                                             .withExposedPorts(6379);
 
     @BeforeProperty
@@ -34,6 +38,7 @@ public class RedisBackedCacheIntTest {
     @Example
     public void retrieve_from_redis() {
         underTest.put("test", "example");
+
 
         String retrieved = underTest.get("test");
         assertThat("example").isEqualTo(retrieved);

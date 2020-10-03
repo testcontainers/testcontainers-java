@@ -41,10 +41,10 @@ stopped after calling `@AfterProperty`.
 [Redis Backed Cache Integration Test](../examples/jqwik/examples/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:withTestContainersAnnotation
 <!--/codeinclude-->
 
-The test above uses `@Testcontainers` with one redis `@Container`. It contains an `@Example` and a `@Property`. The 
-redis container will be restarted between both. The assumption about redis is, that whatever key or value is used, 
-the value should be able to be retrieved again by the key. jqwik generates keys and values and tries to falsify 
-this assumption. By default, the property will be tried 1000 times.
+The test above uses `@Testcontainers` with two redis `@Container`s. `sharedContainer` will run for the whole test while 
+`redis` will be restarted between the `@Example` and the `@Property`. The assumption about redis is, that whatever key
+or value is used, the value should be able to be retrieved again by the key. jqwik generates keys and values and tries 
+to falsify this assumption. By default, the property will be tried 1000 times.
  
 ## Groups
 
@@ -61,26 +61,6 @@ for all properties and all examples of every group.
 
 <!--codeinclude-->
 [Container of group not running in subgroup](../examples/jqwik/examples/src/test/java/groups/GroupedContainersTest.java) block:sharedWithSubgroup
-<!--/codeinclude-->
-
-### Restarted containers
-
-To define a restarted container, define an instance field inside your test class and annotate it with
-the `@Container` annotation.
-
-<!--codeinclude-->
-[Restarted Containers](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/TestcontainersNestedRestartedContainerTests.java) inside_block:testClass
-<!--/codeinclude-->
-
-
-### Shared containers
-
-Shared containers are defined as static fields in a top level test class and have to be annotated with `@Container`.
-Note that shared containers can't be declared inside nested test classes.
-This is because nested test classes have to be defined non-static and can't therefore have static fields.
-
-<!--codeinclude-->
-[Shared Container](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) lines:18-23,32-33,35-36
 <!--/codeinclude-->
 
 ## Singleton containers
