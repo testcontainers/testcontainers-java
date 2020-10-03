@@ -12,6 +12,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// withTestContainersAnnotation {
 @Testcontainers
 public class RedisBackedCacheIntTest {
 
@@ -45,3 +46,4 @@ public class RedisBackedCacheIntTest {
         assertThat(retrieved).isEqualTo(value);
     }
 }
+// }
