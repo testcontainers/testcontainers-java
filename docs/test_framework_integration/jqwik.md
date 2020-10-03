@@ -90,12 +90,12 @@ using JUnit 5.
 
 ## Limitations
 
-* Experimental API of jqwik
-* Proximity
-* Groups
-* Not after each try
-Since this module has a dependency onto JUnit Jupiter and on Testcontainers core, which
-has a dependency onto JUnit 4.x, projects using this module will end up with both, JUnit Jupiter
-and JUnit 4.x in the test classpath.
+jqwik follows the guidelines of the [api guardian project](https://github.com/apiguardian-team/apiguardian). Lifecycle 
+hooks in jqwik are an experimental feature which means that parts of it can change in the future without prior notice. 
+This could render this module useless for future jqwik versions. At the time of implementation, jqwik version 1.3.6 was 
+used. 
 
-This extension has only be tested with sequential test execution. Using it with parallel test execution is unsupported and may have unintended side effects.
+Lifecycle hooks use proximity to determine when a hook should be run. Proximity, is an integer value with an order
+defined over it. This means, a before property hook with a proximity of 1 will be executed after a before hook with
+proximity of 2. However, these values are hard coded and there might be unwanted effects when the order of hooks is 
+messed up.
