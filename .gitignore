@@ -63,3 +63,6 @@ src/mkdocs-codeinclude-plugin
 src/pip-delete-this-directory.txt
 
 .DS_Store
+
+# Ignore jqwik runtime database
+**/.jqwik-database
