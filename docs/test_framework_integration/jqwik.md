@@ -27,7 +27,7 @@ is unsupported and may result in unintended side effects.
 
 ## Testcontainers
 
-Similar to the [Jupiter integration](./junit_5), the `@Testcontainers` annotation is the entry point of this module. If
+Similar to the [Jupiter integration](../junit_5), the `@Testcontainers` annotation is the entry point of this module. If
 the annotation is present on your class, jqwik will find all fields annotated with `@Container`. If any of these fields
 is not `Startable`, the tests won't be run resulting in a failure. Shared containers are static fields which are started 
 once before all properties and examples and stopped after all properties and examples. Restarted containers are instance 
