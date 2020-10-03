@@ -84,7 +84,7 @@ public class TokenForgery {
             // Private Key
             byte[] privateKeyBytes = IOUtils.toByteArray(this.getClass().getResourceAsStream(PRI_KEY_PATH));
             PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-            RSAPrivateKey privateKey = (RSAPrivateKey) KeyFactory.getInstance("RSA256").generatePrivate(privateSpec);
+            RSAPrivateKey privateKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(privateSpec);
 
             algorithm = Algorithm.RSA256(publicKey, privateKey);
         } catch (Exception ex) {
