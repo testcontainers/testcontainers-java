@@ -31,7 +31,7 @@ public class TokenForgery {
     private Date issuedAt;
     private Date notBefore;
 
-    private Map<String, String[]> claims = new HashMap<>();
+    private final Map<String, String[]> claims = new HashMap<>();
 
     public TokenForgery(String issuer) {
         this.issuer = issuer;
