@@ -33,13 +33,13 @@ public class ForgeTokenTest {
     private static JwtContainer jwtContainer;
     // }
 
-    // junitBefore {
     @BeforeClass
     public static void before() {
+        // initialization {
         jwtContainer = new JwtContainer();
         jwtContainer.start();
-
         // }
+
         // Public Key
         JwkProvider provider = new JwkProviderBuilder(jwtContainer.issuer()).build();
         RSAKeyProvider keyProvider = createKeyProvider(provider);
@@ -47,19 +47,19 @@ public class ForgeTokenTest {
             .withIssuer(jwtContainer.issuer().toString()).build();
     }
 
-    // junitAfter {
     @AfterClass
     public static void after() {
+        // shutdown {
         jwtContainer.stop();
+        // }
     }
-    // }
 
     @Test
     public void should_forge_token_with_expected_content() {
         LocalDateTime now = now(ZoneId.systemDefault());
         LocalDateTime expiration = now.plusMinutes(10);
 
-        // forge {
+        // forgeToken {
         TokenForgery tokenForgery = jwtContainer.forgery();
         tokenForgery
             .withAudience("audience")
@@ -72,7 +72,6 @@ public class ForgeTokenTest {
 
         String token = tokenForgery.forge();
         // }
-
 
         DecodedJWT jwt = verifier.verify(token);
         assertThat(jwt.getIssuer(), is(jwtContainer.issuer().toString()));
