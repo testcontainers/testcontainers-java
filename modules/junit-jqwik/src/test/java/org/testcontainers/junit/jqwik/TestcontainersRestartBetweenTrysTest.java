@@ -15,6 +15,9 @@ public class TestcontainersRestartBetweenTrysTest {
     private GenericContainer<?> restartBetweenTries = new GenericContainer<>(HTTPD_IMAGE)
         .withExposedPorts(80);
 
+    @Container(restartPerTry = true)
+    private TestLifecycleAwareContainerMock containerMock = new TestLifecycleAwareContainerMock();
+
     private static String restartedBetweenTries = "1x0";
 
     @Property(tries = 2)
@@ -28,5 +31,15 @@ public class TestcontainersRestartBetweenTrysTest {
     @AfterProperty
     public void container_restarted_between_tries_should_not_be_running(){
         assertThat(restartBetweenTries.isRunning()).isFalse();
+    }
+
+    @AfterProperty
+    public void call_lifecycle_methods_before_and_after_try(){
+        assertThat(containerMock.getLifecycleMethodCalls()).containsExactly(
+            TestLifecycleAwareContainerMock.BEFORE_TEST,
+            TestLifecycleAwareContainerMock.AFTER_TEST,
+            TestLifecycleAwareContainerMock.BEFORE_TEST,
+            TestLifecycleAwareContainerMock.AFTER_TEST
+        );
     }
 }

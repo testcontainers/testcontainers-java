@@ -82,17 +82,23 @@ class TestcontainersExtension implements AroundTryHook, AroundPropertyHook, Arou
     }
 
     @Override
-    public TryExecutionResult aroundTry(TryLifecycleContext context, TryExecutor aTry, List<Object> parameters) throws Throwable {
+    public TryExecutionResult aroundTry(TryLifecycleContext context, TryExecutor aTry, List<Object> parameters) {
         Object testInstance = context.testInstance();
         Store<List<Startable>> store = getOrCreateContainerClosingStore(aTry.hashCode(), Lifespan.TRY);
 
-        startContainersAndFindLifeCycleAwareOnes(store, findRestartContainersPerTry(testInstance));
-        return aTry.execute(parameters);
+        List<TestLifecycleAware> lifecycleAwareContainers = startContainersAndFindLifeCycleAwareOnes(store, findRestartContainersPerTry(testInstance));
+
+        TestDescription testDescription = testDescriptionFrom(context);
+        signalBeforeTestToContainers(lifecycleAwareContainers, testDescription);
+        TryExecutionResult executionResult = aTry.execute(parameters);
+        signalAfterTestToContainersFor(lifecycleAwareContainers, testDescription, executionResult);
+
+        return executionResult;
     }
 
     @Override
     public int aroundTryProximity() {
-        return -11;
+        return -11; // Run before BeforeTry and after AfterTry
     }
 
     private Store<List<Startable>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan) {
@@ -130,6 +136,10 @@ class TestcontainersExtension implements AroundTryHook, AroundPropertyHook, Arou
                 container.afterTest(testDescription, executionResult.throwable());
             }
         });
+    }
+
+    private void signalAfterTestToContainersFor(List<TestLifecycleAware> containers, TestDescription testDescription, TryExecutionResult executionResult) {
+        containers.forEach(container -> container.afterTest(testDescription, executionResult.throwable()));
     }
 
     private TestDescription testDescriptionFrom(LifecycleContext context) {
