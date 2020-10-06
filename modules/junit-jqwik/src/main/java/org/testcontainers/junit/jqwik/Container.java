@@ -14,4 +14,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Container {
+
+    /**
+     * Whether a container declared as instance field should be restarted between each try
+     * (test runs with different parameters) rather than between each property.
+     */
+    boolean restartPerTry() default false;
 }

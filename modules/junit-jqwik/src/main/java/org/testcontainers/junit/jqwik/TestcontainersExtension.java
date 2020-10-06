@@ -3,6 +3,7 @@ package org.testcontainers.junit.jqwik;
 import net.jqwik.api.JqwikException;
 import net.jqwik.api.lifecycle.AroundContainerHook;
 import net.jqwik.api.lifecycle.AroundPropertyHook;
+import net.jqwik.api.lifecycle.AroundTryHook;
 import net.jqwik.api.lifecycle.ContainerLifecycleContext;
 import net.jqwik.api.lifecycle.LifecycleContext;
 import net.jqwik.api.lifecycle.Lifespan;
@@ -11,6 +12,9 @@ import net.jqwik.api.lifecycle.PropertyExecutor;
 import net.jqwik.api.lifecycle.PropertyLifecycleContext;
 import net.jqwik.api.lifecycle.SkipExecutionHook;
 import net.jqwik.api.lifecycle.Store;
+import net.jqwik.api.lifecycle.TryExecutionResult;
+import net.jqwik.api.lifecycle.TryExecutor;
+import net.jqwik.api.lifecycle.TryLifecycleContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
@@ -29,7 +33,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook, SkipExecutionHook {
+class TestcontainersExtension implements AroundTryHook, AroundPropertyHook, AroundContainerHook, SkipExecutionHook {
 
     private static final Object IDENTIFIER = TestcontainersExtension.class;
     private static final Object SHARED_LIFECYCLE_AWARE_TEST_CONTAINERS = new Object();
@@ -75,6 +79,20 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     @Override
     public int aroundPropertyProximity() {
         return -11; // Run before BeforeProperty and after AfterProperty
+    }
+
+    @Override
+    public TryExecutionResult aroundTry(TryLifecycleContext context, TryExecutor aTry, List<Object> parameters) throws Throwable {
+        Object testInstance = context.testInstance();
+        Store<List<Startable>> store = getOrCreateContainerClosingStore(aTry.hashCode(), Lifespan.TRY);
+
+        startContainersAndFindLifeCycleAwareOnes(store, findRestartContainersPerTry(testInstance));
+        return aTry.execute(parameters);
+    }
+
+    @Override
+    public int aroundTryProximity() {
+        return -11;
     }
 
     private Store<List<Startable>> getOrCreateContainerClosingStore(Object identifier, Lifespan lifespan) {
@@ -161,29 +179,33 @@ class TestcontainersExtension implements AroundPropertyHook, AroundContainerHook
     }
 
     private Stream<Startable> findSharedContainers(Class<?> testClass) {
-        return ReflectionUtils.findFields(
-                testClass,
-                isSharedContainer(),
-                ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
-            .stream()
-            .map(f -> getContainerInstance(null, f));
-    }
-
-    private Predicate<Field> isSharedContainer() {
-        return isContainer().and(ReflectionUtils::isStatic);
+        final Predicate<Field> isSharedContainer = ReflectionUtils::isStatic;
+        return findContainers(null, isSharedContainer, testClass);
     }
 
     private Stream<Startable> findRestartContainers(Object testInstance) {
+        final Predicate<Field> isRestartContainer = ReflectionUtils::isNotStatic;
+        return findContainers(testInstance, isRestartContainer.and(restartPerTry().negate()), testInstance.getClass());
+    }
+
+    private Stream<Startable> findRestartContainersPerTry(Object testInstance) {
+        final Predicate<Field> isRestartContainer = ReflectionUtils::isNotStatic;
+        return findContainers(testInstance, isRestartContainer.and(restartPerTry()), testInstance.getClass());
+    }
+
+    private Stream<Startable> findContainers(Object testInstance, Predicate<Field> containerCondition, Class<?> testClass) {
         return ReflectionUtils.findFields(
-                testInstance.getClass(),
-                isRestartContainer(),
-                ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+            testClass,
+            isContainer().and(containerCondition),
+            ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
             .stream()
             .map(f -> getContainerInstance(testInstance, f));
     }
 
-    private Predicate<Field> isRestartContainer() {
-        return isContainer().and(ReflectionUtils::isNotStatic);
+    private static Predicate<Field> restartPerTry() {
+        return field -> AnnotationSupport.findAnnotation(field, Container.class)
+            .filter(Container::restartPerTry)
+            .isPresent();
     }
 
     private static Predicate<Field> isContainer() {

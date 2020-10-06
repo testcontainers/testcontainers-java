@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * declared as static fields will be shared between properties. They will be
  * started only once before any property is tested and stopped after the
  * last try has executed. Containers declared as instance fields will
- * be started and stopped for every property.</p>
+ * be started and stopped for each property or try.</p>
  *
  * <p>The annotation {@code @Testcontainers} can be used on a superclass in
  * the test hierarchy as well. All subclasses will automatically inherit

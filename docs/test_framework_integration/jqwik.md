@@ -8,9 +8,9 @@
 
 [jqwik](https://jqwik.net/) is a Junit 5 test engine bringing Property-Based Testing (PBT) to the JVM. This module provides 
 an API based on [jqwik lifecycle hooks](https://jqwik.net/docs/current/user-guide.html#lifecycle-hooks) to automatically
-start and stop containers during a test run. It supports two lifecycles; namely a container per property falsification, 
-or a container which is shared between all falsifications. At the moment, restarting containers between each property 
-try is not supported.
+start and stop containers during a test run. It supports three lifecycles; namely a container per property falsification,
+a container for each property try (test run with different parameters), or a container which is shared between all 
+falsifications.
 
 In order to use this module in your tests, your project should be [set up for jqwik](https://jqwik.net/docs/current/user-guide.html#how-to-use)
 and you should add the following dependency:
@@ -37,11 +37,13 @@ Similar to the [Jupiter integration](../junit_5), the `@Testcontainers` annotati
 the annotation is present on your class, jqwik will find all fields annotated with `@Container`. If any of these fields
 is not `Startable`, the tests won't be run resulting in a failure. Shared containers are static fields which are started 
 once before all properties and examples and stopped after all properties and examples. Restarted containers are instance 
-fields which are started and stopped for every property or example.
+fields which are started and stopped for every property or example. Restarted try-containers are instance fields with a
+true `restartPerTry` annotation value. They are started and stopped for every property- or example-try. 
 
 jqwik starts shared containers before calling `@BeforeContainer` annotated methods and stops them after calling 
 `@AfterContainer` annotated methods. Similar, restarted containers are started before calling `@BeforeProperty`and 
-stopped after calling `@AfterProperty`.
+stopped after calling `@AfterProperty`. Finally, restarted try-containers are started before calling `@BeforeTry` and
+stopped after calling `@AfterTry`.
 
 <!--codeinclude-->
 [Redis Backed Cache Integration Test](../examples/jqwik/examples/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:withTestContainersAnnotation
