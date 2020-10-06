@@ -2,7 +2,9 @@ package org.testcontainers.junit.jqwik;
 
 import net.jqwik.api.Property;
 import net.jqwik.api.lifecycle.AfterProperty;
+import net.jqwik.api.lifecycle.AfterTry;
 import net.jqwik.api.lifecycle.BeforeProperty;
+import net.jqwik.api.lifecycle.BeforeTry;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,11 +22,25 @@ public class TestcontainersRestartBetweenTrysTest {
 
     private static String restartedBetweenTries = "1x0";
 
+    private static String beforeTryContainerId = "2x0";
+
     @Property(tries = 2)
     public void container_id_should_always_be_different_between_tries(){
         assertThat(restartBetweenTries.isRunning()).isTrue();
         assertThat(restartedBetweenTries).isNotEqualTo(restartBetweenTries.getContainerId());
         this.restartedBetweenTries = restartBetweenTries.getContainerId();
+    }
+
+    @BeforeTry
+    public void container_should_be_running_before_try(){
+        assertThat(restartBetweenTries.isRunning()).isTrue();
+        beforeTryContainerId = restartBetweenTries.getContainerId();
+    }
+
+    @AfterTry
+    public void container_should_be_running_after_try(){
+        assertThat(restartBetweenTries.isRunning()).isTrue();
+        assertThat(restartBetweenTries.getContainerId()).isEqualTo(beforeTryContainerId);
     }
 
     @BeforeProperty
