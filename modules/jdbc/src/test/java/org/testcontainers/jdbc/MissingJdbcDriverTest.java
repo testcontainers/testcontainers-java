@@ -3,6 +3,7 @@ package org.testcontainers.jdbc;
 import com.google.common.base.Throwables;
 import org.junit.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -39,7 +40,7 @@ public class MissingJdbcDriverTest {
         private final AtomicInteger connectionAttempts = new AtomicInteger();
 
         MissingDriverContainer() {
-            super("mysql:5.7.22");
+            super(DockerImageName.parse("mysql:5.7.22"));
             withEnv("MYSQL_ROOT_PASSWORD", "test");
             withExposedPorts(3306);
         }

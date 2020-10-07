@@ -3,6 +3,7 @@ package org.testcontainers.vault;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,18 +23,31 @@ import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
  */
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
 
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("vault");
+    private static final String DEFAULT_TAG = "1.1.3";
+
     private static final int VAULT_PORT = 8200;
 
     private Map<String, List<String>> secretsMap = new HashMap<>();
 
     private int port = VAULT_PORT;
 
+    /**
+     * @deprecated use {@link VaultContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public VaultContainer() {
-        this("vault:1.1.3");
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public VaultContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public VaultContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         // Use the vault healthcheck endpoint to check for readiness, per https://www.vaultproject.io/api/system/health.html
         setWaitStrategy(Wait.forHttp("/v1/sys/health").forStatusCode(200));

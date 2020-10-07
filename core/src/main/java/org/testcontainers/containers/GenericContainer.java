@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static org.testcontainers.utility.CommandLine.runShellCommand;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -12,15 +14,48 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
@@ -44,8 +79,8 @@ import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.wait.Wait;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
@@ -54,47 +89,13 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.Adler32;
-import java.util.zip.Checksum;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -118,7 +119,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Default settings
      */
     @NonNull
-    private List<Integer> exposedPorts = new ArrayList<>();
+    private LinkedHashSet<Integer> exposedPorts = new LinkedHashSet<>();
 
     @NonNull
     private List<String> portBindings = new ArrayList<>();
@@ -178,7 +179,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private Long shmSize;
 
-    private Map<MountableFile, String> copyToFileContainerPathMap = new HashMap<>();
+    // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
@@ -189,30 +191,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     protected DockerClient dockerClient = DockerClientFactory.lazyClient();
 
-    /*
-     * Info about the Docker server; lazily fetched.
-     */
-    @Setter(AccessLevel.NONE)
-    protected Info dockerDaemonInfo = null;
-
-    /**
-     * Set during container startup
-     * // TODO make it private
-     *
-     * @deprecated use {@link ContainerState#getContainerId()}
-     */
-    @Setter(AccessLevel.NONE)
-    @Deprecated
-    protected String containerId;
-
     /**
      * Set during container startup
      *
-     * @deprecated use {@link GenericContainer#getContainerInfo()}
      */
     @Setter(AccessLevel.NONE)
-    @Deprecated
-    protected String containerName;
+    @VisibleForTesting
+    String containerId;
 
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
@@ -240,10 +225,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
-    public GenericContainer() {
-        this(TestcontainersConfiguration.getInstance().getTinyImage());
+
+    public GenericContainer(@NonNull final DockerImageName dockerImageName) {
+        this.image = new RemoteDockerImage(dockerImageName);
     }
 
+    public GenericContainer(@NonNull final RemoteDockerImage image) {
+        this.image = image;
+    }
+
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public GenericContainer() {
+        this(TestcontainersConfiguration.getInstance().getTinyDockerImageName().asCanonicalNameString());
+    }
+
+    /**
+     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);
     }
@@ -254,6 +256,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public void setImage(Future<String> image) {
         this.image = new RemoteDockerImage(image);
+    }
+
+    @Override
+    public List<Integer> getExposedPorts() {
+        return new ArrayList<>(exposedPorts);
+    }
+
+    @Override
+    public void setExposedPorts(List<Integer> exposedPorts) {
+        this.exposedPorts = new LinkedHashSet<>(exposedPorts);
     }
 
     /**
@@ -307,7 +319,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             Instant startedAt = Instant.now();
 
             logger().debug("Starting container: {}", getDockerImageName());
-            logger().debug("Trying to start container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(startupAttempts, () -> {
@@ -416,7 +427,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             // Tell subclasses that we're starting
             containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
-            containerName = containerInfo.getName();
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
@@ -522,12 +532,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     @SneakyThrows(JsonProcessingException.class)
     final String hash(CreateContainerCmd createCommand) {
-        // TODO add Testcontainers' version to the hash
-        byte[] commandJson = new ObjectMapper()
+        DefaultDockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+
+        byte[] commandJson = dockerClientConfig.getObjectMapper()
+            .copy()
             .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
             .writeValueAsBytes(createCommand);
 
+        // TODO add Testcontainers' version to the hash
         return Hashing.sha1().hashBytes(commandJson).toString();
     }
 
@@ -672,8 +685,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected Integer getLivenessCheckPort() {
         // legacy implementation for backwards compatibility
-        if (exposedPorts.size() > 0) {
-            return getMappedPort(exposedPorts.get(0));
+        Iterator<Integer> exposedPortsIterator = exposedPorts.iterator();
+        if (exposedPortsIterator.hasNext()) {
+            return getMappedPort(exposedPortsIterator.next());
         } else if (portBindings.size() > 0) {
             return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
         } else {
@@ -1245,7 +1259,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Deprecated
     public String getIpAddress() {
-        return getContainerIpAddress();
+        return getHost();
     }
 
     /**
@@ -1309,18 +1323,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.logConsumers.add(consumer);
 
         return self();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized Info fetchDockerDaemonInfo() throws IOException {
-
-        if (this.dockerDaemonInfo == null) {
-            this.dockerDaemonInfo = this.dockerClient.infoCmd().exec();
-        }
-        return this.dockerDaemonInfo;
     }
 
     /**
@@ -1392,74 +1394,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return System.identityHashCode(this);
     }
 
-    /**
-     * Convenience class with access to non-public members of GenericContainer.
-     *
-     * @deprecated use {@link org.testcontainers.containers.wait.strategy.AbstractWaitStrategy}
-     */
-    @Deprecated
-    public static abstract class AbstractWaitStrategy extends org.testcontainers.containers.wait.strategy.AbstractWaitStrategy implements WaitStrategy {
-        protected GenericContainer container;
-
-        @NonNull
-        protected Duration startupTimeout = Duration.ofSeconds(60);
-
-        /**
-         * Wait until the container has started.
-         *
-         * @param container the container for which to wait
-         */
-        @Override
-        public void waitUntilReady(GenericContainer container) {
-            this.container = container;
-            waitUntilReady();
-        }
-
-        /**
-         * Wait until {@link #container} has started.
-         */
-        protected abstract void waitUntilReady();
-
-        /**
-         * Set the duration of waiting time until container treated as started.
-         *
-         * @param startupTimeout timeout
-         * @return this
-         * @see WaitStrategy#waitUntilReady(GenericContainer)
-         */
-        public WaitStrategy withStartupTimeout(Duration startupTimeout) {
-            this.startupTimeout = startupTimeout;
-            return this;
-        }
-
-        /**
-         * @return the container's logger
-         */
-        protected Logger logger() {
-            return container.logger();
-        }
-
-        /**
-         * @return the port on which to check if the container is ready
-         * @deprecated see {@link AbstractWaitStrategy#getLivenessCheckPorts()}
-         */
-        @Deprecated
-        protected Integer getLivenessCheckPort() {
-            return container.getLivenessCheckPort();
-        }
-
-        /**
-         * @return the ports on which to check if the container is ready
-         */
-        protected Set<Integer> getLivenessCheckPorts() {
-            return container.getLivenessCheckPorts();
-        }
-
-        /**
-         * @return the rate limiter to use
-         */
-        protected RateLimiter getRateLimiter() {
-            return DOCKER_CLIENT_RATE_LIMITER;
-        }
+    @Override
+    public String getContainerName() {
+        return getContainerInfo().getName();
     }
 }

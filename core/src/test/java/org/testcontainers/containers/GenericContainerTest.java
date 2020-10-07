@@ -2,13 +2,17 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
+import com.github.dockerjava.api.model.Info;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assumptions;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.TestImages;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 
@@ -21,8 +25,11 @@ public class GenericContainerTest {
 
     @Test
     public void shouldReportOOMAfterWait() {
+        Info info = DockerClientFactory.instance().client().infoCmd().exec();
+        // Poor man's rootless Docker detection :D
+        Assumptions.assumeThat(info.getDriver()).doesNotContain("vfs");
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(ContainerState::getOOMKilled))
                 .withCreateContainerCmdModifier(it -> {
@@ -43,7 +50,7 @@ public class GenericContainerTest {
     @Test
     public void shouldReportErrorAfterWait() {
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")

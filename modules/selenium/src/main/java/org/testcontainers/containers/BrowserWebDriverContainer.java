@@ -1,12 +1,21 @@
 package org.testcontainers.containers;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
-
-import com.github.dockerjava.api.command.InspectContainerResponse;
-
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Capabilities;
@@ -19,35 +28,29 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.traits.VncService;
-import org.testcontainers.containers.wait.HostPortWaitStrategy;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
-import org.testcontainers.containers.wait.WaitAllStrategy;
-import org.testcontainers.containers.wait.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.time.Duration;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
  * <p>
  * The container should expose Selenium remote control protocol and VNC.
  */
-public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements VncService, LinkableContainer, TestLifecycleAware {
+public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer, TestLifecycleAware {
 
-    private static final String CHROME_IMAGE = "selenium/standalone-chrome-debug:%s";
-    private static final String FIREFOX_IMAGE = "selenium/standalone-firefox-debug:%s";
+    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
+    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
+    private static final DockerImageName[] COMPATIBLE_IMAGES = new DockerImageName[] {
+        CHROME_IMAGE,
+        FIREFOX_IMAGE,
+        DockerImageName.parse("selenium/standalone-chrome"),
+        DockerImageName.parse("selenium/standalone-firefox")
+    };
 
     private static final String DEFAULT_PASSWORD = "secret";
     private static final int SELENIUM_PORT = 4444;
@@ -58,7 +61,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Nullable
     private Capabilities capabilities;
-    private boolean customImageNameIsSet = false;
+    private DockerImageName customImageName = null;
 
     @Nullable
     private RemoteWebDriver driver;
@@ -70,9 +73,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
-    /**
-     */
     public BrowserWebDriverContainer() {
+        super();
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
@@ -87,16 +89,36 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     /**
      * Constructor taking a specific webdriver container name and tag
-     * @param dockerImageName Name of the docker image to pull
+     * @param dockerImageName Name of the selenium docker image
      */
     public BrowserWebDriverContainer(String dockerImageName) {
-        this();
-        super.setDockerImageName(dockerImageName);
-        this.customImageNameIsSet = true;
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    /**
+     * Constructor taking a specific webdriver container name and tag
+     * @param dockerImageName Name of the selenium docker image
+     */
+    public BrowserWebDriverContainer(DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        // we assert compatibility with the chrome/firefox image later, after capabilities are processed
+
+        final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+                .withStartupTimeout(Duration.of(15, SECONDS));
+
+        this.waitStrategy = new WaitAllStrategy()
+                .withStrategy(logWaitStrategy)
+                .withStrategy(new HostPortWaitStrategy())
+                .withStartupTimeout(Duration.of(15, SECONDS));
+
+        this.withRecordingFileFactory(new DefaultRecordingFileFactory());
+
+        this.customImageName = dockerImageName;
         // We have to force SKIP mode for the recording by default because we don't know if the image has VNC or not
         recordingMode = VncRecordingMode.SKIP;
     }
-
 
     public SELF withCapabilities(Capabilities capabilities) {
         this.capabilities = capabilities;
@@ -163,8 +185,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                     .withVncPort(VNC_PORT);
         }
 
-        if (!customImageNameIsSet) {
-            super.setDockerImageName(getImageForCapabilities(capabilities, seleniumVersion));
+        if (customImageName != null) {
+            customImageName.assertCompatibleWith(COMPATIBLE_IMAGES);
+            super.setDockerImageName(customImageName.asCanonicalNameString());
+        } else {
+            DockerImageName standardImageForCapabilities = getImageForCapabilities(capabilities, seleniumVersion);
+            super.setDockerImageName(standardImageForCapabilities.asCanonicalNameString());
         }
 
         String timeZone = System.getProperty("user.timezone");
@@ -192,14 +218,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setStartupAttempts(3);
     }
 
-    public static String getImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
-
+    private static DockerImageName getImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
         String browserName = capabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
-                return String.format(CHROME_IMAGE, seleniumVersion);
+                return CHROME_IMAGE.withTag(seleniumVersion);
             case BrowserType.FIREFOX:
-                return String.format(FIREFOX_IMAGE, seleniumVersion);
+                return FIREFOX_IMAGE.withTag(seleniumVersion);
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }
@@ -207,24 +232,23 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     public URL getSeleniumAddress() {
         try {
-            return new URL("http", getContainerIpAddress(), getMappedPort(SELENIUM_PORT), "/wd/hub");
+            return new URL("http", getHost(), getMappedPort(SELENIUM_PORT), "/wd/hub");
         } catch (MalformedURLException e) {
             e.printStackTrace();// TODO
             return null;
         }
     }
 
-    @Override
     public String getVncAddress() {
-        return "vnc://vnc:secret@" + getContainerIpAddress() + ":" + getMappedPort(VNC_PORT);
+        return "vnc://vnc:secret@" + getHost() + ":" + getMappedPort(VNC_PORT);
     }
 
-    @Override
+    @Deprecated
     public String getPassword() {
         return DEFAULT_PASSWORD;
     }
 
-    @Override
+    @Deprecated
     public int getPort() {
         return VNC_PORT;
     }

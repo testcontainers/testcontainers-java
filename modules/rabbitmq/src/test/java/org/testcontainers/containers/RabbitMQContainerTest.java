@@ -1,15 +1,16 @@
 package org.testcontainers.containers;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.testcontainers.containers.RabbitMQContainer.SslVerification.VERIFY_PEER;
-import static org.testcontainers.utility.MountableFile.forClasspathResource;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import org.junit.Test;
+import org.testcontainers.utility.MountableFile;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,18 +20,18 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import org.junit.Test;
-import org.testcontainers.utility.MountableFile;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.testcontainers.containers.RabbitMQContainer.SslVerification.VERIFY_PEER;
+import static org.testcontainers.utility.MountableFile.forClasspathResource;
 
 /**
  * @author Martin Greber
  */
 public class RabbitMQContainerTest {
 
-    public static final String DEFAULT_IMAGE = "rabbitmq:3.7-management-alpine";
     public static final int DEFAULT_AMQPS_PORT = 5671;
     public static final int DEFAULT_AMQP_PORT = 5672;
     public static final int DEFAULT_HTTPS_PORT = 15671;
@@ -39,22 +40,21 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldCreateRabbitMQContainer()
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
 
-            assertThat(container.getDockerImageName()).isEqualTo(DEFAULT_IMAGE);
             assertThat(container.getAdminPassword()).isEqualTo("guest");
             assertThat(container.getAdminUsername()).isEqualTo("guest");
 
             container.start();
 
             assertThat(container.getAmqpsUrl()).isEqualTo(
-                String.format("amqps://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
+                String.format("amqps://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQPS_PORT)));
             assertThat(container.getAmqpUrl()).isEqualTo(
-                String.format("amqp://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_AMQP_PORT)));
+                String.format("amqp://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQP_PORT)));
             assertThat(container.getHttpsUrl()).isEqualTo(
-                String.format("https://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
+                String.format("https://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTPS_PORT)));
             assertThat(container.getHttpUrl()).isEqualTo(
-                String.format("http://%s:%d", container.getContainerIpAddress(), container.getMappedPort(DEFAULT_HTTP_PORT)));
+                String.format("http://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTP_PORT)));
 
             assertThat(container.getHttpsPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTPS_PORT));
             assertThat(container.getHttpPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTP_PORT));
@@ -71,17 +71,9 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithTag()
-    {
-        try (RabbitMQContainer container = new RabbitMQContainer(DEFAULT_IMAGE)) {
-            assertThat(container.getDockerImageName()).isEqualTo(DEFAULT_IMAGE);
-        }
-    }
-
-    @Test
     public void shouldCreateRabbitMQContainerWithExchange() throws IOException, InterruptedException
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withExchange("test-exchange", "direct");
 
             container.start();
@@ -92,9 +84,23 @@ public class RabbitMQContainerTest {
     }
 
     @Test
+    public void shouldCreateRabbitMQContainerWithExchangeInVhost() throws IOException, InterruptedException
+    {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+            container.withVhost("test-vhost");
+            container.withExchange("test-vhost", "test-exchange", "direct", false, false, false, Collections.emptyMap());
+
+            container.start();
+
+            assertThat(container.execInContainer("rabbitmqctl", "list_exchanges", "-p", "test-vhost").getStdout())
+                .containsPattern("test-exchange\\s+direct");
+        }
+    }
+
+    @Test
     public void shouldCreateRabbitMQContainerWithQueues() throws IOException, InterruptedException
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
 
             container.withQueue("queue-one")
                 .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
@@ -111,7 +117,7 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldMountConfigurationFile()
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
 
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
@@ -125,7 +131,7 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldMountConfigurationFileErlang()
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
 
             container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
@@ -139,9 +145,9 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldMountConfigurationFileSysctl()
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
 
-            container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
+            container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
             assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
@@ -152,7 +158,7 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldStartTheWholeEnchilada() throws IOException, InterruptedException
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container
                     .withVhost("vhost1")
                     .withVhostLimit("vhost1", "max-connections", 1)
@@ -214,7 +220,7 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldThrowExceptionForDodgyJson()
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
 
             assertThatCode(() ->
                 container.withQueue(
@@ -230,7 +236,7 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldWorkWithSSL()
     {
-        try (RabbitMQContainer container = new RabbitMQContainer()) {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withSSL(
                 forClasspathResource("/certs/server_key.pem", 0644),
                 forClasspathResource("/certs/server_certificate.pem", 0644),

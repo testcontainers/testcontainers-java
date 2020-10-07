@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 /**
  * This test forks a new JVM, otherwise it's not possible to reliably diff the threads
@@ -19,10 +20,10 @@ public class DaemonTest {
     public static void main(String[] args) {
         Thread mainThread = Thread.currentThread();
 
-        GenericContainer genericContainer = null;
+        GenericContainer<?> genericContainer = null;
 
         try {
-            genericContainer = new GenericContainer().withCommand("top");
+            genericContainer = new GenericContainer<>(TINY_IMAGE).withCommand("top");
             genericContainer.start();
 
             Set<Thread> threads = new HashSet<>(Thread.getAllStackTraces().keySet());
