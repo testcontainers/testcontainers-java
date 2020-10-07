@@ -1,17 +1,14 @@
 package com.example.kafkacluster;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.SneakyThrows;
 import org.rnorth.ducttape.unreliables.Unreliables;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.containers.KafkaContainer;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -30,7 +27,6 @@ public class KafkaContainerCluster implements Startable {
     private final Network network;
     private final GenericContainer zookeeper;
     private final Collection<KafkaContainer> brokers;
-    private final DockerClient dockerClient = DockerClientFactory.instance().client();
 
     public KafkaContainerCluster(int brokersNum, int internalTopicsRf) {
         this(CONFLUENT_PLATFORM_VERSION, brokersNum, internalTopicsRf);
@@ -96,25 +92,18 @@ public class KafkaContainerCluster implements Startable {
     @Override
     @SneakyThrows
     public void start() {
-        Stream<Startable> startables = this.brokers.stream().map(b -> (Startable) b);
+        Stream<Startable> startables = this.brokers.stream().map(Startable.class::cast);
         Startables.deepStart(startables).get(60, SECONDS);
 
-        Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> Stream.of(this.zookeeper)
-            .map(this::clusterBrokers)
-            .anyMatch(brokers -> brokers.split(",").length == this.brokersNum));
-    }
+        Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
+            Container.ExecResult result = this.zookeeper.execInContainer(
+                "sh", "-c",
+                "zookeeper-shell zookeeper:" + KafkaContainer.ZOOKEEPER_PORT + " ls /brokers/ids | tail -n 1"
+            );
+            String brokers = result.getStdout();
 
-    @SneakyThrows
-    private String clusterBrokers(GenericContainer c) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        dockerClient
-            .execStartCmd(
-                dockerClient.execCreateCmd(c.getContainerId()).withAttachStdout(true)
-                    .withCmd("sh", "-c", "zookeeper-shell zookeeper:" + KafkaContainer.ZOOKEEPER_PORT + " ls /brokers/ids | tail -n 1").exec().getId()
-                )
-            .exec(new ExecStartResultCallback(outputStream, null))
-            .awaitCompletion();
-        return outputStream.toString();
+            return brokers != null && brokers.split(",").length == this.brokersNum;
+        });
     }
 
     @Override
