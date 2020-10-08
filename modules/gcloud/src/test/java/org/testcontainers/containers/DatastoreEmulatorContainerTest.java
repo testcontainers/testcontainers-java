@@ -8,6 +8,7 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,7 +16,7 @@ public class DatastoreEmulatorContainerTest {
 
     @Rule
     // creatingDatastoreEmulatorContainer {
-    public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer();
+    public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0"));
     // }
 
     //  startingDatastoreEmulatorContainer {

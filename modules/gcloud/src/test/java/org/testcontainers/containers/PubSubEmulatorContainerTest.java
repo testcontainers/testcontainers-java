@@ -25,6 +25,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,7 +34,7 @@ public class PubSubEmulatorContainerTest {
 	public static final String PROJECT_ID = "my-project-id";
 
 	@Rule
-	public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer();
+	public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0"));
 
 	@Test
 	public void testSimple() throws IOException {

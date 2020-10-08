@@ -14,13 +14,14 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FirestoreEmulatorContainerTest {
 
     @Rule
-    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer();
+    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0"));
 
     @Test
     public void testSimple() throws ExecutionException, InterruptedException {

@@ -19,13 +19,14 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SpannerEmulatorContainerTest {
 
     @Rule
-    public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer();
+    public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer(DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.1.0"));
 
     private static final String PROJECT_NAME = "test-project";
     private static final String INSTANCE_NAME = "test-instance";
