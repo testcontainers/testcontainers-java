@@ -22,9 +22,11 @@ public class AmbiguousImagePullTest {
             client.removeImageCmd(alpineImage.getId()).exec();
         }
 
-        try (final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine"))
-            .withCommand("/bin/sh", "-c", "sleep 0")
-            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {
+        try (
+            final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine"))
+                .withCommand("/bin/sh", "-c", "sleep 0")
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+        ) {
             container.start();
             // do nothing other than start and stop
         }
