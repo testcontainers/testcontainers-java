@@ -11,16 +11,16 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.DefaultRecordingFileFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.SeleniumUtils;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.lifecycle.TestDescription;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -70,17 +70,19 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
 
         @Test
         public void recordingTestThatShouldHaveCorrectDuration() throws IOException, InterruptedException {
-            final String flvFileTitle = "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
-            final String flvFileNameRegEx = "PASSED-" + flvFileTitle + ".*\\.flv";
-            DockerImageName chromeDockerImageName = DockerImageName.parse("selenium/standalone-chrome-debug")
-                                                             .withTag(SeleniumUtils.determineClasspathSeleniumVersion());
+            File target = vncRecordingDirectory.getRoot();
             try (
-                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer(chromeDockerImageName)
-                    .withRecordingMode(RECORD_ALL, vncRecordingDirectory.getRoot())
+                // recordAll {
+                // To do this, simply add extra parameters to the rule constructor:
+                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
+                    .withCapabilities(new ChromeOptions())
+                    .withRecordingMode(RECORD_ALL, target)
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
+                    .withNetwork(NETWORK)
             ) {
                 chrome.start();
 
+                TimeUnit.SECONDS.sleep(5);
                 doSimpleExplore(chrome);
                 chrome.afterTest(new TestDescription() {
                     @Override
@@ -90,10 +92,12 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
 
                     @Override
                     public String getFilesystemFriendlyName() {
-                        return flvFileTitle;
+                        return "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
                     }
                 }, Optional.empty());
 
+                String flvFileTitle = "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
+                String flvFileNameRegEx = "PASSED-" + flvFileTitle + ".*\\.flv";
                 String recordedFile = vncRecordingDirectory.getRoot().listFiles(new PatternFilenameFilter(flvFileNameRegEx))[0].getCanonicalPath();
 
                 ToStringConsumer dockerLogConsumer = new ToStringConsumer();
@@ -101,7 +105,8 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     String recordFileContainerPath = "/tmp/chromeTestRecord.flv";
                     container.withCopyFileToContainer(MountableFile.forHostPath(recordedFile), recordFileContainerPath)
                             .withCreateContainerCmdModifier( createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg") )
-                            .withCommand("-i" , recordFileContainerPath)
+                            .withStartupTimeout( Duration.ofMinutes(1) )
+                            .withCommand("-i" , recordFileContainerPath, "-f" ,"null" ,"-" )
                             .withLogConsumer(dockerLogConsumer)
                             .start();
                 }
