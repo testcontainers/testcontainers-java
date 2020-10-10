@@ -99,6 +99,16 @@ public class KafkaContainerTest {
         }
     }
 
+    @Test
+    public void testConfluentPlatformVersion6() throws Exception {
+        try (
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.0.0"))
+        ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
     protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
         try (
             KafkaProducer<String, String> producer = new KafkaProducer<>(

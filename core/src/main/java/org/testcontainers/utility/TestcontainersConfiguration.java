@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.testcontainers.UnstableAPI;
 
 import java.io.File;
@@ -232,9 +233,9 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.trace("Testcontainers config override was found on {} but the file was not found", url, e);
+            log.warn("Testcontainers config override was found on {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         } catch (IOException e) {
-            log.warn("Testcontainers config override was found on {} but could not be loaded", url, e);
+            log.warn("Testcontainers config override was found on {} but could not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         }
         return properties;
     }
