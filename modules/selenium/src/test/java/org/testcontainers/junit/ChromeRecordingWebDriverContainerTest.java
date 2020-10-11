@@ -11,7 +11,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.DefaultRecordingFileFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.ToStringConsumer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
@@ -82,7 +83,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             ) {
                 chrome.start();
 
-                TimeUnit.SECONDS.sleep(5);
+                TimeUnit.SECONDS.sleep(1);
                 doSimpleExplore(chrome);
                 chrome.afterTest(new TestDescription() {
                     @Override
@@ -100,19 +101,20 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 String flvFileNameRegEx = "PASSED-" + flvFileTitle + ".*\\.flv";
                 String recordedFile = vncRecordingDirectory.getRoot().listFiles(new PatternFilenameFilter(flvFileNameRegEx))[0].getCanonicalPath();
 
-                ToStringConsumer dockerLogConsumer = new ToStringConsumer();
                 try( GenericContainer<?> container = new GenericContainer<>(TestcontainersConfiguration.getInstance().getVncDockerImageName()) ) {
                     String recordFileContainerPath = "/tmp/chromeTestRecord.flv";
                     container.withCopyFileToContainer(MountableFile.forHostPath(recordedFile), recordFileContainerPath)
                             .withCreateContainerCmdModifier( createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg") )
-                            .withStartupTimeout( Duration.ofMinutes(1) )
                             .withCommand("-i" , recordFileContainerPath, "-f" ,"null" ,"-" )
-                            .withLogConsumer(dockerLogConsumer)
+                            .waitingFor( new LogMessageWaitStrategy()
+                                                    .withRegEx(".*Duration.*")
+                                                    .withStartupTimeout(Duration.of(60, SECONDS)) )
                             .start();
-                }
+                    String ffmpegOutput = container.getLogs();
 
-                String dockerOutput = dockerLogConsumer.toUtf8String();
-                assertTrue("Duration is incorrect in:\n " + dockerOutput, dockerOutput.matches("[\\S\\s]*Duration: (?!00:00:00.00)[\\S\\s]*"));
+                    assertTrue("Duration is incorrect in:\n " + ffmpegOutput,
+                        ffmpegOutput.contains("Duration: 00:") && !(ffmpegOutput.contains("Duration: 00:00:00.00")));
+                }
             }
         }
     }
