@@ -38,7 +38,6 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      * @param image the image (e.g. {@value DEFAULT_IMAGE_AND_TAG}) to use
      * @deprecated use {@link MongoDbContainer(DockerImageName)} instead
      */
-    @Deprecated
     public MongoDbContainer(@NotNull String image) {
         this(DockerImageName.parse(image));
     }

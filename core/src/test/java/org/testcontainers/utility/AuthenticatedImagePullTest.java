@@ -59,7 +59,7 @@ public class AuthenticatedImagePullTest {
     private static DockerClient client;
 
     private static String testImageName;
-    private static String testImageNameWithTag;
+    private static RegistryAuthLocator mockAuthLocator;
 
     @BeforeClass
     public static void setUp() throws InterruptedException {
@@ -68,9 +68,8 @@ public class AuthenticatedImagePullTest {
 
         String testRegistryAddress = authenticatedRegistry.getHost() + ":" + authenticatedRegistry.getFirstMappedPort();
         testImageName = testRegistryAddress + "/alpine";
-        testImageNameWithTag = testImageName + ":latest";
 
-        final DockerImageName expectedName = DockerImageName.parse(testImageNameWithTag);
+        final DockerImageName expectedName = DockerImageName.parse(testImageName);
         final AuthConfig authConfig = new AuthConfig()
             .withUsername("testuser")
             .withPassword("notasecret")
@@ -89,7 +88,7 @@ public class AuthenticatedImagePullTest {
     @Before
     public void removeImageFromLocalDocker() {
         // remove the image tag from local docker so that it must be pulled before use
-        client.removeImageCmd(testImageNameWithTag).withForce(true).exec();
+        client.removeImageCmd(testImageName).withForce(true).exec();
     }
 
     @AfterClass
@@ -100,7 +99,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForContainerCreation() {
         // actually start a container, which will require an authenticated pull
-        try (final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(testImageNameWithTag))
+        try (final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(testImageName))
             .withCommand("/bin/sh", "-c", "sleep 10")) {
             container.start();
 
@@ -112,7 +111,7 @@ public class AuthenticatedImagePullTest {
     public void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
         // Prepare a simple temporary Dockerfile which requires our custom private image
         Path tempFile = getLocalTempFile(".Dockerfile");
-        String dockerFileContent = "FROM " + testImageNameWithTag;
+        String dockerFileContent = "FROM " + testImageName;
         Files.write(tempFile, dockerFileContent.getBytes());
 
         // Start a container built from a derived image, which will require an authenticated pull
@@ -136,7 +135,7 @@ public class AuthenticatedImagePullTest {
                 "services:\n" +
                 "  privateservice:\n" +
                 "      command: /bin/sh -c 'sleep 60'\n" +
-                "      image: " + testImageNameWithTag;
+                "      image: " + testImageName;
         Files.write(tempFile, composeFileContent.getBytes());
 
         // Start the docker compose project, which will require an authenticated pull
@@ -177,9 +176,9 @@ public class AuthenticatedImagePullTest {
             .getId();
 
         // push the image to the registry
-        client.tagImageCmd(id, testImageName, "latest").exec();
+        client.tagImageCmd(id, testImageName, "").exec();
 
-        client.pushImageCmd(testImageNameWithTag)
+        client.pushImageCmd(testImageName)
             .exec(new ResultCallback.Adapter<>())
             .awaitCompletion(1, TimeUnit.MINUTES);
     }

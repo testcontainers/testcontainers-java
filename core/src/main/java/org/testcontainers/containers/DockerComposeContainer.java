@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -81,6 +82,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private boolean localCompose;
     private boolean pull = true;
     private boolean build = false;
+    private Set<String> options = new HashSet<>();
     private boolean tailChildContainers;
 
     private String project;
@@ -213,7 +215,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .distinct()
             .collect(joining(" "));
 
-        String command = "up -d";
+        String command = optionsAsString() + "up -d";
 
         if (build) {
             command += " --build";
@@ -229,6 +231,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         // Run the docker-compose container, which starts up the services
         runWithCompose(command);
+    }
+
+    private String optionsAsString() {
+        String optionsString = options
+            .stream()
+            .collect(joining(" "));
+        if (optionsString.length() !=0 ) {
+            // ensures that there is a space between the options and 'up' if options are passed.
+            return optionsString + " ";
+        } else {
+            // otherwise two spaces would appear between 'docker-compose' and 'up'
+            return StringUtils.EMPTY;
+        }
     }
 
     private void waitUntilServiceStarted() {
@@ -518,6 +533,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     /**
+     * Adds options to the docker-compose command, e.g. docker-compose --compatibility.
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withOptions(String... options) {
+        this.options = new HashSet<>(Arrays.asList(options));
+        return self();
+    }
+
+    /**
      * Remove images after containers shutdown.
      *
      * @return this instance, for chaining
@@ -608,7 +633,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         //  as the docker daemon, just mapping the docker control socket is OK.
         // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
         //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind("/" + DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/docker.sock", READ_WRITE);
+        addFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/docker.sock", READ_WRITE);
         addEnv("DOCKER_HOST", "unix:///docker.sock");
         setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
         setWorkingDirectory(containerPwd);

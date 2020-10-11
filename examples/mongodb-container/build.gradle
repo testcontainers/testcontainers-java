@@ -9,4 +9,5 @@ repositories {
 dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'junit:junit:4.13'
+    testCompileClasspath 'org.jetbrains:annotations:20.1.0'
 }
