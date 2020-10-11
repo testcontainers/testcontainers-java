@@ -16,7 +16,9 @@ public class DatastoreEmulatorContainerTest {
 
     @Rule
     // creatingDatastoreEmulatorContainer {
-    public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0"));
+    public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0")
+    );
     // }
 
     //  startingDatastoreEmulatorContainer {
