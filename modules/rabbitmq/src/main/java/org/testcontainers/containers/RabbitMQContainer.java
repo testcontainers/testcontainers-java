@@ -28,7 +28,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     /**
      * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
-    private static final String DEFAULT_IMAGE_NAME = "rabbitmq";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("rabbitmq");
     private static final String DEFAULT_TAG = "3.7.25-management-alpine";
 
     private static final int DEFAULT_AMQP_PORT = 5672;
@@ -41,27 +41,27 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     private final List<List<String>> values = new ArrayList<>();
 
     /**
-     * Creates a Testcontainer using the official RabbitMQ docker image.
+     * Creates a RabbitMQ container using the official RabbitMQ docker image.
      * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
      */
     @Deprecated
     public RabbitMQContainer() {
-        this(DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
-     * Creates a Testcontainer using a specific docker image.
+     * Creates a RabbitMQ container using a specific docker image.
      *
      * @param dockerImageName The docker image to use.
-     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
      */
-    @Deprecated
     public RabbitMQContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public RabbitMQContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 

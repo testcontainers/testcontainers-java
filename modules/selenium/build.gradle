@@ -10,4 +10,7 @@ dependencies {
 
     testCompile 'org.mortbay.jetty:jetty:6.1.26'
     testCompile project(':nginx')
+
+    compileOnly 'org.jetbrains:annotations:20.1.0'
+    testCompileClasspath 'org.jetbrains:annotations:20.0.0'
 }

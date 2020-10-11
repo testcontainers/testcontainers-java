@@ -77,6 +77,15 @@ public class MongoDBContainerTest {
     }
 
     @Test
+    public void supportsMongoDB_4_4() {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))
+        ) {
+            mongoDBContainer.start();
+        }
+    }
+
+    @Test
     public void shouldTestDatabaseName() {
         try (
             final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
