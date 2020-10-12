@@ -15,7 +15,7 @@ dependencies {
     }
 
     compile 'commons-dbutils:commons-dbutils:1.7'
-    compile 'org.apache.tomcat:tomcat-jdbc:9.0.37'
+    compile 'org.apache.tomcat:tomcat-jdbc:9.0.39'
     compile 'org.vibur:vibur-dbcp:25.0'
     compile 'mysql:mysql-connector-java:8.0.21'
 }
