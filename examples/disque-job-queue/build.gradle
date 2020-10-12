@@ -7,8 +7,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.18.12"
-    annotationProcessor "org.projectlombok:lombok:1.18.10"
+    compileOnly "org.projectlombok:lombok:1.18.14"
+    annotationProcessor "org.projectlombok:lombok:1.18.14"
     implementation 'biz.paluch.redis:spinach:0.3'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.guava:guava:23.0'
