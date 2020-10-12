@@ -70,9 +70,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final int KV_SSL_PORT = 11207;
 
-    private static final String DOCKER_IMAGE_NAME = "couchbase/server";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("couchbase/server");
 
-    private static final String VERSION = "6.5.1";
+    private static final String DEFAULT_TAG = "6.5.1";
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -92,26 +92,26 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      */
     @Deprecated
     public CouchbaseContainer() {
-        this(DOCKER_IMAGE_NAME + ":" + VERSION);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
-     * Creates a new couchbase container with a custom image name.
+     * Creates a new couchbase container with the specified image name.
      *
      * @param dockerImageName the image name that should be used.
-     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
      */
-    @Deprecated
     public CouchbaseContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     /**
      * Create a new couchbase container with the specified image name.
-     * @param dockerImageName
+     * @param dockerImageName the image name that should be used.
      */
     public CouchbaseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
     }
 
     /**
