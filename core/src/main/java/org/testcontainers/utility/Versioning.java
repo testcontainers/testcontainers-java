@@ -24,12 +24,12 @@ interface Versioning {
 
         @Override
         public String getSeparator() {
-            return "";
+            return ":";
         }
 
         @Override
         public String toString() {
-            return "";
+            return "latest";
         }
 
         @Override
