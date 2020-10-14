@@ -20,11 +20,10 @@ jobs:
           java-version: '1.8'
       - name: Cache Gradle Home files
         uses: actions/cache@v1
+        continue-on-error: true
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-home-testmatrix-examples-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-home-testmatrix-examples-
       - id: set-matrix
         working-directory: ./examples/
         env:
@@ -48,11 +47,10 @@ jobs:
           java-version: '1.8'
       - name: Cache Gradle Home files
         uses: actions/cache@v1
+        continue-on-error: true
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-home-examples-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-home-examples-${{matrix.gradle_args}}_check-
       - name: Clear existing docker image cache
         run: docker image prune -af
       - name: Build and test Examples with Gradle (${{matrix.gradle_args}})

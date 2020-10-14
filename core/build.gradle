@@ -192,11 +192,11 @@ dependencies {
 
     compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.5'
 
-    shaded "org.yaml:snakeyaml:1.25"
+    shaded "org.yaml:snakeyaml:1.27"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.zeroturnaround:zt-exec:1.10', {
+    shaded 'org.zeroturnaround:zt-exec:1.12', {
         exclude(group: 'org.slf4j')
     }
 
@@ -205,13 +205,13 @@ dependencies {
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
     testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.5.11') {
+    testCompile ('org.mockito:mockito-core:3.5.13') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.17.1'
+    testCompile 'org.assertj:assertj-core:3.17.2'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"

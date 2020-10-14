@@ -8,14 +8,14 @@ dependencies {
     testCompile project(':postgresql')
     testCompile 'com.zaxxer:HikariCP:3.4.5'
     testCompile 'redis.clients:jedis:3.3.0'
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.12'
-    testCompile ('org.mockito:mockito-core:3.5.11') {
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.13'
+    testCompile ('org.mockito:mockito-core:3.5.13') {
         exclude(module: 'hamcrest-core')
     }
     testCompile 'org.assertj:assertj-core:3.17.2'
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.7.0'
 
-    testRuntime 'org.postgresql:postgresql:42.2.16'
+    testRuntime 'org.postgresql:postgresql:42.2.17'
     testRuntime 'mysql:mysql-connector-java:8.0.21'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }

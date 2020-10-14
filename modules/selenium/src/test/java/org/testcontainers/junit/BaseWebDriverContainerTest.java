@@ -1,5 +1,10 @@
 package org.testcontainers.junit;
 
+import static java.lang.String.format;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.junit.ClassRule;
 import org.openqa.selenium.By;
@@ -11,12 +16,6 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.concurrent.TimeUnit;
-
-import static java.lang.String.format;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-
 /**
  *
  */
@@ -26,7 +25,7 @@ public class BaseWebDriverContainerTest {
     public static Network NETWORK = Network.newNetwork();
 
     @ClassRule
-    public static GenericContainer<?> HELLO_WORLD = new GenericContainer<>(DockerImageName.parse("testcontainers/helloworld:1.0.0"))
+    public static GenericContainer<?> HELLO_WORLD = new GenericContainer<>(DockerImageName.parse("testcontainers/helloworld:1.1.0"))
         .withNetwork(NETWORK)
         .withNetworkAliases("helloworld")
         .withExposedPorts(8080, 8081)
