@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
-    private static final String IMAGE_NAME = "shopify/toxiproxy:2.1.0";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy");
+    private static final String DEFAULT_TAG = "2.1.0";
     private static final int TOXIPROXY_CONTROL_PORT = 8474;
     private static final int FIRST_PROXIED_PORT = 8666;
     private static final int LAST_PROXIED_PORT = 8666 + 31;
@@ -35,19 +36,18 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
      */
     @Deprecated
     public ToxiproxyContainer() {
-        this(IMAGE_NAME);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public ToxiproxyContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public ToxiproxyContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         addExposedPorts(TOXIPROXY_CONTROL_PORT);
         setWaitStrategy(new HttpWaitStrategy().forPath("/version").forPort(TOXIPROXY_CONTROL_PORT));
 

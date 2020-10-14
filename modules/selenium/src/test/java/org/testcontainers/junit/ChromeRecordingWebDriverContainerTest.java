@@ -33,11 +33,12 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             try (
                 // recordAll {
                 // To do this, simply add extra parameters to the rule constructor:
-                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
                     .withRecordingMode(RECORD_ALL, target)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
+                    .withNetwork(NETWORK)
             ) {
                 chrome.start();
 
@@ -69,12 +70,13 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
         public void recordingTestThatShouldBeRecordedButNotPersisted() {
             try (
                 // withRecordingFileFactory {
-                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     // }
                     .withCapabilities(new ChromeOptions())
                     // withRecordingFileFactory {
                     .withRecordingFileFactory(new CustomRecordingFileFactory())
-                // }
+                    // }
+                    .withNetwork(NETWORK)
             ) {
                 chrome.start();
 
@@ -88,11 +90,12 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             try (
                 // recordFailing {
                 // or if you only want videos for test failures:
-                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
                     .withRecordingMode(RECORD_FAILING, target)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
+                    .withNetwork(NETWORK)
             ) {
                 chrome.start();
 
@@ -115,6 +118,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
 
         }
 
-        private static class CustomRecordingFileFactory extends DefaultRecordingFileFactory { }
+        private static class CustomRecordingFileFactory extends DefaultRecordingFileFactory {
+        }
     }
 }

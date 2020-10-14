@@ -26,7 +26,7 @@ Now your tests or any other process running on your machine can get access to ru
 
 ### Selecting Kafka version
 
-You can select a version of Confluent Platform by passing it to the container's constructor:
+You can select a specific Confluent Platform Kafka docker image by passing it to the container's constructor:
 <!--codeinclude-->
 [Version Constructor](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
@@ -44,7 +44,7 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 
 ## Multi-container usage
 
-If your test needs to run some other Docker container which needs access to the Kafka, do the following:
+If your test needs to run some other Docker container which needs access to Kafka, do the following:
 
 * Run your other container on the same network as Kafka container, e.g.:
 <!--codeinclude-->
@@ -52,6 +52,8 @@ If your test needs to run some other Docker container which needs access to the 
 <!--/codeinclude-->
 * Use `kafka.getNetworkAliases().get(0)+":9092"` as bootstrap server location. 
 Or just give your Kafka container a network alias of your liking.
+
+You will need to explicitly create a network and set it on the Kafka container as well as on your other containers that need to communicate with Kafka.
 
 ## Adding this module to your project dependencies
 
