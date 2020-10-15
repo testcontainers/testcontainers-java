@@ -15,15 +15,24 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk");
 
     private static final String CMD = "gcloud beta emulators datastore start --project test-project --host-port 0.0.0.0:8081";
+    private static final int HTTP_PORT = 8081;
 
     public DatastoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        withExposedPorts(8081);
+        withExposedPorts(HTTP_PORT);
         setWaitStrategy(Wait.forHttp("/").forStatusCode(200));
         withCommand("/bin/sh", "-c", CMD);
     }
 
+    /**
+     * @return a <code>host:port</code> pair corresponding to the address on which the emulator is
+     * reachable from the test host machine. Directly usable as a parameter to the
+     * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
+     */
+    public String getEmulatorEndpoint() {
+        return getContainerIpAddress() + ":" + getMappedPort(8081);
+    }
 }

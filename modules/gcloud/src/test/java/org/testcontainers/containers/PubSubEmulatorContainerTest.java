@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
@@ -23,11 +23,10 @@ import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.TopicName;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class PubSubEmulatorContainerTest {
 
@@ -38,7 +37,7 @@ public class PubSubEmulatorContainerTest {
 
     @Test
     public void testSimple() throws IOException {
-        String hostport = emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8085);
+        String hostport = emulator.getEmulatorEndpoint();
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
         try {
             TransportChannelProvider channelProvider =
