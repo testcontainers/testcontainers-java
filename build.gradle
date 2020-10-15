@@ -1,14 +1,12 @@
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '3.1.0'
-    id 'nebula.provided-base' version '3.0.3'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
-    id "com.jfrog.bintray" version "1.8.4" apply false
+    id 'io.franzbecker.gradle-lombok' version '4.0.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id "com.jfrog.bintray" version "1.8.5" apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
 
 subprojects {
-    apply plugin: 'nebula.provided-base'
     apply plugin: 'java'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
