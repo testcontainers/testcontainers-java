@@ -25,4 +25,20 @@ public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorCo
                 .withRegEx(".*Cloud Spanner emulator running\\..*"));
     }
 
+    /**
+     * @return a <code>host:port</code> pair corresponding to the address on which the emulator's
+     * gRPC endpoint is reachable from the test host machine. Directly usable as a parameter to the
+     * com.google.cloud.spanner.SpannerOptions.Builder#setEmulatorHost(java.lang.String) method.
+     */
+    public String getEmulatorGrpcEndpoint() {
+        return getContainerIpAddress() + ":" + getMappedPort(GRPC_PORT);
+    }
+
+    /**
+     * @return a <code>host:port</code> pair corresponding to the address on which the emulator's
+     * HTTP REST endpoint is reachable from the test host machine.
+     */
+    public String getEmulatorHttpEndpoint() {
+        return getContainerIpAddress() + ":" + getMappedPort(HTTP_PORT);
+    }
 }
