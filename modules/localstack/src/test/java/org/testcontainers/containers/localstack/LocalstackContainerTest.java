@@ -10,6 +10,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.KMS;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+import static org.testcontainers.containers.localstack.LocalstackTestImages.LOCALSTACK_IMAGE;
 
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
@@ -64,9 +65,7 @@ public class LocalstackContainerTest {
 
         // without_network {
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(
-            DockerImageName.parse("localstack/localstack:0.11.0")
-        )
+        public static LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
             .withServices(S3, SQS, CLOUDWATCHLOGS, KMS);
         // }
 
@@ -179,9 +178,7 @@ public class LocalstackContainerTest {
         private static Network network = Network.newNetwork();
 
         @ClassRule
-        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(
-            DockerImageName.parse("localstack/localstack:0.11.0")
-        )
+        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(LOCALSTACK_IMAGE)
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack")    // the last alias is used for HOSTNAME_EXTERNAL
             .withServices(S3, SQS, CLOUDWATCHLOGS);
