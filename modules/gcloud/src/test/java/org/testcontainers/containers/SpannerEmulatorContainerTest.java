@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
@@ -17,11 +16,11 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SpannerEmulatorContainerTest {
 
@@ -35,7 +34,7 @@ public class SpannerEmulatorContainerTest {
     @Test
     public void testSimple() throws ExecutionException, InterruptedException {
         SpannerOptions options = SpannerOptions.newBuilder()
-                .setEmulatorHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(9010))
+                .setEmulatorHost(emulator.getEmulatorGrpcEndpoint())
                 .setCredentials(NoCredentials.getInstance())
                 .setProjectId(PROJECT_NAME)
                 .build();
