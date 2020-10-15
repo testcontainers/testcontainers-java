@@ -50,6 +50,7 @@ nav:
                 - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
                 - modules/databases/mariadb.md
+                - modules/databases/mongodb.md
                 - modules/databases/mssqlserver.md
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
@@ -59,12 +60,14 @@ nav:
                 - modules/databases/presto.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
+          - modules/gcloud.md
           - modules/kafka.md
           - modules/localstack.md
           - modules/mockserver.md
           - modules/nginx.md
           - modules/pulsar.md
           - modules/rabbitmq.md
+          - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
           - modules/webdriver_containers.md
@@ -87,5 +90,6 @@ nav:
     - Contributing:
           - contributing.md
           - contributing_docs.md
+          - bounty.md
 extra:
-    latest_version: 1.14.1
+    latest_version: 1.14.3

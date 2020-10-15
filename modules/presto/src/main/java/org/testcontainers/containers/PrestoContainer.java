@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,6 +16,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "presto";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("prestosql/presto");
     public static final String IMAGE = "prestosql/presto";
     public static final String DEFAULT_TAG = "329";
 
@@ -23,14 +25,25 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     private String username = "test";
     private String catalog = null;
 
+    /**
+     * @deprecated use {@link PrestoContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public PrestoContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public PrestoContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public PrestoContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         this.waitStrategy = new LogMessageWaitStrategy()
-            .withRegEx(".*io.prestosql.server.PrestoServer\\s+======== SERVER STARTED ========.*")
+            .withRegEx(".*======== SERVER STARTED ========.*")
             .withStartupTimeout(Duration.of(60, SECONDS));
 
         addExposedPort(PRESTO_PORT);
@@ -49,7 +62,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
 
     @Override
     public String getJdbcUrl() {
-        return format("jdbc:presto://%s:%s/%s", getContainerIpAddress(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
+        return format("jdbc:presto://%s:%s/%s", getHost(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
     }
 
     @Override

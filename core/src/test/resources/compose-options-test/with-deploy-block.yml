@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  redis:
+      image: redis:2.6.17
+      deploy:
+        resources:
+          limits:
+            memory: 150M

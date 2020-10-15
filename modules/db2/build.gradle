@@ -2,4 +2,7 @@ description = "Testcontainers :: JDBC :: DB2"
 
 dependencies {
     compile project(':jdbc')
+
+    testCompile project(':jdbc-test')
+    testCompile 'com.ibm.db2:jcc:11.5.0.0'
 }

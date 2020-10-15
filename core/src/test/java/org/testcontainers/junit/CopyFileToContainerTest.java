@@ -1,62 +1,41 @@
 package org.testcontainers.junit;
 
-import com.google.common.io.Files;
-import com.google.common.io.Resources;
 import org.junit.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class CopyFileToContainerTest {
-    public static final String destinationOnHost = "/tmp/test-resource-in-host.txt";
-    private static String directoryInContainer = "/tmp/mappable-resource/";
+    private static String containerPath = "/tmp/mappable-resource/";
     private static String fileName = "test-resource.txt";
 
     @Test
     public void checkFileCopied() throws IOException, InterruptedException {
         try (
-            // copyToContainer {
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
-                // withCopyFileToContainer ensure that a file or directory will be copied to the container
-                // before starting. In this case, we map a classpath directory to a directory inside the container
-                .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), directoryInContainer)
-            // }
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), containerPath)
         ) {
             container.start();
-
-            // at this point directoryInContainer should exist, and should contain copies of file(s)
-            String filesList = container.execInContainer("ls", directoryInContainer).getStdout();
+            String filesList = container.execInContainer("ls", "/tmp/mappable-resource").getStdout();
             assertTrue("file list contains the file", filesList.contains(fileName));
-
-            // ...
-
-            // copyFromContainer {
-            container.copyFileFromContainer(directoryInContainer + fileName, destinationOnHost);
-            // }
         }
-
-        assertArrayEquals(
-            Files.toByteArray(new File(destinationOnHost)),
-            Resources.toByteArray(CopyFileToContainerTest.class.getResource("/mappable-resource/" + fileName))
-        );
     }
 
     @Test
     public void shouldUseCopyForReadOnlyClasspathResources() throws Exception {
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
-                .withClasspathResourceMapping("/mappable-resource/", directoryInContainer, BindMode.READ_ONLY)
+                .withClasspathResourceMapping("/mappable-resource/", containerPath, BindMode.READ_ONLY)
         ) {
             container.start();
             String filesList = container.execInContainer("ls", "/tmp/mappable-resource").getStdout();
@@ -67,7 +46,7 @@ public class CopyFileToContainerTest {
     @Test
     public void shouldUseCopyOnlyWithReadOnlyClasspathResources() {
         String resource = "/test_copy_to_container.txt";
-        GenericContainer<?> container = new GenericContainer<>()
+        GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
             .withClasspathResourceMapping(resource, "/readOnly", BindMode.READ_ONLY)
             .withClasspathResourceMapping(resource, "/readOnlyNoSelinux", BindMode.READ_ONLY)
 
@@ -86,7 +65,7 @@ public class CopyFileToContainerTest {
     public void shouldCreateFoldersStructureWithCopy() throws Exception {
         String resource = "/test_copy_to_container.txt";
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
                 .withClasspathResourceMapping(resource, "/a/b/c/file", BindMode.READ_ONLY)
         ) {

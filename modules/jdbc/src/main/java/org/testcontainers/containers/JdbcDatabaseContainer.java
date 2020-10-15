@@ -2,11 +2,13 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
@@ -16,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Base class for containers that expose a JDBC connection
@@ -28,16 +32,26 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private Driver driver;
     private String initScriptPath;
     protected Map<String, String> parameters = new HashMap<>();
+    protected Map<String, String> urlParameters = new HashMap<>();
 
     private int startupTimeoutSeconds = 120;
     private int connectTimeoutSeconds = 120;
 
+    private static final String QUERY_PARAM_SEPARATOR = "&";
+
+    /**
+     * @deprecated use {@link JdbcDatabaseContainer(DockerImageName)} instead
+     */
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
-        super(dockerImageName);
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public JdbcDatabaseContainer(@NonNull final Future<String> image) {
         super(image);
+    }
+
+    public JdbcDatabaseContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
     }
 
     /**
@@ -82,7 +96,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     public SELF withDatabaseName(String dbName) {
         throw new UnsupportedOperationException();
+    }
 
+    public SELF withUrlParam(String paramName, String paramValue) {
+        urlParameters.put(paramName, paramValue);
+        return self();
     }
 
     /**
@@ -220,7 +238,34 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return a full JDBC URL including queryString
      */
     protected String constructUrlForConnection(String queryString) {
-        return getJdbcUrl() + queryString;
+        String baseUrl = getJdbcUrl();
+
+        if ("".equals(queryString)) {
+            return baseUrl;
+        }
+
+        if (!queryString.startsWith("?")) {
+            throw new IllegalArgumentException("The '?' character must be included");
+        }
+
+        return baseUrl.contains("?")
+            ? baseUrl + QUERY_PARAM_SEPARATOR + queryString.substring(1)
+            : baseUrl + queryString;
+    }
+
+    protected String constructUrlParameters(String startCharacter, String delimiter) {
+        return constructUrlParameters(startCharacter, delimiter, StringUtils.EMPTY);
+    }
+
+    protected String constructUrlParameters(String startCharacter, String delimiter, String endCharacter) {
+        String urlParameters = "";
+        if (!this.urlParameters.isEmpty()) {
+            String additionalParameters = this.urlParameters.entrySet().stream()
+                .map(Object::toString)
+                .collect(joining(delimiter));
+            urlParameters = startCharacter + additionalParameters + endCharacter;
+        }
+        return urlParameters;
     }
 
     protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {

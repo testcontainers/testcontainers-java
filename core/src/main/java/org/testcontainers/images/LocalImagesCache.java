@@ -39,7 +39,7 @@ enum LocalImagesCache {
 
             InspectImageResponse response = null;
             try {
-                response = dockerClient.inspectImageCmd(imageName.toString()).exec();
+                response = dockerClient.inspectImageCmd(imageName.asCanonicalNameString()).exec();
             } catch (NotFoundException e) {
                 log.trace("Image {} not found", imageName, e);
             }
@@ -79,10 +79,14 @@ enum LocalImagesCache {
             }
 
             cache.putAll(
-                Stream.of(repoTags).collect(Collectors.toMap(
-                    DockerImageName::new,
-                    it -> ImageData.from(image)
-                ))
+                Stream.of(repoTags)
+                    // Protection against some edge case where local image repository tags end up with duplicates
+                    // making toMap crash at merge time.
+                    .distinct()
+                    .collect(Collectors.toMap(
+                        DockerImageName::new,
+                        it -> ImageData.from(image)
+                    ))
             );
         }
     }

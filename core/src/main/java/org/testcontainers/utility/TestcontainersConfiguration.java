@@ -1,11 +1,23 @@
 package org.testcontainers.utility;
 
 import com.google.common.annotations.VisibleForTesting;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.testcontainers.UnstableAPI;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
@@ -26,7 +38,7 @@ public class TestcontainersConfiguration {
     private static File ENVIRONMENT_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     @Getter(lazy = true)
-    private static final TestcontainersConfiguration instance = loadConfiguration();;
+    private static final TestcontainersConfiguration instance = loadConfiguration();
 
     @SuppressWarnings({"ConstantConditions", "unchecked", "rawtypes"})
     @VisibleForTesting
@@ -47,52 +59,109 @@ public class TestcontainersConfiguration {
         this.properties.putAll(environmentProperties);
     }
 
+    private DockerImageName getImage(final String key, final String defaultValue) {
+        return DockerImageName
+            .parse(properties.getProperty(key, defaultValue).trim())
+            .asCompatibleSubstituteFor(defaultValue);
+    }
+
+    @Deprecated
     public String getAmbassadorContainerImage() {
-        return (String) properties.getOrDefault("ambassador.container.image", "richnorth/ambassador:latest");
+        return getAmbassadorContainerDockerImageName().asCanonicalNameString();
     }
 
+    @Deprecated
+    public DockerImageName getAmbassadorContainerDockerImageName() {
+        return getImage("ambassador.container.image", "richnorth/ambassador:latest");
+    }
+
+    @Deprecated
     public String getSocatContainerImage() {
-        return (String) properties.getOrDefault("socat.container.image", "alpine/socat:latest");
+        return getSocatDockerImageName().asCanonicalNameString();
     }
 
+    public DockerImageName getSocatDockerImageName() {
+        return getImage("socat.container.image", "alpine/socat:latest");
+    }
+
+    @Deprecated
     public String getVncRecordedContainerImage() {
-        return (String) properties.getOrDefault("vncrecorder.container.image", "quay.io/testcontainers/vnc-recorder:1.1.0");
+        return getVncDockerImageName().asCanonicalNameString();
     }
 
+    public DockerImageName getVncDockerImageName() {
+        return getImage("vncrecorder.container.image", "testcontainers/vnc-recorder:1.1.0");
+    }
+
+    @Deprecated
     public String getDockerComposeContainerImage() {
-        return (String) properties.getOrDefault("compose.container.image", "docker/compose:1.24.1");
+        return getDockerComposeDockerImageName().asCanonicalNameString();
     }
 
+    public DockerImageName getDockerComposeDockerImageName() {
+        return getImage("compose.container.image", "docker/compose:1.24.1");
+    }
+
+    @Deprecated
     public String getTinyImage() {
-        return (String) properties.getOrDefault("tinyimage.container.image", "alpine:3.5");
+        return getTinyDockerImageName().asCanonicalNameString();
+    }
+
+    public DockerImageName getTinyDockerImageName() {
+        return getImage("tinyimage.container.image", "alpine:3.5");
     }
 
     public boolean isRyukPrivileged() {
         return Boolean.parseBoolean((String) properties.getOrDefault("ryuk.container.privileged", "false"));
     }
 
+    @Deprecated
     public String getRyukImage() {
-        return (String) properties.getOrDefault("ryuk.container.image", "quay.io/testcontainers/ryuk:0.2.3");
+        return getRyukDockerImageName().asCanonicalNameString();
     }
 
+    public DockerImageName getRyukDockerImageName() {
+        return getImage("ryuk.container.image", "testcontainers/ryuk:0.3.0");
+    }
+
+    @Deprecated
     public String getSSHdImage() {
-        return (String) properties.getOrDefault("sshd.container.image", "quay.io/testcontainers/sshd:1.0.0");
+        return getSSHdDockerImageName().asCanonicalNameString();
+    }
+
+    public DockerImageName getSSHdDockerImageName() {
+        return getImage("sshd.container.image", "testcontainers/sshd:1.0.0");
     }
 
     public Integer getRyukTimeout() {
         return Integer.parseInt((String) properties.getOrDefault("ryuk.container.timeout", "30"));
     }
 
+    @Deprecated
     public String getKafkaImage() {
-        return (String) properties.getOrDefault("kafka.container.image", "confluentinc/cp-kafka");
+        return getKafkaDockerImageName().asCanonicalNameString();
     }
 
+    public DockerImageName getKafkaDockerImageName() {
+        return getImage("kafka.container.image", "confluentinc/cp-kafka");
+    }
+
+    @Deprecated
     public String getPulsarImage() {
-        return (String) properties.getOrDefault("pulsar.container.image", "apachepulsar/pulsar");
+        return getPulsarDockerImageName().asCanonicalNameString();
     }
 
+    public DockerImageName getPulsarDockerImageName() {
+        return getImage("pulsar.container.image", "apachepulsar/pulsar");
+    }
+
+    @Deprecated
     public String getLocalStackImage() {
-        return (String) properties.getOrDefault("localstack.container.image", "localstack/localstack");
+        return getLocalstackDockerImageName().asCanonicalNameString();
+    }
+
+    public DockerImageName getLocalstackDockerImageName() {
+        return getImage("localstack.container.image", "localstack/localstack");
     }
 
     public boolean isDisableChecks() {
@@ -108,11 +177,6 @@ public class TestcontainersConfiguration {
         return (String) environmentProperties.get("docker.client.strategy");
     }
 
-    /**
-     *
-     * @deprecated we no longer have different transport types
-     */
-    @Deprecated
     public String getTransportType() {
         return properties.getProperty("transport.type", "okhttp");
     }
@@ -169,9 +233,9 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.trace("Testcontainers config override was found on {} but the file was not found", url, e);
+            log.warn("Testcontainers config override was found on {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         } catch (IOException e) {
-            log.warn("Testcontainers config override was found on {} but could not be loaded", url, e);
+            log.warn("Testcontainers config override was found on {} but could not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         }
         return properties;
     }
