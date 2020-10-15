@@ -23,7 +23,9 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Elasticsearch Default Transport port
+     * The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
      */
+    @Deprecated
     private static final int ELASTICSEARCH_DEFAULT_TCP_PORT = 9300;
 
     /**
@@ -35,7 +37,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     /**
      * Elasticsearch Default version
      */
-    protected static final String DEFAULT_TAG = "6.4.1";
+    @Deprecated
+    protected static final String DEFAULT_TAG = "7.9.2";
 
     /**
      * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
@@ -47,7 +50,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
      */
     public ElasticsearchContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -55,7 +58,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.9.2")
      */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -76,6 +79,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 
+    @Deprecated // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
     public InetSocketAddress getTcpHost() {
         return new InetSocketAddress(getHost(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }
