@@ -220,10 +220,10 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void withMlTest() throws IOException {
-        // mlFeature {
+        // machineLearningFeature {
         // Create the elasticsearch container with Machine Learning feature.
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
-            .withML()
+            .withMachineLearning()
         ) {
             // Start the container. This step might take some time...
             container.start();
@@ -238,7 +238,7 @@ public class ElasticsearchContainerTest {
 
             // Check that machine learning is not activated by default
             assertThat(tree.get("features").get("ml").get("enabled").asBoolean(), is(true));
-            // mlFeature {{
+            // machineLearningFeature {{
         }
         // }
     }
@@ -287,7 +287,7 @@ public class ElasticsearchContainerTest {
                 DockerImageName
                     .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
                     .withTag(ELASTICSEARCH_VERSION))
-                .withML()
+                .withMachineLearning()
         );
     }
 

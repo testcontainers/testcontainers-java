@@ -36,10 +36,10 @@ You can turn on security by providing a password:
 ### Machine Learning
 
 The Machine Learning feature is rarely used within integration tests. The Elasticsearch Container module disables
-by default this feature. You can activate it by calling `withML()` when building the container:
+by default this feature. You can activate it by calling `withMachineLearning()` when building the container:
 
 <!--codeinclude-->
-[Machine Learning](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:mlFeature
+[Machine Learning](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:machineLearningFeature
 <!--/codeinclude-->
 
 ## Choose your Elasticsearch license
