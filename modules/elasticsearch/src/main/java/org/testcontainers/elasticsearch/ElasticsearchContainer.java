@@ -39,6 +39,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     @Deprecated
     protected static final String DEFAULT_TAG = "7.9.2";
+    private boolean isOss = false;
 
     /**
      * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
@@ -65,6 +66,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
 
+        if (dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME)) {
+            this.isOss = true;
+        }
+
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
@@ -82,7 +87,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      * @return this
      */
     public ElasticsearchContainer withPassword(String password) {
-        if (getDockerImageName().startsWith(DEFAULT_OSS_IMAGE_NAME.getUnversionedPart())) {
+        if (isOss) {
             throw new IllegalArgumentException("You can not activate security on Elastic OSS Image. " +
                 "Please switch to the default distribution");
         }
