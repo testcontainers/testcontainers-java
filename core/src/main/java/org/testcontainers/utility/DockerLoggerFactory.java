@@ -16,10 +16,10 @@ public final class DockerLoggerFactory {
             abbreviatedName = dockerImageName;
         }
 
-        if ("UTF-8".equals(System.getProperty("file.encoding"))) {
-            return LoggerFactory.getLogger("\uD83D\uDC33 [" + abbreviatedName + "]");
-        } else {
-            return LoggerFactory.getLogger("docker[" + abbreviatedName + "]");
-        }
+        return LoggerFactory.getLogger(String.format(
+            "docker.%s[%s]",
+            "UTF-8".equals(System.getProperty("file.encoding")) ? "\uD83D\uDC33" : "",
+            abbreviatedName
+        ));
     }
 }
