@@ -6,6 +6,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 import java.io.IOException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -102,8 +104,13 @@ public class ElasticsearchContainerTest {
             // The default image is running with the features under Elastic License
             response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
+
+            JsonNode tree = JsonMapper.builder().build().readTree(response.getEntity().getContent());
             // For now we test that we have the monitoring feature available
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("monitoring"));
+            assertThat(tree.get("features").get("monitoring").get("available").asBoolean(), is(true));
+
+            // Check that machine learning is not activated by default
+            assertThat(tree.get("features").get("ml").get("enabled").asBoolean(), is(false));
         }
     }
 
@@ -211,6 +218,31 @@ public class ElasticsearchContainerTest {
         // }
     }
 
+    @Test
+    public void withMlTest() throws IOException {
+        // mlFeature {
+        // Create the elasticsearch container with Machine Learning feature.
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+            .withML()
+        ) {
+            // Start the container. This step might take some time...
+            container.start();
+            // }}
+
+            // The default image is running with the features under Elastic License
+            Response response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            JsonNode tree = JsonMapper.builder().build().readTree(response.getEntity().getContent());
+            // For now we test that we have the monitoring feature available
+            assertThat(tree.get("features").get("monitoring").get("available").asBoolean(), is(true));
+
+            // Check that machine learning is not activated by default
+            assertThat(tree.get("features").get("ml").get("enabled").asBoolean(), is(true));
+            // mlFeature {{
+        }
+        // }
+    }
+
     @SuppressWarnings("deprecation") // The TransportClient will be removed in Elasticsearch 8.
     @Test
     public void transportClientClusterHealth() {
@@ -246,6 +278,16 @@ public class ElasticsearchContainerTest {
                     .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
                     .withTag(ELASTICSEARCH_VERSION))
             .withPassword("foo")
+        );
+
+        // The OSS image can not use machine learning feature
+        assertThrows("We should not be able to activate machine learning with an OSS License",
+            IllegalArgumentException.class,
+            () -> new ElasticsearchContainer(
+                DockerImageName
+                    .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                    .withTag(ELASTICSEARCH_VERSION))
+                .withML()
         );
     }
 

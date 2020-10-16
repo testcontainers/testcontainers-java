@@ -19,13 +19,27 @@ Note that if you are still using the [TransportClient](https://www.elastic.co/gu
 (not recommended as it is deprecated), the default cluster name is set to `docker-cluster` so you need to change `cluster.name` setting
 or set `client.transport.ignore_cluster_name` to `true`.
 
-## Secure your Elasticsearch cluster
+## Enable / Disable features
+
+The default distribution of Elasticsearch comes with the basic Elastic license which contains a lot of features.
+You can turn on and off those features.
+
+### Secure your Elasticsearch cluster
 
 The default distribution of Elasticsearch comes with the basic license which contains security feature.
 You can turn on security by providing a password:
 
 <!--codeinclude-->
 [HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientSecuredContainer
+<!--/codeinclude-->
+
+### Machine Learning
+
+The Machine Learning feature is rarely used within integration tests. The Elasticsearch Container module disables
+by default this feature. You can activate it by calling `withML()` when building the container:
+
+<!--codeinclude-->
+[Machine Learning](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:mlFeature
 <!--/codeinclude-->
 
 ## Choose your Elasticsearch license

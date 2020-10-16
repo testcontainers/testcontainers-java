@@ -40,6 +40,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     @Deprecated
     protected static final String DEFAULT_TAG = "7.9.2";
     private boolean isOss = false;
+    private boolean ml = false;
 
     /**
      * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
@@ -94,6 +95,29 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         withEnv("ELASTIC_PASSWORD", password);
         withEnv("xpack.security.enabled", "true");
         return this;
+    }
+
+    /**
+     * Enable the machine learning module. It's desactivated by default at it takes some
+     * significant time to start.
+     * @return this
+     */
+    public ElasticsearchContainer withML() {
+        if (isOss) {
+            throw new IllegalArgumentException("You can not activate machine learning on Elastic OSS Image. " +
+                "Please switch to the default distribution");
+        }
+        ml = true;
+        return this;
+    }
+
+    @Override
+    public void start() {
+        if (!isOss) {
+            // Activate or desactivate the optional modules which are available within the default image
+            withEnv("xpack.ml.enabled", String.valueOf(ml));
+        }
+        super.start();
     }
 
     public String getHttpHostAddress() {
