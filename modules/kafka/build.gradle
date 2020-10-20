@@ -5,5 +5,5 @@ dependencies {
 
     testCompile 'org.apache.kafka:kafka-clients:2.6.0'
     testCompile 'org.assertj:assertj-core:3.17.2'
-    testCompile 'com.google.guava:guava:23.0'
+    testCompile 'com.google.guava:guava:30.0-jre'
 }

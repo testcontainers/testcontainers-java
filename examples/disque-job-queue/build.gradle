@@ -11,7 +11,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:1.18.14"
     implementation 'biz.paluch.redis:spinach:0.3'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.google.guava:guava:23.0'
+    implementation 'com.google.guava:guava:30.0-jre'
     testImplementation 'ch.qos.logback:logback-classic:1.2.3'
     testImplementation 'org.mockito:mockito-all:1.10.19'
     testImplementation 'org.testcontainers:testcontainers'
