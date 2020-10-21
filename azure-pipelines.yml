@@ -20,6 +20,18 @@ jobs:
   - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
     condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 
+  - task: Docker@2
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    displayName: Clean up Docker images
+    inputs:
+        command: container prune -f
+
+  - task: Docker@2
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    displayName: Clean up Docker images
+    inputs:
+        command: image prune -f
+
   # Run all tests when running the Windows CI tests
   - task: Gradle@2
     condition: eq(variables['Agent.OS'], 'Windows_NT')
