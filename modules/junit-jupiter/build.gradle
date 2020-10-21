@@ -1,7 +1,9 @@
 description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
-    compile project(':testcontainers')
+    compile( project(':testcontainers') ) {
+        exclude group: 'junit', module: 'junit'
+    }
     compile 'org.junit.jupiter:junit-jupiter-api:5.7.0'
 
     testCompile project(':mysql')
