@@ -22,15 +22,17 @@ jobs:
 
   - task: Docker@2
     condition: eq(variables['Agent.OS'], 'Windows_NT')
-    displayName: Clean up Docker images
+    displayName: Clean up Docker containers
     inputs:
-        command: container prune -f
+        command: container
+        arguments: prune -f
 
   - task: Docker@2
     condition: eq(variables['Agent.OS'], 'Windows_NT')
     displayName: Clean up Docker images
     inputs:
-        command: image prune -f
+        command: image
+        arguments: prune -f
 
   # Run all tests when running the Windows CI tests
   - task: Gradle@2
