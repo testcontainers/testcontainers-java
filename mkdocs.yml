@@ -92,4 +92,4 @@ nav:
           - contributing_docs.md
           - bounty.md
 extra:
-    latest_version: 1.14.3
+    latest_version: 1.15.0-rc2
