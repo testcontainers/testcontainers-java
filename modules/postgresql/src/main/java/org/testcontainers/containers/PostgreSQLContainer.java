@@ -5,10 +5,10 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Set;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singleton;
 
 /**
  * @author richardnorth
@@ -63,7 +63,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(POSTGRESQL_PORT));
+        return singleton(getMappedPort(POSTGRESQL_PORT));
     }
 
     @Override
