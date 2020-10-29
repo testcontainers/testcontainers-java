@@ -171,7 +171,7 @@ public abstract class DockerClientProviderStrategy {
                         }
 
                         if (strategy.isPersistable()) {
-                            TestcontainersConfiguration.getInstance().updateGlobalConfig("docker.client.strategy", strategy.getClass().getName());
+                            TestcontainersConfiguration.getInstance().updateUserConfig("docker.client.strategy", strategy.getClass().getName());
                         }
 
                         return Stream.of(strategy);

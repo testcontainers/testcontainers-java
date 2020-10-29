@@ -104,17 +104,9 @@ public class TestcontainersConfiguration {
         return getImage(SOCAT_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getSocatDockerImageName() {
-        return getImage(SOCAT_IMAGE);
-    }
-
     @Deprecated
     public String getVncRecordedContainerImage() {
         return getImage(VNC_RECORDER_IMAGE).asCanonicalNameString();
-    }
-
-    public DockerImageName getVncDockerImageName() {
-        return getImage(VNC_RECORDER_IMAGE);
     }
 
     @Deprecated
@@ -122,17 +114,9 @@ public class TestcontainersConfiguration {
         return getImage(COMPOSE_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getDockerComposeDockerImageName() {
-        return getImage(COMPOSE_IMAGE);
-    }
-
     @Deprecated
     public String getTinyImage() {
         return getImage(ALPINE_IMAGE).asCanonicalNameString();
-    }
-
-    public DockerImageName getTinyDockerImageName() {
-        return getImage(ALPINE_IMAGE);
     }
 
     public boolean isRyukPrivileged() {
@@ -145,17 +129,9 @@ public class TestcontainersConfiguration {
         return getImage(RYUK_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getRyukDockerImageName() {
-        return getImage(RYUK_IMAGE);
-    }
-
     @Deprecated
     public String getSSHdImage() {
         return getImage(SSHD_IMAGE).asCanonicalNameString();
-    }
-
-    public DockerImageName getSSHdDockerImageName() {
-        return getImage(SSHD_IMAGE);
     }
 
     public Integer getRyukTimeout() {
@@ -167,11 +143,6 @@ public class TestcontainersConfiguration {
         return getImage(KAFKA_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getKafkaDockerImageName() {
-        return getImage(KAFKA_IMAGE);
-    }
-
-
     @Deprecated
     public String getOracleImage() {
         return getEnvVarOrUserProperty("oracle.container.image", null);
@@ -182,17 +153,9 @@ public class TestcontainersConfiguration {
         return getImage(PULSAR_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getPulsarDockerImageName() {
-        return getImage(PULSAR_IMAGE);
-    }
-
     @Deprecated
     public String getLocalStackImage() {
         return getImage(LOCALSTACK_IMAGE).asCanonicalNameString();
-    }
-
-    public DockerImageName getLocalstackDockerImageName() {
-        return getImage(LOCALSTACK_IMAGE);
     }
 
 

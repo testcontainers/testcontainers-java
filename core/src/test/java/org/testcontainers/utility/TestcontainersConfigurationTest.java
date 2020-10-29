@@ -26,6 +26,36 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
+    public void shouldSubstituteImageNamesFromClasspathProperties() {
+        classpathProperties.setProperty("ryuk.container.image", "foo:version");
+        assertEquals(
+            "an image name can be pulled from classpath properties",
+            DockerImageName.parse("foo:version"),
+            newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any"))
+        );
+    }
+
+    @Test
+    public void shouldSubstituteImageNamesFromUserProperties() {
+        userProperties.setProperty("ryuk.container.image", "foo:version");
+        assertEquals(
+            "an image name can be pulled from user properties",
+            DockerImageName.parse("foo:version"),
+            newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any"))
+        );
+    }
+
+    @Test
+    public void shouldSubstituteImageNamesFromEnvironmentVariables() {
+        environment.put("TESTCONTAINERS_RYUK_CONTAINER_IMAGE", "foo:version");
+        assertEquals(
+            "an image name can be pulled from an environment variable",
+            DockerImageName.parse("foo:version"),
+            newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any"))
+        );
+    }
+
+    @Test
     public void shouldNotReadChecksFromClasspathProperties() {
         assertFalse("checks enabled by default", newConfig().isDisableChecks());
 

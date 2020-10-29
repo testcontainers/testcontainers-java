@@ -29,11 +29,11 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.AuditLogger;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.CommandLine;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
-import org.testcontainers.utility.TestcontainersConfiguration;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
@@ -608,10 +608,11 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
     public static final char UNIX_PATH_SEPERATOR = ':';
+    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.24.1");
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 
-        super(TestcontainersConfiguration.getInstance().getDockerComposeDockerImageName());
+        super(DEFAULT_IMAGE_NAME);
         addEnv(ENV_PROJECT_NAME, identifier);
 
         // Map the docker compose file into the container
