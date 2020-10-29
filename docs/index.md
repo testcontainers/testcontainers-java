@@ -101,7 +101,7 @@ A huge thank you to our sponsors:
 ### Bronze sponsors
 
 <div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
-    <a href="http://cirruslabs.org/">
+    <a href="https://cirruslabs.org/">
         <img src="sponsor_logos/cirrus_labs.jpg" style="width: 100%"/>
         <p>Cirrus Labs</p>
         <!-- via fkorotkov's sponsorship -->
@@ -115,6 +115,13 @@ A huge thank you to our sponsors:
     </a>
 </div>
 
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.jooq.org/">
+        <img src="sponsor_logos/jooq.jpg" style="width: 100%"/>
+        <p>jOOQ</p>
+    </a>
+</div>
+
 ### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
@@ -123,9 +130,7 @@ A huge thank you to our sponsors:
 * [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
 * [Pascal Zwick (@pas2al)](https://github.com/pas2al)
 * [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
-* [jOOQ (@jOOQ)](https://github.com/jOOQ)
 * [Bas Stoker (@bastoker)](https://github.com/bastoker)
-
 
 ## Who is using Testcontainers?
 
