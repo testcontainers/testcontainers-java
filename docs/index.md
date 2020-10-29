@@ -96,19 +96,35 @@ Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain t
 
 <iframe src="https://github.com/sponsors/testcontainers/button" title="Sponsor Testcontainers" height="35" width="107" style="border: 0;"></iframe>
 
-### Backers
+A huge thank you to our sponsors:
 
-A huge thank you to our backers:
+### Bronze sponsors
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="http://cirruslabs.org/">
+        <img src="sponsor_logos/cirrus_labs.jpg" style="width: 100%"/>
+        <p>Cirrus Labs</p>
+        <!-- via fkorotkov's sponsorship -->
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://vivy.com">
+        <img src="sponsor_logos/vivy.png" style="width: 100%"/>
+        <p>Vivy</p>
+    </a>
+</div>
+
+### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
 * [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
 * [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
-* [Lukas Eder (@lukaseder)](https://github.com/lukaseder)
-* [Fedor Korotkov (@fkorotkov)](https://github.com/fkorotkov)
 * [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
 * [Pascal Zwick (@pas2al)](https://github.com/pas2al)
 * [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
-
+* [jOOQ (@jOOQ)](https://github.com/jOOQ)
+* [Bas Stoker (@bastoker)](https://github.com/bastoker)
 
 
 ## Who is using Testcontainers?
