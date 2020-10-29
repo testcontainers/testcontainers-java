@@ -103,7 +103,7 @@ A huge thank you to our sponsors:
 <div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
     <a href="https://cirrus-ci.org/">
         <img src="sponsor_logos/cirrus_labs.jpg" style="width: 100%"/>
-        <p>Cirrus Labs</p>
+        <p>Cirrus CI</p>
         <!-- via fkorotkov's sponsorship -->
     </a>
 </div>
