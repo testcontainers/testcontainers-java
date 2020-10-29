@@ -11,6 +11,7 @@ This page describes four approaches for image name substitution:
 
 * [Manual substitution](#manual-substitution) - not relying upon an automated approach
 * Using an Image Name Substitutor:
+    * Recommended: [Adding a registry URL prefix to image names automatically](#adding-a-registry-url-prefix-to-image-names-automatically)
     * [Developing a custom function for transforming image names on the fly](#developing-a-custom-function-for-transforming-image-names-on-the-fly)
     * [Overriding image names individually in configuration](#overriding-image-names-individually-in-configuration)
 
@@ -45,6 +46,33 @@ to:
 
 
 
+## Adding a registry URL prefix to image names automatically
+
+Consider this if:
+
+* Developers and CI machines need to use different image names. For example, developers are able to pull images from Docker Hub, but CI machines need to pull from a private registry
+* Your private registry has copies of images from Docker Hub where the names are predictable, and just adding a prefix is enough. 
+  For example, `registry.mycompany.com/mirror/mysql:8.0.22` can be derived from the original Docker Hub image name (`mysql:8.0.22`) with a consistent prefix string: `registry.mycompany.com/mirror/`
+
+In this case, image name references in code are **unchanged**.
+i.e. you would leave as-is:
+
+<!--codeinclude--> 
+[Unchanged direct Docker Hub image name](../examples/junit4/generic/src/test/java/generic/ImageNameSubstitutionTest.java) inside_block:directDockerHubReference
+<!--/codeinclude-->
+
+You can then configure Testcontainers to apply the prefix `registry.mycompany.com/mirror/` to every image that it tries to pull.
+This can be done in one of two ways:
+
+* Setting an environment variable, `TESTCONTAINERS_IMAGE_NAME_PREFIX=registry.mycompany.com/mirror/`
+* Via config file, setting `testcontainers.image.name.prefix=registry.mycompany.com/mirror/` in either:
+    * the `~/.testcontainers.properties` file in your user home directory, or
+    * a file named `testcontainers.properties` on the classpath
+
+Testcontainers will automatically apply this prefix to every image that it pulls - please verify that all [the required images](./pull_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
+
+Note that the prefix-based substitution will skip applying a prefix if it is already set.
+This is intended to help avoid obvious mistakes if image names have been partially migrated to a private image registry via changes to code.
 
 
 
