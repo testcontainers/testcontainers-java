@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Testcontainers' default implementation of {@link ImageNameSubstitutor}.
- * Delegates to {@link ConfigurationFileImageNameSubstitutor}.
+ * Delegates to {@link ConfigurationFileImageNameSubstitutor} followed by {@link PrefixingImageNameSubstitutor}.
  * <p>
  * WARNING: this class is not intended to be public, but {@link java.util.ServiceLoader}
  * requires it to be so. Public visibility DOES NOT make it part of the public API.
@@ -14,21 +14,29 @@ import lombok.extern.slf4j.Slf4j;
 public class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
 
     private final ConfigurationFileImageNameSubstitutor configurationFileImageNameSubstitutor;
+    private final PrefixingImageNameSubstitutor prefixingImageNameSubstitutor;
 
     public DefaultImageNameSubstitutor() {
         configurationFileImageNameSubstitutor = new ConfigurationFileImageNameSubstitutor();
+        prefixingImageNameSubstitutor = new PrefixingImageNameSubstitutor();
     }
 
     @VisibleForTesting
     DefaultImageNameSubstitutor(
-        final ConfigurationFileImageNameSubstitutor configurationFileImageNameSubstitutor
+        final ConfigurationFileImageNameSubstitutor configurationFileImageNameSubstitutor,
+        final PrefixingImageNameSubstitutor prefixingImageNameSubstitutor
     ) {
         this.configurationFileImageNameSubstitutor = configurationFileImageNameSubstitutor;
+        this.prefixingImageNameSubstitutor = prefixingImageNameSubstitutor;
     }
 
     @Override
     public DockerImageName apply(final DockerImageName original) {
-        return configurationFileImageNameSubstitutor.apply(original);
+        return prefixingImageNameSubstitutor.apply(
+            configurationFileImageNameSubstitutor.apply(
+                original
+            )
+        );
     }
 
     @Override
@@ -38,6 +46,6 @@ public class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
 
     @Override
     protected String getDescription() {
-        return "DefaultImageNameSubstitutor (delegates to '" + configurationFileImageNameSubstitutor.getDescription() + "')";
+        return "DefaultImageNameSubstitutor (composite of '" + configurationFileImageNameSubstitutor.getDescription() + "' and '" + prefixingImageNameSubstitutor.getDescription() + "')";
     }
 }
