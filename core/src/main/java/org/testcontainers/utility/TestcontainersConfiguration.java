@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -286,13 +285,7 @@ public class TestcontainersConfiguration {
     private static TestcontainersConfiguration loadConfiguration() {
         return new TestcontainersConfiguration(
             readProperties(USER_CONFIG_FILE.toURI().toURL()),
-            Stream
-                .of(
-                    TestcontainersConfiguration.class.getClassLoader(),
-                    Thread.currentThread().getContextClassLoader()
-                )
-                .map(it -> it.getResource(PROPERTIES_FILE_NAME))
-                .filter(Objects::nonNull)
+            ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
                 .map(TestcontainersConfiguration::readProperties)
                 .reduce(new Properties(), (a, b) -> {
                     a.putAll(b);
@@ -307,9 +300,9 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.warn("Testcontainers config override was found on {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn("Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         } catch (IOException e) {
-            log.warn("Testcontainers config override was found on {} but could not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn("Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         }
         return properties;
     }
