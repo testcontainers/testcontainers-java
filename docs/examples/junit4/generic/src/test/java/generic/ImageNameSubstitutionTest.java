@@ -1,7 +1,6 @@
 package generic;
 
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -24,7 +23,12 @@ public class ImageNameSubstitutionTest {
         }
     }
 
-    @Test @Ignore
+    /**
+     * Note that this test uses a fake image name, which will only work because
+     * {@link generic.support.TestSpecificImageNameSubstitutor} steps in to override the substitution for this exact
+     * image name.
+     */
+    @Test
     public void substitutedExample() {
         try (
             // hardcodedMirror {
