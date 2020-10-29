@@ -158,7 +158,6 @@ public class TestcontainersConfiguration {
         return getImage(LOCALSTACK_IMAGE).asCanonicalNameString();
     }
 
-
     public boolean isDisableChecks() {
         return Boolean.parseBoolean(getEnvVarOrUserProperty("checks.disable", "false"));
     }

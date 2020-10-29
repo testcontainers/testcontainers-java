@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
-    private static final String DEFAULT_TAG = "5.2.1";
+    private static final String DEFAULT_TAG = "5.4.3";
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 

@@ -171,7 +171,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                     vncRecordingDirectory = Files.createTempDirectory(TC_TEMP_DIR_PREFIX).toFile();
                 } catch (IOException e) {
                     // should never happen as per javadoc, since we use valid prefix
-                    logger().error("Exception while trying to create temp directory " + vncRecordingDirectory.getAbsolutePath(), e);
+                    logger().error("Exception while trying to create temp directory", e);
                     throw new ContainerLaunchException("Exception while trying to create temp directory", e);
                 }
             }

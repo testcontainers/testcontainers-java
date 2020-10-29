@@ -38,7 +38,7 @@ It takes a couple of seconds, but if you want to speed up your tests, you can di
 Testcontainers uses public Docker images to perform different actions like startup checks, VNC recording and others. 
 Some companies disallow the usage of Docker Hub, but you can override `*.image` properties with your own images from your private registry to workaround that.
 
-> **ryuk.container.image = testcontainersofficial/ryuk:0.3.0**
+> **ryuk.container.image = testcontainers/ryuk:0.3.0**
 > Performs fail-safe cleanup of containers, and always required (unless [Ryuk is disabled](#disabling-ryuk))
 
 > **tinyimage.container.image = alpine:3.5**  
@@ -47,7 +47,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **sshd.container.image = testcontainers/sshd:1.0.0**  
 > Required if [exposing host ports to containers](./networking.md#exposing-host-ports-to-the-container)
 
-> **vncrecorder.container.image = testcontainersofficial/vnc-recorder:1.1.0**  
+> **vncrecorder.container.image = testcontainers/vnc-recorder:1.1.0**
 > Used by VNC recorder in Testcontainers' Selenium integration
 
 > **socat.container.image = alpine/socat**  
@@ -67,7 +67,7 @@ See [Image Name Substitution](./image_name_substitution.md) for other strategies
 
 ## Customizing Ryuk resource reaper
 
-> **ryuk.container.image = testcontainersofficial/ryuk:0.3.0**
+> **ryuk.container.image = testcontainers/ryuk:0.3.0**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
 
 > **ryuk.container.privileged = false**

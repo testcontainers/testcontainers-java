@@ -20,7 +20,7 @@ import org.testcontainers.utility.DockerImageName;
 public class FirestoreEmulatorContainerTest {
 
     @Rule
-    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0"));
+    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators"));
 
     @Test
     public void testSimple() throws ExecutionException, InterruptedException {
