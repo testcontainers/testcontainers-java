@@ -69,7 +69,7 @@ i.e. you would leave as-is:
 You can implement a custom image name substitutor by:
 
 * subclassing `org.testcontainers.utility.ImageNameSubstitutor`
-* making sure that Testcontainers can find your custom implementation by creating a service loader file. **Do not miss this step!**
+* configuring Testcontainers to use your custom implementation
 
 The following is an example image substitutor implementation:
 
@@ -77,15 +77,21 @@ The following is an example image substitutor implementation:
 [Example Image Substitutor](../examples/junit4/generic/src/test/java/generic/ExampleImageNameSubstitutor.java) block:ExampleImageNameSubstitutor
 <!--/codeinclude-->
 
-Testcontainers can be configured to find it at runtime using the Service Loader mechanism.
-To do this, create a file on the classpath at `META-INF/services/org.testcontainers.utility.ImageNameSubstitutor` 
-containing the full name of your custom image substitutor.
+Testcontainers can be configured to find it at runtime via configuration.
+To do this, create or modify a file on the classpath named `testcontainers.properties`.
 
 For example:
 
-```text tab="src/main/resources/META-INF/services/org.testcontainers.utility.ImageNameSubstitutor"
-com.mycompany.testcontainers.ExampleImageNameSubstitutor
+```text tab="src/test/resources/testcontainers.properties"
+image.substitutor=com.mycompany.testcontainers.ExampleImageNameSubstitutor
 ``` 
+
+Note that it is also possible to provide this same configuration property:
+
+* in a properties file in the user's home directory (`~/.testcontainers.properties`, note the leading `.`)
+* or as an environment variable (e.g. `TESTCONTAINERS_IMAGE_SUBSTITUTOR=com.mycompany.testcontainers.ExampleImageNameSubstitutor`).
+
+Please see [the documentation on configuration mechanisms](./configuration.md) for more information.
 
 
 ## Overriding image names individually in configuration

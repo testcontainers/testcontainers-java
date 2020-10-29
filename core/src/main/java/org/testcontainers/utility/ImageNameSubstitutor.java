@@ -3,11 +3,7 @@ package org.testcontainers.utility;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ServiceLoader;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
-
-import static java.util.Comparator.comparingInt;
 
 /**
  * An image name substitutor converts a Docker image name, as may be specified in code, to an alternative name.
@@ -22,15 +18,16 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
 
     public synchronized static ImageNameSubstitutor instance() {
         if (instance == null) {
-            final ServiceLoader<ImageNameSubstitutor> serviceLoader = ServiceLoader.load(ImageNameSubstitutor.class);
+            final String configuredClassName = TestcontainersConfiguration.getInstance().getImageSubstitutorClassName();
+            log.debug("Attempting to instantiate an ImageNameSubstitutor with class: {}", configuredClassName);
+            try {
+                ImageNameSubstitutor configuredSubstitutor = (ImageNameSubstitutor) Class.forName(configuredClassName).getConstructor().newInstance();
+                instance = wrapWithLogging(configuredSubstitutor);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Configured Image Substitutor could not be loaded: " + configuredClassName, e);
+            }
 
-            instance = StreamSupport.stream(serviceLoader.spliterator(), false)
-                .peek(it -> log.debug("Found ImageNameSubstitutor using ServiceLoader: {} (priority {}) ", it, it.getPriority()))
-                .max(comparingInt(ImageNameSubstitutor::getPriority))
-                .map(ImageNameSubstitutor::wrapWithLogging)
-                .orElseThrow(() -> new RuntimeException("Unable to find any ImageNameSubstitutor using ServiceLoader"));
-
-            log.info("Using ImageNameSubstitutor: {}", instance);
+            log.info("Using ImageNameSubstitutor: {}", instance.getDescription());
         }
 
         return instance;
@@ -48,14 +45,6 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
      * @return a replacement name, or the original, as appropriate
      */
     public abstract DockerImageName apply(DockerImageName original);
-
-    /**
-     * Priority of this {@link ImageNameSubstitutor} compared to other instances that may be found by the service
-     * loader. The highest priority instance found will always be used.
-     *
-     * @return a priority
-     */
-    protected abstract int getPriority();
 
     protected abstract String getDescription();
 
@@ -82,11 +71,6 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
                 log.debug("Did not find a substitute image for {} (using image substitutor: {})", original.asCanonicalNameString(), className);
                 return original;
             }
-        }
-
-        @Override
-        protected int getPriority() {
-            return wrappedInstance.getPriority();
         }
 
         @Override

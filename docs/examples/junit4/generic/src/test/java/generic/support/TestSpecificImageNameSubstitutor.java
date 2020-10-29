@@ -23,11 +23,6 @@ public class TestSpecificImageNameSubstitutor extends ImageNameSubstitutor {
     }
 
     @Override
-    protected int getPriority() {
-        return 1;
-    }
-
-    @Override
     protected String getDescription() {
         return TestSpecificImageNameSubstitutor.class.getSimpleName();
     }

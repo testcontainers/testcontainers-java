@@ -180,6 +180,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("pull.pause.timeout", "30"));
     }
 
+    public String getImageSubstitutorClassName() {
+        return getEnvVarOrProperty("image.substitutor", DefaultImageNameSubstitutor.class.getCanonicalName());
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {

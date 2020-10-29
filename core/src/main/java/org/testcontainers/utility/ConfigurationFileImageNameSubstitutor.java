@@ -41,11 +41,6 @@ public class ConfigurationFileImageNameSubstitutor extends ImageNameSubstitutor 
     }
 
     @Override
-    protected int getPriority() {
-        return -2;
-    }
-
-    @Override
     protected String getDescription() {
         return getClass().getSimpleName();
     }

@@ -32,11 +32,6 @@ public class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
     }
 
     @Override
-    protected int getPriority() {
-        return 0;
-    }
-
-    @Override
     protected String getDescription() {
         return "DefaultImageNameSubstitutor (delegates to '" + configurationFileImageNameSubstitutor.getDescription() + "')";
     }
