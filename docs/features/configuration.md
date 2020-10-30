@@ -10,11 +10,18 @@ The configuration will be loaded from multiple locations. Properties are conside
 **Linux:** `/home/myuser/.testcontainers.properties`  
 **Windows:** `C:/Users/myuser/.testcontainers.properties`  
 **macOS:** `/Users/myuser/.testcontainers.properties`
-3. `testcontainers.properties` on classpath
+3. `testcontainers.properties` on the classpath.
 
 Note that when using environment variables, configuration property names should be set in upper 
 case with underscore separators, preceded by `TESTCONTAINERS_` - e.g. `checks.disable` becomes 
 `TESTCONTAINERS_CHECKS_DISABLE`.
+
+The classpath `testcontainers.properties` file may exist within the local codebase (e.g. within the `src/test/resources` directory) or within library dependencies that you may have. 
+Any such configuration files will have their contents merged.
+If any keys conflict, the value will be taken on the basis of the first value found in:
+
+* 'local' classpath (i.e. where the URL of the file on the classpath begins with `file:`), then
+* other classpath locations (i.e. JAR files) - considered in _alphabetical order of path_  to provide deterministic ordering.
 
 ## Disabling the startup checks
 > **checks.disable = [true|false]**

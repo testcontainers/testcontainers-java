@@ -6,6 +6,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -20,13 +21,23 @@ class ClasspathScanner {
         return Stream
             .of(classLoaders)
             .flatMap(classLoader -> getAllPropertyFilesOnClassloader(classLoader, name))
-            .distinct()
-            .filter(Objects::nonNull);
+            .filter(Objects::nonNull)
+            .sorted(
+                Comparator
+                    .comparing(ClasspathScanner::filesFileSchemeFirst) // resolve 'local' files first
+                    .thenComparing(URL::toString) // sort alphabetically for the sake of determinism
+            )
+            .distinct();
+    }
+
+    private static Integer filesFileSchemeFirst(final URL t) {
+        return t.getProtocol().equals("file") ? 0 : 1;
     }
 
     /**
      * @param name the resource name to search for
-     * @return distinct, ordered stream of resources found by searching this class' classloader and then the current thread's context classloader
+     * @return distinct, ordered stream of resources found by searching this class' classloader and the current thread's
+     * context classloader. Results are currently alphabetically sorted.
      */
     static Stream<URL> scanFor(final String name) {
         return scanFor(

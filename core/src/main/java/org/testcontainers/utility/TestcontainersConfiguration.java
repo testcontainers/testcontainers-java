@@ -244,6 +244,13 @@ public class TestcontainersConfiguration {
         return getConfigurable(propertyName, defaultValue);
     }
 
+    /**
+     * @return properties values available from user properties and classpath properties. Values set by environment
+     * variable are NOT included.
+     * @deprecated usages should be removed ASAP. See {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)},
+     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getUserProperty(String, String)}
+     * for suitable replacements.
+     */
     @Deprecated
     public Properties getProperties() {
         return Stream.of(userProperties, classpathProperties)
@@ -288,8 +295,10 @@ public class TestcontainersConfiguration {
             ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
                 .map(TestcontainersConfiguration::readProperties)
                 .reduce(new Properties(), (a, b) -> {
-                    a.putAll(b);
-                    return a;
+                    // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
+                    // Note that this means that file: URLs will always take priority over jar: URLs.
+                    b.putAll(a);
+                    return b;
                 }),
             System.getenv());
     }
