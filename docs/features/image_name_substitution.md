@@ -88,7 +88,8 @@ image.substitutor=com.mycompany.testcontainers.ExampleImageNameSubstitutor
 
 Note that it is also possible to provide this same configuration property:
 
-* in a properties file in the user's home directory (`~/.testcontainers.properties`, note the leading `.`)
+* in a `testcontainers.properties` file at the root of a library JAR file (useful if you wish to distribute a drop-in image substitutor JAR within an organization) 
+* in a properties file in the user's home directory (`~/.testcontainers.properties`; note the leading `.`)
 * or as an environment variable (e.g. `TESTCONTAINERS_IMAGE_SUBSTITUTOR=com.mycompany.testcontainers.ExampleImageNameSubstitutor`).
 
 Please see [the documentation on configuration mechanisms](./configuration.md) for more information.
