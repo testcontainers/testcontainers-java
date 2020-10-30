@@ -99,6 +99,7 @@ Please see [the documentation on configuration mechanisms](./configuration.md) f
 
 !!! note
     This approach is discouraged and deprecated, but is documented for completeness.
+    Please consider one of the other approaches outlined in this page instead.
     Overriding individual image names via configuration may be removed in 2021. 
 
 Consider this if:
