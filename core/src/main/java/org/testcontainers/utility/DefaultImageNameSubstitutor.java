@@ -6,9 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Testcontainers' default implementation of {@link ImageNameSubstitutor}.
  * Delegates to {@link ConfigurationFileImageNameSubstitutor}.
- * <p>
- * WARNING: this class is not intended to be public, but {@link java.util.ServiceLoader}
- * requires it to be so. Public visibility DOES NOT make it part of the public API.
  */
 @Slf4j
 public class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
