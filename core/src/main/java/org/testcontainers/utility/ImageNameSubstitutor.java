@@ -16,18 +16,33 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
     @VisibleForTesting
     static ImageNameSubstitutor instance;
 
+    @VisibleForTesting
+    static ImageNameSubstitutor defaultImplementation = new DefaultImageNameSubstitutor();
+
     public synchronized static ImageNameSubstitutor instance() {
         if (instance == null) {
             final String configuredClassName = TestcontainersConfiguration.getInstance().getImageSubstitutorClassName();
-            log.debug("Attempting to instantiate an ImageNameSubstitutor with class: {}", configuredClassName);
-            try {
-                ImageNameSubstitutor configuredSubstitutor = (ImageNameSubstitutor) Class.forName(configuredClassName).getConstructor().newInstance();
-                instance = wrapWithLogging(configuredSubstitutor);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Configured Image Substitutor could not be loaded: " + configuredClassName, e);
+
+            if (configuredClassName != null) {
+                log.debug("Attempting to instantiate an ImageNameSubstitutor with class: {}", configuredClassName);
+                ImageNameSubstitutor configuredInstance;
+                try {
+                    configuredInstance = (ImageNameSubstitutor) Class.forName(configuredClassName).getConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Configured Image Substitutor could not be loaded: " + configuredClassName, e);
+                }
+
+                log.info("Found configured ImageNameSubstitutor: {}", configuredInstance.getDescription());
+
+                instance = new ChainedImageNameSubstitutor(
+                    wrapWithLogging(defaultImplementation),
+                    wrapWithLogging(configuredInstance)
+                );
+            } else {
+                instance = wrapWithLogging(defaultImplementation);
             }
 
-            log.info("Using ImageNameSubstitutor: {}", instance.getDescription());
+            log.info("Image name substitution will be performed by: {}", instance.getDescription());
         }
 
         return instance;
@@ -46,6 +61,9 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
      */
     public abstract DockerImageName apply(DockerImageName original);
 
+    /**
+     * @return a human-readable description of the substitutor
+     */
     protected abstract String getDescription();
 
     /**
@@ -61,14 +79,13 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
 
         @Override
         public DockerImageName apply(final DockerImageName original) {
-            final String className = wrappedInstance.getClass().getName();
             final DockerImageName replacementImage = wrappedInstance.apply(original);
 
             if (!replacementImage.equals(original)) {
-                log.info("Using {} as a substitute image for {} (using image substitutor: {})", replacementImage.asCanonicalNameString(), original.asCanonicalNameString(), className);
+                log.info("Using {} as a substitute image for {} (using image substitutor: {})", replacementImage.asCanonicalNameString(), original.asCanonicalNameString(), wrappedInstance.getDescription());
                 return replacementImage;
             } else {
-                log.debug("Did not find a substitute image for {} (using image substitutor: {})", original.asCanonicalNameString(), className);
+                log.debug("Did not find a substitute image for {} (using image substitutor: {})", original.asCanonicalNameString(), wrappedInstance.getDescription());
                 return original;
             }
         }
@@ -76,6 +93,33 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
         @Override
         protected String getDescription() {
             return wrappedInstance.getDescription();
+        }
+    }
+
+    /**
+     * Wrapper substitutor that passes the original image name through a default substitutor and then the configured one
+     */
+    static class ChainedImageNameSubstitutor extends ImageNameSubstitutor {
+        private final ImageNameSubstitutor defaultInstance;
+        private final ImageNameSubstitutor configuredInstance;
+
+        public ChainedImageNameSubstitutor(ImageNameSubstitutor defaultInstance, ImageNameSubstitutor configuredInstance) {
+            this.defaultInstance = defaultInstance;
+            this.configuredInstance = configuredInstance;
+        }
+
+        @Override
+        public DockerImageName apply(DockerImageName original) {
+            return defaultInstance.andThen(configuredInstance).apply(original);
+        }
+
+        @Override
+        protected String getDescription() {
+            return String.format(
+                "Chained substitutor of '%s' and then '%s'",
+                defaultInstance.getDescription(),
+                configuredInstance.getDescription()
+            );
         }
     }
 }

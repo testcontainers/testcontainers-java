@@ -180,7 +180,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getImageSubstitutorClassName() {
-        return getEnvVarOrProperty("image.substitutor", DefaultImageNameSubstitutor.class.getCanonicalName());
+        return getEnvVarOrProperty("image.substitutor", null);
     }
 
     @Nullable

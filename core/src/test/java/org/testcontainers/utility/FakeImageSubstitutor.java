@@ -3,11 +3,11 @@ package org.testcontainers.utility;
 public class FakeImageSubstitutor extends ImageNameSubstitutor {
     @Override
     public DockerImageName apply(final DockerImageName original) {
-        return null;
+        return DockerImageName.parse("transformed-" + original.asCanonicalNameString());
     }
 
     @Override
     protected String getDescription() {
-        return null;
+        return "test implementation";
     }
 }

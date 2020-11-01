@@ -30,6 +30,6 @@ public class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
 
     @Override
     protected String getDescription() {
-        return "DefaultImageNameSubstitutor (delegates to '" + configurationFileImageNameSubstitutor.getDescription() + "')";
+        return "DefaultImageNameSubstitutor (" + configurationFileImageNameSubstitutor.getDescription() + ")";
     }
 }
