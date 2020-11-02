@@ -86,6 +86,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
 
+    private CouchbaseIndexStorageMode indexStorageMode = CouchbaseIndexStorageMode.MEMORY_OPTIMIZED;
+
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
     /**
@@ -139,6 +141,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     public CouchbaseContainer withEnabledServices(final CouchbaseService... enabled) {
         checkNotRunning();
         this.enabledServices = EnumSet.copyOf(Arrays.asList(enabled));
+        return this;
+    }
+
+    public CouchbaseContainer withIndexStorageMode(final CouchbaseIndexStorageMode indexStorageMode) {
+        checkNotRunning();
+        this.indexStorageMode = indexStorageMode == null ? CouchbaseIndexStorageMode.MEMORY_OPTIMIZED : indexStorageMode;
         return this;
     }
 
@@ -336,7 +344,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         logger().debug("Configuring the indexer service");
 
         @Cleanup Response response = doHttpRequest(MGMT_PORT, "/settings/indexes", "POST", new FormBody.Builder()
-            .add("storageMode", "memory_optimized")
+            .add("storageMode", indexStorageMode.toString())
             .build(), true
         );
 
