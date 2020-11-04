@@ -41,6 +41,8 @@ It takes a couple of seconds, but if you want to speed up your tests, you can di
 !!! note
     This approach is discouraged and deprecated, but is documented for completeness.
     Overriding individual image names via configuration may be removed in 2021.
+    See [Image Name Substitution](./image_name_substitution.md) for other strategies for substituting image names to pull from other registries.
+
 
 Testcontainers uses public Docker images to perform different actions like startup checks, VNC recording and others. 
 Some companies disallow the usage of Docker Hub, but you can override `*.image` properties with your own images from your private registry to workaround that.
@@ -69,8 +71,6 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 
 > **pulsar.container.image = apachepulsar/pulsar:2.2.0**  
 > Used by Apache Pulsar
-
-See [Image Name Substitution](./image_name_substitution.md) for other strategies for substituting image names to pull from other registries.
 
 ## Customizing Ryuk resource reaper
 
