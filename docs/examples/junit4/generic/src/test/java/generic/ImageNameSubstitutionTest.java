@@ -25,7 +25,7 @@ public class ImageNameSubstitutionTest {
 
     /**
      * Note that this test uses a fake image name, which will only work because
-     * {@link generic.support.TestSpecificImageNameSubstitutor} steps in to override the substitution for this exact
+     * {@link org.testcontainers.utility.TestSpecificImageNameSubstitutor} steps in to override the substitution for this exact
      * image name.
      */
     @Test

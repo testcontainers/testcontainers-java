@@ -1,8 +1,4 @@
-package generic.support;
-
-import org.testcontainers.utility.DefaultImageNameSubstitutor;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.ImageNameSubstitutor;
+package org.testcontainers.utility;
 
 /**
  * An {@link ImageNameSubstitutor} which makes it possible to use fake image names in
