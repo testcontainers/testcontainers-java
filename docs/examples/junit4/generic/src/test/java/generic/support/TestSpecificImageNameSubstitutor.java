@@ -1,4 +1,7 @@
-package org.testcontainers.utility;
+package generic.support;
+
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.ImageNameSubstitutor;
 
 /**
  * An {@link ImageNameSubstitutor} which makes it possible to use fake image names in
@@ -7,14 +10,12 @@ package org.testcontainers.utility;
  */
 public class TestSpecificImageNameSubstitutor extends ImageNameSubstitutor {
 
-    private final DefaultImageNameSubstitutor defaultImageNameSubstitutor = new DefaultImageNameSubstitutor();
-
     @Override
     public DockerImageName apply(final DockerImageName original) {
         if (original.equals(DockerImageName.parse("registry.mycompany.com/mirror/mysql:8.0.22"))) {
-            return defaultImageNameSubstitutor.apply(DockerImageName.parse("mysql"));
+            return DockerImageName.parse("mysql");
         } else {
-            return defaultImageNameSubstitutor.apply(original);
+            return original;
         }
     }
 

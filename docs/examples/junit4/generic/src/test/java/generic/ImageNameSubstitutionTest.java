@@ -1,6 +1,7 @@
 package generic;
 
 
+import generic.support.TestSpecificImageNameSubstitutor;
 import org.junit.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -25,7 +26,7 @@ public class ImageNameSubstitutionTest {
 
     /**
      * Note that this test uses a fake image name, which will only work because
-     * {@link org.testcontainers.utility.TestSpecificImageNameSubstitutor} steps in to override the substitution for this exact
+     * {@link TestSpecificImageNameSubstitutor} steps in to override the substitution for this exact
      * image name.
      */
     @Test
