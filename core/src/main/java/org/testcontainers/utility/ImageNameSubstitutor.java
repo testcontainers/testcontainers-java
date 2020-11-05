@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.UnstableAPI;
 
 import java.util.function.Function;
 
@@ -9,8 +10,12 @@ import java.util.function.Function;
  * An image name substitutor converts a Docker image name, as may be specified in code, to an alternative name.
  * This is intended to provide a way to override image names, for example to enforce pulling of images from a private
  * registry.
+ * <p>
+ * This is marked as @{@link UnstableAPI} as this API is new. While we do not think major changes will be required, we
+ * will react to feedback if necessary.
  */
 @Slf4j
+@UnstableAPI
 public abstract class ImageNameSubstitutor implements Function<DockerImageName, DockerImageName> {
 
     @VisibleForTesting
