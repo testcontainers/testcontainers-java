@@ -61,7 +61,7 @@ public class KafkaContainerTest {
     @Test
     public void testUsageWithVersion() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer("5.4.3")
+            KafkaContainer kafka = new KafkaContainer("5.5.1")
         ) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
