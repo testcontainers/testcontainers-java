@@ -5,7 +5,7 @@ Testcontainers supports automatic substitution of Docker image names.
 This allows replacement of an image name specified in test code with an alternative name - for example, to replace the 
 name of a Docker Hub image dependency with an alternative hosted on a private image registry.
 
-This is advisable to avoid [Docker Hub rate limiting](./pull_rate_limiting.md), and some companies will prefer this for policy reasons.
+This is advisable to avoid [Docker Hub rate limiting](../supported_docker_environment/image_registry_rate_limiting.md), and some companies will prefer this for policy reasons.
 
 This page describes four approaches for image name substitution:
 
@@ -14,7 +14,7 @@ This page describes four approaches for image name substitution:
     * [Developing a custom function for transforming image names on the fly](#developing-a-custom-function-for-transforming-image-names-on-the-fly)
     * [Overriding image names individually in configuration](#overriding-image-names-individually-in-configuration)
 
-It is assumed that you have already set up a private registry hosting [all the Docker images your build requires](./pull_rate_limiting.md#which-images-are-used-by-testcontainers).
+It is assumed that you have already set up a private registry hosting [all the Docker images your build requires](../supported_docker_environment/image_registry_rate_limiting.md#which-images-are-used-by-testcontainers).
 
 
 
@@ -25,7 +25,7 @@ Consider this if:
 
 * You use only a few images and updating code is not a chore
 * All developers and CI machines in your organisation have access to a common registry server
-* You also use one of the automated mechanisms to substitute [the images that Testcontainers itself requires](./pull_rate_limiting.md#which-images-are-used-by-testcontainers)
+* You also use one of the automated mechanisms to substitute [the images that Testcontainers itself requires](../supported_docker_environment/image_registry_rate_limiting.md#which-images-are-used-by-testcontainers)
 
 This approach simply entails modifying test code manually, e.g. changing:
 
