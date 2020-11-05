@@ -1,7 +1,6 @@
 package org.testcontainers;
 
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 public interface TestImages {
     DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:3.0.2");
@@ -9,5 +8,5 @@ public interface TestImages {
     DockerImageName MONGODB_IMAGE = DockerImageName.parse("mongo:3.1.5");
     DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.2");
     DockerImageName DOCKER_REGISTRY_IMAGE = DockerImageName.parse("registry:2.7.0");
-    DockerImageName TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyDockerImageName();
+    DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.5");
 }

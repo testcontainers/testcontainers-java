@@ -26,6 +26,69 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
+    public void shouldSubstituteImageNamesFromClasspathProperties() {
+        classpathProperties.setProperty("ryuk.container.image", "foo:version");
+        assertEquals(
+            "an image name can be pulled from classpath properties",
+            DockerImageName.parse("foo:version"),
+            newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any"))
+        );
+    }
+
+    @Test
+    public void shouldSubstituteImageNamesFromUserProperties() {
+        userProperties.setProperty("ryuk.container.image", "foo:version");
+        assertEquals(
+            "an image name can be pulled from user properties",
+            DockerImageName.parse("foo:version"),
+            newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any"))
+        );
+    }
+
+    @Test
+    public void shouldSubstituteImageNamesFromEnvironmentVariables() {
+        environment.put("TESTCONTAINERS_RYUK_CONTAINER_IMAGE", "foo:version");
+        assertEquals(
+            "an image name can be pulled from an environment variable",
+            DockerImageName.parse("foo:version"),
+            newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any"))
+        );
+    }
+
+    @Test
+    public void shouldApplySettingsInOrder() {
+        assertEquals(
+            "precedence order for multiple sources of the same value is correct",
+            "default",
+            newConfig().getEnvVarOrProperty("key", "default")
+        );
+
+        classpathProperties.setProperty("key", "foo");
+
+        assertEquals(
+            "precedence order for multiple sources of the same value is correct",
+            "foo",
+            newConfig().getEnvVarOrProperty("key", "default")
+        );
+
+        userProperties.setProperty("key", "bar");
+
+        assertEquals(
+            "precedence order for multiple sources of the same value is correct",
+            "bar",
+            newConfig().getEnvVarOrProperty("key", "default")
+        );
+
+        environment.put("TESTCONTAINERS_KEY", "baz");
+
+        assertEquals(
+            "precedence order for multiple sources of the same value is correct",
+            "baz",
+            newConfig().getEnvVarOrProperty("key", "default")
+        );
+    }
+
+    @Test
     public void shouldNotReadChecksFromClasspathProperties() {
         assertFalse("checks enabled by default", newConfig().isDisableChecks());
 

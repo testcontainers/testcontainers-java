@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -104,17 +103,9 @@ public class TestcontainersConfiguration {
         return getImage(SOCAT_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getSocatDockerImageName() {
-        return getImage(SOCAT_IMAGE);
-    }
-
     @Deprecated
     public String getVncRecordedContainerImage() {
         return getImage(VNC_RECORDER_IMAGE).asCanonicalNameString();
-    }
-
-    public DockerImageName getVncDockerImageName() {
-        return getImage(VNC_RECORDER_IMAGE);
     }
 
     @Deprecated
@@ -122,17 +113,9 @@ public class TestcontainersConfiguration {
         return getImage(COMPOSE_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getDockerComposeDockerImageName() {
-        return getImage(COMPOSE_IMAGE);
-    }
-
     @Deprecated
     public String getTinyImage() {
         return getImage(ALPINE_IMAGE).asCanonicalNameString();
-    }
-
-    public DockerImageName getTinyDockerImageName() {
-        return getImage(ALPINE_IMAGE);
     }
 
     public boolean isRyukPrivileged() {
@@ -145,17 +128,9 @@ public class TestcontainersConfiguration {
         return getImage(RYUK_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getRyukDockerImageName() {
-        return getImage(RYUK_IMAGE);
-    }
-
     @Deprecated
     public String getSSHdImage() {
         return getImage(SSHD_IMAGE).asCanonicalNameString();
-    }
-
-    public DockerImageName getSSHdDockerImageName() {
-        return getImage(SSHD_IMAGE);
     }
 
     public Integer getRyukTimeout() {
@@ -167,11 +142,6 @@ public class TestcontainersConfiguration {
         return getImage(KAFKA_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getKafkaDockerImageName() {
-        return getImage(KAFKA_IMAGE);
-    }
-
-
     @Deprecated
     public String getOracleImage() {
         return getEnvVarOrUserProperty("oracle.container.image", null);
@@ -182,19 +152,10 @@ public class TestcontainersConfiguration {
         return getImage(PULSAR_IMAGE).asCanonicalNameString();
     }
 
-    public DockerImageName getPulsarDockerImageName() {
-        return getImage(PULSAR_IMAGE);
-    }
-
     @Deprecated
     public String getLocalStackImage() {
         return getImage(LOCALSTACK_IMAGE).asCanonicalNameString();
     }
-
-    public DockerImageName getLocalstackDockerImageName() {
-        return getImage(LOCALSTACK_IMAGE);
-    }
-
 
     public boolean isDisableChecks() {
         return Boolean.parseBoolean(getEnvVarOrUserProperty("checks.disable", "false"));
@@ -216,6 +177,10 @@ public class TestcontainersConfiguration {
 
     public Integer getImagePullPauseTimeout() {
         return Integer.parseInt(getEnvVarOrProperty("pull.pause.timeout", "30"));
+    }
+
+    public String getImageSubstitutorClassName() {
+        return getEnvVarOrProperty("image.substitutor", null);
     }
 
     @Nullable
@@ -279,6 +244,13 @@ public class TestcontainersConfiguration {
         return getConfigurable(propertyName, defaultValue);
     }
 
+    /**
+     * @return properties values available from user properties and classpath properties. Values set by environment
+     * variable are NOT included.
+     * @deprecated usages should be removed ASAP. See {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)},
+     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getUserProperty(String, String)}
+     * for suitable replacements.
+     */
     @Deprecated
     public Properties getProperties() {
         return Stream.of(userProperties, classpathProperties)
@@ -320,17 +292,13 @@ public class TestcontainersConfiguration {
     private static TestcontainersConfiguration loadConfiguration() {
         return new TestcontainersConfiguration(
             readProperties(USER_CONFIG_FILE.toURI().toURL()),
-            Stream
-                .of(
-                    TestcontainersConfiguration.class.getClassLoader(),
-                    Thread.currentThread().getContextClassLoader()
-                )
-                .map(it -> it.getResource(PROPERTIES_FILE_NAME))
-                .filter(Objects::nonNull)
+            ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
                 .map(TestcontainersConfiguration::readProperties)
                 .reduce(new Properties(), (a, b) -> {
-                    a.putAll(b);
-                    return a;
+                    // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
+                    // Note that this means that file: URLs will always take priority over jar: URLs.
+                    b.putAll(a);
+                    return b;
                 }),
             System.getenv());
     }
@@ -341,9 +309,9 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.warn("Testcontainers config override was found on {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn("Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         } catch (IOException e) {
-            log.warn("Testcontainers config override was found on {} but could not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn("Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         }
         return properties;
     }
