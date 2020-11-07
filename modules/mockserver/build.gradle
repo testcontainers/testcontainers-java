@@ -3,5 +3,5 @@ description = "Testcontainers :: MockServer"
 dependencies {
     compile project(':testcontainers')
 
-    testCompile 'org.mock-server:mockserver-client-java:5.5.4'
+    testCompile 'org.mock-server:mockserver-client-java:5.11.1'
 }
