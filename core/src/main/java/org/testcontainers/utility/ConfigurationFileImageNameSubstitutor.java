@@ -6,12 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * {@link ImageNameSubstitutor} which takes replacement image names from configuration.
  * See {@link TestcontainersConfiguration} for the subset of image names which can be substituted using this mechanism.
- * <p>
- * WARNING: this class is not intended to be public, but {@link java.util.ServiceLoader}
- * requires it to be so. Public visibility DOES NOT make it part of the public API.
  */
 @Slf4j
-public class ConfigurationFileImageNameSubstitutor extends ImageNameSubstitutor {
+final class ConfigurationFileImageNameSubstitutor extends ImageNameSubstitutor {
 
     private final TestcontainersConfiguration configuration;
 
@@ -38,11 +35,6 @@ public class ConfigurationFileImageNameSubstitutor extends ImageNameSubstitutor 
         }
 
         return result;
-    }
-
-    @Override
-    protected int getPriority() {
-        return -2;
     }
 
     @Override

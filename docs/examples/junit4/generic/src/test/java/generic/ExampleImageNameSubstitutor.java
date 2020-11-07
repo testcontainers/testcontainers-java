@@ -17,14 +17,6 @@ public class ExampleImageNameSubstitutor extends ImageNameSubstitutor {
     }
 
     @Override
-    protected int getPriority() {
-        // the highest priority substitutor is used.
-        // Use something higher than 0, which is the priority
-        // of the default implementation
-        return 1;
-    }
-
-    @Override
     protected String getDescription() {
         // used in logs
         return "example image name substitutor";

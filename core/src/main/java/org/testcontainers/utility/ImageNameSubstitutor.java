@@ -2,35 +2,52 @@ package org.testcontainers.utility;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.UnstableAPI;
 
-import java.util.ServiceLoader;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
-
-import static java.util.Comparator.comparingInt;
 
 /**
  * An image name substitutor converts a Docker image name, as may be specified in code, to an alternative name.
  * This is intended to provide a way to override image names, for example to enforce pulling of images from a private
  * registry.
+ * <p>
+ * This is marked as @{@link UnstableAPI} as this API is new. While we do not think major changes will be required, we
+ * will react to feedback if necessary.
  */
 @Slf4j
+@UnstableAPI
 public abstract class ImageNameSubstitutor implements Function<DockerImageName, DockerImageName> {
 
     @VisibleForTesting
     static ImageNameSubstitutor instance;
 
+    @VisibleForTesting
+    static ImageNameSubstitutor defaultImplementation = new DefaultImageNameSubstitutor();
+
     public synchronized static ImageNameSubstitutor instance() {
         if (instance == null) {
-            final ServiceLoader<ImageNameSubstitutor> serviceLoader = ServiceLoader.load(ImageNameSubstitutor.class);
+            final String configuredClassName = TestcontainersConfiguration.getInstance().getImageSubstitutorClassName();
 
-            instance = StreamSupport.stream(serviceLoader.spliterator(), false)
-                .peek(it -> log.debug("Found ImageNameSubstitutor using ServiceLoader: {} (priority {}) ", it, it.getPriority()))
-                .max(comparingInt(ImageNameSubstitutor::getPriority))
-                .map(ImageNameSubstitutor::wrapWithLogging)
-                .orElseThrow(() -> new RuntimeException("Unable to find any ImageNameSubstitutor using ServiceLoader"));
+            if (configuredClassName != null) {
+                log.debug("Attempting to instantiate an ImageNameSubstitutor with class: {}", configuredClassName);
+                ImageNameSubstitutor configuredInstance;
+                try {
+                    configuredInstance = (ImageNameSubstitutor) Class.forName(configuredClassName).getConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Configured Image Substitutor could not be loaded: " + configuredClassName, e);
+                }
 
-            log.info("Using ImageNameSubstitutor: {}", instance);
+                log.info("Found configured ImageNameSubstitutor: {}", configuredInstance.getDescription());
+
+                instance = new ChainedImageNameSubstitutor(
+                    wrapWithLogging(defaultImplementation),
+                    wrapWithLogging(configuredInstance)
+                );
+            } else {
+                instance = wrapWithLogging(defaultImplementation);
+            }
+
+            log.info("Image name substitution will be performed by: {}", instance.getDescription());
         }
 
         return instance;
@@ -50,13 +67,8 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
     public abstract DockerImageName apply(DockerImageName original);
 
     /**
-     * Priority of this {@link ImageNameSubstitutor} compared to other instances that may be found by the service
-     * loader. The highest priority instance found will always be used.
-     *
-     * @return a priority
+     * @return a human-readable description of the substitutor
      */
-    protected abstract int getPriority();
-
     protected abstract String getDescription();
 
     /**
@@ -72,26 +84,47 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
 
         @Override
         public DockerImageName apply(final DockerImageName original) {
-            final String className = wrappedInstance.getClass().getName();
             final DockerImageName replacementImage = wrappedInstance.apply(original);
 
             if (!replacementImage.equals(original)) {
-                log.info("Using {} as a substitute image for {} (using image substitutor: {})", replacementImage.asCanonicalNameString(), original.asCanonicalNameString(), className);
+                log.info("Using {} as a substitute image for {} (using image substitutor: {})", replacementImage.asCanonicalNameString(), original.asCanonicalNameString(), wrappedInstance.getDescription());
                 return replacementImage;
             } else {
-                log.debug("Did not find a substitute image for {} (using image substitutor: {})", original.asCanonicalNameString(), className);
+                log.debug("Did not find a substitute image for {} (using image substitutor: {})", original.asCanonicalNameString(), wrappedInstance.getDescription());
                 return original;
             }
         }
 
         @Override
-        protected int getPriority() {
-            return wrappedInstance.getPriority();
+        protected String getDescription() {
+            return wrappedInstance.getDescription();
+        }
+    }
+
+    /**
+     * Wrapper substitutor that passes the original image name through a default substitutor and then the configured one
+     */
+    static class ChainedImageNameSubstitutor extends ImageNameSubstitutor {
+        private final ImageNameSubstitutor defaultInstance;
+        private final ImageNameSubstitutor configuredInstance;
+
+        public ChainedImageNameSubstitutor(ImageNameSubstitutor defaultInstance, ImageNameSubstitutor configuredInstance) {
+            this.defaultInstance = defaultInstance;
+            this.configuredInstance = configuredInstance;
+        }
+
+        @Override
+        public DockerImageName apply(DockerImageName original) {
+            return defaultInstance.andThen(configuredInstance).apply(original);
         }
 
         @Override
         protected String getDescription() {
-            return wrappedInstance.getDescription();
+            return String.format(
+                "Chained substitutor of '%s' and then '%s'",
+                defaultInstance.getDescription(),
+                configuredInstance.getDescription()
+            );
         }
     }
 }

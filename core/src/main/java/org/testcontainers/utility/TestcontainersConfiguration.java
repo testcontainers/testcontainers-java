@@ -23,7 +23,8 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -158,7 +159,6 @@ public class TestcontainersConfiguration {
         return getImage(LOCALSTACK_IMAGE).asCanonicalNameString();
     }
 
-
     public boolean isDisableChecks() {
         return Boolean.parseBoolean(getEnvVarOrUserProperty("checks.disable", "false"));
     }
@@ -179,6 +179,92 @@ public class TestcontainersConfiguration {
 
     public Integer getImagePullPauseTimeout() {
         return Integer.parseInt(getEnvVarOrProperty("pull.pause.timeout", "30"));
+    }
+
+    public String getImageSubstitutorClassName() {
+        return getEnvVarOrProperty("image.substitutor", null);
+    }
+
+    @Nullable
+    @Contract("_, !null, _ -> !null")
+    private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {
+        String envVarName = propertyName.replaceAll("\\.", "_").toUpperCase();
+        if (!envVarName.startsWith("TESTCONTAINERS_")) {
+            envVarName = "TESTCONTAINERS_" + envVarName;
+        }
+
+        if (environment.containsKey(envVarName)) {
+            return environment.get(envVarName);
+        }
+
+        for (final Properties properties : propertiesSources) {
+            if (properties.get(propertyName) != null) {
+                return (String) properties.get(propertyName);
+            }
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
+     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory or
+     * a <code>testcontainers.properties</code> found on the classpath.
+     *
+     * @param propertyName name of configuration file property (dot-separated lower case)
+     * @return the found value, or null if not set
+     */
+    @Nullable
+    @Contract("_, !null -> !null")
+    public String getEnvVarOrProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
+        return getConfigurable(propertyName, defaultValue, userProperties, classpathProperties);
+    }
+
+    /**
+     * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
+     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     *
+     * @param propertyName name of configuration file property (dot-separated lower case)
+     * @return the found value, or null if not set
+     */
+    @Nullable
+    @Contract("_, !null -> !null")
+    public String getEnvVarOrUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
+        return getConfigurable(propertyName, defaultValue, userProperties);
+    }
+
+    /**
+     * Gets a configured setting from a the user's configuration file.
+     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     *
+     * @param propertyName name of configuration file property (dot-separated lower case)
+     * @return the found value, or null if not set
+     */
+    @Nullable
+    @Contract("_, !null -> !null")
+    public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
+        return getConfigurable(propertyName, defaultValue);
+    }
+
+    /**
+     * @return properties values available from user properties and classpath properties. Values set by environment
+     * variable are NOT included.
+     * @deprecated usages should be removed ASAP. See {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)},
+     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getUserProperty(String, String)}
+     * for suitable replacements.
+     */
+    @Deprecated
+    public Properties getProperties() {
+        return Stream.of(userProperties, classpathProperties)
+            .reduce(new Properties(), (a, b) -> {
+                a.putAll(b);
+                return a;
+            });
+    }
+
+    @Deprecated
+    public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
+        return updateUserConfig(prop, value);
     }
 
     @Nullable
@@ -252,7 +338,7 @@ public class TestcontainersConfiguration {
     }
 
     @Deprecated
-    public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
+    public boolean updateUserConfig(@NonNull String prop, @NonNull String value) {
         return updateUserConfig(prop, value);
     }
 
@@ -283,17 +369,13 @@ public class TestcontainersConfiguration {
     private static TestcontainersConfiguration loadConfiguration() {
         return new TestcontainersConfiguration(
             readProperties(USER_CONFIG_FILE.toURI().toURL()),
-            Stream
-                .of(
-                    TestcontainersConfiguration.class.getClassLoader(),
-                    Thread.currentThread().getContextClassLoader()
-                )
-                .map(it -> it.getResource(PROPERTIES_FILE_NAME))
-                .filter(Objects::nonNull)
+            ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
                 .map(TestcontainersConfiguration::readProperties)
                 .reduce(new Properties(), (a, b) -> {
-                    a.putAll(b);
-                    return a;
+                    // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
+                    // Note that this means that file: URLs will always take priority over jar: URLs.
+                    b.putAll(a);
+                    return b;
                 }),
             System.getenv());
     }
@@ -304,9 +386,9 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.warn("Testcontainers config override was found on {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn("Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         } catch (IOException e) {
-            log.warn("Testcontainers config override was found on {} but could not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn("Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
         }
         return properties;
     }

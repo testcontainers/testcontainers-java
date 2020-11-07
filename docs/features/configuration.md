@@ -10,11 +10,18 @@ The configuration will be loaded from multiple locations. Properties are conside
 **Linux:** `/home/myuser/.testcontainers.properties`  
 **Windows:** `C:/Users/myuser/.testcontainers.properties`  
 **macOS:** `/Users/myuser/.testcontainers.properties`
-3. `testcontainers.properties` on classpath
+3. `testcontainers.properties` on the classpath.
 
 Note that when using environment variables, configuration property names should be set in upper 
 case with underscore separators, preceded by `TESTCONTAINERS_` - e.g. `checks.disable` becomes 
 `TESTCONTAINERS_CHECKS_DISABLE`.
+
+The classpath `testcontainers.properties` file may exist within the local codebase (e.g. within the `src/test/resources` directory) or within library dependencies that you may have. 
+Any such configuration files will have their contents merged.
+If any keys conflict, the value will be taken on the basis of the first value found in:
+
+* 'local' classpath (i.e. where the URL of the file on the classpath begins with `file:`), then
+* other classpath locations (i.e. JAR files) - considered in _alphabetical order of path_  to provide deterministic ordering.
 
 ## Disabling the startup checks
 > **checks.disable = [true|false]**
@@ -34,11 +41,13 @@ It takes a couple of seconds, but if you want to speed up your tests, you can di
 !!! note
     This approach is discouraged and deprecated, but is documented for completeness.
     Overriding individual image names via configuration may be removed in 2021.
+    See [Image Name Substitution](./image_name_substitution.md) for other strategies for substituting image names to pull from other registries.
+
 
 Testcontainers uses public Docker images to perform different actions like startup checks, VNC recording and others. 
 Some companies disallow the usage of Docker Hub, but you can override `*.image` properties with your own images from your private registry to workaround that.
 
-> **ryuk.container.image = testcontainersofficial/ryuk:0.3.0**
+> **ryuk.container.image = testcontainers/ryuk:0.3.0**
 > Performs fail-safe cleanup of containers, and always required (unless [Ryuk is disabled](#disabling-ryuk))
 
 > **tinyimage.container.image = alpine:3.5**  
@@ -47,7 +56,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **sshd.container.image = testcontainers/sshd:1.0.0**  
 > Required if [exposing host ports to containers](./networking.md#exposing-host-ports-to-the-container)
 
-> **vncrecorder.container.image = testcontainersofficial/vnc-recorder:1.1.0**  
+> **vncrecorder.container.image = testcontainers/vnc-recorder:1.1.0**
 > Used by VNC recorder in Testcontainers' Selenium integration
 
 > **socat.container.image = alpine/socat**  
@@ -67,7 +76,7 @@ See [Image Name Substitution](./image_name_substitution.md) for other strategies
 
 ## Customizing Ryuk resource reaper
 
-> **ryuk.container.image = testcontainersofficial/ryuk:0.3.0**
+> **ryuk.container.image = testcontainers/ryuk:0.3.0**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
 
 > **ryuk.container.privileged = false**
