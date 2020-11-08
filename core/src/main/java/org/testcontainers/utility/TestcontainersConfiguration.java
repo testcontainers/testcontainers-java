@@ -23,8 +23,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -214,7 +212,6 @@ public class TestcontainersConfiguration {
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
-    @Nullable
     @Contract("_, !null -> !null")
     public String getEnvVarOrProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue, userProperties, classpathProperties);
@@ -227,7 +224,6 @@ public class TestcontainersConfiguration {
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
-    @Nullable
     @Contract("_, !null -> !null")
     public String getEnvVarOrUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue, userProperties);
@@ -240,7 +236,6 @@ public class TestcontainersConfiguration {
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
-    @Nullable
     @Contract("_, !null -> !null")
     public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue);
@@ -264,81 +259,6 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public boolean updateGlobalConfig(@NonNull String prop, @NonNull String value) {
-        return updateUserConfig(prop, value);
-    }
-
-    @Nullable
-    @Contract("_, !null, _ -> !null")
-    private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {
-        String envVarName = propertyName.replaceAll("\\.", "_").toUpperCase();
-        if (!envVarName.startsWith("TESTCONTAINERS_")) {
-            envVarName = "TESTCONTAINERS_" + envVarName;
-        }
-
-        if (environment.containsKey(envVarName)) {
-            return environment.get(envVarName);
-        }
-
-        for (final Properties properties : propertiesSources) {
-            if (properties.get(propertyName) != null) {
-                return (String) properties.get(propertyName);
-            }
-        }
-
-        return defaultValue;
-    }
-
-    /**
-     * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory or
-     * a <code>testcontainers.properties</code> found on the classpath.
-     *
-     * @param propertyName name of configuration file property (dot-separated lower case)
-     * @return the found value, or null if not set
-     */
-    @Nullable
-    @Contract("_, !null -> !null")
-    public String getEnvVarOrProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue, userProperties, classpathProperties);
-    }
-
-    /**
-     * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
-     *
-     * @param propertyName name of configuration file property (dot-separated lower case)
-     * @return the found value, or null if not set
-     */
-    @Nullable
-    @Contract("_, !null -> !null")
-    public String getEnvVarOrUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue, userProperties);
-    }
-
-    /**
-     * Gets a configured setting from a the user's configuration file.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
-     *
-     * @param propertyName name of configuration file property (dot-separated lower case)
-     * @return the found value, or null if not set
-     */
-    @Nullable
-    @Contract("_, !null -> !null")
-    public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue);
-    }
-
-    @Deprecated
-    public Properties getProperties() {
-        return Stream.of(userProperties, classpathProperties)
-            .reduce(new Properties(), (a, b) -> {
-                a.putAll(b);
-                return a;
-            });
-    }
-
-    @Deprecated
-    public boolean updateUserConfig(@NonNull String prop, @NonNull String value) {
         return updateUserConfig(prop, value);
     }
 

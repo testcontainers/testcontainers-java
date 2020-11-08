@@ -2,22 +2,22 @@ package org.testcontainers.utility;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.UnstableAPI;
 
 /**
  * An {@link ImageNameSubstitutor} which applies a prefix to all image names, e.g. a private registry host and path.
  * The prefix may be set via an environment variable (<code>TESTCONTAINERS_IMAGE_NAME_PREFIX</code>) or an equivalent
  * configuration file entry (see {@link TestcontainersConfiguration}).
- * <p>
- * WARNING: this class is not intended to be public, but {@link java.util.ServiceLoader}
- * requires it to be so. Public visibility DOES NOT make it part of the public API.
  */
 @UnstableAPI
 @NoArgsConstructor
-public final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
+@Slf4j
+final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
 
     @VisibleForTesting
-    static final String PROPERTY_KEY = "testcontainers.image.name.prefix";
+    static final String REGISTRY_PROPERTY_KEY = "hub.image.override.registry";
+    static final String REPOSITORY_PREFIX_PROPERTY_KEY = "hub.image.override.repository.prefix";
 
     private TestcontainersConfiguration configuration = TestcontainersConfiguration.getInstance();
 
@@ -28,22 +28,33 @@ public final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
 
     @Override
     public DockerImageName apply(DockerImageName original) {
-        final String prefix = configuration.getEnvVarOrProperty(PROPERTY_KEY, "");
+        final String registryOverride = configuration.getEnvVarOrProperty(REGISTRY_PROPERTY_KEY, "");
+        final String repositoryPrefixOrEmpty = configuration.getEnvVarOrProperty(REPOSITORY_PREFIX_PROPERTY_KEY, "");
+        boolean overrideIsConfigured = !registryOverride.isEmpty();
 
-        if (prefix != null && !prefix.isEmpty()) {
-            if (!original.asCanonicalNameString().startsWith(prefix)) {
-                return DockerImageName.parse(prefix + original.asCanonicalNameString());
-            } else {
-                return original;
-            }
-        } else {
+        if (!overrideIsConfigured) {
+            log.debug("No override is configured");
             return original;
         }
-    }
 
-    @Override
-    protected int getPriority() {
-        return -1;
+        boolean isAHubImage = original.getRegistry().isEmpty() ||
+            original.getRegistry().equals("docker.io") ||
+            original.getRegistry().equals("registry.hub.docker.com");
+        if (!isAHubImage) {
+            log.debug("Image {} is not a Docker Hub image - not applying registry/repository change", original);
+            return original;
+        }
+
+        log.debug(
+            "Applying changes to image name {}: Changing registry part to '{}' and applying prefix '{}' to repository name part",
+            original,
+            registryOverride,
+            repositoryPrefixOrEmpty
+        );
+
+        return original
+            .withRegistry(registryOverride)
+            .withRepository(repositoryPrefixOrEmpty + original.getRepository());
     }
 
     @Override

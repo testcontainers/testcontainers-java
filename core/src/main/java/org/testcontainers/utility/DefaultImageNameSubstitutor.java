@@ -32,11 +32,9 @@ public class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
 
     @Override
     public DockerImageName apply(final DockerImageName original) {
-        return prefixingImageNameSubstitutor.apply(
-            configurationFileImageNameSubstitutor.apply(
-                original
-            )
-        );
+        return configurationFileImageNameSubstitutor
+            .andThen(prefixingImageNameSubstitutor)
+            .apply(original);
     }
 
     @Override
