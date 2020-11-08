@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
  * Delegates to {@link ConfigurationFileImageNameSubstitutor} followed by {@link PrefixingImageNameSubstitutor}.
  */
 @Slf4j
-public class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
+final class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
 
     private final ConfigurationFileImageNameSubstitutor configurationFileImageNameSubstitutor;
     private final PrefixingImageNameSubstitutor prefixingImageNameSubstitutor;
