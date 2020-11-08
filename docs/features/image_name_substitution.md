@@ -45,7 +45,9 @@ to:
 
 
 
-## Adding a registry URL prefix to image names automatically
+## Automatically modifying Docker Hub image names
+
+Testcontainers can be configured to modify Docker Hub image names on the fly to apply a prefix string.
 
 Consider this if:
 
@@ -60,19 +62,17 @@ i.e. you would leave as-is:
 [Unchanged direct Docker Hub image name](../examples/junit4/generic/src/test/java/generic/ImageNameSubstitutionTest.java) inside_block:directDockerHubReference
 <!--/codeinclude-->
 
-You can then configure Testcontainers to apply the prefix `registry.mycompany.com/mirror/` to every image that it tries to pull.
+You can then configure Testcontainers to apply the prefix `registry.mycompany.com/mirror/` to every image that it tries to pull from Docker Hub.
 This can be done in one of two ways:
 
-* Setting an environment variable, `TESTCONTAINERS_IMAGE_NAME_PREFIX=registry.mycompany.com/mirror/`
-* Via config file, setting `testcontainers.image.name.prefix=registry.mycompany.com/mirror/` in either:
+* Setting environment variables `TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX=registry.mycompany.com/mirror/`
+* Via config file, setting `hub.image.name.prefix` in either:
     * the `~/.testcontainers.properties` file in your user home directory, or
     * a file named `testcontainers.properties` on the classpath
+    
+Testcontainers will automatically apply the prefix to every image that it pulls from Docker Hub - please verify that all [the required images](./pull_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
 
-Testcontainers will automatically apply this prefix to every image that it pulls - please verify that all [the required images](./pull_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
-
-Note that the prefix-based substitution will skip applying a prefix if it is already set.
-This is intended to help avoid obvious mistakes if image names have been partially migrated to a private image registry via changes to code.
-
+Testcontainers will not apply the prefix to non-Hub image names.
 
 
 
@@ -81,7 +81,7 @@ This is intended to help avoid obvious mistakes if image names have been partial
 Consider this if:
 
 * You have complex rules about which private registry images should be used as substitutes, e.g.:
-    * non-deterministic mapping of names meaning that a [name prefix](#adding-a-registry-url-prefix-to-image-names-automatically) cannot be used
+    * non-deterministic mapping of names meaning that a [name prefix](#automatically-modifying-docker-hub-image-names) cannot be used
     * rules depending upon developer identity or location
 * or you wish to add audit logging of images used in the build
 * or you wish to prevent accidental usage of images that are not on an approved list

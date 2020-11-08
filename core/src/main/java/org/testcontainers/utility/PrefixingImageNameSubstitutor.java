@@ -7,7 +7,7 @@ import org.testcontainers.UnstableAPI;
 
 /**
  * An {@link ImageNameSubstitutor} which applies a prefix to all image names, e.g. a private registry host and path.
- * The prefix may be set via an environment variable (<code>TESTCONTAINERS_IMAGE_NAME_PREFIX</code>) or an equivalent
+ * The prefix may be set via an environment variable (<code>TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX</code>) or an equivalent
  * configuration file entry (see {@link TestcontainersConfiguration}).
  */
 @UnstableAPI
@@ -16,8 +16,7 @@ import org.testcontainers.UnstableAPI;
 final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
 
     @VisibleForTesting
-    static final String REGISTRY_PROPERTY_KEY = "hub.image.override.registry";
-    static final String REPOSITORY_PREFIX_PROPERTY_KEY = "hub.image.override.repository.prefix";
+    static final String PREFIX_PROPERTY_KEY = "hub.image.name.prefix";
 
     private TestcontainersConfiguration configuration = TestcontainersConfiguration.getInstance();
 
@@ -28,12 +27,10 @@ final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
 
     @Override
     public DockerImageName apply(DockerImageName original) {
-        final String registryOverride = configuration.getEnvVarOrProperty(REGISTRY_PROPERTY_KEY, "");
-        final String repositoryPrefixOrEmpty = configuration.getEnvVarOrProperty(REPOSITORY_PREFIX_PROPERTY_KEY, "");
-        boolean overrideIsConfigured = !registryOverride.isEmpty();
+        final String configuredPrefix = configuration.getEnvVarOrProperty(PREFIX_PROPERTY_KEY, "");
 
-        if (!overrideIsConfigured) {
-            log.debug("No override is configured");
+        if (!!configuredPrefix.isEmpty()) {
+            log.debug("No prefix is configured");
             return original;
         }
 
@@ -46,15 +43,16 @@ final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
         }
 
         log.debug(
-            "Applying changes to image name {}: Changing registry part to '{}' and applying prefix '{}' to repository name part",
+            "Applying changes to image name {}: applying prefix '{}'",
             original,
-            registryOverride,
-            repositoryPrefixOrEmpty
+            configuredPrefix
         );
 
+        DockerImageName prefixAsImage = DockerImageName.parse(configuredPrefix);
+
         return original
-            .withRegistry(registryOverride)
-            .withRepository(repositoryPrefixOrEmpty + original.getRepository());
+            .withRegistry(prefixAsImage.getRegistry())
+            .withRepository(prefixAsImage.getRepository() + original.getRepository());
     }
 
     @Override
