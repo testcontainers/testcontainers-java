@@ -70,7 +70,7 @@ This can be done in one of two ways:
     * the `~/.testcontainers.properties` file in your user home directory, or
     * a file named `testcontainers.properties` on the classpath
     
-Testcontainers will automatically apply the prefix to every image that it pulls from Docker Hub - please verify that all [the required images](./pull_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
+Testcontainers will automatically apply the prefix to every image that it pulls from Docker Hub - please verify that all [the required images](../supported_docker_environment/image_registry_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
 
 Testcontainers will not apply the prefix to non-Hub image names.
 
