@@ -8,7 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mockserver/mockserver");
-    private static final String DEFAULT_TAG = "mockserver-5.11.1";
+    private static final String DEFAULT_TAG = "mockserver-5.11.2";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;

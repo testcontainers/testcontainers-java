@@ -15,7 +15,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class MockServerContainerTest {
 
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("mockserver/mockserver:mockserver-5.11.1");
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("mockserver/mockserver:mockserver-5.11.2");
 
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
