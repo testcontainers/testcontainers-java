@@ -21,9 +21,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
+    public static final int TOXIPROXY_CONTROL_PORT = 8474;
+
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy");
     private static final String DEFAULT_TAG = "2.1.0";
-    private static final int TOXIPROXY_CONTROL_PORT = 8474;
     private static final int FIRST_PROXIED_PORT = 8666;
     private static final int LAST_PROXIED_PORT = 8666 + 31;
 
@@ -129,6 +130,10 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
          */
         @Getter private final int originalProxyPort;
         private boolean isCurrentlyCut;
+
+        public String getName() {
+            return toxi.getName();
+        }
 
         public ToxicList toxics() {
             return toxi.toxics();
