@@ -3,14 +3,16 @@
 !!! note
     This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
 
-Testcontainers module for the Google's [Cloud SDK](https://cloud.google.com/sdk/).
+Testcontainers module for the Google Cloud Platform's [Cloud SDK](https://cloud.google.com/sdk/).
 
-Currently, the module supports `Datastore`, `Firestore`, `Pub/Sub` and `Spanner` emulators. In order to use it, you should use the following classes:
+Currently, the module supports `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
 
-* DatastoreEmulatorContainer
-* FirestoreEmulatorContainer
-* PubSubEmulatorContainer
-* SpannerEmulatorContainer
+Class | Container Image
+-|-
+DatastoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
+FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
+SpannerEmulatorContainer | [gcr.io/cloud-spanner-emulator/emulator](https://gcr.io/cloud-spanner-emulator/emulator)
+PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 
 ## Usage example
 
