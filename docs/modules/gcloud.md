@@ -30,7 +30,10 @@ And test against the Emulator:
 [Testing with a Datastore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:startingDatastoreEmulatorContainer
 <!--/codeinclude-->
 
-You can find more examples with [Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/datastore-example/src/test/java/com/example/springboot/datastore) and [without Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/blob/main/noframeworks/datastore-example/src/test/java/com/example/noframeworks/datastore/DatastoreIntegrationTests.java).
+See more examples:
+
+ * [Full sample code](../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
+ * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/datastore-example/src/test/java/com/example/springboot/datastore) 
 
 ### Firestore 
 
@@ -46,7 +49,10 @@ And test against the Emulator:
 [Testing with a Firestore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
-You can find more examples with [Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/firestore-example/src/test/java/com/example/springboot/firestore/FirestoreIntegrationTests.java) and [without Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/blob/main/noframeworks/firestore-example/src/test/java/com/example/noframeworks/firestore/FirestoreIntegrationTests.java).
+See more examples:
+
+ * [Full sample code](../../modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
+ * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/firestore-example/src/test/java/com/example/springboot/firestore/FirestoreIntegrationTests.java)
 
 ### Spanner 
 
@@ -74,7 +80,10 @@ And test against the Emulator:
 [Testing with a Firestore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
-You can find more examples with [Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/spanner-example/src/test/java/com/example/springboot/spanner/SpannerIntegrationTests.java) and [without Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/blob/main/noframeworks/spanner-example/src/test/java/com/example/noframeworks/spanner/SpannerIntegrationTests.java).
+See more examples:
+
+ * [Full sample code](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
+ * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/spanner-example/src/test/java/com/example/springboot/spanner/SpannerIntegrationTests.java)
 
 ### Pub/Sub 
 
@@ -102,7 +111,10 @@ And test against the Emulator:
 [Testing with a Pub/Sub Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
-You can find more examples with [Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/pubsub-example/src/test/java/com/example/springboot/pubsub/PubSubIntegrationTests.java) and [without Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/blob/main/noframeworks/pubsub-example/src/test/java/com/example/noframeworks/pubsub/PubSubIntegrationTests.java).
+See more examples:
+
+ * [Full sample code](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
+ * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/pubsub-example/src/test/java/com/example/springboot/pubsub/PubSubIntegrationTests.java)
 
 ## Adding this module to your project dependencies
 
