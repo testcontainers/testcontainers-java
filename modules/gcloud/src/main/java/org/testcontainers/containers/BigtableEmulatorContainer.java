@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * A Bigtable container that relies in google cloud sdk.
  *
- * Default port is 8080.
+ * Default port is 9000.
  *
  * @author Eddú Meléndez
  * @author Ray Tsang
@@ -15,8 +15,8 @@ public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulator
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk");
 
+    private static final String CMD = "gcloud beta emulators bigtable start --host-port 0.0.0.0:9000";
     private static final int PORT = 9000;
-    private static final String CMD = "gcloud beta emulators bigtable start --host-port 0.0.0.0:" + PORT;
 
     public BigtableEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
