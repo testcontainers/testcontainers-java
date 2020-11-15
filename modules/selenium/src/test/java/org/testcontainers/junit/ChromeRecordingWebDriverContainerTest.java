@@ -13,8 +13,8 @@ import org.testcontainers.containers.DefaultRecordingFileFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,9 +72,9 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
         @Test
         public void recordingTestThatShouldHaveCorrectDuration() throws IOException, InterruptedException {
             File target = vncRecordingDirectory.getRoot();
+            String flvFileTitle = "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
+
             try (
-                // recordAll {
-                // To do this, simply add extra parameters to the rule constructor:
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
                     .withRecordingMode(RECORD_ALL, target)
@@ -83,7 +83,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             ) {
                 chrome.start();
 
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.MILLISECONDS.sleep(500);
                 doSimpleExplore(chrome);
                 chrome.afterTest(new TestDescription() {
                     @Override
@@ -93,15 +93,14 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
 
                     @Override
                     public String getFilesystemFriendlyName() {
-                        return "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
+                        return flvFileTitle;
                     }
                 }, Optional.empty());
 
-                String flvFileTitle = "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
                 String flvFileNameRegEx = "PASSED-" + flvFileTitle + ".*\\.flv";
                 String recordedFile = vncRecordingDirectory.getRoot().listFiles(new PatternFilenameFilter(flvFileNameRegEx))[0].getCanonicalPath();
 
-                try( GenericContainer<?> container = new GenericContainer<>(TestcontainersConfiguration.getInstance().getVncDockerImageName()) ) {
+                try( GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("testcontainers/vnc-recorder:1.2.0")) ) {
                     String recordFileContainerPath = "/tmp/chromeTestRecord.flv";
                     container.withCopyFileToContainer(MountableFile.forHostPath(recordedFile), recordFileContainerPath)
                             .withCreateContainerCmdModifier( createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg") )
