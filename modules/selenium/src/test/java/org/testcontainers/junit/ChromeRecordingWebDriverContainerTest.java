@@ -83,7 +83,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             ) {
                 chrome.start();
 
-                TimeUnit.MILLISECONDS.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(500); // to make sure video will have a duration
                 doSimpleExplore(chrome);
                 chrome.afterTest(new TestDescription() {
                     @Override
