@@ -72,8 +72,6 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **pulsar.container.image = apachepulsar/pulsar:2.2.0**  
 > Used by Apache Pulsar
 
-See [Image Name Substitution](./image_name_substitution.md) for other strategies for substituting image names to pull from other registries.
-
 ## Customizing Ryuk resource reaper
 
 > **ryuk.container.image = testcontainers/ryuk:0.3.0**
