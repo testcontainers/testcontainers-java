@@ -11,10 +11,10 @@ dependencies {
     compile project(':testcontainers')
     compile 'io.r2dbc:r2dbc-spi:0.8.1.RELEASE'
 
-    testCompile 'org.assertj:assertj-core:3.14.0'
+    testCompile 'org.assertj:assertj-core:3.18.1'
     testCompile 'io.r2dbc:r2dbc-postgresql:0.8.1.RELEASE'
     testCompile project(':postgresql')
 
     testFixturesCompile 'io.projectreactor:reactor-core:3.3.4.RELEASE'
-    testFixturesCompile 'org.assertj:assertj-core:3.14.0'
+    testFixturesCompile 'org.assertj:assertj-core:3.18.1'
 }
