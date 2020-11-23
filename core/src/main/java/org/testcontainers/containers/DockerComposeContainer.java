@@ -618,12 +618,12 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         // Map the docker compose file into the container
         final File dockerComposeBaseFile = composeFiles.get(0);
         final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        final String containerPwd = MountableFile.forHostPath(pwd).getFilesystemPath();
+        final String containerPwd = MountableFile.forHostPath(pwd).getUnixFilesystemPath();
 
         final List<String> absoluteDockerComposeFiles = composeFiles.stream()
             .map(File::getAbsolutePath)
             .map(MountableFile::forHostPath)
-            .map(MountableFile::getFilesystemPath)
+            .map(MountableFile::getUnixFilesystemPath)
             .collect(toList());
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);

@@ -395,6 +395,12 @@ public class MountableFile implements Transferable {
         }
     }
 
+    public String getUnixFilesystemPath() {
+        return SystemUtils.IS_OS_WINDOWS
+            ? PathUtils.createMinGWPath(path).substring(1)
+            : path;
+    }
+
     private int getModeValue(final Path path) {
         int result = Files.isDirectory(path) ? BASE_DIR_MODE : BASE_FILE_MODE;
         return result | this.forcedFileMode;
