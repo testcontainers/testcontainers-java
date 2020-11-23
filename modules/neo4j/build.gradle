@@ -29,7 +29,7 @@ task customNeo4jPluginJar(type: Jar) {
 test.dependsOn customNeo4jPluginJar
 
 dependencies {
-    customNeo4jPluginCompileOnly "org.neo4j:neo4j:3.5.9"
+    customNeo4jPluginCompileOnly "org.neo4j:neo4j:4.2.0"
 
     compile project(":testcontainers")
 
