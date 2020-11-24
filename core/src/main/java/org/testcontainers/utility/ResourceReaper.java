@@ -24,7 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,9 +43,8 @@ public final class ResourceReaper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
-    private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
-
     private static ResourceReaper instance;
+    private static RyukClient ryukClient;
     private final DockerClient dockerClient;
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
@@ -71,67 +69,25 @@ public final class ResourceReaper {
      * @deprecated internal API
      */
     @Deprecated
-    @SneakyThrows(InterruptedException.class)
     public static String start(DockerClient client) {
         String ryukContainerId = startRyukContainer(client);
 
-        CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
+        ryukClient = new RyukClient(client, ryukContainerId);
 
-        synchronized (DEATH_NOTE) {
-            DEATH_NOTE.add(
-                    DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
-                            .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
-                            .collect(Collectors.toList())
-            );
+        try {
+            log.debug("Connecting to Ryuk");
+            ryukClient.connect();
+        } catch (Exception e) {
+            throw new IllegalStateException("Can not connect to Ryuk", e);
         }
 
-        Thread kiraThread = new Thread(
-                DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
-                () -> {
-                    int index = 0;
-                    while (true) {
-                        try (RyukClient ryukClient = new RyukClient(client, ryukContainerId)) {
-                            try {
-                                log.debug("Connecting to Ryuk");
-                                ryukClient.connect();
-                            } catch (Exception e) {
-                                log.warn("Can not connect to Ryuk", e);
-                                continue;
-                            }
-
-                            synchronized (DEATH_NOTE) {
-                                String query = null;
-                                try {
-                                    while (true) {
-                                        if (DEATH_NOTE.size() <= index) {
-                                            try {
-                                                DEATH_NOTE.wait(1_000);
-                                                continue;
-                                            } catch (InterruptedException e) {
-                                                throw new RuntimeException(e);
-                                            }
-                                        }
-                                        query = toQuery(DEATH_NOTE.get(index));
-                                        log.debug("Sending '{}' to Ryuk", query);
-                                        ryukClient.acknowledge(query);
-                                        log.debug("Received 'ACK' from Ryuk");
-                                        ryukScheduledLatch.countDown();
-                                        index++;
-                                    }
-                                } catch (Exception e) {
-                                    log.warn("Failed to send '{}' to Ryuk, reconnecting...", query);
-                                }
-                            }
-                        }
-                    }
-                },
-                "testcontainers-ryuk"
-        );
-        kiraThread.setDaemon(true);
-        kiraThread.start();
-
-        // We need to wait before we can start any containers to make sure that we delete them
-        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+        try {
+            ryukClient.acknowledge(toQuery(
+                DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
+                    .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
+                    .collect(Collectors.toList())
+            ));
+        } catch (Exception e) {
             log.error("Timed out waiting for the default Ryuk filters to be registered");
             throw new IllegalStateException("Timed out waiting for the default Ryuk filters to be registered");
         }
@@ -245,10 +201,7 @@ public final class ResourceReaper {
      * @param filter the filter
      */
     public void registerFilterForCleanup(List<Map.Entry<String, String>> filter) {
-        synchronized (DEATH_NOTE) {
-            DEATH_NOTE.add(filter);
-            DEATH_NOTE.notifyAll();
-        }
+        ryukClient.acknowledge(toQuery(filter));
     }
 
     /**

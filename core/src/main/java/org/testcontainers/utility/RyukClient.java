@@ -6,6 +6,7 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.Frame;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.unreliables.Unreliables;
 
 import java.io.PipedInputStream;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @RequiredArgsConstructor
+@Slf4j
 class RyukClient implements AutoCloseable {
 
     private final DockerClient dockerClient;
@@ -55,10 +57,13 @@ class RyukClient implements AutoCloseable {
         if (!acked.compareAndSet(true, false)) {
             throw new IllegalStateException("ACK is in progress");
         }
+        log.debug("Sending '{}' to Ryuk", query);
         outputStream.write((query + "\n").getBytes());
         outputStream.flush();
 
         Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, acked::get);
+
+        log.debug("Received 'ACK' from Ryuk");
     }
 
     @Override

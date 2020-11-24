@@ -17,7 +17,7 @@ import static org.testcontainers.TestImages.TINY_IMAGE;
  */
 public class DaemonTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Thread mainThread = Thread.currentThread();
 
         GenericContainer<?> genericContainer = null;
@@ -42,9 +42,10 @@ public class DaemonTest {
             }
         } finally {
             if (genericContainer != null) {
-                genericContainer.stop();
+                // genericContainer.stop();
             }
         }
+        Thread.currentThread().join();
     }
 
     @Test
