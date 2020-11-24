@@ -141,6 +141,18 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
             return toxi.getName();
         }
 
+        public boolean isEnabled() {
+            return toxi.isEnabled();
+        }
+
+        public void enable() throws IOException {
+            toxi.enable();
+        }
+
+        public void disable()  throws IOException {
+            toxi.disable();
+        }
+
         public ToxicList toxics() {
             return toxi.toxics();
         }

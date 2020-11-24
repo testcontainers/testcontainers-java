@@ -12,6 +12,7 @@ import java.time.Duration;
 
 import static java.lang.String.format;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
@@ -128,6 +129,16 @@ public class ToxiproxyTest {
 
             assertEquals("access via a different proxy is OK", "somevalue", secondJedis.get("somekey"));
         }
+    }
+
+    @Test
+    public void testEnableAndDisable() throws Exception {
+        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy("hostname", 7070);
+        assertTrue("proxy should be enabled", proxy.isEnabled());
+        proxy.disable();
+        assertFalse("proxy should be disabled", proxy.isEnabled());
+        proxy.enable();
+        assertTrue("proxy should be enabled", proxy.isEnabled());
     }
 
     @Test
