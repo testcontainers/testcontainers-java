@@ -143,7 +143,7 @@ public final class ResourceReaper {
             });
         if (!attachment.awaitStarted(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
             log.error("Timed out waiting for Ryuk container's attach. Container id: '{}'", ryukContainerId);
-            throw new IllegalStateException("Failed to attack too Ryuk");
+            throw new IllegalStateException("Failed to attach to Ryuk");
         }
 
         log.debug("Starting Ryuk container with id: '{}'", ryukContainerId);
