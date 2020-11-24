@@ -5,34 +5,27 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.model.StreamType;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -53,11 +45,6 @@ public final class ResourceReaper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
     private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
-    private static final RateLimiter RYUK_ACK_RATE_LIMITER = RateLimiterBuilder
-        .newBuilder()
-        .withRate(4, TimeUnit.SECONDS)
-        .withConstantThroughput()
-        .build();
 
     private static ResourceReaper instance;
     private final DockerClient dockerClient;
@@ -70,51 +57,23 @@ public final class ResourceReaper {
         dockerClient = DockerClientFactory.instance().client();
     }
 
-    @SneakyThrows(InterruptedException.class)
+    /**
+     *
+     * @deprecated internal API
+     */
+    @Deprecated
     public static String start(String hostIpAddress, DockerClient client) {
-        String ryukImage = ImageNameSubstitutor.instance()
-            .apply(DockerImageName.parse("testcontainers/ryuk:0.3.0"))
-            .asCanonicalNameString();
-        DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
+        return start(client);
+    }
 
-        List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
-
-        String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig().withAutoRemove(true))
-                .withExposedPorts(new ExposedPort(8080))
-                .withPublishAllPorts(true)
-                .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
-                .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-                .withBinds(binds)
-                .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
-                .exec()
-                .getId();
-
-        client.startContainerCmd(ryukContainerId).exec();
-
-        StringBuilder ryukLog = new StringBuilder();
-
-        ResultCallback.Adapter<Frame> logCallback = client.logContainerCmd(ryukContainerId)
-            .withSince(0)
-            .withFollowStream(true)
-            .withStdOut(true)
-            .withStdErr(true)
-            .exec(new ResultCallback.Adapter<Frame>() {
-                @Override
-                public void onNext(Frame frame) {
-                    ryukLog.append(new String(frame.getPayload(), StandardCharsets.UTF_8));
-                }
-            });
-
-        InspectContainerResponse inspectedContainer = client.inspectContainerCmd(ryukContainerId).exec();
-
-        Integer ryukPort = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().stream()
-                .flatMap(Stream::of)
-                .findFirst()
-                .map(Ports.Binding::getHostPortSpec)
-                .map(Integer::parseInt)
-                .get();
+    /**
+     *
+     * @deprecated internal API
+     */
+    @Deprecated
+    @SneakyThrows(InterruptedException.class)
+    public static String start(DockerClient client) {
+        String ryukContainerId = startRyukContainer(client);
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
@@ -129,13 +88,20 @@ public final class ResourceReaper {
         Thread kiraThread = new Thread(
                 DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
                 () -> {
+                    int index = 0;
                     while (true) {
-                        RYUK_ACK_RATE_LIMITER.doWhenReady(() -> {
-                            int index = 0;
-                            try(Socket clientSocket = new Socket(hostIpAddress, ryukPort)) {
-                                FilterRegistry registry = new FilterRegistry(clientSocket.getInputStream(), clientSocket.getOutputStream());
+                        try (RyukClient ryukClient = new RyukClient(client, ryukContainerId)) {
+                            try {
+                                log.debug("Connecting to Ryuk");
+                                ryukClient.connect();
+                            } catch (Exception e) {
+                                log.warn("Can not connect to Ryuk", e);
+                                continue;
+                            }
 
-                                synchronized (DEATH_NOTE) {
+                            synchronized (DEATH_NOTE) {
+                                String query = null;
+                                try {
                                     while (true) {
                                         if (DEATH_NOTE.size() <= index) {
                                             try {
@@ -145,41 +111,115 @@ public final class ResourceReaper {
                                                 throw new RuntimeException(e);
                                             }
                                         }
-                                        List<Map.Entry<String, String>> filters = DEATH_NOTE.get(index);
-                                        boolean isAcknowledged = registry.register(filters);
-                                        if (isAcknowledged) {
-                                            log.debug("Received 'ACK' from Ryuk");
-                                            ryukScheduledLatch.countDown();
-                                            index++;
-                                        } else {
-                                            log.debug("Didn't receive 'ACK' from Ryuk. Will retry to send filters.");
-                                        }
+                                        query = toQuery(DEATH_NOTE.get(index));
+                                        log.debug("Sending '{}' to Ryuk", query);
+                                        ryukClient.acknowledge(query);
+                                        log.debug("Received 'ACK' from Ryuk");
+                                        ryukScheduledLatch.countDown();
+                                        index++;
                                     }
+                                } catch (Exception e) {
+                                    log.warn("Failed to send '{}' to Ryuk, reconnecting...", query);
                                 }
-                            } catch (IOException e) {
-                                log.warn("Can not connect to Ryuk at {}:{}", hostIpAddress, ryukPort, e);
                             }
-                        });
+                        }
                     }
                 },
                 "testcontainers-ryuk"
         );
         kiraThread.setDaemon(true);
         kiraThread.start();
-        try {
-            // We need to wait before we can start any containers to make sure that we delete them
-            if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-                log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukLog);
-                throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", hostIpAddress, ryukPort));
-            }
-        } finally {
-            try {
-                logCallback.close();
-            } catch (IOException ignored) {
-            }
+
+        // We need to wait before we can start any containers to make sure that we delete them
+        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+            log.error("Timed out waiting for the default Ryuk filters to be registered");
+            throw new IllegalStateException("Timed out waiting for the default Ryuk filters to be registered");
         }
 
         return ryukContainerId;
+    }
+
+    @SneakyThrows(InterruptedException.class)
+    private static String startRyukContainer(DockerClient client) {
+        String ryukImage = ImageNameSubstitutor.instance()
+            .apply(DockerImageName.parse("testcontainers/ryuk:0.3.0"))
+            .asCanonicalNameString();
+        DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
+
+        log.debug("Creating Ryuk container");
+        String ryukContainerId = client.createContainerCmd(ryukImage)
+            .withHostConfig(
+                new HostConfig()
+                    .withAutoRemove(true)
+                    .withBinds(Arrays.asList(
+                        new Bind(
+                            DockerClientFactory.instance().getRemoteDockerUnixSocketPath(),
+                            new Volume("/var/run/docker.sock")
+                        )
+                    ))
+                    .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
+            )
+            .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
+            .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
+            .exec()
+            .getId();
+
+        StringBuilder ryukLog = new StringBuilder();
+
+        CountDownLatch started = new CountDownLatch(1);
+
+        log.debug("Attaching to the Ryuk container with id: '{}'", ryukContainerId);
+        ResultCallback.Adapter<Frame> attachment = client.attachContainerCmd(ryukContainerId)
+            .withFollowStream(true)
+            .withLogs(true)
+            .withStdErr(true)
+            .withStdOut(true)
+            .exec(new ResultCallback.Adapter<Frame>() {
+                @Override
+                public void onNext(Frame frame) {
+                    String payload = new String(frame.getPayload(), StandardCharsets.UTF_8);
+                    // Poor Man's log-based wait strategy :)
+                    if (frame.getStreamType() == StreamType.STDERR && payload.contains("Started!")) {
+                        started.countDown();
+                    }
+                    ryukLog.append(payload);
+                }
+            });
+        if (!attachment.awaitStarted(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+            log.error("Timed out waiting for Ryuk container's attach. Container id: '{}'", ryukContainerId);
+            throw new IllegalStateException("Failed to attack too Ryuk");
+        }
+
+        log.debug("Starting Ryuk container with id: '{}'", ryukContainerId);
+        client.startContainerCmd(ryukContainerId).exec();
+
+        try {
+            if (!started.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+                log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukLog);
+                throw new IllegalStateException("Could not connect to Ryuk");
+            }
+        } finally {
+            try {
+                attachment.close();
+            } catch (IOException ignored) {
+            }
+        }
+        log.debug("Ryuk started");
+
+        return ryukContainerId;
+    }
+
+    @VisibleForTesting
+    static String toQuery(List<Map.Entry<String, String>> filters) {
+        return filters.stream()
+            .map(it -> {
+                try {
+                    return URLEncoder.encode(it.getKey(), "UTF-8") + "=" + URLEncoder.encode(it.getValue(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .collect(Collectors.joining("&"));
     }
 
     public synchronized static ResourceReaper instance() {
@@ -390,54 +430,5 @@ public final class ResourceReaper {
             // If the JVM stops without containers being stopped, try and stop the container.
             Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
-    }
-
-    static class FilterRegistry {
-
-        @VisibleForTesting
-        static final String ACKNOWLEDGMENT = "ACK";
-
-        private final BufferedReader in;
-        private final OutputStream out;
-
-        FilterRegistry(InputStream ryukInputStream, OutputStream ryukOutputStream) {
-            this.in = new BufferedReader(new InputStreamReader(ryukInputStream));
-            this.out = ryukOutputStream;
-        }
-
-        /**
-         * Registers the given filters with Ryuk
-         *
-         * @param filters the filter to register
-         * @return true if the filters have been registered successfuly, false otherwise
-         * @throws IOException if communication with Ryuk fails
-         */
-        protected boolean register(List<Map.Entry<String, String>> filters) throws IOException {
-            String query = filters.stream()
-                .map(it -> {
-                    try {
-                        return URLEncoder.encode(it.getKey(), "UTF-8") + "=" + URLEncoder.encode(it.getValue(), "UTF-8");
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.joining("&"));
-
-            log.debug("Sending '{}' to Ryuk", query);
-            out.write(query.getBytes());
-            out.write('\n');
-            out.flush();
-
-            return waitForAcknowledgment(in);
-        }
-
-        private static boolean waitForAcknowledgment(BufferedReader in) throws IOException {
-            String line = in.readLine();
-            while (line != null && !ACKNOWLEDGMENT.equalsIgnoreCase(line)) {
-                line = in.readLine();
-            }
-            return ACKNOWLEDGMENT.equalsIgnoreCase(line);
-        }
-
     }
 }
