@@ -144,7 +144,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getOracleImage() {
-        return getEnvVarOrUserProperty("oracle.container.image", null);
+        return getEnvVarOrProperty("oracle.container.image", null);
     }
 
     @Deprecated
