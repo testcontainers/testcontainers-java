@@ -44,7 +44,7 @@ class RyukClient implements AutoCloseable {
                 @SneakyThrows
                 public void onNext(Frame object) {
                     String payload = new String(object.getPayload(), StandardCharsets.UTF_8);
-                    if ("ACK".equals(payload.trim())) {
+                    if (payload.contains("ACK\n")) {
                         acked.set(true);
                     }
                 }

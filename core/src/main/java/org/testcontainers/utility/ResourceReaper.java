@@ -74,27 +74,27 @@ public final class ResourceReaper {
     public static String start(DockerClient client) {
         String ryukContainerId = startRyukContainer(client);
 
-        ryukClient = new RyukClient(client, ryukContainerId);
-
-        try {
-            log.debug("Connecting to Ryuk");
-            ryukClient.connect();
-        } catch (Exception e) {
-            throw new IllegalStateException("Can not connect to Ryuk", e);
-        }
-
         String query = toQuery(
             DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
                 .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
                 .collect(Collectors.toList())
         );
         try {
-            Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS, () -> {
-                ryukClient.acknowledge(query);
-                return null;
+            ryukClient = Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS, () -> {
+                RyukClient ryukClient = new RyukClient(client, ryukContainerId);
+
+                try {
+                    log.debug("Connecting to the Ryuk watchdog container");
+                    ryukClient.connect();
+                    ryukClient.acknowledge(query);
+                    return ryukClient;
+                } catch (Exception e) {
+                    log.warn("Timed out waiting for the Ryuk watchdog container to start");
+                    ryukClient.close();
+                    throw new IllegalStateException("Timed out waiting for the Ryuk watchdog container to start", e);
+                }
             });
         } catch (TimeoutException e) {
-            log.error("Timed out waiting for the default Ryuk filters to be registered");
             throw new IllegalStateException("Timed out waiting for the default Ryuk filters to be registered", e);
         }
 
