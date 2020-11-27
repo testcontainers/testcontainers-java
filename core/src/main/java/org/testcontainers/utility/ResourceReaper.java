@@ -15,6 +15,8 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.rnorth.ducttape.TimeoutException;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -81,15 +83,19 @@ public final class ResourceReaper {
             throw new IllegalStateException("Can not connect to Ryuk", e);
         }
 
+        String query = toQuery(
+            DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
+                .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
+                .collect(Collectors.toList())
+        );
         try {
-            ryukClient.acknowledge(toQuery(
-                DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
-                    .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
-                    .collect(Collectors.toList())
-            ));
-        } catch (Exception e) {
+            Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS, () -> {
+                ryukClient.acknowledge(query);
+                return null;
+            });
+        } catch (TimeoutException e) {
             log.error("Timed out waiting for the default Ryuk filters to be registered");
-            throw new IllegalStateException("Timed out waiting for the default Ryuk filters to be registered");
+            throw new IllegalStateException("Timed out waiting for the default Ryuk filters to be registered", e);
         }
 
         return ryukContainerId;
