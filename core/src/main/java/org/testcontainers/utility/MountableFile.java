@@ -105,12 +105,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
-        if (SystemUtils.IS_OS_WINDOWS && path.startsWith("/")) {
-            // e.g. Docker socket mount
-            return new MountableFile(path, mode);
-        } else {
-            return forHostPath(Paths.get(path), mode);
-        }
+        return forHostPath(Paths.get(path), mode);
     }
 
     /**
