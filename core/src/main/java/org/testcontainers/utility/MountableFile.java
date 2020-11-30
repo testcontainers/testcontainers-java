@@ -175,7 +175,7 @@ public class MountableFile implements Transferable {
         String result = getResourcePath();
 
         // Special case for Windows
-        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) { // Can this ever happen? It already is a Path.
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
             // Remove leading /
             result = result.substring(1);
         }
