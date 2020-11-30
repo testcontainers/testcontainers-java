@@ -170,9 +170,12 @@ public class MountableFile implements Transferable {
         String result = getResourcePath();
 
         // Special case for Windows
-        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) {
+        if (SystemUtils.IS_OS_WINDOWS && result.startsWith("/")) { // Can this ever happen? It already is a Path.
             // Remove leading /
             result = result.substring(1);
+        } else if (SystemUtils.IS_OS_WINDOWS && result.startsWith("\\")) {
+            // for cases such as Docker socket mounting
+            result = PathUtils.createMinGWPath(result).substring(1);
         }
 
         return result;
