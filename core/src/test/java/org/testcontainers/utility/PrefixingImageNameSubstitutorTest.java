@@ -98,4 +98,43 @@ public class PrefixingImageNameSubstitutorTest {
             result.asCanonicalNameString()
         );
     }
+
+    @Test
+    public void testHandlesRegistryOnlyWithTrailingSlash() {
+        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/");
+
+        final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
+
+        assertEquals(
+            "The prefix is applied",
+            "someregistry.com/some/image:tag",
+            result.asCanonicalNameString()
+        );
+    }
+
+    @Test
+    public void testCombinesLiterallyForRegistryOnlyWithoutTrailingSlash() {
+        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com");
+
+        final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
+
+        assertEquals(
+            "The prefix is applied",
+            "someregistry.comsome/image:tag",   // treating the prefix literally, for predictability
+            result.asCanonicalNameString()
+        );
+    }
+
+    @Test
+    public void testCombinesLiterallyForBothPartsWithoutTrailingSlash() {
+        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror");
+
+        final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
+
+        assertEquals(
+            "The prefix is applied",
+            "someregistry.com/our-mirrorsome/image:tag",   // treating the prefix literally, for predictability
+            result.asCanonicalNameString()
+        );
+    }
 }
