@@ -72,7 +72,9 @@ This can be done in one of two ways:
     
 Testcontainers will automatically apply the prefix to every image that it pulls from Docker Hub - please verify that all [the required images](../supported_docker_environment/image_registry_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
 
-Testcontainers will not apply the prefix to non-Hub image names.
+Testcontainers will not apply the prefix to:
+* non-Hub image names (e.g. where another registry is set)
+* Docker Hub image names where the hub registry is explicitly part of the name (i.e. anything with a `docker.io` or `registry.hub.docker.com` host part)
 
 
 

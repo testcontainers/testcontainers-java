@@ -3,14 +3,12 @@ package org.testcontainers.utility;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.UnstableAPI;
 
 /**
  * An {@link ImageNameSubstitutor} which applies a prefix to all image names, e.g. a private registry host and path.
  * The prefix may be set via an environment variable (<code>TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX</code>) or an equivalent
  * configuration file entry (see {@link TestcontainersConfiguration}).
  */
-@UnstableAPI
 @NoArgsConstructor
 @Slf4j
 final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
@@ -34,9 +32,7 @@ final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
             return original;
         }
 
-        boolean isAHubImage = original.getRegistry().isEmpty() ||
-            original.getRegistry().equals("docker.io") ||
-            original.getRegistry().equals("registry.hub.docker.com");
+        boolean isAHubImage = original.getRegistry().isEmpty();
         if (!isAHubImage) {
             log.debug("Image {} is not a Docker Hub image - not applying registry/repository change", original);
             return original;
