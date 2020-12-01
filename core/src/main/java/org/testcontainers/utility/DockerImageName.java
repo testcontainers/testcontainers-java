@@ -167,10 +167,6 @@ public final class DockerImageName {
         }
     }
 
-    public String getRegistry() {
-        return registry;
-    }
-
     /**
      * @param newTag version tag for the copy to use
      * @return an immutable copy of this {@link DockerImageName} with the new version tag
