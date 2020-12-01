@@ -35,27 +35,27 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void hubIoRegistryIsChanged() {
+    public void hubIoRegistryIsNotChanged() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("docker.io/some/image:tag"));
 
         assertEquals(
             "The prefix is applied",
-            "someregistry.com/our-mirror/some/image:tag",
+            "docker.io/some/image:tag",
             result.asCanonicalNameString()
         );
     }
 
     @Test
-    public void hubComRegistryIsChanged() {
+    public void hubComRegistryIsNotChanged() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("registry.hub.docker.com/some/image:tag"));
 
         assertEquals(
             "The prefix is applied",
-            "someregistry.com/our-mirror/some/image:tag",
+            "registry.hub.docker.com/some/image:tag",
             result.asCanonicalNameString()
         );
     }
