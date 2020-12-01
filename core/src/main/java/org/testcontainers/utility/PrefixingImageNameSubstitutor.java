@@ -29,7 +29,7 @@ final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
     public DockerImageName apply(DockerImageName original) {
         final String configuredPrefix = configuration.getEnvVarOrProperty(PREFIX_PROPERTY_KEY, "");
 
-        if (!!configuredPrefix.isEmpty()) {
+        if (configuredPrefix.isEmpty()) {
             log.debug("No prefix is configured");
             return original;
         }
