@@ -38,10 +38,6 @@ public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulator
         return getContainerIpAddress() + ":" + getMappedPort(PORT);
     }
 
-    public String getEmulatorHost() {
-        return getContainerIpAddress();
-    }
-
     public int getEmulatorPort() {
         return getMappedPort(PORT);
     }

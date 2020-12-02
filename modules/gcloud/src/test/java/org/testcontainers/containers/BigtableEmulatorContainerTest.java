@@ -60,7 +60,7 @@ public class BigtableEmulatorContainerTest {
             createTable(channelProvider, credentialsProvider, "test-table" );
 
             BigtableDataClient client = BigtableDataClient.create(BigtableDataSettings
-                .newBuilderForEmulator(emulator.getEmulatorHost(), emulator.getEmulatorPort())
+                .newBuilderForEmulator(emulator.getHost(), emulator.getEmulatorPort())
                 .setProjectId(PROJECT_ID)
                 .setInstanceId(INSTANCE_ID)
                 .build());
