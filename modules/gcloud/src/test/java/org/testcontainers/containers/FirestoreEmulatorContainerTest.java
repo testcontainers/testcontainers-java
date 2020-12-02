@@ -20,8 +20,13 @@ import org.testcontainers.utility.DockerImageName;
 public class FirestoreEmulatorContainerTest {
 
     @Rule
-    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators"));
+    // emulatorContainer {
+    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators")
+    );
+    // }
 
+    // testWithEmulatorContainer {
     @Test
     public void testSimple() throws ExecutionException, InterruptedException {
         FirestoreOptions options = FirestoreOptions.getDefaultInstance().toBuilder()
@@ -44,5 +49,6 @@ public class FirestoreEmulatorContainerTest {
 
         assertThat(querySnapshot.getDocuments().get(0).getData()).containsEntry("first", "Ada");
     }
+    // }
 
 }
