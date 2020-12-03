@@ -35,7 +35,7 @@ public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulator
      * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getContainerIpAddress() + ":" + getMappedPort(PORT);
+        return getHost() + ":" + getEmulatorPort();
     }
 
     public int getEmulatorPort() {
