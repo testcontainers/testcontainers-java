@@ -111,6 +111,22 @@ public interface ContainerState {
         }
     }
 
+    /**
+     * @return does the container exist?
+     */
+    default boolean exists() {
+        if (getContainerId() == null) {
+            return false;
+        }
+
+        try {
+            String status = getCurrentContainerInfo().getState().getStatus();
+            return status != null && !status.isEmpty();
+        } catch (DockerException e) {
+            return false;
+        }
+    }
+
     default InspectContainerResponse getCurrentContainerInfo() {
         return DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
     }
@@ -260,8 +276,8 @@ public interface ContainerState {
      */
     @SneakyThrows(IOException.class)
     default void copyFileToContainer(Transferable transferable, String containerPath) {
-        if (!isCreated()) {
-            throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
+        if (!exists()) {
+            throw new IllegalStateException("copyFileToContainer can only be used with containers that exist");
         }
 
         try (
@@ -306,8 +322,8 @@ public interface ContainerState {
      */
     @SneakyThrows
     default  <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
-        if (!isCreated()) {
-            throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
+        if (!exists()) {
+            throw new IllegalStateException("copyFileFromContainer can only be used when the Container exists.");
         }
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
