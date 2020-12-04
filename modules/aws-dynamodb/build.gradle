@@ -1,0 +1,8 @@
+description = "Testcontainers :: AWS DynamoDb"
+
+dependencies {
+    compile project(':testcontainers')
+
+    compileOnly 'software.amazon.awssdk:dynamodb:2.15.39'
+    testCompile 'software.amazon.awssdk:dynamodb:2.15.39'
+}
