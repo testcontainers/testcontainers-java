@@ -1,4 +1,4 @@
-# Dynalite Module
+# AWS DynamoDb Module
 
 Testcontainers module for [AWS DynamoDb](https://hub.docker.com/r/amazon/dynamodb-local) official
 Docker image.
