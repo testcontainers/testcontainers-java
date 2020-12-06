@@ -11,7 +11,7 @@ Running the container as a stand-in for DynamoDB in a test:
 public class SomeTest {
 
     @Rule
-    public DynamoDbContainer dynamoDB = new DynamoDbContainer();
+    public DynamoDbContainer dynamoDB = new DynamoDbContainer("amazon/dynamodb-local:1.13.5");
     
     @Test
     public void someTestMethod() {
