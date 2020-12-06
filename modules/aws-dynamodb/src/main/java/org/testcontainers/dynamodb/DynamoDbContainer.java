@@ -11,7 +11,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Container for official AWS DynamoDB.
+ * Container for official AWS DynamoDB Local.
  */
 public class DynamoDbContainer extends GenericContainer<DynamoDbContainer> {
 
