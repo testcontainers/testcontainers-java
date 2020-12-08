@@ -117,7 +117,7 @@ public final class ResourceReaper {
                 kiraThread.setDaemon(true);
                 kiraThread.start();
 
-                if (!ack.await(10, TimeUnit.SECONDS)) {
+                if (!ack.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
                     kiraThread.interrupt();
                     throw new IllegalStateException("Timed out waiting for the Ryuk watchdog container default filters to be registered");
                 }
