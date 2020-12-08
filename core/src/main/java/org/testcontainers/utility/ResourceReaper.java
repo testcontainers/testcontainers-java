@@ -79,20 +79,49 @@ public final class ResourceReaper {
                 .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
                 .collect(Collectors.toList())
         );
-        try {
-            ryukClient = Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS, () -> {
-                RyukClient ryukClient = new RyukClient(client, ryukContainerId);
 
-                try {
-                    log.debug("Connecting to the Ryuk watchdog container");
-                    ryukClient.connect();
-                    ryukClient.acknowledge(query);
-                    return ryukClient;
-                } catch (Exception e) {
-                    log.warn("Timed out waiting for the Ryuk watchdog container to start");
-                    ryukClient.close();
-                    throw new IllegalStateException("Timed out waiting for the Ryuk watchdog container to start", e);
+        ryukClient = new RyukClient(client, ryukContainerId);
+
+        try {
+            Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS, () -> {
+                CountDownLatch ack = new CountDownLatch(1);
+
+                Thread kiraThread = new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
+                    while (true) {
+                        log.debug("Connecting to the Ryuk watchdog container");
+                        ResultCallback.Adapter<Frame> callback = new ResultCallback.Adapter<Frame>() {
+                            @Override
+                            @SneakyThrows
+                            public void onNext(Frame object) {
+                                String payload = new String(object.getPayload(), StandardCharsets.UTF_8);
+                                if (payload.contains("ACK")) {
+                                    ack.countDown();
+                                }
+                            }
+                        };
+
+                        try {
+                            ryukClient.acknowledge(query, callback);
+                            callback.awaitCompletion();
+                        } catch (InterruptedException e) {
+                            try {
+                                callback.close();
+                            } catch (Exception ignored) {
+                            }
+                            break;
+                        } catch (Exception e) {
+                            log.warn("Ryuk connection failure", e);
+                        }
+                    }
+                }, "testcontainers-ryuk");
+                kiraThread.setDaemon(true);
+                kiraThread.start();
+
+                if (!ack.await(10, TimeUnit.SECONDS)) {
+                    kiraThread.interrupt();
+                    throw new IllegalStateException("Timed out waiting for the Ryuk watchdog container default filters to be registered");
                 }
+                return null;
             });
         } catch (TimeoutException e) {
             throw new IllegalStateException("Timed out waiting for the default Ryuk filters to be registered", e);
@@ -104,7 +133,7 @@ public final class ResourceReaper {
     @SneakyThrows(InterruptedException.class)
     private static String startRyukContainer(DockerClient client) {
         String ryukImage = ImageNameSubstitutor.instance()
-            .apply(DockerImageName.parse("testcontainers/ryuk:0.3.0"))
+            .apply(DockerImageName.parse("testcontainers/ryuk:latest"))
             .asCanonicalNameString();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
@@ -148,7 +177,7 @@ public final class ResourceReaper {
                 }
             });
         if (!attachment.awaitStarted(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-            log.error("Timed out waiting for Ryuk container's attach. Container id: '{}'", ryukContainerId);
+            log.error("Timed out waiting for the Ryuk watchdog container's attach. Container id: '{}'", ryukContainerId);
             throw new IllegalStateException("Failed to attach to Ryuk");
         }
 
@@ -157,8 +186,8 @@ public final class ResourceReaper {
 
         try {
             if (!started.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-                log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukLog);
-                throw new IllegalStateException("Could not connect to Ryuk");
+                log.error("Timed out waiting for the Ryuk watchdog container to start. Ryuk's logs:\n{}", ryukLog);
+                throw new IllegalStateException("Timed out waiting for the Ryuk watchdog container to start");
             }
         } finally {
             try {
@@ -206,8 +235,18 @@ public final class ResourceReaper {
      *
      * @param filter the filter
      */
+    @SneakyThrows(InterruptedException.class)
     public void registerFilterForCleanup(List<Map.Entry<String, String>> filter) {
-        ryukClient.acknowledge(toQuery(filter));
+        ryukClient.acknowledge(toQuery(filter), new ResultCallback.Adapter<Frame>() {
+            @Override
+            @SneakyThrows(IOException.class)
+            public void onNext(Frame object) {
+                String payload = new String(object.getPayload(), StandardCharsets.UTF_8);
+                if (payload.contains("ACK")) {
+                    close();
+                }
+            }
+        }).awaitCompletion();
     }
 
     /**
