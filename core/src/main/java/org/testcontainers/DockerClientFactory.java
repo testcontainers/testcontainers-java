@@ -328,10 +328,9 @@ public class DockerClientFactory {
    */
     @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
-        ListImagesCmd listImagesCmd = client.listImagesCmd();
-        listImagesCmd.getFilters().put("reference", Arrays.asList(image));
-        List<Image> images = listImagesCmd.exec();
-        if (images.isEmpty()) {
+        try {
+            client.inspectImageCmd(image).exec();
+        } catch (NotFoundException e) {
             client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
     }
