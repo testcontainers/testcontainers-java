@@ -175,8 +175,7 @@ public class DockerClientFactory {
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
-        String hostIpAddress = strategy.getDockerHostIpAddress();
-        log.info("Docker host IP address is {}", hostIpAddress);
+        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
         final DockerClient client = new DelegatingDockerClient(strategy.getDockerClient()) {
             @Override
             public void close() {
@@ -200,7 +199,8 @@ public class DockerClientFactory {
         if (useRyuk) {
             log.debug("Ryuk is enabled");
             try {
-                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+                //noinspection deprecation
+                ryukContainerId = ResourceReaper.start(client);
             } catch (RuntimeException e) {
                 cachedClientFailure = e;
                 throw e;
