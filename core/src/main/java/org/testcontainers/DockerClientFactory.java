@@ -3,6 +3,7 @@ package org.testcontainers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -326,7 +328,9 @@ public class DockerClientFactory {
    */
     @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
-        List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
+        ListImagesCmd listImagesCmd = client.listImagesCmd();
+        listImagesCmd.getFilters().put("reference", Arrays.asList(image));
+        List<Image> images = listImagesCmd.exec();
         if (images.isEmpty()) {
             client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
