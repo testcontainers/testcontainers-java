@@ -33,6 +33,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -618,12 +619,13 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         // Map the docker compose file into the container
         final File dockerComposeBaseFile = composeFiles.get(0);
         final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        final String containerPwd = MountableFile.forHostPath(pwd).getUnixFilesystemPath();
+        final String containerPwd =  convertToUnixFilesystemPath(pwd);
 
         final List<String> absoluteDockerComposeFiles = composeFiles.stream()
             .map(File::getAbsolutePath)
             .map(MountableFile::forHostPath)
-            .map(MountableFile::getUnixFilesystemPath)
+            .map(MountableFile::getFilesystemPath)
+            .map(this::convertToUnixFilesystemPath)
             .collect(toList());
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
@@ -668,6 +670,12 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
                 " whilst running command: " +
                 StringUtils.join(this.getCommandParts(), ' '));
         }
+    }
+
+    private String convertToUnixFilesystemPath(String path) {
+        return SystemUtils.IS_OS_WINDOWS
+            ? PathUtils.createMinGWPath(path).substring(1)
+            : path;
     }
 }
 
