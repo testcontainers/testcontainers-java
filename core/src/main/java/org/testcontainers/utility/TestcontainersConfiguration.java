@@ -144,7 +144,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getOracleImage() {
-        return getEnvVarOrUserProperty("oracle.container.image", null);
+        return getEnvVarOrProperty("oracle.container.image", null);
     }
 
     @Deprecated
@@ -212,7 +212,6 @@ public class TestcontainersConfiguration {
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
-    @Nullable
     @Contract("_, !null -> !null")
     public String getEnvVarOrProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue, userProperties, classpathProperties);
@@ -225,7 +224,6 @@ public class TestcontainersConfiguration {
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
-    @Nullable
     @Contract("_, !null -> !null")
     public String getEnvVarOrUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue, userProperties);
@@ -238,7 +236,6 @@ public class TestcontainersConfiguration {
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
-    @Nullable
     @Contract("_, !null -> !null")
     public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue);
