@@ -2,20 +2,16 @@ package org.testcontainers.containers;
 
 import org.junit.Test;
 import org.mockserver.client.MockServerClient;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.FileNotFoundException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class MockServerContainerTest {
 
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("mockserver/mockserver:mockserver-5.11.2");
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("jamesdbloom/mockserver:mockserver-5.5.4");
 
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
@@ -37,13 +33,14 @@ public class MockServerContainerTest {
     }
 
     @Test
-    public void oldVersionRequiresDefaultWaitStrategy() throws Exception {
-        DockerImageName dockerImageName = DockerImageName.parse("jamesdbloom/mockserver").withTag("mockserver-5.5.4");
-        try (MockServerContainer mockServer = new MockServerContainer(dockerImageName).waitingFor(Wait.defaultWaitStrategy())) {
+    public void newVersionWorksDefaultWaitStrategy() throws Exception {
+        DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver").withTag("mockserver-5.11.2");
+        try (MockServerContainer mockServer = new MockServerContainer(dockerImageName)) {
             mockServer.start();
 
-            assertThrows("expected not found response (as we can't use old client to set expectations properly)", FileNotFoundException.class,
-                () -> SimpleHttpClient.responseFromMockserver(mockServer, "/hello")
+            assertThat("MockServer returns something",
+                SimpleHttpClient.responseFromMockserver(mockServer, "/mockserver/status"),
+                equalTo("{")
             );
         }
     }
