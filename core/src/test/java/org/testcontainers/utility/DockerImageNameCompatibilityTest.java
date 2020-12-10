@@ -1,12 +1,12 @@
 package org.testcontainers.utility;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import static org.hamcrest.core.StringContains.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class DockerImageNameCompatibilityTest {
