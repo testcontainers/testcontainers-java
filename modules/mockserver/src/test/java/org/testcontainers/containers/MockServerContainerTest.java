@@ -35,11 +35,11 @@ public class MockServerContainerTest {
     @Test
     public void newVersionWorksDefaultWaitStrategy() throws Exception {
         DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver").withTag("mockserver-5.11.2");
-        try (MockServerContainer mockServer = new MockServerContainer(dockerImageName)) {
+        try (MockServerContainer mockServer = new MockServerContainer(dockerImageName).withEnv("MOCKSERVER_LIVENESS_HTTP_GET_PATH", "/liveness")) {
             mockServer.start();
 
             assertThat("MockServer returns something",
-                SimpleHttpClient.responseFromMockserver(mockServer, "/mockserver/status"),
+                SimpleHttpClient.responseFromMockserver(mockServer, "/liveness"),
                 equalTo("{")
             );
         }
