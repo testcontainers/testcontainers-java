@@ -5,6 +5,7 @@ import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.core.RemoteApiVersion;
 import com.github.dockerjava.okhttp.OkDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
@@ -236,9 +237,14 @@ public abstract class DockerClientProviderStrategy {
                 throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
         }
 
+        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+
+        if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
+            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_30);
+        }
         return DockerClientImpl.getInstance(
             new AuthDelegatingDockerClientConfig(
-                DefaultDockerClientConfig.createDefaultConfigBuilder()
+                configBuilder
                     .withDockerHost(transportConfig.getDockerHost().toString())
                     .build()
             ),
