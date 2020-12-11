@@ -175,6 +175,10 @@ dependencies {
 
     compile "com.github.docker-java:docker-java-api:3.2.7"
 
+    // use lower Jackson version
+    shaded ('com.fasterxml.jackson.core:jackson-databind:2.8.8') {
+        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
+    }
     shaded ('com.github.docker-java:docker-java-core:3.2.7') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
         exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
