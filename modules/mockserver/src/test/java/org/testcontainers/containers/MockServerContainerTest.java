@@ -1,16 +1,14 @@
 package org.testcontainers.containers;
 
 import org.junit.Test;
-import org.mockserver.client.ClientException;
 import org.mockserver.client.MockServerClient;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class MockServerContainerTest {
 
@@ -26,7 +24,7 @@ public class MockServerContainerTest {
 
             MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
 
-            assertThat("Mockserver running", client.isRunning(), is(true));
+            assertTrue("Mockserver running", client.isRunning());
 
             client
                 .when(request().withPath("/hello"))
@@ -41,13 +39,9 @@ public class MockServerContainerTest {
 
     @Test
     public void newVersionStartsWithDefaultWaitStrategy() {
-        DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver").withTag("mockserver-5.11.2");
+        DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver:mockserver-5.11.2");
         try (MockServerContainer mockServer = new MockServerContainer(dockerImageName)) {
             mockServer.start();
-
-            assertThatThrownBy(() -> new MockServerClient(mockServer.getHost(), mockServer.getServerPort()).isRunning())
-                .isInstanceOf(ClientException.class)
-                .hasMessageContaining("does not match server version \"5.11.2\"");
         }
     }
 }
