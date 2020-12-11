@@ -26,7 +26,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 @ToString
 public class VncRecordingContainer extends GenericContainer<VncRecordingContainer> {
 
-    private static final String RECORDING_FILE_NAME = "/screen.flv";
+    private static final String ORIGINAL_RECORDING_FILE_NAME = "/screen.flv";
 
     public static final String DEFAULT_VNC_PASSWORD = "secret";
 
@@ -35,6 +35,8 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     private final String targetNetworkAlias;
 
     private String vncPassword = DEFAULT_VNC_PASSWORD;
+
+    private VncRecordingFormat recordingFormat = VncRecordingFormat.FLV;
 
     private int vncPort = 5900;
 
@@ -72,6 +74,13 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         return this;
     }
 
+    public VncRecordingContainer withVideoExtension(VncRecordingFormat recordingFormat) {
+        if (recordingFormat != null) {
+            this.recordingFormat = recordingFormat;
+        }
+        return this;
+    }
+
     public VncRecordingContainer withFrameRate(int frameRate) {
         this.frameRate = frameRate;
         return this;
@@ -84,7 +93,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         setCommand(
                 "-c",
                 "echo '" + encodedPassword + "' | base64 -d > /vnc_password && " +
-                        "flvrec.py -o " + RECORDING_FILE_NAME + " -d -r " + frameRate + " -P /vnc_password " + targetNetworkAlias + " " + vncPort
+                        "flvrec.py -o " + ORIGINAL_RECORDING_FILE_NAME + " -d -r " + frameRate + " -P /vnc_password " + targetNetworkAlias + " " + vncPort
         );
     }
 
@@ -97,18 +106,44 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     @SneakyThrows
     public InputStream streamRecording() {
-        reencodeRecording();
+        String newRecordingFileName = recordingFormat.reencodeRecording(this, ORIGINAL_RECORDING_FILE_NAME);
 
         TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
-                dockerClient.copyArchiveFromContainerCmd(getContainerId(), RECORDING_FILE_NAME).exec()
+                dockerClient.copyArchiveFromContainerCmd(getContainerId(), newRecordingFileName).exec()
         );
         archiveInputStream.getNextEntry();
         return archiveInputStream;
     }
 
-    private void reencodeRecording() throws IOException, InterruptedException {
-        String newFlvOutput = "/newScreen.flv";
-        execInContainer("ffmpeg" , "-i", RECORDING_FILE_NAME, "-vcodec", "libx264", newFlvOutput);
-        execInContainer("mv" , "-f", newFlvOutput, RECORDING_FILE_NAME);
+
+    public enum VncRecordingFormat {
+        FLV("flv") {
+            @Override
+            String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException {
+                String newFileOutput = "/newScreen.flv";
+                container.execInContainer("ffmpeg" , "-i", source, "-vcodec", "libx264", newFileOutput);
+                return newFileOutput;
+            }
+        },
+        MP4("mp4") {
+            @Override
+            String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException {
+                String newFileOutput = "/newScreen.mp4";
+                container.execInContainer("ffmpeg" , "-i", source, "-vcodec", "libx264", "-movflags", "faststart", newFileOutput);
+                return newFileOutput;
+            }
+        };
+
+        abstract String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException;
+
+        private final String filenameExtension;
+
+        VncRecordingFormat(String filenameExtension) {
+            this.filenameExtension = filenameExtension;
+        }
+
+        public String getExtension() {
+            return filenameExtension;
+        }
     }
 }

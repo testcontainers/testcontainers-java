@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -46,7 +47,7 @@ public class DefaultRecordingFileFactoryTest {
         File vncRecordingDirectory = Files.createTempDirectory("recording").toFile();
         Description description = createTestDescription(getClass().getCanonicalName(), methodName, Test.class);
 
-        File recordingFile = factory.recordingFileForTest(vncRecordingDirectory, description, success);
+        File recordingFile = factory.recordingFileForTest(vncRecordingDirectory, description, success, VncRecordingFormat.FLV);
 
         String expectedFilePrefix = format("%s-%s-%s", prefix, getClass().getSimpleName(), methodName);
 
