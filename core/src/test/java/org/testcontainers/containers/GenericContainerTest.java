@@ -27,7 +27,7 @@ public class GenericContainerTest {
     public void shouldReportOOMAfterWait() {
         Info info = DockerClientFactory.instance().client().infoCmd().exec();
         // Poor man's rootless Docker detection :D
-        Assumptions.assumeThat(info.getDriver()).doesNotContain("vfs");
+        Assumptions.assumeThat(info.getSecurityOptions()).doesNotContain("rootless");
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())

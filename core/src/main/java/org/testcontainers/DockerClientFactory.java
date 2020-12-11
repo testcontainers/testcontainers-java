@@ -3,6 +3,7 @@ package org.testcontainers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -175,8 +177,7 @@ public class DockerClientFactory {
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
-        String hostIpAddress = strategy.getDockerHostIpAddress();
-        log.info("Docker host IP address is {}", hostIpAddress);
+        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
         final DockerClient client = new DelegatingDockerClient(strategy.getDockerClient()) {
             @Override
             public void close() {
@@ -200,7 +201,8 @@ public class DockerClientFactory {
         if (useRyuk) {
             log.debug("Ryuk is enabled");
             try {
-                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+                //noinspection deprecation
+                ryukContainerId = ResourceReaper.start(client);
             } catch (RuntimeException e) {
                 cachedClientFailure = e;
                 throw e;
@@ -326,8 +328,9 @@ public class DockerClientFactory {
    */
     @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
-        List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
-        if (images.isEmpty()) {
+        try {
+            client.inspectImageCmd(image).exec();
+        } catch (NotFoundException e) {
             client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
     }

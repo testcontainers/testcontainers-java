@@ -45,7 +45,37 @@ to:
 
 
 
+## Automatically modifying Docker Hub image names
 
+Testcontainers can be configured to modify Docker Hub image names on the fly to apply a prefix string.
+
+Consider this if:
+
+* Developers and CI machines need to use different image names. For example, developers are able to pull images from Docker Hub, but CI machines need to pull from a private registry
+* Your private registry has copies of images from Docker Hub where the names are predictable, and just adding a prefix is enough. 
+  For example, `registry.mycompany.com/mirror/mysql:8.0.22` can be derived from the original Docker Hub image name (`mysql:8.0.22`) with a consistent prefix string: `registry.mycompany.com/mirror/`
+
+In this case, image name references in code are **unchanged**.
+i.e. you would leave as-is:
+
+<!--codeinclude--> 
+[Unchanged direct Docker Hub image name](../examples/junit4/generic/src/test/java/generic/ImageNameSubstitutionTest.java) inside_block:directDockerHubReference
+<!--/codeinclude-->
+
+You can then configure Testcontainers to apply the prefix `registry.mycompany.com/mirror/` to every image that it tries to pull from Docker Hub.
+This can be done in one of two ways:
+
+* Setting environment variables `TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX=registry.mycompany.com/mirror/`
+* Via config file, setting `hub.image.name.prefix` in either:
+    * the `~/.testcontainers.properties` file in your user home directory, or
+    * a file named `testcontainers.properties` on the classpath
+    
+Testcontainers will automatically apply the prefix to every image that it pulls from Docker Hub - please verify that all [the required images](../supported_docker_environment/image_registry_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
+
+Testcontainers will not apply the prefix to:
+
+* non-Hub image names (e.g. where another registry is set)
+* Docker Hub image names where the hub registry is explicitly part of the name (i.e. anything with a `docker.io` or `registry.hub.docker.com` host part)
 
 
 
@@ -54,7 +84,7 @@ to:
 Consider this if:
 
 * You have complex rules about which private registry images should be used as substitutes, e.g.:
-    * non-deterministic mapping of names meaning that a [name prefix](#adding-a-registry-url-prefix-to-image-names-automatically) cannot be used
+    * non-deterministic mapping of names meaning that a [name prefix](#automatically-modifying-docker-hub-image-names) cannot be used
     * rules depending upon developer identity or location
 * or you wish to add audit logging of images used in the build
 * or you wish to prevent accidental usage of images that are not on an approved list

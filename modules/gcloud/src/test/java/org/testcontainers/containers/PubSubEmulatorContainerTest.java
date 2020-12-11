@@ -33,9 +33,15 @@ public class PubSubEmulatorContainerTest {
     public static final String PROJECT_ID = "my-project-id";
 
     @Rule
-    public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators"));
+    // emulatorContainer {
+    public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators")
+    );
+    // }
+
 
     @Test
+    // testWithEmulatorContainer {
     public void testSimple() throws IOException {
         String hostport = emulator.getEmulatorEndpoint();
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
@@ -76,7 +82,9 @@ public class PubSubEmulatorContainerTest {
             channel.shutdown();
         }
     }
+    // }
 
+    // createTopic {
     private void createTopic(String topicId, TransportChannelProvider channelProvider, NoCredentialsProvider credentialsProvider) throws IOException {
         TopicAdminSettings topicAdminSettings = TopicAdminSettings.newBuilder()
                 .setTransportChannelProvider(channelProvider)
@@ -87,7 +95,9 @@ public class PubSubEmulatorContainerTest {
             topicAdminClient.createTopic(topicName);
         }
     }
+    // }
 
+    // createSubscription {
     private void createSubscription(String subscriptionId, String topicId, TransportChannelProvider channelProvider, NoCredentialsProvider credentialsProvider) throws IOException {
         SubscriptionAdminSettings subscriptionAdminSettings = SubscriptionAdminSettings.newBuilder()
                 .setTransportChannelProvider(channelProvider)
@@ -97,5 +107,6 @@ public class PubSubEmulatorContainerTest {
         ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(PROJECT_ID, subscriptionId);
         subscriptionAdminClient.createSubscription(subscriptionName, TopicName.of(PROJECT_ID, topicId), PushConfig.getDefaultInstance(), 10);
     }
+    // }
 
 }
