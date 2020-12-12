@@ -36,7 +36,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     private String vncPassword = DEFAULT_VNC_PASSWORD;
 
-    private VncRecordingFormat recordingFormat = VncRecordingFormat.FLV;
+    private VncRecordingFormat recordingFormat = VncRecordingFormat.DEFAULT_FORMAT;
 
     private int vncPort = 5900;
 
@@ -98,7 +98,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     }
 
     @SneakyThrows
-    public void saveRecordingToFile(File file) {
+    public void saveRecordingToFile(@NonNull File file) {
         try(InputStream inputStream = streamRecording()) {
             Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
@@ -119,7 +119,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     public enum VncRecordingFormat {
         FLV("flv") {
             @Override
-            String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException {
+            String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source) throws IOException, InterruptedException {
                 String newFileOutput = "/newScreen.flv";
                 container.execInContainer("ffmpeg" , "-i", source, "-vcodec", "libx264", newFileOutput);
                 return newFileOutput;
@@ -127,7 +127,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         },
         MP4("mp4") {
             @Override
-            String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException {
+            String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source) throws IOException, InterruptedException {
                 String newFileOutput = "/newScreen.mp4";
                 container.execInContainer("ffmpeg" , "-i", source, "-vcodec", "libx264", "-movflags", "faststart", newFileOutput);
                 return newFileOutput;
@@ -136,6 +136,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
         abstract String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException;
 
+        private static final VncRecordingFormat DEFAULT_FORMAT = FLV;
         private final String filenameExtension;
 
         VncRecordingFormat(String filenameExtension) {
@@ -145,5 +146,16 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         public String getExtension() {
             return filenameExtension;
         }
+
+        /**
+         * @return {@code vncRecordingFormat} value if not null, otherwise, {@link VncRecordingFormat#FLV} will be returned as a default format.
+         */
+        public static VncRecordingFormat of(VncRecordingFormat vncRecordingFormat) {
+            if (vncRecordingFormat == null) {
+                return DEFAULT_FORMAT;
+            }
+            return vncRecordingFormat;
+        }
     }
+
 }

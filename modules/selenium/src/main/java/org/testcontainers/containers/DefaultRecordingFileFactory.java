@@ -13,6 +13,12 @@ public class DefaultRecordingFileFactory implements RecordingFileFactory {
     private static final String FAILED = "FAILED";
     private static final String FILENAME_FORMAT = "%s-%s-%s.%s";
 
+
+    @Override
+    public File recordingFileForTest(File vncRecordingDirectory, String prefix, boolean succeeded) {
+        return recordingFileForTest(vncRecordingDirectory, prefix, succeeded, null);
+    }
+
     @Override
     public File recordingFileForTest(File vncRecordingDirectory, String prefix, boolean succeeded, VncRecordingFormat recordingFormat) {
         final String resultMarker = succeeded ? PASSED : FAILED;
@@ -20,7 +26,7 @@ public class DefaultRecordingFileFactory implements RecordingFileFactory {
             resultMarker,
             prefix,
             filenameDateFormat.format(new Date()),
-            recordingFormat.getExtension()
+            VncRecordingFormat.of(recordingFormat).getExtension()
         );
         return new File(vncRecordingDirectory, fileName);
     }

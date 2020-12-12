@@ -37,7 +37,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
      * Guaranty a minimum video length for FFmpeg re-encoding.
      * @see VncRecordingFormat#reencodeRecording(VncRecordingContainer, String)
      */
-    private static final int MINIMUM_VIDEO_DURATION_MILLISECONDS = 100;
+    private static final int MINIMUM_VIDEO_DURATION_MILLISECONDS = 200;
 
     public static class ChromeThatRecordsAllTests {
 
@@ -86,8 +86,8 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
         public void recordingTestShouldHaveFlvExtension() throws InterruptedException {
             File target = vncRecordingDirectory.getRoot();
             try (
-                // recordAllFlv {
-                // Define explicitly FLV format for recorded video:
+                // recordFlv {
+                // Set (explicitly) FLV format for recorded video:
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
                     .withRecordingMode(RECORD_ALL, target, VncRecordingFormat.FLV)
@@ -104,8 +104,8 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
         public void recordingTestShouldHaveMp4Extension() throws InterruptedException {
             File target = vncRecordingDirectory.getRoot();
             try (
-                // recordAllMp4 {
-                // Define MP4 format for recorded video:
+                // recordMp4 {
+                // Set MP4 format for recorded video:
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
                     .withRecordingMode(RECORD_ALL, target, VncRecordingFormat.MP4)
