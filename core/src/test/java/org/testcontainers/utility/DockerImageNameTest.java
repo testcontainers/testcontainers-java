@@ -124,7 +124,7 @@ public class DockerImageNameTest {
             if (version != null) {
                 assertEquals(combined + " has version part: " + version, version, imageName.getVersionPart());
             } else {
-                assertEquals(combined + " has implicit version: latest", "latest", imageName.getVersionPart());
+                assertEquals(combined + " has automatic 'latest' version specified", "latest", imageName.getVersionPart());
             }
             assertEquals(combined + " has canonical name: " + canonicalName, canonicalName, imageName.asCanonicalNameString());
 

@@ -4,26 +4,33 @@ package org.testcontainers.utility;
 import com.google.common.net.HostAndPort;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.With;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.testcontainers.utility.Versioning.Sha256Versioning;
+import org.testcontainers.utility.Versioning.TagVersioning;
 
 import java.util.regex.Pattern;
 
-@EqualsAndHashCode(exclude = "rawName")
+@EqualsAndHashCode(exclude = { "rawName", "compatibleSubstituteFor" })
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DockerImageName {
 
     /* Regex patterns used for validation */
     private static final String ALPHA_NUMERIC = "[a-z0-9]+";
-    private static final String SEPARATOR = "([\\.]{1}|_{1,2}|-+)";
+    private static final String SEPARATOR = "([.]|_{1,2}|-+)";
     private static final String REPO_NAME_PART = ALPHA_NUMERIC + "(" + SEPARATOR + ALPHA_NUMERIC + ")*";
     private static final Pattern REPO_NAME = Pattern.compile(REPO_NAME_PART + "(/" + REPO_NAME_PART + ")*");
 
     private final String rawName;
-    private final String registry;
-    private final String repo;
-    @NotNull private final Versioning versioning;
+    @With @Getter private final String registry;
+    @With @Getter private final String repository;
+    @NotNull @With(AccessLevel.PRIVATE)
+    private final Versioning versioning;
+    @Nullable @With(AccessLevel.PRIVATE)
+    private final DockerImageName compatibleSubstituteFor;
 
     /**
      * Parses a docker image name from a provided string.
@@ -52,8 +59,8 @@ public final class DockerImageName {
         String remoteName;
         if (slashIndex == -1 ||
             (!fullImageName.substring(0, slashIndex).contains(".") &&
-             !fullImageName.substring(0, slashIndex).contains(":") &&
-             !fullImageName.substring(0, slashIndex).equals("localhost"))) {
+                !fullImageName.substring(0, slashIndex).contains(":") &&
+                !fullImageName.substring(0, slashIndex).equals("localhost"))) {
             registry = "";
             remoteName = fullImageName;
         } else {
@@ -62,15 +69,17 @@ public final class DockerImageName {
         }
 
         if (remoteName.contains("@sha256:")) {
-            repo = remoteName.split("@sha256:")[0];
+            repository = remoteName.split("@sha256:")[0];
             versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
         } else if (remoteName.contains(":")) {
-            repo = remoteName.split(":")[0];
+            repository = remoteName.split(":")[0];
             versioning = new TagVersioning(remoteName.split(":")[1]);
         } else {
-            repo = remoteName;
-            versioning = new TagVersioning("latest");
+            repository = remoteName;
+            versioning = Versioning.ANY;
         }
+
+        compatibleSubstituteFor = null;
     }
 
     /**
@@ -92,8 +101,8 @@ public final class DockerImageName {
         String remoteName;
         if (slashIndex == -1 ||
             (!nameWithoutTag.substring(0, slashIndex).contains(".") &&
-             !nameWithoutTag.substring(0, slashIndex).contains(":") &&
-             !nameWithoutTag.substring(0, slashIndex).equals("localhost"))) {
+                !nameWithoutTag.substring(0, slashIndex).contains(":") &&
+                !nameWithoutTag.substring(0, slashIndex).equals("localhost"))) {
             registry = "";
             remoteName = nameWithoutTag;
         } else {
@@ -102,12 +111,14 @@ public final class DockerImageName {
         }
 
         if (version.startsWith("sha256:")) {
-            repo = remoteName;
+            repository = remoteName;
             versioning = new Sha256Versioning(version.replace("sha256:", ""));
         } else {
-            repo = remoteName;
+            repository = remoteName;
             versioning = new TagVersioning(version);
         }
+
+        compatibleSubstituteFor = null;
     }
 
     /**
@@ -115,9 +126,9 @@ public final class DockerImageName {
      */
     public String getUnversionedPart() {
         if (!"".equals(registry)) {
-            return registry + "/" + repo;
+            return registry + "/" + repository;
         } else {
-            return repo;
+            return repository;
         }
     }
 
@@ -132,7 +143,7 @@ public final class DockerImageName {
      * @return canonical name for the image
      */
     public String asCanonicalNameString() {
-        return getUnversionedPart() + versioning.getSeparator() + versioning.toString();
+        return getUnversionedPart() + versioning.getSeparator() + getVersionPart();
     }
 
     @Override
@@ -146,76 +157,108 @@ public final class DockerImageName {
      * @throws IllegalArgumentException if not valid
      */
     public void assertValid() {
-        HostAndPort.fromString(registry);
-        if (!REPO_NAME.matcher(repo).matches()) {
-            throw new IllegalArgumentException(repo + " is not a valid Docker image name (in " + rawName + ")");
+        //noinspection UnstableApiUsage
+        HostAndPort.fromString(registry); // return value ignored - this throws if registry is not a valid host:port string
+        if (!REPO_NAME.matcher(repository).matches()) {
+            throw new IllegalArgumentException(repository + " is not a valid Docker image name (in " + rawName + ")");
         }
         if (!versioning.isValid()) {
             throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");
         }
     }
 
-    public String getRegistry() {
-        return registry;
-    }
-
+    /**
+     * @param newTag version tag for the copy to use
+     * @return an immutable copy of this {@link DockerImageName} with the new version tag
+     */
     public DockerImageName withTag(final String newTag) {
-        return new DockerImageName(rawName, registry, repo, new TagVersioning(newTag));
+        return withVersioning(new TagVersioning(newTag));
     }
 
-    private interface Versioning {
-        boolean isValid();
-
-        String getSeparator();
+    /**
+     * Declare that this {@link DockerImageName} is a compatible substitute for another image - i.e. that this image
+     * behaves as the other does, and is compatible with Testcontainers' assumptions about the other image.
+     *
+     * @param otherImageName the image name of the other image
+     * @return an immutable copy of this {@link DockerImageName} with the compatibility declaration attached.
+     */
+    public DockerImageName asCompatibleSubstituteFor(String otherImageName) {
+        return withCompatibleSubstituteFor(DockerImageName.parse(otherImageName));
     }
 
-    @Data
-    private static class TagVersioning implements Versioning {
-        public static final String TAG_REGEX = "[\\w][\\w\\.\\-]{0,127}";
-        private final String tag;
-
-        TagVersioning(String tag) {
-            this.tag = tag;
-        }
-
-        @Override
-        public boolean isValid() {
-            return tag.matches(TAG_REGEX);
-        }
-
-        @Override
-        public String getSeparator() {
-            return ":";
-        }
-
-        @Override
-        public String toString() {
-            return tag;
-        }
+    /**
+     * Declare that this {@link DockerImageName} is a compatible substitute for another image - i.e. that this image
+     * behaves as the other does, and is compatible with Testcontainers' assumptions about the other image.
+     *
+     * @param otherImageName the image name of the other image
+     * @return an immutable copy of this {@link DockerImageName} with the compatibility declaration attached.
+     */
+    public DockerImageName asCompatibleSubstituteFor(DockerImageName otherImageName) {
+        return withCompatibleSubstituteFor(otherImageName);
     }
 
-    @Data
-    private static class Sha256Versioning implements Versioning {
-        public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
-        private final String hash;
-
-        Sha256Versioning(String hash) {
-            this.hash = hash;
+    /**
+     * Test whether this {@link DockerImageName} has declared compatibility with another image (set using
+     * {@link DockerImageName#asCompatibleSubstituteFor(String)} or
+     * {@link DockerImageName#asCompatibleSubstituteFor(DockerImageName)}.
+     * <p>
+     * If a version tag part is present in the <code>other</code> image name, the tags must exactly match, unless it
+     * is 'latest'. If a version part is not present in the <code>other</code> image name, the tag contents are ignored.
+     *
+     * @param other the other image that we are trying to test compatibility with
+     * @return whether this image has declared compatibility.
+     */
+    public boolean isCompatibleWith(DockerImageName other) {
+        // is this image already the same or equivalent?
+        if (other.equals(this)) {
+            return true;
         }
 
-        @Override
-        public boolean isValid() {
-            return hash.matches(HASH_REGEX);
+        if (this.compatibleSubstituteFor == null) {
+            return false;
         }
 
-        @Override
-        public String getSeparator() {
-            return "@";
+        return this.compatibleSubstituteFor.isCompatibleWith(other);
+    }
+
+    /**
+     * Behaves as {@link DockerImageName#isCompatibleWith(DockerImageName)} but throws an exception
+     * rather than returning false if a mismatch is detected.
+     *
+     * @param anyOthers the other image(s) that we are trying to check compatibility with. If more
+     *                  than one is provided, this method will check compatibility with at least one
+     *                  of them.
+     * @throws IllegalStateException if {@link DockerImageName#isCompatibleWith(DockerImageName)}
+     *                               returns false
+     */
+    public void assertCompatibleWith(DockerImageName... anyOthers) {
+        if (anyOthers.length == 0) {
+            throw new IllegalArgumentException("anyOthers parameter must be non-empty");
         }
 
-        @Override
-        public String toString() {
-            return "sha256:" + hash;
+        for (DockerImageName anyOther : anyOthers) {
+            if (this.isCompatibleWith(anyOther)) {
+                return;
+            }
         }
+
+        final DockerImageName exampleOther = anyOthers[0];
+
+        throw new IllegalStateException(
+            String.format(
+                "Failed to verify that image '%s' is a compatible substitute for '%s'. This generally means that "
+                    +
+                    "you are trying to use an image that Testcontainers has not been designed to use. If this is "
+                    +
+                    "deliberate, and if you are confident that the image is compatible, you should declare "
+                    +
+                    "compatibility in code using the `asCompatibleSubstituteFor` method. For example:\n"
+                    +
+                    "   DockerImageName myImage = DockerImageName.parse(\"%s\").asCompatibleSubstituteFor(\"%s\");\n"
+                    +
+                    "and then use `myImage` instead.",
+                this.rawName, exampleOther.rawName, this.rawName, exampleOther.rawName
+            )
+        );
     }
 }

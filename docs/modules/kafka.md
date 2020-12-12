@@ -14,25 +14,16 @@ The following field in your JUnit test class will prepare a container running Ka
 <!--codeinclude-->
 [JUnit Rule](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:junitRule
 <!--/codeinclude-->
-        
+
+The correspondence between Confluent Platform versions and Kafka versions can be seen [in Confluent documentation](https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility)
+
 Now your tests or any other process running on your machine can get access to running Kafka broker by using the following bootstrap server location:
 
 <!--codeinclude-->
 [Bootstrap Servers](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:getBootstrapServers
 <!--/codeinclude-->
 
-
 ## Options
-
-### Selecting Kafka version
-
-You can select a version of Confluent Platform by passing it to the container's constructor:
-<!--codeinclude-->
-[Version Constructor](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
-<!--/codeinclude-->
-
-
-The correspondence between Confluent Platform versions and Kafka versions can be seen [in Confluent documentation](https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility)
         
 ### <a name="zookeeper"></a> Using external Zookeeper
 
@@ -44,7 +35,7 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 
 ## Multi-container usage
 
-If your test needs to run some other Docker container which needs access to the Kafka, do the following:
+If your test needs to run some other Docker container which needs access to Kafka, do the following:
 
 * Run your other container on the same network as Kafka container, e.g.:
 <!--codeinclude-->

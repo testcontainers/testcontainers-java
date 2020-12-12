@@ -15,7 +15,7 @@ public class PrestoJDBCDriverTest extends AbstractJDBCDriverTest {
     public static Iterable<Object[]> data() {
         return asList(
             new Object[][]{
-                {"jdbc:tc:presto:329://hostname/", EnumSet.of(Options.PmdKnownBroken)},
+                {"jdbc:tc:presto:344://hostname/", EnumSet.of(Options.PmdKnownBroken)},
             });
     }
 }

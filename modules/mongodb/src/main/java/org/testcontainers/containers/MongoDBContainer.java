@@ -16,10 +16,12 @@ import java.io.IOException;
  */
 @Slf4j
 public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
+    private static final String DEFAULT_TAG = "4.0.10";
     private static final int CONTAINER_EXIT_CODE_OK = 0;
     private static final int MONGODB_INTERNAL_PORT = 27017;
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
-    private static final String MONGODB_VERSION_DEFAULT = "4.0.10";
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
     /**
@@ -27,27 +29,41 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      */
     @Deprecated
     public MongoDBContainer() {
-        this("mongo:" + MONGODB_VERSION_DEFAULT);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public MongoDBContainer(@NonNull final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public MongoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");
         waitingFor(
-            Wait.forLogMessage(".*waiting for connections on port.*", 1)
+            Wait.forLogMessage("(?i).*waiting for connections.*", 1)
         );
     }
 
+    /**
+     * Gets a replica set url for the default {@value #MONGODB_DATABASE_NAME_DEFAULT} database.
+     *
+     * @return a replica set url.
+     */
     public String getReplicaSetUrl() {
+        return getReplicaSetUrl(MONGODB_DATABASE_NAME_DEFAULT);
+    }
+
+    /**
+     * Gets a replica set url for a provided <code>databaseName</code>.
+     *
+     * @param databaseName a database name.
+     * @return a replica set url.
+     */
+    public String getReplicaSetUrl(final String databaseName) {
         if (!isRunning()) {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
@@ -55,7 +71,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             "mongodb://%s:%d/%s",
             getContainerIpAddress(),
             getMappedPort(MONGODB_INTERNAL_PORT),
-            MONGODB_DATABASE_NAME_DEFAULT
+            databaseName
         );
     }
 
