@@ -1,5 +1,6 @@
 package org.testcontainers.lifecycle;
 
+import java.util.Arrays;
 import lombok.experimental.UtilityClass;
 
 import java.util.Collection;
@@ -40,6 +41,13 @@ public class Startables {
      */
     public CompletableFuture<Void> deepStart(Iterable<? extends Startable> startables) {
         return deepStart(StreamSupport.stream(startables.spliterator(), false));
+    }
+
+    /**
+     * @see #deepStart(Stream)
+     */
+    public CompletableFuture<Void> deepStart(Startable... startables) {
+        return deepStart(Arrays.stream(startables));
     }
 
     /**
