@@ -1,8 +1,6 @@
 package org.testcontainers.containers;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.NoCredentials;
@@ -12,21 +10,27 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class FirestoreEmulatorContainerTest {
 
     @Rule
-    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0"));
+    // emulatorContainer {
+    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators")
+    );
+    // }
 
+    // testWithEmulatorContainer {
     @Test
     public void testSimple() throws ExecutionException, InterruptedException {
         FirestoreOptions options = FirestoreOptions.getDefaultInstance().toBuilder()
-                .setHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8080))
+                .setHost(emulator.getEmulatorEndpoint())
                 .setCredentials(NoCredentials.getInstance())
                 .setProjectId("test-project")
                 .build();
@@ -45,5 +49,6 @@ public class FirestoreEmulatorContainerTest {
 
         assertThat(querySnapshot.getDocuments().get(0).getData()).containsEntry("first", "Ada");
     }
+    // }
 
 }

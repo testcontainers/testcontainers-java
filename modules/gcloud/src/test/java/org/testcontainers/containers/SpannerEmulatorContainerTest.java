@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
@@ -17,25 +16,30 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class SpannerEmulatorContainerTest {
 
     @Rule
-    public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer(DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.1.0"));
+    // emulatorContainer {
+    public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer(
+        DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.1.0")
+    );
+    // }
 
     private static final String PROJECT_NAME = "test-project";
     private static final String INSTANCE_NAME = "test-instance";
     private static final String DATABASE_NAME = "test-database";
 
+    // testWithEmulatorContainer {
     @Test
     public void testSimple() throws ExecutionException, InterruptedException {
         SpannerOptions options = SpannerOptions.newBuilder()
-                .setEmulatorHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(9010))
+                .setEmulatorHost(emulator.getEmulatorGrpcEndpoint())
                 .setCredentials(NoCredentials.getInstance())
                 .setProjectId(PROJECT_NAME)
                 .build();
@@ -63,12 +67,16 @@ public class SpannerEmulatorContainerTest {
         assertThat(resultSet.getLong(0)).isEqualTo(1);
         assertThat(resultSet.getString(1)).isEqualTo("Java");
     }
+    // }
 
+    // createDatabase {
     private void createDatabase(Spanner spanner) throws InterruptedException, ExecutionException {
         DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
         Database database = dbAdminClient.createDatabase(INSTANCE_NAME, DATABASE_NAME, Arrays.asList("CREATE TABLE TestTable (Key INT64, Value STRING(MAX)) PRIMARY KEY (Key)")).get();
     }
+    // }
 
+    // createInstance {
     private InstanceId createInstance(Spanner spanner) throws InterruptedException, ExecutionException {
         InstanceConfigId instanceConfig = InstanceConfigId.of(PROJECT_NAME, "emulator-config");
         InstanceId instanceId = InstanceId.of(PROJECT_NAME, INSTANCE_NAME);
@@ -76,5 +84,6 @@ public class SpannerEmulatorContainerTest {
         Instance instance = insAdminClient.createInstance(InstanceInfo.newBuilder(instanceId).setNodeCount(1).setDisplayName("Test instance").setInstanceConfigId(instanceConfig).build()).get();
         return instanceId;
     }
+    // }
 
 }

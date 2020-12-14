@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
@@ -23,22 +23,27 @@ import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.TopicName;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class PubSubEmulatorContainerTest {
 
     public static final String PROJECT_ID = "my-project-id";
 
     @Rule
-    public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0"));
+    // emulatorContainer {
+    public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators")
+    );
+    // }
+
 
     @Test
+    // testWithEmulatorContainer {
     public void testSimple() throws IOException {
-        String hostport = emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8085);
+        String hostport = emulator.getEmulatorEndpoint();
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
         try {
             TransportChannelProvider channelProvider =
@@ -77,7 +82,9 @@ public class PubSubEmulatorContainerTest {
             channel.shutdown();
         }
     }
+    // }
 
+    // createTopic {
     private void createTopic(String topicId, TransportChannelProvider channelProvider, NoCredentialsProvider credentialsProvider) throws IOException {
         TopicAdminSettings topicAdminSettings = TopicAdminSettings.newBuilder()
                 .setTransportChannelProvider(channelProvider)
@@ -88,7 +95,9 @@ public class PubSubEmulatorContainerTest {
             topicAdminClient.createTopic(topicName);
         }
     }
+    // }
 
+    // createSubscription {
     private void createSubscription(String subscriptionId, String topicId, TransportChannelProvider channelProvider, NoCredentialsProvider credentialsProvider) throws IOException {
         SubscriptionAdminSettings subscriptionAdminSettings = SubscriptionAdminSettings.newBuilder()
                 .setTransportChannelProvider(channelProvider)
@@ -98,5 +107,6 @@ public class PubSubEmulatorContainerTest {
         ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(PROJECT_ID, subscriptionId);
         subscriptionAdminClient.createSubscription(subscriptionName, TopicName.of(PROJECT_ID, topicId), PushConfig.getDefaultInstance(), 10);
     }
+    // }
 
 }

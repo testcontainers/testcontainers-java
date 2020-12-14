@@ -24,12 +24,12 @@ import org.testcontainers.utility.DockerImageName;
 
 public class KafkaContainerTest {
 
-    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:5.2.1");
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:5.4.3");
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
 
     // junitRule {
     @ClassRule
-    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.2.1"));
+    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.3"));
     // }
 
     @Test
@@ -45,7 +45,7 @@ public class KafkaContainerTest {
     public void testUsageWithSpecificImage() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.2.1"))
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.3"))
             // }
         ) {
             kafka.start();
@@ -61,7 +61,7 @@ public class KafkaContainerTest {
     @Test
     public void testUsageWithVersion() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer("5.2.1")
+            KafkaContainer kafka = new KafkaContainer("5.5.1")
         ) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());

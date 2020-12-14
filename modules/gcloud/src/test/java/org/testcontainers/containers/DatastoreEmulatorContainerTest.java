@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.datastore.Datastore;
@@ -10,14 +12,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class DatastoreEmulatorContainerTest {
 
     @Rule
     // creatingDatastoreEmulatorContainer {
     public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:313.0.0")
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators")
     );
     // }
 
@@ -25,7 +25,7 @@ public class DatastoreEmulatorContainerTest {
     @Test
     public void testSimple() {
         DatastoreOptions options = DatastoreOptions.newBuilder()
-                .setHost(emulator.getContainerIpAddress() + ":" + emulator.getMappedPort(8081))
+                .setHost(emulator.getEmulatorEndpoint())
                 .setCredentials(NoCredentials.getInstance())
                 .setRetrySettings(ServiceOptions.getNoRetrySettings())
                 .setProjectId("test-project")

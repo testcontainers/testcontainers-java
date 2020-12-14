@@ -145,7 +145,7 @@ public class RegistryAuthLocator {
                 return Optional.of(existingAuthConfig);
             }
         } catch (Exception e) {
-            log.warn("Failure when attempting to lookup auth config (dockerImageName: {}, configFile: {}. Falling back to docker-java default behaviour. Exception message: {}",
+            log.info("Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: {}, configFile: {}. Falling back to docker-java default behaviour. Exception message: {}",
                 dockerImageName,
                 configFile,
                 e.getMessage());
