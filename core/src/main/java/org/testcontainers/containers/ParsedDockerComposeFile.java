@@ -13,8 +13,12 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Representation of a docker-compose file, with partial parsing for validation and extraction of a minimal set of
@@ -24,6 +28,9 @@ import java.util.Set;
 @EqualsAndHashCode
 class ParsedDockerComposeFile {
 
+    private static final Pattern ENV_SUBSTITUTION_PATTERN =
+        Pattern.compile("\\$(?:\\$|\\{(?<var>[^}]*?)(?:(?<op>:-|-|:\\?|\\?)(?<default>[^}]*))?})");
+
     private final Map<String, Object> composeFileContent;
     private final String composeFileName;
     private final File composeFile;
@@ -31,10 +38,12 @@ class ParsedDockerComposeFile {
     @Getter
     private Set<String> dependencyImageNames = new HashSet<>();
 
-    ParsedDockerComposeFile(File composeFile) {
+    ParsedDockerComposeFile(File composeFile, Map<String, String> env) {
         Yaml yaml = new Yaml();
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
-            composeFileContent = yaml.load(fileInputStream);
+            Object preSubstitution = yaml.load(fileInputStream);
+            //noinspection unchecked
+            composeFileContent = (Map<String, Object>) substituteEnv(preSubstitution, env);
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to parse YAML file from " + composeFile.getAbsolutePath(), e);
         }
@@ -44,12 +53,69 @@ class ParsedDockerComposeFile {
     }
 
     @VisibleForTesting
-    ParsedDockerComposeFile(Map<String, Object> testContent) {
-        this.composeFileContent = testContent;
+    ParsedDockerComposeFile(Map<String, Object> testContent, Map<String, String> env) {
+        //noinspection unchecked
+        this.composeFileContent = (Map<String, Object>) substituteEnv(testContent, env);
         this.composeFileName = "";
         this.composeFile = new File(".");
 
         parseAndValidate();
+    }
+
+    private static Object substituteEnv(Object obj, Map<String, String> env) {
+        if (obj instanceof Map) {
+            return ((Map<?, ?>) obj)
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                    entry -> substituteEnv(entry.getKey(), env),
+                    entry -> substituteEnv(entry.getValue(), env)));
+        } else if (obj instanceof List) {
+            return ((List<?>) obj)
+                .stream()
+                .map(entry -> substituteEnv(entry, env))
+                .collect(Collectors.toList());
+        } else if (obj instanceof String) {
+            return substituteEnv((String)obj, env);
+        } else {
+            return obj;
+        }
+    }
+
+    private static String substituteEnv(String input, Map<String, String> env) {
+        if (!input.contains("$")) {
+            return input;
+        }
+
+        Matcher matcher = ENV_SUBSTITUTION_PATTERN.matcher(input);
+        StringBuilder builder = new StringBuilder();
+        int lastIndex = 0;
+
+        while (matcher.find()) {
+            builder.append(input, lastIndex, matcher.start());
+
+            String var = matcher.group("var");
+            String op = matcher.group("op");
+            String def = matcher.group("default");
+            String val = env.get(var);
+
+            if (var == null) {
+                // If no var is captured, it's an escaped $.
+                builder.append('$');
+            } else if (op == null || op.equals("?") || op.equals(":?")) {
+                builder.append(val != null ? val : "");
+            } else if (op.equals("-")) {
+                builder.append(val != null ? val : def);
+            } else if (op.equals(":-")) {
+                builder.append(val != null && !val.isEmpty() ? val : def);
+            }
+
+            lastIndex = matcher.end();
+        }
+
+        builder.append(input, lastIndex, input.length());
+
+        return builder.toString();
     }
 
     private void parseAndValidate() {

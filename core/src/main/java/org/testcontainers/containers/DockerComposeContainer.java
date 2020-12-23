@@ -77,7 +77,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private final String identifier;
     private final List<File> composeFiles;
-    private Set<ParsedDockerComposeFile> parsedComposeFiles;
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
@@ -126,7 +125,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
 
         this.composeFiles = composeFiles;
-        this.parsedComposeFiles = composeFiles.stream().map(ParsedDockerComposeFile::new).collect(Collectors.toSet());
 
         // Use a unique identifier so that containers created for this compose environment can be identified
         this.identifier = identifier;
@@ -184,7 +182,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // Pull images using our docker client rather than compose itself,
         // (a) as a workaround for https://github.com/docker/compose/issues/5854, which prevents authenticated image pulls being possible when credential helpers are in use
         // (b) so that credential helper-based auth still works when compose is running from within a container
-        parsedComposeFiles.stream()
+        composeFiles.stream()
+            .map(file -> new ParsedDockerComposeFile(file, env))
             .flatMap(it -> it.getDependencyImageNames().stream())
             .forEach(imageName -> {
                 try {
