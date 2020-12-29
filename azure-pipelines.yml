@@ -17,8 +17,6 @@ jobs:
         tasks: "clean testcontainers:test --tests GenericContainerRuleTest"
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
-  - script: wget -q https://get.cimate.io/release/linux/cimate && chmod +x cimate && ./cimate "**/TEST-*.xml"
-    condition: and(succeededOrFailed(),eq(variables['Agent.OS'], 'Linux'))
 
   # Run all tests when running the Windows CI tests
   - task: Gradle@2
