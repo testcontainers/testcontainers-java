@@ -32,13 +32,3 @@ jobs:
           DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
-      - name: aggregate test reports with ciMate
-        if: always()
-        continue-on-error: true
-        env:
-          CIMATE_PROJECT_ID: 2348n4vl
-          CIMATE_CI_KEY: "CI / rootless Docker (${{ matrix.XDG_RUNTIME_DIR }})"
-        run: |
-          wget -q https://get.cimate.io/release/linux/cimate
-          chmod +x cimate
-          ./cimate "**/TEST-*.xml"
