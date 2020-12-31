@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
@@ -33,7 +34,9 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
     public MockServerContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DockerImageName.parse("mockserver/mockserver"));
+
+        waitingFor(Wait.forHttp("/mockserver/status").withMethod("PUT").forStatusCode(200));
 
         withCommand("-logLevel INFO -serverPort " + PORT);
         addExposedPorts(PORT);

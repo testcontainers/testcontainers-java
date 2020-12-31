@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
 
@@ -104,6 +105,17 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     public SELF withVaultPort(int port) {
         this.port = port;
         return self();
+    }
+
+    /**
+     * Sets the logging level for the Vault server in the container.
+     * Logs can be consumed through {@link #withLogConsumer(Consumer)}.
+     *
+     * @param level the logging level to set for Vault.
+     * @return this
+     */
+    public SELF withLogLevel(VaultLogLevel level) {
+        return withEnv("VAULT_LOG_LEVEL", level.config);
     }
 
     /**

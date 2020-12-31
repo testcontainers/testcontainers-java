@@ -64,6 +64,13 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     }
 
     /**
+     * @return Publicly exposed Toxiproxy HTTP API control port.
+     */
+    public int getControlPort() {
+        return getMappedPort(TOXIPROXY_CONTROL_PORT);
+    }
+
+    /**
      * Obtain a {@link ContainerProxy} instance for target container that is managed by Testcontainers. The target
      * container should be routable from this <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
      * Docker {@link Network}).
@@ -129,6 +136,10 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
          */
         @Getter private final int originalProxyPort;
         private boolean isCurrentlyCut;
+
+        public String getName() {
+            return toxi.getName();
+        }
 
         public ToxicList toxics() {
             return toxi.toxics();

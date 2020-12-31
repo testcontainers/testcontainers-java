@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.InputStream;
@@ -52,7 +52,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
      * Create a sidekick container and attach it to another container. The VNC output of that container will be recorded.
      */
     public VncRecordingContainer(@NonNull Network network, @NonNull String targetNetworkAlias) throws IllegalStateException {
-        super(TestcontainersConfiguration.getInstance().getVncDockerImageName());
+        super(DockerImageName.parse("testcontainers/vnc-recorder:1.1.0"));
 
         this.targetNetworkAlias = targetNetworkAlias;
         withNetwork(network);

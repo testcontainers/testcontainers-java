@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:29.0-jre'
+        classpath 'com.google.guava:guava:30.0-jre'
     }
 }
 
@@ -173,9 +173,13 @@ dependencies {
 
     compile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 
-    compile "com.github.docker-java:docker-java-api:3.2.5"
+    compile "com.github.docker-java:docker-java-api:3.2.7"
 
-    shaded ('com.github.docker-java:docker-java-core:3.2.5') {
+    // use lower Jackson version
+    shaded ('com.fasterxml.jackson.core:jackson-databind:2.8.8') {
+        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
+    }
+    shaded ('com.github.docker-java:docker-java-core:3.2.7') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
         exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
         exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
@@ -184,13 +188,13 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.5') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.7') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-core')
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
 
-    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.5'
+    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.7'
 
     shaded "org.yaml:snakeyaml:1.27"
 
@@ -201,22 +205,22 @@ dependencies {
     }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.3.0'
+    testCompile 'redis.clients:jedis:3.4.0'
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
     testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.5.13') {
+    testCompile ('org.mockito:mockito-core:3.6.28') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.17.2'
+    testCompile 'org.assertj:assertj-core:3.18.1'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.17.1'
+    jarFileTestCompile 'org.assertj:assertj-core:3.18.1'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }

@@ -4,7 +4,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
@@ -17,7 +16,7 @@ import java.util.stream.Stream;
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
-    private static final String DEFAULT_TAG = "5.2.1";
+    private static final String DEFAULT_TAG = "5.4.3";
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
@@ -36,7 +35,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      */
     @Deprecated
     public KafkaContainer() {
-        this(TestcontainersConfiguration.getInstance().getKafkaDockerImageName().withTag(DEFAULT_TAG));
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
@@ -44,7 +43,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      */
     @Deprecated
     public KafkaContainer(String confluentPlatformVersion) {
-        this(TestcontainersConfiguration.getInstance().getKafkaDockerImageName().withTag(confluentPlatformVersion));
+        this(DEFAULT_IMAGE_NAME.withTag(confluentPlatformVersion));
     }
 
     public KafkaContainer(final DockerImageName dockerImageName) {
