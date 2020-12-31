@@ -162,7 +162,7 @@ A huge thank you to our sponsors:
 * [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
 * [Apache SkyWalking](http://github.com/apache/skywalking) - End-to-end testing of the Apache SkyWalking, and plugin tests of its subproject, [Apache SkyWalking Python](http://github.com/apache/skywalking-python), and of its eco-system built by the community, like [SkyAPM NodeJS Agent](http://github.com/SkyAPM/nodejs)
 * [jOOQ](https://www.jooq.org) - Integration testing all of jOOQ with a variety of RDBMS
-* [Presto](https://prestosql.io) - Integration testing all Presto core & connectors, including tests of multi-node deployments and security configurations.
+* [Trino (formerly Presto SQL)](https://trino.io) - Integration testing all Trino core & connectors, including tests of multi-node deployments and security configurations.
 
 
 ## License
