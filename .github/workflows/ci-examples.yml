@@ -19,7 +19,7 @@ jobs:
         with:
           java-version: '1.8'
       - name: Cache Gradle Home files
-        uses: actions/cache@v1
+        uses: actions/cache@v2.1.3
         continue-on-error: true
         with:
           path: ~/.gradle/caches
@@ -46,7 +46,7 @@ jobs:
         with:
           java-version: '1.8'
       - name: Cache Gradle Home files
-        uses: actions/cache@v1
+        uses: actions/cache@v2.1.3
         continue-on-error: true
         with:
           path: ~/.gradle/caches
@@ -57,13 +57,3 @@ jobs:
         working-directory: ./examples/
         run: |
           ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
-      - name: Aggregate Examples test reports with ciMate
-        if: always()
-        continue-on-error: true
-        env:
-          CIMATE_PROJECT_ID: 2348n4vl
-          CIMATE_CI_KEY: "Examples / ${{ runner.os }} / ${{matrix.gradle_args}}"
-        run: |
-          wget -q https://get.cimate.io/release/linux/cimate
-          chmod +x cimate
-          ./cimate "**/TEST-*.xml"

@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:30.0-jre'
+        classpath 'com.google.guava:guava:30.1-jre'
     }
 }
 
@@ -158,7 +158,7 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.3', {
+    baseline 'org.testcontainers:testcontainers:1.15.1', {
         exclude group: "*", module: "*"
     }
 
@@ -205,11 +205,11 @@ dependencies {
     }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.3.0'
+    testCompile 'redis.clients:jedis:3.4.0'
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
     testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.5.13') {
+    testCompile ('org.mockito:mockito-core:3.6.28') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
