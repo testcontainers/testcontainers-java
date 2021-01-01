@@ -2,7 +2,7 @@ dependencies {
     compile project(':jdbc')
     compile project(':test-support')
 
-    compile 'com.google.guava:guava:30.0-jre'
+    compile 'com.google.guava:guava:30.1-jre'
     compile 'org.apache.commons:commons-lang3:3.11'
     compile 'com.zaxxer:HikariCP-java6:2.3.13'
     compile 'commons-dbutils:commons-dbutils:1.7'
