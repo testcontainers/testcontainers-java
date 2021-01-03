@@ -10,7 +10,7 @@ dependencies {
     compileOnly 'org.mariadb:r2dbc-mariadb:1.0.0'
 
     testCompile project(':jdbc-test')
-    testCompile 'org.mariadb.jdbc:mariadb-java-client:2.7.0'
+    testCompile 'org.mariadb.jdbc:mariadb-java-client:2.7.1'
 
     testCompile testFixtures(project(':r2dbc'))
     testCompile 'org.mariadb:r2dbc-mariadb:1.0.0'
