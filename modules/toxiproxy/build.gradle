@@ -4,7 +4,7 @@ dependencies {
     compile project(':testcontainers')
     compile 'eu.rekawek.toxiproxy:toxiproxy-java:2.1.4'
 
-    testCompile 'redis.clients:jedis:3.0.1'
+    testCompile 'redis.clients:jedis:3.4.1'
     testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 
     testCompile project(':test-support')
