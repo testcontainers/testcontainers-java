@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +65,14 @@ class ParsedDockerComposeFile {
 
     private static Object substituteEnv(Object obj, Map<String, String> env) {
         if (obj instanceof Map) {
-            return ((Map<?, ?>) obj)
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                    entry -> substituteEnv(entry.getKey(), env),
-                    entry -> substituteEnv(entry.getValue(), env)));
+            HashMap<Object, Object> map = new HashMap<>();
+
+            // Don't use Collectors.toMap here, as it doesn't support nulls in the value
+            ((Map<?, ?>) obj).forEach((key, value) -> map.put(
+                substituteEnv(key, env),
+                substituteEnv(value, env)));
+
+            return map;
         } else if (obj instanceof List) {
             return ((List<?>) obj)
                 .stream()
