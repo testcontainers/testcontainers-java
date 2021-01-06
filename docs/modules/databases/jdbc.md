@@ -39,9 +39,9 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:postgis:9.6-2.5:///databasename`
 
-#### Using Presto
+#### Using Trino
 
-`jdbc:tc:presto:344://localhost/memory/default`
+`jdbc:tc:trino:352://localhost/memory/default`
 
 ### Using a classpath init script
 
