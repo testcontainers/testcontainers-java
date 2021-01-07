@@ -1,8 +1,12 @@
 description = "Testcontainers :: InfluxDB"
 
+ext {
+    influxdbClientVersion = '1.14.0'
+}
+
 dependencies {
     compile project(':testcontainers')
 
-    compileOnly 'org.influxdb:influxdb-java:2.21'
-    testCompile 'org.influxdb:influxdb-java:2.21'
+    compileOnly group:'com.influxdb', name:'influxdb-client-java', version:"${influxdbClientVersion}"
+    testCompile group:'com.influxdb', name:'influxdb-client-java', version:"${influxdbClientVersion}"
 }

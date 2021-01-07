@@ -1,72 +1,86 @@
 package org.testcontainers.containers;
 
-import org.influxdb.InfluxDB;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
-import org.influxdb.dto.QueryResult;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+
+import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.QueryApi;
+import com.influxdb.client.WriteApi;
+import com.influxdb.client.domain.Bucket;
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
+import com.influxdb.query.FluxRecord;
+import com.influxdb.query.FluxTable;
+import java.time.Instant;
+import java.util.List;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 public class InfluxDBContainerWithUserTest {
 
-    private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_TEST_IMAGE.getVersionPart();
-    private static final String DATABASE = "test";
-    private static final String USER = "test-user";
-    private static final String PASSWORD = "test-password";
+    private static final String BUCKET = "new-test-bucket";
+    private static final String USER = "new-test-user";
+    private static final String PASSWORD = "new-test-password";
+    private static final String ORG = "new-test-org";
 
-    @Rule
-    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_TEST_IMAGE)
-        .withDatabase(DATABASE)
+    private InfluxDBClient client = null;
+
+    @ClassRule
+    public static final InfluxDBContainer<?> influxDBContainer = InfluxDBContainer
+        .createWithDefaultTag()
+        .withBucket(BUCKET)
         .withUsername(USER)
-        .withPassword(PASSWORD);
+        .withPassword(PASSWORD)
+        .withOrganization(ORG);
 
-    @Test
-    public void describeDatabases() {
-        InfluxDB actual = influxDBContainer.getNewInfluxDB();
+    @Before
+    public void setUp() {
+        this.client = influxDBContainer.getNewInfluxDB();
+    }
 
-        assertThat(actual, notNullValue());
-        assertThat(actual.describeDatabases(), hasItem(DATABASE));
+    @After
+    public void tearDown() {
+        this.client.close();
     }
 
     @Test
-    public void checkVersion() {
-        InfluxDB actual = influxDBContainer.getNewInfluxDB();
+    public void getBucket() {
+        assertThat(this.client, notNullValue());
 
-        assertThat(actual, notNullValue());
+        final Bucket bucket = this.client.getBucketsApi().findBucketByName(BUCKET);
+        assertThat(bucket, notNullValue());
 
-        assertThat(actual.ping(), notNullValue());
-        assertThat(actual.ping().getVersion(), is(TEST_VERSION));
-
-        assertThat(actual.version(), is(TEST_VERSION));
+        assertThat(bucket.getName(), is(BUCKET));
     }
 
     @Test
     public void queryForWriteAndRead() {
-        InfluxDB influxDB = influxDBContainer.getNewInfluxDB();
+        try (final WriteApi writeApi = this.client.getWriteApi()) {
 
-        Point point = Point.measurement("cpu")
-            .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            .addField("idle", 90L)
-            .addField("user", 9L)
-            .addField("system", 1L)
-            .build();
-        influxDB.write(point);
+            //
+            // Write by Data Point
+            //
+            final Point point = Point.measurement("temperature")
+                .addTag("location", "west")
+                .addField("value", 55D)
+                .time(Instant.now().toEpochMilli(), WritePrecision.MS);
 
-        Query query = new Query("SELECT idle FROM cpu", DATABASE);
-        QueryResult actual = influxDB.query(query);
+            writeApi.writePoint(point);
 
-        assertThat(actual, notNullValue());
-        assertThat(actual.getError(), nullValue());
-        assertThat(actual.getResults(), notNullValue());
-        assertThat(actual.getResults().size(), is(1));
+        }
 
+        //
+        // Query data
+        //
+        final String flux = String.format("from(bucket:\"%s\") |> range(start: 0)", BUCKET);
+
+        final QueryApi queryApi = this.client.getQueryApi();
+
+        final FluxTable fluxTable = queryApi.query(flux).get(0);
+        final List<FluxRecord> records = fluxTable.getRecords();
+        assertThat(records.size(), is(1));
     }
 }

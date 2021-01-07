@@ -1,163 +1,149 @@
 package org.testcontainers.containers;
 
-import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
+import static org.junit.Assert.assertEquals;
+
+import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.InfluxDBClientOptions;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import lombok.SneakyThrows;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.DockerImageName;
-
-import java.util.Collections;
-import java.util.Set;
+import org.testcontainers.utility.MountableFile;
 
 /**
- * See <a href="https://store.docker.com/images/influxdb">https://store.docker.com/images/influxdb</a>
+ * See
+ * <a href="https://docs.influxdata.com/influxdb/v2.0/get-started/#download-and-run-influxdb-v2-0">https://docs.influxdata.com/influxdb/v2.0/get-started/#download-and-run-influxdb-v2-0</a>
  */
 public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF> {
 
     public static final Integer INFLUXDB_PORT = 8086;
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
-    private static final String DEFAULT_TAG = "1.4.3";
+    private static final String REGISTRY = "quay.io";
+    private static final String REPOSITORY = "influxdb/influxdb";
+    private static final String TAG = "v2.0.0";
+    private static final DockerImageName DEFAULT_IMAGE_NAME =
+        DockerImageName.parse(String.format("%s/%s:%s", REGISTRY, REPOSITORY, TAG));
+    private static final int NO_CONTENT_STATUS_CODE = 204;
+    private static final String INFLUX_SETUP_SH = "influx-setup.sh";
 
-    @Deprecated
-    public static final String VERSION = DEFAULT_TAG;
+    private String username = "test-user";
+    private String password = "test-password";
+    private String bucket = "test-bucket";
+    private String organization = "test-org";
 
-    private boolean authEnabled = true;
-    private String admin = "admin";
-    private String adminPassword = "password";
-
-    private String database;
-    private String username = "any";
-    private String password = "any";
-
-    /**
-     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public InfluxDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
-    /**
-     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public InfluxDBContainer(final String version) {
-        this(DEFAULT_IMAGE_NAME.withTag(version));
-    }
-
-    public InfluxDBContainer(final DockerImageName dockerImageName) {
-        super(dockerImageName);
-
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        waitStrategy = new WaitAllStrategy()
-            .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
+    private InfluxDBContainer(final DockerImageName imageName) {
+        super(imageName);
+        imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        this.waitStrategy = (new WaitAllStrategy())
+            .withStrategy(Wait
+                .forHttp("/ping")
+                .withBasicCredentials(this.username, this.password)
+                .forStatusCode(NO_CONTENT_STATUS_CODE))
             .withStrategy(Wait.forListeningPort());
+        this.addExposedPort(INFLUXDB_PORT);
+    }
 
-        addExposedPort(INFLUXDB_PORT);
+    public static InfluxDBContainer<?> createWithDefaultTag() {
+        return new InfluxDBContainer<>(DEFAULT_IMAGE_NAME);
+    }
+
+    public static InfluxDBContainer<?> createWithSpecificTag(final DockerImageName imageName) {
+        return new InfluxDBContainer<>(imageName);
     }
 
     @Override
     protected void configure() {
-        addEnv("INFLUXDB_ADMIN_USER", admin);
-        addEnv("INFLUXDB_ADMIN_PASSWORD", adminPassword);
-
-        addEnv("INFLUXDB_HTTP_AUTH_ENABLED", String.valueOf(authEnabled));
-
-        addEnv("INFLUXDB_DB", database);
-        addEnv("INFLUXDB_USER", username);
-        addEnv("INFLUXDB_USER_PASSWORD", password);
+        this.addEnv("INFLUXDB_USER", this.username);
+        this.addEnv("INFLUXDB_PASSWORD", this.password);
+        this.addEnv("INFLUXDB_BUCKET", this.bucket);
+        this.addEnv("INFLUXDB_ORG", this.organization);
     }
 
     @Override
-    public Set<Integer> getLivenessCheckPortNumbers() {
-        return Collections.singleton(getMappedPort(INFLUXDB_PORT));
-    }
-
-    /**
-     * Set env variable `INFLUXDB_HTTP_AUTH_ENABLED`.
-     *
-     * @param authEnabled Enables authentication.
-     * @return a reference to this container instance
-     */
-    public SELF withAuthEnabled(final boolean authEnabled) {
-        this.authEnabled = authEnabled;
-        return self();
-    }
-
-    /**
-     * Set env variable `INFLUXDB_ADMIN_USER`.
-     *
-     * @param admin The name of the admin user to be created. If this is unset, no admin user is created.
-     * @return a reference to this container instance
-     */
-    public SELF withAdmin(final String admin) {
-        this.admin = admin;
-        return self();
-    }
-
-    /**
-     * Set env variable `INFLUXDB_ADMIN_PASSWORD`.
-     *
-     * @param adminPassword TThe password for the admin user configured with `INFLUXDB_ADMIN_USER`. If this is unset, a
-     *                      random password is generated and printed to standard out.
-     * @return a reference to this container instance
-     */
-    public SELF withAdminPassword(final String adminPassword) {
-        this.adminPassword = adminPassword;
-        return self();
-    }
-
-    /**
-     * Set env variable `INFLUXDB_DB`.
-     *
-     * @param database Automatically initializes a database with the name of this environment variable.
-     * @return a reference to this container instance
-     */
-    public SELF withDatabase(final String database) {
-        this.database = database;
-        return self();
+    @SneakyThrows({InterruptedException.class, IOException.class, ExecutionException.class})
+    public void start() {
+        this.withCopyFileToContainer(MountableFile.forClasspathResource(INFLUX_SETUP_SH),
+            String.format("%s", INFLUX_SETUP_SH));
+        if (this.containerId != null) {
+            return;
+        }
+        Startables.deepStart(this.dependencies).get();
+        // trigger LazyDockerClient's resolve so that we fail fast here and not in getDockerImageName()
+        this.dockerClient.authConfig();
+        this.doStart();
+        final Container.ExecResult execResult = this.execInContainer("chmod", "-x", "/influx-setup.sh");
+        assertEquals(execResult.getExitCode(), 0);
+        final Container.ExecResult writeResult = this.execInContainer("/bin/bash", "/influx-setup.sh");
+        assertEquals(writeResult.getExitCode(), 0);
     }
 
     /**
      * Set env variable `INFLUXDB_USER`.
      *
-     * @param username The name of a user to be created with no privileges. If `INFLUXDB_DB` is set, this user will
-     *                 be granted read and write permissions for that database.
+     * @param username The name of a user to be created with no privileges. If `INFLUXDB_BUCKET` is set, this user will
+     * be granted read and write permissions for that database.
      * @return a reference to this container instance
      */
     public SELF withUsername(final String username) {
         this.username = username;
-        return self();
+        return this.self();
     }
 
     /**
-     * Set env variable `INFLUXDB_USER_PASSWORD`.
+     * Set env variable `INFLUXDB_PASSWORD`.
      *
-     * @param password The password for the user configured with `INFLUXDB_USER`. If this is unset, a random password
-     *                 is generated and printed to standard out.
+     * @param password The password for the user configured with `INFLUXDB_USER`. If this is unset, a random password is
+     * generated and printed to standard out.
      * @return a reference to this container instance
      */
     public SELF withPassword(final String password) {
         this.password = password;
-        return self();
+        return this.self();
     }
 
+    /**
+     * Set env variable `INFLUXDB_BUCKET`.
+     *
+     * @param bucket Automatically initializes a bucket with the name of this environment variable.
+     * @return a reference to this container instance
+     */
+    public SELF withBucket(final String bucket) {
+        this.bucket = bucket;
+        return this.self();
+    }
 
     /**
-     * @return a url to influxDb
+     * Set env variable `INFLUXDB_ORGANIZATION`.
+     *
+     * @param organization The organization for the initial setup of influxDB.
+     * @return a reference to this container instance
      */
-    public String getUrl() {
-        return "http://" + getHost() + ":" + getLivenessCheckPort();
+    public SELF withOrganization(final String organization) {
+        this.organization = organization;
+        return this.self();
     }
 
     /**
      * @return a influxDb client
      */
-    public InfluxDB getNewInfluxDB() {
-        InfluxDB influxDB = InfluxDBFactory.connect(getUrl(), username, password);
-        influxDB.setDatabase(database);
-        return influxDB;
+    public InfluxDBClient getNewInfluxDB() {
+        final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions.builder()
+            .url(this.getUrl())
+            .authenticate(this.username, this.password.toCharArray())
+            .bucket(this.bucket)
+            .org(this.organization)
+            .build();
+        return InfluxDBClientFactory.create(influxDBClientOptions);
+    }
+
+    /**
+     * @return a url to influxDb
+     */
+    String getUrl() {
+        return "http://" + this.getHost() + ":" + this.getMappedPort(INFLUXDB_PORT);
     }
 }
