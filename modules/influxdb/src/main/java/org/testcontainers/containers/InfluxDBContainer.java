@@ -34,6 +34,8 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     private String password = "test-password";
     private String bucket = "test-bucket";
     private String organization = "test-org";
+    private int retention = 0;
+    private String retentionUnit = RetentionUnits.NANOSECONDS.label;
 
     private InfluxDBContainer(final DockerImageName imageName) {
         super(imageName);
@@ -61,6 +63,8 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
         this.addEnv("INFLUXDB_PASSWORD", this.password);
         this.addEnv("INFLUXDB_BUCKET", this.bucket);
         this.addEnv("INFLUXDB_ORG", this.organization);
+        this.addEnv("INFLUXDB_RETENTION", String.valueOf(this.retention));
+        this.addEnv("INFLUXDB_RETENTION_UNIT", this.retentionUnit);
     }
 
     @Override
@@ -126,6 +130,29 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
         this.organization = organization;
         return this.self();
     }
+
+    /**
+     * Set env variable `INFLUXDB_RETENTION`.
+     *
+     * @param retention Duration bucket will retain data (0 is infinite, default is 0).
+     * @return a reference to this container instance
+     */
+    public SELF withRetention(final int retention) {
+        this.retention = retention;
+        return this.self();
+    }
+
+    /**
+     * Set env variable `INFLUXDB_RETENTION_UNIT`.
+     *
+     * @param retentionUnit The retention unit (ns, us, ms, etc.).
+     * @return a reference to this container instance
+     */
+    public SELF withRetentionUnit(final RetentionUnits retentionUnit) {
+        this.retentionUnit = retentionUnit.label;
+        return this.self();
+    }
+
 
     /**
      * @return a influxDb client

@@ -2,7 +2,7 @@
 
 Testcontainers module for InfluxData [InfluxDB](https://github.com/influxdata/influxdb).
 
-## Importat Note
+## Important Note
 This is the test container for influxDB v2 and does not support influxDB 1.x. Influx Data migrated to quay.io as their new [container registry](https://quay.io/repository/influxdb/influxdb).
 
 ## Usage example
@@ -23,12 +23,15 @@ public class SomeTest {
 ```
 This will create a InfluxDB container with tag v2.0.0. The influxDB will be setup with the following data:<br/>
 
-| Property      | Value         | 
+| Property      | Default Value | 
 | ------------- |:-------------:|
 | User          | test-user     | 
 | Password      | test-password | 
 | Bucket        | test-bucket   |  
 | Organization  | test-org      |
+| Retention     | 0 (infinite)  |
+| Retention Unit| ns            |
+For more details about the InfluxDB setup go to the official [docs](https://docs.influxdata.com/influxdb/v2.0/reference/cli/influx/setup/).
 
 It is possible to override the default values and start the container with a newer tag:
 ```java
