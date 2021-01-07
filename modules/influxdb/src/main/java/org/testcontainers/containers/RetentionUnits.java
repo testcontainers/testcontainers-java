@@ -10,7 +10,7 @@ public enum RetentionUnits {
     DAYS("d"),
     WEEKS("w");
 
-    public final String label;
+    final String label;
 
     RetentionUnits(final String label) {
         this.label = label;
