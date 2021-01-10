@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-public enum RetentionUnits {
+public enum RetentionUnit {
     NANOSECONDS("ns"),
     MICROSECONDS("us"),
     MILLISECONDS("ms"),
@@ -12,7 +12,7 @@ public enum RetentionUnits {
 
     final String label;
 
-    RetentionUnits(final String label) {
+    RetentionUnit(final String label) {
         this.label = label;
     }
 }

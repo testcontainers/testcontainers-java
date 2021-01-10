@@ -11,19 +11,19 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-public class InfluxDBContainerTest {
+public class InfluxDBContainerV2Test {
 
-    private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_TEST_IMAGE.getVersionPart();
+    private static final String TEST_VERSION = InfluxDBV2TestImages.INFLUXDB_TEST_IMAGE.getVersionPart();
 
     @ClassRule
-    public static final InfluxDBContainer<?> influxDBContainer = InfluxDBContainer
-        .createWithSpecificTag(InfluxDBTestImages.INFLUXDB_TEST_IMAGE);
+    public static final InfluxDBContainerV2<?> influxDBContainerV2 = InfluxDBContainerV2
+        .createWithSpecificTag(InfluxDBV2TestImages.INFLUXDB_TEST_IMAGE);
 
     private InfluxDBClient client = null;
 
     @Before
     public void setUp() {
-        this.client = influxDBContainer.getNewInfluxDB();
+        this.client = influxDBContainerV2.getNewInfluxDB();
     }
 
     @After
@@ -33,14 +33,14 @@ public class InfluxDBContainerTest {
 
     @Test
     public void getUrl() {
-        final String actual = influxDBContainer.getUrl();
+        final String actual = influxDBContainerV2.getUrl();
 
         assertThat(actual, notNullValue());
     }
 
     @Test
     public void getNewInfluxDB() {
-        final InfluxDBClient actual = influxDBContainer.getNewInfluxDB();
+        final InfluxDBClient actual = influxDBContainerV2.getNewInfluxDB();
 
         assertThat(actual, notNullValue());
         assertThat(actual.health().getStatus(), is(StatusEnum.PASS));
@@ -59,7 +59,7 @@ public class InfluxDBContainerTest {
 
     @Test
     public void isRunning() {
-        final boolean actual = influxDBContainer.isRunning();
+        final boolean actual = influxDBContainerV2.isRunning();
 
         assertThat(actual, is(true));
     }

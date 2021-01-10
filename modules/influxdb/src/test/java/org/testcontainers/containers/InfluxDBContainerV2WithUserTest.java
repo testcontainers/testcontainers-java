@@ -19,7 +19,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-public class InfluxDBContainerWithUserTest {
+public class InfluxDBContainerV2WithUserTest {
 
     private static final String BUCKET = "new-test-bucket";
     private static final String USER = "new-test-user";
@@ -29,7 +29,7 @@ public class InfluxDBContainerWithUserTest {
     private InfluxDBClient client = null;
 
     @ClassRule
-    public static final InfluxDBContainer<?> influxDBContainer = InfluxDBContainer
+    public static final InfluxDBContainerV2<?> influxDBContainerV2 = InfluxDBContainerV2
         .createWithDefaultTag()
         .withBucket(BUCKET)
         .withUsername(USER)
@@ -38,7 +38,7 @@ public class InfluxDBContainerWithUserTest {
 
     @Before
     public void setUp() {
-        this.client = influxDBContainer.getNewInfluxDB();
+        this.client = influxDBContainerV2.getNewInfluxDB();
     }
 
     @After
