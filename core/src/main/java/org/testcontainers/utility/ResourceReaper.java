@@ -159,7 +159,7 @@ public final class ResourceReaper {
                         RYUK_ACK_RATE_LIMITER.doWhenReady(() -> {
                             int index = 0;
                             // not set the read timeout, as Ryuk would not send anything unless a new filter is submitted, meaning that we would get a timeout exception pretty quick
-                            try(Socket clientSocket = new Socket()) {
+                            try (Socket clientSocket = new Socket()) {
                                 clientSocket.connect(new InetSocketAddress(host, ryukPort), 5 * 1000);
                                 FilterRegistry registry = new FilterRegistry(clientSocket.getInputStream(), clientSocket.getOutputStream());
 
