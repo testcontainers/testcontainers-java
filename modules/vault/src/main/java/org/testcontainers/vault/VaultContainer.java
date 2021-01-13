@@ -27,7 +27,7 @@ import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("vault");
-    private static final String DEFAULT_TAG = "1.1.3";
+    private static final String DEFAULT_TAG = "1.6.1";
 
     private static final int VAULT_PORT = 8200;
 
@@ -59,6 +59,10 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
         withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(IPC_LOCK));
         withEnv("VAULT_ADDR", "http://0.0.0.0:" + port);
         withExposedPorts(port);
+    }
+
+    public String getVaultAddress() {
+        return String.format("http://%s:%s", getHost(), getMappedPort(port));
     }
 
     @Override
@@ -166,7 +170,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     /**
      * Run initialization commands using the vault cli.
-     * 
+     *
      * Useful for enableing more secret engines like:
      * <pre>
      *     .withInitCommand("secrets enable pki")
