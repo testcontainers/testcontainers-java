@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -157,7 +158,9 @@ public final class ResourceReaper {
                     while (true) {
                         RYUK_ACK_RATE_LIMITER.doWhenReady(() -> {
                             int index = 0;
-                            try(Socket clientSocket = new Socket(host, ryukPort)) {
+                            // not set the read timeout, as Ryuk would not send anything unless a new filter is submitted, meaning that we would get a timeout exception pretty quick
+                            try (Socket clientSocket = new Socket()) {
+                                clientSocket.connect(new InetSocketAddress(host, ryukPort), 5 * 1000);
                                 FilterRegistry registry = new FilterRegistry(clientSocket.getInputStream(), clientSocket.getOutputStream());
 
                                 synchronized (DEATH_NOTE) {
