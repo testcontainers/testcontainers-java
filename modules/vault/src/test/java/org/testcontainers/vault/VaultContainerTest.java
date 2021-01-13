@@ -121,13 +121,13 @@ public class VaultContainerTest {
 
         final Vault vault = new Vault(config);
         final Map<String, String> value = vault.logical()
-            .read("secret/testing1")
+            .read("secret/testing2")
             .getData();
 
         assertThat(value)
             .containsEntry("secret_one", "password1")
             .containsEntry("secret_two", "password2")
-            .containsEntry("secret_three", "password3")
+            .containsEntry("secret_three", "[\"password3\",\"password3\"]")
             .containsEntry("secret_four", "password4");
     }
 
