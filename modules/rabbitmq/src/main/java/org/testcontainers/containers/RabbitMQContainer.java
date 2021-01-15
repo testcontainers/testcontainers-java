@@ -230,6 +230,21 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    public RabbitMQContainer withBinding(String vhost, String source, String destination, Map<String, Object> arguments, String routingKey, String destinationType) {
+        values.add(asList(
+            "rabbitmqadmin",
+            "--vhost=" + vhost,
+            "declare",
+            "binding",
+            "source=" + source,
+            "destination=" + destination,
+            "routing_key=" + routingKey,
+            "destination_type=" + destinationType,
+            "arguments=" + toJson(arguments)
+        ));
+        return self();
+    }
+
     public RabbitMQContainer withParameter(String component, String name, String value) {
         values.add(asList("rabbitmqadmin", "declare", "parameter",
                 "component=" + component,
@@ -342,6 +357,20 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
                 "auto_delete=" + autoDelete,
                 "durable=" + durable,
                 "arguments=" + toJson(arguments)));
+        return self();
+    }
+
+    public RabbitMQContainer withQueue(String vhost, String name, boolean autoDelete, boolean durable, Map<String, Object> arguments) {
+        values.add(asList(
+            "rabbitmqadmin",
+            "--vhost=" + vhost,
+            "declare",
+            "queue",
+            "name=" + name,
+            "auto_delete=" + autoDelete,
+            "durable=" + durable,
+            "arguments=" + toJson(arguments)
+        ));
         return self();
     }
 

@@ -21,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -111,6 +112,24 @@ public class RabbitMQContainerTest {
                 .containsPattern("queue-one");
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
                 .containsPattern("queue-two\\s.*x-message-ttl");
+        }
+    }
+
+    @Test
+    public void shouldCreateRabbitMQContainerWithQueueOnVHost() throws IOException, InterruptedException {
+        // given: container with specific vhost set
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+            container.withVhost("specificVHost");
+
+            // when: defining a queue on specific vhost
+            container.withQueue("specificVHost", "queue-on-vhost", false, true, ImmutableMap.of("x-message-ttl", 1000));
+
+            // and: start the container
+            container.start();
+
+            // then: rabbitmq inside of container should have defined queue on specific vhost
+            assertThat(container.execInContainer("rabbitmqctl", "--vhost=specificVHost", "list_queues", "name", "arguments").getStdout())
+                .containsPattern("queue-on-vhost\\s.*x-message-ttl");
         }
     }
 
@@ -260,6 +279,27 @@ public class RabbitMQContainerTest {
                 channel.close();
                 connection.close();
             }).doesNotThrowAnyException();
+        }
+    }
+
+    @Test
+    public void shouldCreateBindingOnSpecificVHost() throws IOException, InterruptedException {
+        // given: a container configuration with specific vhost, exchange on vhost and queue on vhost set
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE).withVhost("specificVHost")
+            .withQueue("specificVHost", "test-queue", false, true, new HashMap<>())
+            .withExchange("specificVHost", "test.topic-exchange", "topic", false, true, true, new HashMap<>())) {
+
+            // when: defining a binding on vhost
+            container.withBinding("specificVHost", "test.topic-exchange",
+                "test-queue", new HashMap<>(), "test.message.routing-key", "queue");
+
+            // and: start the container
+            container.start();
+
+            // then: binding should have been created on specific vhost
+            assertThat(container.execInContainer("rabbitmqadmin", "--vhost=specificVHost", "list", "bindings")
+                .getStdout())
+                .contains("test.topic-exchange");
         }
     }
 
