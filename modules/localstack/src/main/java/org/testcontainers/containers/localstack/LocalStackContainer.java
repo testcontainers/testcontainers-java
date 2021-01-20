@@ -304,31 +304,30 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     @RequiredArgsConstructor
     @Getter
     @FieldDefaults(makeFinal = true)
-    public enum Service {
-        API_GATEWAY("apigateway", 4567),
-        KINESIS("kinesis", 4568),
-        DYNAMODB("dynamodb", 4569),
-        DYNAMODB_STREAMS("dynamodbstreams", 4570),
-        // TODO: Clarify usage for ELASTICSEARCH and ELASTICSEARCH_SERVICE
-//        ELASTICSEARCH("es",           4571),
-        S3("s3", 4572),
-        FIREHOSE("firehose", 4573),
-        LAMBDA("lambda", 4574),
-        SNS("sns", 4575),
-        SQS("sqs", 4576),
-        REDSHIFT("redshift", 4577),
-        //        ELASTICSEARCH_SERVICE("",   4578),
-        SES("ses", 4579),
-        ROUTE53("route53", 4580),
-        CLOUDFORMATION("cloudformation", 4581),
-        CLOUDWATCH("cloudwatch", 4582),
-        SSM("ssm", 4583),
-        SECRETSMANAGER("secretsmanager", 4584),
-        STEPFUNCTIONS("stepfunctions", 4585),
-        CLOUDWATCHLOGS("logs", 4586),
-        STS("sts", 4592),
-        IAM("iam", 4593),
-        KMS("kms", 4599);
+    public static class Service {
+        public static final Service API_GATEWAY = new Service("apigateway", 4567);
+        public static final Service KINESIS = new Service("kinesis", 4568);
+        public static final Service DYNAMODB = new Service("dynamodb", 4569);
+        public static final Service DYNAMODB_STREAMS = new Service("dynamodbstreams", 4570);
+        // public static final Service ELASTICSEARCH = new Service("es",           4571);
+        public static final Service S3 = new Service("s3", 4572);
+        public static final Service FIREHOSE = new Service("firehose", 4573);
+        public static final Service LAMBDA = new Service("lambda", 4574);
+        public static final Service SNS = new Service("sns", 4575);
+        public static final Service SQS = new Service("sqs", 4576);
+        public static final Service REDSHIFT = new Service("redshift", 4577);
+        // public static final Service ELASTICSEARCH_SERVICE = new Service("",   4578);
+        public static final Service SES = new Service("ses", 4579);
+        public static final Service ROUTE53 = new Service("route53", 4580);
+        public static final Service CLOUDFORMATION = new Service("cloudformation", 4581);
+        public static final Service CLOUDWATCH = new Service("cloudwatch", 4582);
+        public static final Service SSM = new Service("ssm", 4583);
+        public static final Service SECRETSMANAGER = new Service("secretsmanager", 4584);
+        public static final Service STEPFUNCTIONS = new Service("stepfunctions", 4585);
+        public static final Service CLOUDWATCHLOGS = new Service("logs", 4586);
+        public static final Service STS = new Service("sts", 4592);
+        public static final Service IAM = new Service("iam", 4593);
+        public static final Service KMS = new Service("kms", 4599);
 
         String localStackName;
 
