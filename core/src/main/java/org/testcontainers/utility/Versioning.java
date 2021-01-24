@@ -24,12 +24,12 @@ interface Versioning {
 
         @Override
         public String getSeparator() {
-            return "";
+            return ":";
         }
 
         @Override
         public String toString() {
-            return "";
+            return "latest";
         }
 
         @Override
@@ -46,6 +46,7 @@ interface Versioning {
     @EqualsAndHashCode
     class TagVersioning implements Versioning {
         public static final String TAG_REGEX = "[\\w][\\w.\\-]{0,127}";
+        static final TagVersioning LATEST = new TagVersioning("latest");
         private final String tag;
 
         TagVersioning(String tag) {

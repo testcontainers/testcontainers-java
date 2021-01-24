@@ -112,7 +112,7 @@ public class DockerImageNameTest {
                 canonicalName = unversionedPart + versionSeparator + version;
             } else {
                 combined = unversionedPart;
-                canonicalName = unversionedPart;
+                canonicalName = unversionedPart + ":latest";
             }
 
             VisibleAssertions.context("For " + combined);
@@ -124,7 +124,7 @@ public class DockerImageNameTest {
             if (version != null) {
                 assertEquals(combined + " has version part: " + version, version, imageName.getVersionPart());
             } else {
-                assertEquals(combined + " has no version specified", "", imageName.getVersionPart());
+                assertEquals(combined + " has automatic 'latest' version specified", "latest", imageName.getVersionPart());
             }
             assertEquals(combined + " has canonical name: " + canonicalName, canonicalName, imageName.asCanonicalNameString());
 

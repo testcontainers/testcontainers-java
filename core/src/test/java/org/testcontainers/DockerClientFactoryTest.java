@@ -1,5 +1,9 @@
 package org.testcontainers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.testcontainers.TestImages.TINY_IMAGE;
+
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -11,9 +15,6 @@ import org.testcontainers.DockerClientFactory.DiskSpaceUsage;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Test for {@link DockerClientFactory}.
@@ -30,7 +31,7 @@ public class DockerClientFactoryTest {
         try {
             //remove tiny image, so it will be pulled during next command run
             dockFactory.client()
-                    .removeImageCmd(TestcontainersConfiguration.getInstance().getTinyDockerImageName().asCanonicalNameString())
+                    .removeImageCmd(TINY_IMAGE.asCanonicalNameString())
                     .withForce(true).exec();
         } catch (NotFoundException ignored) {
             // Do not fail if it's not pulled yet

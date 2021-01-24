@@ -1,14 +1,11 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,7 +16,7 @@ import java.util.stream.Stream;
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
-    private static final String DEFAULT_TAG = "5.2.1";
+    private static final String DEFAULT_TAG = "5.4.3";
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
@@ -38,7 +35,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      */
     @Deprecated
     public KafkaContainer() {
-        this(TestcontainersConfiguration.getInstance().getKafkaDockerImageName().withTag(DEFAULT_TAG));
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
@@ -46,7 +43,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      */
     @Deprecated
     public KafkaContainer(String confluentPlatformVersion) {
-        this(TestcontainersConfiguration.getInstance().getKafkaDockerImageName().withTag(confluentPlatformVersion));
+        this(DEFAULT_IMAGE_NAME.withTag(confluentPlatformVersion));
     }
 
     public KafkaContainer(final DockerImageName dockerImageName) {
@@ -108,14 +105,18 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             return;
         }
 
+        String command = "#!/bin/bash\n";
         final String zookeeperConnect;
         if (externalZookeeperConnect != null) {
             zookeeperConnect = externalZookeeperConnect;
         } else {
-            zookeeperConnect = startZookeeper();
+            zookeeperConnect = "localhost:" + ZOOKEEPER_PORT;
+            command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
+            command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
+            command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
+            command += "zookeeper-server-start zookeeper.properties &\n";
         }
 
-        String command = "#!/bin/bash \n";
         command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
         command += "export KAFKA_ADVERTISED_LISTENERS='" + Stream
             .concat(
@@ -130,22 +131,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         command += "/etc/confluent/docker/launch \n";
 
         copyFileToContainer(
-            Transferable.of(command.getBytes(StandardCharsets.UTF_8), 700),
+            Transferable.of(command.getBytes(StandardCharsets.UTF_8), 0777),
             STARTER_SCRIPT
         );
-    }
-
-    @SneakyThrows(InterruptedException.class)
-    private String startZookeeper() {
-        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId())
-            .withCmd("sh", "-c", "" +
-                "printf 'clientPort=" + ZOOKEEPER_PORT + "\ndataDir=/var/lib/zookeeper/data\ndataLogDir=/var/lib/zookeeper/log' > /zookeeper.properties\n" +
-                "zookeeper-server-start /zookeeper.properties\n"
-            )
-            .exec();
-
-        dockerClient.execStartCmd(execCreateCmdResponse.getId()).start().awaitStarted(10, TimeUnit.SECONDS);
-
-        return "localhost:" + ZOOKEEPER_PORT;
     }
 }

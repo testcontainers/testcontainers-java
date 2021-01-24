@@ -1,12 +1,12 @@
 package org.testcontainers.utility;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import static org.hamcrest.core.StringContains.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class DockerImageNameCompatibilityTest {
@@ -26,9 +26,8 @@ public class DockerImageNameCompatibilityTest {
         /*
         foo:1.2.3 != foo:4.5.6
         foo:1.2.3 ~= foo
-        foo:1.2.3 ~= foo:latest
 
-        The test is effectively making sure that no tag and `latest` tag are equivalent
+        The test is effectively making sure that 'no tag' is treated as a wildcard
          */
         assertFalse("foo:4.5.6 != foo:1.2.3", subject.isCompatibleWith(DockerImageName.parse("foo:1.2.3")));
         assertTrue("foo:4.5.6 ~= foo", subject.isCompatibleWith(DockerImageName.parse("foo")));
