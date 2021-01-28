@@ -40,8 +40,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
         Instant before = Instant.now();
         try {
             ExecResult result = ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), "/bin/sh", "-c", command.toString());
-            log.trace("Port listener check result code [{}] with stdout message [{}]", result.getExitCode(), result.getStdout());
-            log.trace("Check for {} took {}", internalPorts, Duration.between(before, Instant.now()));
+            log.trace("Check for {} took {}. Result code '{}', stdout message: '{}'", internalPorts, Duration.between(before, Instant.now()), result.getExitCode(), result.getStdout());
             return result.getExitCode() == 0;
         } catch (Exception e) {
             throw new IllegalStateException(e);
