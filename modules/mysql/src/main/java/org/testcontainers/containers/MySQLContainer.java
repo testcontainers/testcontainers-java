@@ -57,7 +57,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         addExposedPort(MYSQL_PORT);
     }
 
-
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {

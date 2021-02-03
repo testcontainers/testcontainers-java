@@ -55,7 +55,5 @@ public class MySQLContainerTest {
         thrown.expectMessage("Empty password can be used only with the root user");
 
         db.configure();
-
-
     }
 }
