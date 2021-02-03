@@ -27,10 +27,15 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
     public static final Integer MYSQL_PORT = 3306;
+    public static final String MYSQL_USER_PASSWORD = "MYSQL_PASSWORD";
+    public static final String MYSQL_ROOT_PASSWORD = "MYSQL_ROOT_PASSWORD";
+    public static final String MYSQL_ALLOW_EMPTY_PASSWORD = "MYSQL_ALLOW_EMPTY_PASSWORD";
+    public static final String MYSQL_USER = "MYSQL_USER";
+    public static final String MYSQL_DATABASE = "MYSQL_DATABASE";
     private String databaseName = "test";
     private String username = DEFAULT_USER;
     private String password = DEFAULT_PASSWORD;
-    private static final String MYSQL_ROOT_USER = "root";
+    public static final String MYSQL_ROOT_USER = "root";
 
     /**
      * @deprecated use {@link MySQLContainer(DockerImageName)} instead
@@ -64,17 +69,24 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d",
                 "mysql-default-conf");
 
-        addEnv("MYSQL_DATABASE", databaseName);
-        addEnv("MYSQL_USER", username);
-        if (password != null && !password.isEmpty()) {
-            addEnv("MYSQL_PASSWORD", password);
-            addEnv("MYSQL_ROOT_PASSWORD", password);
+        addEnv(MYSQL_DATABASE, databaseName);
+
+        if (!MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
+            addEnv(MYSQL_USER, username);
+        }
+        if (passwordExists()) {
+            addEnv(MYSQL_USER_PASSWORD, password);
+            addEnv(MYSQL_ROOT_PASSWORD, password);
         } else if (MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
-            addEnv("MYSQL_ALLOW_EMPTY_PASSWORD", "yes");
+            addEnv(MYSQL_ALLOW_EMPTY_PASSWORD, "yes");
         } else {
             throw new ContainerLaunchException("Empty password can be used only with the root user");
         }
         setStartupAttempts(3);
+    }
+
+    private boolean passwordExists() {
+        return password != null && !password.isEmpty();
     }
 
     @Override
