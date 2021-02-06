@@ -24,14 +24,13 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.testcontainers.containers.KafkaContainer.CONFLUENT_PLATFORM_VERSION;
 
 public class KafkaContainerClusterTest {
 
     @Test
     public void testKafkaContainerCluster() throws Exception {
         try (
-            KafkaContainerCluster cluster = new KafkaContainerCluster(CONFLUENT_PLATFORM_VERSION, 3, 2)
+            KafkaContainerCluster cluster = new KafkaContainerCluster("5.2.1", 3, 2)
         ) {
             cluster.start();
             String bootstrapServers = cluster.getBootstrapServers();

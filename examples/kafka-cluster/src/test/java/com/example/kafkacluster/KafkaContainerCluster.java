@@ -16,7 +16,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.testcontainers.containers.KafkaContainer.CONFLUENT_PLATFORM_VERSION;
 
 /**
  * Provides an easy way to launch a Kafka cluster with multiple brokers.
@@ -27,10 +26,6 @@ public class KafkaContainerCluster implements Startable {
     private final Network network;
     private final GenericContainer zookeeper;
     private final Collection<KafkaContainer> brokers;
-
-    public KafkaContainerCluster(int brokersNum, int internalTopicsRf) {
-        this(CONFLUENT_PLATFORM_VERSION, brokersNum, internalTopicsRf);
-    }
 
     public KafkaContainerCluster(String confluentPlatformVersion, int brokersNum, int internalTopicsRf) {
         if (brokersNum < 0) {

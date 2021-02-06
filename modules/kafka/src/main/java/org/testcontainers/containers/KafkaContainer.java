@@ -24,9 +24,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public static final int ZOOKEEPER_PORT = 2181;
 
-    public static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
-
-    public static final String CONFLUENT_PLATFORM_VERSION = "5.2.1";
+    private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
     private static final int PORT_NOT_ASSIGNED = -1;
 
