@@ -23,8 +23,6 @@ jobs:
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-home-testmatrix-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-home-testmatrix-
       - id: set-matrix
         env:
           # Since we override the tests executor,
@@ -51,8 +49,6 @@ jobs:
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-
       - name: Clear existing docker image cache
         run: docker image prune -af
       - name: Build and test with Gradle (${{matrix.gradle_args}})

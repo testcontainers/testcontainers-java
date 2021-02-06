@@ -37,12 +37,12 @@ public final class DockerMachineClientProviderStrategy extends DockerClientProvi
 
         DockerMachineClient.instance().ensureMachineRunning(machineName);
 
-        String dockerDaemonIpAddress = DockerMachineClient.instance().getDockerDaemonIpAddress(machineName);
+        String dockerDaemonUrl = DockerMachineClient.instance().getDockerDaemonUrl(machineName);
 
-        log.info("Docker daemon IP address for docker machine {} is {}", machineName, dockerDaemonIpAddress);
+        log.info("Docker daemon URL for docker machine {} is {}", machineName, dockerDaemonUrl);
 
         return TransportConfig.builder()
-            .dockerHost(URI.create("tcp://" + dockerDaemonIpAddress + ":2376"))
+            .dockerHost(URI.create(dockerDaemonUrl))
             .sslConfig(
                 new LocalDirectorySSLConfig(
                     Paths.get(System.getProperty("user.home") + "/.docker/machine/certs/").toString()

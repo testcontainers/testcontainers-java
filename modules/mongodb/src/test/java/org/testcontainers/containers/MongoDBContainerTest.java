@@ -13,8 +13,10 @@ import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 
 public class MongoDBContainerTest {
@@ -80,6 +82,17 @@ public class MongoDBContainerTest {
             final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))
         ) {
             mongoDBContainer.start();
+        }
+    }
+
+    @Test
+    public void shouldTestDatabaseName() {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+        ) {
+            mongoDBContainer.start();
+            final String databaseName = "my-db";
+            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName), endsWith(databaseName));
         }
     }
 }
