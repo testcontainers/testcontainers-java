@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:30.0-jre'
+        classpath 'com.google.guava:guava:30.1-jre'
     }
 }
 
@@ -157,8 +157,15 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
     project.tasks.check.dependsOn(japicmp)
 }
 
+configurations.all {
+    resolutionStrategy {
+        // use lower Jackson version
+        force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+    }
+}
+
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.3', {
+    baseline 'org.testcontainers:testcontainers:1.15.1', {
         exclude group: "*", module: "*"
     }
 
@@ -175,10 +182,6 @@ dependencies {
 
     compile "com.github.docker-java:docker-java-api:3.2.7"
 
-    // use lower Jackson version
-    shaded ('com.fasterxml.jackson.core:jackson-databind:2.8.8') {
-        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
-    }
     shaded ('com.github.docker-java:docker-java-core:3.2.7') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
         exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
@@ -205,11 +208,11 @@ dependencies {
     }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.3.0'
+    testCompile 'redis.clients:jedis:3.4.0'
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
     testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.5.13') {
+    testCompile ('org.mockito:mockito-core:3.6.28') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest

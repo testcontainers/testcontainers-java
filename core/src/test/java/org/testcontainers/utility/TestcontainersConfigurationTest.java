@@ -160,8 +160,8 @@ public class TestcontainersConfigurationTest {
 
     @Test
     public void shouldTrimImageNames() {
-        userProperties.setProperty("ryuk.container.image", " testcontainersofficial/ryuk:0.3.0 ");
-        assertEquals("trailing whitespace was not removed from image name property", "testcontainersofficial/ryuk:0.3.0",newConfig().getRyukImage());
+        userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.1 ");
+        assertEquals("trailing whitespace was not removed from image name property", "testcontainers/ryuk:0.3.1",newConfig().getRyukImage());
     }
 
     private TestcontainersConfiguration newConfig() {
