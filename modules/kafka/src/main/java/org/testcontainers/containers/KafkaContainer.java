@@ -24,6 +24,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public static final int ZOOKEEPER_PORT = 2181;
 
+    private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
+
     private static final int PORT_NOT_ASSIGNED = -1;
 
     protected String externalZookeeperConnect = null;
@@ -60,8 +62,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
         withEnv("KAFKA_BROKER_ID", "1");
-        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
-        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
+        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
     }
