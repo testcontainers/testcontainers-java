@@ -8,7 +8,7 @@ import java.time.Duration;
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cockroachdb/cockroach");
-    private static final String DEFAULT_TAG = "v19.1.1";
+    private static final String DEFAULT_TAG = "v19.2.11";
 
     public static final String NAME = "cockroach";
 
@@ -53,7 +53,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
                 .forStatusCode(200)
                 .withStartupTimeout(Duration.ofMinutes(1))
         );
-        withCommand("start --insecure");
+        withCommand("start-single-node --insecure");
     }
 
     @Override
