@@ -6,8 +6,12 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import com.google.common.collect.ImmutableMap;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -110,7 +114,15 @@ public class KafkaContainerTest {
     }
 
     protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
+        testKafkaFunctionality(bootstrapServers, 1, 1);
+    }
+
+    protected void testKafkaFunctionality(String bootstrapServers, int partitions, int rf) throws Exception {
         try (
+            AdminClient adminClient = AdminClient.create(ImmutableMap.of(
+                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers
+            ));
+
             KafkaProducer<String, String> producer = new KafkaProducer<>(
                 ImmutableMap.of(
                     ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
@@ -131,6 +143,10 @@ public class KafkaContainerTest {
             );
         ) {
             String topicName = "messages-" + UUID.randomUUID();
+
+            Collection<NewTopic> topics = singletonList(new NewTopic(topicName, partitions, (short) rf));
+            adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS);
+
             consumer.subscribe(singletonList(topicName));
 
             producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
