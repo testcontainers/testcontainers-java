@@ -162,8 +162,20 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
         if (null == livenessCheckPort || -1 == livenessCheckPort) {
             return;
         }
-        final String uri = buildLivenessUri(livenessCheckPort).toString();
-        log.info("{}: Waiting for {} seconds for URL: {}", containerName, startupTimeout.getSeconds(), uri);
+        final URI rawUri = buildLivenessUri(livenessCheckPort);
+        final String uri = rawUri.toString();
+
+        try {
+            // Un-map the port for logging
+            int originalPort = waitStrategyTarget.getExposedPorts().stream()
+                .filter(exposedPort -> rawUri.getPort() == waitStrategyTarget.getMappedPort(exposedPort))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Target port " + rawUri.getPort() + " is not exposed"));
+            log.info("{}: Waiting for {} seconds for URL: {} (where port {} maps to container port {})", containerName, startupTimeout.getSeconds(), uri, rawUri.getPort(), originalPort);
+        } catch (RuntimeException e) {
+            // do not allow a failure in logging to prevent progress, but log for diagnosis
+            log.warn("Unexpected error occurred - will proceed to try to wait anyway", e);
+        }
 
         // try to connect to the URL
         try {
@@ -243,7 +255,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {
             portSuffix = "";
         } else {
-            portSuffix = ":" + String.valueOf(livenessCheckPort);
+            portSuffix = ":" + livenessCheckPort;
         }
 
         return URI.create(scheme + host + portSuffix + path);
