@@ -2,6 +2,8 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -40,6 +42,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private boolean tlsEnabled;
     private String username;
     private String password;
+    private final Map<String, String> headers = new HashMap<>();
     private Predicate<String> responsePredicate;
     private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
@@ -123,6 +126,27 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     /**
+     * Add a custom HTTP Header to the call.
+     * @param name The HTTP Header name
+     * @param value The HTTP Header value
+     * @return this
+     */
+    public HttpWaitStrategy withHeader(String name, String value) {
+        this.headers.put(name, value);
+        return this;
+    }
+
+    /**
+     * Add multiple custom HTTP Headers to the call.
+     * @param headers Headers map of name/value
+     * @return this
+     */
+    public HttpWaitStrategy withHeaders(Map<String, String> headers) {
+        this.headers.putAll(headers);
+        return this;
+    }
+
+    /**
      * Set the HTTP connections read timeout.
      *
      * @param timeout the timeout (minimum 1 millisecond)
@@ -191,6 +215,8 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                             connection.setUseCaches(false);
                         }
 
+                        // Add user configured headers
+                        this.headers.forEach(connection::setRequestProperty);
                         connection.setRequestMethod(method);
                         connection.connect();
 
