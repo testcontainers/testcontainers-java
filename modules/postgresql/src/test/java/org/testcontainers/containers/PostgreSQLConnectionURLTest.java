@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.junit.Test;
+import org.testcontainers.PostgreSQLTestImages;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
@@ -46,6 +47,9 @@ public class PostgreSQLConnectionURLTest {
     }
 
     static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+        public FixedJdbcUrlPostgreSQLContainer() {
+            super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
+        }
 
         @Override
         public String getHost() {
@@ -59,6 +63,9 @@ public class PostgreSQLConnectionURLTest {
     }
 
     static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+        public NoParamsUrlPostgreSQLContainer() {
+            super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
+        }
 
         @Override
         public String getJdbcUrl() {

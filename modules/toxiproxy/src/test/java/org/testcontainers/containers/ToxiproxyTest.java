@@ -1,16 +1,19 @@
 package org.testcontainers.containers;
 
 import eu.rekawek.toxiproxy.model.ToxicDirection;
-import java.time.Duration;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import static java.lang.String.format;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class ToxiproxyTest {
 
@@ -25,15 +28,17 @@ public class ToxiproxyTest {
     @Rule
     public Network network = Network.newNetwork();
 
+    private static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:5.0.4");
     // The target container - this could be anything
     @Rule
-    public GenericContainer redis = new GenericContainer("redis:5.0.4")
+    public GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
         .withExposedPorts(6379)
         .withNetwork(network);
 
+    private static final DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("shopify/toxiproxy:2.1.0");
     // Toxiproxy container, which will be used as a TCP proxy
     @Rule
-    public ToxiproxyContainer toxiproxy = new ToxiproxyContainer()
+    public ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE)
         .withNetwork(network)
         .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
     // }
@@ -99,7 +104,7 @@ public class ToxiproxyTest {
 
     @Test
     public void testMultipleProxiesCanBeCreated() {
-        try (GenericContainer secondRedis = new GenericContainer("redis:5.0.4")
+        try (GenericContainer<?> secondRedis = new GenericContainer<>(REDIS_IMAGE)
             .withExposedPorts(6379)
             .withNetwork(network)) {
 
@@ -142,6 +147,20 @@ public class ToxiproxyTest {
         final ToxiproxyContainer.ContainerProxy proxy2 = toxiproxy.getProxy("hostname2", 9090);
         assertEquals("original port is correct", 8668, proxy2.getOriginalProxyPort());
         assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy2.getOriginalProxyPort()), proxy2.getProxyPort());
+    }
+
+    @Test
+    public void testProxyName() {
+        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy("hostname", 7070);
+
+        assertEquals("proxy name is hostname and port", "hostname:7070", proxy.getName());
+    }
+
+    @Test
+    public void testControlPort() {
+        final int controlPort = toxiproxy.getControlPort();
+
+        assertEquals("control port is mapped from port 8474", toxiproxy.getMappedPort(8474), controlPort);
     }
 
     private void checkCallWithLatency(Jedis jedis, final String description, int expectedMinLatency, long expectedMaxLatency) {

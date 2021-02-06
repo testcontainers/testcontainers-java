@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.concurrent.Future;
@@ -21,8 +22,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     private String password = "oracle";
 
     private static String resolveImageName() {
-        String image = TestcontainersConfiguration.getInstance()
-            .getProperties().getProperty("oracle.container.image");
+        String image = TestcontainersConfiguration.getInstance().getOracleImage();
 
         if (image == null) {
             throw new IllegalStateException("An image to use for Oracle containers must be configured. " +
@@ -32,11 +32,19 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return image;
     }
 
+    /**
+     * @deprecated use {@link OracleContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public OracleContainer() {
         this(resolveImageName());
     }
 
     public OracleContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         preconfigure();
     }

@@ -1,11 +1,10 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import static java.util.stream.Collectors.joining;
 
 /**
  * @author richardnorth
@@ -13,8 +12,14 @@ import static java.util.stream.Collectors.joining;
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
-    public static final String IMAGE = "mysql";
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mysql");
+
+    @Deprecated
     public static final String DEFAULT_TAG = "5.7.22";
+
+    @Deprecated
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     static final String DEFAULT_USER = "test";
 
@@ -27,14 +32,26 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private String password = DEFAULT_PASSWORD;
     private static final String MYSQL_ROOT_USER = "root";
 
+    /**
+     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MySQLContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public MySQLContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public MySQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         addExposedPort(MYSQL_PORT);
     }
+
 
     @NotNull
     @Override

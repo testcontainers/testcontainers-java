@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
 import java.time.Duration;
@@ -11,7 +12,13 @@ import java.util.Set;
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
-    public static final String DEFAULT_DB2_IMAGE_NAME = "ibmcom/db2";
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ibmcom/db2");
+
+    @Deprecated
+    public static final String DEFAULT_DB2_IMAGE_NAME = DEFAULT_IMAGE_NAME.getUnversionedPart();
+
+    @Deprecated
     public static final String DEFAULT_TAG = "11.5.0.0a";
     public static final int DB2_PORT = 50000;
 
@@ -19,12 +26,23 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     private String username = "db2inst1";
     private String password = "foobar1234";
 
+    /**
+     * @deprecated use {@link Db2Container(DockerImageName)} instead
+     */
+    @Deprecated
     public Db2Container() {
-        this(DEFAULT_DB2_IMAGE_NAME + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    public Db2Container(String imageName) {
-        super(imageName);
+    public Db2Container(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public Db2Container(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         withPrivilegedMode(true);
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")

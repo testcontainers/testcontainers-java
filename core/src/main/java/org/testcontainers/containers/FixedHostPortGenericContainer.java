@@ -12,6 +12,11 @@ import org.jetbrains.annotations.NotNull;
  * not available - which could manifest as flaky or unstable tests.</p>
  */
 public class FixedHostPortGenericContainer<SELF extends FixedHostPortGenericContainer<SELF>> extends GenericContainer<SELF> {
+
+    /**
+     * @deprecated it is highly recommended that {@link FixedHostPortGenericContainer} not be used, as it risks port conflicts.
+     */
+    @Deprecated
     public FixedHostPortGenericContainer(@NotNull String dockerImageName) {
         super(dockerImageName);
     }

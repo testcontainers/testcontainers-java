@@ -37,6 +37,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private static final String AUTH_BASIC = "Basic ";
 
     private String path = "/";
+    private String method = "GET";
     private Set<Integer> statusCodes = new HashSet<>();
     private boolean tlsEnabled;
     private String username;
@@ -97,6 +98,17 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      */
     public HttpWaitStrategy usingTls() {
         this.tlsEnabled = true;
+        return this;
+    }
+
+    /**
+     * Indicates the HTTP method to use (<code>GET</code> by default).
+     *
+     * @param method the HTTP method.
+     * @return this
+     */
+    public HttpWaitStrategy withMethod(String method) {
+        this.method = method;
         return this;
     }
 
@@ -193,8 +205,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
                         // Add user configured headers
                         this.headers.forEach(connection::setRequestProperty);
-
-                        connection.setRequestMethod("GET");
+                        connection.setRequestMethod(method);
                         connection.connect();
 
                         log.trace("Get response code {}", connection.getResponseCode());
