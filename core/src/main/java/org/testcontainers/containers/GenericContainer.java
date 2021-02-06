@@ -63,6 +63,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -946,9 +947,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
+        if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
+            // e.g. Docker socket mount
+            binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
 
-        final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-        binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+        } else {
+            final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
+            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+        }
     }
 
     /**
@@ -1333,7 +1339,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Allow container startup to be attempted more than once if an error occurs. To be if containers are
+     * Allow container startup to be attempted more than once if an error occurs. To be used if containers are
      * 'flaky' but this flakiness is not something that should affect test outcomes.
      *
      * @param attempts number of attempts

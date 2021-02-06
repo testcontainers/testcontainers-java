@@ -149,6 +149,20 @@ public class ToxiproxyTest {
         assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy2.getOriginalProxyPort()), proxy2.getProxyPort());
     }
 
+    @Test
+    public void testProxyName() {
+        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy("hostname", 7070);
+
+        assertEquals("proxy name is hostname and port", "hostname:7070", proxy.getName());
+    }
+
+    @Test
+    public void testControlPort() {
+        final int controlPort = toxiproxy.getControlPort();
+
+        assertEquals("control port is mapped from port 8474", toxiproxy.getMappedPort(8474), controlPort);
+    }
+
     private void checkCallWithLatency(Jedis jedis, final String description, int expectedMinLatency, long expectedMaxLatency) {
         final long start = System.currentTimeMillis();
         String s = jedis.get("somekey");

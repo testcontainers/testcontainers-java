@@ -10,7 +10,7 @@ dependencies {
     compileOnly "org.projectlombok:lombok:1.18.16"
     annotationProcessor "org.projectlombok:lombok:1.18.16"
 
-    implementation 'org.apache.solr:solr-solrj:8.6.3'
+    implementation 'org.apache.solr:solr-solrj:8.7.0'
 
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:solr'

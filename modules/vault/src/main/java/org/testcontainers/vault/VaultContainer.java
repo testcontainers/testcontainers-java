@@ -7,10 +7,12 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
 
@@ -30,6 +32,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     private static final int VAULT_PORT = 8200;
 
     private Map<String, List<String>> secretsMap = new HashMap<>();
+    private List<String> initCommands = new ArrayList<>();
 
     private int port = VAULT_PORT;
 
@@ -61,6 +64,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         addSecrets();
+        runInitCommands();
     }
 
     private void addSecrets() {
@@ -80,6 +84,23 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
             secrets.forEach(item -> stringBuilder.append(" " + item));
         });
         return new String[]{"/bin/sh", "-c", stringBuilder.toString().substring(4)};
+    }
+
+    private void runInitCommands() {
+        if (!initCommands.isEmpty()) {
+            String commands = initCommands.stream()
+                                    .map(command -> "vault " + command)
+                                    .collect(Collectors.joining(" && "));
+            try {
+                ExecResult execResult = this.execInContainer(new String[]{"/bin/sh", "-c", commands});
+                if (execResult.getExitCode() != 0) {
+                    logger().error("Failed to execute these init commands {}. Exit code {}. Stdout {}. Stderr {}",
+                                    initCommands, execResult.getExitCode(), execResult.getStdout(), execResult.getStderr());
+                }
+            } catch (IOException | InterruptedException e) {
+                logger().error("Failed to execute these init commands {}. Exception message: {}", initCommands, e.getMessage());
+            }
+        }
     }
 
     /**
@@ -140,6 +161,22 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
             list.addAll(list);
         }
         secretsMap.putIfAbsent(path, list);
+        return self();
+    }
+
+    /**
+     * Run initialization commands using the vault cli.
+     * 
+     * Useful for enableing more secret engines like:
+     * <pre>
+     *     .withInitCommand("secrets enable pki")
+     *     .withInitCommand("secrets enable transit")
+     * </pre>
+     * @param commands The commands to send to the vault cli
+     * @return this
+     */
+    public SELF withInitCommand(String... commands) {
+        initCommands.addAll(Arrays.asList(commands));
         return self();
     }
 }
