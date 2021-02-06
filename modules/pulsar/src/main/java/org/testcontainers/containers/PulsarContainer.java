@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 /**
  * This container wraps Apache Pulsar running in standalone mode
@@ -25,7 +24,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
      */
     @Deprecated
     public PulsarContainer() {
-        this(TestcontainersConfiguration.getInstance().getPulsarDockerImageName().withTag(DEFAULT_TAG));
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
@@ -33,7 +32,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
      */
     @Deprecated
     public PulsarContainer(String pulsarVersion) {
-        this(TestcontainersConfiguration.getInstance().getPulsarDockerImageName().withTag(pulsarVersion));
+        this(DEFAULT_IMAGE_NAME.withTag(pulsarVersion));
     }
 
     public PulsarContainer(final DockerImageName dockerImageName) {

@@ -105,7 +105,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
-        return new MountableFile(new File(path).toURI().toString(), mode);
+        return forHostPath(Paths.get(path), mode);
     }
 
     /**

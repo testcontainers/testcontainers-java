@@ -27,7 +27,7 @@ public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PostgreSQLContainer<>(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+        return new PostgreSQLContainer<>(DEFAULT_IMAGE_NAME.withTag(tag));
     }
 
     @Override

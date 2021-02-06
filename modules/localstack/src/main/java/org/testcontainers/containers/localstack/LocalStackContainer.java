@@ -14,7 +14,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -65,7 +64,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     @Deprecated
     public LocalStackContainer() {
-        this(TestcontainersConfiguration.getInstance().getLocalstackDockerImageName().withTag(DEFAULT_TAG));
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
@@ -73,7 +72,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     @Deprecated
     public LocalStackContainer(String version) {
-        this(TestcontainersConfiguration.getInstance().getLocalstackDockerImageName().withTag(version));
+        this(DEFAULT_IMAGE_NAME.withTag(version));
     }
 
     /**

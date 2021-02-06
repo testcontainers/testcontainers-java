@@ -54,7 +54,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private Set<String> dependencyImageNames = Collections.emptySet();
 
     public ImageFromDockerfile() {
-        this("testcontainers/" + Base58.randomString(16).toLowerCase());
+        this("localhost/testcontainers/" + Base58.randomString(16).toLowerCase());
     }
 
     public ImageFromDockerfile(String dockerImageName) {
