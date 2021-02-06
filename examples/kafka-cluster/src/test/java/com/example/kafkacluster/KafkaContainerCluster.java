@@ -8,6 +8,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +25,7 @@ public class KafkaContainerCluster implements Startable {
 
     private final int brokersNum;
     private final Network network;
-    private final GenericContainer zookeeper;
+    private final GenericContainer<?> zookeeper;
     private final Collection<KafkaContainer> brokers;
 
     public KafkaContainerCluster(String confluentPlatformVersion, int brokersNum, int internalTopicsRf) {
@@ -38,15 +39,15 @@ public class KafkaContainerCluster implements Startable {
         this.brokersNum = brokersNum;
         this.network = Network.newNetwork();
 
-        this.zookeeper = new GenericContainer("confluentinc/cp-zookeeper:" + confluentPlatformVersion)
+        this.zookeeper = new GenericContainer<>(DockerImageName.parse("confluentinc/cp-zookeeper").withTag(confluentPlatformVersion))
             .withNetwork(network)
             .withNetworkAliases("zookeeper")
             .withEnv("ZOOKEEPER_CLIENT_PORT", String.valueOf(KafkaContainer.ZOOKEEPER_PORT));
 
         this.brokers = IntStream
             .range(0, this.brokersNum)
-            .mapToObj(brokerNum ->
-                new KafkaContainer(confluentPlatformVersion)
+            .mapToObj(brokerNum -> {
+                return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag(confluentPlatformVersion))
                     .withNetwork(this.network)
                     .withNetworkAliases("broker-" + brokerNum)
                     .dependsOn(this.zookeeper)
@@ -55,17 +56,9 @@ public class KafkaContainerCluster implements Startable {
                     .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
                     .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
                     .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", internalTopicsRf + "")
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "")
-            )
+                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "");
+            })
             .collect(Collectors.toList());
-    }
-
-    public Network getNetwork() {
-        return this.network;
-    }
-
-    public GenericContainer getZooKeeper() {
-        return this.zookeeper;
     }
 
     public Collection<KafkaContainer> getBrokers() {
@@ -78,10 +71,11 @@ public class KafkaContainerCluster implements Startable {
             .collect(Collectors.joining(","));
     }
 
-    private Stream<GenericContainer> allContainers() {
-        Stream<GenericContainer> genericBrokers = this.brokers.stream().map(b -> (GenericContainer) b);
-        Stream<GenericContainer> zookeeper = Stream.of(this.zookeeper);
-        return Stream.concat(genericBrokers, zookeeper);
+    private Stream<GenericContainer<?>> allContainers() {
+        return Stream.concat(
+            this.brokers.stream(),
+            Stream.of(this.zookeeper)
+        );
     }
 
     @Override
