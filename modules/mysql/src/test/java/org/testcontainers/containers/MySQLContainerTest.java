@@ -5,9 +5,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.MySQLContainer.MYSQL_ALLOW_EMPTY_PASSWORD;
-import static org.testcontainers.containers.MySQLContainer.MYSQL_ROOT_PASSWORD;
-import static org.testcontainers.containers.MySQLContainer.MYSQL_USER;
 
 public class MySQLContainerTest {
 
@@ -20,8 +17,8 @@ public class MySQLContainerTest {
             .withUsername("testUser");
         db.configure();
 
-        assertThat(db.getEnvMap().get(MYSQL_USER)).isEqualTo("testUser");
-        assertThat(db.getEnvMap().get(MYSQL_ROOT_PASSWORD)).isEqualTo("test");
+        assertThat(db.getEnvMap().get("MYSQL_USER")).isEqualTo("testUser");
+        assertThat(db.getEnvMap().get("MYSQL_ROOT_PASSWORD")).isEqualTo("test");
     }
 
     @Test
@@ -31,8 +28,8 @@ public class MySQLContainerTest {
             .withPassword("pass");
         db.configure();
 
-        assertThat(db.getEnvMap().get(MYSQL_USER)).isNull();
-        assertThat(db.getEnvMap().get(MYSQL_ROOT_PASSWORD)).isEqualTo("pass");
+        assertThat(db.getEnvMap().get("MYSQL_USER")).isNull();
+        assertThat(db.getEnvMap().get("MYSQL_ROOT_PASSWORD")).isEqualTo("pass");
     }
 
     @Test
@@ -42,7 +39,7 @@ public class MySQLContainerTest {
             .withPassword("");
         db.configure();
 
-        assertThat(db.getEnvMap().get(MYSQL_ALLOW_EMPTY_PASSWORD)).isEqualTo("yes");
+        assertThat(db.getEnvMap().get("MYSQL_ALLOW_EMPTY_PASSWORD")).isEqualTo("yes");
     }
 
     @Test
