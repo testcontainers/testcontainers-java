@@ -27,13 +27,13 @@ public class CassandraContainerTest {
 
     private static final String TEST_CLUSTER_NAME_IN_CONF = "Test Cluster Integration Test";
 
-    private static final String BAISC_QUERY = "SELECT release_version FROM system.local";
+    private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
 
     @Test
     public void testSimple() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, BAISC_QUERY);
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }
@@ -44,7 +44,7 @@ public class CassandraContainerTest {
         String cassandraVersion = "3.0.15";
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE.withTag(cassandraVersion))) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, BAISC_QUERY);
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertEquals("Cassandra has wrong version", cassandraVersion, resultSet.one().getString(0));
         }
@@ -103,7 +103,7 @@ public class CassandraContainerTest {
                 .waitingFor(new CassandraQueryWaitStrategy())
         ) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, BAISC_QUERY);
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
         }
     }
@@ -113,23 +113,9 @@ public class CassandraContainerTest {
     public void testCassandraGetCluster() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), BAISC_QUERY);
+            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
-        }
-    }
-
-    @Test
-    public void testMissingLocalDatacenter() {
-        try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
-            cassandraContainer.start();
-            // Trying to build a CqlSession will fail if a Contact Point is specified,
-            // but Local Datacenter is omitted.
-            CqlSession.builder().addContactPoint(cassandraContainer.getContactPoint()).build();
-            fail("Session build should fail if no local Datacenter provided");
-        } catch (IllegalStateException ise) {
-            String msg = "Since you provided explicit contact points, the local DC must be explicitly set";
-            assertThat(ise.getMessage(), containsString(msg));
         }
     }
 
@@ -141,7 +127,7 @@ public class CassandraContainerTest {
                 .addContactPoint(cassandraContainer.getContactPoint())
                 .withLocalDatacenter(cassandraContainer.getLocalDatacenter())
                 .build();
-            com.datastax.oss.driver.api.core.cql.ResultSet resultSet = performQuery(session, BAISC_QUERY);
+            com.datastax.oss.driver.api.core.cql.ResultSet resultSet = performQuery(session, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }

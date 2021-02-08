@@ -33,7 +33,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer CQL_PORT = 9042;
-    public static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
+    private static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
     private static final String USERNAME = "cassandra";
     private static final String PASSWORD = "cassandra";
@@ -41,7 +41,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private String configLocation;
     private String initScriptPath;
     private boolean enableJmxReporting;
-    private String localDatacenter;
 
     /**
      * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
@@ -63,7 +62,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
         this.enableJmxReporting = false;
-        this.localDatacenter = DEFAULT_LOCAL_DATACENTER;
     }
 
     @Override
@@ -148,14 +146,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
-     * Override the default Cassandra local Datacenter name
-     */
-    public SELF withLocalDatacenter(String localDatacenter) {
-      this.localDatacenter = localDatacenter;
-      return self();
-    }
-
-    /**
      * Get username
      *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
@@ -180,7 +170,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
-     * Get configured Session
+     * Get configured Cluster
      *
      * Can be used to obtain connections to Cassandra in the container
      *
@@ -225,10 +215,9 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * Retrieve the Local Datacenter for connecting to the Cassandra container via the driver.
      *
      * @return The configured local Datacenter name.
-     * @see #withLocalDatacenter(java.lang.String)
      */
     public String getLocalDatacenter() {
-      return localDatacenter;
+      return DEFAULT_LOCAL_DATACENTER;
     }
 
     @Deprecated

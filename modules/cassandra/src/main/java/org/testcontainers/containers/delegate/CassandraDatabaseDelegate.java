@@ -25,7 +25,8 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
     @Override
     protected Session createNewConnection() {
         try {
-            return CassandraContainer.getCluster(container).newSession();
+            return CassandraContainer.getCluster(container)
+                    .newSession();
         } catch (DriverException e) {
             log.error("Could not obtain cassandra connection");
             throw new ConnectionCreationException("Could not obtain cassandra connection", e);
