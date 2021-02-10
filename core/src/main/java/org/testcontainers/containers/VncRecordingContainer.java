@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -32,11 +33,13 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     public static final int DEFAULT_VNC_PORT = 5900;
 
+    static final VncRecordingFormat DEFAULT_RECORDING_FORMAT = VncRecordingFormat.FLV;
+
     private final String targetNetworkAlias;
 
     private String vncPassword = DEFAULT_VNC_PASSWORD;
 
-    private VncRecordingFormat recordingFormat = VncRecordingFormat.DEFAULT_FORMAT;
+    private VncRecordingFormat videoFormat = DEFAULT_RECORDING_FORMAT;
 
     private int vncPort = 5900;
 
@@ -44,10 +47,10 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     public VncRecordingContainer(@NonNull GenericContainer<?> targetContainer) {
         this(
-                targetContainer.getNetwork(),
-                targetContainer.getNetworkAliases().stream()
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalStateException("Target container must have a network alias"))
+            targetContainer.getNetwork(),
+            targetContainer.getNetworkAliases().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Target container must have a network alias"))
         );
     }
 
@@ -74,9 +77,9 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         return this;
     }
 
-    public VncRecordingContainer withVideoFormat(VncRecordingFormat recordingFormat) {
-        if (recordingFormat != null) {
-            this.recordingFormat = recordingFormat;
+    public VncRecordingContainer withVideoFormat(VncRecordingFormat videoFormat) {
+        if (videoFormat != null) {
+            this.videoFormat = videoFormat;
         }
         return this;
     }
@@ -91,10 +94,21 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
         String encodedPassword = Base64.getEncoder().encodeToString(vncPassword.getBytes());
         setCommand(
-                "-c",
-                "echo '" + encodedPassword + "' | base64 -d > /vnc_password && " +
-                        "flvrec.py -o " + ORIGINAL_RECORDING_FILE_NAME + " -d -r " + frameRate + " -P /vnc_password " + targetNetworkAlias + " " + vncPort
+            "-c",
+            "echo '" + encodedPassword + "' | base64 -d > /vnc_password && " +
+                "flvrec.py -o " + ORIGINAL_RECORDING_FILE_NAME + " -d -r " + frameRate + " -P /vnc_password " + targetNetworkAlias + " " + vncPort
         );
+    }
+
+    @SneakyThrows
+    public InputStream streamRecording() {
+        String newRecordingFileName = videoFormat.reencodeRecording(this, ORIGINAL_RECORDING_FILE_NAME);
+
+        TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
+            dockerClient.copyArchiveFromContainerCmd(getContainerId(), newRecordingFileName).exec()
+        );
+        archiveInputStream.getNextEntry();
+        return archiveInputStream;
     }
 
     @SneakyThrows
@@ -104,18 +118,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         }
     }
 
-    @SneakyThrows
-    public InputStream streamRecording() {
-        String newRecordingFileName = recordingFormat.reencodeRecording(this, ORIGINAL_RECORDING_FILE_NAME);
-
-        TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
-                dockerClient.copyArchiveFromContainerCmd(getContainerId(), newRecordingFileName).exec()
-        );
-        archiveInputStream.getNextEntry();
-        return archiveInputStream;
-    }
-
-
+    @RequiredArgsConstructor
     public enum VncRecordingFormat {
         FLV("flv") {
             @Override
@@ -136,20 +139,8 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
         abstract String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException;
 
-        private static final VncRecordingFormat DEFAULT_FORMAT = FLV;
+        @Getter
         private final String filenameExtension;
-
-        VncRecordingFormat(String filenameExtension) {
-            this.filenameExtension = filenameExtension;
-        }
-
-        public String getExtension() {
-            return filenameExtension;
-        }
-
-        public static VncRecordingFormat getDefaultFormat() {
-            return DEFAULT_FORMAT;
-        }
     }
 
 }

@@ -337,7 +337,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (shouldRecord) {
-            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, prefix, succeeded, vncRecordingContainer.getRecordingFormat());
+            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, prefix, succeeded, vncRecordingContainer.getVideoFormat());
             LOGGER.info("Screen recordings for test {} will be stored at: {}", prefix, recordingFile);
 
             vncRecordingContainer.saveRecordingToFile(recordingFile);

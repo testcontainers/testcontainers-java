@@ -16,7 +16,7 @@ public class DefaultRecordingFileFactory implements RecordingFileFactory {
 
     @Override
     public File recordingFileForTest(File vncRecordingDirectory, String prefix, boolean succeeded) {
-        return recordingFileForTest(vncRecordingDirectory, prefix, succeeded, VncRecordingFormat.getDefaultFormat());
+        return recordingFileForTest(vncRecordingDirectory, prefix, succeeded, VncRecordingContainer.DEFAULT_RECORDING_FORMAT);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class DefaultRecordingFileFactory implements RecordingFileFactory {
             resultMarker,
             prefix,
             filenameDateFormat.format(new Date()),
-            recordingFormat.getExtension()
+            recordingFormat.getFilenameExtension()
         );
         return new File(vncRecordingDirectory, fileName);
     }
