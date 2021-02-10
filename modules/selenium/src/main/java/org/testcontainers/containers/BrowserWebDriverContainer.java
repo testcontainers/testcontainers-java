@@ -185,7 +185,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             vncRecordingContainer = new VncRecordingContainer(this)
                     .withVncPassword(DEFAULT_PASSWORD)
                     .withVncPort(VNC_PORT)
-                    .withVideoExtension(recordingFormat);
+                    .withVideoFormat(recordingFormat);
         }
 
         if (customImageName != null) {
@@ -364,7 +364,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         return withRecordingMode(recordingMode, vncRecordingDirectory, null);
     }
 
-    public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory, @Nullable VncRecordingFormat recordingFormat) {
+    public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory, VncRecordingFormat recordingFormat) {
         this.recordingMode = recordingMode;
         this.vncRecordingDirectory = vncRecordingDirectory;
         this.recordingFormat = recordingFormat;

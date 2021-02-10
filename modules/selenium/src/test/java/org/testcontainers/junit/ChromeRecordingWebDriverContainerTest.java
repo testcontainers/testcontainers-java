@@ -132,14 +132,14 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 mountableFile = MountableFile.forHostPath(recordedFiles[0].getCanonicalPath());
             }
 
-            try( GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("testcontainers/vnc-recorder:1.2.0")) ) {
+            try (GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("testcontainers/vnc-recorder:1.2.0"))) {
                 String recordFileContainerPath = "/tmp/chromeTestRecord.flv";
                 container.withCopyFileToContainer(mountableFile, recordFileContainerPath)
-                        .withCreateContainerCmdModifier( createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg") )
-                        .withCommand("-i" , recordFileContainerPath, "-f" ,"null" ,"-" )
-                        .waitingFor( new LogMessageWaitStrategy()
+                        .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg"))
+                        .withCommand("-i", recordFileContainerPath, "-f", "null", "-")
+                        .waitingFor(new LogMessageWaitStrategy()
                                                 .withRegEx(".*Duration.*")
-                                                .withStartupTimeout(Duration.of(60, SECONDS)) )
+                                                .withStartupTimeout(Duration.of(60, SECONDS)))
                         .start();
                 String ffmpegOutput = container.getLogs();
 

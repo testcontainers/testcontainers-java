@@ -74,7 +74,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         return this;
     }
 
-    public VncRecordingContainer withVideoExtension(VncRecordingFormat recordingFormat) {
+    public VncRecordingContainer withVideoFormat(VncRecordingFormat recordingFormat) {
         if (recordingFormat != null) {
             this.recordingFormat = recordingFormat;
         }
@@ -99,7 +99,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     @SneakyThrows
     public void saveRecordingToFile(@NonNull File file) {
-        try(InputStream inputStream = streamRecording()) {
+        try (InputStream inputStream = streamRecording()) {
             Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }
@@ -121,7 +121,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
             @Override
             String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source) throws IOException, InterruptedException {
                 String newFileOutput = "/newScreen.flv";
-                container.execInContainer("ffmpeg" , "-i", source, "-vcodec", "libx264", newFileOutput);
+                container.execInContainer("ffmpeg", "-i", source, "-vcodec", "libx264", newFileOutput);
                 return newFileOutput;
             }
         },
@@ -129,7 +129,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
             @Override
             String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source) throws IOException, InterruptedException {
                 String newFileOutput = "/newScreen.mp4";
-                container.execInContainer("ffmpeg" , "-i", source, "-vcodec", "libx264", "-movflags", "faststart", newFileOutput);
+                container.execInContainer("ffmpeg", "-i", source, "-vcodec", "libx264", "-movflags", "faststart", newFileOutput);
                 return newFileOutput;
             }
         };
@@ -147,14 +147,8 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
             return filenameExtension;
         }
 
-        /**
-         * @return {@code vncRecordingFormat} value if not null, otherwise, {@link VncRecordingFormat#FLV} will be returned as a default format.
-         */
-        public static VncRecordingFormat of(VncRecordingFormat vncRecordingFormat) {
-            if (vncRecordingFormat == null) {
-                return DEFAULT_FORMAT;
-            }
-            return vncRecordingFormat;
+        public static VncRecordingFormat getDefaultFormat() {
+            return DEFAULT_FORMAT;
         }
     }
 
