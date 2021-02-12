@@ -17,12 +17,22 @@ public class Wait {
     }
 
     /**
-     * Convenience method to return a WaitStrategy for an exposed or mapped port.
+     * Convenience method to return a WaitStrategy for all exposed or mapped port.
      *
      * @return the WaitStrategy
      * @see HostPortWaitStrategy
      */
     public static HostPortWaitStrategy forListeningPort() {
+        return forListeningPorts();
+    }
+
+    /**
+     * Convenience method to return a WaitStrategy for all exposed or mapped port.
+     *
+     * @return the WaitStrategy
+     * @see HostPortWaitStrategy
+     */
+    public static HostPortWaitStrategy forListeningPorts() {
         return new HostPortWaitStrategy();
     }
 

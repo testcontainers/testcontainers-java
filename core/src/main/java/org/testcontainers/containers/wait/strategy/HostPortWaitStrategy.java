@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Waits until a socket connection can be established on a port exposed or mapped by the container.
+ * Waits until a socket connection can be established on all port exposed or mapped by the container.
  *
  * @author richardnorth
  */
