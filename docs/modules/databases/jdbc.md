@@ -12,7 +12,7 @@ As long as you have Testcontainers and the appropriate JDBC driver on your class
 _N.B:_
 
 * _TC needs to be on your application's classpath at runtime for this to work_
-* _For Spring Boot (Before version `2.3.0`) you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
+* _For Spring Boot you need to specify the driver manually `spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver`_
 
 **Original URL**: `jdbc:mysql://localhost:3306/databasename`
 
