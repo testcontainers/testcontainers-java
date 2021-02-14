@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static org.testcontainers.containers.ContainerStateMethods.exists;
+
 public interface ContainerState {
 
     String STATE_HEALTHY = "healthy";
@@ -260,7 +262,7 @@ public interface ContainerState {
      */
     @SneakyThrows(IOException.class)
     default void copyFileToContainer(Transferable transferable, String containerPath) {
-        if (!InternalMethods.exists(this)) {
+        if (!exists(this)) {
             throw new IllegalStateException("copyFileToContainer can only be used with containers that exist");
         }
 
@@ -306,7 +308,7 @@ public interface ContainerState {
      */
     @SneakyThrows
     default  <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
-        if (!InternalMethods.exists(this)) {
+        if (!exists(this)) {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container exists.");
         }
 
@@ -317,25 +319,6 @@ public interface ContainerState {
         ) {
             tarInputStream.getNextTarEntry();
             return function.apply(tarInputStream);
-        }
-    }
-
-    class InternalMethods {
-        /**
-         * @return does the container exist?
-         */
-        private static boolean exists(ContainerState state) {
-            if (state.getContainerId() == null) {
-                return false;
-            }
-
-            try {
-                String status = state.getCurrentContainerInfo().getState().getStatus();
-                return status != null && !status.isEmpty();
-            }
-            catch (DockerException e) {
-                return false;
-            }
         }
     }
 }
