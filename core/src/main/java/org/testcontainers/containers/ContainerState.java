@@ -260,7 +260,7 @@ public interface ContainerState {
      */
     @SneakyThrows(IOException.class)
     default void copyFileToContainer(Transferable transferable, String containerPath) {
-        if (!isCreated()) {
+        if (getContainerId() == null) {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
@@ -306,7 +306,7 @@ public interface ContainerState {
      */
     @SneakyThrows
     default  <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
-        if (!isCreated()) {
+        if (getContainerId() == null) {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
