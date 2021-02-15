@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.testcontainers.containers.ContainerStateMethods.exists;
-
 public interface ContainerState {
 
     String STATE_HEALTHY = "healthy";
@@ -262,8 +260,8 @@ public interface ContainerState {
      */
     @SneakyThrows(IOException.class)
     default void copyFileToContainer(Transferable transferable, String containerPath) {
-        if (!exists(this)) {
-            throw new IllegalStateException("copyFileToContainer can only be used with containers that exist");
+        if (getContainerId() == null) {
+            throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
         try (
@@ -308,8 +306,8 @@ public interface ContainerState {
      */
     @SneakyThrows
     default  <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
-        if (!exists(this)) {
-            throw new IllegalStateException("copyFileFromContainer can only be used when the Container exists.");
+        if (getContainerId() == null) {
+            throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
         DockerClient dockerClient = DockerClientFactory.instance().client();

@@ -9,10 +9,15 @@ import org.junit.rules.TemporaryFolder;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.TestImages.ALPINE_IMAGE;
@@ -108,24 +113,20 @@ public class FileOperationsTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void copyFileToNotStartedContainerShouldFailNicely() {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
+    public void copyFileToContainerShouldFailWhenNotStartedTest() {
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("top")) {
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
+            container.copyFileToContainer(mountableFile, "/home/");
         }
     }
 
     @Test(expected = IllegalStateException.class)
-    public void copyFileFromNotStartedContainerShouldFailNicely() {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
+    public void copyFileFromContainerShouldFailWhenNotStartedTest() {
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("top")) {
             File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
+            container.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
         }
     }
 
@@ -133,103 +134,117 @@ public class FileOperationsTest {
      * This is expected to fail because {@link GenericContainer#stop()} stops _and removes_ the container
      */
     @Test(expected = IllegalStateException.class)
-    public void copyFileFromKnownStoppedContainerShouldFailNicely() {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
-            alpineCopyToContainer.start();
+    public void copyFileFromContainerShouldFailWhenStoppedAndRemovedTest() {
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("top")) {
+            container.start();
 
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
-            assertTrue("The container is still running", alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning());
+            container.copyFileToContainer(mountableFile, "/home/");
+            assertTrue("The container is still running", container.getCurrentContainerInfo().getState().getRunning());
 
-            alpineCopyToContainer.stop();
+            container.stop();
 
             File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
+            container.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
         }
     }
 
     @Test
     public void shouldCopyFileFromExitedContainerTest() throws IOException {
-        String testFileContent = this.getClass().getCanonicalName();
 
+        String testFileContent = getTestFileContent();
         // There is a sleep in here because container.start() fails intermittently if the container exits too quickly
-        String command = String.format("echo '%s' > /home/file_in_container.txt && sleep 3", testFileContent);
+        String command = String.format("echo -n '%s' > /home/file_in_container.txt && sleep 3", testFileContent);
 
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("sh", "-c", command)
-        ) {
-            alpineCopyToContainer.start();
-
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
-            }
-
-            InspectContainerResponse currentContainerInfo = alpineCopyToContainer.getCurrentContainerInfo();
-            assertFalse("The container is no longer running", currentContainerInfo.getState().getRunning());
-            assertTrue("The container status is exited", "exited".equals(currentContainerInfo.getState().getStatus()));
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/file_in_container.txt", actualFile.getPath());
-            byte[] bytes = Files.readAllBytes(actualFile.toPath());
-            assertTrue("Files aren't same ", (testFileContent + "\n").equals(new String(bytes)));
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("sh", "-c", command)) {
+            container.start();
+            assertCopyFromStoppedContainerWorks(container, "/home/file_in_container.txt", 0);
         }
     }
 
     @Test
-    public void shouldCopyFileFromFailedContainer() throws IOException {
-        String testFileContent = this.getClass().getCanonicalName();
+    public void shouldCopyFileToExitedContainerTest() throws Exception {
 
-        // There is a sleep in here because container.start() fails intermittently if the container exits too quickly
-        String command = String.format("echo '%s' > /home/file_in_container.txt && sleep 3 && exit 1", testFileContent);
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("sh", "-c", command)
-        ) {
-            alpineCopyToContainer.start();
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("sleep", "3")) {
+            container.start();
 
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
-            }
-
-            InspectContainerResponse currentContainerInfo = alpineCopyToContainer.getCurrentContainerInfo();
-            assertFalse("The container is no longer running", currentContainerInfo.getState().getRunning());
-            assertTrue("The container status is exited", "exited".equals(currentContainerInfo.getState().getStatus()));
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/file_in_container.txt", actualFile.getPath());
-            byte[] bytes = Files.readAllBytes(actualFile.toPath());
-            assertTrue("Files aren't same ", (testFileContent + "\n").equals(new String(bytes)));
+            assertCopyToStoppedContainerWorks(container, "/home/test_copy_to_container.txt", 0);
         }
     }
 
     @Test
-    public void shouldCopyFileFromStoppedContainer() throws IOException {
+    public void shouldCopyFileFromFailedContainerTest() throws IOException {
+
+        String testFileContent = getTestFileContent();
+        // There is a sleep in here because container.start() fails intermittently if the container exits too quickly
+        String command = String.format("echo -n '%s' > /home/file_in_container.txt && sleep 3 && exit 1", testFileContent);
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("sh", "-c", command)) {
+            container.start();
+            assertCopyFromStoppedContainerWorks(container, "/home/file_in_container.txt", 1);
+        }
+    }
+
+    @Test
+    public void shouldCopyFileToFailedContainerTest() throws Exception {
+
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
+            GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("sh", "-c", "sleep 3 && exit 1")
         ) {
-            alpineCopyToContainer.start();
+            container.start();
+
+            assertCopyToStoppedContainerWorks(container, "/home/test_copy_to_container.txt", 1);
+        }
+    }
+
+    @Test
+    public void shouldCopyFileFromStoppedContainerTest() throws IOException {
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("top")) {
+            container.start();
 
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
-            assertTrue("The container is still running", alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning());
+            container.copyFileToContainer(mountableFile, "/home/");
+            assertTrue("The container is still running", container.getCurrentContainerInfo().getState().getRunning());
 
-            // Stop the container but directly via the docker client, bypassing the Test Containers framework
-            alpineCopyToContainer.getDockerClient().stopContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
-            }
+            stopViaDockerClient(container);
 
-            InspectContainerResponse currentContainerInfo = alpineCopyToContainer.getCurrentContainerInfo();
-            assertFalse("The container is no longer running", currentContainerInfo.getState().getRunning());
-            assertTrue("The container status is exited", "exited".equals(currentContainerInfo.getState().getStatus()));
+            // 143 is Sigterm
+            assertCopyFromStoppedContainerWorks(container, "/home/test_copy_to_container.txt", 143);
+        }
+    }
+
+    @Test
+    public void shouldCopyFileToStoppedContainerTest() throws Exception {
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("top")) {
+            container.start();
+
+            stopViaDockerClient(container);
+
+            assertCopyToStoppedContainerWorks(container, "/home/test_copy_to_container.txt", 143);
+        }
+    }
+
+
+    @Test
+    public void shouldCopyFileFromPausedContainerTest() throws IOException {
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("top")) {
+            container.start();
+            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+            container.copyFileToContainer(mountableFile, "/home/");
+            assertTrue("The container is still running", container.getCurrentContainerInfo().getState().getRunning());
+
+            // Pause the container directly via the docker client - there is no way to do a pause directly on a GenericContainer instance
+            pauseViaDockerClient(container);
+
+            InspectContainerResponse currentContainerInfo = container.getCurrentContainerInfo();
+            assertTrue("The container status is paused", "paused".equals(currentContainerInfo.getState().getStatus()));
 
             File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
+            container.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
             assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
@@ -237,27 +252,18 @@ public class FileOperationsTest {
     }
 
     @Test
-    public void shouldCopyFileFromPausedContainer() throws IOException {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
-            alpineCopyToContainer.start();
+    public void shouldCopyFileToPausedContainerTest() throws Exception {
+
+        try (GenericContainer container = new GenericContainer(ALPINE_IMAGE).withCommand("top")) {
+            container.start();
+
+            pauseViaDockerClient(container);
+
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
-            assertTrue("The container is still running", alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning());
+            container.copyFileToContainer(mountableFile, "/test.txt");
 
-            // Pause the container directly via the docker client - there is no way to do a pause directly on a GenericContainer instance
-            alpineCopyToContainer.getDockerClient().pauseContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-            while (!alpineCopyToContainer.getCurrentContainerInfo().getState().getPaused()) {
-                // container is not yet paused, wait for it to pause
-            }
-
-            InspectContainerResponse currentContainerInfo = alpineCopyToContainer.getCurrentContainerInfo();
-            assertTrue("The container status is paused", "paused".equals(currentContainerInfo.getState().getStatus()));
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
+            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
+            container.copyFileFromContainer("/test.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
             assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
@@ -265,172 +271,85 @@ public class FileOperationsTest {
     }
 
     /**
-     * This is an ugly failure - but if a container is stopped and removed while a test is running what else would we expect to happen?
+     * Utility method to retrieve the content of the file to copy to avoid duplication of content in tests
+     *
+     * @return String content of a file system resource
      */
-    @Test(expected = RuntimeException.class)
-    public void copyFileFromRemovedContainerShouldFail() {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
-            alpineCopyToContainer.start();
+    private static String getTestFileContent() throws IOException {
 
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
-            assertTrue("The container is still running", alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning());
-
-            alpineCopyToContainer.getDockerClient().stopContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-            alpineCopyToContainer.getDockerClient().removeContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
+        try (InputStream in = FileOperationsTest.class.getResourceAsStream("/test_copy_to_container.txt")) {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = in.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+            return result.toString(StandardCharsets.UTF_8.name());
         }
     }
 
-    @Test
-    public void copyFileToStoppedContainerFileTest() throws Exception {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
-            alpineCopyToContainer.start();
 
-            // Stop the container but directly via the docker client, bypassing the Test Containers framework
-            alpineCopyToContainer.getDockerClient().stopContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
-            }
-
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/test.txt");
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/test.txt", actualFile.getPath());
-
-            File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
-        }
+    /**
+     * Stop the container directly via the docker client, bypassing the Test Containers framework
+     * @param container Container to stop
+     */
+    private static void stopViaDockerClient(GenericContainer container) {
+        container.getDockerClient().stopContainerCmd(container.getContainerId()).exec();
     }
 
-    @Test
-    public void copyFileToStoppedContainerFolderTest() throws Exception {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
-            alpineCopyToContainer.start();
+    /**
+     * There is no public API to pause a container via test container, but some libraries might want to
+     * manipulate a paused container as well. So we want to test for copying things to and from those as well.
+     * We have to loop here as there is no status
+     * @param container
+     */
+    private void pauseViaDockerClient(GenericContainer container) {
 
-            // Stop the container but directly via the docker client, bypassing the Test Containers framework
-            alpineCopyToContainer.getDockerClient().stopContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
+        container.getDockerClient().pauseContainerCmd(container.getContainerId()).exec();
+        Instant waitingStarted = Instant.now();
+        while (Duration.between(waitingStarted, Instant.now()).getSeconds() < 30) {
+            if(container.getCurrentContainerInfo().getState().getPaused()) {
+                return;
             }
-
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
-
-            File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
         }
+        throw new IllegalStateException("Could not pause container.");
     }
 
-    @Test
-    public void copyFolderToStoppedContainerFolderTest() throws Exception {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
+    private void assertCopyFromStoppedContainerWorks(GenericContainer container, String fileNameInContainer, int expectedExitCode) throws IOException {
 
-            alpineCopyToContainer.start();
+        int exitCode = container.getDockerClient().waitContainerCmd(container.getContainerId()).start().awaitStatusCode();
 
-            // Stop the container but directly via the docker client, bypassing the Test Containers framework
-            alpineCopyToContainer.getDockerClient().stopContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
-            }
+        assertEquals("Status code doesn't equals expected code", expectedExitCode, exitCode);
 
-            final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/test/");
+        InspectContainerResponse currentContainerInfo = container.getCurrentContainerInfo();
+        assertFalse("The container is no longer running", currentContainerInfo.getState().getRunning());
+        assertTrue("The container status is exited", "exited".equals(currentContainerInfo.getState().getStatus()));
 
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/home/test/test-resource.txt", actualFile.getPath());
+        File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
+        container.copyFileFromContainer(fileNameInContainer, actualFile.getPath());
 
-            File expectedFile = new File(mountableFile.getResolvedPath() + "/test-resource.txt");
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
-        }
+        final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+        File expectedFile = new File(mountableFile.getResolvedPath());
+        assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
     }
 
-    @Test
-    public void copyFileToExitedContainerFileTest() throws Exception {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("sleep", "3")
-        ) {
-            alpineCopyToContainer.start();
+    private void assertCopyToStoppedContainerWorks(GenericContainer container, String fileNameInContainer, int expectedExitCode) throws IOException {
 
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
-            }
+        int exitCode = container.getDockerClient().waitContainerCmd(container.getContainerId()).start().awaitStatusCode();
 
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/test.txt");
+        assertEquals("Status code doesn't equals expected code", expectedExitCode, exitCode);
 
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/test.txt", actualFile.getPath());
+        InspectContainerResponse currentContainerInfo = container.getCurrentContainerInfo();
+        assertFalse("The container is no longer running", currentContainerInfo.getState().getRunning());
+        assertTrue("The container status is exited", "exited".equals(currentContainerInfo.getState().getStatus()));
 
-            File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
-        }
-    }
+        final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
+        container.copyFileToContainer(mountableFile, "/test.txt");
 
-    @Test
-    public void copyFileToFailedContainerFileTest() throws Exception {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("sh", "-c", "sleep 3 && exit 1")
-        ) {
-            alpineCopyToContainer.start();
+        File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
+        container.copyFileFromContainer("/test.txt", actualFile.getPath());
 
-            while (alpineCopyToContainer.getCurrentContainerInfo().getState().getRunning()) {
-                // container is still running, wait for it to exit
-            }
-
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/test.txt");
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/test.txt", actualFile.getPath());
-
-            File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
-        }
-    }
-
-    @Test
-    public void copyFileToPausedContainerFileTest() throws Exception {
-        try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
-                .withCommand("top")
-        ) {
-            alpineCopyToContainer.start();
-
-            // Stop the container but directly via the docker client, bypassing the Test Containers framework
-            alpineCopyToContainer.getDockerClient().pauseContainerCmd(alpineCopyToContainer.getContainerId()).exec();
-            while (!alpineCopyToContainer.getCurrentContainerInfo().getState().getPaused()) {
-                // container is not yet paused, wait for it to pause
-            }
-
-            final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileToContainer(mountableFile, "/test.txt");
-
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
-            alpineCopyToContainer.copyFileFromContainer("/test.txt", actualFile.getPath());
-
-            File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
-        }
+        File expectedFile = new File(mountableFile.getResolvedPath());
+        assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
     }
 }
