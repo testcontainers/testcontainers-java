@@ -5,5 +5,5 @@ dependencies {
     compile project(':jdbc')
 
     testCompile project(':jdbc-test')
-    testCompile 'ru.yandex.clickhouse:clickhouse-jdbc:0.2.4'
+    testCompile 'ru.yandex.clickhouse:clickhouse-jdbc:0.2.6'
 }
