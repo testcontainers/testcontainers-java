@@ -108,7 +108,7 @@ public class FileOperationsTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void copyFileOperationsShouldFailWhenNotStartedTest() {
         try (GenericContainer<?> container = new GenericContainer<>(ALPINE_IMAGE).withCommand("top")) {
             Assertions
@@ -127,7 +127,7 @@ public class FileOperationsTest {
                     );
                 })
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("can only be used with created / running container");
+                .hasMessageContaining("can only be used when the Container is created");
         }
     }
 
