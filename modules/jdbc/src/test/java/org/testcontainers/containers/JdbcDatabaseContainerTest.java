@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 public class JdbcDatabaseContainerTest {
 
     @Test
-    public void tanExceptionIsThrownIfJdbcIsNotAvailable() {
+    public void anExceptionIsThrownIfJdbcIsNotAvailable() {
         JdbcDatabaseContainer<?> jdbcContainer = new JdbcDatabaseContainerStub("mysql:latest")
             .withStartupTimeoutSeconds(1);
 
