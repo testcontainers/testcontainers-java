@@ -132,7 +132,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
             @Override
             String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source) throws IOException, InterruptedException {
                 String newFileOutput = "/newScreen.mp4";
-                container.execInContainer("ffmpeg", "-i", source, "-vcodec", "libx264", "-movflags", "faststart", newFileOutput);
+                container.execInContainer("ffmpeg", "-i", source, "-vcodec", "libx264", "-movflags", "faststart", "-pix_fmt", "yuv420p", newFileOutput);
                 return newFileOutput;
             }
         };
