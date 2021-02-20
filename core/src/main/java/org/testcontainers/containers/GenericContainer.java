@@ -85,6 +85,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -182,6 +183,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
     private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
+
+    // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    private Map<Transferable, String> copyToTransferableContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
@@ -408,6 +412,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+
+                copyToTransferableContainerPathMap.forEach(this::copyFileToContainer);
             }
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
@@ -1252,6 +1258,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
         copyToFileContainerPathMap.put(mountableFile, containerPath);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withCopyTransferableToContainer(Transferable transferable, String containerPath) {
+        copyToTransferableContainerPathMap.put(transferable, containerPath);
         return self();
     }
 

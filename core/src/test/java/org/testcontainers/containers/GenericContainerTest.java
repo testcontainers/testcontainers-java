@@ -15,7 +15,9 @@ import org.testcontainers.TestImages;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -52,11 +54,25 @@ public class GenericContainerTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
-                .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
+                .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container exited with code 123");
+        }
+    }
+
+    @Test
+    public void shouldCopyTransferableAsFile() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withStartupCheckStrategy(new NoopStartupCheckStrategy())
+                .withCopyTransferableToContainer(Transferable.of("test".getBytes(StandardCharsets.UTF_8)), "/tmp/test")
+                .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
+                .withCommand("sh", "-c", "grep -q test /tmp/test && exit 100")
+        ) {
+            assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Container exited with code 100");
         }
     }
 
