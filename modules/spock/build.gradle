@@ -15,7 +15,7 @@ dependencies {
     testCompile 'com.zaxxer:HikariCP:3.4.5'
     testCompile 'org.apache.httpcomponents:httpclient:4.5.13'
 
-    testRuntime 'org.postgresql:postgresql:42.2.18'
+    testRuntime 'org.postgresql:postgresql:42.2.19'
     testRuntime 'mysql:mysql-connector-java:8.0.22'
 
     testCompileClasspath 'org.jetbrains:annotations:20.1.0'
