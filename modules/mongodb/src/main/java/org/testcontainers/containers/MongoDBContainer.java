@@ -21,8 +21,14 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String DEFAULT_TAG = "4.0.10";
     private static final int CONTAINER_EXIT_CODE_OK = 0;
     private static final int MONGODB_INTERNAL_PORT = 27017;
-    private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
+    private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 120;
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
+
+    private Boolean useAuth = false;
+    private String username = "root";
+    private String password = "testContainers";
+
+    private Boolean useReplicaSet = false;
 
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
@@ -41,11 +47,22 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        withExposedPorts(MONGODB_INTERNAL_PORT);
-        withCommand("--replSet", "docker-rs");
-        waitingFor(
-            Wait.forLogMessage("(?i).*waiting for connections.*", 1)
-        );
+        addExposedPorts(MONGODB_INTERNAL_PORT);
+
+        this.waitStrategy = Wait.
+            forLogMessage("(?i).*waiting for connections.*", 1);
+    }
+
+    @Override
+    protected void configure() {
+        if (this.useAuth) {
+            withEnv("MONGO_INITDB_ROOT_USERNAME", this.username);
+            withEnv("MONGO_INITDB_ROOT_PASSWORD", this.password);
+        }
+
+        if (this.useReplicaSet) {
+            withCommand("--replSet", "docker-rs");
+        }
     }
 
     /**
@@ -53,8 +70,8 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      *
      * @return a replica set url.
      */
-    public String getReplicaSetUrl() {
-        return getReplicaSetUrl(MONGODB_DATABASE_NAME_DEFAULT);
+    public String getConnectionUri() {
+        return getConnectionUri(MONGODB_DATABASE_NAME_DEFAULT);
     }
 
     /**
@@ -63,21 +80,33 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @param databaseName a database name.
      * @return a replica set url.
      */
-    public String getReplicaSetUrl(final String databaseName) {
+    public String getConnectionUri(final String databaseName) {
         if (!isRunning()) {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
         return String.format(
-            "mongodb://%s:%d/%s",
+            "mongodb://%s%s:%d/%s%s",
+            (useAuth ? String.format("%s:%s@", getUsername(), getPassword()) : ""),
             getContainerIpAddress(),
             getMappedPort(MONGODB_INTERNAL_PORT),
-            databaseName
+            databaseName,
+            (useAuth ? "?authSource=admin" : "")
         );
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        initReplicaSet();
+//        if (useReplicaSet) {
+//            initReplicaSet();
+//        }
     }
 
     private String[] buildMongoEvalCommand(final String command) {
@@ -90,6 +119,33 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             log.error(errorMessage);
             throw new ReplicaSetInitializationException(errorMessage);
         }
+    }
+
+    public MongoDBContainer withReplicaSet() {
+        this.useReplicaSet = true;
+        return this;
+    }
+
+    public MongoDBContainer withAuth() {
+        this.useAuth = true;
+        return this;
+    }
+
+    public MongoDBContainer withAuth(String username, String password) {
+        this.useAuth = true;
+        withUsername(username);
+        withPassword(password);
+        return this;
+    }
+
+    public MongoDBContainer withUsername(final String username) {
+        this.username = username;
+        return this;
+    }
+
+    public MongoDBContainer withPassword(final String password) {
+        this.password = password;
+        return this;
     }
 
     private String buildMongoWaitCommand() {

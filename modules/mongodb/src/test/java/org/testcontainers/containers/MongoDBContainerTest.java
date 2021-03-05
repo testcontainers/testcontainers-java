@@ -13,6 +13,7 @@ import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -28,7 +29,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10")).withReplicaSet()
             // }
         ) {
 
@@ -36,7 +37,7 @@ public class MongoDBContainerTest {
             mongoDBContainer.start();
             // }
 
-            final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
+            final String mongoRsUrl = mongoDBContainer.getConnectionUri();
             assertNotNull(mongoRsUrl);
             final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
             mongoSyncClient.getDatabase("mydb1").getCollection("foo")
@@ -92,7 +93,51 @@ public class MongoDBContainerTest {
         ) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName), endsWith(databaseName));
+            assertThat(mongoDBContainer.getConnectionUri(databaseName), endsWith(databaseName));
+        }
+    }
+
+    @Test
+    public void shouldTestAuth() {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10")).withAuth()
+        ) {
+            mongoDBContainer.start();
+
+            //Basic We connected test.
+            final MongoClient mongoSyncClient = MongoClients.create(mongoDBContainer.getConnectionUri());
+            assertNotNull(mongoSyncClient.listDatabaseNames().first());
+        }
+    }
+
+    @Test
+    public void shouldTestAuthAndReplica() {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+                .withReplicaSet()
+                .withAuth()
+        ) {
+            mongoDBContainer.start();
+
+            //Basic We connected test.
+            final MongoClient mongoSyncClient = MongoClients.create(mongoDBContainer.getConnectionUri());
+            assertNotNull(mongoSyncClient.listDatabaseNames().first());
+        }
+    }
+
+
+    @Test
+    public void shouldTestAuthOverrideUNAndPW() {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+                .withAuth("testUser", "testPassword")
+        ) {
+            mongoDBContainer.start();
+
+            assertThat(mongoDBContainer.getConnectionUri(), containsString("testUser:testPassword@"));
+            //Basic We connected test.
+            final MongoClient mongoSyncClient = MongoClients.create(mongoDBContainer.getConnectionUri());
+            assertNotNull(mongoSyncClient.listDatabaseNames().first());
         }
     }
 }
