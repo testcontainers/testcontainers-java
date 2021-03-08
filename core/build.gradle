@@ -159,8 +159,11 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 
 configurations.all {
     resolutionStrategy {
+        failOnVersionConflict()
         // use lower Jackson version
         force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+        force 'org.slf4j:slf4j-api:1.7.30'
+        force 'net.java.dev.jna:jna:5.5.0'
     }
 }
 
