@@ -8,6 +8,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Constructs a single node MongoDB replica set for testing transactions.
@@ -23,6 +25,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final int MONGODB_INTERNAL_PORT = 27017;
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
+    private static final String DOCKER_ENTRYPOINT_INIT_DIR = "docker-entrypoint-initdb.d";
 
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
@@ -64,15 +67,41 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return a replica set url.
      */
     public String getReplicaSetUrl(final String databaseName) {
-        if (!isRunning()) {
-            throw new IllegalStateException("MongoDBContainer should be started first");
-        }
+        checkIfRunning();
         return String.format(
             "mongodb://%s:%d/%s",
             getContainerIpAddress(),
             getMappedPort(MONGODB_INTERNAL_PORT),
             databaseName
         );
+    }
+
+    private void checkIfRunning() {
+        if (!isRunning()) {
+            throw new IllegalStateException("MongoDBContainer should be started first");
+        }
+    }
+
+    /**
+     * Loads and executes JavaScript files directly.
+     * Note that all the files are supposed to be delivered to a container via proper commands before starting.
+     * Should be used as an alternative to docker-entrypoint-initdb.d. This is because at docker-entrypoint-initdb.d
+     * stage, a replica set is not yet initialized and thus cannot accept operations.
+     *
+     * @param paths directory or file names as an array of strings.
+     * @see GenericContainer#withClasspathResourceMapping(String, String, BindMode) etc.
+     */
+    @SneakyThrows(value = {IOException.class, InterruptedException.class})
+    public void loadAndExecuteJsFiles(final String... paths) {
+        checkIfRunning();
+        final String loadCommand =
+            Stream.of(paths).map(it -> "load(\"" + it + "\")").collect(Collectors.joining(";"));
+        final ExecResult execResult = execInContainer(buildMongoEvalCommand(loadCommand));
+        if (execResult.getExitCode() != CONTAINER_EXIT_CODE_OK) {
+            final String errorMessage = String.format("An error occurred: %s", execResult.getStdout());
+            log.error(errorMessage);
+            throw new LoadAndExecuteJsFilesException(errorMessage);
+        }
     }
 
     @Override
@@ -89,6 +118,28 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             final String errorMessage = String.format("An error occurred: %s", execResult.getStdout());
             log.error(errorMessage);
             throw new ReplicaSetInitializationException(errorMessage);
+        }
+    }
+
+    @SneakyThrows(value = {IOException.class, InterruptedException.class})
+    private void checkDockerEntrypointDirIsEmpty() {
+        final ExecResult execResult = execInContainer(
+            "/bin/bash",
+            "-c",
+            String.format(
+                "if [ -n \"$(find \"%s\" -maxdepth 0 -type d -empty 2>/dev/null)\" ]; then exit 0; else exit -1; fi",
+                DOCKER_ENTRYPOINT_INIT_DIR
+            )
+        );
+        if (execResult.getExitCode() != CONTAINER_EXIT_CODE_OK) {
+            throw new DockerEntrypointInitDirIsNotEmptyException(
+                String.format(
+                    "%s is supposed to be empty while running with the --replSet command-line option. " +
+                        "Consider using loadAndExecuteJsFiles(...). Error: %s",
+                    DOCKER_ENTRYPOINT_INIT_DIR,
+                    execResult.getStdout()
+                )
+            );
         }
     }
 
@@ -122,6 +173,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     @SneakyThrows(value = {IOException.class, InterruptedException.class})
     private void initReplicaSet() {
+        checkDockerEntrypointDirIsEmpty();
         log.debug("Initializing a single node node replica set...");
         final ExecResult execResultInitRs = execInContainer(
             buildMongoEvalCommand("rs.initiate();")
@@ -143,6 +195,18 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     public static class ReplicaSetInitializationException extends RuntimeException {
         ReplicaSetInitializationException(final String errorMessage) {
+            super(errorMessage);
+        }
+    }
+
+    public static class DockerEntrypointInitDirIsNotEmptyException extends RuntimeException {
+        DockerEntrypointInitDirIsNotEmptyException(final String errorMessage) {
+            super(errorMessage);
+        }
+    }
+
+    public static class LoadAndExecuteJsFilesException extends RuntimeException {
+        LoadAndExecuteJsFilesException(final String errorMessage) {
             super(errorMessage);
         }
     }
