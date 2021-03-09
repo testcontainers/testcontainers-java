@@ -63,6 +63,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
             "version: '2.2'\n" +
                 "services:\n" +
                 "  http:\n" +
+                "    build: .\n" +
                 "    image: python:latest\n" +
                 "    ports:\n" +
                 "    - 8080:8080";
