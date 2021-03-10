@@ -1,0 +1,32 @@
+version: "2.1"
+services:
+    a:
+        image: "a-prefix-${DEFINED_A}-suffix"
+    b:
+        image: "b-prefix-${UNDEFINED}-suffix"
+    c:
+        image: "c-prefix-${EMPTY}-suffix"
+    d:
+        image: "d-prefix-${DEFINED_D-d-default}-suffix"
+    e:
+        image: "e-prefix-${UNDEFINED-e-default}-suffix"
+    f:
+        image: "f-prefix-${EMPTY-f-default}-suffix"
+    g:
+        image: "g-prefix-${DEFINED_G:-g-default}-suffix"
+    h:
+        image: "h-prefix-${UNDEFINED:-h-default}-suffix"
+    i:
+        image: "i-prefix-${EMPTY:-i-default}-suffix"
+    j:
+        image: "j-prefix-${DEFINED_J?j-err}-suffix"
+    k:
+        image: "k-prefix-${UNDEFINED?k-err}-suffix"
+    l:
+        image: "l-prefix-${EMPTY?l-err}-suffix"
+    m:
+        image: "m-prefix-${DEFINED_M:?m-err}-suffix"
+    n:
+        image: "n-prefix-${UNDEFINED:?n-err}-suffix"
+    o:
+        image: "o-prefix-${EMPTY:?o-err}-suffix"
