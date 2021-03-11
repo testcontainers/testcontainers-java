@@ -164,6 +164,7 @@ A huge thank you to our sponsors:
 * [jOOQ](https://www.jooq.org) - Integration testing all of jOOQ with a variety of RDBMS
 * [Trino (formerly Presto SQL)](https://trino.io) - Integration testing all Trino core & connectors, including tests of multi-node deployments and security configurations.
 * Google - Various open source projects: [OpenTelemetry](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java), [Universal Application Tool](https://github.com/seattle-uat/universal-application-tool), [CloudBowl](https://github.com/GoogleCloudPlatform/cloudbowl-microservice-game)
+* [Backbase](https://www.backbase.com/) - Unit, Integration and Acceptance testing for different the databases supported (Oracle, SQL Server, MySQL), the different messaging systems supported (Kafka, Rabbit, AMQ) and other microservices and HTTP mocks.
 
 
 ## License
