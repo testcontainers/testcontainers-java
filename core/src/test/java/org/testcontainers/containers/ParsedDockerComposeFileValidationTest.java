@@ -14,39 +14,9 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class ParsedDockerComposeFileValidationTest {
 
     @Test
-    public void shouldValidate() {
+    public void shouldAcceptContainerName() {
         File file = new File("src/test/resources/docker-compose-container-name-v1.yml");
-        Assertions
-            .assertThatThrownBy(() -> {
-                new ParsedDockerComposeFile(file);
-            })
-            .hasMessageContaining(file.getAbsolutePath())
-            .hasMessageContaining("'container_name' property set for service 'redis'");
-    }
-
-    @Test
-    public void shouldRejectContainerNameV1() {
-        Assertions
-            .assertThatThrownBy(() -> {
-                new ParsedDockerComposeFile(ImmutableMap.of(
-                    "redis", ImmutableMap.of("container_name", "redis")
-                ));
-            })
-            .hasMessageContaining("'container_name' property set for service 'redis'");
-    }
-
-    @Test
-    public void shouldRejectContainerNameV2() {
-        Assertions
-            .assertThatThrownBy(() -> {
-                new ParsedDockerComposeFile(ImmutableMap.of(
-                    "version", "2",
-                    "services", ImmutableMap.of(
-                        "redis", ImmutableMap.of("container_name", "redis")
-                    )
-                ));
-            })
-            .hasMessageContaining("'container_name' property set for service 'redis'");
+        ParsedDockerComposeFile parsedDockerComposeFile = new ParsedDockerComposeFile(file);
     }
 
     @Test
@@ -99,4 +69,5 @@ public class ParsedDockerComposeFileValidationTest {
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertEquals("all defined images are found", Sets.newHashSet("redis", "mysql", "alpine:3.2"), parsedFile.getDependencyImageNames()); // redis, mysql from compose file, alpine:3.2 from Dockerfile build
     }
+
 }

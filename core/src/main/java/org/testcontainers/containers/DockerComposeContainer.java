@@ -79,6 +79,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final List<File> composeFiles;
     private Set<ParsedDockerComposeFile> parsedComposeFiles;
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
+    private final Map<String, String> customContainerNames = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
     private boolean pull = true;
@@ -127,6 +128,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
         this.composeFiles = composeFiles;
         this.parsedComposeFiles = composeFiles.stream().map(ParsedDockerComposeFile::new).collect(Collectors.toSet());
+        this.parsedComposeFiles
+            .forEach(composeFile -> this.customContainerNames.putAll(composeFile.getContainerNames()));
 
         // Use a unique identifier so that containers created for this compose environment can be identified
         this.identifier = identifier;
@@ -318,12 +321,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     @VisibleForTesting
     List<Container> listChildContainers() {
+        Set<String> names = customContainerNames.values()
+            .stream()
+            .map(name -> String.format("/%s", name))
+            .collect(Collectors.toSet());
         return dockerClient.listContainersCmd()
-            .withShowAll(true)
-            .exec().stream()
-            .filter(container -> Arrays.stream(container.getNames()).anyMatch(name ->
-                name.startsWith("/" + project)))
-            .collect(toList());
+                .withShowAll(true)
+                .exec().stream()
+                .filter(
+                    container -> Arrays.stream(container.getNames()).anyMatch(name ->
+                        names.contains(name) || name.startsWith("/" + project)
+                    )
+                )
+                .collect(toList());
     }
 
     private void startAmbassadorContainers() {
@@ -386,7 +396,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         int ambassadorPort = nextAmbassadorPort.getAndIncrement();
         ambassadorPortMappings.computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>()).put(servicePort, ambassadorPort);
         ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
+        String containerName = getContainerName(serviceInstanceName);
+        ambassadorContainer.addLink(new FutureContainer(containerName), serviceInstanceName);
         addWaitStrategy(serviceInstanceName, waitStrategy);
         return self();
     }
@@ -397,6 +408,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             serviceInstanceName += "_1"; // implicit first instance of this service
         }
         return serviceInstanceName;
+    }
+
+    private String getContainerName(String serviceName) {
+        String serviceInstanceName = serviceName;
+        if (serviceInstanceName.matches(".*_[0-9]+")) {
+            serviceName = serviceInstanceName.substring(0, serviceInstanceName.indexOf('_'));
+            if (customContainerNames.containsKey(serviceName)) {
+                return customContainerNames.get(serviceName);
+            }
+        }
+        return String.format("%s_%s", project, serviceInstanceName);
     }
 
     /*

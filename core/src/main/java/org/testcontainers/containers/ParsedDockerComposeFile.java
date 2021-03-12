@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +31,8 @@ class ParsedDockerComposeFile {
 
     @Getter
     private Set<String> dependencyImageNames = new HashSet<>();
+    @Getter
+    private Map<String, String> containerNames = new HashMap<>();
 
     ParsedDockerComposeFile(File composeFile) {
         Yaml yaml = new Yaml();
@@ -86,19 +89,15 @@ class ParsedDockerComposeFile {
 
             final Map serviceDefinitionMap = (Map) serviceDefinition;
 
-            validateNoContainerNameSpecified(serviceName, serviceDefinitionMap);
+            findContainerName(serviceName, serviceDefinitionMap);
             findServiceImageName(serviceDefinitionMap);
             findImageNamesInDockerfile(serviceDefinitionMap);
         }
     }
 
-    private void validateNoContainerNameSpecified(String serviceName, Map serviceDefinitionMap) {
+    private void findContainerName(String serviceName, Map serviceDefinitionMap) {
         if (serviceDefinitionMap.containsKey("container_name")) {
-            throw new IllegalStateException(String.format(
-                "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
-                composeFileName,
-                serviceName
-            ));
+            this.containerNames.put(serviceName, (String) serviceDefinitionMap.get("container_name"));
         }
     }
 
