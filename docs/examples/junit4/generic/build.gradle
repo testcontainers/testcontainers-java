@@ -4,6 +4,9 @@ dependencies {
     testCompile "junit:junit:4.12"
     testCompile project(":testcontainers")
     testCompile project(":selenium")
+    testCompile project(":mysql")
+
+    testCompile 'mysql:mysql-connector-java:8.0.21'
     testCompile "org.seleniumhq.selenium:selenium-api:3.141.59"
     testCompile 'org.assertj:assertj-core:3.15.0'
 }

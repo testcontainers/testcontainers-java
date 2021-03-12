@@ -1,6 +1,7 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
+import org.assertj.core.api.Assumptions;
 import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 
@@ -16,6 +17,10 @@ public class DockerClientConfigUtilsTest {
 
     @Test
     public void getDockerHostIpAddressShouldReturnLocalhostWhenUnixSocket() {
+        Assumptions.assumeThat(DockerClientConfigUtils.IN_A_CONTAINER)
+            .as("in a container")
+            .isFalse();
+
         String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(client, URI.create("unix:///var/run/docker.sock"));
         assertEquals("localhost", actual);
     }

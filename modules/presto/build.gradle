@@ -5,4 +5,5 @@ dependencies {
 
     testCompile project(':jdbc-test')
     testCompile 'io.prestosql:presto-jdbc:331'
+    compileOnly 'org.jetbrains:annotations:20.0.0'
 }

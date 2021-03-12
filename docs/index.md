@@ -90,6 +90,48 @@ testImplementation('org.testcontainers:mysql') //no version specified
     These libraries in particular seem to be especially prone to conflicts with test code/application under test code. 
     As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
 
+## Sponsors
+
+Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain the project and help us improve it further.
+
+<iframe src="https://github.com/sponsors/testcontainers/button" title="Sponsor Testcontainers" height="35" width="107" style="border: 0;"></iframe>
+
+A huge thank you to our sponsors:
+
+### Bronze sponsors
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://cirrus-ci.org/">
+        <img src="sponsor_logos/cirrus_labs.jpg" style="width: 100%"/>
+        <p>Cirrus CI</p>
+        <!-- via fkorotkov's sponsorship -->
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://vivy.com">
+        <img src="sponsor_logos/vivy.png" style="width: 100%"/>
+        <p>Vivy</p>
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.jooq.org/">
+        <img src="sponsor_logos/jooq.jpg" style="width: 100%"/>
+        <p>jOOQ</p>
+    </a>
+</div>
+
+### Backers
+
+* [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
+* [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
+* [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
+* [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
+* [Pascal Zwick (@pas2al)](https://github.com/pas2al)
+* [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
+* [Bas Stoker (@bastoker)](https://github.com/bastoker)
+
 ## Who is using Testcontainers?
 
 * [ZeroTurnaround](https://zeroturnaround.com) - Testing of the Java Agents, micro-services, Selenium browser automation
@@ -118,6 +160,11 @@ testImplementation('org.testcontainers:mysql') //no version specified
 * [Marquez](https://marquezproject.github.io/marquez) - PostgreSQL integration testing
 * [Wise (formerly TransferWise)](https://wise.com) - Integration testing for different RDBMS, kafka and micro services
 * [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
+* [Apache SkyWalking](http://github.com/apache/skywalking) - End-to-end testing of the Apache SkyWalking, and plugin tests of its subproject, [Apache SkyWalking Python](http://github.com/apache/skywalking-python), and of its eco-system built by the community, like [SkyAPM NodeJS Agent](http://github.com/SkyAPM/nodejs)
+* [jOOQ](https://www.jooq.org) - Integration testing all of jOOQ with a variety of RDBMS
+* [Trino (formerly Presto SQL)](https://trino.io) - Integration testing all Trino core & connectors, including tests of multi-node deployments and security configurations.
+* Google - Various open source projects: [OpenTelemetry](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java), [Universal Application Tool](https://github.com/seattle-uat/universal-application-tool), [CloudBowl](https://github.com/GoogleCloudPlatform/cloudbowl-microservice-game)
+
 
 ## License
 

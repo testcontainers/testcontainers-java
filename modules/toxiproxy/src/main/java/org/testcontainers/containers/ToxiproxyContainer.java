@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,7 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
-    private static final String IMAGE_NAME = "shopify/toxiproxy:2.1.0";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy");
+    private static final String DEFAULT_TAG = "2.1.0";
     private static final int TOXIPROXY_CONTROL_PORT = 8474;
     private static final int FIRST_PROXIED_PORT = 8666;
     private static final int LAST_PROXIED_PORT = 8666 + 31;
@@ -29,12 +31,23 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final Map<String, ContainerProxy> proxies = new HashMap<>();
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
+    /**
+     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public ToxiproxyContainer() {
-        this(IMAGE_NAME);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    public ToxiproxyContainer(String imageName) {
-        super(imageName);
+    public ToxiproxyContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public ToxiproxyContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         addExposedPorts(TOXIPROXY_CONTROL_PORT);
         setWaitStrategy(new HttpWaitStrategy().forPath("/version").forPort(TOXIPROXY_CONTROL_PORT));
 
@@ -48,6 +61,13 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         client = new ToxiproxyClient(getHost(), getMappedPort(TOXIPROXY_CONTROL_PORT));
+    }
+
+    /**
+     * @return Publicly exposed Toxiproxy HTTP API control port.
+     */
+    public int getControlPort() {
+        return getMappedPort(TOXIPROXY_CONTROL_PORT);
     }
 
     /**
@@ -116,6 +136,10 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
          */
         @Getter private final int originalProxyPort;
         private boolean isCurrentlyCut;
+
+        public String getName() {
+            return toxi.getName();
+        }
 
         public ToxicList toxics() {
             return toxi.toxics();

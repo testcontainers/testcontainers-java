@@ -15,6 +15,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 
 import java.time.Duration;
@@ -38,12 +39,18 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
-    public RemoteDockerImage(String dockerImageName) {
-        this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(dockerImageName));
+    public RemoteDockerImage(DockerImageName dockerImageName) {
+        this.imageNameFuture = CompletableFuture.completedFuture(dockerImageName);
     }
 
+    @Deprecated
+    public RemoteDockerImage(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    @Deprecated
     public RemoteDockerImage(@NonNull String repository, @NonNull String tag) {
-        this.imageNameFuture = CompletableFuture.completedFuture(new DockerImageName(repository, tag));
+        this(DockerImageName.parse(repository).withTag(tag));
     }
 
     public RemoteDockerImage(@NonNull Future<String> imageFuture) {
@@ -57,7 +64,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
         try {
             if (!imagePullPolicy.shouldPull(imageName)) {
-                return imageName.toString();
+                return imageName.asCanonicalNameString();
             }
 
             // The image is not available locally - pull it
@@ -76,7 +83,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 
-                    return imageName.toString();
+                    return imageName.asCanonicalNameString();
                 } catch (InterruptedException | InternalServerErrorException e) {
                     // these classes of exception often relate to timeout/connection errors so should be retried
                     lastFailure = e;
@@ -94,7 +101,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     private DockerImageName getImageName() throws InterruptedException, ExecutionException {
-        return imageNameFuture.get();
+        final DockerImageName specifiedImageName = imageNameFuture.get();
+
+        // Allow the image name to be substituted
+        return ImageNameSubstitutor.instance().apply(specifiedImageName);
     }
 
     @ToString.Include(name = "imageName", rank = 1)
@@ -104,7 +114,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         }
 
         try {
-            return getImageName().toString();
+            return getImageName().asCanonicalNameString();
         } catch (InterruptedException | ExecutionException e) {
             return e.getMessage();
         }

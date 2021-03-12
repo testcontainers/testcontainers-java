@@ -1,13 +1,5 @@
 package com.example;
 
-import static com.example.SolrSearchEngine.COLLECTION_NAME;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
@@ -16,10 +8,21 @@ import org.apache.solr.common.SolrInputField;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.testcontainers.containers.SolrContainer;
+import org.testcontainers.utility.DockerImageName;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.SolrSearchEngine.COLLECTION_NAME;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SolrQueryTest {
 
-    public static final SolrContainer solrContainer = new SolrContainer()
+    private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
+
+    public static final SolrContainer solrContainer = new SolrContainer(SOLR_IMAGE)
         .withCollection(COLLECTION_NAME);
 
     private static SolrClient solrClient;

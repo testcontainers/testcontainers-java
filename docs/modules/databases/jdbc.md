@@ -37,11 +37,11 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using PostGIS
 
-`jdbc:tc:postgis:9.6:///databasename`
+`jdbc:tc:postgis:9.6-2.5:///databasename`
 
 #### Using Presto
 
-`jdbc:tc:presto:329://localhost/memory/default`
+`jdbc:tc:presto:344://localhost/memory/default`
 
 ### Using a classpath init script
 
@@ -115,5 +115,5 @@ Note that if you use `@Rule`, you will be given an isolated container for each t
 
 Examples/Tests:
 
- * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/jdbc-test/src/test/java/org/testcontainers/junit/SimpleMySQLTest.java)
- * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/jdbc-test/src/test/java/org/testcontainers/junit/SimplePostgreSQLTest.java)
+ * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java)

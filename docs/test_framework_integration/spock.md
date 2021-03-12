@@ -9,37 +9,9 @@
 Specifying the `@Testcontainers` annotation will instruct Spock to start and stop all testcontainers accordingly. This annotation 
 can be mixed with Spock's `@Shared` annotation to indicate, that containers shouldn't be restarted between tests.
 
-```groovy
-@Testcontainers
-class DatabaseTest extends Specification {
-
-    @Shared
-    PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer()
-            .withDatabaseName("foo")
-            .withUsername("foo")
-            .withPassword("secret")
-
-    def "database is accessible"() {
-
-        given: "a jdbc connection"
-        HikariConfig hikariConfig = new HikariConfig()
-        hikariConfig.setJdbcUrl(postgreSQLContainer.jdbcUrl)
-        hikariConfig.setUsername("foo")
-        hikariConfig.setPassword("secret")
-        HikariDataSource ds = new HikariDataSource(hikariConfig)
-
-        when: "querying the database"
-        Statement statement = ds.getConnection().createStatement()
-        statement.execute("SELECT 1")
-        ResultSet resultSet = statement.getResultSet()
-        resultSet.next()
-
-        then: "result is returned"
-        int resultSetInt = resultSet.getInt(1)
-        resultSetInt == 1
-    }
-}
-```
+<!--codeinclude-->
+[PostgresContainerIT](../../modules/spock/src/test/groovy/org/testcontainers/spock/PostgresContainerIT.groovy) inside_block:PostgresContainerIT
+<!--/codeinclude-->
 
 ## Adding Testcontainers Spock support to your project dependencies
 

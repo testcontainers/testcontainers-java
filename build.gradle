@@ -27,7 +27,7 @@ subprojects {
     }
 
     lombok {
-        version = '1.18.8'
+        version = '1.18.12'
     }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
@@ -121,11 +121,6 @@ subprojects {
             }
             for (pkg in packages) {
                 pkg = pkg.replaceAll('/', '.')
-
-                if (pkg.startsWith("com.github.dockerjava.")) {
-                    // Keep docker-java's package inside the final jar
-                    continue;
-                }
 
                 tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
             }
