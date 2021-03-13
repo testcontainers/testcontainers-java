@@ -1,8 +1,13 @@
 package org.testcontainers.junit.wait.strategy;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
+
+import java.util.HashMap;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.time.Duration;
@@ -28,6 +33,28 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     @Test
     public void testWaitUntilReadyWithSuccess() {
         waitUntilReadyAndSucceed(createShellCommand("200 OK", GOOD_RESPONSE_BODY));
+    }
+
+    /**
+     * Ensures that HTTP requests made with the HttpWaitStrategy can be enriched with user defined headers,
+     * although the test web server does not depend on the header to response with a 200, by checking the
+     * logs we can ensure the HTTP request was correctly sent.
+     */
+    @Test
+    public void testWaitUntilReadyWithSuccessWithCustomHeaders() {
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("baz", "boo");
+        GenericContainer container = startContainerWithCommand(createShellCommand("200 OK", GOOD_RESPONSE_BODY),
+            createHttpWaitStrategy(ready)
+                .withHeader("foo", "bar")
+                .withHeaders(headers)
+        );
+        waitUntilReadyAndSucceed(container);
+
+        String logs = container.getLogs();
+
+        assertThat(logs, containsString("foo: bar"));
+        assertThat(logs, containsString("baz: boo"));
     }
 
     /**

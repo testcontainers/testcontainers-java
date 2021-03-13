@@ -19,6 +19,7 @@ includeBuild '..'
 
 // explicit include to allow Dependabot to autodiscover subprojects
 include 'disque-job-queue'
+include 'kafka-cluster'
 include 'linked-container'
 include 'mongodb-container'
 include 'redis-backed-cache'

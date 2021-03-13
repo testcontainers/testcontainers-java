@@ -27,6 +27,7 @@ import org.rnorth.ducttape.timeouts.Timeouts;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
@@ -66,6 +67,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Nullable
     private RemoteWebDriver driver;
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
+    private VncRecordingFormat recordingFormat;
     private RecordingFileFactory recordingFileFactory;
     private File vncRecordingDirectory;
 
@@ -182,7 +184,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
             vncRecordingContainer = new VncRecordingContainer(this)
                     .withVncPassword(DEFAULT_PASSWORD)
-                    .withVncPort(VNC_PORT);
+                    .withVncPort(VNC_PORT)
+                    .withVideoFormat(recordingFormat);
         }
 
         if (customImageName != null) {
@@ -334,7 +337,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (shouldRecord) {
-            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, prefix, succeeded);
+            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, prefix, succeeded, vncRecordingContainer.getVideoFormat());
             LOGGER.info("Screen recordings for test {} will be stored at: {}", prefix, recordingFile);
 
             vncRecordingContainer.saveRecordingToFile(recordingFile);
@@ -358,8 +361,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory) {
+        return withRecordingMode(recordingMode, vncRecordingDirectory, null);
+    }
+
+    public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory, VncRecordingFormat recordingFormat) {
         this.recordingMode = recordingMode;
         this.vncRecordingDirectory = vncRecordingDirectory;
+        this.recordingFormat = recordingFormat;
         return self();
     }
 
