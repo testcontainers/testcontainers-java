@@ -120,6 +120,7 @@ class ParsedDockerComposeFile {
             final Object contextRelativePath = buildElement.get("context");
             if (dockerfileRelativePath instanceof String && contextRelativePath instanceof String) {
                 dockerfilePath = composeFile
+                    .getAbsoluteFile()
                     .getParentFile()
                     .toPath()
                     .resolve((String) contextRelativePath)
@@ -128,6 +129,7 @@ class ParsedDockerComposeFile {
             }
         } else if (buildNode instanceof String) {
             dockerfilePath = composeFile
+                .getAbsoluteFile()
                 .getParentFile()
                 .toPath()
                 .resolve((String) buildNode)
