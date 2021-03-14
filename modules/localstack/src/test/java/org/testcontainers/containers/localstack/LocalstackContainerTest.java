@@ -7,11 +7,18 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.containers.localstack.LocalStackContainer.PORT;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCHLOGS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.EVENTBRIDGE;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.KMS;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 import static org.testcontainers.containers.localstack.LocalstackTestImages.LOCALSTACK_IMAGE;
 
+import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEvents;
+import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsClientBuilder;
+import com.amazonaws.services.cloudwatchevents.model.CreateEventBusRequest;
+import com.amazonaws.services.cloudwatchevents.model.EventBus;
+import com.amazonaws.services.cloudwatchevents.model.ListEventBusesRequest;
+import com.amazonaws.services.cloudwatchevents.model.ListEventBusesResult;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
@@ -66,7 +73,7 @@ public class LocalstackContainerTest {
         // without_network {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
-            .withServices(S3, SQS, CLOUDWATCHLOGS, KMS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS, KMS, EVENTBRIDGE);
         // }
 
         @Test
@@ -157,6 +164,20 @@ public class LocalstackContainerTest {
             CreateKeyResult key = awskms.createKey(req);
 
             assertEquals("AWS KMS Customer Managed Key should be created ", key.getKeyMetadata().getDescription(), desc);
+        }
+
+        @Test
+        public void eventBridgeTest() {
+            AmazonCloudWatchEvents events = AmazonCloudWatchEventsClientBuilder.standard()
+                    .withEndpointConfiguration(localstack.getEndpointConfiguration(EVENTBRIDGE))
+                    .withCredentials(localstack.getDefaultCredentialsProvider())
+                    .build();
+
+            events.createEventBus(new CreateEventBusRequest().withName("test"));
+            ListEventBusesResult buses = events.listEventBuses(new ListEventBusesRequest().withNamePrefix("test"));
+            assertEquals("Exactly one test event bus should be visible", 1, buses.getEventBuses().size());
+            EventBus eventBus = buses.getEventBuses().get(0);
+            assertEquals("Test event bus should be named 'test'", "test", eventBus.getName());
         }
 
         @Test
