@@ -179,6 +179,6 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Copyright
 
-Copyright (c) 2015-2020 Richard North and other authors.
+Copyright (c) 2015-2021 Richard North and other authors.
 
 See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.
