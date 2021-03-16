@@ -65,6 +65,7 @@ nav:
           - modules/kafka.md
           - modules/localstack.md
           - modules/mockserver.md
+          - modules/nats.md
           - modules/nginx.md
           - modules/pulsar.md
           - modules/rabbitmq.md
