@@ -14,7 +14,7 @@ public class TimescaleDBContainerProvider extends JdbcDatabaseContainerProvider 
     private static final String DEFAULT_TAG = "2.1.0-pg11";
     private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("timescale/timescaledb").asCompatibleSubstituteFor("postgres");
     public static final String USER_PARAM = "user";
-    public static final String PASSWORD_PARAM = "pTimescaleDBContainerTestassword";
+    public static final String PASSWORD_PARAM = "password";
 
 
     @Override
