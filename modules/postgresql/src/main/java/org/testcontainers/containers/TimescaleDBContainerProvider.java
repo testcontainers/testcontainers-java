@@ -4,15 +4,17 @@ import org.testcontainers.jdbc.ConnectionUrl;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Factory for PostGIS containers, which are a special flavour of PostgreSQL.
+ * Factory for TimescaleDB containers, which are a special flavour of PostgreSQL.
+ *
+ * @see <a href="https://docs.timescale.com/latest/introduction">https://docs.timescale.com/latest/introduction</a>
  */
 public class TimescaleDBContainerProvider extends JdbcDatabaseContainerProvider {
 
     private static final String NAME = "timescaledb";
     private static final String DEFAULT_TAG = "2.1.0-pg11";
-    private static final String DEFAULT_IMAGE = "timescale/timescaledb";
+    private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("timescale/timescaledb").asCompatibleSubstituteFor("postgres");
     public static final String USER_PARAM = "user";
-    public static final String PASSWORD_PARAM = "password";
+    public static final String PASSWORD_PARAM = "pTimescaleDBContainerTestassword";
 
 
     @Override
@@ -27,7 +29,7 @@ public class TimescaleDBContainerProvider extends JdbcDatabaseContainerProvider 
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PostgreSQLContainer(DockerImageName.parse(DEFAULT_IMAGE).withTag(DEFAULT_TAG));
+        return new PostgreSQLContainer(DEFAULT_IMAGE.withTag(tag));
     }
 
     @Override
