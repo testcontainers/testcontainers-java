@@ -39,6 +39,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:postgis:9.6:///databasename`
 
+#### Using TimescaleDB
+
+`jdbc:tc:timescaldb:2.1.0-pg13:///databasename`
+
 #### Using Presto
 
 `jdbc:tc:presto:329://localhost/memory/default`
