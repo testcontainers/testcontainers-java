@@ -123,6 +123,11 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/toxiproxy"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/vault"
     schedule:
       interval: "weekly"
@@ -131,6 +136,13 @@ updates:
 # Examples
   - package-ecosystem: "gradle"
     directory: "/examples"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+# GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10

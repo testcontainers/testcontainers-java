@@ -1,12 +1,10 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * A socat container is used as a TCP proxy, enabling any TCP port of another container to be exposed
@@ -17,7 +15,7 @@ public class SocatContainer extends GenericContainer<SocatContainer> {
     private final Map<Integer, String> targets = new HashMap<>();
 
     public SocatContainer() {
-        this(TestcontainersConfiguration.getInstance().getSocatDockerImageName());
+        this(DockerImageName.parse("alpine/socat:1.7.3.4-r0"));
     }
 
     public SocatContainer(final DockerImageName dockerImageName) {

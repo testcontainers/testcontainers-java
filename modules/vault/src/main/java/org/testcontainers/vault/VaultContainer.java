@@ -7,9 +7,12 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
 
@@ -23,9 +26,13 @@ import static com.github.dockerjava.api.model.Capability.IPC_LOCK;
  */
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
 
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("vault");
+    private static final String DEFAULT_TAG = "1.1.3";
+
     private static final int VAULT_PORT = 8200;
 
     private Map<String, List<String>> secretsMap = new HashMap<>();
+    private List<String> initCommands = new ArrayList<>();
 
     private int port = VAULT_PORT;
 
@@ -34,19 +41,17 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      */
     @Deprecated
     public VaultContainer() {
-        this("vault:1.1.3");
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link VaultContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public VaultContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public VaultContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         // Use the vault healthcheck endpoint to check for readiness, per https://www.vaultproject.io/api/system/health.html
         setWaitStrategy(Wait.forHttp("/v1/sys/health").forStatusCode(200));
@@ -59,6 +64,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         addSecrets();
+        runInitCommands();
     }
 
     private void addSecrets() {
@@ -78,6 +84,23 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
             secrets.forEach(item -> stringBuilder.append(" " + item));
         });
         return new String[]{"/bin/sh", "-c", stringBuilder.toString().substring(4)};
+    }
+
+    private void runInitCommands() {
+        if (!initCommands.isEmpty()) {
+            String commands = initCommands.stream()
+                                    .map(command -> "vault " + command)
+                                    .collect(Collectors.joining(" && "));
+            try {
+                ExecResult execResult = this.execInContainer(new String[]{"/bin/sh", "-c", commands});
+                if (execResult.getExitCode() != 0) {
+                    logger().error("Failed to execute these init commands {}. Exit code {}. Stdout {}. Stderr {}",
+                                    initCommands, execResult.getExitCode(), execResult.getStdout(), execResult.getStderr());
+                }
+            } catch (IOException | InterruptedException e) {
+                logger().error("Failed to execute these init commands {}. Exception message: {}", initCommands, e.getMessage());
+            }
+        }
     }
 
     /**
@@ -106,6 +129,17 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     }
 
     /**
+     * Sets the logging level for the Vault server in the container.
+     * Logs can be consumed through {@link #withLogConsumer(Consumer)}.
+     *
+     * @param level the logging level to set for Vault.
+     * @return this
+     */
+    public SELF withLogLevel(VaultLogLevel level) {
+        return withEnv("VAULT_LOG_LEVEL", level.config);
+    }
+
+    /**
      * Pre-loads secrets into Vault container. User may specify one or more secrets and all will be added to each path
      * that is specified. Thus this can be called more than once for multiple paths to be added to Vault.
      * <p>
@@ -127,6 +161,22 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
             list.addAll(list);
         }
         secretsMap.putIfAbsent(path, list);
+        return self();
+    }
+
+    /**
+     * Run initialization commands using the vault cli.
+     * 
+     * Useful for enableing more secret engines like:
+     * <pre>
+     *     .withInitCommand("secrets enable pki")
+     *     .withInitCommand("secrets enable transit")
+     * </pre>
+     * @param commands The commands to send to the vault cli
+     * @return this
+     */
+    public SELF withInitCommand(String... commands) {
+        initCommands.addAll(Arrays.asList(commands));
         return self();
     }
 }

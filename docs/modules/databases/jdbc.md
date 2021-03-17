@@ -37,7 +37,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using PostGIS
 
-`jdbc:tc:postgis:9.6:///databasename`
+`jdbc:tc:postgis:9.6-2.5:///databasename`
 
 #### Using TimescaleDB
 
@@ -45,7 +45,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using Presto
 
-`jdbc:tc:presto:329://localhost/memory/default`
+`jdbc:tc:presto:344://localhost/memory/default`
 
 ### Using a classpath init script
 

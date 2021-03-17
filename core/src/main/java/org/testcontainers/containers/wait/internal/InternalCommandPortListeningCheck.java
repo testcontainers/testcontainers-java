@@ -24,23 +24,23 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
     @Override
     public Boolean call() {
-        String command = "true";
+        StringBuilder command = new StringBuilder("true");
 
         for (int internalPort : internalPorts) {
-            command += " && ";
-            command += " (";
-            command += format("cat /proc/net/tcp* | awk '{print $2}' | grep -i ':0*%x'", internalPort);
-            command += " || ";
-            command += format("nc -vz -w 1 localhost %d", internalPort);
-            command += " || ";
-            command += format("/bin/bash -c '</dev/tcp/localhost/%d'", internalPort);
-            command += ")";
+            command.append(" && ");
+            command.append(" (");
+            command.append(format("cat /proc/net/tcp* | awk '{print $2}' | grep -i ':0*%x'", internalPort));
+            command.append(" || ");
+            command.append(format("nc -vz -w 1 localhost %d", internalPort));
+            command.append(" || ");
+            command.append(format("/bin/bash -c '</dev/tcp/localhost/%d'", internalPort));
+            command.append(")");
         }
 
         Instant before = Instant.now();
         try {
-            ExecResult result = ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), "/bin/sh", "-c", command);
-            log.trace("Check for {} took {}", internalPorts, Duration.between(before, Instant.now()));
+            ExecResult result = ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), "/bin/sh", "-c", command.toString());
+            log.trace("Check for {} took {}. Result code '{}', stdout message: '{}'", internalPorts, Duration.between(before, Instant.now()), result.getExitCode(), result.getStdout());
             return result.getExitCode() == 0;
         } catch (Exception e) {
             throw new IllegalStateException(e);

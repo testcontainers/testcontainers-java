@@ -42,7 +42,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * @deprecated use {@link JdbcDatabaseContainer(DockerImageName)} instead
      */
-    @Deprecated
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }

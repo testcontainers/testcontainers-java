@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,7 +30,7 @@ class ParsedDockerComposeFile {
     private final File composeFile;
 
     @Getter
-    private Set<String> dependencyImageNames = new HashSet<>();
+    private Map<String, Set<String>> serviceNameToImageNames = new HashMap<>();
 
     ParsedDockerComposeFile(File composeFile) {
         Yaml yaml = new Yaml();
@@ -87,8 +88,8 @@ class ParsedDockerComposeFile {
             final Map serviceDefinitionMap = (Map) serviceDefinition;
 
             validateNoContainerNameSpecified(serviceName, serviceDefinitionMap);
-            findServiceImageName(serviceDefinitionMap);
-            findImageNamesInDockerfile(serviceDefinitionMap);
+            findServiceImageName(serviceName, serviceDefinitionMap);
+            findImageNamesInDockerfile(serviceName, serviceDefinitionMap);
         }
     }
 
@@ -102,15 +103,15 @@ class ParsedDockerComposeFile {
         }
     }
 
-    private void findServiceImageName(Map serviceDefinitionMap) {
+    private void findServiceImageName(String serviceName, Map serviceDefinitionMap) {
         if (serviceDefinitionMap.containsKey("image") && serviceDefinitionMap.get("image") instanceof String) {
             final String imageName = (String) serviceDefinitionMap.get("image");
             log.debug("Resolved dependency image for Docker Compose in {}: {}", composeFileName, imageName);
-            dependencyImageNames.add(imageName);
+            serviceNameToImageNames.put(serviceName, Sets.newHashSet(imageName));
         }
     }
 
-    private void findImageNamesInDockerfile(Map serviceDefinitionMap) {
+    private void findImageNamesInDockerfile(String serviceName, Map serviceDefinitionMap) {
         final Object buildNode = serviceDefinitionMap.get("build");
         Path dockerfilePath = null;
 
@@ -120,6 +121,7 @@ class ParsedDockerComposeFile {
             final Object contextRelativePath = buildElement.get("context");
             if (dockerfileRelativePath instanceof String && contextRelativePath instanceof String) {
                 dockerfilePath = composeFile
+                    .getAbsoluteFile()
                     .getParentFile()
                     .toPath()
                     .resolve((String) contextRelativePath)
@@ -128,6 +130,7 @@ class ParsedDockerComposeFile {
             }
         } else if (buildNode instanceof String) {
             dockerfilePath = composeFile
+                .getAbsoluteFile()
                 .getParentFile()
                 .toPath()
                 .resolve((String) buildNode)
@@ -139,7 +142,7 @@ class ParsedDockerComposeFile {
             Set<String> resolvedImageNames = new ParsedDockerfile(dockerfilePath).getDependencyImageNames();
             if (!resolvedImageNames.isEmpty()) {
                 log.debug("Resolved Dockerfile dependency images for Docker Compose in {} -> {}: {}", composeFileName, dockerfilePath, resolvedImageNames);
-                this.dependencyImageNames.addAll(resolvedImageNames);
+                this.serviceNameToImageNames.put(serviceName, resolvedImageNames);
             }
         }
     }

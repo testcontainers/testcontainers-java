@@ -14,10 +14,13 @@ import java.util.Set;
  */
 public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF> {
 
-    public static final String VERSION = "1.4.3";
     public static final Integer INFLUXDB_PORT = 8086;
 
-    private static final String IMAGE_NAME = "influxdb";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
+    private static final String DEFAULT_TAG = "1.4.3";
+
+    @Deprecated
+    public static final String VERSION = DEFAULT_TAG;
 
     private boolean authEnabled = true;
     private String admin = "admin";
@@ -32,7 +35,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      */
     @Deprecated
     public InfluxDBContainer() {
-        this(VERSION);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
@@ -40,11 +43,14 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      */
     @Deprecated
     public InfluxDBContainer(final String version) {
-        this(DockerImageName.parse(IMAGE_NAME + ":" + version));
+        this(DEFAULT_IMAGE_NAME.withTag(version));
     }
 
     public InfluxDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         waitStrategy = new WaitAllStrategy()
             .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
             .withStrategy(Wait.forListeningPort());

@@ -21,6 +21,7 @@ public class MSSQLR2DBCDatabaseContainerProvider implements R2DBCDatabaseContain
 
     @Override
     public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
+        // TODO work out how best to do this if these constants become private
         String image = MSSQLServerContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
         MSSQLServerContainer<?> container = new MSSQLServerContainer<>(image);
 
