@@ -5,6 +5,7 @@ plugins:
     - markdownextradata
 theme:
     name: 'material'
+    custom_dir: 'docs/theme'
     palette:
         primary: 'blue'
         accent: 'teal'
