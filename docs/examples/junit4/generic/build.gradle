@@ -8,6 +8,5 @@ dependencies {
 
     testCompile 'mysql:mysql-connector-java:8.0.21'
     testCompile "org.seleniumhq.selenium:selenium-api:3.141.59"
-    testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
     testCompile 'org.assertj:assertj-core:3.15.0'
 }

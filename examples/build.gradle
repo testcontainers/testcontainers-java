@@ -5,6 +5,7 @@ subprojects {
     apply plugin:"java"
 
     repositories {
-        jcenter()
+        mavenLocal()
+        mavenCentral()
     }
 }

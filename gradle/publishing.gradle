@@ -73,7 +73,7 @@ publishing {
                 }
 
                 project.configurations.compile.dependencies.each { addDependency(it, 'compile') }
-                project.configurations.provided.dependencies.each { addDependency(it, 'provided') }
+                project.configurations.runtimeOnly.dependencies.each { addDependency(it, 'provided') }
             }
         }
     }
