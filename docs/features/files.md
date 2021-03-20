@@ -4,7 +4,7 @@
 
 It is possible to map a file or directory from your FileSystem into the container as a volume using `withFileSystemBind`:
 ```java
-String pathToFile = String.format("%s/.aws", System.getProperty("user.home"))
+String pathToFile = System.getProperty("user.home") + "/.aws";
 new GenericContainer(...)
         .withFileSystemBind(pathToFile, "/home/user/.aws", BindMode.READ_ONLY)
 ```
