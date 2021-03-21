@@ -16,6 +16,10 @@
 
 package org.testcontainers.ext;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Comparator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -298,16 +302,33 @@ public abstract class ScriptUtils {
 				LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
 			}
-			String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
-			executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
-		} catch (IOException e) {
+            File inputSpecFile = new File(resource.toURI());
+            if (inputSpecFile.isDirectory()) {
+                LOGGER.info("inputSpec is being read as a directory");
+                File[] inputSpecs;
+                inputSpecs = inputSpecFile.listFiles(pathname -> pathname.getName().endsWith(".sql"));
+                if (inputSpecs == null || inputSpecs.length == 0) {
+                    LOGGER.error("Error while executing init script: {}", initScriptPath);
+                    throw new ScriptLoadException("Error while executing init script, empty folder: " + initScriptPath);
+                }
+                inputSpecs = (File[]) Arrays.stream(inputSpecs)
+                    .sorted(Comparator.comparing(File::getName, new FilenameComparator())).toArray();
+                for (File f : inputSpecs) {
+                    String scripts = IOUtils.toString(f.toURI(), StandardCharsets.UTF_8);
+                    executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+                }
+            } else {
+                String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
+                executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+            }
+		} catch (IOException | URISyntaxException e) {
 			LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
 		} catch (ScriptException e) {
 			LOGGER.error("Error while executing init script: {}", initScriptPath, e);
 			throw new UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
 		}
-	}
+    }
 
     public static void executeDatabaseScript(DatabaseDelegate databaseDelegate, String scriptPath, String script) throws ScriptException {
         executeDatabaseScript(databaseDelegate, scriptPath, script, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR, DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);

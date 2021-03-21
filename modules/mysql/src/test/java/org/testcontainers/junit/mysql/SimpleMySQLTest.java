@@ -1,23 +1,5 @@
 package org.testcontainers.junit.mysql;
 
-import org.apache.commons.lang.SystemUtils;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.db.AbstractContainerDatabaseTest;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeFalse;
@@ -27,6 +9,23 @@ import static org.rnorth.visibleassertions.VisibleAssertions.fail;
 import static org.testcontainers.MySQLTestImages.MYSQL_55_IMAGE;
 import static org.testcontainers.MySQLTestImages.MYSQL_56_IMAGE;
 import static org.testcontainers.MySQLTestImages.MYSQL_IMAGE;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import org.apache.commons.lang.SystemUtils;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
@@ -114,6 +113,21 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     public void testExplicitInitScript() throws SQLException {
         try (MySQLContainer<?> container = new MySQLContainer<>(MYSQL_IMAGE)
             .withInitScript("somepath/init_mysql.sql")
+            .withLogConsumer(new Slf4jLogConsumer(logger))) {
+            container.start();
+
+            ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
+            String firstColumnValue = resultSet.getString(1);
+
+            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
+
+    @Test
+    public void testExplicitInitScriptAsDirectory() throws SQLException {
+        try (MySQLContainer<?> container = new MySQLContainer<>(MYSQL_IMAGE)
+            .withInitScript("somepath/somedirectory")
             .withLogConsumer(new Slf4jLogConsumer(logger))) {
             container.start();
 

@@ -1,21 +1,36 @@
 package org.testcontainers.jdbc;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.logging.Logger;
+import javax.script.ScriptException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.delegate.DatabaseDelegate;
+import org.testcontainers.ext.FilenameComparator;
 import org.testcontainers.ext.ScriptUtils;
-
-import javax.script.ScriptException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.sql.*;
-import java.util.*;
-import java.util.logging.Logger;
+import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
 
 /**
  * Test Containers JDBC proxy driver. This driver will handle JDBC URLs of the form:
@@ -192,9 +207,27 @@ public class ContainerDatabaseDriver implements Driver {
                     throw new SQLException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
                 }
 
-                String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, sql);
-            } catch (IOException e) {
+                File inputSpecFile = new File(resource.toURI());
+                if (inputSpecFile.isDirectory()){
+                    LOGGER.info("inputSpec is being read as a directory");
+                    File[] inputSpecs;
+                    inputSpecs = inputSpecFile.listFiles(pathname -> pathname.getName().endsWith(".sql"));
+                    if (inputSpecs == null || inputSpecs.length == 0) {
+                        LOGGER.error("Error while executing init script: {}", initScriptPath);
+                        throw new ScriptLoadException("Error while executing init script, empty folder: " + initScriptPath);
+                    }
+                    inputSpecs = (File[]) Arrays
+                        .stream(inputSpecs).sorted(Comparator.comparing(File::getName, new FilenameComparator())).toArray();
+                    for(File f : inputSpecs) {
+                        String scripts = IOUtils.toString(f.toURI(), StandardCharsets.UTF_8);
+                        ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+                    }
+                }
+                else {
+                    String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
+                    ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, sql);
+                }
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
                 throw new SQLException("Could not load classpath init script: " + initScriptPath, e);
             } catch (ScriptException e) {

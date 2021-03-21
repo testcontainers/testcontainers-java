@@ -51,6 +51,16 @@ Testcontainers can run an init script after the database container is started, b
 
 This is useful if you have a fixed script for setting up database schema, etc.
 
+It also possible to point to a folder instead of a single file, in that case all the *.sql files under that directory will be executed one by one in order. To specify the order the format expected is `[0-9]-name.sql`
+
+    ├── somefolder
+    │   └── 01-create.sql 
+    │   └── 02-data.sql   
+
+`jdbc:tc:mysql:5.7.22:///databasename?TC_INITSCRIPT=somepath/somefolder`
+
+This is useful if you have a set of SQL migration scripts.
+
 ### Using an init script from a file
 
 If the init script path is prefixed `file:`, it will be loaded from a file (relative to the working directory, which will usually be the project root).
