@@ -168,7 +168,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getDockerClientStrategyClassName() {
-        return getEnvVarOrUserProperty("docker.client.strategy", null);
+        return getEnvVarOrProperty("docker.client.strategy", null);
     }
 
     public String getTransportType() {
