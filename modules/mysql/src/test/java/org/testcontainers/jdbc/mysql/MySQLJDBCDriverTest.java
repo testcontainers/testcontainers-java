@@ -20,7 +20,7 @@ public class MySQLJDBCDriverTest extends AbstractJDBCDriverTest {
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=somepath/somedirectory", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=file:sql/init_mysql.sql", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
-                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=file:sql/somefolder", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
+                {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITSCRIPT=file:sql/somedirectory", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?user=someuser&password=somepwd&TC_INITFUNCTION=org.testcontainers.jdbc.AbstractJDBCDriverTest::sampleInitFunction", EnumSet.of(Options.ScriptedSchema, Options.JDBCParams)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename?TC_INITSCRIPT=somepath/init_unicode_mysql.sql&useUnicode=yes&characterEncoding=utf8", EnumSet.of(Options.CharacterSet)},
                 {"jdbc:tc:mysql:5.5.43://hostname/databasename", EnumSet.noneOf(Options.class)},

@@ -17,21 +17,20 @@
 package org.testcontainers.ext;
 
 import java.io.File;
-import java.net.URISyntaxException;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import javax.script.ScriptException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.delegate.DatabaseDelegate;
-
-import javax.script.ScriptException;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * This is a modified version of the Spring-JDBC ScriptUtils class, adapted to reduce
@@ -302,7 +301,7 @@ public abstract class ScriptUtils {
 				LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
 			}
-            File inputSpecFile = new File(resource.toURI());
+            File inputSpecFile = FileUtils.toFile(resource);
             if (inputSpecFile.isDirectory()) {
                 LOGGER.info("inputSpec is being read as a directory");
                 File[] inputSpecs;
@@ -321,7 +320,7 @@ public abstract class ScriptUtils {
                 String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
                 executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
             }
-		} catch (IOException | URISyntaxException e) {
+		} catch (IOException e) {
 			LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
 		} catch (ScriptException e) {
