@@ -216,8 +216,8 @@ public class ContainerDatabaseDriver implements Driver {
                         LOGGER.error("Error while executing init script: {}", initScriptPath);
                         throw new ScriptLoadException("Error while executing init script, empty folder: " + initScriptPath);
                     }
-                    inputSpecs = (File[]) Arrays
-                        .stream(inputSpecs).sorted(Comparator.comparing(File::getName, new FilenameComparator())).toArray();
+                    inputSpecs = Arrays
+                        .stream(inputSpecs).sorted(Comparator.comparing(File::getName, new FilenameComparator())).toArray(File[]::new);
                     for(File f : inputSpecs) {
                         String scripts = IOUtils.toString(f.toURI(), StandardCharsets.UTF_8);
                         ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
