@@ -1,0 +1,5 @@
+description = "Testcontainers :: Pinot"
+
+dependencies {
+    compile project(':testcontainers')
+}
