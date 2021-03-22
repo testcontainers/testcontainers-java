@@ -1,13 +1,15 @@
 package org.testcontainers.containers;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+
+import java.net.InetSocketAddress;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -19,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 @Slf4j
 public class CassandraContainerTest {
 
-    private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("cassandra:3.11.2");
+    private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("cassandra:3.11.9");
 
     private static final String TEST_CLUSTER_NAME_IN_CONF = "Test Cluster Integration Test";
 
@@ -107,7 +109,7 @@ public class CassandraContainerTest {
     public void testCassandraGetCluster() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }
@@ -122,17 +124,10 @@ public class CassandraContainerTest {
     }
 
     private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {
-        Cluster explicitCluster = Cluster.builder()
-            .addContactPoint(cassandraContainer.getHost())
-            .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
+        InetSocketAddress endpoint = new InetSocketAddress(cassandraContainer.getHost(), CassandraContainer.CQL_PORT);
+        CqlSession cqlSession = CqlSession.builder()
+            .addContactPoint(endpoint)
             .build();
-        return performQuery(explicitCluster, cql);
-    }
-
-    private ResultSet performQuery(Cluster cluster, String cql) {
-        try (Cluster closeableCluster = cluster) {
-            Session session = closeableCluster.newSession();
-            return session.execute(cql);
-        }
+        return cqlSession.execute(cql);
     }
 }
