@@ -1,0 +1,29 @@
+syntax = "proto2";
+
+option java_outer_classname = "RecordLayerDemoProto";
+option java_package = "org.testcontainers.foundationdb";
+
+import "record_metadata_options.proto";
+
+message Order {
+    optional int64 order_id = 1;
+    optional Flower flower = 2;
+    optional int32 price = 3;
+}
+
+message Flower {
+    optional string type = 1;
+    optional Color color = 2;
+}
+
+enum Color {
+    RED = 1;
+    BLUE = 2;
+    YELLOW = 3;
+    PINK = 4;
+}
+
+message UnionDescriptor {
+    option (com.apple.foundationdb.record.record).usage = UNION;
+    optional Order _Order = 1;
+}

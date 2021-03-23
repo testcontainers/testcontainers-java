@@ -1,0 +1,74 @@
+/*
+ * sample.proto
+ *
+ * This source file is part of the FoundationDB open source project
+ *
+ * Copyright 2015-2018 Apple Inc. and the FoundationDB project authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+syntax = "proto2";
+
+package com.apple.foundationdb.record.sample;
+option java_outer_classname = "SampleProto";
+
+import "record_metadata_options.proto";
+
+// Ensure that records larger than the value size limit
+// are properly split into multiple keys
+option (com.apple.foundationdb.record.schema).split_long_records = true;
+
+message Vendor {
+    // For each top-level message type, a primary key must be declared either in
+    // the message type definition or in code via a RecordMetaDataBuilder.
+    // Note: the primary key extent is shared between all record types,
+    // so each record must have primary key that is unique across all records
+    // of each type in each store. (In other words, two records of different
+    // types cannot share the same primary key.) For more information, see the
+    // FAQ: https://github.com/FoundationDB/fdb-record-layer/blob/main/docs/FAQ.md#are-record-types-tables
+    optional int64 vendor_id = 1 [(com.apple.foundationdb.record.field).primary_key = true];
+    optional string vendor_name = 2;
+}
+
+message Item {
+    optional int64 item_id = 1 [(com.apple.foundationdb.record.field).primary_key = true];
+    optional string item_name = 2;
+    optional int64 vendor_id = 3 [(com.apple.foundationdb.record.field).index = {}];
+    optional string category = 4;
+}
+
+message Customer {
+    optional int64 customer_id = 1 [(com.apple.foundationdb.record.field).primary_key = true];
+    optional string first_name = 2;
+    optional string last_name = 3;
+    repeated string email_address = 4;
+    repeated string preference_tag = 5;
+    optional string phone_number = 6 [(com.apple.foundationdb.record.field).index = {}];
+    repeated Order order = 7;
+}
+
+message Order {
+    // This is not a top-level message, so it does not have a primary key
+    // defined.
+    optional int64 order_id = 1;
+    optional int64 item_id = 2;
+    optional int32 quantity = 3;
+}
+
+// Required boilerplate listing all top-level message types in the Record Store.
+message UnionDescriptor {
+    option (com.apple.foundationdb.record.record).usage = UNION;
+    optional Item _Item = 1;
+    optional Vendor _Vendor = 2;
+    optional Customer _Customer = 3;
+}

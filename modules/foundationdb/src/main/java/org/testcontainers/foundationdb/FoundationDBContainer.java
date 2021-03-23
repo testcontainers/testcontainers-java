@@ -58,37 +58,13 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        String resourceName = "fdb.cluster";
-
-        ClassLoader classLoader = getClass().getClassLoader();
-        assert classLoader != null;
-
-
-        File resourcesDirectory = new File("src/test/resources/fdb.cluster");
-        String absolutePath = resourcesDirectory.getAbsolutePath();
-
-//        final URL resource = classLoader.getResource(resourceName);
-//        assert resource != null;
-//        File file = new File(resource.getFile());
-//        String absolutePath = file.getAbsolutePath();
-
-        System.out.println("absolutePath: " + absolutePath);
-
-//        File file = new File(classLoader.getResource("somefile").getFile());
-//        System.out.println(file.getAbsolutePath());
-
-
         logger().info("Starting an foundationdb container using [{}]", dockerImageName);
         withEnv(FDB_NETWORKING_MODE_KEY, "host")
             .withFileSystemBind("./etc", "/etc/foundationdb");
-//            .withFileSystemBind("./etc", "/var/fdb");
         addExposedPorts(FOUNDATIONDB_DEFAULT_PORT);
         waitingFor(
             Wait.forLogMessage(".*FDBD joined cluster.*\\n", 1)
         );
-
-
-
     }
 
     public String getHttpHostAddress() {

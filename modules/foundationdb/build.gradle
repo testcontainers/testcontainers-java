@@ -1,11 +1,38 @@
+
+plugins {
+    id 'com.google.protobuf' version "0.8.13"
+}
+
 description = "TestContainers :: foundationdb"
 
 dependencies {
     compile project(':testcontainers')
     compile "org.foundationdb:fdb-java:6.2.22"
-    compile "org.foundationdb:fdb-record-layer-core-pb3:2.8.110.0"
+    compile "org.foundationdb:fdb-record-layer-core:2.8.110.0"
+    compile "com.google.protobuf:protobuf-java:4.0.0-rc-2"
 
-//    testCompile "org.foundationdb:fdb-java:6.2.22"
-//    testCompile "org.foundationdb:fdb-record-layer-core-pb3:2.8.110.0"
 
+    compile "com.google.protobuf:protobuf-gradle-plugin:0.8.13"
+
+    compileOnly 'org.projectlombok:lombok:1.18.18'
+    annotationProcessor 'org.projectlombok:lombok:1.18.18'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.18'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.18'
+
+}
+
+protobuf {
+    generatedFilesBaseDir = "${projectDir}/src/test/generated"
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.6.1'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/test/generated/main/java'
+        }
+    }
 }
