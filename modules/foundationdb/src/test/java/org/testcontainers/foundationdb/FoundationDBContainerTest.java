@@ -101,7 +101,6 @@ public class FoundationDBContainerTest {
         }
     }
 
-
     @Test
     public void testStartDatabase1() {
 
@@ -114,14 +113,8 @@ public class FoundationDBContainerTest {
             int createDbExitCode = createDbResult.getExitCode();
             assertTrue(createDbExitCode == 0);
 
-            // Assumes a cluster file with the following contents:
-            // docker:docker@127.0.0.1:4500
-            File resourcesDirectory = new File("src/test/resources/fdb.cluster");
-            String absolutePath = resourcesDirectory.getAbsolutePath();
-
             val fdb = FDBDatabaseFactory
                 .instance()
-//                .getDatabase(absolutePath.toString());
                 .getDatabase();
 
             // Create a subspace using the key space API to create a subspace within
