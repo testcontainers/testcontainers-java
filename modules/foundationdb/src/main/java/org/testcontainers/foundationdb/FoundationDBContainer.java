@@ -5,6 +5,9 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.File;
+import java.net.URL;
+
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
  * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
@@ -55,18 +58,36 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
+        String resourceName = "fdb.cluster";
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        assert classLoader != null;
+
+
+        File resourcesDirectory = new File("src/test/resources/fdb.cluster");
+        String absolutePath = resourcesDirectory.getAbsolutePath();
+
+//        final URL resource = classLoader.getResource(resourceName);
+//        assert resource != null;
+//        File file = new File(resource.getFile());
+//        String absolutePath = file.getAbsolutePath();
+
+        System.out.println("absolutePath: " + absolutePath);
+
+//        File file = new File(classLoader.getResource("somefile").getFile());
+//        System.out.println(file.getAbsolutePath());
+
+
         logger().info("Starting an foundationdb container using [{}]", dockerImageName);
-        withEnv(FDB_NETWORKING_MODE_KEY, "host").withFileSystemBind("./etc", "/etc/foundationdb");
+        withEnv(FDB_NETWORKING_MODE_KEY, "host")
+            .withFileSystemBind("./etc", "/etc/foundationdb");
+//            .withFileSystemBind("./etc", "/var/fdb");
         addExposedPorts(FOUNDATIONDB_DEFAULT_PORT);
         waitingFor(
             Wait.forLogMessage(".*FDBD joined cluster.*\\n", 1)
         );
 
-//        val fdb = FDBDatabaseFactory
-//            .instance()
-//            // Assumes a src/test/resources/fdb.cluster file with the following contents:
-//            // docker:docker@127.0.0.1:4500
-//            .getDatabase("src/test/resources/fdb.cluster");
+
 
     }
 

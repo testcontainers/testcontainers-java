@@ -34,17 +34,28 @@ public class FoundationDBContainerTest {
             System.out.println("FoundationDB started");
             System.out.println("Cluster file path: " + "src/test/resources/fdb.cluster");
 
-            Container.ExecResult lsResult = foundationdbContainer.execInContainer("ls", "-al", "/");
-            String stdout = lsResult.getStdout();
-            System.out.println("stdout: " + stdout);
-            int exitCode = lsResult.getExitCode();
-            assertTrue(exitCode == 0);
+            Container.ExecResult clusterFileResult = foundationdbContainer.execInContainer("cat","/var/fdb/fdb.cluster");
+            String clusterFileResultStdout = clusterFileResult.getStdout();
+            System.out.println("stdout: " + clusterFileResultStdout);
+            int clusterFileResultExitCode = clusterFileResult.getExitCode();
+            assertTrue(clusterFileResultExitCode == 0);
 
             Container.ExecResult createDbResult = foundationdbContainer.execInContainer("/usr/bin/fdbcli", "--exec", "configure new single memory");
             String createDbStdout = createDbResult.getStdout();
             System.out.println("createDbStdout: " + createDbStdout);
             int createDbExitCode = createDbResult.getExitCode();
             assertTrue(createDbExitCode == 0);
+
+             File resourcesDirectory = new File("src/test/resources/fdb.cluster");
+             String absolutePath = resourcesDirectory.getAbsolutePath();
+            // System.out.println("absolutePath: " + absolutePath);
+
+            val fdb = FDBDatabaseFactory
+                .instance()
+                // Assumes a src/test/resources/fdb.cluster file with the following contents:
+                // docker:docker@127.0.0.1:4500
+                .getDatabase(absolutePath.toString());
+
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -57,6 +68,18 @@ public class FoundationDBContainerTest {
 
 
     private String clusterFilePath() {
+
+        String resourceName = "fdb.cluster";
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        File file = new File(classLoader.getResource(resourceName).getFile());
+        String absolutePath = file.getAbsolutePath();
+
+        System.out.println(absolutePath);
+
+        assertTrue(absolutePath.endsWith("/fdb.cluster"));
+
+
 
         return "src/test/resources/fdb.cluster";
 //
