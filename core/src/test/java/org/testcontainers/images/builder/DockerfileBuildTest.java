@@ -52,6 +52,15 @@ public class DockerfileBuildTest {
                     .withFileFromPath(".", RESOURCE_PATH)
                     .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-alt"))
             },
+
+            // Dockerfile build using build args in FROM statements
+            new Object[]{"test1234",
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                    .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-from-buildarg"))
+                    .withBuildArg("BUILD_IMAGE", "alpine:3.6")
+                    .withBuildArg("BASE_IMAGE_TAG", "3.12")
+            },
         };
     }
 

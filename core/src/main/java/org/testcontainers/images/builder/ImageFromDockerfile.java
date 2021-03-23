@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.zip.GZIPOutputStream;
 
 @Slf4j
@@ -167,13 +168,29 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         final DockerClient dockerClient = DockerClientFactory.instance().client();
 
         imagesToPull.forEach(imageName -> {
+            String resolvedImageName = resolveImageNameFromBuildArgs(imageName);
             try {
-                log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
-                DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", resolvedImageName);
+                DockerClientFactory.instance().checkAndPullImage(dockerClient, resolvedImageName);
             } catch (Exception e) {
-                log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
+                log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", resolvedImageName, e.getMessage());
             }
         });
+    }
+
+    private String resolveImageNameFromBuildArgs(final String imageName) {
+        Optional<String> imageBuildArg = buildArgs.keySet()
+            .stream()
+            .filter(arg -> imageName.contains(arg))
+            .findFirst();
+        if (imageBuildArg.isPresent()) {
+            String buildArg = imageBuildArg.get();
+            return imageName.replaceAll("\\$\\{" + buildArg + "\\}",
+                Matcher.quoteReplacement(buildArgs.get(buildArg)));
+        }
+        else {
+            return imageName;
+        }
     }
 
     public ImageFromDockerfile withBuildArg(final String key, final String value) {
