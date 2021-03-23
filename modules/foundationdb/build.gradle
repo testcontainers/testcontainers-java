@@ -1,0 +1,11 @@
+description = "TestContainers :: foundationdb"
+
+dependencies {
+    compile project(':testcontainers')
+    compile "org.foundationdb:fdb-java:6.2.22"
+    compile "org.foundationdb:fdb-record-layer-core-pb3:2.8.110.0"
+
+//    testCompile "org.foundationdb:fdb-java:6.2.22"
+//    testCompile "org.foundationdb:fdb-record-layer-core-pb3:2.8.110.0"
+
+}
