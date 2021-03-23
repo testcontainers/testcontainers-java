@@ -1,16 +1,11 @@
 package org.testcontainers.foundationdb;
 
-import lombok.val;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.File;
-import java.net.URL;
-
 /**
- * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
- * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
+ * Represents an foundationdb docker instance which exposes by default port 4500
  */
 public class FoundationDBContainer extends GenericContainer<FoundationDBContainer> {
 

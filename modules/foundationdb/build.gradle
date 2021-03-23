@@ -10,8 +10,6 @@ dependencies {
     compile "org.foundationdb:fdb-java:6.2.22"
     compile "org.foundationdb:fdb-record-layer-core:2.8.110.0"
     compile "com.google.protobuf:protobuf-java:4.0.0-rc-2"
-
-
     compile "com.google.protobuf:protobuf-gradle-plugin:0.8.13"
 
     compileOnly 'org.projectlombok:lombok:1.18.18'
@@ -19,7 +17,6 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok:1.18.18'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.18'
-
 }
 
 protobuf {

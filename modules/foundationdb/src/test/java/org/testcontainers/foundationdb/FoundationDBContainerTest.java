@@ -44,7 +44,6 @@ import org.testcontainers.containers.Container;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -568,11 +567,6 @@ public class FoundationDBContainerTest {
             int createDbExitCode = createDbResult.getExitCode();
             assertTrue(createDbExitCode == 0);
 
-            // Assumes a cluster file with the following contents:
-            // docker:docker@127.0.0.1:4500
-            File resourcesDirectory = new File("src/test/resources/fdb.cluster");
-            String absolutePath = resourcesDirectory.getAbsolutePath();
-
             val fdb = FDBDatabaseFactory
                 .instance()
                 .getDatabase();
@@ -639,10 +633,7 @@ public class FoundationDBContainerTest {
         } catch (IOException e) {
             assertTrue("Error: " + e, false);
         }
-
-
     }
-
 
     private String clusterFilePath() {
 
