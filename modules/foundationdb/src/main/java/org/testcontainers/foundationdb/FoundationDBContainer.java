@@ -17,12 +17,12 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
 
     private static final String FDB_NETWORKING_MODE_KEY = "FDB_NETWORKING_MODE";
     /**
-     * Elasticsearch Docker base image
+     * FoundationDB Docker base image
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("foundationdb/foundationdb");
 
     /**
-     * Elasticsearch Default version
+     * FoundationDB Default version
      */
     @Deprecated
     protected static final String DEFAULT_TAG = "6.2.28";
@@ -37,16 +37,16 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
     }
 
     /**
-     * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+     * Create an FoundationDB Container by passing the full docker image name
+     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("foundationdb/foundationdb:6.2.28")
      */
     public FoundationDBContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     /**
-     * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.9.2")
+     * Create an FoundationDB Container by passing the full docker image name
+     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("foundationdb/foundationdb:6.2.28")
      */
     public FoundationDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);

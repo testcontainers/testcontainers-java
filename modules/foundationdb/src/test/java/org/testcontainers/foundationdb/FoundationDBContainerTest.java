@@ -57,8 +57,16 @@ import static com.apple.foundationdb.record.metadata.Key.Expressions.concatenate
 import static com.apple.foundationdb.record.metadata.Key.Expressions.field;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * FoundationDB Container tests.
+ *
+ * Disclaimer: Some source code comes the FoundationDB open source project. The code is marked
+ * with clear start and end markers.
+ *
+ */
 public class FoundationDBContainerTest {
 
+    /* Start: FoundationDB open source project source code */
     private static final Logger LOGGER = LoggerFactory.getLogger(FoundationDBContainerTest.class);
 
     public static List<String> readNames(FDBRecordStore.Builder recordStoreBuilder, FDBRecordContext cx, RecordQuery query) {
@@ -91,6 +99,7 @@ public class FoundationDBContainerTest {
             .setColor(color)
             .build();
     }
+    /* End: FoundationDB open source project source code */
 
     @Test
     public void supportsFoundationDB_6_28() {
@@ -117,6 +126,7 @@ public class FoundationDBContainerTest {
                 .instance()
                 .getDatabase();
 
+            /* Start: FoundationDB open source project source code */
             // Create a subspace using the key space API to create a subspace within
             // the cluster used by this record store. The key space API in general
             // allows the user to specify a hierarchical structure of named sub-paths.
@@ -536,17 +546,14 @@ public class FoundationDBContainerTest {
                     .thenApply(tuple -> tuple.getLong(0));
             })).join();
             LOGGER.info("Total quantity ordered of all items: {}", allItemsQuantitySum);
-
+            /* End: FoundationDB open source project source code */
 
         } catch (InterruptedException e) {
             assertTrue("Error: " + e, false);
         } catch (IOException e) {
             assertTrue("Error: " + e, false);
         }
-
-
     }
-
 
     @Test
     public void testStartDatabase2() {
@@ -564,6 +571,7 @@ public class FoundationDBContainerTest {
                 .instance()
                 .getDatabase();
 
+            /* Start: FoundationDB open source project source code */
             // Define the keyspace for our application
             KeySpace keySpace = new KeySpace(new KeySpaceDirectory("record-layer-demo", KeySpaceDirectory.KeyType.STRING, "record-layer-demo"));
             // Get the path where our record store will be rooted
@@ -619,7 +627,7 @@ public class FoundationDBContainerTest {
                 recordStoreProvider.apply(context).loadRecord(Tuple.from(99999))
             );
             assert shouldNotExist == null;
-
+            /* End: FoundationDB open source project source code */
 
         } catch (InterruptedException e) {
             assertTrue("Error: " + e, false);
@@ -627,35 +635,4 @@ public class FoundationDBContainerTest {
             assertTrue("Error: " + e, false);
         }
     }
-
-    private String clusterFilePath() {
-
-        String resourceName = "fdb.cluster";
-
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(resourceName).getFile());
-        String absolutePath = file.getAbsolutePath();
-
-        System.out.println(absolutePath);
-
-        assertTrue(absolutePath.endsWith("/fdb.cluster"));
-
-
-
-        return "src/test/resources/fdb.cluster";
-//
-//        String resourceName = "fdb.cluster";
-//
-//        ClassLoader classLoader = getClass().getClassLoader();
-//        File file = new File(classLoader.getResource(resourceName).getFile());
-//        String absolutePath = file.getAbsolutePath();
-//
-//        System.out.println(absolutePath);
-//        return absolutePath;
-    }
-
-
-
-
-
 }
