@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -181,7 +182,9 @@ public interface ContainerState {
             .map(PortBinding::getBinding)
             .map(Ports.Binding::getHostPortSpec)
             .filter(Objects::nonNull)
+            .filter(NumberUtils::isNumber)
             .map(Integer::valueOf)
+            .filter(port -> port.compareTo(0) > 0)
             .collect(Collectors.toList());
     }
 
