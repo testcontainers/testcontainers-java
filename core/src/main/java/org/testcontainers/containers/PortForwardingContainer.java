@@ -71,6 +71,8 @@ public enum PortForwardingContainer {
     Optional<ContainerNetwork> getNetwork() {
         return Optional.ofNullable(container)
             .map(GenericContainer::getContainerInfo)
-            .flatMap(it -> it.getNetworkSettings().getNetworks().values().stream().findFirst());
+            .flatMap(it -> Optional.ofNullable(it.getNetworkSettings()))
+            .flatMap(it -> Optional.ofNullable(it.getNetworks()))
+            .flatMap(it -> it.values().stream().findFirst());
     }
 }
