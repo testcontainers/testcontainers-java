@@ -63,7 +63,14 @@ just for failing tests.
 [Record failing Tests](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFailing
 <!--/codeinclude-->
 
-Note that the seconds parameter to `withRecordingMode` should be a directory where recordings can be saved.
+Note that the second parameter of `withRecordingMode` should be a directory where recordings can be saved.
+
+By default, the video will be recorded in [FLV](https://en.wikipedia.org/wiki/Flash_Video) format, but you can specify it explicitly or change it to [MP4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) using `withRecordingMode` method with `VncRecordingFormat` option:
+
+<!--codeinclude-->
+[Video Format in MP4](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordMp4
+[Video Format in FLV](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFlv
+<!--/codeinclude-->
 
 If you would like to customise the file name of the recording, or provide a different directory at runtime based on the description of the test and/or its success or failure, you may provide a custom recording file factory as follows:
 <!--codeinclude-->

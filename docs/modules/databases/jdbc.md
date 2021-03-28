@@ -37,7 +37,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using PostGIS
 
-`jdbc:tc:postgis:9.6:///databasename`
+`jdbc:tc:postgis:9.6-2.5:///databasename`
 
 #### Using Presto
 

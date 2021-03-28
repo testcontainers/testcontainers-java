@@ -1339,7 +1339,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Allow container startup to be attempted more than once if an error occurs. To be if containers are
+     * Allow container startup to be attempted more than once if an error occurs. To be used if containers are
      * 'flaky' but this flakiness is not something that should affect test outcomes.
      *
      * @param attempts number of attempts
