@@ -2,7 +2,7 @@ description = "Testcontainers :: InfluxDB"
 
 ext {
     influxdbV1ClientVersion = '2.21'
-    influxdbV2ClientVersion = '1.14.0'
+    influxdbV2ClientVersion = '2.0.0'
 }
 
 dependencies {
