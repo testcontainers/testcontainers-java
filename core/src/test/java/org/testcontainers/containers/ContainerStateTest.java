@@ -34,7 +34,7 @@ public class ContainerStateTest {
         testSet("80:8080/tcp");
         List<Integer> res = containerState.getBoundPortNumbers();
         assertEquals(null,1,res.size());
-        assertEquals(null,80, res.stream().findFirst().get());
+        assertEquals("regular mapping works",80, res.stream().findFirst().get());
     }
 
     @Test
@@ -42,20 +42,34 @@ public class ContainerStateTest {
         testSet("127.0.0.1:80:8080/tcp");
         List<Integer> res = containerState.getBoundPortNumbers();
         assertEquals(null,1,res.size());
-        assertEquals(null,80, res.stream().findFirst().get());
+        assertEquals("regular mapping with host works",80, res.stream().findFirst().get());
     }
 
     @Test
     public void testGetBoundPortNumbersFullExplicitZero() {
-        testSet("127.0.0.1:0:8080/tcp");
+        testSet(":0:8080/tcp");
         List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals(null,0,res.size());
+        assertEquals("zero port with host is ignored",0,res.size());
+    }
+
+    @Test
+    public void testGetBoundPortNumbersFullImplicitZero() {
+        testSet("0.0.0.0::8080/tcp");
+        List<Integer> res = containerState.getBoundPortNumbers();
+        assertEquals("missing port with host is ignored",0,res.size());
+    }
+
+    @Test
+    public void testGetBoundPortNumbersExplicitZero() {
+        testSet("0:8080/tcp");
+        List<Integer> res = containerState.getBoundPortNumbers();
+        assertEquals("zero port (synthetic case) is ignored",0,res.size());
     }
 
     @Test
     public void testGetBoundPortNumbersImplicitZero() {
         testSet(":8080/tcp");
         List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals(null,0,res.size());
+        assertEquals("missing port is ignored",0,res.size());
     }
 }
