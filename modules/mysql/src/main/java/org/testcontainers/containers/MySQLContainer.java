@@ -49,7 +49,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        addExposedP ort(MYSQL_PORT);
+        addExposedPort(MYSQL_PORT);
     }
 
 
