@@ -14,6 +14,10 @@ import static com.google.common.base.Strings.nullToEmpty;
 import static java.lang.String.format;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
+/**
+ * @deprecated Use {@code TrinoContainer} instead.
+ */
+@Deprecated
 public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "presto";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/trinodb/presto");
