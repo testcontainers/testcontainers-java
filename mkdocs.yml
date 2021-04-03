@@ -60,6 +60,7 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+                - modules/databases/trino.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
