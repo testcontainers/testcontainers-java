@@ -8,9 +8,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class TestcontainersConfigurationTest {
 
@@ -114,11 +112,12 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldNotReadDockerClientStrategyFromClasspathProperties() {
+    public void shouldReadDockerClientStrategyFromClasspathProperties() {
         String currentValue = newConfig().getDockerClientStrategyClassName();
-
-        classpathProperties.setProperty("docker.client.strategy", UUID.randomUUID().toString());
-        assertEquals("Docker client strategy is not affected by classpath properties", currentValue, newConfig().getDockerClientStrategyClassName());
+        String randomValue = UUID.randomUUID().toString();
+        classpathProperties.setProperty("docker.client.strategy", randomValue);
+        assertEquals("Docker client strategy is changed by classpath properties", randomValue, newConfig().getDockerClientStrategyClassName());
+        assertNotEquals("Docker client strategy is changed by classpath properties", currentValue, newConfig().getDockerClientStrategyClassName());
     }
 
     @Test
@@ -129,7 +128,7 @@ public class TestcontainersConfigurationTest {
 
     @Test
     public void shouldReadDockerClientStrategyFromEnvironment() {
-               userProperties.remove("docker.client.strategy");
+        userProperties.remove("docker.client.strategy");
         environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "foo");
         assertEquals("Docker client strategy is changed by env var", "foo", newConfig().getDockerClientStrategyClassName());
     }
@@ -149,6 +148,7 @@ public class TestcontainersConfigurationTest {
         userProperties.setProperty("testcontainers.reuse.enable", "true");
         assertTrue("reuse enabled via user property", newConfig().environmentSupportsReuse());
     }
+
     @Test
     public void shouldReadReuseFromEnvironment() {
         assertFalse("no reuse by default", newConfig().environmentSupportsReuse());
@@ -161,7 +161,7 @@ public class TestcontainersConfigurationTest {
     @Test
     public void shouldTrimImageNames() {
         userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.1 ");
-        assertEquals("trailing whitespace was not removed from image name property", "testcontainers/ryuk:0.3.1",newConfig().getRyukImage());
+        assertEquals("trailing whitespace was not removed from image name property", "testcontainers/ryuk:0.3.1", newConfig().getRyukImage());
     }
 
     private TestcontainersConfiguration newConfig() {
