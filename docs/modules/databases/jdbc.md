@@ -43,9 +43,9 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:timescaldb:2.1.0-pg13:///databasename`
 
-#### Using Presto
+#### Using Trino
 
-`jdbc:tc:presto:344://localhost/memory/default`
+`jdbc:tc:trino:352://localhost/memory/default`
 
 ### Using a classpath init script
 
