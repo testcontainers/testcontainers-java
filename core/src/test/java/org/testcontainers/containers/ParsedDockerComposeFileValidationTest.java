@@ -9,7 +9,7 @@ import java.io.File;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.entry;
 
 public class ParsedDockerComposeFileValidationTest {
 
@@ -76,27 +76,47 @@ public class ParsedDockerComposeFileValidationTest {
     public void shouldObtainImageNamesV1() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-v1.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertEquals("all defined images are found", Sets.newHashSet("redis", "mysql", "postgres"), parsedFile.getDependencyImageNames()); // redis, mysql from compose file, postgres from Dockerfile build
+        Assertions.assertThat(parsedFile.getServiceNameToImageNames())
+            .contains(
+                entry("mysql", Sets.newHashSet("mysql")),
+                entry("redis", Sets.newHashSet("redis")),
+                entry("custom", Sets.newHashSet("postgres")))
+            .as("all defined images are found"); // redis, mysql from compose file, postgres from Dockerfile build
     }
 
     @Test
     public void shouldObtainImageNamesV2() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-v2.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertEquals("all defined images are found", Sets.newHashSet("redis", "mysql", "postgres"), parsedFile.getDependencyImageNames()); // redis, mysql from compose file, postgres from Dockerfile build
+        Assertions.assertThat(parsedFile.getServiceNameToImageNames())
+            .contains(
+                entry("mysql", Sets.newHashSet("mysql")),
+                entry("redis", Sets.newHashSet("redis")),
+                entry("custom", Sets.newHashSet("postgres")))
+            .as("all defined images are found");
     }
 
     @Test
     public void shouldObtainImageFromDockerfileBuild() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-dockerfile.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertEquals("all defined images are found", Sets.newHashSet("redis", "mysql", "alpine:3.2"), parsedFile.getDependencyImageNames()); // redis, mysql from compose file, alpine:3.2 from Dockerfile build
+        Assertions.assertThat(parsedFile.getServiceNameToImageNames())
+            .contains(
+                entry("mysql", Sets.newHashSet("mysql")),
+                entry("redis", Sets.newHashSet("redis")),
+                entry("custom", Sets.newHashSet("alpine:3.2")))
+            .as("all defined images are found"); // r/ redis, mysql from compose file, alpine:3.2 from Dockerfile build
     }
 
     @Test
     public void shouldObtainImageFromDockerfileBuildWithContext() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-dockerfile-with-context.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertEquals("all defined images are found", Sets.newHashSet("redis", "mysql", "alpine:3.2"), parsedFile.getDependencyImageNames()); // redis, mysql from compose file, alpine:3.2 from Dockerfile build
+        Assertions.assertThat(parsedFile.getServiceNameToImageNames())
+            .contains(
+                entry("mysql", Sets.newHashSet("mysql")),
+                entry("redis", Sets.newHashSet("redis")),
+                entry("custom", Sets.newHashSet("alpine:3.2")))
+            .as("all defined images are found"); // redis, mysql from compose file, alpine:3.2 from Dockerfile build
     }
 }
