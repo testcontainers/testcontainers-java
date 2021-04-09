@@ -1,12 +1,12 @@
 apply plugin: 'maven-publish'
 
 task sourceJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set('sources')
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier.set('javadoc')
     from javadoc
 }
 
@@ -34,7 +34,7 @@ publishing {
                     licenses {
                         license {
                             name 'MIT'
-                            url 'http://opensource.org/licenses/MIT'
+                            url 'https://opensource.org/licenses/MIT'
                         }
                     }
                     scm {

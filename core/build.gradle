@@ -159,8 +159,11 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
 
 configurations.all {
     resolutionStrategy {
+        failOnVersionConflict()
         // use lower Jackson version
         force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+        force 'org.slf4j:slf4j-api:1.7.30'
+        force 'net.java.dev.jna:jna:5.5.0'
     }
 }
 
@@ -174,7 +177,7 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:20.1.0'
     testCompileClasspath 'org.jetbrains:annotations:20.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
-    compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
+    compile('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
@@ -182,7 +185,7 @@ dependencies {
 
     compile "com.github.docker-java:docker-java-api:3.2.7"
 
-    shaded ('com.github.docker-java:docker-java-core:3.2.7') {
+    shaded('com.github.docker-java:docker-java-core:3.2.7') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
         exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
         exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
@@ -191,7 +194,7 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.7') {
+    shaded('com.github.docker-java:docker-java-transport-okhttp:3.2.7') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-core')
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
@@ -212,7 +215,7 @@ dependencies {
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
     testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.6.28') {
+    testCompile('org.mockito:mockito-core:3.6.28') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
