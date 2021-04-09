@@ -1,5 +1,6 @@
 package org.testcontainers.junit.mysql;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,7 +30,7 @@ import static org.testcontainers.MySQLTestImages.MYSQL_55_IMAGE;
 import static org.testcontainers.MySQLTestImages.MYSQL_56_IMAGE;
 import static org.testcontainers.MySQLTestImages.MYSQL_IMAGE;
 
-
+@Slf4j
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleMySQLTest.class);
@@ -224,6 +226,52 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl, containsString("allowMultiQueries=true"));
         } finally {
             mysql.stop();
+        }
+    }
+
+    @Test
+    public void shouldCreateMysqlRootAccount() throws SQLException {
+        try (MySQLContainer<?> db = new MySQLContainer<>(MYSQL_IMAGE)
+            .withUsername("root")
+            .withPassword("test")
+            .withLogConsumer(new Slf4jLogConsumer(log))) {
+            db.start();
+
+            Connection connection = DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
+            connection.createStatement().execute("SELECT 1");
+            connection.createStatement().execute("set sql_log_bin=0");
+        }
+    }
+
+    @Test
+    public void shouldCreateDefaultRootAccountWithCustomPassword() throws SQLException {
+        try (MySQLContainer<?> db = new MySQLContainer<>(MYSQL_IMAGE)
+            .withUsername("test")
+            .withPassword("test1")
+            .withEnv("MYSQL_ROOT_PASSWORD", "test")
+            .withLogConsumer(new Slf4jLogConsumer(log))) {
+            db.start();
+
+            Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", db.getPassword());
+            connection.createStatement().execute("SELECT 1");
+            connection.createStatement().execute("set sql_log_bin=0");
+        }
+    }
+
+    @Test
+    // Works with both
+    public void testEnvVarOnlyRootAccountCreationAndHardcodedUser() throws SQLException {
+        try (MySQLContainer<?> db = new MySQLContainer<>(MYSQL_IMAGE)
+            .withUsername("test")
+            .withPassword("test")
+            .withEnv("MYSQL_ROOT_PASSWORD", "test")
+            .withLogConsumer(new Slf4jLogConsumer(log))) {
+            db.start();
+
+            Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", "test");
+            connection.createStatement().execute("set sql_log_bin=0");
+            connection = DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
+            connection.createStatement().execute("SELECT 1");
         }
     }
 }

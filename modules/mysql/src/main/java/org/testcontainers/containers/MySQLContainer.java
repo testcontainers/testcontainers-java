@@ -52,7 +52,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         addExposedPort(MYSQL_PORT);
     }
 
-
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
@@ -65,8 +64,11 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
                 "mysql-default-conf");
 
         addEnv("MYSQL_DATABASE", databaseName);
-        addEnv("MYSQL_USER", username);
-        if (password != null && !password.isEmpty()) {
+
+        if (!MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
+            addEnv("MYSQL_USER", username);
+        }
+        if (passwordExists()) {
             addEnv("MYSQL_PASSWORD", password);
             addEnv("MYSQL_ROOT_PASSWORD", password);
         } else if (MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
@@ -75,6 +77,10 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
             throw new ContainerLaunchException("Empty password can be used only with the root user");
         }
         setStartupAttempts(3);
+    }
+
+    private boolean passwordExists() {
+        return password != null && !password.isEmpty();
     }
 
     @Override
