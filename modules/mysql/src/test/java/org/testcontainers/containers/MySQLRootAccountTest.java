@@ -32,7 +32,7 @@ public class MySQLRootAccountTest {
 
     @Test
     public void testRootAccountUsageWithEmptyPassword() throws SQLException {
-        testWithDB(new MySQLContainer<>(image).withUsername("root").withPassword(null));
+        testWithDB(new MySQLContainer<>(image).withUsername("root").withPassword(""));
     }
 
     @Test
