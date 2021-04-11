@@ -45,6 +45,7 @@ public class MySQLRootAccountTest {
             db.withLogConsumer(new Slf4jLogConsumer(log)).start();
             Connection connection = DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
             connection.createStatement().execute("SELECT 1");
+            connection.createStatement().execute("set sql_log_bin=0"); // requires root
         } finally {
             db.close();
         }
