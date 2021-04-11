@@ -184,7 +184,7 @@ public interface ContainerState {
             .filter(Objects::nonNull)
             .filter(NumberUtils::isNumber)
             .map(Integer::valueOf)
-            .filter(port -> port.compareTo(0) > 0)
+            .filter(port -> port > 0)
             .collect(Collectors.toList());
     }
 
