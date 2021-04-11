@@ -24,6 +24,9 @@ subprojects {
     repositories {
         jcenter()
         mavenCentral()
+        maven {
+            url 'https://dl.bintray.com/docker-java/releases/'
+        }
     }
 
     lombok {
