@@ -36,7 +36,7 @@ public class LegacyModeTest {
         public static Iterable<Object[]> constructors() {
             return Arrays.asList(new Object[][]{
                 {"default constructor", new LocalStackContainer(LOCALSTACK_IMAGE)},
-                {"latest", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("latest"))},
+                {"0.12.8", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("0.12.8"))},
                 {"0.11.1", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("0.11.1"))},
                 {"0.7.0 with legacy = off", new LocalStackContainer(LOCALSTACK_IMAGE.withTag("0.7.0"), false)}
             });
@@ -72,8 +72,8 @@ public class LegacyModeTest {
 
         @BeforeClass
         public static void createCustomTag() {
-            run("docker pull localstack/localstack:latest");
-            run("docker tag localstack/localstack:latest localstack/localstack:custom");
+            run("docker pull localstack/localstack:0.12.8");
+            run("docker tag localstack/localstack:0.12.8 localstack/localstack:custom");
         }
 
         @Parameterized.Parameters(name = "{0}")
