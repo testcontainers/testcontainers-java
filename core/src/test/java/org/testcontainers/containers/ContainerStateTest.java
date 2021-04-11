@@ -1,75 +1,49 @@
 package org.testcontainers.containers;
 
-import org.assertj.core.util.Lists;
-import org.junit.Before;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
+@RunWith(Parameterized.class)
 public class ContainerStateTest {
 
-    @Mock
-    ContainerState containerState;
+    @Parameterized.Parameters(name = "{0} ({1} -> {2})")
+    public static Object[][] params() {
+        return new Object[][]{
+            new Object[]{"regular mapping", "80:8080/tcp", singletonList(80),},
+            new Object[]{"regular mapping with host", "127.0.0.1:80:8080/tcp", singletonList(80),},
+            new Object[]{"zero port without host", ":0:8080/tcp", emptyList(),},
+            new Object[]{"missing port with host", "0.0.0.0:0:8080/tcp", emptyList(),},
+            new Object[]{"zero port (synthetic case)", "0:8080/tcp", emptyList(),},
+            new Object[]{"missing port", ":8080/tcp", emptyList(),
+            }
+        };
+    }
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
+    @Parameterized.Parameter(0)
+    public String name;
+    @Parameterized.Parameter(1)
+    public String testSet;
+    @Parameterized.Parameter(2)
+    public List<Integer> expectedResult;
+
+    @Test
+    public void test() {
+        ContainerState containerState = mock(ContainerState.class);
         doCallRealMethod().when(containerState).getBoundPortNumbers();
-    }
 
-    void testSet(String... args) {
-        when(containerState.getPortBindings()).thenReturn(
-            Lists.list(args)
-        );
-    }
+        when(containerState.getPortBindings()).thenReturn(singletonList(testSet));
 
-    @Test
-    public void testGetBoundPortNumbers() {
-        testSet("80:8080/tcp");
-        List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals(null,1,res.size());
-        assertEquals("regular mapping works",80, res.stream().findFirst().get());
-    }
-
-    @Test
-    public void testGetBoundPortNumbersFull() {
-        testSet("127.0.0.1:80:8080/tcp");
-        List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals(null,1,res.size());
-        assertEquals("regular mapping with host works",80, res.stream().findFirst().get());
-    }
-
-    @Test
-    public void testGetBoundPortNumbersFullExplicitZero() {
-        testSet(":0:8080/tcp");
-        List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals("zero port with host is ignored",0,res.size());
-    }
-
-    @Test
-    public void testGetBoundPortNumbersFullImplicitZero() {
-        testSet("0.0.0.0::8080/tcp");
-        List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals("missing port with host is ignored",0,res.size());
-    }
-
-    @Test
-    public void testGetBoundPortNumbersExplicitZero() {
-        testSet("0:8080/tcp");
-        List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals("zero port (synthetic case) is ignored",0,res.size());
-    }
-
-    @Test
-    public void testGetBoundPortNumbersImplicitZero() {
-        testSet(":8080/tcp");
-        List<Integer> res = containerState.getBoundPortNumbers();
-        assertEquals("missing port is ignored",0,res.size());
+        List<Integer> result = containerState.getBoundPortNumbers();
+        Assertions.assertThat(result).hasSameElementsAs(expectedResult);
     }
 }
