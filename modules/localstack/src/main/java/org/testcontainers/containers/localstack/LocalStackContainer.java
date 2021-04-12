@@ -306,6 +306,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     @FieldDefaults(makeFinal = true)
     public enum Service {
         API_GATEWAY("apigateway", 4567),
+        EC2("ec2", 4597),
         KINESIS("kinesis", 4568),
         DYNAMODB("dynamodb", 4569),
         DYNAMODB_STREAMS("dynamodbstreams", 4570),
