@@ -2,5 +2,9 @@ description = "TestContainers :: Cassandra"
 
 dependencies {
     implementation project(":database-commons")
-    implementation "com.datastax.oss:java-driver-core:4.10.0"
+    implementation("com.datastax.oss:java-driver-core:4.10.0") {
+        // fasterxml 2.12 not compatible for com.github.docker-java
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+    }
 }

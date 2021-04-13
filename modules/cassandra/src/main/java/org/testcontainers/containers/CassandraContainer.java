@@ -37,6 +37,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
     private static final String USERNAME = "cassandra";
     private static final String PASSWORD = "cassandra";
+    protected static final String LOCAL_DC = "datacenter1";
 
     private String configLocation;
     private String initScriptPath;
@@ -172,8 +173,10 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     public String getCqlHostAddress() {
-        return getHost() + ":" + getMappedPort(CQL_PORT);
+        return getHost() + ":" + getMappedPort(CassandraContainer.CQL_PORT);
     }
+
+    public String getLocalDc() { return CassandraContainer.LOCAL_DC; }
 
     /**
      * Get configured Cluster
@@ -188,7 +191,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         InetSocketAddress endpoint = new InetSocketAddress(containerState.getHost(), containerState.getMappedPort(CQL_PORT));
         final CqlSessionBuilder builder = CqlSession.builder()
             .addContactPoint(endpoint)
-            .withLocalDatacenter("datacenter1");
+            .withLocalDatacenter(LOCAL_DC);
+
         if (meterRegistry != null) {
             builder.withMetricRegistry(meterRegistry);
         }

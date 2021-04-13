@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 @Slf4j
 public class CassandraContainerTest {
 
-    private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("cassandra:3.11.9");
+    private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("cassandra:3.11.2");
 
     private static final String TEST_CLUSTER_NAME_IN_CONF = "Test Cluster Integration Test";
 
@@ -124,9 +124,12 @@ public class CassandraContainerTest {
     }
 
     private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {
-        InetSocketAddress endpoint = new InetSocketAddress(cassandraContainer.getHost(), CassandraContainer.CQL_PORT);
+        InetSocketAddress endpoint = new InetSocketAddress(
+            cassandraContainer.getHost(),
+            cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT));
         CqlSession cqlSession = CqlSession.builder()
             .addContactPoint(endpoint)
+            .withLocalDatacenter(CassandraContainer.LOCAL_DC)
             .build();
         return cqlSession.execute(cql);
     }
