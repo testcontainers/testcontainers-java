@@ -14,5 +14,6 @@ dependencies {
 
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:solr'
+    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 
 }
