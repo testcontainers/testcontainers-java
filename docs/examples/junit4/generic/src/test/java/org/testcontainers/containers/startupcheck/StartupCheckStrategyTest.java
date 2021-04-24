@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +36,7 @@ public class StartupCheckStrategyTest {
     public static class OneShotStrategyTest {
         @Rule
         // withOneShotStrategy {
-        public GenericContainer bboxWithOneShot = new GenericContainer("busybox:1.31.1")
+        public GenericContainer<?> bboxWithOneShot = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
             .withCommand(String.format("echo %s", HELLO_TESTCONTAINERS))
             .withStartupCheckStrategy(
                 new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3))
@@ -54,7 +55,7 @@ public class StartupCheckStrategyTest {
     public static class IndefiniteOneShotStrategyTest {
         @Rule
         // withIndefiniteOneShotStrategy {
-        public GenericContainer bboxWithIndefiniteOneShot = new GenericContainer("busybox:1.31.1")
+        public GenericContainer<?> bboxWithIndefiniteOneShot = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
             .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
             .withStartupCheckStrategy(
                 new IndefiniteWaitOneShotStartupCheckStrategy()
@@ -73,7 +74,7 @@ public class StartupCheckStrategyTest {
     public static class MinimumDurationStrategyTest {
         @Rule
         // withMinimumDurationStrategy {
-        public GenericContainer bboxWithMinimumDuration = new GenericContainer("busybox:1.31.1")
+        public GenericContainer<?> bboxWithMinimumDuration = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
             .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
             .withStartupCheckStrategy(
                 new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(1))

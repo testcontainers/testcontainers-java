@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assumptions;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.TestImages;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
@@ -26,9 +27,9 @@ public class GenericContainerTest {
     public void shouldReportOOMAfterWait() {
         Info info = DockerClientFactory.instance().client().infoCmd().exec();
         // Poor man's rootless Docker detection :D
-        Assumptions.assumeThat(info.getDriver()).doesNotContain("vfs");
+        Assumptions.assumeThat(info.getSecurityOptions()).doesNotContain("rootless");
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(ContainerState::getOOMKilled))
                 .withCreateContainerCmdModifier(it -> {
@@ -49,7 +50,7 @@ public class GenericContainerTest {
     @Test
     public void shouldReportErrorAfterWait() {
         try (
-            GenericContainer container = new GenericContainer<>()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")

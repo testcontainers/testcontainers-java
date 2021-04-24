@@ -12,7 +12,7 @@ public abstract class AbstractImagePullPolicy implements ImagePullPolicy {
 
     @Override
     public boolean shouldPull(DockerImageName imageName) {
-        Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
+        Logger logger = DockerLoggerFactory.getLogger(imageName.asCanonicalNameString());
 
         // Does our cache already know the image?
         ImageData cachedImageData = LOCAL_IMAGES_CACHE.get(imageName);

@@ -14,7 +14,7 @@ import spock.lang.Stepwise
 class TestcontainersSharedContainerIT extends Specification {
 
     @Shared
-    GenericContainer genericContainer = new GenericContainer("httpd:2.4-alpine")
+    GenericContainer genericContainer = new GenericContainer(SpockTestImages.HTTPD_IMAGE)
             .withExposedPorts(80)
 
     @Shared

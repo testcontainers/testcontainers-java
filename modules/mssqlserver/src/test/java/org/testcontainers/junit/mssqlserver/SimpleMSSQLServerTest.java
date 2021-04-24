@@ -1,6 +1,7 @@
 package org.testcontainers.junit.mssqlserver;
 
 import org.junit.Test;
+import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -12,12 +13,13 @@ import java.sql.Statement;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.testcontainers.MSSQLServerTestImages.MSSQL_SERVER_IMAGE;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>()) {
+        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
             mssqlServer.start();
             ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
 
@@ -28,7 +30,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>()
+        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)
             .withUrlParam("integratedSecurity", "false")
             .withUrlParam("applicationName", "MyApp")) {
 
@@ -42,7 +44,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSetupDatabase() throws SQLException {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>()) {
+        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
             mssqlServer.start();
             DataSource ds = getDataSource(mssqlServer);
             Statement statement = ds.getConnection().createStatement();

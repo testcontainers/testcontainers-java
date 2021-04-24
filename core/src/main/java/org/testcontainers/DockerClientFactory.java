@@ -3,6 +3,7 @@ package org.testcontainers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
@@ -19,11 +20,14 @@ import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -33,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,7 +65,7 @@ public class DockerClientFactory {
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
-    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.5");
     private static DockerClientFactory instance;
 
     // Cached client configuration
@@ -145,9 +150,12 @@ public class DockerClientFactory {
         }
 
         URI dockerHost = getTransportConfig().getDockerHost();
-        return "unix".equals(dockerHost.getScheme())
+        String path = "unix".equals(dockerHost.getScheme())
             ? dockerHost.getRawPath()
             : "/var/run/docker.sock";
+        return SystemUtils.IS_OS_WINDOWS
+               ? "/" + path
+               : path;
     }
 
     /**
@@ -169,8 +177,7 @@ public class DockerClientFactory {
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
-        String hostIpAddress = strategy.getDockerHostIpAddress();
-        log.info("Docker host IP address is {}", hostIpAddress);
+        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
         final DockerClient client = new DelegatingDockerClient(strategy.getDockerClient()) {
             @Override
             public void close() {
@@ -194,7 +201,8 @@ public class DockerClientFactory {
         if (useRyuk) {
             log.debug("Ryuk is enabled");
             try {
-                ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+                //noinspection deprecation
+                ryukContainerId = ResourceReaper.start(client);
             } catch (RuntimeException e) {
                 cachedClientFailure = e;
                 throw e;
@@ -320,8 +328,9 @@ public class DockerClientFactory {
    */
     @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
-        List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
-        if (images.isEmpty()) {
+        try {
+            client.inspectImageCmd(image).exec();
+        } catch (NotFoundException e) {
             client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
     }
@@ -339,8 +348,11 @@ public class DockerClientFactory {
     }
 
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-        checkAndPullImage(client, TINY_IMAGE);
-        CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE)
+
+        final String tinyImage = ImageNameSubstitutor.instance().apply(TINY_IMAGE).asCanonicalNameString();
+
+        checkAndPullImage(client, tinyImage);
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(tinyImage)
                 .withLabels(DEFAULT_LABELS);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();

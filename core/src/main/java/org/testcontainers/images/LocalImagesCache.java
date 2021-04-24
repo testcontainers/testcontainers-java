@@ -39,7 +39,7 @@ enum LocalImagesCache {
 
             InspectImageResponse response = null;
             try {
-                response = dockerClient.inspectImageCmd(imageName.toString()).exec();
+                response = dockerClient.inspectImageCmd(imageName.asCanonicalNameString()).exec();
             } catch (NotFoundException e) {
                 log.trace("Image {} not found", imageName, e);
             }

@@ -1,15 +1,16 @@
 package org.testcontainers.containers;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.Collections;
-
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
 import org.neo4j.driver.v1.Session;
+
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Test for basic functionality when used as a <code>@ClassRule</code>.
@@ -19,7 +20,7 @@ import org.neo4j.driver.v1.Session;
 public class Neo4jContainerJUnitIntegrationTest {
 
     @ClassRule
-    public static Neo4jContainer neo4jContainer = new Neo4jContainer();
+    public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE);
 
     @Test
     public void shouldStart() {

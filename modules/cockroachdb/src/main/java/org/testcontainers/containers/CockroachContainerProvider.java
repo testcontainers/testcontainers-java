@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
+
 public class CockroachContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public boolean supports(String databaseType) {
@@ -13,6 +15,6 @@ public class CockroachContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new CockroachContainer(CockroachContainer.IMAGE + ":" + tag);
+        return new CockroachContainer(DockerImageName.parse(CockroachContainer.IMAGE).withTag(tag));
     }
 }

@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
@@ -12,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class ExecTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer("alpine:3.6")
+    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine:3.6"))
         .withCommand("top");
 
     @Test

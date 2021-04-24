@@ -1,12 +1,9 @@
 package org.testcontainers.images;
 
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.github.dockerjava.core.command.PushImageResultCallback;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -23,20 +20,24 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
+
 public class ImagePullPolicyTest {
 
     @ClassRule
-    public static GenericContainer<?> registry = new GenericContainer<>("registry:2")
+    public static GenericContainer<?> registry = new GenericContainer<>(DOCKER_REGISTRY_IMAGE)
         .withExposedPorts(5000);
 
-    private static String imageName;
+    private static DockerImageName imageName;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         String testRegistryAddress = registry.getHost() + ":" + registry.getFirstMappedPort();
         String testImageName = testRegistryAddress + "/image-pull-policy-test";
         String tag = UUID.randomUUID().toString();
-        imageName = testImageName + ":" + tag;
+        imageName = DockerImageName.parse(testImageName).withTag(tag);
 
         DockerClient client = DockerClientFactory.instance().client();
         String dummySourceImage = "hello-world:latest";
@@ -47,28 +48,22 @@ public class ImagePullPolicyTest {
         // push the image to the registry
         client.tagImageCmd(dummyImageId, testImageName, tag).exec();
 
-        client.pushImageCmd(imageName)
-            .exec(new PushImageResultCallback())
+        client.pushImageCmd(imageName.asCanonicalNameString())
+            .exec(new ResultCallback.Adapter<>())
             .awaitCompletion(1, TimeUnit.MINUTES);
     }
 
     @AfterClass
     public static void afterClass() {
-        try {
-            DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
-        } catch (NotFoundException ignored) {
-        }
+        removeImage();
     }
 
     @Before
     public void setUp() {
         // Clean up local cache
-        try {
-            DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
-        } catch (NotFoundException ignored) {
-        }
+        removeImage();
 
-        LocalImagesCache.INSTANCE.cache.remove(new DockerImageName(imageName));
+        LocalImagesCache.INSTANCE.cache.remove(imageName);
     }
 
     @Test
@@ -90,7 +85,7 @@ public class ImagePullPolicyTest {
             container.start();
         }
 
-        DockerClientFactory.instance().client().removeImageCmd(imageName).withForce(true).exec();
+        removeImage();
 
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
@@ -175,4 +170,13 @@ public class ImagePullPolicyTest {
         }
     }
 
+    private static void removeImage() {
+        try {
+            DockerClientFactory.instance().client()
+                .removeImageCmd(imageName.asCanonicalNameString())
+                .withForce(true)
+                .exec();
+        } catch (NotFoundException ignored) {
+        }
+    }
 }

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.TestImages;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -20,7 +21,6 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
     static final long WAIT_TIMEOUT_MILLIS = 3000;
-    static final String IMAGE_NAME = "alpine:3.7";
 
     /**
      * Indicates that the WaitStrategy has completed waiting successfully.
@@ -38,36 +38,36 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
     protected abstract W buildWaitStrategy(final AtomicBoolean ready);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ready = new AtomicBoolean(false);
     }
 
     /**
-     * Starts a GenericContainer with the {@link #IMAGE_NAME} image, passing the given {@code shellCommand} as
+     * Starts a GenericContainer with the Alpine image, passing the given {@code shellCommand} as
      * a parameter to {@literal sh -c} (the container CMD).
      *
      * @param shellCommand the shell command to execute
      * @return the (unstarted) container
      */
-    private GenericContainer startContainerWithCommand(String shellCommand) {
+    private GenericContainer<?> startContainerWithCommand(String shellCommand) {
         return startContainerWithCommand(shellCommand, buildWaitStrategy(ready));
     }
 
     /**
-     * Starts a GenericContainer with the {@link #IMAGE_NAME} image, passing the given {@code shellCommand} as
+     * Starts a GenericContainer with the Alpine image, passing the given {@code shellCommand} as
      * a parameter to {@literal sh -c} (the container CMD) and apply a give wait strategy.
      * Note that the timeout will be overwritten if any with {@link #WAIT_TIMEOUT_MILLIS}.
      * @param shellCommand the shell command to execute
      * @param waitStrategy The wait strategy to apply
      * @return the (unstarted) container
      */
-    protected GenericContainer startContainerWithCommand(String shellCommand, WaitStrategy waitStrategy) {
+    protected GenericContainer<?> startContainerWithCommand(String shellCommand, WaitStrategy waitStrategy) {
         return startContainerWithCommand(shellCommand, waitStrategy, 8080);
     }
 
-    protected GenericContainer startContainerWithCommand(String shellCommand, WaitStrategy waitStrategy, Integer... ports) {
+    protected GenericContainer<?> startContainerWithCommand(String shellCommand, WaitStrategy waitStrategy, Integer... ports) {
         // apply WaitStrategy to container
-        return new GenericContainer(IMAGE_NAME)
+        return new GenericContainer<>(TestImages.ALPINE_IMAGE)
                 .withExposedPorts(ports)
                 .withCommand("sh", "-c", shellCommand)
                 .waitingFor(waitStrategy.withStartupTimeout(Duration.ofMillis(WAIT_TIMEOUT_MILLIS)));
@@ -98,7 +98,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      *
      * @param container the container to start
      */
-    protected void waitUntilReadyAndTimeout(GenericContainer container) {
+    protected void waitUntilReadyAndTimeout(GenericContainer<?> container) {
         // start() blocks until successful or timeout
         VisibleAssertions.assertThrows("an exception is thrown when timeout occurs (" + WAIT_TIMEOUT_MILLIS + "ms)",
                 ContainerLaunchException.class,
@@ -111,7 +111,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      *
      * @param container the container to start
      */
-    protected void waitUntilReadyAndSucceed(GenericContainer container) {
+    protected void waitUntilReadyAndSucceed(GenericContainer<?> container) {
         // start() blocks until successful or timeout
         container.start();
 

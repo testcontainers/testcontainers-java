@@ -13,7 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class AgeBasedPullPolicyTest {
 
-    final DockerImageName imageName = new DockerImageName(UUID.randomUUID().toString());
+    final DockerImageName imageName = DockerImageName.parse(UUID.randomUUID().toString());
 
     @Test
     public void shouldPull() {

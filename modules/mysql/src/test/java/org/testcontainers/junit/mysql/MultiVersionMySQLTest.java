@@ -3,8 +3,10 @@ package org.testcontainers.junit.mysql;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,7 +29,10 @@ public class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void versionCheckTest() throws SQLException {
-        try (MySQLContainer<?> mysql = new MySQLContainer<>("mysql:" + version)) {
+
+        final DockerImageName dockerImageName = MySQLTestImages.MYSQL_IMAGE.withTag(version);
+
+        try (MySQLContainer<?> mysql = new MySQLContainer<>(dockerImageName)) {
             mysql.start();
             final ResultSet resultSet = performQuery(mysql, "SELECT VERSION()");
             final String resultSetString = resultSet.getString(1);

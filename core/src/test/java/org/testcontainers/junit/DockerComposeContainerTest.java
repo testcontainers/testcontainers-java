@@ -6,6 +6,9 @@ import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -52,5 +55,25 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
         String notExistingServiceName = "db_256";
         Optional<ContainerState> result = environment.getContainerByServiceName(notExistingServiceName);
         assertFalse(format("No container should be found under service name %s", notExistingServiceName), result.isPresent());
+    }
+
+    @Test
+    public void shouldCreateContainerWhenFileNotPrefixedWithPath() throws IOException {
+        String validYaml =
+            "version: '2.2'\n" +
+                "services:\n" +
+                "  http:\n" +
+                "    build: .\n" +
+                "    image: python:latest\n" +
+                "    ports:\n" +
+                "    - 8080:8080";
+
+        File filePathNotStartWithDotSlash = new File("docker-compose-test.yml");
+        filePathNotStartWithDotSlash.createNewFile();
+        filePathNotStartWithDotSlash.deleteOnExit();
+        Files.write(filePathNotStartWithDotSlash.toPath(), validYaml.getBytes(StandardCharsets.UTF_8));
+
+        final DockerComposeContainer<?> dockerComposeContainer = new DockerComposeContainer<>(filePathNotStartWithDotSlash);
+        assertNotNull("Container could not be created using docker compose file", dockerComposeContainer);
     }
 }

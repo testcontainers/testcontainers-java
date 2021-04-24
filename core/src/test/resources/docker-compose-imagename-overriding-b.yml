@@ -1,0 +1,10 @@
+version: "2.1"
+services:
+    redis:
+        image: redis:b
+    mysql:
+        image: mysql:b
+    custom:
+        build: compose-dockerfile
+networks:
+    custom_network: {}

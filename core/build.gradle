@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:29.0-jre'
+        classpath 'com.google.guava:guava:30.1-jre'
     }
 }
 
@@ -157,14 +157,22 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
     project.tasks.check.dependsOn(japicmp)
 }
 
+configurations.all {
+    resolutionStrategy {
+        // use lower Jackson version
+        force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+    }
+}
+
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.3', {
+    baseline 'org.testcontainers:testcontainers:1.15.2', {
         exclude group: "*", module: "*"
     }
 
     compile 'junit:junit:4.12'
     compile 'org.slf4j:slf4j-api:1.7.30'
-    compile 'org.jetbrains:annotations:19.0.0'
+    compileOnly 'org.jetbrains:annotations:20.1.0'
+    testCompileClasspath 'org.jetbrains:annotations:20.0.0'
     compile 'org.apache.commons:commons-compress:1.20'
     compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
@@ -172,9 +180,9 @@ dependencies {
 
     compile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 
-    compile "com.github.docker-java:docker-java-api:3.2.5"
+    compile "com.github.docker-java:docker-java-api:3.2.8"
 
-    shaded ('com.github.docker-java:docker-java-core:3.2.5') {
+    shaded ('com.github.docker-java:docker-java-core:3.2.8') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
         exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
         exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
@@ -183,39 +191,39 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.5') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.8') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-core')
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
 
-    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.5'
+    compile 'com.github.docker-java:docker-java-transport-zerodep:3.2.8'
 
-    shaded "org.yaml:snakeyaml:1.25"
+    shaded "org.yaml:snakeyaml:1.27"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.zeroturnaround:zt-exec:1.10', {
+    shaded 'org.zeroturnaround:zt-exec:1.12', {
         exclude(group: 'org.slf4j')
     }
 
     testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.3.0'
+    testCompile 'redis.clients:jedis:3.4.0'
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
-    testCompile 'org.mongodb:mongo-java-driver:3.12.5'
+    testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.3.3') {
+    testCompile ('org.mockito:mockito-core:3.6.28') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.16.1'
+    testCompile 'org.assertj:assertj-core:3.18.1'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.16.0'
+    jarFileTestCompile 'org.assertj:assertj-core:3.18.1'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }
