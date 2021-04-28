@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.testcontainers.ClickhouseTestImages.CLICKHOUSE_IMAGE;
 
-public class SimpleClickhouseYandexTest extends AbstractContainerDatabaseTest {
+public class SimpleClickhouseJdbcYandexTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {

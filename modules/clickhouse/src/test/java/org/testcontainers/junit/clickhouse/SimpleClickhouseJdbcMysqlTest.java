@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.ClickhouseTestImages.CLICKHOUSE_IMAGE;
 
-public class SimpleClickhouseMysqlTest {
+public class SimpleClickhouseJdbcMysqlTest {
 
     @Test
     public void testSimple() throws SQLException {
