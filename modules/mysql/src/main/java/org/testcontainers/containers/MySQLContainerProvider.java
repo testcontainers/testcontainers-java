@@ -18,6 +18,11 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
+    public JdbcDatabaseContainer newInstance(DockerImageName dockerImageName) {
+        return new MySQLContainer(dockerImageName);
+    }
+
+    @Override
     public JdbcDatabaseContainer newInstance() {
         return newInstance(MySQLContainer.DEFAULT_TAG);
     }

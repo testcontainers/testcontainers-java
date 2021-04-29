@@ -9,6 +9,11 @@ public class CockroachContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
+    public JdbcDatabaseContainer newInstance(DockerImageName dockerImageName) {
+        return new CockroachContainer(dockerImageName);
+    }
+
+    @Override
     public JdbcDatabaseContainer newInstance() {
         return newInstance(CockroachContainer.IMAGE_TAG);
     }

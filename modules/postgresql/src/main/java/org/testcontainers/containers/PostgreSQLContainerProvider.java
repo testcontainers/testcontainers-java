@@ -22,6 +22,11 @@ public class PostgreSQLContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
+    public JdbcDatabaseContainer newInstance(DockerImageName dockerImageName) {
+        return new PostgreSQLContainer(dockerImageName);
+    }
+
+    @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         return new PostgreSQLContainer(DockerImageName.parse(PostgreSQLContainer.IMAGE).withTag(tag));
     }
@@ -30,5 +35,4 @@ public class PostgreSQLContainerProvider extends JdbcDatabaseContainerProvider {
     public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
         return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
-
 }

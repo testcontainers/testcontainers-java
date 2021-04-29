@@ -17,6 +17,11 @@ public class PrestoContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
+    public JdbcDatabaseContainer newInstance(DockerImageName dockerImageName) {
+        return new PrestoContainer(dockerImageName);
+    }
+
+    @Override
     public JdbcDatabaseContainer newInstance() {
         return newInstance(PrestoContainer.DEFAULT_TAG);
     }

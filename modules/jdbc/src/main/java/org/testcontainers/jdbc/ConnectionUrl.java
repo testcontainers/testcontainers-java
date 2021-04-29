@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -32,7 +31,11 @@ public class ConnectionUrl {
 
     private String databaseType;
 
+    private String imageName;
+
     private Optional<String> imageTag;
+
+    private Optional<String> registry;
 
     /**
      * This is a part of the connection string that may specify host:port/databasename.
@@ -63,6 +66,10 @@ public class ConnectionUrl {
     private Map<String, String> tmpfsOptions = new HashMap<>();
 
     public static ConnectionUrl newInstance(final String url) {
+        if (!accepts(url)) {
+            throw new IllegalArgumentException("URL does not match testcontainers pattern");
+        }
+
         ConnectionUrl connectionUrl = new ConnectionUrl(url);
         connectionUrl.parseUrl();
         return connectionUrl;
@@ -97,9 +104,19 @@ public class ConnectionUrl {
                 throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
             }
         }
-        databaseType = urlMatcher.group(1);
 
-        imageTag = Optional.ofNullable(urlMatcher.group(3));
+        ImageAlias.ImageAliased aliased = ImageAlias.getImageAliased(urlMatcher.group(1));
+        if (aliased != null) {
+            databaseType = aliased.getImageType();
+            imageName = aliased.getImageName();
+            imageTag = Optional.ofNullable(aliased.getImageTag());
+            registry = Optional.ofNullable(aliased.getRegistryHost());
+        } else {
+            databaseType = urlMatcher.group(1);
+            imageName = databaseType;
+            imageTag = Optional.ofNullable(urlMatcher.group(3));
+            registry = Optional.empty();
+        }
 
         //String like hostname:port/database name, which may vary based on target database.
         //Clients can further parse it as needed.
@@ -109,7 +126,7 @@ public class ConnectionUrl {
         Matcher dbInstanceMatcher = Patterns.DB_INSTANCE_MATCHING_PATTERN.matcher(dbHostString);
         if (dbInstanceMatcher.matches()) {
             databaseHost = Optional.of(dbInstanceMatcher.group(1));
-            databasePort = Optional.ofNullable(dbInstanceMatcher.group(3)).map(value -> Integer.valueOf(value));
+            databasePort = Optional.ofNullable(dbInstanceMatcher.group(3)).map(Integer::valueOf);
             databaseName = Optional.of(dbInstanceMatcher.group(4));
         }
 
@@ -123,7 +140,7 @@ public class ConnectionUrl {
             .map(e -> e.getKey() + "=" + e.getValue())
             .collect(Collectors.joining("&"));
 
-        if (query == null || query.trim().length() == 0) {
+        if (query.trim().length() == 0) {
             queryString = Optional.empty();
         } else {
             queryString = Optional.of("?" + query);
