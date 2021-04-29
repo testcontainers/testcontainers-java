@@ -16,18 +16,21 @@
 
 package org.testcontainers.ext;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import javax.script.ScriptException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.delegate.DatabaseDelegate;
-
-import javax.script.ScriptException;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * This is a modified version of the Spring-JDBC ScriptUtils class, adapted to reduce
@@ -298,8 +301,25 @@ public abstract class ScriptUtils {
 				LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 				throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
 			}
-			String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
-			executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+            File inputSpecFile = FileUtils.toFile(resource);
+            if (inputSpecFile.isDirectory()) {
+                LOGGER.info("inputSpec is being read as a directory");
+                File[] inputSpecs;
+                inputSpecs = inputSpecFile.listFiles(pathname -> pathname.getName().endsWith(".sql"));
+                if (inputSpecs == null || inputSpecs.length == 0) {
+                    LOGGER.error("Error while executing init script: {}", initScriptPath);
+                    throw new ScriptLoadException("Error while executing init script, empty folder: " + initScriptPath);
+                }
+                inputSpecs = Arrays.stream(inputSpecs).
+                    sorted(Comparator.comparing(File::getName, new FilenameComparator())).toArray(File[]::new);
+                for (File f : inputSpecs) {
+                    String scripts = IOUtils.toString(f.toURI(), StandardCharsets.UTF_8);
+                    executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+                }
+            } else {
+                String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
+                executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+            }
 		} catch (IOException e) {
 			LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
 			throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
@@ -307,7 +327,7 @@ public abstract class ScriptUtils {
 			LOGGER.error("Error while executing init script: {}", initScriptPath, e);
 			throw new UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
 		}
-	}
+    }
 
     public static void executeDatabaseScript(DatabaseDelegate databaseDelegate, String scriptPath, String script) throws ScriptException {
         executeDatabaseScript(databaseDelegate, scriptPath, script, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR, DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);

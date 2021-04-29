@@ -1,0 +1,3 @@
+CREATE TABLE bar2 (
+  foo VARCHAR(255)
+);
