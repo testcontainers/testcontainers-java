@@ -13,7 +13,8 @@ On the JVM you would most likely use the [Java driver](https://github.com/neo4j/
 
 The following example uses the JUnit 5 extension `@Testcontainers` and demonstrates both the usage of the Java Driver and the REST endpoint:
 
-```java tab="JUnit 5 example"
+=== "JUnit 5 example"
+```java
 @Testcontainers
 public class ExampleTest {
 
@@ -162,11 +163,12 @@ You'll find more information about licensing Neo4j here: [About Neo4j Licenses](
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 testCompile "org.testcontainers:neo4j:{{latest_version}}"
 ```
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>neo4j</artifactId>
@@ -178,11 +180,12 @@ testCompile "org.testcontainers:neo4j:{{latest_version}}"
 !!! hint
     Add the Neo4j Java driver if you plan to access the Testcontainer via Bolt:
     
-    ```groovy tab='Gradle'
+    === "Gradle"
+    ```groovy
     compile "org.neo4j.driver:neo4j-java-driver:1.7.1"
     ```
-    
-    ```xml tab='Maven'
+    === "Maven"
+    ```xml
     <dependency>
         <groupId>org.neo4j.driver</groupId>
         <artifactId>neo4j-java-driver</artifactId>

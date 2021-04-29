@@ -20,11 +20,12 @@ You can start a solr container instance from any Java application by using:
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 testCompile "org.testcontainers:solr:{{latest_version}}"
 ```
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>solr</artifactId>

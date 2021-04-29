@@ -21,11 +21,12 @@ Let's start from here, and see how to improve the test with Testcontainers:
 
 First, add Testcontainers as a dependency as follows:
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 testCompile "org.testcontainers:spock:{{latest_version}}"
 ```
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>spock</artifactId>
@@ -38,7 +39,8 @@ testCompile "org.testcontainers:spock:{{latest_version}}"
 
 Annotate the Spock specification class with the Testcontainers extension:
 
-```groovy tab='Spock Testcontainers annotation'
+=== "Spock Testcontainers annotation"
+```groovy
 @org.testcontainers.spock.Testcontainers
 class RedisBackedCacheIntTest extends Specification {
 ```

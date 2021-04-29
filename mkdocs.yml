@@ -21,6 +21,7 @@ markdown_extensions:
     - codehilite:
           linenums: False
     - pymdownx.superfences
+    - pymdownx.tabbed
     - pymdownx.snippets
 nav:
     - Home: index.md

@@ -41,15 +41,15 @@ other new and advanced features), you can use this instead:
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testCompile "org.testcontainers:elasticsearch:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>elasticsearch</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testCompile "org.testcontainers:elasticsearch:{{latest_version}}"
+    ```=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>elasticsearch</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

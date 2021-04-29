@@ -68,11 +68,12 @@ This extension has only be tested with sequential test execution. Using it with 
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
 ```
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>junit-jupiter</artifactId>

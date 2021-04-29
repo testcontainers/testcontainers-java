@@ -29,11 +29,12 @@ public class SomeTest {
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 testCompile "org.testcontainers:mssqlserver:{{latest_version}}"
 ```
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>mssqlserver</artifactId>

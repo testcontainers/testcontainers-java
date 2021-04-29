@@ -1,6 +1,7 @@
 # Testcontainers
 
-![Testcontainers logo](./logo.png)
+<!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
+<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/> 
 
 ## About
 
@@ -31,11 +32,12 @@ Testcontainers is distributed as separate JARs with a common version number:
 
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 ```
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers</artifactId>
@@ -51,8 +53,8 @@ You can also [check the latest version available on Maven Central](https://searc
 To avoid specifying the version of each dependency, you can use a `BOM` or `Bill Of Materials`.
 
 Using Maven you can add the following to `dependencyManagement` section in your `pom.xml`:
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -66,8 +68,8 @@ Using Maven you can add the following to `dependencyManagement` section in your 
 </dependencyManagement>
 ```
 and then use dependencies without specifying a version:
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>mysql</artifactId>
@@ -77,7 +79,8 @@ and then use dependencies without specifying a version:
 
 Using Gradle 5.0 or higher, you can add the following to the `dependencies` section in your `build.gradle`:
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
 testImplementation('org.testcontainers:mysql') //no version specified
 ```

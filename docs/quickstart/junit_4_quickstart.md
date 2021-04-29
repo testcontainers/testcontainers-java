@@ -21,11 +21,12 @@ Let's start from here, and see how to improve the test with Testcontainers:
 
 First, add Testcontainers as a dependency as follows:
 
-```groovy tab='Gradle'
+=== "Gradle"
+```groovy
 testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 ```
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers</artifactId>
