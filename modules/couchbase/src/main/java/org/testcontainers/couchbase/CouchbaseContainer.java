@@ -88,6 +88,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
+    private boolean communityMode = false;
+
     /**
      * Creates a new couchbase container with the default image and version.
      * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
@@ -133,6 +135,18 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     public CouchbaseContainer withBucket(final BucketDefinition bucketDefinition) {
         checkNotRunning();
         this.buckets.add(bucketDefinition);
+        return this;
+    }
+
+    /**
+     * Enables compatibility with community edition of couchbase server.
+     *
+     * @param communityMode if true, tries to be compatible with community edition.
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withCommunityMode(final boolean communityMode) {
+        checkNotRunning();
+        this.communityMode = communityMode;
         return this;
     }
 
@@ -336,7 +350,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         logger().debug("Configuring the indexer service");
 
         @Cleanup Response response = doHttpRequest(MGMT_PORT, "/settings/indexes", "POST", new FormBody.Builder()
-            .add("storageMode", "memory_optimized")
+            .add("storageMode", communityMode ? "forestdb" : "memory_optimized")
             .build(), true
         );
 

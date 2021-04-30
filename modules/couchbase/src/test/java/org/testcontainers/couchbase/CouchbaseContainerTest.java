@@ -30,17 +30,44 @@ import static org.junit.Assert.assertFalse;
 
 public class CouchbaseContainerTest {
 
-    private static final DockerImageName COUCHBASE_IMAGE = DockerImageName.parse("couchbase/server:6.5.1");
+    private static final DockerImageName COUCHBASE_IMAGE_ENTERPRISE =
+        DockerImageName.parse("couchbase/server:enterprise-6.6.2");
+    private static final DockerImageName COUCHBASE_IMAGE_COMMUNITY =
+        DockerImageName.parse("couchbase/server:community-6.6.0");
 
     @Test
-    public void testBasicContainerUsage() {
+    public void testBasicContainerUsageForEnterpriseContainer() {
         // bucket_definition {
         BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
         // }
 
         try (
-            // container_definition {
-            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE)
+            // container_definition_enterprise {
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_ENTERPRISE)
+                .withBucket(bucketDefinition)
+            // }
+        ) {
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                Collection collection = bucket.defaultCollection();
+
+                collection.upsert("foo", JsonObject.create().put("key", "value"));
+
+                JsonObject fooObject = collection.get("foo").contentAsObject();
+
+                assertEquals("value", fooObject.getString("key"));
+            });
+        }
+    }
+
+    @Test
+    public void testBasicContainerUsageForCommunityContainer() {
+        BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
+
+        try (
+            // container_definition_community {
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
+                .withCommunityMode(true)
                 .withBucket(bucketDefinition)
             // }
         ) {
@@ -63,7 +90,7 @@ public class CouchbaseContainerTest {
             .withFlushEnabled(true);
 
         try (
-            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE)
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_ENTERPRISE)
                 .withBucket(bucketDefinition)
         ) {
             setUpClient(container, cluster -> {

@@ -13,12 +13,17 @@ Running Couchbase as a stand-in in a test:
     [Bucket Definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:bucket_definition
     <!--/codeinclude-->
 
-2. define a container:
+2. Define a container with enterprise edition:
     <!--codeinclude-->
-    [Container definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:container_definition
+    [Container definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:container_definition_enterprise
     <!--/codeinclude-->
 
-3. create an cluster:
+    or with community edition:
+    <!--codeinclude-->
+    [Container definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:container_definition_community
+    <!--/codeinclude-->
+
+3. Create a cluster:
     <!--codeinclude-->
     [Cluster creation](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:cluster_creation
     <!--/codeinclude-->
