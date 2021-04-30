@@ -23,8 +23,10 @@ import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
 import java.util.function.Consumer;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -46,6 +48,8 @@ public class CouchbaseContainerTest {
         ) {
             setUpClient(container, cluster -> {
                 Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
+
                 Collection collection = bucket.defaultCollection();
 
                 collection.upsert("foo", JsonObject.create().put("key", "value"));
@@ -68,13 +72,15 @@ public class CouchbaseContainerTest {
         ) {
             setUpClient(container, cluster -> {
                 Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
+
                 Collection collection = bucket.defaultCollection();
 
                 collection.upsert("foo", JsonObject.create().put("key", "value"));
 
                 cluster.buckets().flushBucket(bucketDefinition.getName());
 
-                assertFalse(collection.exists("foo").exists());
+                await().untilAsserted(() -> assertFalse(collection.exists("foo").exists()));
             });
         }
     }
