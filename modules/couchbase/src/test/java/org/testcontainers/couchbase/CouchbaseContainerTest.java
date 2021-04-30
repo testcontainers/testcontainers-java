@@ -18,16 +18,12 @@ package org.testcontainers.couchbase;
 
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.CouchbaseCluster;
-import com.couchbase.client.java.document.JsonDocument;
-import com.couchbase.client.java.document.json.JsonObject;
-import com.couchbase.client.java.env.CouchbaseEnvironment;
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
+import com.couchbase.client.java.Collection;
+import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class CouchbaseContainerTest {
 
@@ -48,32 +44,24 @@ public class CouchbaseContainerTest {
             container.start();
 
             // cluster_creation {
-            CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
-                .builder()
-                .bootstrapCarrierDirectPort(container.getBootstrapCarrierDirectPort())
-                .bootstrapHttpDirectPort(container.getBootstrapHttpDirectPort())
-                .build();
-
-            Cluster cluster = CouchbaseCluster.create(
-                environment,
-                container.getHost()
+            Cluster cluster = Cluster.connect(
+                container.getConnectionString(),
+                container.getUsername(),
+                container.getPassword()
             );
             // }
 
             try {
-                // auth {
-                cluster.authenticate(container.getUsername(), container.getPassword());
-                // }
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                Collection collection = bucket.defaultCollection();
 
-                Bucket bucket = cluster.openBucket(bucketDefinition.getName());
+                collection.upsert("foo", JsonObject.create().put("key", "value"));
 
-                bucket.upsert(JsonDocument.create("foo", JsonObject.empty()));
+                JsonObject fooObject = collection.get("foo").contentAsObject();
 
-                assertTrue(bucket.exists("foo"));
-                assertNotNull(cluster.clusterManager().getBucket(bucketDefinition.getName()));
+                assertEquals("value", fooObject.getString("key"));
             } finally {
                 cluster.disconnect();
-                environment.shutdown();
             }
         }
     }
