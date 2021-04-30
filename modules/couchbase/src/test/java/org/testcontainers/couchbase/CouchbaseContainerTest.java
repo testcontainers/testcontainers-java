@@ -23,7 +23,10 @@ import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.function.Consumer;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class CouchbaseContainerTest {
 
@@ -41,17 +44,7 @@ public class CouchbaseContainerTest {
                 .withBucket(bucketDefinition)
             // }
         ) {
-            container.start();
-
-            // cluster_creation {
-            Cluster cluster = Cluster.connect(
-                container.getConnectionString(),
-                container.getUsername(),
-                container.getPassword()
-            );
-            // }
-
-            try {
+            setUpClient(container, cluster -> {
                 Bucket bucket = cluster.bucket(bucketDefinition.getName());
                 Collection collection = bucket.defaultCollection();
 
@@ -60,10 +53,47 @@ public class CouchbaseContainerTest {
                 JsonObject fooObject = collection.get("foo").contentAsObject();
 
                 assertEquals("value", fooObject.getString("key"));
-            } finally {
-                cluster.disconnect();
-            }
+            });
         }
     }
 
+    @Test
+    public void testBucketIsFlushableIfEnabled() {
+        BucketDefinition bucketDefinition = new BucketDefinition("mybucket")
+            .withFlushEnabled(true);
+
+        try (
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE)
+                .withBucket(bucketDefinition)
+        ) {
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                Collection collection = bucket.defaultCollection();
+
+                collection.upsert("foo", JsonObject.create().put("key", "value"));
+
+                cluster.buckets().flushBucket(bucketDefinition.getName());
+
+                assertFalse(collection.exists("foo").exists());
+            });
+        }
+    }
+
+    private void setUpClient(CouchbaseContainer container, Consumer<Cluster> consumer) {
+        container.start();
+
+        // cluster_creation {
+        Cluster cluster = Cluster.connect(
+            container.getConnectionString(),
+            container.getUsername(),
+            container.getPassword()
+        );
+        // }
+
+        try {
+            consumer.accept(cluster);
+        } finally {
+            cluster.disconnect();
+        }
+    }
 }
