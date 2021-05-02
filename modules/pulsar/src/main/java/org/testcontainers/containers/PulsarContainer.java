@@ -7,7 +7,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * This container wraps Apache Pulsar running in standalone mode
  */
-public class PulsarContainer extends GenericContainer<PulsarContainer> {
+public class PulsarContainer<SELF extends PulsarContainer<SELF>> extends GenericContainer<SELF> { {
 
     public static final int BROKER_PORT = 6650;
     public static final int BROKER_HTTP_PORT = 8080;
@@ -59,9 +59,9 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         }
     }
 
-    public PulsarContainer withFunctionsWorker() {
+    public SELF withFunctionsWorker() {
         functionsWorkerEnabled = true;
-        return this;
+        return self();
     }
 
     public String getPulsarBrokerUrl() {
