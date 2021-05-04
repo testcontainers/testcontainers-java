@@ -67,7 +67,7 @@ Testcontainers will inform Localstack of the best hostname automatically, using 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:localstack:{{latest_version}}"
+testImplementation "org.testcontainers:localstack:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

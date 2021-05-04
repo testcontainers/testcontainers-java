@@ -18,7 +18,7 @@ and will be able to override server settings when the container starts.
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:mysql:{{latest_version}}"
+testImplementation "org.testcontainers:mysql:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
