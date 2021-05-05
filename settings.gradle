@@ -64,5 +64,6 @@ gradleEnterprise {
         uploadInBackground = System.getenv("CI") == null
         captureTaskInputFiles = true
     }
+    allowUntrustedServer = true
 
 }
