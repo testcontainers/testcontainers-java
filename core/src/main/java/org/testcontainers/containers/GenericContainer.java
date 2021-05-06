@@ -11,6 +11,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
@@ -155,6 +156,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<Bind> binds = new ArrayList<>();
 
     private boolean privilegedMode;
+
+    @NonNull
+    private Set<Capability> capabilitiesAdded = new LinkedHashSet<>();
+
+    @NonNull
+    private Set<Capability> capabilitiesDropped = new LinkedHashSet<>();
 
     @NonNull
     private List<VolumesFrom> volumesFroms = new ArrayList<>();
@@ -824,6 +831,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withPrivileged(privilegedMode);
         }
 
+        Capability[] capabilitiesAddedArray = capabilitiesAdded.stream()
+                .toArray(Capability[]::new);
+        hostConfig.withCapAdd(capabilitiesAddedArray);
+
+        Capability[] capabilitiesDroppedArray = capabilitiesDropped.stream()
+                .toArray(Capability[]::new);
+        hostConfig.withCapDrop(capabilitiesDroppedArray);
+
         createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
         Map<String, String> combinedLabels = new HashMap<>();
@@ -1216,6 +1231,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withPrivilegedMode(boolean mode) {
         this.privilegedMode = mode;
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withCapabilitiesAdded(Capability... capabilities) {
+        Collections.addAll(capabilitiesAdded, capabilities);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withCapabilitiesDropped(Capability... capabilities) {
+        Collections.addAll(capabilitiesDropped, capabilities);
         return self();
     }
 

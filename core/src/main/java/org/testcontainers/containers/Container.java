@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Capability;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -317,6 +318,20 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withPrivilegedMode(boolean mode);
+
+    /**
+     * Add linux capabilities to the container.
+     * @param capabilities an array of capabilities
+     * @return this
+     */
+    SELF withCapabilitiesAdded(Capability... capabilities);
+
+    /**
+     * Drop linux capabilities from the container.
+     * @param capabilities an array of capabilities
+     * @return this
+     */
+    SELF withCapabilitiesDropped(Capability... capabilities);
 
     /**
      * Only consider a container to have successfully started if it has been running for this duration. The default

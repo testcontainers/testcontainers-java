@@ -1,5 +1,6 @@
 package org.testcontainers.junit;
 
+import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.HostConfig;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -45,6 +46,7 @@ import java.util.regex.Pattern;
 
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertArrayEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
@@ -243,6 +245,34 @@ public class GenericContainerRuleTest {
         String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
 
         assertEquals("Environment variables can be passed into a command from a map", "42 and 50", line);
+    }
+
+    @Test
+    public void capabilitiesAddedTest() {
+        try (final GenericContainer alpineCapabilitiesAdded = new GenericContainer<>(ALPINE_IMAGE)
+            .withCapabilitiesAdded(Capability.SYSLOG)
+            .withCommand("top")) {
+
+            alpineCapabilitiesAdded.start();
+
+            Capability[] capabilitiesAdded = alpineCapabilitiesAdded.getCurrentContainerInfo()
+                    .getHostConfig().getCapAdd();
+            assertArrayEquals(new Capability[]{Capability.SYSLOG}, capabilitiesAdded);
+        }
+    }
+
+    @Test
+    public void capabilitiesDroppedTest() {
+        try (final GenericContainer alpineCapabilitiesDropped = new GenericContainer<>(ALPINE_IMAGE)
+            .withCapabilitiesDropped(Capability.SYSLOG)
+            .withCommand("top")) {
+
+            alpineCapabilitiesDropped.start();
+
+            Capability[] capabilitiesDropped = alpineCapabilitiesDropped.getCurrentContainerInfo()
+                    .getHostConfig().getCapDrop();
+            assertArrayEquals(new Capability[]{Capability.SYSLOG}, capabilitiesDropped);
+        }
     }
 
     @Test
