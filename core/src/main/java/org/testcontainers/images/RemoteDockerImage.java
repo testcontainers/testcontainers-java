@@ -3,6 +3,7 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.github.dockerjava.api.model.Info;
 import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.experimental.Wither;
+import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -75,11 +77,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
-                    dockerClient
-                        .pullImageCmd(imageName.getUnversionedPart())
-                        .withTag(imageName.getVersionPart())
-                        .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
-                        .awaitCompletion();
+                    pullImageWithEmulatedFallback(imageName, logger);
 
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 
@@ -97,6 +95,28 @@ public class RemoteDockerImage extends LazyFuture<String> {
             throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
+        }
+    }
+
+    private void pullImageWithEmulatedFallback(DockerImageName imageName, Logger logger) throws InterruptedException {
+        try {
+            dockerClient
+                .pullImageCmd(imageName.getUnversionedPart())
+                .withTag(imageName.getVersionPart())
+                .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                .awaitCompletion();
+        } catch (DockerClientException e) {
+            Info info = dockerClient.infoCmd().exec();
+            if ("aarch64".equals(info.getArchitecture())) {
+                dockerClient
+                    .pullImageCmd(imageName.getUnversionedPart())
+                    .withTag(imageName.getVersionPart())
+                    .withPlatform("linux/amd64")
+                    .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                    .awaitCompletion();
+            } else {
+                throw e;
+            }
         }
     }
 
