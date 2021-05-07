@@ -747,7 +747,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
-                System.err.println(
+                logger().warn(
                     "Unable to mount a file from test host into a running container. " +
                         "This may be a misconfiguration or limitation of your Docker environment. " +
                         "Some features might not work."
