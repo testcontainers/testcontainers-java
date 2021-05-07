@@ -4,4 +4,5 @@ dependencies {
     compile project(':testcontainers')
 
     testCompile 'org.mock-server:mockserver-client-java:5.5.4'
+    testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }

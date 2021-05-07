@@ -14,4 +14,5 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }

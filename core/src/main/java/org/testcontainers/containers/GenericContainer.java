@@ -71,7 +71,6 @@ import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
@@ -748,7 +747,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
-                VisibleAssertions.warn(
+                logger().warn(
                     "Unable to mount a file from test host into a running container. " +
                         "This may be a misconfiguration or limitation of your Docker environment. " +
                         "Some features might not work."
