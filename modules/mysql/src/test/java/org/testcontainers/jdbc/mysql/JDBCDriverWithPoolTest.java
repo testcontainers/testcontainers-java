@@ -31,7 +31,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 @RunWith(Parameterized.class)
 public class JDBCDriverWithPoolTest {
 
-    public static final String URL = "jdbc:tc:mysql:5://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.mysql.JDBCDriverWithPoolTest::sampleInitFunction";
+    public static final String URL = "jdbc:tc:mysql:5.7.34://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.mysql.JDBCDriverWithPoolTest::sampleInitFunction";
     private final DataSource dataSource;
 
     @Parameterized.Parameters
