@@ -46,7 +46,7 @@ You are not limited to Unit tests and can of course use an instance of the Orien
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:orientdb:{{latest_version}}"
+testImplementation "org.testcontainers:orientdb:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

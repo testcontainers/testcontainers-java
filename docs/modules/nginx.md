@@ -27,7 +27,7 @@ And how to query the Nginx server for the custom content added.
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:nginx:{{latest_version}}"
+testImplementation "org.testcontainers:nginx:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
