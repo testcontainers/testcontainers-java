@@ -27,7 +27,6 @@ public abstract class AbstractContainerDatabaseTest {
         hikariConfig.setUsername(container.getUsername());
         hikariConfig.setPassword(container.getPassword());
         hikariConfig.setDriverClassName(container.getDriverClassName());
-        hikariConfig.addDataSourceProperty("enabledTLSProtocols", "TLSv1,TLSv1.1,TLSv1.2");
         return new HikariDataSource(hikariConfig);
     }
 }
