@@ -32,7 +32,7 @@ Testcontainers is distributed as separate JARs with a common version number:
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:testcontainers:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
