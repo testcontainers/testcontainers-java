@@ -1,7 +1,6 @@
 package org.testcontainers;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import lombok.experimental.UtilityClass;
 
@@ -17,8 +16,6 @@ public class Testcontainers {
     }
     
     public void exposeHostPorts(Map<Integer, Integer> ports) {
-    	for(Entry<Integer, Integer> entry : ports.entrySet()) {
-    		PortForwardingContainer.INSTANCE.exposeHostPort(entry.getKey(), entry.getValue());
-    	}
+    	ports.forEach(PortForwardingContainer.INSTANCE::exposeHostPort);
     }
 }
