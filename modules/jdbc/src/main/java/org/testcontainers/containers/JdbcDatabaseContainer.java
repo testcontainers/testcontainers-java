@@ -139,7 +139,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 try (Statement statement = createConnection("").createStatement()) {
                     boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
-                        logger().info("Container is started (JDBC URL: {})", JdbcDatabaseContainer.this.getJdbcUrl());
+                        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
                         return;
                     }
                 } catch (NoDriverFoundException e) {
@@ -155,7 +155,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         throw new IllegalStateException(
             String.format("Container is started, but cannot be accessed by (JDBC URL: %s), please check container logs",
-                JdbcDatabaseContainer.this.getJdbcUrl())
+                this.getJdbcUrl())
         );
     }
 
