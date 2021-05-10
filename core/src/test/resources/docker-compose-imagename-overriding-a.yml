@@ -1,0 +1,12 @@
+version: "2.1"
+services:
+    aservice:
+      image: aservice
+    redis:
+        image: redis:a
+    mysql:
+        image: mysql:a
+    custom:
+        build: .
+networks:
+    custom_network: {}

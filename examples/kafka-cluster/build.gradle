@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompileOnly "org.projectlombok:lombok:1.18.10"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.10"
+    testCompile 'org.testcontainers:kafka'
+    testCompile 'org.apache.kafka:kafka-clients:2.3.1'
+    testCompile 'org.assertj:assertj-core:3.14.0'
+    testCompile 'com.google.guava:guava:23.0'
+    testCompile 'org.slf4j:slf4j-simple:1.7.30'
+}

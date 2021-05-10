@@ -6,6 +6,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestImages.ALPINE_IMAGE;
 
 /**
  * Created by rnorth on 26/07/2016.
@@ -13,7 +14,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 public class WorkingDirectoryTest {
 
     @ClassRule
-    public static GenericContainer container = new GenericContainer("alpine:3.2")
+    public static GenericContainer container = new GenericContainer(ALPINE_IMAGE)
             .withWorkingDirectory("/etc")
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
             .withCommand("ls", "-al");

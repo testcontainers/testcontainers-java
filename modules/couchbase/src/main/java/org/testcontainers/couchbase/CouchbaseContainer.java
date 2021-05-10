@@ -30,15 +30,18 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -69,9 +72,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final int KV_SSL_PORT = 11207;
 
-    private static final String DOCKER_IMAGE_NAME = "couchbase/server";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("couchbase/server");
 
-    private static final String VERSION = "6.5.1";
+    private static final String DEFAULT_TAG = "6.5.1";
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -87,18 +90,30 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     /**
      * Creates a new couchbase container with the default image and version.
+     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
      */
+    @Deprecated
     public CouchbaseContainer() {
-        this(DOCKER_IMAGE_NAME + ":" + VERSION);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
-     * Creates a new couchbase container with a custom image name.
+     * Creates a new couchbase container with the specified image name.
      *
-     * @param imageName the image name that should be used.
+     * @param dockerImageName the image name that should be used.
      */
-    public CouchbaseContainer(final String imageName) {
-        super(imageName);
+    public CouchbaseContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    /**
+     * Create a new couchbase container with the specified image name.
+     * @param dockerImageName the image name that should be used.
+     */
+    public CouchbaseContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
     }
 
     /**
@@ -168,7 +183,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                             .map("healthy"::equals)
                             .orElse(false);
                     } catch (IOException e) {
-                        logger().error("Unable to parse response {}", response);
+                        logger().error("Unable to parse response: {}", response, e);
                         return false;
                     }
                 })
@@ -241,15 +256,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private void initializeServices() {
         logger().debug("Initializing couchbase services on host: {}", enabledServices);
 
-        final String services = enabledServices.stream().map(s -> {
-            switch (s) {
-                case KV: return "kv";
-                case QUERY: return "n1ql";
-                case INDEX: return "index";
-                case SEARCH: return "fts";
-                default: throw new IllegalStateException("Unknown service!");
-            }
-        }).collect(Collectors.joining(","));
+        final String services = enabledServices
+            .stream()
+            .map(CouchbaseService::getIdentifier)
+            .collect(Collectors.joining(","));
 
         @Cleanup Response response = doHttpRequest(MGMT_PORT, "/node/controller/setupServices", "POST", new FormBody.Builder()
             .add("services", services)
@@ -337,10 +347,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Based on the user-configured bucket definitions, creating buckets and corresponding indexes if needed.
      */
     private void createBuckets() {
-        logger().debug("Creating " + buckets.size() + " buckets (and corresponding indexes).");
+        logger().debug("Creating {} buckets (and corresponding indexes).", buckets.size());
 
         for (BucketDefinition bucket : buckets) {
-            logger().debug("Creating bucket \"" + bucket.getName() + "\"");
+            logger().debug("Creating bucket \"{}\"", bucket.getName());
 
             @Cleanup Response response = doHttpRequest(MGMT_PORT, "/pools/default/buckets", "POST", new FormBody.Builder()
                 .add("name", bucket.getName())
@@ -350,10 +360,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
 
             new HttpWaitStrategy()
-                .forPath("/pools/default/buckets/" + bucket.getName())
+                .forPath("/pools/default/b/" + bucket.getName())
                 .forPort(MGMT_PORT)
                 .withBasicCredentials(username, password)
                 .forStatusCode(200)
+                .forResponsePredicate(new AllServicesEnabledPredicate())
                 .waitUntilReady(this);
 
             if (enabledServices.contains(CouchbaseService.QUERY)) {
@@ -382,7 +393,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
                     checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
                 } else {
-                    logger().info("Primary index creation for bucket " + bucket.getName() + " ignored, since QUERY service is not present.");
+                    logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucket.getName());
                 }
             }
         }
@@ -406,7 +417,16 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      */
     private void checkSuccessfulResponse(final Response response, final String message) {
         if (!response.isSuccessful()) {
-            throw new IllegalStateException(message + ": " + response.toString());
+            String body = null;
+            if (response.body() != null) {
+                try {
+                    body = response.body().string();
+                } catch (IOException e) {
+                    logger().debug("Unable to read body of response: {}", response, e);
+                }
+            }
+
+            throw new IllegalStateException(message + ": " + response.toString() + ", body=" + (body == null ? "<null>" : body));
         }
     }
 
@@ -448,6 +468,40 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             return HTTP_CLIENT.newCall(requestBuilder.build()).execute();
         } catch (Exception ex) {
             throw new RuntimeException("Could not perform request against couchbase HTTP endpoint ", ex);
+        }
+    }
+
+    /**
+     * In addition to getting a 200, we need to make sure that all services we need are enabled and available on
+     * the bucket.
+     * <p>
+     *  Fixes the issue observed in https://github.com/testcontainers/testcontainers-java/issues/2993
+     */
+    private class AllServicesEnabledPredicate implements Predicate<String> {
+
+        @Override
+        public boolean test(final String rawConfig) {
+            try {
+                for (JsonNode node : MAPPER.readTree(rawConfig).at("/nodesExt")) {
+                    for (CouchbaseService enabledService : enabledServices) {
+                        boolean found = false;
+                        Iterator<String> fieldNames = node.get("services").fieldNames();
+                        while (fieldNames.hasNext()) {
+                            if (fieldNames.next().startsWith(enabledService.getIdentifier())) {
+                                found = true;
+                            }
+                        }
+                        if (!found) {
+                            logger().trace("Service {} not yet part of config, retrying.", enabledService);
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            } catch (IOException ex) {
+                logger().error("Unable to parse response: {}", rawConfig, ex);
+                return false;
+            }
         }
     }
 }

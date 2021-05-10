@@ -20,10 +20,12 @@ import java.time.temporal.ChronoUnit;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.rnorth.visibleassertions.VisibleAssertions.fail;
+import static org.testcontainers.MySQLTestImages.MYSQL_56_IMAGE;
+import static org.testcontainers.MySQLTestImages.MYSQL_57_IMAGE;
 
 
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
@@ -37,19 +39,19 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
      */
     /*
     @ClassRule
-    public static MySQLContainer<?> mysql = new MySQLContainer<>();
+    public static MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_IMAGE);
 
     @ClassRule
-    public static MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>("mysql:5.5");
+    public static MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>(DockerImageName.parse("mysql:5.5");)
 
     @ClassRule
-    public static MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>("mysql:5.6")
+    public static MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(DockerImageName.parse("mysql:5.6"))
                                                             .withConfigurationOverride("somepath/mysql_conf_override");
     */
 
     @Test
     public void testSimple() throws SQLException {
-        try (MySQLContainer<?> mysql = new MySQLContainer<>()
+        try (MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_57_IMAGE)
             .withConfigurationOverride("somepath/mysql_conf_override")
             .withLogConsumer(new Slf4jLogConsumer(logger))) {
 
@@ -64,7 +66,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSpecificVersion() throws SQLException {
-        try (MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>("mysql:5.5")
+        try (MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>(MYSQL_56_IMAGE)
             .withConfigurationOverride("somepath/mysql_conf_override")
             .withLogConsumer(new Slf4jLogConsumer(logger))) {
 
@@ -73,7 +75,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
             String resultSetString = resultSet.getString(1);
 
-            assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5"));
+            assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.6"));
         }
     }
 
@@ -81,7 +83,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     public void testMySQLWithCustomIniFile() throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
 
-        try (MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>("mysql:5.6")
+        try (MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(MYSQL_56_IMAGE)
             .withConfigurationOverride("somepath/mysql_conf_override")) {
 
             mysqlCustomConfig.start();
@@ -95,7 +97,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testCommandOverride() throws SQLException {
-        try (MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>()
+        try (MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(MYSQL_57_IMAGE)
             .withCommand("mysqld --auto_increment_increment=42")) {
 
             mysqlCustomConfig.start();
@@ -109,7 +111,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (MySQLContainer<?> container = new MySQLContainer<>()
+        try (MySQLContainer<?> container = new MySQLContainer<>(MYSQL_57_IMAGE)
             .withInitScript("somepath/init_mysql.sql")
             .withLogConsumer(new Slf4jLogConsumer(logger))) {
             container.start();
@@ -123,7 +125,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test(expected = ContainerLaunchException.class)
     public void testEmptyPasswordWithNonRootUser() {
-        try (MySQLContainer<?> container = new MySQLContainer<>("mysql:5.5")
+        try (MySQLContainer<?> container = new MySQLContainer<>(MYSQL_56_IMAGE)
                     .withDatabaseName("TEST")
                     .withUsername("test")
                     .withPassword("")
@@ -136,7 +138,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     @Test
     public void testEmptyPasswordWithRootUser() throws SQLException {
         // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
-        try (MySQLContainer<?> mysql = new MySQLContainer<>("mysql:5.5")
+        try (MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_56_IMAGE)
             .withDatabaseName("foo")
             .withUsername("root")
             .withPassword("")
@@ -153,7 +155,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamTimeZone() throws SQLException {
-        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+        MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_57_IMAGE)
             .withUrlParam("serverTimezone", "Europe/Zurich")
             .withEnv("TZ", "Europe/Zurich")
             .withLogConsumer(new Slf4jLogConsumer(logger));
@@ -183,7 +185,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamMultiQueries() throws SQLException {
-        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+        MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_57_IMAGE)
             .withUrlParam("allowMultiQueries", "true")
             .withLogConsumer(new Slf4jLogConsumer(logger));
         mysql.start();
@@ -207,7 +209,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        MySQLContainer mysql = (MySQLContainer) new MySQLContainer()
+        MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_57_IMAGE)
             .withUrlParam("allowMultiQueries", "true")
             .withUrlParam("rewriteBatchedStatements", "true")
             .withLogConsumer(new Slf4jLogConsumer(logger));

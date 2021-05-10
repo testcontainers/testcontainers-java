@@ -1,25 +1,29 @@
 package org.testcontainers.containers;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.SneakyThrows;
+import org.apache.commons.lang.StringUtils;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-
-import lombok.SneakyThrows;
-
-import org.apache.commons.lang.StringUtils;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * SolrContainer allows a solr container to be launched and controlled.
  */
 public class SolrContainer extends GenericContainer<SolrContainer> {
 
-    public static final String IMAGE = "solr";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("solr");
+
+    @Deprecated
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
+
+    @Deprecated
     public static final String DEFAULT_TAG = "8.3.0";
 
     public static final Integer ZOOKEEPER_PORT = 9983;
@@ -27,12 +31,26 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private SolrContainerConfiguration configuration;
 
+    /**
+     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public SolrContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
+    /**
+     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     */
     public SolrContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public SolrContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         this.waitStrategy = new LogMessageWaitStrategy()
             .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")
             .withStartupTimeout(Duration.of(60, SECONDS));

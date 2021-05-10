@@ -3,6 +3,7 @@ package com.example.linkedcontainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * A Redmine container.
@@ -11,7 +12,7 @@ public class RedmineContainer extends GenericContainer<RedmineContainer> {
 
     private static final int REDMINE_PORT = 3000;
 
-    public RedmineContainer(String dockerImageName) {
+    public RedmineContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
     }
 

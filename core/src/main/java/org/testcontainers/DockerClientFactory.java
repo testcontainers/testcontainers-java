@@ -1,33 +1,43 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
+import org.testcontainers.dockerclient.TransportConfig;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +65,7 @@ public class DockerClientFactory {
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
-    private static final String TINY_IMAGE = TestcontainersConfiguration.getInstance().getTinyImage();
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.5");
     private static DockerClientFactory instance;
 
     // Cached client configuration
@@ -66,7 +76,7 @@ public class DockerClientFactory {
     DockerClient dockerClient;
 
     @VisibleForTesting
-    RuntimeException cachedChecksFailure;
+    RuntimeException cachedClientFailure;
 
     private String activeApiVersion;
     private String activeExecutionDriver;
@@ -127,6 +137,27 @@ public class DockerClientFactory {
         return strategy;
     }
 
+    @UnstableAPI
+    public TransportConfig getTransportConfig() {
+        return getOrInitializeStrategy().getTransportConfig();
+    }
+
+    @UnstableAPI
+    public String getRemoteDockerUnixSocketPath() {
+        String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
+        if (!StringUtils.isBlank(dockerSocketOverride)) {
+            return dockerSocketOverride;
+        }
+
+        URI dockerHost = getTransportConfig().getDockerHost();
+        String path = "unix".equals(dockerHost.getScheme())
+            ? dockerHost.getRawPath()
+            : "/var/run/docker.sock";
+        return SystemUtils.IS_OS_WINDOWS
+               ? "/" + path
+               : path;
+    }
+
     /**
      *
      * @return a new initialized Docker client
@@ -139,16 +170,15 @@ public class DockerClientFactory {
         }
 
         // fail-fast if checks have failed previously
-        if (cachedChecksFailure != null) {
-            log.debug("There is a cached checks failure - throwing", cachedChecksFailure);
-            throw cachedChecksFailure;
+        if (cachedClientFailure != null) {
+            log.debug("There is a cached checks failure - throwing", cachedClientFailure);
+            throw cachedClientFailure;
         }
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
-        String hostIpAddress = strategy.getDockerHostIpAddress();
-        log.info("Docker host IP address is {}", hostIpAddress);
-        final DockerClient client = new DelegatingDockerClient(strategy.getClient()) {
+        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
+        final DockerClient client = new DelegatingDockerClient(strategy.getDockerClient()) {
             @Override
             public void close() {
                 throw new IllegalStateException("You should never close the global DockerClient!");
@@ -170,7 +200,13 @@ public class DockerClientFactory {
         boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
         if (useRyuk) {
             log.debug("Ryuk is enabled");
-            ryukContainerId = ResourceReaper.start(hostIpAddress, client);
+            try {
+                //noinspection deprecation
+                ryukContainerId = ResourceReaper.start(client);
+            } catch (RuntimeException e) {
+                cachedClientFailure = e;
+                throw e;
+            }
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
         } else {
             log.debug("Ryuk is disabled");
@@ -201,7 +237,7 @@ public class DockerClientFactory {
                     );
                 }
             } catch (RuntimeException e) {
-                cachedChecksFailure = e;
+                cachedClientFailure = e;
                 throw e;
             }
         } else {
@@ -223,7 +259,24 @@ public class DockerClientFactory {
         try {
             dockerClient
                     .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
-                    .exec(new ExecStartResultCallback(outputStream, null))
+                    .exec(new ResultCallback.Adapter<Frame>() {
+                        @Override
+                        public void onNext(Frame frame) {
+                            if (frame == null) {
+                                return;
+                            }
+                            switch (frame.getStreamType()) {
+                                case RAW:
+                                case STDOUT:
+                                    try {
+                                        outputStream.write(frame.getPayload());
+                                        outputStream.flush();
+                                    } catch (IOException e) {
+                                        onError(e);
+                                    }
+                            }
+                        }
+                    })
                     .awaitCompletion();
         } catch (Exception e) {
             log.debug("Can't exec disk checking command", e);
@@ -275,8 +328,9 @@ public class DockerClientFactory {
    */
     @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
-        List<Image> images = client.listImagesCmd().withImageNameFilter(image).exec();
-        if (images.isEmpty()) {
+        try {
+            client.inspectImageCmd(image).exec();
+        } catch (NotFoundException e) {
             client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
     }
@@ -290,12 +344,15 @@ public class DockerClientFactory {
 
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
         // We can't use client() here because it might create an infinite loop
-        return runInsideDocker(getOrInitializeStrategy().getClient(), createContainerCmdConsumer, block);
+        return runInsideDocker(getOrInitializeStrategy().getDockerClient(), createContainerCmdConsumer, block);
     }
 
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-        checkAndPullImage(client, TINY_IMAGE);
-        CreateContainerCmd createContainerCmd = client.createContainerCmd(TINY_IMAGE)
+
+        final String tinyImage = ImageNameSubstitutor.instance().apply(TINY_IMAGE).asCanonicalNameString();
+
+        checkAndPullImage(client, tinyImage);
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(tinyImage)
                 .withLabels(DEFAULT_LABELS);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();

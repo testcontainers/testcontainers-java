@@ -22,7 +22,7 @@ Let's start from here, and see how to improve the test with Testcontainers:
 First, add Testcontainers as a dependency as follows:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:spock:{{latest_version}}"
+testImplementation "org.testcontainers:spock:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

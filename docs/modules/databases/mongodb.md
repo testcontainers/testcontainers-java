@@ -41,7 +41,7 @@ That's where the MongoDBContainer might come in handy.
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:mongodb:{{latest_version}}"
+testImplementation "org.testcontainers:mongodb:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

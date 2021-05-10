@@ -2,12 +2,13 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Set;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singleton;
 
 /**
  * @author richardnorth
@@ -15,7 +16,9 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
+
     public static final String DEFAULT_TAG = "9.6.12";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgres");
 
     public static final Integer POSTGRESQL_PORT = 5432;
 
@@ -31,12 +34,23 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     private static final String QUERY_PARAM_SEPARATOR = "&";
 
+    /**
+     * @deprecated use {@link PostgreSQLContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public PostgreSQLContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public PostgreSQLContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public PostgreSQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*database system is ready to accept connections.*\\s")
                 .withTimes(2)
@@ -49,7 +63,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(POSTGRESQL_PORT));
+        return singleton(getMappedPort(POSTGRESQL_PORT));
     }
 
     @Override

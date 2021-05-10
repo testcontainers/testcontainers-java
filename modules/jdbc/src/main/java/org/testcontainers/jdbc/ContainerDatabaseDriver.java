@@ -230,27 +230,30 @@ public class ContainerDatabaseDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return delegate.getPropertyInfo(url, info);
+        return delegate != null ? delegate.getPropertyInfo(url, info) : new DriverPropertyInfo[0];
     }
 
     @Override
     public int getMajorVersion() {
-        return delegate.getMajorVersion();
+        return delegate != null ? delegate.getMajorVersion() : 1;
     }
 
     @Override
     public int getMinorVersion() {
-        return delegate.getMinorVersion();
+        return delegate != null ? delegate.getMinorVersion() : 0;
     }
 
     @Override
     public boolean jdbcCompliant() {
-        return delegate.jdbcCompliant();
+        return delegate != null && delegate.jdbcCompliant();
     }
 
     @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        return delegate.getParentLogger();
+        if (delegate != null) {
+            return delegate.getParentLogger();
+        }
+        throw new SQLFeatureNotSupportedException("getParentLogger not supported");
     }
 
     /**

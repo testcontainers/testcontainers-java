@@ -4,11 +4,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 
 import java.util.Optional;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 /**
  * Integration test for Redis-backed cache implementation.
@@ -16,7 +19,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
 public class RedisBackedCacheTest {
 
     @Rule
-    public GenericContainer redis = new GenericContainer("redis:3.0.6")
+    public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
                                             .withExposedPorts(6379);
     private Cache cache;
 
