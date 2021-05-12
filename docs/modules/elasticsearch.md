@@ -28,6 +28,20 @@ You can turn on security by providing a password:
 [HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientSecuredContainer
 <!--/codeinclude-->
 
+## Configure the heap size of your node
+
+Elasticsearch has changed its default mechanism to decide how much memory it
+uses from a static to a dynamic setting based on the available memory from
+Elasticsearch [7.11](https://github.com/elastic/elasticsearch/pull/65905) onwards.
+
+You can configure the heap size like this:
+
+<!--codeinclude-->
+[Elasticsearch heap size](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:configureHeapMemory
+<!--/codeinclude-->
+
+
+
 ## Choose your Elasticsearch license
 
 If you prefer to start a Docker image with the pure OSS version (which means with no security in older versions or
