@@ -5,4 +5,6 @@ dependencies {
 
     compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.11.929'
     testCompile 'com.amazonaws:aws-java-sdk-dynamodb:1.11.929'
+
+    testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }

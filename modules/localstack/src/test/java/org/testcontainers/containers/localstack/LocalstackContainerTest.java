@@ -66,7 +66,7 @@ public class LocalstackContainerTest {
         // without_network {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
-            .withServices(S3, SQS, CLOUDWATCHLOGS, KMS);
+            .withServices(S3, SQS, CLOUDWATCHLOGS, KMS, LocalStackContainer.EnabledService.named("events"));
         // }
 
         @Test
