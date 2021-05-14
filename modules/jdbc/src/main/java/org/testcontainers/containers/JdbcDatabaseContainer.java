@@ -36,6 +36,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private int startupTimeoutSeconds = 120;
     private int connectTimeoutSeconds = 120;
+    private int retryTimeoutMs = 100;
 
     private static final String QUERY_PARAM_SEPARATOR = "&";
 
@@ -130,6 +131,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return self();
     }
 
+    public SELF withRetryTimeout(int retryTimeoutMs) {
+        this.retryTimeoutMs = retryTimeoutMs;
+        return self();
+    }
+
     @Override
     protected void waitUntilContainerStarted() {
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
@@ -140,7 +146,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
                 try {
                     if (!isRunning()) {
-                        Thread.sleep(100L);
+                        Thread.sleep(retryTimeoutMs);
                         continue; // Don't attempt to connect yet
                     }
 
@@ -156,7 +162,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 } catch (Exception e) {
                     // ignore so that we can try again
                     logger().debug("Failure when trying test query", e);
-                    Thread.sleep(100L);
+                    Thread.sleep(retryTimeoutMs);
                 }
             }
         } catch (InterruptedException e) {
@@ -219,7 +225,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                     return jdbcDriverInstance.connect(url, info);
                 } catch (SQLException e) {
                     lastException = e;
-                    Thread.sleep(100L);
+                    Thread.sleep(retryTimeoutMs);
                 }
             }
         } catch (InterruptedException e) {
