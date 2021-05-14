@@ -7,7 +7,7 @@ dependencies {
     compile project(':jdbc')
 
     compileOnly project(':r2dbc')
-    compileOnly 'io.r2dbc:r2dbc-mssql:0.8.5.RELEASE'
+    compileOnly 'io.r2dbc:r2dbc-mssql:0.8.6.RELEASE'
 
     testCompile project(':jdbc-test')
     testCompile 'com.microsoft.sqlserver:mssql-jdbc:9.1.1.jre8-preview'
