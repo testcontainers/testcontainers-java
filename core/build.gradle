@@ -210,7 +210,7 @@ dependencies {
     testCompile 'com.rabbitmq:amqp-client:5.9.0'
     testCompile 'org.mongodb:mongo-java-driver:3.12.7'
 
-    testCompile ('org.mockito:mockito-core:3.6.28') {
+    testCompile ('org.mockito:mockito-core:3.10.0') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
