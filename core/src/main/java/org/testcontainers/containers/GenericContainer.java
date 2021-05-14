@@ -52,6 +52,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Adler32;
@@ -152,6 +153,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @NonNull
     private List<Bind> binds = new ArrayList<>();
+
+    @NonNull
+    private List<Supplier<Bind>> bindSuppliers = new ArrayList<>();
 
     private boolean privilegedMode;
 
@@ -744,7 +748,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
 
-        boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
+        boolean shouldCheckFileMountingSupport = (binds.size() > 0 || bindSuppliers.size() > 0) &&
+            !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
                 logger().warn(
@@ -755,7 +760,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         }
 
-        Bind[] bindsArray = binds.stream()
+        Bind[] bindsArray = Stream.concat(binds.stream(), bindSuppliers.stream().map(Supplier::get))
                 .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
@@ -956,11 +961,25 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    @Override
+    public void addFileSystemBind(Supplier<String> hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext) {
+        bindSuppliers.add(() -> {
+            final MountableFile mountableFile = MountableFile.forHostPath(hostPath.get());
+            return new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext);
+        });
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
+        addFileSystemBind(hostPath, containerPath, mode);
+        return self();
+    }
+
+    @Override
+    public SELF withFileSystemBind(Supplier<String> hostPath, String containerPath, BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode);
         return self();
     }
