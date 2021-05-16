@@ -4,5 +4,5 @@ dependencies {
     compile project(':jdbc')
 
     testCompile project(':jdbc-test')
-    testCompile 'com.ibm.db2:jcc:11.5.0.0'
+    testCompile 'com.ibm.db2:jcc:11.5.5.0'
 }

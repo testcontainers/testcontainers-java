@@ -1,5 +1,6 @@
 package org.testcontainers.jdbc.db2;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.jdbc.AbstractJDBCDriverTest;
@@ -8,6 +9,7 @@ import java.util.EnumSet;
 
 import static java.util.Arrays.asList;
 
+@Ignore
 @RunWith(Parameterized.class)
 public class DB2JDBCDriverTest extends AbstractJDBCDriverTest {
 
