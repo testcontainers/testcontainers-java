@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,15 +17,15 @@ import java.sql.SQLException;
 public class MySQLRootAccountTest {
 
     @Parameterized.Parameters(name = "{0}")
-    public static String[] params() {
-        return new String[]{
-            "mysql:8",
-            "mysql:5"
+    public static DockerImageName[] params() {
+        return new DockerImageName[]{
+            MySQLTestImages.MYSQL_80_IMAGE,
+            MySQLTestImages.MYSQL_57_IMAGE
         };
     }
 
     @Parameterized.Parameter()
-    public String image;
+    public DockerImageName image;
 
     @Test
     public void testRootAccountUsageWithDefaultPassword() throws SQLException {

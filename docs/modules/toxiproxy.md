@@ -73,7 +73,7 @@ Additionally we can disable the proxy to simulate a complete interruption to the
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:toxiproxy:{{latest_version}}"
+testImplementation "org.testcontainers:toxiproxy:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

@@ -89,7 +89,7 @@ A few different examples are shown in [ChromeWebDriverContainerTest.java](https:
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:selenium:{{latest_version}}"
+testImplementation "org.testcontainers:selenium:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

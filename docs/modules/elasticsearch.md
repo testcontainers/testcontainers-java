@@ -42,7 +42,7 @@ other new and advanced features), you can use this instead:
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:elasticsearch:{{latest_version}}"
+testImplementation "org.testcontainers:elasticsearch:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

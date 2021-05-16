@@ -31,7 +31,7 @@ containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:oracle-xe:{{latest_version}}"
+testImplementation "org.testcontainers:oracle-xe:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

@@ -13,7 +13,7 @@ dependencies {
     testCompile 'mysql:mysql-connector-java:8.0.22'
 
     testCompile testFixtures(project(':r2dbc'))
-    testCompile 'dev.miku:r2dbc-mysql:0.8.1.RELEASE'
+    testCompile 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 
     compileOnly 'org.jetbrains:annotations:20.1.0'
 }
