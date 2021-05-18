@@ -319,6 +319,13 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withPrivilegedMode(boolean mode);
 
     /**
+     * Set publishAllPorts for the container
+     * @param publishAllPorts boolean
+     * @return this
+     */
+    SELF withPublishAllPorts(boolean publishAllPorts);
+
+    /**
      * Only consider a container to have successfully started if it has been running for this duration. The default
      * value is null; if that's the value, ignore this check.
      *

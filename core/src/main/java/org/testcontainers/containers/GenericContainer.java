@@ -153,6 +153,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private List<Bind> binds = new ArrayList<>();
 
+    private boolean publishAllPorts = true;
+
     private boolean privilegedMode;
 
     @NonNull
@@ -798,7 +800,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withNetworkMode(networkForLinks.get());
         }
 
-        createCommand.withPublishAllPorts(true);
+        createCommand.withPublishAllPorts(publishAllPorts);
 
         PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
             withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
@@ -1215,6 +1217,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withPrivilegedMode(boolean mode) {
         this.privilegedMode = mode;
+        return self();
+    }
+
+    @Override
+    public SELF withPublishAllPorts(boolean publishAllPorts) {
+        this.publishAllPorts = publishAllPorts;
         return self();
     }
 
