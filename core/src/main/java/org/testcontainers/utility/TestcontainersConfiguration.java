@@ -251,7 +251,7 @@ public class TestcontainersConfiguration {
      * @return properties values available from user properties and classpath properties. Values set by environment
      * variable are NOT included.
      * @deprecated usages should be removed ASAP. See {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)},
-     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getRawEnvVar(String, String)}
+     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getEnvVar(String, String)}
      * for suitable replacements.
      */
     @Deprecated
