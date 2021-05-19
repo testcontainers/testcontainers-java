@@ -11,4 +11,5 @@ dependencies {
     testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
     testCompile 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
     testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    testCompile 'org.assertj:assertj-core:3.16.1'
 }
