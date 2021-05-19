@@ -5,5 +5,5 @@ dependencies {
 
     testCompile group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.7.1'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.18.1'
-    testCompile group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '2.7.0'
+    testCompile group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '2.7.2'
 }
