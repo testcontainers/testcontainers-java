@@ -16,7 +16,7 @@ dependencies {
     testCompile 'org.apache.httpcomponents:httpclient:4.5.13'
 
     testRuntime 'org.postgresql:postgresql:42.2.18'
-    testRuntime 'mysql:mysql-connector-java:8.0.22'
+    testRuntime 'mysql:mysql-connector-java:8.0.25'
 
     testCompileClasspath 'org.jetbrains:annotations:20.1.0'
 }
