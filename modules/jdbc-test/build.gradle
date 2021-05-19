@@ -16,5 +16,5 @@ dependencies {
 
     compile 'org.apache.tomcat:tomcat-jdbc:9.0.40'
     compile 'org.vibur:vibur-dbcp:25.0'
-    compile 'mysql:mysql-connector-java:8.0.22'
+    compile 'mysql:mysql-connector-java:8.0.25'
 }
