@@ -13,16 +13,13 @@ import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 
@@ -35,13 +32,15 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
     @Rule
     public MockTestcontainersConfigurationRule mockConfig = new MockTestcontainersConfigurationRule();
+    private URI defaultDockerHost;
+    private com.github.dockerjava.core.SSLConfig defaultSSLConfig;
 
     @Before
     public void checkEnvironmentClear() {
-        // If docker-java will pick up non-default settings from the environment, testing will not be reliable - skip tests
+        // If docker-java picks up non-default settings from the environment, our test needs to know to expect those
         DefaultDockerClientConfig defaultConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-        assumeThat(defaultConfig.getDockerHost().toASCIIString(), is("unix:///var/run/docker.sock"));
-        assumeThat(defaultConfig.getSSLConfig(), is(nullValue()));
+        defaultDockerHost = defaultConfig.getDockerHost();
+        defaultSSLConfig = defaultConfig.getSSLConfig();
     }
 
     @Test
@@ -53,8 +52,8 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
-        assertEquals("unix:///var/run/docker.sock", transportConfig.getDockerHost().toString());
-        assertNull(transportConfig.getSslConfig());
+        assertEquals(defaultDockerHost, transportConfig.getDockerHost());
+        assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
 
         String dockerHostIpAddress = strategy.getDockerHostIpAddress();
         assertEquals("localhost", dockerHostIpAddress);
@@ -70,7 +69,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
         TransportConfig transportConfig = strategy.getTransportConfig();
         assertEquals("tcp://1.2.3.4:2375", transportConfig.getDockerHost().toString());
-        assertNull(transportConfig.getSslConfig());
+        assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
 
         String dockerHostIpAddress = strategy.getDockerHostIpAddress();
         assertEquals("1.2.3.4", dockerHostIpAddress);
