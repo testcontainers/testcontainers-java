@@ -208,6 +208,8 @@ public class TestcontainersConfiguration {
      * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
      * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory or
      * a <code>testcontainers.properties</code> found on the classpath.
+     * <p>
+     * Note that only environment variables prefixed <code>TESTCONTAINERS_</code> will be searched.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
@@ -220,6 +222,8 @@ public class TestcontainersConfiguration {
     /**
      * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
      * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     * <p>
+     * Note that only environment variables prefixed <code>TESTCONTAINERS_</code> will be searched.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
@@ -232,12 +236,14 @@ public class TestcontainersConfiguration {
     /**
      * Gets a configured setting from a the user's configuration file.
      * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     * <p>
+     * Note that only environment variables prefixed <code>TESTCONTAINERS_</code> will be searched.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
     @Contract("_, !null -> !null")
-    public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
+    public String getEnvVar(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue);
     }
 
@@ -245,7 +251,7 @@ public class TestcontainersConfiguration {
      * @return properties values available from user properties and classpath properties. Values set by environment
      * variable are NOT included.
      * @deprecated usages should be removed ASAP. See {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)},
-     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getUserProperty(String, String)}
+     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getRawEnvVar(String, String)}
      * for suitable replacements.
      */
     @Deprecated

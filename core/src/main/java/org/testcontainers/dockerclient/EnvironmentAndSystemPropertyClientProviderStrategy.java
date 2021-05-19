@@ -2,6 +2,9 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
+import org.testcontainers.utility.TestcontainersConfiguration;
+
+import java.util.Optional;
 
 /**
  * Use environment variables and system properties (as supported by the underlying DockerClient DefaultConfigBuilder)
@@ -15,11 +18,25 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     public static final int PRIORITY = 100;
 
     // Try using environment variables
-    private final DockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+    private final DockerClientConfig dockerClientConfig;
+
+    public EnvironmentAndSystemPropertyClientProviderStrategy() {
+        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+
+        getUserProperty("docker.host").ifPresent(configBuilder::withDockerHost);
+        getUserProperty("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+        getUserProperty("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+
+        dockerClientConfig = configBuilder.build();
+    }
+
+    private Optional<String> getUserProperty(final String s) {
+        return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(s, null));
+    }
 
     @Override
     protected boolean isApplicable() {
-        return System.getenv("DOCKER_HOST") != null;
+        return System.getenv("DOCKER_HOST") != null || getUserProperty("docker.host").isPresent();
     }
 
     @Override
