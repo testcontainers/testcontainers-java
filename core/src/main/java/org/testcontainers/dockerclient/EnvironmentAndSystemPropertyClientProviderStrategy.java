@@ -29,20 +29,20 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
         // use docker-java defaults if present, overridden if our own configuration is set
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
-        getUserProperty("docker.host").ifPresent(configBuilder::withDockerHost);
-        getUserProperty("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
-        getUserProperty("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+        getSetting("docker.host").ifPresent(configBuilder::withDockerHost);
+        getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+        getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
 
         dockerClientConfig = configBuilder.build();
     }
 
-    private Optional<String> getUserProperty(final String name) {
+    private Optional<String> getSetting(final String name) {
         return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(name, null));
     }
 
     @Override
     protected boolean isApplicable() {
-        return getUserProperty("docker.host").isPresent();
+        return getSetting("docker.host").isPresent();
     }
 
     @Override
