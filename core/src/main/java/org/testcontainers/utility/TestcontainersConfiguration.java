@@ -234,8 +234,7 @@ public class TestcontainersConfiguration {
     }
 
     /**
-     * Gets a configured setting from a the user's configuration file.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     * Gets a configured setting from an environment variable.
      * <p>
      * Note that only environment variables prefixed <code>TESTCONTAINERS_</code> will be searched.
      *
