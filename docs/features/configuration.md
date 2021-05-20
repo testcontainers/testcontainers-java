@@ -96,9 +96,9 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 
 ## Customizing Docker host detection
 
-Testcontainers will attempt to detect the Docker environment and configure everything.
+Testcontainers will attempt to detect the Docker environment and configure everything to work automatically.
 
-However, sometimes a customization is required. For that, you can provide the following environment variables:
+However, sometimes customization is required. Testcontainers will respect the following **environment variables**:
 
 > **DOCKER_HOST** = unix:///var/run/docker.sock  
 > See [Docker environment variables](https://docs.docker.com/engine/reference/commandline/cli/#environment-variables)
@@ -110,3 +110,14 @@ However, sometimes a customization is required. For that, you can provide the fo
 > **TESTCONTAINERS_HOST_OVERRIDE**  
 > Docker's host on which ports are exposed.  
 > Example: `docker.svc.local`
+
+For advanced users, the Docker host connection can be configured **via configuration** in `~/.testcontainers.properties`.
+Note that these settings require use of the `EnvironmentAndSystemPropertyClientProviderStrategy`. The example below 
+illustrates usage:
+
+```properties
+docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
+docker.host=tcp\://my.docker.host\:1234     # Equivalent to the DOCKER_HOST environment variable. Colons should be escaped.
+docker.tls.verify=1                         # Equivalent to the DOCKER_TLS_VERIFY environment variable
+docker.cert.path=/some/path                 # Equivalent to the DOCKER_CERT_PATH environment variable
+```
