@@ -30,8 +30,8 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
         dockerClientConfig = configBuilder.build();
     }
 
-    private Optional<String> getUserProperty(final String s) {
-        return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(s, null));
+    private Optional<String> getUserProperty(final String name) {
+        return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(name, null));
     }
 
     @Override
