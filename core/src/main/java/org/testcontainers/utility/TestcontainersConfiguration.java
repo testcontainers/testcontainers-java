@@ -252,7 +252,7 @@ public class TestcontainersConfiguration {
      * @return the found value, or null if not set
      */
     @Contract("_, !null -> !null")
-    public String getEnvVar(@NotNull final String propertyName, @Nullable final String defaultValue) {
+    public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue);
     }
 
@@ -260,7 +260,7 @@ public class TestcontainersConfiguration {
      * @return properties values available from user properties and classpath properties. Values set by environment
      * variable are NOT included.
      * @deprecated usages should be removed ASAP. See {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)},
-     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getEnvVar(String, String)}
+     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getUserProperty(String, String)}
      * for suitable replacements.
      */
     @Deprecated
