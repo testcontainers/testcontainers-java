@@ -9,6 +9,12 @@ import java.util.Optional;
 /**
  * Use environment variables and system properties (as supported by the underlying DockerClient DefaultConfigBuilder)
  * to try and locate a docker environment.
+ * <p>
+ * Resolution order is:
+ * <ol>
+ *     <li>DOCKER_HOST env var</li>
+ *     <li>docker.host in ~/.testcontainers.properties</li>
+ * </ol>
  *
  * @deprecated this class is used by the SPI and should not be used directly
  */
@@ -36,7 +42,7 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     @Override
     protected boolean isApplicable() {
-        return System.getenv("DOCKER_HOST") != null || getUserProperty("docker.host").isPresent();
+        return getUserProperty("docker.host").isPresent();
     }
 
     @Override
