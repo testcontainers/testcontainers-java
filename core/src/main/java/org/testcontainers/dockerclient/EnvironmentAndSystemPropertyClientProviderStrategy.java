@@ -17,10 +17,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     public static final int PRIORITY = 100;
 
-    // Try using environment variables
     private final DockerClientConfig dockerClientConfig;
 
     public EnvironmentAndSystemPropertyClientProviderStrategy() {
+        // use docker-java defaults if present, overridden if our own configuration is set
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
         getUserProperty("docker.host").ifPresent(configBuilder::withDockerHost);
