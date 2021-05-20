@@ -54,9 +54,6 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         TransportConfig transportConfig = strategy.getTransportConfig();
         assertEquals(defaultDockerHost, transportConfig.getDockerHost());
         assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
-
-        String dockerHostIpAddress = strategy.getDockerHostIpAddress();
-        assertEquals("localhost", dockerHostIpAddress);
     }
 
     @Test
@@ -70,9 +67,6 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         TransportConfig transportConfig = strategy.getTransportConfig();
         assertEquals("tcp://1.2.3.4:2375", transportConfig.getDockerHost().toString());
         assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
-
-        String dockerHostIpAddress = strategy.getDockerHostIpAddress();
-        assertEquals("1.2.3.4", dockerHostIpAddress);
     }
 
     @Test
@@ -93,8 +87,5 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         assertNotNull(sslConfig);
         assertTrue(sslConfig instanceof LocalDirectorySSLConfig);
         assertEquals(tempDirPath, ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
-
-        String dockerHostIpAddress = strategy.getDockerHostIpAddress();
-        assertEquals("1.2.3.4", dockerHostIpAddress);
     }
 }
