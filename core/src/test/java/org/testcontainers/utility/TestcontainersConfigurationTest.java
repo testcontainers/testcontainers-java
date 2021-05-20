@@ -114,6 +114,27 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
+    public void shouldReadDockerSettingsFromEnvironmentWithoutTestcontainersPrefix() {
+        userProperties.remove("docker.foo");
+        environment.put("DOCKER_FOO", "some value");
+        assertEquals("reads unprefixed env vars for docker. settings", "some value", newConfig().getEnvVarOrUserProperty("docker.foo", "default"));
+    }
+
+    @Test
+    public void shouldNotReadDockerSettingsFromEnvironmentWithTestcontainersPrefix() {
+        userProperties.remove("docker.foo");
+        environment.put("TESTCONTAINERS_DOCKER_FOO", "some value");
+        assertEquals("reads unprefixed env vars for docker. settings", "default", newConfig().getEnvVarOrUserProperty("docker.foo", "default"));
+    }
+
+    @Test
+    public void shouldReadDockerSettingsFromUserProperties() {
+        environment.remove("DOCKER_FOO");
+        userProperties.put("docker.foo", "some value");
+        assertEquals("reads unprefixed user properties for docker. settings", "some value", newConfig().getEnvVarOrUserProperty("docker.foo", "default"));
+    }
+
+    @Test
     public void shouldNotReadDockerClientStrategyFromClasspathProperties() {
         String currentValue = newConfig().getDockerClientStrategyClassName();
 
@@ -129,7 +150,7 @@ public class TestcontainersConfigurationTest {
 
     @Test
     public void shouldReadDockerClientStrategyFromEnvironment() {
-               userProperties.remove("docker.client.strategy");
+        userProperties.remove("docker.client.strategy");
         environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "foo");
         assertEquals("Docker client strategy is changed by env var", "foo", newConfig().getDockerClientStrategyClassName());
     }
