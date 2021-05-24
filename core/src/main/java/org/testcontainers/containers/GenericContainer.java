@@ -739,6 +739,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         final List<ExposedPort> exposedPorts = allPortBindings.stream()
             .map(PortBinding::getExposedPort)
+            .distinct()
             .collect(Collectors.toList());
         createCommand.withExposedPorts(exposedPorts);
 
