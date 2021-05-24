@@ -721,22 +721,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void applyConfiguration(CreateContainerCmd createCommand) {
         HostConfig hostConfig = buildHostConfig();
 
+        // PortBindings must contain:
+        //  * all exposed ports with a randomized host port (equivalent to -p CONTAINER_PORT)
+        //  * all exposed ports with a fixed host port (equivalent to -p HOST_PORT:CONTAINER_PORT)
         List<PortBinding> allPortBindings = new ArrayList<>();
-        for (final Integer exposedPort : exposedPorts) {
-            allPortBindings.add(
-                new PortBinding(
-                    Ports.Binding.empty(),
-                    new ExposedPort(exposedPort)
-                )
-            );
-        }
-        for (final String portBinding : portBindings) {
-            allPortBindings.add(
-                PortBinding.parse(portBinding)
-            );
-        }
+        // First collect all the randomized host ports from our 'exposedPorts' field
+        exposedPorts.stream()
+            .map(ExposedPort::new)
+            .map(p -> new PortBinding(Ports.Binding.empty(), p))
+            .forEachOrdered(allPortBindings::add);
+        // Next collect all the fixed host ports from our 'portBindings' field
+        portBindings.stream()
+            .map(PortBinding::parse)
+            .forEachOrdered(allPortBindings::add);
+
         hostConfig.withPortBindings(allPortBindings);
 
+        // Next, ExposedPorts must be set up to publish all of the above ports, randomized and fixed.
+        // Collect all of the exposed ports for publication
         final List<ExposedPort> exposedPorts = allPortBindings.stream()
             .map(PortBinding::getExposedPort)
             .distinct()

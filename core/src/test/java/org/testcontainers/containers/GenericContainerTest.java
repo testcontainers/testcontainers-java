@@ -106,8 +106,8 @@ public class GenericContainerTest {
                 .map(Ports.Binding::getHostPortSpec)
                 .collect(Collectors.toList());
             assertEquals(
-                "port 8080 is bound to a random port on the host (published)",
-                singletonList(""),
+                "port 8080 is bound to a random port on the host",
+                singletonList("0"),
                 bindings
             );
         }
