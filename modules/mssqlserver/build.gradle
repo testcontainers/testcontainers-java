@@ -1,8 +1,8 @@
 description = "Testcontainers :: MS SQL Server"
 
 dependencies {
-    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
-    compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0'
+    compileOnly 'com.google.auto.service:auto-service:1.0'
 
     compile project(':jdbc')
 
