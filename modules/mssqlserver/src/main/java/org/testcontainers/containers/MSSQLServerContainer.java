@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -60,8 +62,8 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MS_SQL_SERVER_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(MS_SQL_SERVER_PORT);
     }
 
     @Override
