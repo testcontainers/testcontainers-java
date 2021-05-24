@@ -18,7 +18,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      * <p>
      * You can use this constant in case you want to map an explicit public port to it
      * instead of the default random port. This can be done using methods like
-     * {@link #setFixedExposedPorts(java.util.List)}.
+     * {@link #setPortBindings(java.util.List)}.
      */
     public static final int MONGODB_PORT = 27017;
     public static final String DEFAULT_IMAGE_AND_TAG = "mongo:4.0";
