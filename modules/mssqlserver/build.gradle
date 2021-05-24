@@ -1,8 +1,8 @@
 description = "Testcontainers :: MS SQL Server"
 
 dependencies {
-    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
-    compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0'
+    compileOnly 'com.google.auto.service:auto-service:1.0'
 
     compile project(':jdbc')
 
@@ -10,12 +10,12 @@ dependencies {
     compileOnly 'io.r2dbc:r2dbc-mssql:0.8.6.RELEASE'
 
     testCompile project(':jdbc-test')
-    testCompile 'com.microsoft.sqlserver:mssql-jdbc:9.1.1.jre8-preview'
+    testCompile 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
 
     testCompile project(':r2dbc')
     testCompile 'io.r2dbc:r2dbc-mssql:0.8.5.RELEASE'
 
     // MSSQL's wait strategy requires the JDBC driver
     testCompile testFixtures(project(':r2dbc'))
-    testCompile 'com.microsoft.sqlserver:mssql-jdbc:9.1.1.jre8-preview'
+    testCompile 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
 }
