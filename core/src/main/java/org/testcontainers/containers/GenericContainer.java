@@ -724,26 +724,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         // PortBindings must contain:
         //  * all exposed ports with a randomized host port (equivalent to -p CONTAINER_PORT)
         //  * all exposed ports with a fixed host port (equivalent to -p HOST_PORT:CONTAINER_PORT)
-        List<PortBinding> allPortBindings = new ArrayList<>();
+        Map<ExposedPort, PortBinding> allPortBindings = new HashMap<>();
         // First collect all the randomized host ports from our 'exposedPorts' field
-        exposedPorts.stream()
-            .map(ExposedPort::new)
-            .map(p -> new PortBinding(Ports.Binding.empty(), p))
-            .forEachOrdered(allPortBindings::add);
-        // Next collect all the fixed host ports from our 'portBindings' field
-        portBindings.stream()
-            .map(PortBinding::parse)
-            .forEachOrdered(allPortBindings::add);
+        for (final Integer tcpPort : exposedPorts) {
+            ExposedPort exposedPort = new ExposedPort(tcpPort);
+            allPortBindings.put(exposedPort, new PortBinding(Ports.Binding.empty(), exposedPort));
+        }
+        // Next collect all the fixed host ports from our 'portBindings' field, overwriting any randomized ports so that
+        // we don't create two bindings for the same container port.
+        for (final String portBinding : portBindings) {
+            PortBinding parsedBinding = PortBinding.parse(portBinding);
+            allPortBindings.put(parsedBinding.getExposedPort(), parsedBinding);
+        }
 
-        hostConfig.withPortBindings(allPortBindings);
+        List<PortBinding> finalBindings = new ArrayList<>(allPortBindings.values());
+        hostConfig.withPortBindings(finalBindings);
 
-        // Next, ExposedPorts must be set up to publish all of the above ports, randomized and fixed.
+        // Next, ExposedPorts must be set up to publish all of the above ports, both randomized and fixed.
         // Collect all of the exposed ports for publication
-        final List<ExposedPort> exposedPorts = allPortBindings.stream()
-            .map(PortBinding::getExposedPort)
-            .distinct()
-            .collect(Collectors.toList());
-        createCommand.withExposedPorts(exposedPorts);
+        final List<ExposedPort> finalExposedPorts = new ArrayList<>(allPortBindings.keySet());
+        createCommand.withExposedPorts(finalExposedPorts);
 
         createCommand.withHostConfig(hostConfig);
 
