@@ -105,8 +105,8 @@ public class GenericContainerTest {
 
             Integer mappedPort = container.getMappedPort(8080);
             assertTrue(
-                "port 8080 is bound to an ephemeral port on the host",
-                mappedPort >= 32768
+                "port 8080 is bound to a different port on the host",
+                mappedPort != 8080
             );
 
             assertThrows(
