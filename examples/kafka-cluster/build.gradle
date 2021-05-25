@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    testCompileOnly "org.projectlombok:lombok:1.18.10"
+    testCompileOnly "org.projectlombok:lombok:1.18.20"
     testAnnotationProcessor "org.projectlombok:lombok:1.18.10"
     testCompile 'org.testcontainers:kafka'
     testCompile 'org.apache.kafka:kafka-clients:2.3.1'

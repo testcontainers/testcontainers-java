@@ -142,7 +142,7 @@ See more examples:
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:gcloud:{{latest_version}}"
+testImplementation "org.testcontainers:gcloud:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

@@ -33,7 +33,7 @@ Running Couchbase as a stand-in in a test:
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:couchbase:{{latest_version}}"
+testImplementation "org.testcontainers:couchbase:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

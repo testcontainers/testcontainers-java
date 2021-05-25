@@ -27,7 +27,6 @@ public abstract class AbstractContainerDatabaseTest {
         hikariConfig.setUsername(container.getUsername());
         hikariConfig.setPassword(container.getPassword());
         hikariConfig.setDriverClassName(container.getDriverClassName());
-
         return new HikariDataSource(hikariConfig);
     }
 }

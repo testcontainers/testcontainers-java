@@ -3,4 +3,5 @@ description = "Testcontainers :: Nginx"
 dependencies {
     compile project(':testcontainers')
     compileOnly 'org.jetbrains:annotations:20.1.0'
+    testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }
