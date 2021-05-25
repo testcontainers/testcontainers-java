@@ -727,7 +727,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Map<ExposedPort, PortBinding> allPortBindings = new HashMap<>();
         // First collect all the randomized host ports from our 'exposedPorts' field
         for (final Integer tcpPort : exposedPorts) {
-            ExposedPort exposedPort = new ExposedPort(tcpPort);
+            ExposedPort exposedPort = ExposedPort.tcp(tcpPort);
             allPortBindings.put(exposedPort, new PortBinding(Ports.Binding.empty(), exposedPort));
         }
         // Next collect all the fixed host ports from our 'portBindings' field, overwriting any randomized ports so that
@@ -736,14 +736,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             PortBinding parsedBinding = PortBinding.parse(portBinding);
             allPortBindings.put(parsedBinding.getExposedPort(), parsedBinding);
         }
-
-        List<PortBinding> finalBindings = new ArrayList<>(allPortBindings.values());
-        hostConfig.withPortBindings(finalBindings);
+        hostConfig.withPortBindings(new ArrayList<>(allPortBindings.values()));
 
         // Next, ExposedPorts must be set up to publish all of the above ports, both randomized and fixed.
-        // Collect all of the exposed ports for publication
-        final List<ExposedPort> finalExposedPorts = new ArrayList<>(allPortBindings.keySet());
-        createCommand.withExposedPorts(finalExposedPorts);
+        createCommand.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
 
         createCommand.withHostConfig(hostConfig);
 
