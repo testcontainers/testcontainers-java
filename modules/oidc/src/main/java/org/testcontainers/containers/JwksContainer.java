@@ -83,7 +83,7 @@ public class JwksContainer extends GenericContainer<JwksContainer> {
     }
 
     private final void copyResources() {
-        MountableFile file = MountableFile.forClasspathResource("/security/jwt/public/jwks.json");
+        MountableFile file = MountableFile.forClasspathResource("/org/testcontainers/jwks/public/jwks.json");
         this.withCopyFileToContainer(file, "/www/jwks.json");
     }
 
