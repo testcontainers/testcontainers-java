@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static org.testcontainers.utility.CommandLine.runShellCommand;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -21,47 +23,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
-import org.rnorth.visibleassertions.VisibleAssertions;
-import org.slf4j.Logger;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.UnstableAPI;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
-import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
-import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
-import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
-import org.testcontainers.images.ImagePullPolicy;
-import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.lifecycle.Startable;
-import org.testcontainers.lifecycle.Startables;
-import org.testcontainers.lifecycle.TestDescription;
-import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.DockerLoggerFactory;
-import org.testcontainers.utility.DockerMachineClient;
-import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.PathUtils;
-import org.testcontainers.utility.ResourceReaper;
-import org.testcontainers.utility.TestcontainersConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -95,9 +56,46 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.utility.CommandLine.runShellCommand;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.rnorth.ducttape.ratelimits.RateLimiter;
+import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.rnorth.ducttape.unreliables.Unreliables;
+import org.slf4j.Logger;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.UnstableAPI;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
+import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.images.ImagePullPolicy;
+import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
+import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -244,10 +242,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
-    /**
-     * @deprecated use {@link GenericContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public GenericContainer(@NonNull final String dockerImageName) {
         this.setDockerImageName(dockerImageName);
     }
@@ -311,6 +305,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             return;
         }
         Startables.deepStart(dependencies).get();
+        // trigger LazyDockerClient's resolve so that we fail fast here and not in getDockerImageName()
+        dockerClient.authConfig();
         doStart();
     }
 
@@ -751,7 +747,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
-                VisibleAssertions.warn(
+                logger().warn(
                     "Unable to mount a file from test host into a running container. " +
                         "This may be a misconfiguration or limitation of your Docker environment. " +
                         "Some features might not work."
@@ -950,9 +946,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
+        if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
+            // e.g. Docker socket mount
+            binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
 
-        final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-        binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+        } else {
+            final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
+            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+        }
     }
 
     /**
@@ -1337,7 +1338,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Allow container startup to be attempted more than once if an error occurs. To be if containers are
+     * Allow container startup to be attempted more than once if an error occurs. To be used if containers are
      * 'flaky' but this flakiness is not something that should affect test outcomes.
      *
      * @param attempts number of attempts

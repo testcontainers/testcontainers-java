@@ -5,6 +5,7 @@ plugins:
     - markdownextradata
 theme:
     name: 'material'
+    custom_dir: 'docs/theme'
     palette:
         primary: 'blue'
         accent: 'teal'
@@ -36,6 +37,7 @@ nav:
           - features/container_logs.md
           - features/creating_images.md
           - features/configuration.md
+          - features/image_name_substitution.md
           - features/advanced_options.md
     - Modules:
           - Databases:
@@ -58,8 +60,10 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+                - modules/databases/trino.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
+          - modules/gcloud.md
           - modules/kafka.md
           - modules/localstack.md
           - modules/mockserver.md
@@ -85,10 +89,11 @@ nav:
                 - supported_docker_environment/continuous_integration/bitbucket_pipelines.md
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
+          - supported_docker_environment/image_registry_rate_limiting.md
     - Getting help: getting_help.md
     - Contributing:
           - contributing.md
           - contributing_docs.md
           - bounty.md
 extra:
-    latest_version: 1.14.3
+    latest_version: 1.15.3

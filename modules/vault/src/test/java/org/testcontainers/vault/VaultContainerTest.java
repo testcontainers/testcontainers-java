@@ -27,7 +27,8 @@ public class VaultContainerTest {
             "secret_two=password2",
             "secret_three=password3",
             "secret_three=password3",
-            "secret_four=password4");
+            "secret_four=password4")
+        .withInitCommand("secrets enable transit", "write -f transit/keys/my-key");
 
     @Test
     public void readFirstSecretPathWithCli() throws IOException, InterruptedException {
@@ -68,6 +69,16 @@ public class VaultContainerTest {
             assertThat().body("data.data.secret_two", containsString("password2")).
             assertThat().body("data.data.secret_three", hasItem("password3")).
             assertThat().body("data.data.secret_four", containsString("password4"));
+    }
+
+    @Test
+    public void readTransitKeyOverHttpApi() throws InterruptedException {
+        given().
+            header("X-Vault-Token", VAULT_TOKEN).
+            when().
+            get("http://" + getHostAndPort() + "/v1/transit/keys/my-key").
+            then().
+            assertThat().body("data.name", equalTo("my-key"));
     }
 
     private String getHostAndPort() {

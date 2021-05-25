@@ -3,6 +3,8 @@ description = "Testcontainers :: Dynalite"
 dependencies {
     compile project(':testcontainers')
 
-    compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.11.851'
-    testCompile 'com.amazonaws:aws-java-sdk-dynamodb:1.11.847'
+    compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.11.1018'
+    testCompile 'com.amazonaws:aws-java-sdk-dynamodb:1.11.929'
+
+    testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }

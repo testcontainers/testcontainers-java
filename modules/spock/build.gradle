@@ -12,13 +12,13 @@ dependencies {
     testCompile project(':mysql')
     testCompile project(':postgresql')
 
-    testCompile 'com.zaxxer:HikariCP:3.4.5'
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.12'
+    testCompile 'com.zaxxer:HikariCP:4.0.3'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.13'
 
-    testRuntime 'org.postgresql:postgresql:42.2.16'
-    testRuntime 'mysql:mysql-connector-java:8.0.21'
+    testRuntime 'org.postgresql:postgresql:42.2.18'
+    testRuntime 'mysql:mysql-connector-java:8.0.25'
 
-    testCompileOnly 'org.jetbrains:annotations:20.0.0'
+    testCompileClasspath 'org.jetbrains:annotations:20.1.0'
 }
 
 sourceJar {

@@ -15,28 +15,28 @@ import java.util.Set;
 public class NginxContainer<SELF extends NginxContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
 
     private static final int NGINX_DEFAULT_PORT = 80;
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("nginx");
+    private static final String DEFAULT_TAG = "1.9.4";
 
     /**
      * @deprecated use {@link NginxContainer(DockerImageName)} instead
      */
     @Deprecated
     public NginxContainer() {
-        this("nginx:1.9.4");
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link NginxContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public NginxContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
-
-        addExposedPort(NGINX_DEFAULT_PORT);
-        setCommand("nginx", "-g", "daemon off;");
     }
 
     public NginxContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
+        addExposedPort(NGINX_DEFAULT_PORT);
+        setCommand("nginx", "-g", "daemon off;");
     }
 
     @NotNull

@@ -14,7 +14,8 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
 
-    private static final String IMAGE_NAME = "quay.io/testcontainers/dynalite:v1.2.1-1";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("quay.io/testcontainers/dynalite");
+    private static final String DEFAULT_TAG = "v1.2.1-1";
     private static final int MAPPED_PORT = 4567;
 
     /**
@@ -22,20 +23,19 @@ public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
      */
     @Deprecated
     public DynaliteContainer() {
-        this(IMAGE_NAME);
-        withExposedPorts(MAPPED_PORT);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link DynaliteContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public DynaliteContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public DynaliteContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
+        withExposedPorts(MAPPED_PORT);
     }
 
 

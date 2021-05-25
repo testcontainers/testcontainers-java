@@ -7,8 +7,9 @@ on:
 
 jobs:
   update_release_draft:
+    if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-latest
     steps:
-      - uses: release-drafter/release-drafter@v5.9.0
+      - uses: release-drafter/release-drafter@fe52e97d262833ae07d05efaf1a239df3f1b5cd4 # v5.15.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

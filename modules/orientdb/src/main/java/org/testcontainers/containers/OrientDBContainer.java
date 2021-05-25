@@ -29,9 +29,8 @@ import static java.net.HttpURLConnection.HTTP_OK;
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
 
-    private static final String DEFAULT_IMAGE_NAME = "orientdb";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("orientdb");
     private static final String DEFAULT_TAG = "3.0.24-tp3";
-    private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
 
     private static final String DEFAULT_USERNAME = "admin";
     private static final String DEFAULT_PASSWORD = "admin";
@@ -54,19 +53,17 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
      */
     @Deprecated
     public OrientDBContainer() {
-        this(DOCKER_IMAGE_NAME);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link OrientDBContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public OrientDBContainer(@NonNull String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public OrientDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
