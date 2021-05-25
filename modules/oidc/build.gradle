@@ -1,0 +1,6 @@
+description = "Testcontainers :: OIDC"
+
+dependencies {
+    compile project(':testcontainers')
+
+}
