@@ -28,9 +28,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class GenericContainerTest {
 
@@ -102,13 +103,18 @@ public class GenericContainerTest {
                 hostBindings.size()
             );
 
-            List<String> bindings = Arrays.stream(hostBindings.get(ExposedPort.parse("8080")))
-                .map(Ports.Binding::getHostPortSpec)
-                .collect(Collectors.toList());
-            assertEquals(
-                "port 8080 is bound to a random port on the host",
-                singletonList("0"),
-                bindings
+            Integer mappedPort = container.getMappedPort(8080);
+            assertTrue(
+                "port 8080 is bound to an ephemeral port on the host",
+                mappedPort >= 32768
+            );
+
+            assertThrows(
+                "trying to get a non-bound port mapping fails",
+                IllegalArgumentException.class,
+                () -> {
+                    container.getMappedPort(8081);
+                }
             );
         }
     }
