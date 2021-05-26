@@ -14,6 +14,7 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.model.Ulimit;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -180,6 +181,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Nullable
     private Long shmSize;
+
+    @Nullable
+    private Long ulimitsNofileSoft;
+
+    @Nullable
+    private Long ulimitsNofileHard;
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
     private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
@@ -567,6 +574,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
         if (tmpFsMapping != null) {
             config.withTmpFs(tmpFsMapping);
+        }
+        if (ulimitsNofileSoft != null && ulimitsNofileHard != null) {
+            config.withUlimits(new Ulimit[]{new Ulimit("nofile", ulimitsNofileSoft, ulimitsNofileHard)});
         }
         return config;
     }
@@ -1375,6 +1385,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withSharedMemorySize(Long bytes) {
         this.shmSize = bytes;
+        return self();
+    }
+
+    public SELF withUlimitsNofile(Long ulimitsNofileSoft, Long ulimitsNofileHard) {
+        this.ulimitsNofileSoft = ulimitsNofileSoft;
+        this.ulimitsNofileHard = ulimitsNofileHard;
         return self();
     }
 
