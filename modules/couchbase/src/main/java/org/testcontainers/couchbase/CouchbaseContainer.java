@@ -166,6 +166,19 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     protected void configure() {
         super.configure();
 
+        addExposedPorts(
+            MGMT_PORT,
+            MGMT_SSL_PORT,
+            VIEW_PORT,
+            VIEW_SSL_PORT,
+            QUERY_PORT,
+            QUERY_SSL_PORT,
+            SEARCH_PORT,
+            SEARCH_SSL_PORT,
+            KV_PORT,
+            KV_SSL_PORT
+        );
+
         WaitAllStrategy waitStrategy = new WaitAllStrategy();
 
         // Makes sure that all nodes in the cluster are healthy.
