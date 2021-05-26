@@ -1,6 +1,9 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Set;
 
 /**
  * Container implementation for the MariaDB project.
@@ -51,8 +54,8 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MARIADB_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(MARIADB_PORT);
     }
 
     @Override
