@@ -53,7 +53,6 @@ public class TestcontainersConfiguration {
     private static final String SOCAT_IMAGE = "alpine/socat";
     private static final String VNC_RECORDER_IMAGE = "testcontainers/vnc-recorder";
     private static final String COMPOSE_IMAGE = "docker/compose";
-    private static final String ALPINE_IMAGE = "alpine";
     private static final String RYUK_IMAGE = "testcontainers/ryuk";
     private static final String KAFKA_IMAGE = "confluentinc/cp-kafka";
     private static final String PULSAR_IMAGE = "apachepulsar/pulsar";
@@ -65,7 +64,6 @@ public class TestcontainersConfiguration {
         .put(DockerImageName.parse(SOCAT_IMAGE), "socat.container.image")
         .put(DockerImageName.parse(VNC_RECORDER_IMAGE), "vncrecorder.container.image")
         .put(DockerImageName.parse(COMPOSE_IMAGE), "compose.container.image")
-        .put(DockerImageName.parse(ALPINE_IMAGE), "tinyimage.container.image")
         .put(DockerImageName.parse(RYUK_IMAGE), "ryuk.container.image")
         .put(DockerImageName.parse(KAFKA_IMAGE), "kafka.container.image")
         .put(DockerImageName.parse(PULSAR_IMAGE), "pulsar.container.image")
@@ -115,7 +113,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getTinyImage() {
-        return getImage(ALPINE_IMAGE).asCanonicalNameString();
+        return getImage(RYUK_IMAGE).asCanonicalNameString();
     }
 
     public boolean isRyukPrivileged() {

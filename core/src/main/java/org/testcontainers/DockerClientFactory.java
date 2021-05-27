@@ -3,13 +3,11 @@ package org.testcontainers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
@@ -37,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,7 +62,7 @@ public class DockerClientFactory {
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
-    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.5");
+    private static final DockerImageName RYUK_IMAGE = DockerImageName.parse("testcontainers/ryuk:0.3.1");
     private static DockerClientFactory instance;
 
     // Cached client configuration
@@ -349,7 +346,7 @@ public class DockerClientFactory {
 
     private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
 
-        final String tinyImage = ImageNameSubstitutor.instance().apply(TINY_IMAGE).asCanonicalNameString();
+        final String tinyImage = ImageNameSubstitutor.instance().apply(RYUK_IMAGE).asCanonicalNameString();
 
         checkAndPullImage(client, tinyImage);
         CreateContainerCmd createContainerCmd = client.createContainerCmd(tinyImage)

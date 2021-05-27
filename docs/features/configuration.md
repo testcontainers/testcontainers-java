@@ -48,10 +48,7 @@ Testcontainers uses public Docker images to perform different actions like start
 Some companies disallow the usage of Docker Hub, but you can override `*.image` properties with your own images from your private registry to workaround that.
 
 > **ryuk.container.image = testcontainers/ryuk:0.3.1**
-> Performs fail-safe cleanup of containers, and always required (unless [Ryuk is disabled](#disabling-ryuk))
-
-> **tinyimage.container.image = alpine:3.5**  
-> Used to check whether images can be pulled at startup, and always required (unless [startup checks are disabled](#disabling-the-startup-checks))
+> Performs fail-safe cleanup of containers and is used for startup checks. Always required, unless [Ryuk is disabled](#disabling-ryuk) and [startup checks are disabled](#disabling-the-startup-checks).
 
 > **sshd.container.image = testcontainers/sshd:1.0.0**  
 > Required if [exposing host ports to containers](./networking.md#exposing-host-ports-to-the-container)
