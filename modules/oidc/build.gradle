@@ -3,4 +3,6 @@ description = "Testcontainers :: OIDC"
 dependencies {
     compile project(':testcontainers')
 
+    implementation("com.auth0:java-jwt:3.16.0")
+    implementation("com.auth0:jwks-rsa:0.18.0")
 }

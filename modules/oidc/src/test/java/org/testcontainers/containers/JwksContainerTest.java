@@ -1,24 +1,32 @@
 package org.testcontainers.containers;
 
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.response.SolrPingResponse;
-import org.junit.After;
+import lombok.SneakyThrows;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.junit.Test;
-import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Simon Schneider
  */
 public class JwksContainerTest {
 
-    private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
+    public final OkHttpClient client = new OkHttpClient();
 
+    @Test
+    @SneakyThrows
+    public void testJwksJsonAvailability() {
+        try (JwksContainer container = new JwksContainer()) {
+            container.start();
+            Request request = new Request.Builder().url(container.baseUrl() + "/jwks.json").build();
+            Response response = client.newCall(request).execute();
+            assertNotNull(response.body());
+            assertTrue(response.body().string().contains("keys"));
+        }
+    }
 }
