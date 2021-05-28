@@ -19,7 +19,7 @@ public class JwksContainer extends GenericContainer<JwksContainer> {
 
     private static final int DEFAULT_PORT = 8080;
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("raynigon/minimal-http");
-    private static final String DEFAULT_TAG = "latest";
+    private static final String DEFAULT_TAG = "0.0.1";
 
     public JwksContainer() {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
