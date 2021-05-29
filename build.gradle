@@ -43,7 +43,7 @@ subprojects {
     }
 
     // specific modules should be excluded from publication
-    if ( ! ["test-support", "jdbc-test"].contains(it.name) && !it.path.startsWith(":docs:") && it != project(":docs") ) {
+    if ( ! ["test-support", "jdbc-test"].contains(it.name)) {
         apply from: "$rootDir/gradle/publishing.gradle"
         apply from: "$rootDir/gradle/bintray.gradle"
 
