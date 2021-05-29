@@ -34,13 +34,13 @@ It is suggested that developers treat `DockerImageName`s as you would any other 
 A generic container rule can be used with any public docker image; for example:
 
 <!--codeinclude--> 
-[Creating a Redis container (JUnit 4)](../examples/junit4/generic/src/test/java/generic/ContainerCreationTest.java) inside_block:simple
+[Creating a Redis container (JUnit 4)](../../examples/junit4/generic/src/test/java/generic/ContainerCreationTest.java) inside_block:simple
 <!--/codeinclude-->
 
 Further options may be specified:
 
 <!--codeinclude--> 
-[Creating a container with more options (JUnit 4)](../examples/junit4/generic/src/test/java/generic/ContainerCreationTest.java) inside_block:withOptions
+[Creating a container with more options (JUnit 4)](../../examples/junit4/generic/src/test/java/generic/ContainerCreationTest.java) inside_block:withOptions
 <!--/codeinclude-->
 
 These containers, as `@ClassRule`s, will be started before any tests in the class run, and will be destroyed after all

@@ -8,7 +8,7 @@ For example, you may be testing a class that needs to connect to a backend or da
 Generally, each required port needs to be explicitly exposed. For example, we can specify one or more ports as follows:
 
 <!--codeinclude-->
-[Exposing ports](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:rule
+[Exposing ports](../../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:rule
 <!--/codeinclude-->
 
 Note that this exposed port number is from the *perspective of the container*. 
@@ -20,7 +20,7 @@ Because there is this layer of indirection, it is necessary to ask Testcontainer
 This can be done using the `getMappedPort` method, which takes the original (container) port as an argument:
 
 <!--codeinclude-->
-[Retrieving actual ports at runtime](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:fetchPortsByNumber
+[Retrieving actual ports at runtime](../../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:fetchPortsByNumber
 <!--/codeinclude-->
 
 !!! warning
@@ -30,7 +30,7 @@ This can be done using the `getMappedPort` method, which takes the original (con
 There is also a `getFirstMappedPort` method for convenience, for the fairly common scenario of a container that only exposes one port:
 
 <!--codeinclude-->
-[Retrieving the first mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:fetchFirstMappedPort
+[Retrieving the first mapped port](../../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:fetchFirstMappedPort
 <!--/codeinclude-->
 
 ## Getting the container host
@@ -41,13 +41,13 @@ However, in some CI environments they may instead be reachable on a different ho
 As such, Testcontainers provides a convenience method to obtain an address on which the container should be reachable from the host machine.
 
 <!--codeinclude-->
-[Getting the container host](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostOnly
+[Getting the container host](../../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostOnly
 <!--/codeinclude-->
 
 It is normally advisable to use `getHost` and `getMappedPort` together when constructing addresses - for example:
 
 <!--codeinclude-->
-[Getting the container host and mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostAndMappedPort
+[Getting the container host and mapped port](../../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostAndMappedPort
 <!--/codeinclude-->
 
 !!! tip
@@ -65,7 +65,7 @@ In this example, assume that `localServerPort` is a port on our test host machin
 We need to tell Testcontainers to prepare to expose this port to containers:
 
 <!--codeinclude-->
-[Exposing the host port](../examples/junit4/generic/src/test/java/generic/HostPortExposedTest.java) inside_block:exposePort
+[Exposing the host port](../../examples/junit4/generic/src/test/java/generic/HostPortExposedTest.java) inside_block:exposePort
 <!--/codeinclude-->
 
 !!! warning
@@ -77,7 +77,7 @@ From a container's perspective, the hostname will be `host.testcontainers.intern
 For example, here we construct an HTTP URL for our local web application and tell a Selenium container to get a page from it:
 
 <!--codeinclude-->
-[Accessing the exposed host port from a container](../examples/junit4/generic/src/test/java/generic/HostPortExposedTest.java) inside_block:useHostExposedPort
+[Accessing the exposed host port from a container](../../examples/junit4/generic/src/test/java/generic/HostPortExposedTest.java) inside_block:useHostExposedPort
 <!--/codeinclude-->
 
 
