@@ -30,7 +30,10 @@ include 'solr-container'
 include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
-include 'spock'
+include 'junit4/generic'
+include 'junit4/redis'
+include 'junit5'
+include 'spock/redis'
 
 ext.isMasterBuild = false ||
     (System.getenv("GITHUB_REF") == "refs/heads/master") ||
