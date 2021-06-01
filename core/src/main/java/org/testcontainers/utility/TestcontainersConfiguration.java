@@ -347,4 +347,12 @@ public class TestcontainersConfiguration {
         }
         return original;
     }
+
+    public String getPlatformRetry() {
+        return getEnvVarOrProperty("platform.retry", null);
+    }
+
+    public String getPlatformOverride() {
+        return getEnvVarOrProperty("platform.override", null);
+    }
 }
