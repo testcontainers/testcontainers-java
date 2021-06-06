@@ -26,7 +26,7 @@ subprojects {
 
     configurations {
         provided
-        compileOnly.extendsFrom(provided)
+        api.extendsFrom(provided)
     }
 
     lombok {
