@@ -1,15 +1,13 @@
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '3.1.0'
-    id 'nebula.provided-base' version '3.0.3'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'io.franzbecker.gradle-lombok' version '4.0.0'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     id "com.jfrog.bintray" version "1.8.4" apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
 
 subprojects {
-    apply plugin: 'nebula.provided-base'
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply plugin: 'com.github.johnrengelman.shadow'
@@ -26,8 +24,13 @@ subprojects {
         mavenCentral()
     }
 
+    configurations {
+        provided
+        compileOnly.extendsFrom(provided)
+    }
+
     lombok {
-        version = '1.18.12'
+        version = '1.18.20'
     }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
@@ -98,7 +101,7 @@ subprojects {
 
     shadowJar {
         configurations = []
-        classifier = null
+        archiveClassifier.set(null)
 
         doFirst {
             // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
@@ -128,6 +131,6 @@ subprojects {
     }
 
     dependencies {
-        testCompile 'ch.qos.logback:logback-classic:1.2.3'
+        testImplementation 'ch.qos.logback:logback-classic:1.2.3'
     }
 }

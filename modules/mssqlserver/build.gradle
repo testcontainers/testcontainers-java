@@ -4,18 +4,18 @@ dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0'
     compileOnly 'com.google.auto.service:auto-service:1.0'
 
-    compile project(':jdbc')
+    api project(':jdbc')
 
     compileOnly project(':r2dbc')
     compileOnly 'io.r2dbc:r2dbc-mssql:0.8.6.RELEASE'
 
-    testCompile project(':jdbc-test')
-    testCompile 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
+    testImplementation project(':jdbc-test')
+    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
 
-    testCompile project(':r2dbc')
-    testCompile 'io.r2dbc:r2dbc-mssql:0.8.5.RELEASE'
+    testImplementation project(':r2dbc')
+    testImplementation 'io.r2dbc:r2dbc-mssql:0.8.5.RELEASE'
 
     // MSSQL's wait strategy requires the JDBC driver
-    testCompile testFixtures(project(':r2dbc'))
-    testCompile 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
+    testImplementation testFixtures(project(':r2dbc'))
+    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
 }
