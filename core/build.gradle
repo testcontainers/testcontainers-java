@@ -209,3 +209,34 @@ dependencies {
     jarFileTestImplementation 'org.assertj:assertj-core:3.18.1'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
+
+tasks.generatePomFileForMavenJavaPublication.finalizedBy(
+    // The task is a bit more generic that it needs to be, but we may consider applying it to other modules too
+    tasks.register('checkPOMdependencies') {
+        doLast {
+            def rootNode = new XmlSlurper().parse(tasks.generatePomFileForMavenJavaPublication.destination)
+
+            def artifactId = rootNode.artifactId.text()
+
+            def latestRelease = new XmlSlurper()
+                .parse("https://repo1.maven.org/maven2/org/testcontainers/${artifactId}/maven-metadata.xml")
+                .versioning.release.text()
+
+            def releasedRootNode = new XmlSlurper()
+                .parse("https://repo1.maven.org/maven2/org/testcontainers/${artifactId}/${latestRelease}/${artifactId}-${latestRelease}.pom")
+
+            Set<String> dependencies = releasedRootNode.dependencies.children()
+                .collect { "${it.groupId.text()}:${it.artifactId.text()}".toString() }
+
+            Set<String> whitelist = [
+            ]
+
+            for (dependency in rootNode.dependencies.children()) {
+                def coordinates = "${dependency.groupId.text()}:${dependency.artifactId.text()}".toString()
+                if (!dependencies.contains(coordinates) && !whitelist.contains(coordinates)) {
+                    throw new IllegalStateException("New dependency! ${coordinates}")
+                }
+            }
+        }
+    }
+)
