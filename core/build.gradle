@@ -217,7 +217,7 @@ dependencies {
     testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testCompile 'org.assertj:assertj-core:3.18.1'
+    testCompile 'org.assertj:assertj-core:3.19.0'
     testCompile project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
