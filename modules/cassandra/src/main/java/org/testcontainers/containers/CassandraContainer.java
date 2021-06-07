@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
-import com.datastax.driver.core.Cluster;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
@@ -12,6 +13,7 @@ import org.testcontainers.utility.MountableFile;
 
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -35,10 +37,11 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
     private static final String USERNAME = "cassandra";
     private static final String PASSWORD = "cassandra";
+    protected static final String LOCAL_DC = "datacenter1";
 
     private String configLocation;
     private String initScriptPath;
-    private boolean enableJmxReporting;
+    private Object metricRegistry;
 
     /**
      * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
@@ -59,7 +62,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
         addExposedPort(CQL_PORT);
         setStartupAttempts(3);
-        this.enableJmxReporting = false;
     }
 
     @Override
@@ -136,10 +138,13 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
-     * Initialize Cassandra client with JMX reporting enabled or disabled
+     * Register an external Metric Registry object in the Cassandra driver,
+     * see https://docs.datastax.com/en/developer/java-driver/4.10/manual/core/metrics/#metric-registry
+     *
+     * @param metricRegistry
      */
-    public SELF withJmxReporting(boolean enableJmxReporting) {
-        this.enableJmxReporting = enableJmxReporting;
+    public SELF withMetricRegistry(Object metricRegistry) {
+        this.metricRegistry = metricRegistry;
         return self();
     }
 
@@ -167,27 +172,35 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return PASSWORD;
     }
 
+    public String getCqlHostAddress() {
+        return getHost() + ":" + getMappedPort(CassandraContainer.CQL_PORT);
+    }
+
+    public String getLocalDc() { return CassandraContainer.LOCAL_DC; }
+
     /**
      * Get configured Cluster
      *
      * Can be used to obtain connections to Cassandra in the container
      */
-    public Cluster getCluster() {
-        return getCluster(this, enableJmxReporting);
+    public CqlSession getCqlSession() {
+        return getCqlSession(this, this.metricRegistry);
     }
 
-    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
-        final Cluster.Builder builder = Cluster.builder()
-            .addContactPoint(containerState.getHost())
-            .withPort(containerState.getMappedPort(CQL_PORT));
-        if (!enableJmxReporting) {
-            builder.withoutJMXReporting();
+    public static CqlSession getCqlSession(ContainerState containerState, Object meterRegistry) {
+        InetSocketAddress endpoint = new InetSocketAddress(containerState.getHost(), containerState.getMappedPort(CQL_PORT));
+        final CqlSessionBuilder builder = CqlSession.builder()
+            .addContactPoint(endpoint)
+            .withLocalDatacenter(LOCAL_DC);
+
+        if (meterRegistry != null) {
+            builder.withMetricRegistry(meterRegistry);
         }
         return builder.build();
     }
 
-    public static Cluster getCluster(ContainerState containerState) {
-        return getCluster(containerState, false);
+    public CqlSession getCqlSession(ContainerState containerState) {
+        return getCqlSession(containerState, false);
     }
 
     private DatabaseDelegate getDatabaseDelegate() {
