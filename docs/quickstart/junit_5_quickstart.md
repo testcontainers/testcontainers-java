@@ -8,7 +8,7 @@ In our imaginary program, there is a `RedisBackedCache` class which stores data 
 You can see an example test that could have been written for it (without using Testcontainers):
 
 <!--codeinclude-->
-[Pre-Testcontainers test code](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTestStep0.java) block:RedisBackedCacheIntTestStep0
+[Pre-Testcontainers test code](../../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTestStep0.java) block:RedisBackedCacheIntTestStep0
 <!--/codeinclude-->
 
 Notice that the existing test has a problem - it's relying on a local installation of Redis, which is a red flag for test reliability.
@@ -68,7 +68,7 @@ testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
 First, you'll need to annotate the test class with `@Testcontainers`. Furthermore, add the following to the body of our test class:
 
 <!--codeinclude-->
-[JUnit 5 Rule](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:container
+[JUnit 5 Rule](../../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:container
 <!--/codeinclude-->
 
 The `@Container` annotation tells JUnit to notify this field about various events in the test lifecycle.
@@ -90,7 +90,7 @@ Testcontainers uses *randomized ports* for each container it starts, but makes i
 We can do this in our test `setUp` method, to set up our component under test:
 
 <!--codeinclude-->
-[Obtaining a mapped port](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:setUp
+[Obtaining a mapped port](../../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:setUp
 <!--/codeinclude-->
 
 !!! tip
@@ -106,6 +106,6 @@ That's it!
 Let's look at our complete test class to see how little we had to add to get up and running with Testcontainers:
 
 <!--codeinclude-->
-[RedisBackedCacheIntTest](../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:class
+[RedisBackedCacheIntTest](../../examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:class
 <!--/codeinclude-->
 

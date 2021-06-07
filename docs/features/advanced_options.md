@@ -5,13 +5,13 @@
 To add a custom label to the container, use `withLabel`:
 
 <!--codeinclude-->
-[Adding a single label](../examples/junit4/generic/src/test/java/generic/ContainerLabelTest.java) inside_block:single_label
+[Adding a single label](../../examples/junit4/generic/src/test/java/generic/ContainerLabelTest.java) inside_block:single_label
 <!--/codeinclude-->
 
 Additionally, multiple labels may be applied together from a map:
 
 <!--codeinclude-->
-[Adding multiple labels](../examples/junit4/generic/src/test/java/generic/ContainerLabelTest.java) inside_block:multiple_labels
+[Adding multiple labels](../../examples/junit4/generic/src/test/java/generic/ContainerLabelTest.java) inside_block:multiple_labels
 <!--/codeinclude-->
 
 ## Image Pull Policy
@@ -38,13 +38,13 @@ It is possible to use the [`docker-java`](https://github.com/docker-java/docker-
 For example, this can be used to change the container hostname:
 
 <!--codeinclude-->
-[Using modifier to change hostname](../examples/junit4/generic/src/test/java/generic/CmdModifierTest.java) inside_block:hostname
+[Using modifier to change hostname](../../examples/junit4/generic/src/test/java/generic/CmdModifierTest.java) inside_block:hostname
 <!--/codeinclude-->
 
 ... or modify container memory (see [this](https://fabiokung.com/2014/03/13/memory-inside-linux-containers/) if it does not appear to work):
 
 <!--codeinclude-->
-[Using modifier to change memory limits](../examples/junit4/generic/src/test/java/generic/CmdModifierTest.java) inside_block:memory
+[Using modifier to change memory limits](../../examples/junit4/generic/src/test/java/generic/CmdModifierTest.java) inside_block:memory
 <!--/codeinclude-->
 
 !!! note

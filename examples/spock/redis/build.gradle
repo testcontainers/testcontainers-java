@@ -1,0 +1,11 @@
+plugins {
+    id 'java'
+    id 'groovy'
+}
+
+dependencies {
+    compile "io.lettuce:lettuce-core:5.2.0.RELEASE"
+    testCompile 'org.spockframework:spock-core:1.2-groovy-2.5'
+    testCompile "org.testcontainers:spock" 
+    testCompile 'ch.qos.logback:logback-classic:1.2.3'
+}

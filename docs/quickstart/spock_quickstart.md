@@ -8,7 +8,7 @@ In our imaginary program, there is a `RedisBackedCache` class which stores data 
 You can see an example test that could have been written for it (without using Testcontainers):
 
 <!--codeinclude-->
-[Pre-Testcontainers test code](../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTestStep0.groovy) block:RedisBackedCacheIntTestStep0
+[Pre-Testcontainers test code](../../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTestStep0.groovy) block:RedisBackedCacheIntTestStep0
 <!--/codeinclude-->
 
 Notice that the existing test has a problem - it's relying on a local installation of Redis, which is a red flag for test reliability.
@@ -46,7 +46,7 @@ class RedisBackedCacheIntTest extends Specification {
 And add the following field to the body of our test class:
 
 <!--codeinclude-->
-[Spock Testcontainers init](../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTest.groovy) inside_block:init
+[Spock Testcontainers init](../../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTest.groovy) inside_block:init
 <!--/codeinclude-->
 
 This tells Spock to start a Testcontainers `GenericContainer`, configured to use a specific Redis image from Docker Hub, and configured to expose a port.
@@ -67,7 +67,7 @@ Testcontainers uses *randomized ports* for each container it starts, but makes i
 We can do this in our test `setup` method, to set up our component under test:
 
 <!--codeinclude-->
-[Obtaining a mapped port](../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTest.groovy) inside_block:setup
+[Obtaining a mapped port](../../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTest.groovy) inside_block:setup
 <!--/codeinclude-->
 
 !!! tip
@@ -83,5 +83,5 @@ That's it!
 Let's look at our complete test class to see how little we had to add to get up and running with Testcontainers:
 
 <!--codeinclude-->
-[RedisBackedCacheIntTest](../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTest.groovy) block:complete
+[RedisBackedCacheIntTest](../../examples/spock/redis/src/test/groovy/quickstart/RedisBackedCacheIntTest.groovy) block:complete
 <!--/codeinclude-->
