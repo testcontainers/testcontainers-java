@@ -9,7 +9,7 @@ dependencies {
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'org.json:json:20210307'
-    testImplementation 'org.postgresql:postgresql:42.2.18'
+    testImplementation 'org.postgresql:postgresql:42.2.20'
     testImplementation 'ch.qos.logback:logback-classic:1.2.3'
     testImplementation 'org.testcontainers:postgresql'
 }
