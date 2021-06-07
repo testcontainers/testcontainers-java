@@ -1,4 +1,4 @@
 dependencies {
-    implementation 'junit:junit:4.12'
+    implementation 'junit:junit:4.13.2'
     implementation 'org.slf4j:slf4j-api:1.7.30'
 }

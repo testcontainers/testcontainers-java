@@ -169,7 +169,7 @@ dependencies {
         exclude group: "*", module: "*"
     }
 
-    compile 'junit:junit:4.12'
+    compile 'junit:junit:4.13.2'
     compile 'org.slf4j:slf4j-api:1.7.30'
     compileOnly 'org.jetbrains:annotations:20.1.0'
     testCompileClasspath 'org.jetbrains:annotations:20.0.0'
@@ -222,7 +222,7 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestCompile 'junit:junit:4.12'
+    jarFileTestCompile 'junit:junit:4.13.2'
     jarFileTestCompile 'org.assertj:assertj-core:3.18.1'
     jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
 }
