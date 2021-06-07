@@ -14,7 +14,7 @@ dependencies {
         exclude(group: "net.java.dev.jna", module: "jna")
     }
 
-    compile 'org.apache.tomcat:tomcat-jdbc:9.0.40'
+    compile 'org.apache.tomcat:tomcat-jdbc:10.0.6'
     compile 'org.vibur:vibur-dbcp:25.0'
     compile 'mysql:mysql-connector-java:8.0.25'
 }
