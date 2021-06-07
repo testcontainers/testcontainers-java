@@ -4,4 +4,5 @@ dependencies {
     compile project(':testcontainers')
 
     testCompile("org.mongodb:mongodb-driver-sync:4.0.2")
+    testCompile("org.assertj:assertj-core:3.19.0")
 }
