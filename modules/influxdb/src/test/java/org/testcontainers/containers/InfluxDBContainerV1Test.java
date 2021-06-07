@@ -8,21 +8,21 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class InfluxDBContainerTest {
+public class InfluxDBContainerV1Test {
 
     @ClassRule
-    public static InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_TEST_IMAGE);
+    public static InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBV1TestImages.INFLUXDB_TEST_IMAGE);
 
     @Test
     public void getUrl() {
-        String actual = influxDBContainer.getUrl();
+        final String actual = influxDBContainer.getUrl();
 
         assertThat(actual, notNullValue());
     }
 
     @Test
     public void getNewInfluxDB() {
-        InfluxDB actual = influxDBContainer.getNewInfluxDB();
+        final InfluxDB actual = influxDBContainer.getNewInfluxDB();
 
         assertThat(actual, notNullValue());
         assertThat(actual.ping(), notNullValue());
@@ -30,14 +30,14 @@ public class InfluxDBContainerTest {
 
     @Test
     public void getLivenessCheckPort() {
-        Integer actual = influxDBContainer.getLivenessCheckPort();
+        final Integer actual = influxDBContainer.getLivenessCheckPort();
 
         assertThat(actual, notNullValue());
     }
 
     @Test
     public void isRunning() {
-        boolean actual = influxDBContainer.isRunning();
+        final boolean actual = influxDBContainer.isRunning();
 
         assertThat(actual, is(true));
     }

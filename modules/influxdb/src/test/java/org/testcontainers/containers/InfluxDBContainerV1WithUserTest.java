@@ -15,22 +15,22 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-public class InfluxDBContainerWithUserTest {
+public class InfluxDBContainerV1WithUserTest {
 
-    private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_TEST_IMAGE.getVersionPart();
+    private static final String TEST_VERSION = InfluxDBV1TestImages.INFLUXDB_TEST_IMAGE.getVersionPart();
     private static final String DATABASE = "test";
     private static final String USER = "test-user";
     private static final String PASSWORD = "test-password";
 
     @Rule
-    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_TEST_IMAGE)
+    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBV1TestImages.INFLUXDB_TEST_IMAGE)
         .withDatabase(DATABASE)
         .withUsername(USER)
         .withPassword(PASSWORD);
 
     @Test
     public void describeDatabases() {
-        InfluxDB actual = influxDBContainer.getNewInfluxDB();
+        final InfluxDB actual = this.influxDBContainer.getNewInfluxDB();
 
         assertThat(actual, notNullValue());
         assertThat(actual.describeDatabases(), hasItem(DATABASE));
@@ -38,7 +38,7 @@ public class InfluxDBContainerWithUserTest {
 
     @Test
     public void checkVersion() {
-        InfluxDB actual = influxDBContainer.getNewInfluxDB();
+        final InfluxDB actual = this.influxDBContainer.getNewInfluxDB();
 
         assertThat(actual, notNullValue());
 
@@ -50,9 +50,9 @@ public class InfluxDBContainerWithUserTest {
 
     @Test
     public void queryForWriteAndRead() {
-        InfluxDB influxDB = influxDBContainer.getNewInfluxDB();
+        final InfluxDB influxDB = this.influxDBContainer.getNewInfluxDB();
 
-        Point point = Point.measurement("cpu")
+        final Point point = Point.measurement("cpu")
             .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
             .addField("idle", 90L)
             .addField("user", 9L)
@@ -60,8 +60,8 @@ public class InfluxDBContainerWithUserTest {
             .build();
         influxDB.write(point);
 
-        Query query = new Query("SELECT idle FROM cpu", DATABASE);
-        QueryResult actual = influxDB.query(query);
+        final Query query = new Query("SELECT idle FROM cpu", DATABASE);
+        final QueryResult actual = influxDB.query(query);
 
         assertThat(actual, notNullValue());
         assertThat(actual.getError(), nullValue());
