@@ -2,7 +2,6 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '3.1.0'
     id 'nebula.provided-base' version '3.0.3'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
-    id "com.jfrog.bintray" version "1.8.4" apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -22,7 +21,6 @@ subprojects {
     compileTestJava.options.encoding = 'UTF-8'
 
     repositories {
-        jcenter()
         mavenCentral()
     }
 
@@ -45,7 +43,6 @@ subprojects {
     // specific modules should be excluded from publication
     if ( ! ["test-support", "jdbc-test"].contains(it.name) && !it.path.startsWith(":docs:") && it != project(":docs") ) {
         apply from: "$rootDir/gradle/publishing.gradle"
-        apply from: "$rootDir/gradle/bintray.gradle"
 
         jar.archiveClassifier.set("original")
 
@@ -58,7 +55,7 @@ subprojects {
             }
         }
 
-        task release(dependsOn: bintrayUpload)
+        task release()
     }
 
     test {

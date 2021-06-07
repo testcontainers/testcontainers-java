@@ -5,7 +5,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
