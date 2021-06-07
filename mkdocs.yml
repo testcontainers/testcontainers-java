@@ -63,6 +63,7 @@ nav:
                 - modules/databases/trino.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
+          - modules/jwt.md
           - modules/gcloud.md
           - modules/kafka.md
           - modules/localstack.md
