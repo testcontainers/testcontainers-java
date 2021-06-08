@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,6 +24,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -172,7 +174,19 @@ public class TestcontainersConfiguration {
         // Because of this overlap, and the desire to not change this specific TESTCONTAINERS_DOCKER_CLIENT_STRATEGY setting,
         // we special-case the logic here so that docker.client.strategy is used when reading properties files and
         // TESTCONTAINERS_DOCKER_CLIENT_STRATEGY is used when searching environment variables.
-        return getEnvVarOrUserProperty("docker.client.strategy", environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY"));
+        String prefixedEnvVarStrategy = environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY");
+        String unprefixedEnvVarOrProperty = getEnvVarOrUserProperty("docker.client.strategy", null);
+
+        // If docker.host is set then EnvironmentAndSystemPropertyClientProviderStrategy is likely to work
+        String implicitStrategy = null;
+        if (getEnvVarOrUserProperty("docker.host", null) != null) {
+            implicitStrategy = EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName();
+        }
+
+        return Stream.of(prefixedEnvVarStrategy, unprefixedEnvVarOrProperty, implicitStrategy)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
     }
 
     public String getTransportType() {
