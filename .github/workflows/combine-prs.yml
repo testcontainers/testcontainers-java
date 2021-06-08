@@ -51,16 +51,15 @@ jobs:
                 statusOK = true;
                 if(${{ github.event.inputs.mustBeGreen }}) {
                   console.log('Checking green status: ' + branch);
-                  const statuses = await github.paginate('GET /repos/{owner}/{repo}/commits/{ref}/status', {
+                  const checkRuns = await github.request('GET /repos/{owner}/{repo}/commits/{ref}/check-runs', {
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     ref: branch
                   });
-                  if(statuses.length > 0) {
-                    const latest_status = statuses[0]['state'];
-                    console.log('Validating status: ' + latest_status);
-                    if(latest_status != 'success') {
-                      console.log('Discarding ' + branch + ' with status ' + latest_status);
+                  for await (const cr of checkRuns.data.check_runs) {
+                    console.log('Validating check conclusion: ' + cr.conclusion);
+                    if(cr.conclusion != 'success') {
+                      console.log('Discarding ' + branch + ' with check conclusion ' + cr.conclusion);
                       statusOK = false;
                     }
                   }
