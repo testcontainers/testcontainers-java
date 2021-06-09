@@ -2,7 +2,7 @@ dependencies {
     api project(':jdbc')
     api project(':test-support')
 
-    api 'com.google.guava:guava:30.1-jre'
+    api 'com.google.guava:guava:30.1.1-jre'
     api 'org.apache.commons:commons-lang3:3.12.0'
     api 'com.zaxxer:HikariCP-java6:2.3.13'
     api 'commons-dbutils:commons-dbutils:1.7'
