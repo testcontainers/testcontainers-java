@@ -72,64 +72,11 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
         "org.testcontainers.shaded.*",
     ]
 
-    // TODO remove once 1.15.0 is released
-    classExcludes = [
-        "org.testcontainers.containers.AmbassadorContainer",
-        "org.testcontainers.containers.traits.VncService",
-        "org.testcontainers.containers.wait.HostPortWaitStrategy",
-        "org.testcontainers.containers.wait.HttpWaitStrategy",
-        "org.testcontainers.containers.wait.LogMessageWaitStrategy",
-        "org.testcontainers.containers.wait.Wait",
-        "org.testcontainers.containers.wait.WaitAllStrategy",
-        "org.testcontainers.containers.wait.WaitStrategy",
-        "org.testcontainers.dockerclient.AuditLoggingDockerClient",
-        "org.testcontainers.dockerclient.LogToStringContainerCallback",
-        "org.testcontainers.dockerclient.DockerMachineClientProviderStrategy",
-        "org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy",
-        "org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy",
-        "org.testcontainers.dockerclient.ProxiedUnixSocketClientProviderStrategy",
-        "org.testcontainers.dockerclient.WindowsClientProviderStrategy",
-        "org.testcontainers.dockerclient.UnixSocketClientProviderStrategy",
-        "org.testcontainers.dockerclient.auth.AuthDelegatingDockerClientConfig",
-        "org.testcontainers.containers.GenericContainer\$AbstractWaitStrategy",
-        "org.testcontainers.dockerclient.transport.okhttp.NamedPipeSocketFactory",
-        "org.testcontainers.dockerclient.transport.okhttp.OkHttpDockerCmdExecFactory",
-        "org.testcontainers.dockerclient.transport.okhttp.UnixSocketFactory",
-        "org.testcontainers.containers.output.FrameConsumerResultCallback",
-        "org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback",
-    ]
+    classExcludes = []
 
-    methodExcludes = [
-        "org.testcontainers.dockerclient.DockerClientConfigUtils#getDetectedDockerHostIp()",
-        "org.testcontainers.dockerclient.DockerClientConfigUtils#getDockerHostIpAddress(com.github.dockerjava.core.DockerClientConfig)",
+    methodExcludes = []
 
-        "org.testcontainers.dockerclient.DockerClientProviderStrategy#checkOSType()",
-        "org.testcontainers.dockerclient.DockerClientProviderStrategy#getClientForConfig(com.github.dockerjava.core.DockerClientConfig)",
-        "org.testcontainers.dockerclient.DockerClientProviderStrategy#ping(com.github.dockerjava.api.DockerClient, int)",
-        "org.testcontainers.dockerclient.DockerClientProviderStrategy#test()",
-
-        "org.testcontainers.dockerclient.UnixSocketClientProviderStrategy#tryConfiguration(java.lang.String)",
-
-        "org.testcontainers.utility.ResourceReaper#start(java.lang.String, com.github.dockerjava.api.DockerClient, boolean)",
-
-        "org.testcontainers.containers.Container#fetchDockerDaemonInfo()",
-        "org.testcontainers.containers.Container#getDockerDaemonInfo()",
-
-        "org.testcontainers.containers.GenericContainer#fetchDockerDaemonInfo()",
-        "org.testcontainers.containers.GenericContainer#getDockerDaemonInfo()",
-
-        "org.testcontainers.containers.Container\$ExecResult#Container\$ExecResult(java.lang.String, java.lang.String)",
-    ]
-
-    fieldExcludes = [
-        "org.testcontainers.containers.GenericContainer#containerId",
-        "org.testcontainers.containers.GenericContainer#containerName",
-        "org.testcontainers.containers.GenericContainer#dockerDaemonInfo",
-
-        "org.testcontainers.dockerclient.DockerClientProviderStrategy#LOGGER",
-        "org.testcontainers.dockerclient.DockerClientProviderStrategy#client",
-        "org.testcontainers.dockerclient.DockerClientProviderStrategy#config",
-    ]
+    fieldExcludes = []
 
     onlyBinaryIncompatibleModified = true
     htmlOutputFile = file("$buildDir/reports/japi.html")
