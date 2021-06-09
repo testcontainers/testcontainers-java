@@ -180,7 +180,7 @@ dependencies {
 
     api 'com.github.docker-java:docker-java-transport-zerodep:3.2.8'
 
-    shaded "org.yaml:snakeyaml:1.27"
+    shaded "org.yaml:snakeyaml:1.29"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
