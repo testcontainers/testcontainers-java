@@ -72,7 +72,7 @@ publishing {
                     }
                 }
 
-                project.configurations.compile.dependencies.each { addDependency(it, 'compile') }
+                project.configurations.api.dependencies.each { addDependency(it, 'compile') }
                 project.configurations.provided.dependencies.each { addDependency(it, 'provided') }
             }
         }
