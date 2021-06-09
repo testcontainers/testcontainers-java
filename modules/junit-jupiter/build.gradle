@@ -6,7 +6,7 @@ dependencies {
 
     testImplementation project(':mysql')
     testImplementation project(':postgresql')
-    testImplementation 'com.zaxxer:HikariCP:3.4.5'
+    testImplementation 'com.zaxxer:HikariCP:4.0.3'
     testImplementation 'redis.clients:jedis:3.6.0'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation ('org.mockito:mockito-core:3.10.0') {
@@ -16,8 +16,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
 
     testRuntimeOnly 'org.postgresql:postgresql:42.2.20'
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.22'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+    testRuntimeOnly 'mysql:mysql-connector-java:8.0.25'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
 
 test {
