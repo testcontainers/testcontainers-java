@@ -1,23 +1,23 @@
 description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
-    compile project(':testcontainers')
-    compile 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    api project(':testcontainers')
+    api 'org.junit.jupiter:junit-jupiter-api:5.7.1'
 
-    testCompile project(':mysql')
-    testCompile project(':postgresql')
-    testCompile 'com.zaxxer:HikariCP:4.0.3'
-    testCompile 'redis.clients:jedis:3.6.0'
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.13'
-    testCompile ('org.mockito:mockito-core:3.10.0') {
+    testImplementation project(':mysql')
+    testImplementation project(':postgresql')
+    testImplementation 'com.zaxxer:HikariCP:4.0.3'
+    testImplementation 'redis.clients:jedis:3.6.0'
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    testImplementation ('org.mockito:mockito-core:3.10.0') {
         exclude(module: 'hamcrest-core')
     }
-    testCompile 'org.assertj:assertj-core:3.18.1'
-    testCompile 'org.junit.jupiter:junit-jupiter-params:5.7.1'
+    testImplementation 'org.assertj:assertj-core:3.18.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
 
-    testRuntime 'org.postgresql:postgresql:42.2.20'
-    testRuntime 'mysql:mysql-connector-java:8.0.25'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+    testRuntimeOnly 'org.postgresql:postgresql:42.2.20'
+    testRuntimeOnly 'mysql:mysql-connector-java:8.0.25'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
 
 test {
