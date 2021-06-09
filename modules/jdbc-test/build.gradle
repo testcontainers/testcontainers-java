@@ -14,7 +14,7 @@ dependencies {
         exclude(group: "net.java.dev.jna", module: "jna")
     }
 
-    api 'org.apache.tomcat:tomcat-jdbc:9.0.40'
+    api 'org.apache.tomcat:tomcat-jdbc:10.0.6'
     api 'org.vibur:vibur-dbcp:25.0'
     api 'mysql:mysql-connector-java:8.0.25'
 }
