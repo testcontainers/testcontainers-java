@@ -12,6 +12,6 @@ dependencies {
     testCompile project(':nginx')
     testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 
-    compileOnly 'org.jetbrains:annotations:20.1.0'
-    testCompileClasspath 'org.jetbrains:annotations:20.0.0'
+    compileOnly 'org.jetbrains:annotations:21.0.1'
+    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
 }
