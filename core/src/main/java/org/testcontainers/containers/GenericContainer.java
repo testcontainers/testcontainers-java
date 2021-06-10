@@ -86,6 +86,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -623,7 +624,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return path to the volume directory
      */
     protected Path createVolumeDirectory(boolean temporary) {
-        Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
+        Path directory = new File(".tmp-volume-" + UUID.randomUUID()).toPath();
         PathUtils.mkdirp(directory);
 
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
