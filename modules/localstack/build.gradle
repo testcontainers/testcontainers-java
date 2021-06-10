@@ -7,6 +7,6 @@ dependencies {
     testImplementation 'com.amazonaws:aws-java-sdk-s3:1.11.1030'
     testImplementation 'com.amazonaws:aws-java-sdk-sqs:1.12.1'
     testImplementation 'com.amazonaws:aws-java-sdk-logs:1.11.807'
-    testImplementation 'software.amazon.awssdk:s3:2.16.62'
+    testImplementation 'software.amazon.awssdk:s3:2.16.80'
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }

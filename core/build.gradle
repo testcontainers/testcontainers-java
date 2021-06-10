@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:30.1-jre'
+        classpath 'com.google.guava:guava:30.1.1-jre'
     }
 }
 
@@ -101,8 +101,8 @@ dependencies {
 
     api 'junit:junit:4.12'
     api 'org.slf4j:slf4j-api:1.7.30'
-    compileOnly 'org.jetbrains:annotations:20.1.0'
-    testCompileClasspath 'org.jetbrains:annotations:20.0.0'
+    compileOnly 'org.jetbrains:annotations:21.0.1'
+    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
     api 'org.apache.commons:commons-compress:1.20'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
@@ -127,7 +127,7 @@ dependencies {
 
     api 'com.github.docker-java:docker-java-transport-zerodep:3.2.8'
 
-    shaded "org.yaml:snakeyaml:1.27"
+    shaded "org.yaml:snakeyaml:1.29"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
@@ -137,7 +137,7 @@ dependencies {
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:3.6.0'
-    testImplementation 'com.rabbitmq:amqp-client:5.9.0'
+    testImplementation 'com.rabbitmq:amqp-client:5.12.0'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.7'
 
     testImplementation ('org.mockito:mockito-core:3.10.0') {

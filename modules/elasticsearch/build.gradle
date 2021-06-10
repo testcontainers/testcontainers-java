@@ -3,6 +3,6 @@ description = "TestContainers :: elasticsearch"
 dependencies {
     api project(':testcontainers')
     testImplementation "org.elasticsearch.client:elasticsearch-rest-client:7.13.0"
-    testImplementation "org.elasticsearch.client:transport:7.12.1"
+    testImplementation "org.elasticsearch.client:transport:7.13.1"
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }
