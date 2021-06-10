@@ -13,7 +13,7 @@ dependencies {
         exclude(module: 'hamcrest-core')
     }
     testImplementation 'org.assertj:assertj-core:3.18.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
 
     testRuntimeOnly 'org.postgresql:postgresql:42.2.20'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.25'
