@@ -623,6 +623,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param temporary is the volume directory temporary? If true, the directory will be deleted on JVM shutdown.
      * @return path to the volume directory
      */
+    @Deprecated
     protected Path createVolumeDirectory(boolean temporary) {
         Path directory = new File(".tmp-volume-" + UUID.randomUUID()).toPath();
         PathUtils.mkdirp(directory);
