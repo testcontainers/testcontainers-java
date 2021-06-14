@@ -4,6 +4,6 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'org.apache.kafka:kafka-clients:2.8.0'
-    testImplementation 'org.assertj:assertj-core:3.18.1'
+    testImplementation 'org.assertj:assertj-core:3.19.0'
     testImplementation 'com.google.guava:guava:23.0'
 }
