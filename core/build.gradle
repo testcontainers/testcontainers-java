@@ -72,12 +72,6 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = []
-
-    methodExcludes = []
-
-    fieldExcludes = []
-
     onlyBinaryIncompatibleModified = true
     htmlOutputFile = file("$buildDir/reports/japi.html")
 }
@@ -99,41 +93,22 @@ dependencies {
         exclude group: "*", module: "*"
     }
 
+    compileOnly 'org.jetbrains:annotations:21.0.1'
+
     api 'junit:junit:4.12'
     api 'org.slf4j:slf4j-api:1.7.30'
-    compileOnly 'org.jetbrains:annotations:21.0.1'
-    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
     api 'org.apache.commons:commons-compress:1.20'
-    api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
-        exclude(group: 'org.jetbrains', module: 'annotations')
-    }
-
-    api "com.github.docker-java:docker-java-api:3.2.10"
-
-    shaded ('com.github.docker-java:docker-java-core:3.2.10') {
-        exclude(group: 'com.github.docker-java', module: 'docker-java-api')
-        exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
-        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
-        exclude(group: 'com.google.code.findbug')
-        exclude(group: 'org.slf4j')
-        exclude(group: 'org.apache.commons', module: 'commons-compress')
-    }
-
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.10') {
-        exclude(group: 'com.github.docker-java', module: 'docker-java-core')
-        exclude(group: 'net.java.dev.jna')
-        exclude(group: 'org.slf4j')
-    }
-
+    api 'org.rnorth.duct-tape:duct-tape:1.0.8'
+    api 'com.github.docker-java:docker-java-api:3.2.10'
     api 'com.github.docker-java:docker-java-transport-zerodep:3.2.10'
 
+    shaded 'com.github.docker-java:docker-java-core:3.2.10'
+    shaded 'com.github.docker-java:docker-java-transport-okhttp:3.2.10'
     shaded "org.yaml:snakeyaml:1.29"
-
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
+    shaded 'org.zeroturnaround:zt-exec:1.12'
 
-    shaded 'org.zeroturnaround:zt-exec:1.12', {
-        exclude(group: 'org.slf4j')
-    }
+    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:3.6.0'
