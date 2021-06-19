@@ -20,12 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import lombok.Cleanup;
+import lombok.NonNull;
 import okhttp3.Credentials;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -36,8 +38,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +84,14 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
+    private static final Map<CouchbaseService, Integer> SERVICE_MEMORY_QUOTA_MINIMUMS;
+    static {
+        SERVICE_MEMORY_QUOTA_MINIMUMS = new HashMap<>();
+        SERVICE_MEMORY_QUOTA_MINIMUMS.put(CouchbaseService.KV, 256);
+        SERVICE_MEMORY_QUOTA_MINIMUMS.put(CouchbaseService.INDEX, 256);
+        SERVICE_MEMORY_QUOTA_MINIMUMS.put(CouchbaseService.SEARCH, 256);
+    }
+
     private String username = "Administrator";
 
     private String password = "password";
@@ -87,6 +99,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
 
     private final List<BucketDefinition> buckets = new ArrayList<>();
+
+    private final Map<CouchbaseService, Integer> memoryQuotas = new HashMap<>();
 
     /**
      * Creates a new couchbase container with the default image and version.
@@ -142,6 +156,37 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return this;
     }
 
+    /**
+     * Set a custom memory quota for the specified service.
+     *
+     * @param service the couchbase service to configure the custom memory quota for, cannot be null.
+     * @param memoryQuota the service memory quota in MB, if passed null will revert to the services default memory quota.
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withMemoryQuota(@NonNull final CouchbaseService service, final Integer memoryQuota) {
+        checkNotRunning();
+
+        if (service == CouchbaseService.QUERY) {
+            throw new IllegalArgumentException("QUERY service's memory quota cannot be specified");
+        }
+
+        if (memoryQuota != null) {
+            final Integer minimum = SERVICE_MEMORY_QUOTA_MINIMUMS.get(service);
+            if (minimum != null && memoryQuota < minimum) {
+                throw new IllegalArgumentException(String.format("%s service's memory quota cannot be less than %dMB.",
+                    service.name(), minimum));
+            }
+        }
+
+        if (memoryQuota == null) {
+            this.memoryQuotas.remove(service);
+        } else {
+            this.memoryQuotas.put(service, memoryQuota);
+        }
+
+        return this;
+    }
+
     public final String getUsername() {
         return username;
     }
@@ -160,6 +205,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     public String getConnectionString() {
         return String.format("couchbase://%s:%d", getHost(), getBootstrapCarrierDirectPort());
+    }
+
+    /**
+     * Retrieve the currently configured memory quota for a specified service.
+     *
+     * @param service the service to retrieve
+     * @return either the configured service's memory quota, or null which indicates the services "default" memory quota.
+     */
+    @Nullable
+    public Integer getMemoryQuota(final CouchbaseService service) {
+        return memoryQuotas.get(service);
     }
 
     @Override
@@ -224,6 +280,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         initializeServices();
         configureAdminUser();
         configureExternalPorts();
+        configureMemoryQuotas();
         if (enabledServices.contains(CouchbaseService.INDEX)) {
             configureIndexer();
         }
@@ -280,6 +337,42 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         );
 
         checkSuccessfulResponse(response, "Could not enable couchbase services");
+    }
+
+    /**
+     * Configure the various service's memory quotas, if supplied by the user.
+     */
+    private void configureMemoryQuotas() {
+        logger().debug("Configuring {} service memory quotas", memoryQuotas.size());
+
+        if (memoryQuotas.size() > 0) {
+            FormBody.Builder builder = new FormBody.Builder();
+            memoryQuotas.forEach((service, quota) -> {
+                switch (service) {
+                    case KV:
+                        builder.add("memoryQuota", quota.toString());
+                        break;
+                    case INDEX:
+                        builder.add("indexMemoryQuota", quota.toString());
+                        break;
+                    case SEARCH:
+                        builder.add("ftsMemoryQuota", quota.toString());
+                        break;
+                    default:
+                        throw new IllegalStateException(String.format("cannot configure memory quota for %s for it is not supported", service));
+                }
+            });
+
+            @Cleanup Response response = doHttpRequest(MGMT_PORT,
+                "/pools/default",
+                "POST",
+                builder.build(),
+                true);
+
+            checkSuccessfulResponse(response, "Could not configure services' memory quotas");
+        } else {
+            logger().debug("No services' memory quotas were modified from their default values");
+        }
     }
 
     /**
