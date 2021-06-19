@@ -187,6 +187,37 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return this;
     }
 
+    /**
+     * Set a custom memory quota for the specified service.
+     *
+     * @param service the couchbase service to configure the custom memory quota for, cannot be null.
+     * @param memoryQuota the service memory quota in MB, if passed null will revert to the services default memory quota.
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withMemoryQuota(@NonNull final CouchbaseService service, final Integer memoryQuota) {
+        checkNotRunning();
+
+        if (service == CouchbaseService.QUERY) {
+            throw new IllegalArgumentException("QUERY service's memory quota cannot be specified");
+        }
+
+        if (memoryQuota != null) {
+            final Integer minimum = SERVICE_MEMORY_QUOTA_MINIMUMS.get(service);
+            if (minimum != null && memoryQuota < minimum) {
+                throw new IllegalArgumentException(String.format("%s service's memory quota cannot be less than %dMB.",
+                    service.name(), minimum));
+            }
+        }
+
+        if (memoryQuota == null) {
+            this.memoryQuotas.remove(service);
+        } else {
+            this.memoryQuotas.put(service, memoryQuota);
+        }
+
+        return this;
+    }
+
     public final String getUsername() {
         return username;
     }
