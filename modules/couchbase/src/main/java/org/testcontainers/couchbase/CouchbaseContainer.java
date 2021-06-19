@@ -381,14 +381,15 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             logger().debug("Creating user with username: \"{}\"", user.getUsername());
 
             FormBody.Builder builder = new FormBody.Builder();
-            Optional.ofNullable(user.getPassword())
-                .ifPresent(p -> builder.add("password", p));
-            Optional.ofNullable(user.getRoles())
-                .filter(r -> !r.isEmpty())
-                .map(r -> String.join(",", r))
-                .ifPresent(r -> builder.add("roles", r));
-            Optional.ofNullable(user.getName())
-                .ifPresent(n -> builder.add("name", n));
+            if (user.getPassword() != null) {
+                builder.add("password", user.getPassword());
+            }
+            if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+                builder.add("roles", String.join(",", user.getRoles()));
+            }
+            if (user.getName() != null) {
+                builder.add("name", user.getName());
+            }
 
             @Cleanup Response response = doHttpRequest(MGMT_PORT,
                 String.format("/settings/rbac/users/local/%s", user.getUsername()),
