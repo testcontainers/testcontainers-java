@@ -9,6 +9,9 @@ import org.junit.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Comparator;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -89,6 +92,28 @@ public class CassandraContainerTest {
         }
     }
 
+    @Test
+    public void testInitScripts() {
+        try (
+            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
+                .withInitScripts("initial.cql", "initial_2.cql")
+        ) {
+            cassandraContainer.start();
+            testInitScripts(cassandraContainer);
+        }
+    }
+
+    @Test
+    public void testInitScriptsWithLegacyCassandra() {
+        try (
+            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(DockerImageName.parse("cassandra:2.2.11"))
+                .withInitScripts("initial.cql", "initial_2.cql")
+        ) {
+            cassandraContainer.start();
+            testInitScripts(cassandraContainer);
+        }
+    }
+
     @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
     @Test
     public void testCassandraQueryWaitStrategy() {
@@ -119,6 +144,18 @@ public class CassandraContainerTest {
         Row row = resultSet.one();
         assertEquals("Inserted row is not in expected state", 1, row.getLong(0));
         assertEquals("Inserted row is not in expected state", "test_category", row.getString(1));
+    }
+
+    private void testInitScripts(CassandraContainer<?> cassandraContainer) {
+        ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
+        assertTrue("Query was not applied", resultSet.wasApplied());
+        List<Row> rows = resultSet.all();
+        assertEquals("The number of returned records is unexpected", 2, rows.size());
+        rows.sort(Comparator.comparingLong(row -> row.getLong(0)));
+        assertEquals("Inserted row is not in expected state", 1, rows.get(0).getLong(0));
+        assertEquals("Inserted row is not in expected state", "test_category", rows.get(0).getString(1));
+        assertEquals("Inserted row is not in expected state", 2, rows.get(1).getLong(0));
+        assertEquals("Inserted row is not in expected state", "test_category_2", rows.get(1).getString(1));
     }
 
     private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {

@@ -37,7 +37,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private static final String PASSWORD = "cassandra";
 
     private String configLocation;
-    private String initScriptPath;
+    private String[] initScriptPaths;
     private boolean enableJmxReporting;
 
     /**
@@ -69,29 +69,31 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        runInitScriptIfRequired();
+        runInitScriptsIfRequired();
     }
 
     /**
-     * Load init script content and apply it to the database if initScriptPath is set
+     * Load init scripts content and apply it to the database if initScriptPaths is set
      */
-    private void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
-            try {
-                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-                if (resource == null) {
+    private void runInitScriptsIfRequired() {
+        if (initScriptPaths != null && initScriptPaths.length > 0) {
+            for (String initScriptPath : initScriptPaths) {
+                try {
+                    URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+                    if (resource == null) {
+                        logger().warn("Could not load classpath init script: {}", initScriptPath);
+                        throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
+                    }
+                    String cql = IOUtils.toString(resource, StandardCharsets.UTF_8);
+                    DatabaseDelegate databaseDelegate = getDatabaseDelegate();
+                    ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, cql);
+                } catch (IOException e) {
                     logger().warn("Could not load classpath init script: {}", initScriptPath);
-                    throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
+                    throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
+                } catch (ScriptException e) {
+                    logger().error("Error while executing init script: {}", initScriptPath, e);
+                    throw new ScriptUtils.UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
                 }
-                String cql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                DatabaseDelegate databaseDelegate = getDatabaseDelegate();
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, cql);
-            } catch (IOException e) {
-                logger().warn("Could not load classpath init script: {}", initScriptPath);
-                throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
-            } catch (ScriptException e) {
-                logger().error("Error while executing init script: {}", initScriptPath, e);
-                throw new ScriptUtils.UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
             }
         }
     }
@@ -131,7 +133,22 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * @param initScriptPath relative classpath resource
      */
     public SELF withInitScript(String initScriptPath) {
-        this.initScriptPath = initScriptPath;
+        if (initScriptPath != null) {
+            this.initScriptPaths = new String[]{initScriptPath};
+        }
+        return self();
+    }
+
+    /**
+     * Initialize Cassandra with init CQL scripts
+     * <p>
+     * CQL scripts will be applied after a container is started (see using WaitStrategy)
+     * in order that defines in array {@code initScriptPaths}
+     *
+     * @param initScriptPaths the array of relative classpath paths to init script files
+     */
+    public SELF withInitScripts(String... initScriptPaths) {
+        this.initScriptPaths = initScriptPaths;
         return self();
     }
 
