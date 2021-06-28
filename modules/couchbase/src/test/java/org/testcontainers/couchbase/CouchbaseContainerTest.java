@@ -39,10 +39,18 @@ public class CouchbaseContainerTest {
         BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
         // }
 
+        // user_definition {
+        UserDefinition userDefinition = new UserDefinition("hal")
+            .withRoles("bucket_full_access[mybucket]")
+            .withName("HAL 2000")
+            .withPassword("password");
+        // }
+
         try (
             // container_definition {
             CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE)
                 .withBucket(bucketDefinition)
+                .withUser(userDefinition)
             // }
         ) {
             container.start();
@@ -62,7 +70,7 @@ public class CouchbaseContainerTest {
 
             try {
                 // auth {
-                cluster.authenticate(container.getUsername(), container.getPassword());
+                cluster.authenticate(userDefinition.getUsername(), userDefinition.getPassword());
                 // }
 
                 Bucket bucket = cluster.openBucket(bucketDefinition.getName());

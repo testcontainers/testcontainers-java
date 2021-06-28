@@ -16,6 +16,8 @@
 
 package org.testcontainers.couchbase;
 
+import lombok.NonNull;
+
 /**
  * Allows to configure the properties of a bucket that should be created.
  */
@@ -25,7 +27,7 @@ public class BucketDefinition {
     private boolean queryPrimaryIndex = true;
     private int quota = 100;
 
-    public BucketDefinition(final String name) {
+    public BucketDefinition(@NonNull final String name) {
         this.name = name;
     }
 
