@@ -93,10 +93,6 @@ testImplementation('org.testcontainers:mysql') //no version specified
 
 ## Sponsors
 
-Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain the project and help us improve it further.
-
-<iframe src="https://github.com/sponsors/testcontainers/button" title="Sponsor Testcontainers" height="35" width="107" style="border: 0;"></iframe>
-
 A huge thank you to our sponsors:
 
 ### Bronze sponsors
