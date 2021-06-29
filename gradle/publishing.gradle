@@ -1,23 +1,27 @@
 apply plugin: 'maven-publish'
 
 task sourceJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set( 'sources')
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier.set('javadoc')
     from javadoc
 }
+
+jar.archiveClassifier.set("original")
 
 publishing {
     publications {
         mavenJava(MavenPublication) { publication ->
             artifactId = project.name
-
-            artifact project.tasks.jar
             artifact sourceJar
             artifact javadocJar
+
+            artifact project.tasks.jar
+            artifacts.removeAll { it.classifier == jar.archiveClassifier.get() }
+            artifact project.tasks.shadowJar
 
             pom.withXml {
                 def rootNode = asNode()

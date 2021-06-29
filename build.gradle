@@ -46,17 +46,6 @@ subprojects {
     // specific modules should be excluded from publication
     if ( ! ["test-support", "jdbc-test"].contains(it.name) && !it.path.startsWith(":docs:") && it != project(":docs") ) {
         apply from: "$rootDir/gradle/publishing.gradle"
-
-        jar.archiveClassifier.set("original")
-
-        publishing {
-            publications {
-                mavenJava(MavenPublication) { publication ->
-                    artifacts.removeAll { it.classifier == jar.archiveClassifier.get() }
-                    artifact project.tasks.shadowJar
-                }
-            }
-        }
     }
 
     test {
