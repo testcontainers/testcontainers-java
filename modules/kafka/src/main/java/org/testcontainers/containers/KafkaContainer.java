@@ -6,10 +6,11 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.util.Comparator;
 
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
+ *
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
@@ -121,8 +122,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
 
-        command += "export KAFKA_ADVERTISED_LISTENERS='" +
-            String.join(",", getBootstrapServers(), brokerAdvertisedListener(containerInfo)) + "'\n";
+        command += "export KAFKA_ADVERTISED_LISTENERS='" + String.join(",", getBootstrapServers(), brokerAdvertisedListener(containerInfo)) + "'\n";
 
         command += ". /etc/confluent/docker/bash-config \n";
         command += "/etc/confluent/docker/configure \n";
@@ -135,17 +135,28 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected String brokerAdvertisedListener(InspectContainerResponse containerInfo) {
-        //Current implementation exposes only two listeners PLAINTEXT and BROKER
-        //BROKER must be advertised to the network attached (either the explicitly specified or bridge)
-        //If a host port is exposed using Testcontainers.exposeHostPorts, the container
-        //will be "attached" to more than one network.
-        String ipAddress = Optional.ofNullable(getNetwork())
-            .map(Network::getId)
-            .flatMap(id -> containerInfo.getNetworkSettings().getNetworks().values().stream()
-                .filter(network -> id.equals(network.getNetworkID()))
-                .findFirst())
-            .orElse(containerInfo.getNetworkSettings().getNetworks().get("bridge"))
-            .getIpAddress();
-        return String.format("BROKER://%s:%s",ipAddress,"9092");
+        // Kafka supports only one INTER_BROKER listener, so we have to pick one.
+        // The current algorithm uses the following order of resolving the IP:
+        // 1. Custom network's IP set via `withNetwork`
+        // 2. Bridge network's IP
+        // 3. Best effort fallback to getNetworkSettings#ipAddress
+        String ipAddress = containerInfo.getNetworkSettings().getNetworks().entrySet()
+            .stream()
+            .filter(it -> it.getValue().getIpAddress() != null)
+            .max(Comparator.comparingInt(entry -> {
+                if (getNetwork() != null && getNetwork().getId().equals(entry.getValue().getNetworkID())) {
+                    return 2;
+                }
+
+                if ("bridge".equals(entry.getKey())) {
+                    return 1;
+                }
+
+                return 0;
+            }))
+            .map(it -> it.getValue().getIpAddress())
+            .orElseGet(() -> containerInfo.getNetworkSettings().getIpAddress());
+
+        return String.format("BROKER://%s:%s", ipAddress, "9092");
     }
 }
