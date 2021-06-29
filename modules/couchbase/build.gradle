@@ -3,5 +3,6 @@ description = "Testcontainers :: Couchbase"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'com.couchbase.client:java-client:2.7.15'
+    testImplementation 'com.couchbase.client:java-client:3.1.6'
+    testImplementation 'org.awaitility:awaitility:3.0.0'
 }
