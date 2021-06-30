@@ -4,13 +4,15 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 configurations {
     shaded
-    [compileOnly, testCompile]*.extendsFrom shaded
+    [apiElements, compileOnly, testCompile]*.extendsFrom shaded
 }
 configurations.api.canBeResolved = true
 
 shadowJar {
-    configurations = []
+    configurations = [project.configurations.shaded]
     archiveClassifier.set(null)
+
+    mergeServiceFiles()
 }
 
 project.afterEvaluate {
@@ -24,11 +26,16 @@ project.afterEvaluate {
         }
     }
 
+    // Inherit dependencies' relocators
+    shadowJar.relocators = configurations.api.dependencies.withType(ProjectDependency).collectMany {
+        return it.dependencyProject.tasks.findByName("shadowJar")?.relocators ?: []
+    }
+
     // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
     Set<String> packages = []
     // Always read from core's configurations
-    for (configuration in tasks.getByPath(":testcontainers:shadowJar").configurations) {
-        for (jar in configuration.files) {
+    for (configuration in tasks.shadowJar.configurations) {
+        for (jar in configuration.resolvedConfiguration.files) {
             if (apiFiles.contains(jar)) {
                 continue
             }
