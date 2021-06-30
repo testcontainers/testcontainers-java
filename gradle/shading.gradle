@@ -1,0 +1,54 @@
+import java.util.jar.JarFile
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+configurations {
+    shaded
+    [compileOnly, testCompile]*.extendsFrom shaded
+}
+configurations.api.canBeResolved = true
+
+shadowJar {
+    configurations = []
+    archiveClassifier.set(null)
+}
+
+project.afterEvaluate {
+    def apiDependencies = project.configurations.api.resolvedConfiguration.resolvedArtifacts*.moduleVersion*.id
+    def apiFiles = project.configurations.api.resolvedConfiguration.files
+
+    // Exclude `api` dependencies, to prevent them being included into the final JAR
+    shadowJar.dependencies {
+        for (id in apiDependencies) {
+            exclude(dependency("${id.group}:${id.name}"))
+        }
+    }
+
+    // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
+    Set<String> packages = []
+    // Always read from core's configurations
+    for (configuration in tasks.getByPath(":testcontainers:shadowJar").configurations) {
+        for (jar in configuration.files) {
+            if (apiFiles.contains(jar)) {
+                continue
+            }
+
+            try (def jf = new JarFile(jar)) {
+                for (entry in jf.entries()) {
+                    def name = entry.name
+                    if (name.endsWith(".class")) {
+                        def index = name.lastIndexOf('/')
+                        if (index != -1) {
+                            packages.add(name.substring(0, index))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for (pkg in packages) {
+        pkg = pkg.replaceAll('/', '.')
+
+        tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
+    }
+}

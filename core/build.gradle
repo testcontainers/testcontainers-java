@@ -25,8 +25,6 @@ idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 configurations {
     baseline
-    shaded
-    [api, compileOnly, testCompile]*.extendsFrom shaded
 }
 
 shadowJar {
@@ -103,7 +101,10 @@ dependencies {
     api 'com.github.docker-java:docker-java-transport-zerodep:3.2.11'
 
     shaded 'com.github.docker-java:docker-java-core:3.2.11'
-    shaded 'com.github.docker-java:docker-java-transport-okhttp:3.2.11'
+    shaded 'com.github.docker-java:docker-java-transport-okhttp:3.2.11', {
+        // TODO remove unused `net.java.dev.jna:jna-platform` from `docker-java-transport-okhttp`
+        exclude(group: 'net.java.dev.jna', module: 'jna-platform')
+    }
     shaded "org.yaml:snakeyaml:1.29"
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
     shaded 'org.zeroturnaround:zt-exec:1.12'
