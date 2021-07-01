@@ -4,7 +4,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 configurations {
     shaded
-    [apiElements, compileOnly, testCompile]*.extendsFrom shaded
+    [apiElements, implementation, compileOnly, testCompile]*.extendsFrom shaded
 }
 configurations.api.canBeResolved = true
 
