@@ -7,7 +7,7 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:21.0.1'
     testImplementation 'commons-dbutils:commons-dbutils:1.7'
     testImplementation 'org.vibur:vibur-dbcp:25.0'
-    testImplementation 'org.apache.tomcat:tomcat-jdbc:10.0.6'
+    testImplementation 'org.apache.tomcat:tomcat-jdbc:10.0.7'
     testImplementation 'com.zaxxer:HikariCP-java6:2.3.13'
     testImplementation 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
