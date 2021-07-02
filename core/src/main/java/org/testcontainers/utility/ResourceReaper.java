@@ -23,6 +23,7 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.ContainerState;
 
 import java.io.BufferedReader;
@@ -138,7 +139,7 @@ public final class ResourceReaper {
                     .stream().filter(Objects::nonNull).count();
 
                 if (mappedExposedPorts != 1) {
-                    throw new Exception();
+                    throw new ContainerLaunchException("Inspect container response did not contain mapped port");
                 }
 
                 return containerInfo;
