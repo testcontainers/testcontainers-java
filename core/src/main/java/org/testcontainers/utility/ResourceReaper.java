@@ -9,6 +9,8 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -17,6 +19,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -96,10 +100,11 @@ public final class ResourceReaper {
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
+        ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
         String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig().withAutoRemove(true))
-                .withExposedPorts(new ExposedPort(8080))
-                .withPublishAllPorts(true)
+                .withHostConfig(new HostConfig().withAutoRemove(true)
+                    .withPortBindings(new PortBinding(Ports.Binding.empty(), ryukExposedPort)))
+                .withExposedPorts(ryukExposedPort)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(binds)
@@ -125,7 +130,19 @@ public final class ResourceReaper {
 
         ContainerState containerState = new ContainerState() {
 
-            final InspectContainerResponse inspectedContainer = client.inspectContainerCmd(ryukContainerId).exec();
+            // inspect container response might initially not contain the mapped port
+            final InspectContainerResponse inspectedContainer = Unreliables.retryUntilSuccess(10, () -> {
+                InspectContainerResponse containerInfo = client.inspectContainerCmd(ryukContainerId).exec();
+
+                long mappedExposedPorts = containerInfo.getNetworkSettings().getPorts().getBindings().values()
+                    .stream().filter(Objects::nonNull).count();
+
+                if (mappedExposedPorts != 1) {
+                    throw new Exception();
+                }
+
+                return containerInfo;
+            });
 
             @Override
             public List<Integer> getExposedPorts() {

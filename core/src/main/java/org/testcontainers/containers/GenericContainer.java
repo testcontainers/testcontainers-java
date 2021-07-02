@@ -427,19 +427,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             this.logConsumers.forEach(this::followOutput);
 
             // Wait until inspect container returns the mapped ports
-            if (exposedPorts.size() > 0) {
+            containerInfo = Unreliables.retryUntilSuccess(10, () -> {
+                InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
 
-                Unreliables.retryUntilTrue(10, () -> {
-                    containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+                long mappedExposedPorts = containerInfo.getNetworkSettings().getPorts().getBindings().values()
+                    .stream().filter(Objects::nonNull).count();
 
-                    long mappedExposedPorts = containerInfo.getNetworkSettings().getPorts().getBindings().values()
-                        .stream().filter(Objects::nonNull).count();
-                    return mappedExposedPorts == exposedPorts.size();
-                });
+                if (mappedExposedPorts != exposedPorts.size()) {
+                    throw new Exception();
+                }
 
-            } else {
-                containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
-            }
+                return containerInfo;
+            });
+
 
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
