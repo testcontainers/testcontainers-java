@@ -84,6 +84,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -425,8 +426,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
 
+            // Wait until inspect container returns the mapped ports
+            if (exposedPorts.size() > 0) {
+
+                Unreliables.retryUntilTrue(10, () -> {
+                    containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+
+                    long mappedExposedPorts = containerInfo.getNetworkSettings().getPorts().getBindings().values()
+                        .stream().filter(Objects::nonNull).count();
+                    return mappedExposedPorts == exposedPorts.size();
+                });
+
+            } else {
+                containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+            }
+
             // Tell subclasses that we're starting
-            containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
