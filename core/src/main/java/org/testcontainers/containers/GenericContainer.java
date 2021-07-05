@@ -434,6 +434,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     .stream().filter(Objects::nonNull).count();
 
                 if (mappedExposedPorts != exposedPorts.size()) {
+                    Thread.sleep(100L);
                     throw new ContainerLaunchException("Inspect container response did not contain mapped ports");
                 }
 

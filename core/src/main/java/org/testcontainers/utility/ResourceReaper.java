@@ -139,6 +139,7 @@ public final class ResourceReaper {
                     .stream().filter(Objects::nonNull).count();
 
                 if (mappedExposedPorts != 1) {
+                    Thread.sleep(100L);
                     throw new ContainerLaunchException("Inspect container response did not contain mapped port");
                 }
 
