@@ -61,6 +61,7 @@ nav:
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
                 - modules/databases/trino.md
+          - modules/azure.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
