@@ -176,7 +176,7 @@ public class TestcontainersConfiguration {
     }
 
     public String getTransportType() {
-        return getEnvVarOrProperty("transport.type", "okhttp");
+        return getEnvVarOrProperty("transport.type", "httpclient5");
     }
 
     public Integer getImagePullPauseTimeout() {
