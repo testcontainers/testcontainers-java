@@ -172,7 +172,16 @@ public class TestcontainersConfigurationTest {
         userProperties.remove("docker.client.strategy");
 
         environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "bar");
+        userProperties.put("docker.client.strategy", "foo");
         assertEquals("Docker client strategy is can be explicitly set", "bar", newConfig().getDockerClientStrategyClassName());
+
+        environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "bar");
+        userProperties.remove("docker.client.strategy");
+        assertEquals("Docker client strategy is can be explicitly set", "bar", newConfig().getDockerClientStrategyClassName());
+
+        environment.remove("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY");
+        userProperties.put("docker.client.strategy", "foo");
+        assertEquals("Docker client strategy is can be explicitly set", "foo", newConfig().getDockerClientStrategyClassName());
     }
 
     @Test
