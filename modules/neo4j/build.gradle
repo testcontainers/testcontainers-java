@@ -34,5 +34,5 @@ dependencies {
     api project(":testcontainers")
 
     testImplementation "org.neo4j.driver:neo4j-java-driver:1.7.5"
-    testImplementation 'org.assertj:assertj-core:3.19.0'
+    testImplementation 'org.assertj:assertj-core:3.20.2'
 }

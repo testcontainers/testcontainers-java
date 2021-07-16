@@ -3,5 +3,5 @@ description = "Testcontainers :: Database-Commons"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.assertj:assertj-core:3.19.0'
+    testImplementation 'org.assertj:assertj-core:3.20.2'
 }
