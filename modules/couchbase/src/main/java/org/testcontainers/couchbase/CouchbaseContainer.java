@@ -88,6 +88,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
+    private boolean isEnterprise = false;
+
     /**
      * Creates a new couchbase container with the default image and version.
      * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
@@ -166,6 +168,19 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     protected void configure() {
         super.configure();
 
+        addExposedPorts(
+            MGMT_PORT,
+            MGMT_SSL_PORT,
+            VIEW_PORT,
+            VIEW_SSL_PORT,
+            QUERY_PORT,
+            QUERY_SSL_PORT,
+            SEARCH_PORT,
+            SEARCH_SSL_PORT,
+            KV_PORT,
+            KV_SSL_PORT
+        );
+
         WaitAllStrategy waitStrategy = new WaitAllStrategy();
 
         // Makes sure that all nodes in the cluster are healthy.
@@ -207,6 +222,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         logger().debug("Couchbase container is starting, performing configuration.");
 
         waitUntilNodeIsOnline();
+        initializeIsEnterprise();
         renameNode();
         initializeServices();
         configureAdminUser();
@@ -231,6 +247,19 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             .forPath("/pools")
             .forStatusCode(200)
             .waitUntilReady(this);
+    }
+
+    /**
+     * Fetches edition (enterprise or community) of started container.
+     */
+    private void initializeIsEnterprise() {
+        @Cleanup Response response = doHttpRequest(MGMT_PORT, "/pools", "GET", null, true);
+
+        try {
+            isEnterprise = MAPPER.readTree(response.body().string()).get("isEnterprise").asBoolean();
+        } catch (IOException e) {
+            throw new IllegalStateException("Couchbase /pools did not return valid JSON");
+        }
     }
 
     /**
@@ -336,7 +365,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         logger().debug("Configuring the indexer service");
 
         @Cleanup Response response = doHttpRequest(MGMT_PORT, "/settings/indexes", "POST", new FormBody.Builder()
-            .add("storageMode", "memory_optimized")
+            .add("storageMode", isEnterprise ? "memory_optimized" : "forestdb")
             .build(), true
         );
 
@@ -355,6 +384,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             @Cleanup Response response = doHttpRequest(MGMT_PORT, "/pools/default/buckets", "POST", new FormBody.Builder()
                 .add("name", bucket.getName())
                 .add("ramQuotaMB", Integer.toString(bucket.getQuota()))
+                .add("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0")
                 .build(), true);
 
             checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());

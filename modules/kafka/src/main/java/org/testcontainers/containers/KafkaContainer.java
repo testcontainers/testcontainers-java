@@ -6,8 +6,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Comparator;
 
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
@@ -122,13 +121,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
 
         command += "export KAFKA_ZOOKEEPER_CONNECT='" + zookeeperConnect + "'\n";
-        command += "export KAFKA_ADVERTISED_LISTENERS='" + Stream
-            .concat(
-                Stream.of(getBootstrapServers()),
-                containerInfo.getNetworkSettings().getNetworks().values().stream()
-                    .map(it -> "BROKER://" + it.getIpAddress() + ":9092")
-            )
-            .collect(Collectors.joining(",")) + "'\n";
+
+        command += "export KAFKA_ADVERTISED_LISTENERS='" + String.join(",", getBootstrapServers(), brokerAdvertisedListener(containerInfo)) + "'\n";
 
         command += ". /etc/confluent/docker/bash-config \n";
         command += "/etc/confluent/docker/configure \n";
@@ -138,5 +132,31 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             Transferable.of(command.getBytes(StandardCharsets.UTF_8), 0777),
             STARTER_SCRIPT
         );
+    }
+
+    protected String brokerAdvertisedListener(InspectContainerResponse containerInfo) {
+        // Kafka supports only one INTER_BROKER listener, so we have to pick one.
+        // The current algorithm uses the following order of resolving the IP:
+        // 1. Custom network's IP set via `withNetwork`
+        // 2. Bridge network's IP
+        // 3. Best effort fallback to getNetworkSettings#ipAddress
+        String ipAddress = containerInfo.getNetworkSettings().getNetworks().entrySet()
+            .stream()
+            .filter(it -> it.getValue().getIpAddress() != null)
+            .max(Comparator.comparingInt(entry -> {
+                if (getNetwork() != null && getNetwork().getId().equals(entry.getValue().getNetworkID())) {
+                    return 2;
+                }
+
+                if ("bridge".equals(entry.getKey())) {
+                    return 1;
+                }
+
+                return 0;
+            }))
+            .map(it -> it.getValue().getIpAddress())
+            .orElseGet(() -> containerInfo.getNetworkSettings().getIpAddress());
+
+        return String.format("BROKER://%s:%s", ipAddress, "9092");
     }
 }
