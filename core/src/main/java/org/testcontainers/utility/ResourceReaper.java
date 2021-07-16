@@ -43,12 +43,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.function.Predicate.isEqual;
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.pollinterval.FibonacciPollInterval.fibonacci;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -103,8 +110,10 @@ public final class ResourceReaper {
 
         ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
         String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig().withAutoRemove(true)
-                    .withPortBindings(new PortBinding(Ports.Binding.empty(), ryukExposedPort)))
+                .withHostConfig(
+                    new HostConfig()
+                        .withAutoRemove(true)
+                        .withPortBindings(new PortBinding(Ports.Binding.empty(), ryukExposedPort)))
                 .withExposedPorts(ryukExposedPort)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
@@ -132,19 +141,16 @@ public final class ResourceReaper {
         ContainerState containerState = new ContainerState() {
 
             // inspect container response might initially not contain the mapped port
-            final InspectContainerResponse inspectedContainer = Unreliables.retryUntilSuccess(10, () -> {
-                InspectContainerResponse containerInfo = client.inspectContainerCmd(ryukContainerId).exec();
-
-                long mappedExposedPorts = containerInfo.getNetworkSettings().getPorts().getBindings().values()
-                    .stream().filter(Objects::nonNull).count();
-
-                if (mappedExposedPorts != 1) {
-                    Thread.sleep(100L);
-                    throw new ContainerLaunchException("Inspect container response did not contain mapped port");
-                }
-
-                return containerInfo;
-            });
+            final InspectContainerResponse inspectedContainer = await()
+                .atMost(5, SECONDS)
+                .pollInterval(fibonacci(MILLISECONDS))
+                .until(
+                    () -> client.inspectContainerCmd(ryukContainerId).exec(),
+                    inspectContainerResponse -> {
+                        long mappedExposedPorts = inspectContainerResponse
+                            .getNetworkSettings().getPorts().getBindings().values().stream().filter(Objects::nonNull).count();
+                        return mappedExposedPorts == 1;
+                    });
 
             @Override
             public List<Integer> getExposedPorts() {

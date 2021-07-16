@@ -29,6 +29,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.awaitility.pollinterval.PollInterval;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -87,17 +88,24 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.function.Predicate.isEqual;
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.pollinterval.FibonacciPollInterval.fibonacci;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -218,7 +226,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
             .newBuilder()
-            .withRate(1, TimeUnit.SECONDS)
+            .withRate(1, SECONDS)
             .withConstantThroughput()
             .build();
 
@@ -427,20 +435,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             this.logConsumers.forEach(this::followOutput);
 
             // Wait until inspect container returns the mapped ports
-            containerInfo = Unreliables.retryUntilSuccess(10, () -> {
-                InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+            Callable<Integer> inspectMappedExposedPortsCount = () -> {
+                containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+                return (int) containerInfo
+                    .getNetworkSettings()
+                    .getPorts()
+                    .getBindings()
+                    .values()
+                    .stream()
+                        .filter(Objects::nonNull)
+                        .count();
+            };
 
-                long mappedExposedPorts = containerInfo.getNetworkSettings().getPorts().getBindings().values()
-                    .stream().filter(Objects::nonNull).count();
-
-                if (mappedExposedPorts != exposedPorts.size()) {
-                    Thread.sleep(100L);
-                    throw new ContainerLaunchException("Inspect container response did not contain mapped ports");
-                }
-
-                return containerInfo;
-            });
-
+            await()
+                .atMost(5, SECONDS)
+                .pollInterval(fibonacci(MILLISECONDS))
+                .until(inspectMappedExposedPortsCount, isEqual(exposedPorts.size()));
 
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
