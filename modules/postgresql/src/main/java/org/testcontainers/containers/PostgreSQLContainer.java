@@ -1,11 +1,13 @@
 package org.testcontainers.containers;
 
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singleton;
@@ -17,7 +19,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
 
-    public static final String DEFAULT_TAG = "9.6.12";
+    public static final String DEFAULT_TAG = "9.6";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgres");
 
     public static final Integer POSTGRESQL_PORT = 5432;
@@ -46,15 +48,22 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         this(DockerImageName.parse(dockerImageName));
     }
 
+    public PostgreSQLContainer(@NonNull final Future<String> image) {
+        super(image);
+        setup();
+    }
+
     public PostgreSQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        setup();
+    }
 
+    private void setup() {
         this.waitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*database system is ready to accept connections.*\\s")
-                .withTimes(2)
-                .withStartupTimeout(Duration.of(60, SECONDS));
+            .withRegEx(".*(?:Skipping initialization|(?:database system is ready to accept connections)).*\\s?")
+            .withTimes(2)
+            .withStartupTimeout(Duration.of(60, SECONDS));
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);

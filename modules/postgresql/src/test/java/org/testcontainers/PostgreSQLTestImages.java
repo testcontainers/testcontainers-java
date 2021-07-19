@@ -3,5 +3,8 @@ package org.testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 public interface PostgreSQLTestImages {
-    DockerImageName POSTGRES_TEST_IMAGE = DockerImageName.parse("postgres:9.6.12");
+    String POSTGRES_VERSION = "postgres:9.6";
+    String POSTGRES_ALPINE_VERSION = "postgres:9.6-alpine";
+
+    DockerImageName POSTGRES_TEST_IMAGE = DockerImageName.parse(POSTGRES_VERSION);;
 }
