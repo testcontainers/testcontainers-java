@@ -12,6 +12,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 import static org.testcontainers.containers.localstack.LocalstackTestImages.LOCALSTACK_IMAGE;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
@@ -228,6 +229,24 @@ public class LocalstackContainerTest {
             final String logs = execResult.getStdout() + execResult.getStderr();
             log.info(logs);
             return logs;
+        }
+    }
+
+    public static class WithRegion {
+
+        // with_region {
+        private static String region = "eu-west-1";
+        @ClassRule
+        public static LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
+            .withEnv("DEFAULT_REGION", region)
+            .withServices(S3);
+        // }
+
+        @Test
+        public void s3EndpointHasProperRegion() throws IOException {
+            final AwsClientBuilder.EndpointConfiguration endpointConfiguration = localstack.getEndpointConfiguration(S3);
+            assertEquals("The endpoint configuration has right region", region, endpointConfiguration.getSigningRegion());
+
         }
     }
 }
