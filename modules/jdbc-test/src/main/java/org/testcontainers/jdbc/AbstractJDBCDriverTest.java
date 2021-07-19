@@ -117,7 +117,9 @@ public class AbstractJDBCDriverTest {
         String databaseQuery = "SELECT DATABASE()";
         // Postgres does not have Database() as a function
         String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
-        if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
+        if (databaseType.equalsIgnoreCase("postgresql") ||
+            databaseType.equalsIgnoreCase("postgis") ||
+            databaseType.equalsIgnoreCase("timescaledb")) {
             databaseQuery = "SELECT CURRENT_DATABASE()";
         }
 
