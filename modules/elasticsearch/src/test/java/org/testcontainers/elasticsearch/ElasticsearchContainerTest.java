@@ -249,6 +249,22 @@ public class ElasticsearchContainerTest {
         );
     }
 
+    @Test
+    public void setHeapMemory() throws IOException {
+        try (ElasticsearchContainer container =
+            // configureHeapMemory {
+            new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+                .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
+        // configureHeapMemory }
+        ){
+            container.start();
+
+            Response response = getClient(container).performRequest(new Request("GET", "/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+        }
+        // }
+    }
+
     private RestClient getClient(ElasticsearchContainer container) {
         if (client == null) {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
