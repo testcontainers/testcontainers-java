@@ -1,0 +1,12 @@
+description = "TestContainers :: NATS"
+
+dependencies {
+    compile project(":database-commons")
+
+    testImplementation(platform('org.junit:junit-bom:5.7.0'))
+    testImplementation "io.nats:jnats:2.8.0"
+}
+
+test {
+    useJUnit()
+}
