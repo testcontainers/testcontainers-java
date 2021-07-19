@@ -436,16 +436,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .until(
                     () -> dockerClient.inspectContainerCmd(containerId).exec(),
                     inspectContainerResponse -> {
-                        long exposedPortsCount = (int) inspectContainerResponse
+                         Set<Integer> currentlyExposedPorts = inspectContainerResponse
                             .getNetworkSettings()
                             .getPorts()
                             .getBindings()
-                            .values()
+                            .keySet()
                             .stream()
-                            .filter(Objects::nonNull)
-                            .count();
+                            .map(ExposedPort::getPort)
+                            .collect(Collectors.toSet());
 
-                        return exposedPortsCount == exposedPorts.size();
+                         return currentlyExposedPorts.containsAll(exposedPorts);
                     }
                 );
 
