@@ -133,7 +133,8 @@ public class GenericContainerTest {
                     .build()
             );
 
-        try (GenericContainer container = new GenericContainer<>(image)
+        try (
+            GenericContainer container = new GenericContainer<>(image)
             .withExposedPorts(8080)
             .withCreateContainerCmdModifier(it -> it.withExposedPorts(ExposedPort.tcp(8082))) // another port exposed by modifier
         ) {
