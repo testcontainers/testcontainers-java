@@ -331,7 +331,9 @@ public class DockerClientFactory {
         try {
             client.inspectImageCmd(image).exec();
         } catch (NotFoundException e) {
-            client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
+            client.pullImageCmd(image)
+                .withPlatform(TestcontainersConfiguration.getInstance().getPlatformOverride()) // Null value is fine
+                .exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
         }
     }
 

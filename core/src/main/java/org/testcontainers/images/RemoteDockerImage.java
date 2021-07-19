@@ -10,6 +10,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.experimental.Wither;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -17,6 +18,8 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
+import org.testcontainers.utility.TestcontainersConfiguration;
+
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,6 +32,7 @@ import java.util.concurrent.Future;
 public class RemoteDockerImage extends LazyFuture<String> {
 
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
+    private static final String NO_MATCHING_MANIFEST_ERROR = "no matching manifest";
 
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
@@ -62,6 +66,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
     protected final String resolve() {
         final DockerImageName imageName = getImageName();
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
+        return pullImage(imageName, logger, TestcontainersConfiguration.getInstance().getPlatformOverride());
+    }
+
+    private String pullImage(DockerImageName imageName, Logger logger, String platform) {
         try {
             if (!imagePullPolicy.shouldPull(imageName)) {
                 return imageName.asCanonicalNameString();
@@ -77,6 +85,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 try {
                     dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())
+                        .withPlatform(platform) // Null value is fine
                         .withTag(imageName.getVersionPart())
                         .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
                         .awaitCompletion();
@@ -93,9 +102,18 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 }
             }
             logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName, lastFailure);
-
             throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
+            if (e.getMessage().contains(NO_MATCHING_MANIFEST_ERROR)
+                && TestcontainersConfiguration.getInstance().getPlatformRetry() != null
+                && !StringUtils.equals(platform, TestcontainersConfiguration.getInstance().getPlatformRetry())) {
+
+                // Retry with the configured value
+                platform = TestcontainersConfiguration.getInstance().getPlatformRetry();
+                logger.info("Failed to find suitable image. Retrying pulling docker image: {} with retry platform: {}.",
+                    imageName, platform);
+                return pullImage(imageName, logger, platform);
+            }
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
         }
     }
