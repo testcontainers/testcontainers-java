@@ -3,13 +3,13 @@ package org.testcontainers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.ListImagesCmd;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -330,8 +329,17 @@ public class DockerClientFactory {
     public void checkAndPullImage(DockerClient client, String image) {
         try {
             client.inspectImageCmd(image).exec();
-        } catch (NotFoundException e) {
-            client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
+        } catch (NotFoundException notFoundException) {
+            PullImageCmd pullImageCmd = client.pullImageCmd(image);
+            try {
+                pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
+            } catch (DockerClientException e) {
+                // Try to fallback to x86
+                pullImageCmd
+                    .withPlatform("linux/amd64")
+                    .exec(new TimeLimitedLoggedPullImageResultCallback(log))
+                    .awaitCompletion();
+            }
         }
     }
 
