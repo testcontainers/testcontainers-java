@@ -29,10 +29,14 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     private static final int ELASTICSEARCH_DEFAULT_TCP_PORT = 9300;
 
     /**
-     * Elasticsearch Docker base image
+     * Elasticsearch Docker base image: default distribution with built-in free basic elastic license
      */
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
-    private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss");
+    public static final DockerImageName ELASTICSEARCH_IMAGE = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
+
+    /**
+     * Elasticsearch Docker base image: oss distribution under Apache2 license
+     */
+    public static final DockerImageName ELASTICSEARCH_OSS_IMAGE = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss");
 
     /**
      * Elasticsearch Default version
@@ -46,7 +50,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     @Deprecated
     public ElasticsearchContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+        this(ELASTICSEARCH_IMAGE.withTag(DEFAULT_TAG));
     }
 
     /**
@@ -64,9 +68,9 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(ELASTICSEARCH_IMAGE, ELASTICSEARCH_OSS_IMAGE);
 
-        if (dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME)) {
+        if (dockerImageName.isCompatibleWith(ELASTICSEARCH_OSS_IMAGE)) {
             this.isOss = true;
         }
 

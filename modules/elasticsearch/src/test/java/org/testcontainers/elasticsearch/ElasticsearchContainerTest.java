@@ -23,7 +23,6 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
-import org.testcontainers.utility.DockerImageName;
 
 public class ElasticsearchContainerTest {
 
@@ -31,10 +30,6 @@ public class ElasticsearchContainerTest {
      * Elasticsearch version which should be used for the Tests
      */
     private static final String ELASTICSEARCH_VERSION = "7.9.2";
-    private static final DockerImageName ELASTICSEARCH_IMAGE =
-        DockerImageName
-            .parse("docker.elastic.co/elasticsearch/elasticsearch")
-            .withTag(ELASTICSEARCH_VERSION);
 
     /**
      * Elasticsearch default username, when secured
@@ -61,7 +56,6 @@ public class ElasticsearchContainerTest {
         }
     }
 
-    @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
     @Test
     @Deprecated // We will remove this test in the future
     public void elasticsearchDeprecatedCtorTest() throws IOException {
@@ -88,7 +82,9 @@ public class ElasticsearchContainerTest {
     @Test
     public void elasticsearchDefaultTest() throws IOException {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            ElasticsearchContainer.ELASTICSEARCH_IMAGE
+                .withTag(ELASTICSEARCH_VERSION))
             .withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
         ) {
             // Start the container. This step might take some time...
@@ -109,7 +105,9 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchSecuredTest() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            ElasticsearchContainer.ELASTICSEARCH_IMAGE
+                .withTag(ELASTICSEARCH_VERSION))
             .withPassword(ELASTICSEARCH_PASSWORD)) {
             container.start();
 
@@ -127,7 +125,10 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchVersion() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            ElasticsearchContainer.ELASTICSEARCH_IMAGE
+                .withTag(ELASTICSEARCH_VERSION)
+        )) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
@@ -141,8 +142,7 @@ public class ElasticsearchContainerTest {
         try (ElasticsearchContainer container =
                  // ossContainer {
                  new ElasticsearchContainer(
-                     DockerImageName
-                         .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                     ElasticsearchContainer.ELASTICSEARCH_OSS_IMAGE
                          .withTag(ELASTICSEARCH_VERSION)
                  )
              // }
@@ -161,7 +161,10 @@ public class ElasticsearchContainerTest {
     public void restClientClusterHealth() throws IOException {
         // httpClientContainer {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            ElasticsearchContainer.ELASTICSEARCH_IMAGE
+                .withTag(ELASTICSEARCH_VERSION)
+        )) {
             // Start the container. This step might take some time...
             container.start();
 
@@ -187,7 +190,9 @@ public class ElasticsearchContainerTest {
     public void restClientSecuredClusterHealth() throws IOException {
         // httpClientSecuredContainer {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            ElasticsearchContainer.ELASTICSEARCH_IMAGE
+                .withTag(ELASTICSEARCH_VERSION))
             // With a password
             .withPassword(ELASTICSEARCH_PASSWORD)) {
             // Start the container. This step might take some time...
@@ -216,7 +221,9 @@ public class ElasticsearchContainerTest {
     public void transportClientClusterHealth() {
         // transportClientContainer {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)){
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            ElasticsearchContainer.ELASTICSEARCH_IMAGE
+                .withTag(ELASTICSEARCH_VERSION))) {
             // Start the container. This step might take some time...
             container.start();
 
@@ -242,8 +249,7 @@ public class ElasticsearchContainerTest {
         assertThrows("We should not be able to activate security with an OSS License",
             IllegalArgumentException.class,
             () -> new ElasticsearchContainer(
-                DockerImageName
-                    .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                ElasticsearchContainer.ELASTICSEARCH_OSS_IMAGE
                     .withTag(ELASTICSEARCH_VERSION))
             .withPassword("foo")
         );
