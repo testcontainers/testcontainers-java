@@ -7,6 +7,7 @@ on:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  GRADLE_ENTERPRISE_ACCESS_KEY: ge.testcontainers.org=${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
 
 jobs:
   find_gradle_jobs:

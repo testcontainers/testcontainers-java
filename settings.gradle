@@ -6,12 +6,14 @@ buildscript {
     }
     dependencies {
         classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.10.0"
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.2.1"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.6.1"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.2.1"
     }
 }
 
 apply plugin: 'ch.myniva.s3-build-cache'
 apply plugin: 'com.gradle.enterprise'
+apply plugin: "com.gradle.common-custom-user-data-gradle-plugin"
 
 rootProject.name = 'testcontainers-java'
 
@@ -56,7 +58,11 @@ buildCache {
 
 gradleEnterprise {
     buildScan {
-        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-        termsOfServiceAgree = 'yes'
+        server = "https://ge.testcontainers.org/"
+        publishAlways()
+        publishIfAuthenticated()
+        uploadInBackground = System.getenv("CI") == null
+        captureTaskInputFiles = true
     }
+
 }
