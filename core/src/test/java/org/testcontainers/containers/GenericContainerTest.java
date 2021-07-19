@@ -129,7 +129,7 @@ public class GenericContainerTest {
             .withDockerfileFromBuilder(builder ->
                 builder
                     .from("testcontainers/helloworld:1.1.0")
-                    .expose(8080, 8081) // one addition port exposed in image
+                    .expose(8080, 8081) // one additional port exposed in image
                     .build()
             );
 
