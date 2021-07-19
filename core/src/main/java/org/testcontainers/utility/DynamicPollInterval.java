@@ -17,9 +17,17 @@ public class DynamicPollInterval implements PollInterval {
     final Duration interval;
     Instant lastTimestamp;
 
-    public DynamicPollInterval(Duration interval) {
+    private DynamicPollInterval(Duration interval) {
         this.interval = interval;
         lastTimestamp = Instant.now();
+    }
+
+    public static DynamicPollInterval of(Duration duration) {
+        return new DynamicPollInterval(duration);
+    }
+
+    public static DynamicPollInterval ofMillis(long millis) {
+        return DynamicPollInterval.of(Duration.ofMillis(millis));
     }
 
     @Override

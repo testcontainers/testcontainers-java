@@ -138,17 +138,19 @@ public final class ResourceReaper {
             // inspect container response might initially not contain the mapped port
             final InspectContainerResponse inspectedContainer = await()
                 .atMost(5, TimeUnit.SECONDS)
-                .pollInterval(new DynamicPollInterval(Duration.ofMillis(10)))
+                .pollInterval(DynamicPollInterval.ofMillis(10))
                 .pollInSameThread()
                 .until(
                     () -> client.inspectContainerCmd(ryukContainerId).exec(),
-                    inspectContainerResponse -> inspectContainerResponse
+                    inspectContainerResponse -> {
+                        return inspectContainerResponse
                         .getNetworkSettings()
                         .getPorts()
                         .getBindings()
                         .values()
                         .stream()
-                        .anyMatch(Objects::nonNull)
+                        .anyMatch(Objects::nonNull);
+                    }
                 );
 
             @Override

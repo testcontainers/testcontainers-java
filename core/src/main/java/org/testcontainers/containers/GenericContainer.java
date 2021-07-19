@@ -431,12 +431,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // Wait until inspect container returns the mapped ports
             containerInfo = await()
                 .atMost(5, TimeUnit.SECONDS)
-                .pollInterval(new DynamicPollInterval(Duration.ofMillis(10)))
+                .pollInterval(DynamicPollInterval.ofMillis(10))
                 .pollInSameThread()
                 .until(
                     () -> dockerClient.inspectContainerCmd(containerId).exec(),
                     inspectContainerResponse -> {
-
                         long exposedPortsCount = (int) inspectContainerResponse
                             .getNetworkSettings()
                             .getPorts()
