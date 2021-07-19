@@ -8,19 +8,9 @@ import com.rabbitmq.client.ConnectionFactory;
 import org.junit.Test;
 import org.testcontainers.utility.MountableFile;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -111,6 +101,24 @@ public class RabbitMQContainerTest {
                 .containsPattern("queue-one");
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
                 .containsPattern("queue-two\\s.*x-message-ttl");
+        }
+    }
+
+    @Test
+    public void shouldCreateRabbitMQContainerWithQueueOnVHost() throws IOException, InterruptedException {
+        // given: container with specific vhost set
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+            container.withVhost("specificVHost");
+
+            // when: defining a queue on specific vhost
+            container.withQueue("specificVHost", "queue-on-vhost", false, true, ImmutableMap.of("x-message-ttl", 1000));
+
+            // and: start the container
+            container.start();
+
+            // then: rabbitmq inside of container should have defined queue on specific vhost
+            assertThat(container.execInContainer("rabbitmqctl", "--vhost=specificVHost", "list_queues", "name", "arguments").getStdout())
+                .containsPattern("queue-on-vhost\\s.*x-message-ttl");
         }
     }
 
@@ -249,7 +257,7 @@ public class RabbitMQContainerTest {
 
             assertThatCode(() -> {
                 ConnectionFactory connectionFactory = new ConnectionFactory();
-                connectionFactory.useSslProtocol(createSslContext(
+                connectionFactory.useSslProtocol(new RabbitMQSSLContextHelper().createSslContext(
                     "certs/client_key.p12", "password",
                     "certs/truststore.jks", "password"));
                 connectionFactory.enableHostnameVerification();
@@ -263,23 +271,25 @@ public class RabbitMQContainerTest {
         }
     }
 
-    private SSLContext createSslContext(String keystoreFile, String keystorePassword, String truststoreFile, String truststorePassword)
-        throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException
-    {
-        ClassLoader classLoader = getClass().getClassLoader();
+    @Test
+    public void shouldCreateBindingOnSpecificVHost() throws IOException, InterruptedException {
+        // given: a container configuration with specific vhost, exchange on vhost and queue on vhost set
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE).withVhost("specificVHost")
+            .withQueue("specificVHost", "test-queue", false, true, new HashMap<>())
+            .withExchange("specificVHost", "test.topic-exchange", "topic", false, true, true, new HashMap<>())) {
 
-        KeyStore ks = KeyStore.getInstance("PKCS12");
-        ks.load(new FileInputStream(new File(classLoader.getResource(keystoreFile).getFile())), keystorePassword.toCharArray());
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, "password".toCharArray());
+            // when: defining a binding on vhost
+            container.withBinding("specificVHost", "test.topic-exchange",
+                "test-queue", new HashMap<>(), "test.message.routing-key", "queue");
 
-        KeyStore trustStore = KeyStore.getInstance("PKCS12");
-        trustStore.load(new FileInputStream(new File(classLoader.getResource(truststoreFile).getFile())), truststorePassword.toCharArray());
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(trustStore);
+            // and: start the container
+            container.start();
 
-        SSLContext c = SSLContext.getInstance("TLSv1.2");
-        c.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-        return c;
+            // then: binding should have been created on specific vhost
+            assertThat(container.execInContainer("rabbitmqadmin", "--vhost=specificVHost", "list", "bindings")
+                .getStdout())
+                .contains("test.topic-exchange");
+        }
     }
+
 }
