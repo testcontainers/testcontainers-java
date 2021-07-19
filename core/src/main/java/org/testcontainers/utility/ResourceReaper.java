@@ -19,11 +19,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.ContainerState;
 
 import java.io.BufferedReader;
@@ -43,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -51,11 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.function.Predicate.isEqual;
 import static org.awaitility.Awaitility.await;
-import static org.awaitility.pollinterval.FibonacciPollInterval.fibonacci;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -143,15 +136,19 @@ public final class ResourceReaper {
 
             // inspect container response might initially not contain the mapped port
             final InspectContainerResponse inspectedContainer = await()
-                .atMost(5, SECONDS)
-                .pollInterval(fibonacci(MILLISECONDS))
+                .atMost(5, TimeUnit.SECONDS)
+                .pollInterval(10, TimeUnit.MILLISECONDS)
+                .pollInSameThread()
                 .until(
                     () -> client.inspectContainerCmd(ryukContainerId).exec(),
-                    inspectContainerResponse -> {
-                        long mappedExposedPorts = inspectContainerResponse
-                            .getNetworkSettings().getPorts().getBindings().values().stream().filter(Objects::nonNull).count();
-                        return mappedExposedPorts == 1;
-                    });
+                    inspectContainerResponse -> inspectContainerResponse
+                        .getNetworkSettings()
+                        .getPorts()
+                        .getBindings()
+                        .values()
+                        .stream()
+                        .anyMatch(Objects::nonNull)
+                );
 
             @Override
             public List<Integer> getExposedPorts() {
