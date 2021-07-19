@@ -91,6 +91,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final AtomicInteger nextAmbassadorPort = new AtomicInteger(2000);
     private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
     private final Map<String, ComposeServiceWaitStrategyTarget> serviceInstanceMap = new ConcurrentHashMap<>();
+    private WaitAllStrategy.Mode waitAllStrategyMode = WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT;
+    private Duration waitAllTimeout = Duration.ofMinutes(30);
     private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
     private final SocatContainer ambassadorContainer = new SocatContainer();
     private final Map<String, List<Consumer<OutputFrame>>> logConsumers = new ConcurrentHashMap<>();
@@ -390,6 +392,13 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         return self();
     }
 
+    public SELF withWaitAllMode(@NonNull WaitAllStrategy.Mode mode, Duration timeout) {
+        this.waitAllStrategyMode = mode;
+        if (timeout != null)
+            this.waitAllTimeout = timeout;
+        return self();
+    }
+
     private String getServiceInstanceName(String serviceName) {
         String serviceInstanceName = serviceName;
         if (!serviceInstanceName.matches(".*_[0-9]+")) {
@@ -405,8 +414,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(serviceInstanceName, __ ->
-            new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT).withStartupTimeout(Duration.ofMinutes(30)));
+            mkWaitAllStrategy());
         waitAllStrategy.withStrategy(waitStrategy);
+    }
+
+    private WaitAllStrategy mkWaitAllStrategy() {
+        WaitAllStrategy res = new WaitAllStrategy(waitAllStrategyMode);
+        if (waitAllStrategyMode != WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY) {
+            res = res.withStartupTimeout(waitAllTimeout);
+        }
+        return res;
     }
 
     /**
