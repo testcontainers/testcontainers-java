@@ -34,6 +34,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -137,7 +138,7 @@ public final class ResourceReaper {
             // inspect container response might initially not contain the mapped port
             final InspectContainerResponse inspectedContainer = await()
                 .atMost(5, TimeUnit.SECONDS)
-                .pollInterval(10, TimeUnit.MILLISECONDS)
+                .pollInterval(new DynamicPollInterval(Duration.ofMillis(10)))
                 .pollInSameThread()
                 .until(
                     () -> client.inspectContainerCmd(ryukContainerId).exec(),

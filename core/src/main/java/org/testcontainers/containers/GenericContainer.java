@@ -29,7 +29,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.awaitility.pollinterval.PollInterval;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -58,6 +57,7 @@ import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.DynamicPollInterval;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
@@ -88,24 +88,18 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.function.Predicate.isEqual;
 import static org.awaitility.Awaitility.await;
-import static org.awaitility.pollinterval.FibonacciPollInterval.fibonacci;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -225,10 +219,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
-            .newBuilder()
-            .withRate(1, SECONDS)
-            .withConstantThroughput()
-            .build();
+        .newBuilder()
+        .withRate(1, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
     @Nullable
     private Map<String, String> tmpFsMapping;
@@ -435,22 +429,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             this.logConsumers.forEach(this::followOutput);
 
             // Wait until inspect container returns the mapped ports
-            Callable<Integer> inspectMappedExposedPortsCount = () -> {
-                containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
-                return (int) containerInfo
-                    .getNetworkSettings()
-                    .getPorts()
-                    .getBindings()
-                    .values()
-                    .stream()
-                        .filter(Objects::nonNull)
-                        .count();
-            };
+            containerInfo = await()
+                .atMost(5, TimeUnit.SECONDS)
+                .pollInterval(new DynamicPollInterval(Duration.ofMillis(10)))
+                .pollInSameThread()
+                .until(
+                    () -> dockerClient.inspectContainerCmd(containerId).exec(),
+                    inspectContainerResponse -> {
 
-            await()
-                .atMost(5, SECONDS)
-                .pollInterval(fibonacci(MILLISECONDS))
-                .until(inspectMappedExposedPortsCount, isEqual(exposedPorts.size()));
+                        long exposedPortsCount = (int) inspectContainerResponse
+                            .getNetworkSettings()
+                            .getPorts()
+                            .getBindings()
+                            .values()
+                            .stream()
+                            .filter(Objects::nonNull)
+                            .count();
+
+                        return exposedPortsCount == exposedPorts.size();
+                    }
+                );
 
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
