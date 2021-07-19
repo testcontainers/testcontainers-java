@@ -138,7 +138,7 @@ public final class ResourceReaper {
             // inspect container response might initially not contain the mapped port
             final InspectContainerResponse inspectedContainer = await()
                 .atMost(5, TimeUnit.SECONDS)
-                .pollInterval(DynamicPollInterval.ofMillis(10))
+                .pollInterval(DynamicPollInterval.ofMillis(50))
                 .pollInSameThread()
                 .until(
                     () -> client.inspectContainerCmd(ryukContainerId).exec(),
