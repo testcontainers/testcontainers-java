@@ -135,8 +135,8 @@ public class GenericContainerTest {
 
         try (
             GenericContainer container = new GenericContainer<>(image)
-            .withExposedPorts(8080)
-            .withCreateContainerCmdModifier(it -> it.withExposedPorts(ExposedPort.tcp(8082))) // another port exposed by modifier
+                .withExposedPorts(8080)
+                .withCreateContainerCmdModifier(it -> it.withExposedPorts(ExposedPort.tcp(8082))) // another port exposed by modifier
         ) {
 
             container.start();
