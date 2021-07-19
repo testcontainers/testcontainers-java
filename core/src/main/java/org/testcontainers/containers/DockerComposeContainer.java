@@ -80,7 +80,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private DockerComposeFiles dockerComposeFiles;
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
-    private boolean localCompose;
     private boolean pull = true;
     private boolean build = false;
     private Set<String> options = new HashSet<>();
@@ -297,7 +296,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
 
         final DockerCompose dockerCompose;
-        if (localCompose) {
+        if (LocalDockerCompose.executableExists()) {
             dockerCompose = new LocalDockerCompose(composeFiles, project);
         } else {
             dockerCompose = new ContainerisedDockerCompose(composeFiles, project);
@@ -480,8 +479,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      *
      * @return this instance, for chaining
      */
+    @Deprecated
     public SELF withLocalCompose(boolean localCompose) {
-        this.localCompose = localCompose;
         return self();
     }
 
