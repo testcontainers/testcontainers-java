@@ -20,6 +20,7 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
+import com.couchbase.client.java.kv.GetResult;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
@@ -107,6 +108,27 @@ public class CouchbaseContainerTest {
                 cluster.buckets().flushBucket(bucketDefinition.getName());
 
                 await().untilAsserted(() -> assertFalse(collection.exists("foo").exists()));
+            });
+        }
+    }
+
+    /**
+     * Test loading the travel-sample dataset and fetching a document from its sample data.
+     */
+    @Test
+    public void testSampleBucketLoading() {
+        try (
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE)
+                .withSampleBuckets(SampleBucket.TRAVEL_SAMPLE)
+        ) {
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(SampleBucket.TRAVEL_SAMPLE.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
+
+                Collection collection = bucket.defaultCollection();
+
+                GetResult getResult = collection.get("airline_10123");
+                assertEquals("TXW", getResult.contentAsObject().getString("callsign"));
             });
         }
     }

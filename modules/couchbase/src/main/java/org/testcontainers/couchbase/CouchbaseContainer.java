@@ -15,6 +15,7 @@
  */
 package org.testcontainers.couchbase;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -22,6 +23,7 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 import lombok.Cleanup;
 import okhttp3.Credentials;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -86,6 +88,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
 
+    private Set<SampleBucket> sampleBuckets = EnumSet.noneOf(SampleBucket.class);
+
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
     private boolean isEnterprise = false;
@@ -135,6 +139,12 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     public CouchbaseContainer withBucket(final BucketDefinition bucketDefinition) {
         checkNotRunning();
         this.buckets.add(bucketDefinition);
+        return this;
+    }
+
+    public CouchbaseContainer withSampleBuckets(final SampleBucket... sampleBuckets) {
+        checkNotRunning();
+        this.sampleBuckets = EnumSet.copyOf(Arrays.asList(sampleBuckets));
         return this;
     }
 
@@ -234,6 +244,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        loadSampleBuckets();
         createBuckets();
         logger().info("Couchbase container is ready! UI available at http://{}:{}", getHost(), getMappedPort(MGMT_PORT));
     }
@@ -373,6 +384,82 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     /**
+     * Loads the sample buckets through the REST API.
+     */
+    private void loadSampleBuckets() {
+        if (sampleBuckets.isEmpty()) {
+            logger().debug("No sample buckets to load, skipping.");
+            return;
+        }
+        logger().debug("Loading sample buckets: {}", sampleBuckets);
+
+        List<String> content = sampleBuckets
+            .stream()
+            .map(SampleBucket::getName)
+            .collect(Collectors.toList());
+
+        try {
+            @Cleanup Response response = doHttpRequest(
+                MGMT_PORT,
+                "/sampleBuckets/install",
+                "POST",
+                RequestBody.create(MediaType.get("application/x-www-form-urlencoded"), MAPPER.writeValueAsString(content)),
+                true
+            );
+            checkSuccessfulResponse(response, "Could not create sample buckets " + sampleBuckets);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could  not encode sample buckets into JSON!", e);
+        }
+
+        logger().debug("Loaded sample buckets, now waiting for each to be ready.");
+
+        // In addition to just loading the buckets (which is eventually consistent), we wait until the bucket
+        // has been created properly. Note that we do not create a primary index manually, since this is done
+        // by the sample bucket loading inside the cluster.
+        for (SampleBucket sampleBucket : sampleBuckets) {
+            logger().debug("Waiting for sample bucket {} to be ready", sampleBucket);
+
+            long start = System.nanoTime();
+
+            // This is doing the first sanity check that it is loaded
+            waitUntilBucketReady(sampleBucket.getName(), false);
+
+            // Now run a N1QL query (all sample buckets have a primary index) until the
+            // doc count is equal to the one that is expected.
+            // If the query service is enabled, make sure that we only proceed if the query engine also
+            // knows about the bucket in its metadata configuration.
+            Unreliables.retryUntilTrue(5, TimeUnit.MINUTES, () -> {
+
+                // Unreliables will retry immediately, which is not really helpful in this situation, so
+                // let's give the indexer a break.
+                Thread.sleep(2000);
+
+                String stmt = "SELECT COUNT(*) >= " + sampleBucket.getNumLoadedDocs() + " as fullyLoaded FROM `" + sampleBucket.getName() + "`";
+
+                @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                    .add("statement", stmt)
+                    .build(), true);
+
+                String body = queryResponse.body() != null ? queryResponse.body().string() : null;
+                checkSuccessfulResponse(queryResponse, "Could not poll num docs loaded for sample bucket: " + sampleBucket);
+
+                return Optional.of(MAPPER.readTree(body))
+                    .map(n -> n.at("/results/0/fullyLoaded"))
+                    .map(JsonNode::asBoolean)
+                    .orElse(false);
+            });
+
+            long end = System.nanoTime();
+            logger().info(
+                "Waiting for {} docs to be ready in sample bucket {} took {}s",
+                sampleBucket.getNumLoadedDocs(),
+                sampleBucket.getName(),
+                TimeUnit.NANOSECONDS.toSeconds(end - start)
+            );
+        }
+    }
+
+    /**
      * Based on the user-configured bucket definitions, creating buckets and corresponding indexes if needed.
      */
     private void createBuckets() {
@@ -388,43 +475,52 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 .build(), true);
 
             checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
+            waitUntilBucketReady(bucket.getName(), bucket.hasPrimaryIndex());
+        }
+    }
 
-            new HttpWaitStrategy()
-                .forPath("/pools/default/b/" + bucket.getName())
-                .forPort(MGMT_PORT)
-                .withBasicCredentials(username, password)
-                .forStatusCode(200)
-                .forResponsePredicate(new AllServicesEnabledPredicate())
-                .waitUntilReady(this);
+    /**
+     * Helper method to wait and assert until a bucket is deemed ready to use.
+     *
+     * @param bucketName the name of the bucket
+     * @param needsPrimaryIndex if a query primary index should be created.
+     */
+    private void waitUntilBucketReady(String bucketName, boolean needsPrimaryIndex) {
+        new HttpWaitStrategy()
+            .forPath("/pools/default/b/" + bucketName)
+            .forPort(MGMT_PORT)
+            .withBasicCredentials(username, password)
+            .forStatusCode(200)
+            .forResponsePredicate(new AllServicesEnabledPredicate())
+            .waitUntilReady(this);
 
+        if (enabledServices.contains(CouchbaseService.QUERY)) {
+            // If the query service is enabled, make sure that we only proceed if the query engine also
+            // knows about the bucket in its metadata configuration.
+            Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                    .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucketName + "\"")
+                    .build(), true);
+
+                String body = queryResponse.body() != null ? queryResponse.body().string() : null;
+                checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucketName);
+
+                return Optional.of(MAPPER.readTree(body))
+                    .map(n -> n.at("/results/0/present"))
+                    .map(JsonNode::asBoolean)
+                    .orElse(false);
+            });
+        }
+
+        if (needsPrimaryIndex) {
             if (enabledServices.contains(CouchbaseService.QUERY)) {
-                // If the query service is enabled, make sure that we only proceed if the query engine also
-                // knows about the bucket in its metadata configuration.
-                Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
-                    @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
-                        .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket.getName() + "\"")
-                        .build(), true);
+                @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                    .add("statement", "CREATE PRIMARY INDEX on `" + bucketName + "`")
+                    .build(), true);
 
-                    String body = queryResponse.body() != null ? queryResponse.body().string() : null;
-                    checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucket.getName());
-
-                    return Optional.of(MAPPER.readTree(body))
-                        .map(n -> n.at("/results/0/present"))
-                        .map(JsonNode::asBoolean)
-                        .orElse(false);
-                });
-            }
-
-            if (bucket.hasPrimaryIndex()) {
-                if (enabledServices.contains(CouchbaseService.QUERY)) {
-                    @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
-                        .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
-                        .build(), true);
-
-                    checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
-                } else {
-                    logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucket.getName());
-                }
+                checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucketName);
+            } else {
+                logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucketName);
             }
         }
     }
