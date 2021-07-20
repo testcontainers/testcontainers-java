@@ -108,6 +108,8 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
+    shaded 'org.awaitility:awaitility:4.1.0'
+
     api "com.github.docker-java:docker-java-api:3.2.11"
 
     shaded ('com.github.docker-java:docker-java-core:3.2.11') {
