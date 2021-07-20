@@ -91,6 +91,20 @@ public class Startables {
             })
             .toArray(CompletableFuture[]::new);
 
-        return CompletableFuture.allOf(futures);
+        return firstFailing(futures);
+    }
+
+    private static CompletableFuture<Void> firstFailing(CompletableFuture[] futures) {
+        CompletableFuture<Void> result = CompletableFuture.allOf(futures);
+
+        for (CompletableFuture<?> f : futures) {
+            f.whenComplete((__, ex) -> {
+                if (ex != null) {
+                    result.completeExceptionally(ex);
+                }
+            });
+        }
+
+        return result;
     }
 }
