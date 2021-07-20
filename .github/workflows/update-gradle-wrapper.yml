@@ -18,4 +18,4 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           labels: dependencies
 
-      - uses: gradle/wrapper-validation-action@e2c57acffb2c9aa5a8dc6eda2bbae0b6e495bd4c # v1.0.3
+      - uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b # v1.0.3
