@@ -20,6 +20,6 @@ public class DockerComposeFilesTest {
             Lists.newArrayList(new File("src/test/resources/docker-compose-imagename-overriding-a.yml"),
                                new File("src/test/resources/docker-compose-imagename-overriding-b.yml")));
         Assertions.assertThat(dockerComposeFiles.getDependencyImages())
-            .containsExactlyInAnyOrder("alpine:3.2", "redis:b", "mysql:b", "aservice");
+            .containsExactlyInAnyOrder("alpine:3.14", "redis:b", "mysql:b", "aservice");
     }
 }

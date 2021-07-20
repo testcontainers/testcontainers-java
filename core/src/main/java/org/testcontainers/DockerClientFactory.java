@@ -64,7 +64,7 @@ public class DockerClientFactory {
             TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
     );
 
-    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.5");
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.14");
     private static DockerClientFactory instance;
 
     // Cached client configuration
