@@ -9,6 +9,8 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -32,11 +34,13 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -44,6 +48,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
@@ -96,10 +102,14 @@ public final class ResourceReaper {
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
+        ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
         String ryukContainerId = client.createContainerCmd(ryukImage)
-                .withHostConfig(new HostConfig().withAutoRemove(true))
-                .withExposedPorts(new ExposedPort(8080))
-                .withPublishAllPorts(true)
+                .withHostConfig(
+                    new HostConfig()
+                        .withAutoRemove(true)
+                        .withPortBindings(new PortBinding(Ports.Binding.empty(), ryukExposedPort))
+                )
+                .withExposedPorts(ryukExposedPort)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(binds)
@@ -125,7 +135,23 @@ public final class ResourceReaper {
 
         ContainerState containerState = new ContainerState() {
 
-            final InspectContainerResponse inspectedContainer = client.inspectContainerCmd(ryukContainerId).exec();
+            // inspect container response might initially not contain the mapped port
+            final InspectContainerResponse inspectedContainer = await()
+                .atMost(5, TimeUnit.SECONDS)
+                .pollInterval(DynamicPollInterval.ofMillis(50))
+                .pollInSameThread()
+                .until(
+                    () -> client.inspectContainerCmd(ryukContainerId).exec(),
+                    inspectContainerResponse -> {
+                        return inspectContainerResponse
+                        .getNetworkSettings()
+                        .getPorts()
+                        .getBindings()
+                        .values()
+                        .stream()
+                        .anyMatch(Objects::nonNull);
+                    }
+                );
 
             @Override
             public List<Integer> getExposedPorts() {
