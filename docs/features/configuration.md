@@ -50,7 +50,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **ryuk.container.image = testcontainers/ryuk:0.3.1**
 > Performs fail-safe cleanup of containers, and always required (unless [Ryuk is disabled](#disabling-ryuk))
 
-> **tinyimage.container.image = alpine:3.5**  
+> **tinyimage.container.image = alpine:3.14**  
 > Used to check whether images can be pulled at startup, and always required (unless [startup checks are disabled](#disabling-the-startup-checks))
 
 > **sshd.container.image = testcontainers/sshd:1.0.0**  
