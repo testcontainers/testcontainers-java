@@ -12,10 +12,12 @@ Testcontainers' release process is semi-automated through GitHub Actions. This d
 1. Manually test the release with the staging url as maven repository url (e.g. critical issues and features).
 1. Run [TinSalver](https://github.com/bsideup/tinsalver) from GitHub using `npx` to sign artifact (see [TinsSalver README](https://github.com/bsideup/tinsalver/blob/main/README.md)).
 1. Close the release in Sonatype. This will evaluate the release based on given Sontaype rules and afterwards automatically sync to Maven Central.
+1. Handcraft and polish some of the release notes (e.g. substitute combinded dependency PRs and highlight certain features).
 1. When available through Maven Central, poke [Richard North](https://github.com/rnorth) to announce the release on Twitter!
 
 ## Internal details
 
 * The process is done with GitHub Actions, TinSalver and Sonatype.
 * Sonatype will automatically promote the staging release to Maven Central.
+* Keybase needs to be installed on the developer machine.
 * GPG key of signing developer needs to be uplodaed to the Ubuntu keyserver (or other server supported by Sonatype).
