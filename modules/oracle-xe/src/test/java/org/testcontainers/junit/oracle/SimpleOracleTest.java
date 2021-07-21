@@ -14,10 +14,13 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     public void testSimple() throws SQLException {
 
-        // Oracle Express Edition 11g Release 2 on Ubuntu 18.04 LTS
-        String oracleImage = "oracleinanutshell/oracle-xe-11g:1.0.0";
+        String oracleImage = "gvenzl/oracle-xe";
 
-        try (OracleContainer oracle = new OracleContainer(oracleImage)) {
+        try (
+            OracleContainer oracle = new OracleContainer(oracleImage)
+                .withPassword("foobar")
+                .withEnv("ORACLE_PASSWORD", "foobar")
+        ) {
             oracle.start();
             ResultSet resultSet = performQuery(oracle, "SELECT 1 FROM dual");
 
