@@ -45,11 +45,14 @@ public abstract class JdbcDatabaseContainerProvider {
      * @return Instance of {@link JdbcDatabaseContainer}
      */
     public JdbcDatabaseContainer newInstance(ConnectionUrl url) {
+        final JdbcDatabaseContainer result;
         if (url.getImageTag().isPresent()) {
-            return newInstance(url.getImageTag().get());
+            result = newInstance(url.getImageTag().get());
         } else {
-            return newInstance();
+            result = newInstance();
         }
+        result.withReuse(url.isReusable());
+        return result;
     }
 
     protected JdbcDatabaseContainer newInstanceFromConnectionUrl(ConnectionUrl connectionUrl, final String userParamName, final String pwdParamName) {
@@ -59,7 +62,7 @@ public abstract class JdbcDatabaseContainerProvider {
         final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
         final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
 
-        final JdbcDatabaseContainer instance;
+        final JdbcDatabaseContainer<?> instance;
         if (connectionUrl.getImageTag().isPresent()) {
             instance = newInstance(connectionUrl.getImageTag().get());
         } else {
@@ -67,6 +70,7 @@ public abstract class JdbcDatabaseContainerProvider {
         }
 
         return instance
+            .withReuse(connectionUrl.isReusable())
             .withDatabaseName(databaseName)
             .withUsername(user)
             .withPassword(password);

@@ -1,0 +1,6 @@
+CREATE CLASS Person EXTENDS V;
+
+INSERT INTO Person set name="john";
+INSERT INTO Person set name="paul";
+INSERT INTO Person set name="luke";
+INSERT INTO Person set name="albert";

@@ -1,0 +1,7 @@
+description = "Testcontainers :: MongoDB"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation("org.mongodb:mongodb-driver-sync:4.0.2")
+}

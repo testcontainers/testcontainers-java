@@ -7,23 +7,37 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Container for Dynalite, a DynamoDB clone.
  */
 public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
 
-    private static final String IMAGE_NAME = "quay.io/testcontainers/dynalite:v1.2.1-1";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("quay.io/testcontainers/dynalite");
+    private static final String DEFAULT_TAG = "v1.2.1-1";
     private static final int MAPPED_PORT = 4567;
 
+    /**
+     * @deprecated use {@link DynaliteContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public DynaliteContainer() {
-        this(IMAGE_NAME);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
+
+    public DynaliteContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public DynaliteContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         withExposedPorts(MAPPED_PORT);
     }
 
-    public DynaliteContainer(String imageName) {
-        super(imageName);
-    }
 
     /**
      * Gets a preconfigured {@link AmazonDynamoDB} client object for connecting to this
@@ -46,7 +60,7 @@ public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
      */
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration() {
         return new AwsClientBuilder.EndpointConfiguration("http://" +
-                this.getContainerIpAddress() + ":" +
+                this.getHost() + ":" +
                 this.getMappedPort(MAPPED_PORT), null);
     }
 

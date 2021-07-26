@@ -1,0 +1,8 @@
+description = "TestContainers :: RabbitMQ"
+
+dependencies {
+    api project(":testcontainers")
+    testImplementation 'com.rabbitmq:amqp-client:5.7.0'
+    testImplementation 'org.assertj:assertj-core:3.12.2'
+    compileOnly 'org.jetbrains:annotations:20.0.0'
+}

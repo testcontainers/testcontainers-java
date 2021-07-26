@@ -32,7 +32,7 @@ Testcontainers is distributed as separate JARs with a common version number:
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:testcontainers:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
@@ -46,12 +46,96 @@ testCompile "org.testcontainers:testcontainers:{{latest_version}}"
 
 You can also [check the latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
 
+### Managing versions for multiple Testcontainers dependencies
+
+To avoid specifying the version of each dependency, you can use a `BOM` or `Bill Of Materials`.
+
+Using Maven you can add the following to `dependencyManagement` section in your `pom.xml`:
+
+```xml tab='Maven'
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-bom</artifactId>
+            <version>{{latest_version}}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+and then use dependencies without specifying a version:
+
+```xml tab='Maven'
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>mysql</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+Using Gradle 5.0 or higher, you can add the following to the `dependencies` section in your `build.gradle`:
+
+```groovy tab='Gradle'
+implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
+testImplementation('org.testcontainers:mysql') //no version specified
+```
+
+
 [JitPack](jitpack_dependencies.md) builds are available for pre-release versions.
 
 !!! warning "Shaded dependencies"
-    Testcontainers uses the docker-java client library, which in turn depends on JAX-RS, Jersey and Jackson libraries. 
-    These libraries in particular seem to be especially prone to conflicts with test code/application under test code. 
+    Testcontainers depends on other libraries (like docker-java) for it to work.  
+    Some of them (JUnit, docker-java-{api,transport} and its transitive dependencies, JNA, visible-assertions and others) are part of our public API.  
+    But there are also "private", implementation detail dependencies (e.g. docker-java-core, Guava, OkHttp, etc etc) that are not exposed to public API but prone to conflicts with test code/application under test code. 
     As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
+
+## Sponsors
+
+A huge thank you to our sponsors:
+
+### Bronze sponsors
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://cirrus-ci.org/">
+        <img src="sponsor_logos/cirrus_labs.jpg" style="width: 100%"/>
+        <p>Cirrus CI</p>
+        <!-- via fkorotkov's sponsorship -->
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://vivy.com">
+        <img src="sponsor_logos/vivy.png" style="width: 100%"/>
+        <p>Vivy</p>
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.jooq.org/">
+        <img src="sponsor_logos/jooq.jpg" style="width: 100%"/>
+        <p>jOOQ</p>
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.backbase.com/">
+        <img src="sponsor_logos/backbase.png" style="width: 100%"/>
+        <p>Backbase</p>
+    </a>
+</div>
+
+### Backers
+
+* [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
+* [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
+* [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
+* [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
+* [Pascal Zwick (@pas2al)](https://github.com/pas2al)
+* [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
+* [Bas Stoker (@bastoker)](https://github.com/bastoker)
+* [Oleg Nenashev (@oleg-nenashev)](https://github.com/oleg-nenashev)
 
 ## Who is using Testcontainers?
 
@@ -66,10 +150,30 @@ You can also [check the latest version available on Maven Central](https://searc
 * [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Puslar, Apache Bookeeper and Apache Heron.
 * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
 * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
+* [Infinispan](https://infinispan.org) - Testing the Infinispan Server as well as integration tests with databases, LDAP and KeyCloak
 * [Instana](https://www.instana.com) - Testing agents and stream processing backends
 * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
 * [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing new, reactive client implementations
+* [Lightbend](https://www.lightbend.com/) - Testing [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/current/) and support in [Alpakka Kafka Testkit](https://doc.akka.io/docs/alpakka-kafka/current/testing.html#testing-with-kafka-in-docker)
+* [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
+* [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
+* [Micronaut Data](https://github.com/micronaut-projects/micronaut-data/) - Testing of Micronaut Data JDBC, a database access toolkit
+* [Vert.x SQL Client](https://github.com/eclipse-vertx/vertx-sql-client) - Testing with PostgreSQL, MySQL, MariaDB, SQL Server, etc.
+* [JHipster](https://www.jhipster.tech/) - Couchbase and Cassandra integration testing
+* [wescale](https://www.wescale.com) - Integration testing against HTTP service mocks and various data stores
+* [Marquez](https://marquezproject.github.io/marquez) - PostgreSQL integration testing
+* [Wise (formerly TransferWise)](https://wise.com) - Integration testing for different RDBMS, kafka and micro services
+* [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
+* [Apache SkyWalking](http://github.com/apache/skywalking) - End-to-end testing of the Apache SkyWalking, and plugin tests of its subproject, [Apache SkyWalking Python](http://github.com/apache/skywalking-python), and of its eco-system built by the community, like [SkyAPM NodeJS Agent](http://github.com/SkyAPM/nodejs)
+* [jOOQ](https://www.jooq.org) - Integration testing all of jOOQ with a variety of RDBMS
+* [Trino (formerly Presto SQL)](https://trino.io) - Integration testing all Trino core & connectors, including tests of multi-node deployments and security configurations.
+* Google - Various open source projects: [OpenTelemetry](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java), [Universal Application Tool](https://github.com/seattle-uat/universal-application-tool), [CloudBowl](https://github.com/GoogleCloudPlatform/cloudbowl-microservice-game)
+* [Backbase](https://www.backbase.com/) - Unit, Integration and Acceptance testing for different the databases supported (Oracle, SQL Server, MySQL), the different messaging systems supported (Kafka, Rabbit, AMQ) and other microservices and HTTP mocks.
+* [CloudBees](https://www.cloudbees.com/) - Integration testing of products, including but not limited to database and AWS/Localstack integration testing.
+* [Jenkins](https://www.jenkins.io/) - Integration testing of multiple plugins and the Trilead SSH2 fork maintained by the Jenkins community
+  ([query](https://github.com/search?l=Maven+POM&q=org%3Ajenkinsci+testcontainers&type=Code)).
+
 
 ## License
 
@@ -83,6 +187,6 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Copyright
 
-Copyright (c) 2015-2019 Richard North and other authors.
+Copyright (c) 2015-2021 Richard North and other authors.
 
 See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.

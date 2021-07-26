@@ -2,7 +2,8 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -13,7 +14,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -34,13 +37,16 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private static final String AUTH_BASIC = "Basic ";
 
     private String path = "/";
+    private String method = "GET";
     private Set<Integer> statusCodes = new HashSet<>();
     private boolean tlsEnabled;
     private String username;
     private String password;
+    private final Map<String, String> headers = new HashMap<>();
     private Predicate<String> responsePredicate;
     private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
+    private Duration readTimeout = Duration.ofSeconds(1);
 
     /**
      * Waits for the given status code.
@@ -96,6 +102,17 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     /**
+     * Indicates the HTTP method to use (<code>GET</code> by default).
+     *
+     * @param method the HTTP method.
+     * @return this
+     */
+    public HttpWaitStrategy withMethod(String method) {
+        this.method = method;
+        return this;
+    }
+
+    /**
      * Authenticate with HTTP Basic Authorization credentials.
      *
      * @param username the username
@@ -105,6 +122,41 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     public HttpWaitStrategy withBasicCredentials(String username, String password) {
         this.username = username;
         this.password = password;
+        return this;
+    }
+
+    /**
+     * Add a custom HTTP Header to the call.
+     * @param name The HTTP Header name
+     * @param value The HTTP Header value
+     * @return this
+     */
+    public HttpWaitStrategy withHeader(String name, String value) {
+        this.headers.put(name, value);
+        return this;
+    }
+
+    /**
+     * Add multiple custom HTTP Headers to the call.
+     * @param headers Headers map of name/value
+     * @return this
+     */
+    public HttpWaitStrategy withHeaders(Map<String, String> headers) {
+        this.headers.putAll(headers);
+        return this;
+    }
+
+    /**
+     * Set the HTTP connections read timeout.
+     *
+     * @param timeout the timeout (minimum 1 millisecond)
+     * @return this
+     */
+    public HttpWaitStrategy withReadTimeout(Duration timeout) {
+        if (timeout.toMillis() < 1) {
+            throw new IllegalArgumentException("you cannot specify a value smaller than 1 ms");
+        }
+        this.readTimeout = timeout;
         return this;
     }
 
@@ -134,8 +186,20 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
         if (null == livenessCheckPort || -1 == livenessCheckPort) {
             return;
         }
-        final String uri = buildLivenessUri(livenessCheckPort).toString();
-        log.info("{}: Waiting for {} seconds for URL: {}", containerName, startupTimeout.getSeconds(), uri);
+        final URI rawUri = buildLivenessUri(livenessCheckPort);
+        final String uri = rawUri.toString();
+
+        try {
+            // Un-map the port for logging
+            int originalPort = waitStrategyTarget.getExposedPorts().stream()
+                .filter(exposedPort -> rawUri.getPort() == waitStrategyTarget.getMappedPort(exposedPort))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Target port " + rawUri.getPort() + " is not exposed"));
+            log.info("{}: Waiting for {} seconds for URL: {} (where port {} maps to container port {})", containerName, startupTimeout.getSeconds(), uri, rawUri.getPort(), originalPort);
+        } catch (RuntimeException e) {
+            // do not allow a failure in logging to prevent progress, but log for diagnosis
+            log.warn("Unexpected error occurred - will proceed to try to wait anyway", e);
+        }
 
         // try to connect to the URL
         try {
@@ -143,6 +207,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                 getRateLimiter().doWhenReady(() -> {
                     try {
                         final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
+                        connection.setReadTimeout(Math.toIntExact(readTimeout.toMillis()));
 
                         // authenticate
                         if (!Strings.isNullOrEmpty(username)) {
@@ -150,7 +215,9 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                             connection.setUseCaches(false);
                         }
 
-                        connection.setRequestMethod("GET");
+                        // Add user configured headers
+                        this.headers.forEach(connection::setRequestProperty);
+                        connection.setRequestMethod(method);
                         connection.connect();
 
                         log.trace("Get response code {}", connection.getResponseCode());
@@ -208,13 +275,13 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      */
     private URI buildLivenessUri(int livenessCheckPort) {
         final String scheme = (tlsEnabled ? "https" : "http") + "://";
-        final String host = waitStrategyTarget.getContainerIpAddress();
+        final String host = waitStrategyTarget.getHost();
 
         final String portSuffix;
         if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {
             portSuffix = "";
         } else {
-            portSuffix = ":" + String.valueOf(livenessCheckPort);
+            portSuffix = ":" + livenessCheckPort;
         }
 
         return URI.create(scheme + host + portSuffix + path);

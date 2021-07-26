@@ -8,10 +8,9 @@
         </encoder>
     </appender>
 
-    <root level="info">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="org.testcontainers.shaded" level="WARN"/>
-
+    <logger name="org.testcontainers" level="DEBUG"/>
 </configuration>

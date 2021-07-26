@@ -1,0 +1,34 @@
+import groovy.json.JsonOutput
+
+// Emit a JSON-formatted list of check tasks to be run in CI
+task testMatrix {
+    project.afterEvaluate {
+        def checkTasks = subprojects.collect {
+            it.tasks.findByName("check")
+        }.findAll { it != null }
+
+        dependsOn(checkTasks)
+        doLast {
+            def checkTaskPaths = checkTasks
+                .collect { it.path }
+
+            println(JsonOutput.toJson(checkTaskPaths))
+        }
+    }
+}
+
+// If we're executing the `taskMatrix` task, disable tests and other slow tasks
+//  so that we can get a result quickly.
+gradle.taskGraph.whenReady {
+    if (it.hasTask(tasks.testMatrix)) {
+        for (subproject in subprojects) {
+            subproject.tasks.withType(Test).all {
+                testExecuter([execute: { spec, processor -> }, stopNow:{}] as org.gradle.api.internal.tasks.testing.TestExecuter)
+            }
+            subproject.tasks.findByName("shadowJar")?.enabled = false
+            subproject.tasks.findByName("javadoc")?.enabled = false
+            subproject.tasks.findByName("delombok")?.enabled = false
+            subproject.tasks.findByName("japicmp")?.enabled = false
+        }
+    }
+}

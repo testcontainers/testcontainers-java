@@ -1,0 +1,7 @@
+{
+    "auths": {
+        "https://registry.example.com": {
+            "auth": "X2pzb25fa2V5OnsKInR5cGUiOiAic2VydmljZV9hY2NvdW50IiwKInByb2plY3RfaWQiOiAiZXhhbXBsZS1wcm9qZWN0IiwKInByaXZhdGVfa2V5X2lkIjogImV4YW1wbGUta2V5LWlkIiwKInByaXZhdGVfa2V5IjogImV4YW1wbGUtcHJpdmF0ZS1rZXkiLAoiY2xpZW50X2VtYWlsIjogInVzZXJAZXhhbXBsZS5jb20iLAoiY2xpZW50X2lkIjogInVzZXJAZXhhbXBsZS5jb20iLAoiYXV0aF91cmkiOiAiaHR0cHM6Ly9yZWdpc3RyeS5leGFtcGxlLmNvbS9vL29hdXRoMi9hdXRoIiwKInRva2VuX3VyaSI6ICJodHRwczovL3JlZ2lzdHJ5LmV4YW1wbGUuY29tL3Rva2VuIiwKImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3JlZ2lzdHJ5LmV4YW1wbGUuY29tIiwKImNsaWVudF94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vcmVnaXN0cnkuZXhhbXBsZS5jb20iCn0="
+        }
+    }
+}

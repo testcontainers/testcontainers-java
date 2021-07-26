@@ -1,0 +1,8 @@
+description = "Testcontainers :: JDBC :: DB2"
+
+dependencies {
+    api project(':jdbc')
+
+    testImplementation project(':jdbc-test')
+    testImplementation 'com.ibm.db2:jcc:11.5.0.0'
+}

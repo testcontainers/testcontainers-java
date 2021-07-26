@@ -1,11 +1,19 @@
 description = "Testcontainers :: JDBC :: MySQL"
 
 dependencies {
-    compile project(':jdbc')
+    annotationProcessor 'com.google.auto.service:auto-service:1.0'
+    compileOnly 'com.google.auto.service:auto-service:1.0'
 
-    testCompile 'mysql:mysql-connector-java:8.0.14'
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
-    testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.19'
-    testCompile 'commons-dbutils:commons-dbutils:1.7'
-    testCompile 'org.vibur:vibur-dbcp:22.2'
+    api project(':jdbc')
+
+    compileOnly project(':r2dbc')
+    compileOnly 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
+
+    testImplementation project(':jdbc-test')
+    testImplementation 'mysql:mysql-connector-java:8.0.25'
+
+    testImplementation testFixtures(project(':r2dbc'))
+    testImplementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
+
+    compileOnly 'org.jetbrains:annotations:21.0.1'
 }

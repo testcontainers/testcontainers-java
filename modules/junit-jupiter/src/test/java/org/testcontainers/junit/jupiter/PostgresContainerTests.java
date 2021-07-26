@@ -9,12 +9,13 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
+import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.POSTGRES_IMAGE;
 
 @Testcontainers
 class PostgresContainerTests {
 
     @Container
-    private static final PostgreSQLContainer POSTGRE_SQL_CONTAINER = new PostgreSQLContainer()
+    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(POSTGRES_IMAGE)
             .withDatabaseName("foo")
             .withUsername("foo")
             .withPassword("secret");

@@ -1,10 +1,5 @@
 package org.testcontainers.containers;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assumptions.*;
-
-import java.util.Collections;
-
 import org.junit.Test;
 import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
@@ -14,6 +9,12 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
 import org.testcontainers.utility.MountableFile;
+
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Tests of functionality special to the Neo4jContainer.
@@ -29,7 +30,7 @@ public class Neo4jContainerTest {
     public void shouldDisableAuthentication() {
 
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer().withoutAuthentication();
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE).withoutAuthentication()
         ) {
             neo4jContainer.start();
             try (Driver driver = getDriver(neo4jContainer);
@@ -44,8 +45,8 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyDatabase() {
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer()
-                .withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+                .withDatabase(MountableFile.forClasspathResource("/test-graph.db"))
         ) {
             neo4jContainer.start();
             try (
@@ -62,8 +63,8 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyPlugins() {
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer()
-                .withPlugins(MountableFile.forClasspathResource("/custom-plugins"));
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+                .withPlugins(MountableFile.forClasspathResource("/custom-plugins"))
         ) {
             neo4jContainer.start();
             try (
@@ -78,8 +79,8 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyPlugin() {
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer()
-                .withPlugins(MountableFile.forClasspathResource("/custom-plugins/hello-world.jar"));
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+                .withPlugins(MountableFile.forClasspathResource("/custom-plugins/hello-world.jar"))
         ) {
             neo4jContainer.start();
             try (
@@ -105,7 +106,7 @@ public class Neo4jContainerTest {
         String expectedImageName = "neo4j:3.5.0-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(() -> new Neo4jContainer().withEnterpriseEdition())
+            .isThrownBy(() -> new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE).withEnterpriseEdition())
             .withMessageContaining("The image " + expectedImageName + " requires you to accept a license agreement.");
     }
 
@@ -114,7 +115,7 @@ public class Neo4jContainerTest {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNotNull();
 
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer()
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
                 .withEnterpriseEdition()
                 .withAdminPassword("Picard123")
         ) {
@@ -134,7 +135,7 @@ public class Neo4jContainerTest {
     @Test
     public void shouldAddConfigToEnvironment() {
 
-        Neo4jContainer neo4jContainer = new Neo4jContainer()
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
             .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*")
             .withNeo4jConfig("dbms.tx_log.rotation.size", "42M");
 
@@ -144,7 +145,7 @@ public class Neo4jContainerTest {
             .containsEntry("NEO4J_dbms_tx__log_rotation_size", "42M");
     }
 
-    private static Driver getDriver(Neo4jContainer container) {
+    private static Driver getDriver(Neo4jContainer<?> container) {
 
         AuthToken authToken = AuthTokens.none();
         if (container.getAdminPassword() != null) {

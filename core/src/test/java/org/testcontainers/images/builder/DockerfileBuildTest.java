@@ -6,6 +6,7 @@ import org.junit.runners.Parameterized;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -14,7 +15,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 @RunWith(Parameterized.class)
 public class DockerfileBuildTest {
 
-    private static final Path RESOURCE_PATH = Paths.get("src/test/resources/dockerfile-build-test");
+    static final Path RESOURCE_PATH = Paths.get("src/test/resources/dockerfile-build-test");
 
     public String expectedFileContent;
     public ImageFromDockerfile image;
@@ -44,6 +45,13 @@ public class DockerfileBuildTest {
                     .withDockerfilePath("./Dockerfile-buildarg")
                     .withBuildArg("CUSTOM_ARG", "test7890")
             },
+            
+           // Dockerfile build using withDockerfile(File)
+            new Object[]{"test4567",
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                    .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-alt"))
+            },
         };
     }
 
@@ -57,11 +65,11 @@ public class DockerfileBuildTest {
         try (final GenericContainer container = new GenericContainer(image)
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
             .withCommand("cat", "/test.txt")) {
-
             container.start();
 
             final String logs = container.getLogs();
             assertTrue("expected file content indicates that dockerfile build steps have been run", logs.contains(expectedFileContent));
         }
     }
+    
 }

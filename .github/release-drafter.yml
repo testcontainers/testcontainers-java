@@ -5,11 +5,21 @@ template: |
 
     $CHANGES
 categories:
-  - title: 🚀 Features
-    label: type/feature
+  - title: ⚠️ Breaking API changes
+    label: type/breaking-api-change
+  - title: 🚀 Features & Enhancements
+    labels:
+      - type/feature
+      - type/enhancement
+  - title: ☠️ Deprecations
+    label: type/deprecation
   - title: 🐛 Bug Fixes
     label: type/bug
   - title: 📖 Documentation
     label: type/docs
+  - title: 🧹 Housekeeping
+    labels:
+      - type/housekeeping
+      - type/test-improvement
   - title: 📦 Dependency updates
     label: dependencies

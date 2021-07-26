@@ -1,0 +1,8 @@
+description = "Testcontainers :: JDBC :: CockroachDB"
+
+dependencies {
+    api project(':jdbc')
+
+    testImplementation project(':jdbc-test')
+    testImplementation 'org.postgresql:postgresql:42.2.12'
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Couchbase, Inc.
+ * Copyright (c) 2020 Couchbase, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,431 +15,523 @@
  */
 package org.testcontainers.couchbase;
 
-import com.couchbase.client.core.utils.Base64;
-import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.CouchbaseCluster;
-import com.couchbase.client.java.cluster.*;
-import com.couchbase.client.java.env.CouchbaseEnvironment;
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
-import com.couchbase.client.java.query.Index;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
-import com.google.common.collect.Lists;
-import lombok.*;
-import org.apache.commons.compress.utils.Sets;
-import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.NotNull;
+import com.github.dockerjava.api.model.ContainerNetwork;
+import lombok.Cleanup;
+import okhttp3.Credentials;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.images.builder.Transferable;
-import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.ThrowingFunction;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.utility.DockerImageName;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.net.HttpURLConnection.HTTP_OK;
-import static org.testcontainers.couchbase.CouchbaseContainer.CouchbasePort.*;
 
 /**
- * Based on Laurent Doguin version,
+ * The couchbase container initializes and configures a Couchbase Server single node cluster.
  * <p>
- * optimized by Tayeb Chlyah
+ * Note that it does not depend on a specific couchbase SDK, so it can be used with both the Java SDK 2 and 3 as well
+ * as the Scala SDK 1 or newer. We recommend using the latest and greatest SDKs for the best experience.
  */
-@AllArgsConstructor
 public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
-    public static final String VERSION = "5.5.1";
-    public static final String DOCKER_IMAGE_NAME = "couchbase/server:";
-    public static final ObjectMapper MAPPER = new ObjectMapper();
-    public static final String STATIC_CONFIG = "/opt/couchbase/etc/couchbase/static_config";
-    public static final String CAPI_CONFIG = "/opt/couchbase/etc/couchdb/default.d/capi.ini";
+    private static final int MGMT_PORT = 8091;
 
-    private static final int REQUIRED_DEFAULT_PASSWORD_LENGTH = 6;
+    private static final int MGMT_SSL_PORT = 18091;
 
-    private String memoryQuota = "300";
+    private static final int VIEW_PORT = 8092;
 
-    private String indexMemoryQuota = "300";
+    private static final int VIEW_SSL_PORT = 18092;
 
-    private String clusterUsername = "Administrator";
+    private static final int QUERY_PORT = 8093;
 
-    private String clusterPassword = "password";
+    private static final int QUERY_SSL_PORT = 18093;
 
-    private boolean keyValue = true;
+    private static final int SEARCH_PORT = 8094;
 
-    @Getter
-    private boolean query = true;
+    private static final int SEARCH_SSL_PORT = 18094;
 
-    @Getter
-    private boolean index = true;
+    private static final int KV_PORT = 11210;
 
-    @Getter
-    private boolean primaryIndex = true;
+    private static final int KV_SSL_PORT = 11207;
 
-    @Getter
-    private boolean fts = false;
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("couchbase/server");
 
-    @Getter(lazy = true)
-    private final CouchbaseEnvironment couchbaseEnvironment = createCouchbaseEnvironment();
+    private static final String DEFAULT_TAG = "6.5.1";
 
-    @Getter(lazy = true)
-    private final CouchbaseCluster couchbaseCluster = createCouchbaseCluster();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private List<BucketAndUserSettings> newBuckets = new ArrayList<>();
+    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
-    private String urlBase;
+    private String username = "Administrator";
 
-    private SocatContainer proxy;
+    private String password = "password";
 
+    private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
+
+    private final List<BucketDefinition> buckets = new ArrayList<>();
+
+    private boolean isEnterprise = false;
+
+    /**
+     * Creates a new couchbase container with the default image and version.
+     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public CouchbaseContainer() {
-        this(DOCKER_IMAGE_NAME + VERSION);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    public CouchbaseContainer(String containerName) {
-        super(containerName);
-
-        withNetwork(Network.SHARED);
-        withNetworkAliases("couchbase-" + Base58.randomString(6));
-        setWaitStrategy(new HttpWaitStrategy().forPath("/ui/index.html"));
+    /**
+     * Creates a new couchbase container with the specified image name.
+     *
+     * @param dockerImageName the image name that should be used.
+     */
+    public CouchbaseContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
     }
 
-    @Override
-    public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(getMappedPort(REST));
+    /**
+     * Create a new couchbase container with the specified image name.
+     * @param dockerImageName the image name that should be used.
+     */
+    public CouchbaseContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+    }
+
+    /**
+     * Set custom username and password for the admin user.
+     *
+     * @param username the admin username to use.
+     * @param password the password for the admin user.
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withCredentials(final String username, final String password) {
+        checkNotRunning();
+        this.username = username;
+        this.password = password;
+        return this;
+    }
+
+    public CouchbaseContainer withBucket(final BucketDefinition bucketDefinition) {
+        checkNotRunning();
+        this.buckets.add(bucketDefinition);
+        return this;
+    }
+
+    public CouchbaseContainer withEnabledServices(final CouchbaseService... enabled) {
+        checkNotRunning();
+        this.enabledServices = EnumSet.copyOf(Arrays.asList(enabled));
+        return this;
+    }
+
+    public final String getUsername() {
+        return username;
+    }
+
+    public final String getPassword() {
+        return password;
+    }
+
+    public int getBootstrapCarrierDirectPort() {
+        return getMappedPort(KV_PORT);
+    }
+
+    public int getBootstrapHttpDirectPort() {
+        return getMappedPort(MGMT_PORT);
+    }
+
+    public String getConnectionString() {
+        return String.format("couchbase://%s:%d", getHost(), getBootstrapCarrierDirectPort());
     }
 
     @Override
     protected void configure() {
-        if (clusterPassword.length() < REQUIRED_DEFAULT_PASSWORD_LENGTH) {
-            logger().warn("The provided cluster admin password length is less then the default password policy length. " +
-                "Cluster start will fail if configured password requirements are not met.");
+        super.configure();
+
+        addExposedPorts(
+            MGMT_PORT,
+            MGMT_SSL_PORT,
+            VIEW_PORT,
+            VIEW_SSL_PORT,
+            QUERY_PORT,
+            QUERY_SSL_PORT,
+            SEARCH_PORT,
+            SEARCH_SSL_PORT,
+            KV_PORT,
+            KV_SSL_PORT
+        );
+
+        WaitAllStrategy waitStrategy = new WaitAllStrategy();
+
+        // Makes sure that all nodes in the cluster are healthy.
+        waitStrategy = waitStrategy.withStrategy(
+            new HttpWaitStrategy()
+                .forPath("/pools/default")
+                .forPort(MGMT_PORT)
+                .withBasicCredentials(username, password)
+                .forStatusCode(200)
+                .forResponsePredicate(response -> {
+                    try {
+                        return Optional.of(MAPPER.readTree(response))
+                            .map(n -> n.at("/nodes/0/status"))
+                            .map(JsonNode::asText)
+                            .map("healthy"::equals)
+                            .orElse(false);
+                    } catch (IOException e) {
+                        logger().error("Unable to parse response: {}", response, e);
+                        return false;
+                    }
+                })
+        );
+
+        if (enabledServices.contains(CouchbaseService.QUERY)) {
+            waitStrategy = waitStrategy.withStrategy(
+                new HttpWaitStrategy()
+                    .forPath("/admin/ping")
+                    .forPort(QUERY_PORT)
+                    .withBasicCredentials(username, password)
+                    .forStatusCode(200)
+            );
         }
+
+        waitingFor(waitStrategy);
     }
 
     @Override
-    @SneakyThrows
-    protected void doStart() {
-        String networkAlias = getNetworkAliases().get(0);
-        startProxy(networkAlias);
+    protected void containerIsStarting(final InspectContainerResponse containerInfo) {
+        logger().debug("Couchbase container is starting, performing configuration.");
 
-        for (CouchbasePort port : CouchbasePort.values()) {
-            exposePortThroughProxy(networkAlias, port.getOriginalPort(), getMappedPort(port));
+        waitUntilNodeIsOnline();
+        initializeIsEnterprise();
+        renameNode();
+        initializeServices();
+        configureAdminUser();
+        configureExternalPorts();
+        if (enabledServices.contains(CouchbaseService.INDEX)) {
+            configureIndexer();
         }
-        super.doStart();
-    }
-
-    private void startProxy(String networkAlias) {
-        proxy = new SocatContainer().withNetwork(getNetwork());
-
-        for (CouchbasePort port : CouchbasePort.values()) {
-            if (port.isDynamic()) {
-                proxy.withTarget(port.getOriginalPort(), networkAlias);
-            } else {
-                proxy.addExposedPort(port.getOriginalPort());
-            }
-        }
-        proxy.setWaitStrategy(null);
-        proxy.start();
-    }
-
-    private void exposePortThroughProxy(String networkAlias, int originalPort, int mappedPort) {
-        ExecCreateCmdResponse createCmdResponse = dockerClient
-            .execCreateCmd(proxy.getContainerId())
-            .withCmd("/usr/bin/socat", "TCP-LISTEN:" + originalPort + ",fork,reuseaddr", "TCP:" + networkAlias + ":" + mappedPort)
-            .exec();
-
-        dockerClient.execStartCmd(createCmdResponse.getId())
-            .exec(new ExecStartResultCallback());
-    }
-
-    @Override
-    public List<Integer> getExposedPorts() {
-        return proxy.getExposedPorts();
-    }
-
-    @Override
-    public String getContainerIpAddress() {
-        return proxy.getContainerIpAddress();
-    }
-
-    @Override
-    public Integer getMappedPort(int originalPort) {
-        return proxy.getMappedPort(originalPort);
-    }
-
-    protected Integer getMappedPort(CouchbasePort port) {
-        return getMappedPort(port.getOriginalPort());
-    }
-
-    @Override
-    public List<Integer> getBoundPortNumbers() {
-        return proxy.getBoundPortNumbers();
-    }
-
-    @Override
-    public void stop() {
-        stopCluster();
-        Stream.<Runnable>of(super::stop, proxy::stop).parallel().forEach(Runnable::run);
-    }
-
-    private void stopCluster() {
-        getCouchbaseCluster().disconnect();
-        getCouchbaseEnvironment().shutdown();
-    }
-
-    public CouchbaseContainer withNewBucket(BucketSettings bucketSettings) {
-        newBuckets.add(new BucketAndUserSettings(bucketSettings));
-        return self();
-    }
-
-    public CouchbaseContainer withNewBucket(BucketSettings bucketSettings, UserSettings userSettings) {
-        newBuckets.add(new BucketAndUserSettings(bucketSettings, userSettings));
-        return self();
-    }
-
-    @SneakyThrows
-    public void initCluster() {
-        urlBase = String.format("http://%s:%s", getContainerIpAddress(), getMappedPort(REST));
-        String poolURL = "/pools/default";
-        String poolPayload = "memoryQuota=" + URLEncoder.encode(memoryQuota, "UTF-8") + "&indexMemoryQuota=" + URLEncoder.encode(indexMemoryQuota, "UTF-8");
-
-        String setupServicesURL = "/node/controller/setupServices";
-        StringBuilder servicePayloadBuilder = new StringBuilder();
-        if (keyValue) {
-            servicePayloadBuilder.append("kv,");
-        }
-        if (query) {
-            servicePayloadBuilder.append("n1ql,");
-        }
-        if (index) {
-            servicePayloadBuilder.append("index,");
-        }
-        if (fts) {
-            servicePayloadBuilder.append("fts,");
-        }
-        String setupServiceContent = "services=" + URLEncoder.encode(servicePayloadBuilder.toString(), "UTF-8");
-
-        String webSettingsURL = "/settings/web";
-        String webSettingsContent = "username=" + URLEncoder.encode(clusterUsername, "UTF-8") + "&password=" + URLEncoder.encode(clusterPassword, "UTF-8") + "&port=8091";
-
-        callCouchbaseRestAPI(poolURL, poolPayload);
-        callCouchbaseRestAPI(setupServicesURL, setupServiceContent);
-        callCouchbaseRestAPI(webSettingsURL, webSettingsContent);
-
-        createNodeWaitStrategy().waitUntilReady(this);
-        callCouchbaseRestAPI("/settings/indexes", "indexerThreads=0&logLevel=info&maxRollbackPoints=5&storageMode=memory_optimized");
-    }
-
-    @NotNull
-    private HttpWaitStrategy createNodeWaitStrategy() {
-        return new HttpWaitStrategy()
-            .forPath("/pools/default/")
-            .withBasicCredentials(clusterUsername, clusterPassword)
-            .forStatusCode(HTTP_OK)
-            .forResponsePredicate(response -> {
-                try {
-                    return Optional.of(MAPPER.readTree(response))
-                        .map(n -> n.at("/nodes/0/status"))
-                        .map(JsonNode::asText)
-                        .map("healthy"::equals)
-                        .orElse(false);
-                } catch (IOException e) {
-                    logger().error("Unable to parse response {}", response);
-                    return false;
-                }
-            });
-    }
-
-    public void createBucket(BucketSettings bucketSetting, UserSettings userSettings, boolean primaryIndex) {
-        ClusterManager clusterManager = getCouchbaseCluster().clusterManager(clusterUsername, clusterPassword);
-        // Insert Bucket
-        BucketSettings bucketSettings = clusterManager.insertBucket(bucketSetting);
-        try {
-            // Insert Bucket user
-            clusterManager.upsertUser(AuthDomain.LOCAL, bucketSetting.name(), userSettings);
-        } catch (Exception e) {
-            logger().warn("Unable to insert user '" + bucketSetting.name() + "', maybe you are using older version");
-        }
-        if (index) {
-            Bucket bucket = getCouchbaseCluster().openBucket(bucketSettings.name(), bucketSettings.password());
-            new CouchbaseQueryServiceWaitStrategy(bucket).waitUntilReady(this);
-            if (primaryIndex) {
-                bucket.query(Index.createPrimaryIndex().on(bucketSetting.name()));
-            }
-        }
-    }
-
-    public void callCouchbaseRestAPI(String url, String payload) throws IOException {
-        String fullUrl = urlBase + url;
-        @Cleanup("disconnect")
-        HttpURLConnection httpConnection = (HttpURLConnection) ((new URL(fullUrl).openConnection()));
-        httpConnection.setDoOutput(true);
-        httpConnection.setRequestMethod("POST");
-        httpConnection.setRequestProperty("Content-Type",
-            "application/x-www-form-urlencoded");
-        String encoded = Base64.encode((clusterUsername + ":" + clusterPassword).getBytes("UTF-8"));
-        httpConnection.setRequestProperty("Authorization", "Basic " + encoded);
-        @Cleanup
-        DataOutputStream out = new DataOutputStream(httpConnection.getOutputStream());
-        out.writeBytes(payload);
-        out.flush();
-        httpConnection.getResponseCode();
-    }
-
-    @Override
-    protected void containerIsCreated(String containerId) {
-        patchConfig(STATIC_CONFIG, this::addMappedPorts);
-        // capi needs a special configuration, see https://developer.couchbase.com/documentation/server/current/install/install-ports.html
-        patchConfig(CAPI_CONFIG, this::replaceCapiPort);
-    }
-
-    private void patchConfig(String configLocation, ThrowingFunction<String, String> patchFunction) {
-        String patchedConfig = copyFileFromContainer(configLocation,
-            inputStream -> patchFunction.apply(IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
-        copyFileToContainer(Transferable.of(patchedConfig.getBytes(StandardCharsets.UTF_8)), configLocation);
-    }
-
-    private String addMappedPorts(String originalConfig) {
-        String portConfig = Stream.of(CouchbasePort.values())
-            .filter(port -> !port.isDynamic())
-            .map(port -> String.format("{%s, %d}.", port.name, getMappedPort(port)))
-            .collect(Collectors.joining("\n"));
-        return String.format("%s\n%s", originalConfig, portConfig);
-    }
-
-    private String replaceCapiPort(String originalConfig) {
-        return Arrays.stream(originalConfig.split("\n"))
-            .map(s -> (s.matches("port\\s*=\\s*" + CAPI.getOriginalPort())) ? "port = " + getMappedPort(CAPI) : s)
-            .collect(Collectors.joining("\n"));
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (!newBuckets.isEmpty()) {
-            for (BucketAndUserSettings bucket : newBuckets) {
-                createBucket(bucket.getBucketSettings(), bucket.getUserSettings(), primaryIndex);
+        createBuckets();
+        logger().info("Couchbase container is ready! UI available at http://{}:{}", getHost(), getMappedPort(MGMT_PORT));
+    }
+
+    /**
+     * Before we can start configuring the host, we need to wait until the cluster manager is listening.
+     */
+    private void waitUntilNodeIsOnline() {
+        new HttpWaitStrategy()
+            .forPort(MGMT_PORT)
+            .forPath("/pools")
+            .forStatusCode(200)
+            .waitUntilReady(this);
+    }
+
+    /**
+     * Fetches edition (enterprise or community) of started container.
+     */
+    private void initializeIsEnterprise() {
+        @Cleanup Response response = doHttpRequest(MGMT_PORT, "/pools", "GET", null, true);
+
+        try {
+            isEnterprise = MAPPER.readTree(response.body().string()).get("isEnterprise").asBoolean();
+        } catch (IOException e) {
+            throw new IllegalStateException("Couchbase /pools did not return valid JSON");
+        }
+    }
+
+    /**
+     * Rebinds/renames the internal hostname.
+     * <p>
+     * To make sure the internal hostname is different from the external (alternate) address and the SDK can pick it
+     * up automatically, we bind the internal hostname to the internal IP address.
+     */
+    private void renameNode() {
+        logger().debug("Renaming Couchbase Node from localhost to {}", getHost());
+
+        @Cleanup Response response = doHttpRequest(MGMT_PORT, "/node/controller/rename", "POST", new FormBody.Builder()
+            .add("hostname", getInternalIpAddress())
+            .build(), false
+        );
+
+        checkSuccessfulResponse(response, "Could not rename couchbase node");
+    }
+
+    /**
+     * Initializes services based on the configured enabled services.
+     */
+    private void initializeServices() {
+        logger().debug("Initializing couchbase services on host: {}", enabledServices);
+
+        final String services = enabledServices
+            .stream()
+            .map(CouchbaseService::getIdentifier)
+            .collect(Collectors.joining(","));
+
+        @Cleanup Response response = doHttpRequest(MGMT_PORT, "/node/controller/setupServices", "POST", new FormBody.Builder()
+            .add("services", services)
+            .build(), false
+        );
+
+        checkSuccessfulResponse(response, "Could not enable couchbase services");
+    }
+
+    /**
+     * Configures the admin user on the couchbase node.
+     * <p>
+     * After this stage, all subsequent API calls need to have the basic auth header set.
+     */
+    private void configureAdminUser() {
+        logger().debug("Configuring couchbase admin user with username: \"{}\"", username);
+
+        @Cleanup Response response = doHttpRequest(MGMT_PORT, "/settings/web", "POST", new FormBody.Builder()
+            .add("username", username)
+            .add("password", password)
+            .add("port", Integer.toString(MGMT_PORT))
+            .build(), false);
+
+        checkSuccessfulResponse(response, "Could not configure couchbase admin user");
+    }
+
+    /**
+     * Configures the external ports for SDK access.
+     * <p>
+     * Since the internal ports are not accessible from outside the container, this code configures the "external"
+     * hostname and services to align with the mapped ports. The SDK will pick it up and then automatically connect
+     * to those ports. Note that for all services non-ssl and ssl ports are configured.
+     */
+    private void configureExternalPorts() {
+        logger().debug("Mapping external ports to the alternate address configuration");
+
+        final FormBody.Builder builder = new FormBody.Builder();
+        builder.add("hostname", getHost());
+        builder.add("mgmt", Integer.toString(getMappedPort(MGMT_PORT)));
+        builder.add("mgmtSSL", Integer.toString(getMappedPort(MGMT_SSL_PORT)));
+
+        if (enabledServices.contains(CouchbaseService.KV)) {
+            builder.add("kv", Integer.toString(getMappedPort(KV_PORT)));
+            builder.add("kvSSL", Integer.toString(getMappedPort(KV_SSL_PORT)));
+            builder.add("capi", Integer.toString(getMappedPort(VIEW_PORT)));
+            builder.add("capiSSL", Integer.toString(getMappedPort(VIEW_SSL_PORT)));
+        }
+
+        if (enabledServices.contains(CouchbaseService.QUERY)) {
+            builder.add("n1ql", Integer.toString(getMappedPort(QUERY_PORT)));
+            builder.add("n1qlSSL", Integer.toString(getMappedPort(QUERY_SSL_PORT)));
+        }
+
+        if (enabledServices.contains(CouchbaseService.SEARCH)) {
+            builder.add("fts", Integer.toString(getMappedPort(SEARCH_PORT)));
+            builder.add("ftsSSL", Integer.toString(getMappedPort(SEARCH_SSL_PORT)));
+        }
+
+        @Cleanup Response response = doHttpRequest(
+            MGMT_PORT,
+            "/node/controller/setupAlternateAddresses/external",
+            "PUT",
+            builder.build(),
+            true
+        );
+
+        checkSuccessfulResponse(response, "Could not configure external ports");
+    }
+
+    /**
+     * Configures the indexer service so that indexes can be created later on the bucket.
+     */
+    private void configureIndexer() {
+        logger().debug("Configuring the indexer service");
+
+        @Cleanup Response response = doHttpRequest(MGMT_PORT, "/settings/indexes", "POST", new FormBody.Builder()
+            .add("storageMode", isEnterprise ? "memory_optimized" : "forestdb")
+            .build(), true
+        );
+
+        checkSuccessfulResponse(response, "Could not configure the indexing service");
+    }
+
+    /**
+     * Based on the user-configured bucket definitions, creating buckets and corresponding indexes if needed.
+     */
+    private void createBuckets() {
+        logger().debug("Creating {} buckets (and corresponding indexes).", buckets.size());
+
+        for (BucketDefinition bucket : buckets) {
+            logger().debug("Creating bucket \"{}\"", bucket.getName());
+
+            @Cleanup Response response = doHttpRequest(MGMT_PORT, "/pools/default/buckets", "POST", new FormBody.Builder()
+                .add("name", bucket.getName())
+                .add("ramQuotaMB", Integer.toString(bucket.getQuota()))
+                .add("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0")
+                .build(), true);
+
+            checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
+
+            new HttpWaitStrategy()
+                .forPath("/pools/default/b/" + bucket.getName())
+                .forPort(MGMT_PORT)
+                .withBasicCredentials(username, password)
+                .forStatusCode(200)
+                .forResponsePredicate(new AllServicesEnabledPredicate())
+                .waitUntilReady(this);
+
+            if (enabledServices.contains(CouchbaseService.QUERY)) {
+                // If the query service is enabled, make sure that we only proceed if the query engine also
+                // knows about the bucket in its metadata configuration.
+                Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                    @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                        .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket.getName() + "\"")
+                        .build(), true);
+
+                    String body = queryResponse.body() != null ? queryResponse.body().string() : null;
+                    checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucket.getName());
+
+                    return Optional.of(MAPPER.readTree(body))
+                        .map(n -> n.at("/results/0/present"))
+                        .map(JsonNode::asBoolean)
+                        .orElse(false);
+                });
+            }
+
+            if (bucket.hasPrimaryIndex()) {
+                if (enabledServices.contains(CouchbaseService.QUERY)) {
+                    @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                        .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
+                        .build(), true);
+
+                    checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
+                } else {
+                    logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucket.getName());
+                }
             }
         }
     }
 
-    private CouchbaseCluster createCouchbaseCluster() {
-        return CouchbaseCluster.create(getCouchbaseEnvironment(), getContainerIpAddress());
+    /**
+     * Helper method to extract the internal IP address based on the network configuration.
+     */
+    private String getInternalIpAddress() {
+        return getContainerInfo().getNetworkSettings().getNetworks().values().stream()
+            .findFirst()
+            .map(ContainerNetwork::getIpAddress)
+            .orElseThrow(() -> new IllegalStateException("No network available to extract the internal IP from!"));
     }
 
-    private DefaultCouchbaseEnvironment createCouchbaseEnvironment() {
-        initCluster();
-        return DefaultCouchbaseEnvironment.builder()
-            .kvTimeout(10000)
-            .bootstrapCarrierDirectPort(getMappedPort(MEMCACHED))
-            .bootstrapCarrierSslPort(getMappedPort(MEMCACHED_SSL))
-            .bootstrapHttpDirectPort(getMappedPort(REST))
-            .bootstrapHttpSslPort(getMappedPort(REST_SSL))
-            .build();
-    }
+    /**
+     * Helper method to check if the response is successful and release the body if needed.
+     *
+     * @param response the response to check.
+     * @param message the message that should be part of the exception of not successful.
+     */
+    private void checkSuccessfulResponse(final Response response, final String message) {
+        if (!response.isSuccessful()) {
+            String body = null;
+            if (response.body() != null) {
+                try {
+                    body = response.body().string();
+                } catch (IOException e) {
+                    logger().debug("Unable to read body of response: {}", response, e);
+                }
+            }
 
-    public CouchbaseContainer withMemoryQuota(String memoryQuota) {
-        this.memoryQuota = memoryQuota;
-        return self();
-    }
-
-    public CouchbaseContainer withIndexMemoryQuota(String indexMemoryQuota) {
-        this.indexMemoryQuota = indexMemoryQuota;
-        return self();
-    }
-
-    public CouchbaseContainer withClusterAdmin(String username, String password) {
-        this.clusterUsername = username;
-        this.clusterPassword = password;
-        return self();
-    }
-
-    public CouchbaseContainer withKeyValue(boolean keyValue) {
-        this.keyValue = keyValue;
-        return self();
-    }
-
-    public CouchbaseContainer withQuery(boolean query) {
-        this.query = query;
-        return self();
-    }
-
-    public CouchbaseContainer withIndex(boolean index) {
-        this.index = index;
-        return self();
-    }
-
-    public CouchbaseContainer withPrimaryIndex(boolean primaryIndex) {
-        this.primaryIndex = primaryIndex;
-        return self();
-    }
-
-    public CouchbaseContainer withFts(boolean fts) {
-        this.fts = fts;
-        return self();
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    protected enum CouchbasePort {
-        REST("rest_port", 8091, true),
-        CAPI("capi_port", 8092, false),
-        QUERY("query_port", 8093, false),
-        FTS("fts_http_port", 8094, false),
-        CBAS("cbas_http_port", 8095, false),
-        EVENTING("eventing_http_port", 8096, false),
-        MEMCACHED_SSL("memcached_ssl_port", 11207, false),
-        MEMCACHED("memcached_port", 11210, false),
-        REST_SSL("ssl_rest_port", 18091, true),
-        CAPI_SSL("ssl_capi_port", 18092, false),
-        QUERY_SSL("ssl_query_port", 18093, false),
-        FTS_SSL("fts_ssl_port", 18094, false),
-        CBAS_SSL("cbas_ssl_port", 18095, false),
-        EVENTING_SSL("eventing_ssl_port", 18096, false);
-
-        final String name;
-
-        final int originalPort;
-
-        final boolean dynamic;
-    }
-
-    @Value
-    @AllArgsConstructor
-    private class BucketAndUserSettings {
-
-        private final BucketSettings bucketSettings;
-        private final UserSettings userSettings;
-
-        public BucketAndUserSettings(final BucketSettings bucketSettings) {
-            this.bucketSettings = bucketSettings;
-            this.userSettings = UserSettings.build()
-                .password(bucketSettings.password())
-                .roles(getDefaultAdminRoles(bucketSettings.name()));
+            throw new IllegalStateException(message + ": " + response.toString() + ", body=" + (body == null ? "<null>" : body));
         }
+    }
 
-        private List<UserRole> getDefaultAdminRoles(String bucketName) {
-            return Lists.newArrayList(
-                new UserRole("bucket_admin", bucketName),
-                new UserRole("views_admin", bucketName),
-                new UserRole("query_manage_index", bucketName),
-                new UserRole("query_update", bucketName),
-                new UserRole("query_select", bucketName),
-                new UserRole("query_insert", bucketName),
-                new UserRole("query_delete", bucketName)
-            );
+    /**
+     * Checks if already running and if so raises an exception to prevent too-late setters.
+     */
+    private void checkNotRunning() {
+        if (isRunning()) {
+            throw new IllegalStateException("Setter can only be called before the container is running");
         }
+    }
 
+    /**
+     * Helper method to perform a request against a couchbase server HTTP endpoint.
+     *
+     * @param port the (unmapped) original port that should be used.
+     * @param path the relative http path.
+     * @param method the http method to use.
+     * @param body if present, will be part of the payload.
+     * @param auth if authentication with the admin user and password should be used.
+     * @return the response of the request.
+     */
+    private Response doHttpRequest(final int port, final String path, final String method, final RequestBody body,
+                                   final boolean auth) {
+        try {
+            Request.Builder requestBuilder = new Request.Builder()
+                .url("http://" + getHost() + ":" + getMappedPort(port) + path);
+
+            if (auth) {
+                requestBuilder = requestBuilder.header("Authorization", Credentials.basic(username, password));
+            }
+
+            if (body == null) {
+                requestBuilder = requestBuilder.get();
+            } else {
+                requestBuilder = requestBuilder.method(method, body);
+            }
+
+            return HTTP_CLIENT.newCall(requestBuilder.build()).execute();
+        } catch (Exception ex) {
+            throw new RuntimeException("Could not perform request against couchbase HTTP endpoint ", ex);
+        }
+    }
+
+    /**
+     * In addition to getting a 200, we need to make sure that all services we need are enabled and available on
+     * the bucket.
+     * <p>
+     *  Fixes the issue observed in https://github.com/testcontainers/testcontainers-java/issues/2993
+     */
+    private class AllServicesEnabledPredicate implements Predicate<String> {
+
+        @Override
+        public boolean test(final String rawConfig) {
+            try {
+                for (JsonNode node : MAPPER.readTree(rawConfig).at("/nodesExt")) {
+                    for (CouchbaseService enabledService : enabledServices) {
+                        boolean found = false;
+                        Iterator<String> fieldNames = node.get("services").fieldNames();
+                        while (fieldNames.hasNext()) {
+                            if (fieldNames.next().startsWith(enabledService.getIdentifier())) {
+                                found = true;
+                            }
+                        }
+                        if (!found) {
+                            logger().trace("Service {} not yet part of config, retrying.", enabledService);
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            } catch (IOException ex) {
+                logger().error("Unable to parse response: {}", rawConfig, ex);
+                return false;
+            }
+        }
     }
 }

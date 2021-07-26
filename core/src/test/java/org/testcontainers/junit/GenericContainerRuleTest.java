@@ -6,18 +6,34 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
-import org.junit.*;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
@@ -29,7 +45,16 @@ import java.util.regex.Pattern;
 
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestImages.ALPINE_IMAGE;
+import static org.testcontainers.TestImages.MONGODB_IMAGE;
+import static org.testcontainers.TestImages.RABBITMQ_IMAGE;
+import static org.testcontainers.TestImages.REDIS_IMAGE;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 import static org.testcontainers.containers.SelinuxContext.SHARED;
@@ -46,6 +71,7 @@ public class GenericContainerRuleTest {
     private static final int RABBITMQ_PORT = 5672;
     private static final int MONGO_PORT = 27017;
 
+
     /*
      * Test data setup
      */
@@ -60,29 +86,27 @@ public class GenericContainerRuleTest {
      * Redis
      */
     @ClassRule
-    public static GenericContainer redis = new GenericContainer("redis:3.0.2")
+    public static GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
             .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
     @ClassRule
-    public static GenericContainer rabbitMq = new GenericContainer("rabbitmq:3.5.3")
+    public static GenericContainer<?> rabbitMq = new GenericContainer<>(RABBITMQ_IMAGE)
             .withExposedPorts(RABBITMQ_PORT);
-
     /**
      * MongoDB
      */
     @ClassRule
-    public static GenericContainer mongo = new GenericContainer("mongo:3.1.5")
+    public static GenericContainer<?> mongo = new GenericContainer<>(MONGODB_IMAGE)
             .withExposedPorts(MONGO_PORT);
-
     /**
      * Pass an environment variable to the container, then run a shell script that exposes the variable in a quick and
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainer alpineEnvVar = new GenericContainer<>("alpine:3.2")
+    public static GenericContainer<?> alpineEnvVar = new GenericContainer<>(ALPINE_IMAGE)
             .withExposedPorts(80)
             .withEnv("MAGIC_NUMBER", "4")
             .withEnv("MAGIC_NUMBER", oldValue -> oldValue.orElse("") + "2")
@@ -93,7 +117,7 @@ public class GenericContainerRuleTest {
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainer alpineEnvVarFromMap = new GenericContainer("alpine:3.2")
+    public static GenericContainer<?> alpineEnvVarFromMap = new GenericContainer<>(ALPINE_IMAGE)
             .withExposedPorts(80)
             .withEnv(ImmutableMap.of(
                     "FIRST", "42",
@@ -105,7 +129,7 @@ public class GenericContainerRuleTest {
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainer alpineClasspathResource = new GenericContainer("alpine:3.2")
+    public static GenericContainer<?> alpineClasspathResource = new GenericContainer<>(ALPINE_IMAGE)
             .withExposedPorts(80)
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_ONLY)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
@@ -114,7 +138,7 @@ public class GenericContainerRuleTest {
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainer alpineClasspathResourceSelinux = new GenericContainer("alpine:3.2")
+    public static GenericContainer<?> alpineClasspathResourceSelinux = new GenericContainer<>(ALPINE_IMAGE)
             .withExposedPorts(80)
             .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", READ_WRITE, SHARED)
             .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
@@ -123,37 +147,16 @@ public class GenericContainerRuleTest {
      * Create a container with an extra host entry and expose the content of /etc/hosts for testing.
      */
     @ClassRule
-    public static GenericContainer alpineExtrahost = new GenericContainer("alpine:3.2")
+    public static GenericContainer<?> alpineExtrahost = new GenericContainer<>(ALPINE_IMAGE)
             .withExposedPorts(80)
             .withExtraHost("somehost", "192.168.1.10")
             .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
 
-//    @Test
-//    public void simpleRedisTest() {
-//        String ipAddress = redis.getContainerIpAddress();
-//        Integer port = redis.getMappedPort(REDIS_PORT);
-//
-//        // Use Redisson to obtain a List that is backed by Redis
-//        Config redisConfig = new Config();
-//        redisConfig.useSingleServer().setAddress(ipAddress + ":" + port);
-//
-//        Redisson redisson = Redisson.create(redisConfig);
-//
-//        List<String> testList = redisson.getList("test");
-//        testList.add("foo");
-//        testList.add("bar");
-//        testList.add("baz");
-//
-//        List<String> testList2 = redisson.getList("test");
-//        assertEquals("The list contains the expected number of items (redis is working!)", 3, testList2.size());
-//        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("foo"));
-//        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("bar"));
-//        assertTrue("The list contains an item that was put in (redis is working!)", testList2.contains("baz"));
-//    }
-
     @Test
     public void testIsRunning() {
-        try (GenericContainer container = new GenericContainer().withCommand("top")) {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+            .withCommand("top")) {
             assertFalse("Container is not started and not running", container.isRunning());
             container.start();
             assertTrue("Container is started and running", container.isRunning());
@@ -163,7 +166,7 @@ public class GenericContainerRuleTest {
     @Test
     public void withTmpFsTest() throws Exception {
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("top")
                 .withTmpFs(singletonMap("/testtmpfs", "rw"))
         ) {
@@ -184,7 +187,7 @@ public class GenericContainerRuleTest {
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(rabbitMq.getContainerIpAddress());
+        factory.setHost(rabbitMq.getHost());
         factory.setPort(rabbitMq.getMappedPort(RABBITMQ_PORT));
         Connection connection = factory.newConnection();
 
@@ -216,7 +219,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void simpleMongoDbTest() {
-        MongoClient mongoClient = new MongoClient(mongo.getContainerIpAddress(), mongo.getMappedPort(MONGO_PORT));
+        MongoClient mongoClient = new MongoClient(mongo.getHost(), mongo.getMappedPort(MONGO_PORT));
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
@@ -244,7 +247,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void customLabelTest() {
-        try (final GenericContainer alpineCustomLabel = new GenericContainer("alpine:3.2")
+        try (final GenericContainer alpineCustomLabel = new GenericContainer<>(ALPINE_IMAGE)
             .withLabel("our.custom", "label")
             .withCommand("top")) {
 
@@ -262,7 +265,7 @@ public class GenericContainerRuleTest {
         assertThrows("When trying to overwrite an 'org.testcontainers' label, withLabel() throws an exception",
             IllegalArgumentException.class,
             () -> {
-                new GenericContainer("alpine:3.2")
+                new GenericContainer<>(ALPINE_IMAGE)
                     .withLabel("org.testcontainers.foo", "false");
             }
         );
@@ -284,7 +287,7 @@ public class GenericContainerRuleTest {
     }
 
     @Test
-    public void exceptionThrownWhenMappedPortNotFound() throws IOException {
+    public void exceptionThrownWhenMappedPortNotFound() {
         assertThrows("When the requested port is not mapped, getMappedPort() throws an exception",
                 IllegalArgumentException.class,
                 () -> {
@@ -301,10 +304,10 @@ public class GenericContainerRuleTest {
     }
 
     @Test @Ignore //TODO investigate intermittent failures
-    public void failFastWhenContainerHaltsImmediately() throws Exception {
+    public void failFastWhenContainerHaltsImmediately() {
 
         long startingTimeMs = System.currentTimeMillis();
-        final GenericContainer failsImmediately = new GenericContainer("alpine:3.2")
+        final GenericContainer failsImmediately = new GenericContainer<>(ALPINE_IMAGE)
               .withCommand("/bin/sh", "-c", "return false")
               .withMinimumRunningDuration(Duration.ofMillis(100));
 
@@ -368,7 +371,7 @@ public class GenericContainerRuleTest {
         // Use random name to avoid the conflicts between the tests
         String randomName = Base58.randomString(5);
         try(
-                GenericContainer container = new GenericContainer<>("redis:3.0.2")
+                GenericContainer<?> container = new GenericContainer<>(REDIS_IMAGE)
                         .withCommand("redis-server", "--help")
                         .withCreateContainerCmdModifier(cmd -> cmd.withName("overrideMe"))
                         // Preserves the order
@@ -388,7 +391,7 @@ public class GenericContainerRuleTest {
         return Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS, () -> {
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-            Socket socket = new Socket(container.getContainerIpAddress(), container.getFirstMappedPort());
+            Socket socket = new Socket(container.getHost(), container.getFirstMappedPort());
             return new BufferedReader(new InputStreamReader(socket.getInputStream()));
         });
     }
@@ -402,16 +405,24 @@ public class GenericContainerRuleTest {
     }
 
     @Test
+    public void addingExposedPortTwiceShouldNotFail() {
+        redis.addExposedPort(8987);
+        redis.addExposedPort(8987);
+        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2)); // 2 ports = de-duplicated port 8897 and original port 6379
+        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
+        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+    }
+
+    @Test
     public void sharedMemorySetTest() {
-        try (GenericContainer containerWithSharedMemory = new GenericContainer("busybox:1.29")
-            .withSharedMemorySize(1024L * FileUtils.ONE_MB)) {
+        try (GenericContainer containerWithSharedMemory = new GenericContainer<>(TINY_IMAGE)
+            .withSharedMemorySize(42L * FileUtils.ONE_MB)
+            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {
 
             containerWithSharedMemory.start();
 
-            HostConfig hostConfig =
-                containerWithSharedMemory.getDockerClient().inspectContainerCmd(containerWithSharedMemory.getContainerId())
-                    .exec().getHostConfig();
-            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 1024 * FileUtils.ONE_MB);
+            HostConfig hostConfig = containerWithSharedMemory.getContainerInfo().getHostConfig();
+            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 42L * FileUtils.ONE_MB);
         }
     }
 }

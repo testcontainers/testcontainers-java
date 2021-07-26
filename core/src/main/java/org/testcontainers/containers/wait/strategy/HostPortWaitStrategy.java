@@ -25,7 +25,9 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
         final Set<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
         if (externalLivenessCheckPorts.isEmpty()) {
-            log.debug("Liveness check ports of {} is empty. Not waiting.", waitStrategyTarget.getContainerInfo().getName());
+            if (log.isDebugEnabled()) {
+                log.debug("Liveness check ports of {} is empty. Not waiting.", waitStrategyTarget.getContainerInfo().getName());
+            }
             return;
         }
 
@@ -44,7 +46,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
-                    waitStrategyTarget.getContainerIpAddress() +
+                    waitStrategyTarget.getHost() +
                     " ports: " +
                     externalLivenessCheckPorts +
                     " should be listening)");

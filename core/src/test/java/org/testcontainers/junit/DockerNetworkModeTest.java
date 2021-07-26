@@ -1,73 +1,51 @@
 package org.testcontainers.junit;
 
-import org.junit.*;
+import com.github.dockerjava.api.model.NetworkSettings;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.ToStringConsumer;
-import org.testcontainers.containers.output.WaitingConsumer;
-import org.testcontainers.utility.TestEnvironment;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 /**
  * Simple tests of named network modes - more may be possible, but may not be reproducible
  * without other setup steps.
  */
+@Slf4j
 public class DockerNetworkModeTest {
 
-    @BeforeClass
-    public static void checkVersion() {
-        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
-    }
-
-    @ClassRule
-    public static GenericContainer noNetwork = new GenericContainer("alpine:3.2")
-            .withNetworkMode("none")
-            .withCommand("ping -c 5 www.google.com");
-
-    @ClassRule
-    public static GenericContainer hostNetwork = new GenericContainer("alpine:3.2")
-            .withNetworkMode("host")
-            .withCommand("ping -c 5 www.google.com");
-
-    @ClassRule
-    public static GenericContainer bridgedNetwork = new GenericContainer("alpine:3.2")
-            .withNetworkMode("bridge")
-            .withCommand("ping -c 5 www.google.com");
-
     @Test
-    public void testNoNetworkContainer() throws TimeoutException {
-        String output = getContainerOutput(noNetwork);
+    public void testNoNetworkContainer() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withCommand("true")
+                .withNetworkMode("none")
+        ) {
+            container.start();
+            NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-        assertTrue("'none' network causes a network access error", output.contains("bad address"));
+            assertEquals("only one network is set", 1, networkSettings.getNetworks().size());
+            assertTrue("network is 'none'", networkSettings.getNetworks().containsKey("none"));
+        }
     }
 
     @Test
-    public void testHostNetworkContainer() throws TimeoutException {
-        String output = getContainerOutput(hostNetwork);
+    public void testHostNetworkContainer() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withCommand("true")
+                .withNetworkMode("host")
+        ) {
+            container.start();
+            NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-        assertTrue("'host' network can access the internet", output.contains("seq=1"));
-    }
-
-    @Test
-    public void testBridgedNetworkContainer() throws TimeoutException {
-        String output = getContainerOutput(bridgedNetwork);
-
-        assertTrue("'bridge' network can access the internet", output.contains("seq=1"));
-    }
-
-    private String getContainerOutput(GenericContainer container) throws TimeoutException {
-        WaitingConsumer waitingConsumer = new WaitingConsumer();
-        ToStringConsumer toStringConsumer = new ToStringConsumer();
-        Consumer<OutputFrame> composedConsumer = waitingConsumer.andThen(toStringConsumer);
-
-        container.followOutput(composedConsumer);
-        waitingConsumer.waitUntilEnd(10, TimeUnit.SECONDS);
-
-        return toStringConsumer.toUtf8String();
+            assertEquals("only one network is set", 1, networkSettings.getNetworks().size());
+            assertTrue("network is 'host'", networkSettings.getNetworks().containsKey("host"));
+        }
     }
 }

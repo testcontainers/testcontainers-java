@@ -19,32 +19,13 @@ methods (methods on the `Startable` interface). Containers declared as static fi
 methods. They will be started only once before any test method is executed and stopped after the last test method has 
 executed. Containers declared as instance fields will be started and stopped for every test method.
   
-**Note:** This extension has only be tested with sequential test execution. Using it with parallel test execution is 
+**Note:** This extension has only been tested with sequential test execution. Using it with parallel test execution is 
 unsupported and may have unintended side effects.
   
 *Example:*
-```java
-@Testcontainers
-class MyTestcontainersTests {
-   
-     // will be shared between test methods
-    @Container
-    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
-    
-     // will be started before and stopped after each test method
-    @Container
-    private PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer()
-            .withDatabaseName("foo")
-            .withUsername("foo")
-            .withPassword("secret");
-    @Test
-    void test() {
-        assertTrue(MY_SQL_CONTAINER.isRunning());
-        assertTrue(postgresqlContainer.isRunning());
-    }
-}
-```
-
+<!--codeinclude-->
+[Mixed Lifecycle](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) inside_block:testClass
+<!--/codeinclude-->
 
 ## Examples
 
@@ -55,36 +36,10 @@ To use the Testcontainers extension annotate your test class with `@Testcontaine
 To define a restarted container, define an instance field inside your test class and annotate it with
 the `@Container` annotation.
 
-```java
-@Testcontainers
-class SomeTest {
+<!--codeinclude-->
+[Restarted Containers](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/TestcontainersNestedRestartedContainerTests.java) inside_block:testClass
+<!--/codeinclude-->
 
-    @Container
-    private MySQLContainer mySQLContainer = new MySQLContainer();
-
-    @Test
-    void someTestMethod() {
-        String url = mySQLContainer.getJdbcUrl();
-
-        // create a connection and run test as normal
-    }
-
-    @Nested
-    class NestedTests {
-
-        @Container
-        private final PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
-
-        void nestedTestMethod() {
-            // top level container is restarted for nested methods
-            String mySqlUrl = mySQLContainer.getJdbcUrl();
-            
-            // nested containers are only available inside their nested class
-            String postgresUrl = postgreSQLContainer.getJdbcUrl();
-        }
-    }
-}
-```
 
 ### Shared containers
 
@@ -92,21 +47,9 @@ Shared containers are defined as static fields in a top level test class and hav
 Note that shared containers can't be declared inside nested test classes.
 This is because nested test classes have to be defined non-static and can't therefore have static fields.
 
-```java
-@Testcontainers
-class SomeTest {
-
-    @Container
-    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer();
-
-    @Test
-    void someTestMethod() {
-        String url = MY_SQL_CONTAINER.getJdbcUrl();
-
-        // create a connection and run test as normal
-    }
-}
-```
+<!--codeinclude-->
+[Shared Container](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) lines:18-23,32-33,35-36
+<!--/codeinclude-->
 
 ## Singleton containers
 
@@ -126,7 +69,7 @@ This extension has only be tested with sequential test execution. Using it with 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:junit-jupiter:{{latest_version}}"
+testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

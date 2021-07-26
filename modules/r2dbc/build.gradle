@@ -1,0 +1,20 @@
+plugins {
+    id "java-test-fixtures"
+}
+
+description = "Testcontainers :: R2DBC"
+
+dependencies {
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc6'
+    compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
+
+    api project(':testcontainers')
+    api 'io.r2dbc:r2dbc-spi:0.8.1.RELEASE'
+
+    testImplementation 'org.assertj:assertj-core:3.14.0'
+    testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.1.RELEASE'
+    testImplementation project(':postgresql')
+
+    testFixturesImplementation 'io.projectreactor:reactor-core:3.3.4.RELEASE'
+    testFixturesImplementation 'org.assertj:assertj-core:3.14.0'
+}

@@ -1,11 +1,17 @@
 description = "Testcontainers :: JDBC :: MariaDB"
 
 dependencies {
-    compile project(':jdbc')
+    annotationProcessor 'com.google.auto.service:auto-service:1.0'
+    compileOnly 'com.google.auto.service:auto-service:1.0'
 
-    testCompile 'org.mariadb.jdbc:mariadb-java-client:2.4.1'
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.13'
-    testCompile 'commons-dbutils:commons-dbutils:1.7'
-    testCompile 'org.apache.tomcat:tomcat-jdbc:9.0.19'
-    testCompile 'org.vibur:vibur-dbcp:22.2'
+    api project(':jdbc')
+
+    compileOnly project(':r2dbc')
+    compileOnly 'org.mariadb:r2dbc-mariadb:1.0.1'
+
+    testImplementation project(':jdbc-test')
+    testImplementation 'org.mariadb.jdbc:mariadb-java-client:2.7.3'
+
+    testImplementation testFixtures(project(':r2dbc'))
+    testImplementation 'org.mariadb:r2dbc-mariadb:1.0.0'
 }

@@ -9,7 +9,7 @@ public class ContainerLaunchException extends RuntimeException {
         super(message);
     }
 
-    public ContainerLaunchException(String message, Exception exception) {
-        super(message, exception);
+    public ContainerLaunchException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

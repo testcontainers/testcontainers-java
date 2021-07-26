@@ -4,6 +4,7 @@ import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collections;
 import java.util.Set;
@@ -13,10 +14,13 @@ import java.util.Set;
  */
 public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF> {
 
-    public static final String VERSION = "1.4.3";
     public static final Integer INFLUXDB_PORT = 8086;
 
-    private static final String IMAGE_NAME = "influxdb";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
+    private static final String DEFAULT_TAG = "1.4.3";
+
+    @Deprecated
+    public static final String VERSION = DEFAULT_TAG;
 
     private boolean authEnabled = true;
     private String admin = "admin";
@@ -26,22 +30,36 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     private String username = "any";
     private String password = "any";
 
-
+    /**
+     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public InfluxDBContainer() {
-        this(VERSION);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
+    /**
+     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public InfluxDBContainer(final String version) {
-        super(IMAGE_NAME + ":" + version);
+        this(DEFAULT_IMAGE_NAME.withTag(version));
+    }
+
+    public InfluxDBContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         waitStrategy = new WaitAllStrategy()
             .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
             .withStrategy(Wait.forListeningPort());
+
+        addExposedPort(INFLUXDB_PORT);
     }
 
     @Override
     protected void configure() {
-        addExposedPort(INFLUXDB_PORT);
-
         addEnv("INFLUXDB_ADMIN_USER", admin);
         addEnv("INFLUXDB_ADMIN_PASSWORD", adminPassword);
 
@@ -131,7 +149,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @return a url to influxDb
      */
     public String getUrl() {
-        return "http://" + getContainerIpAddress() + ":" + getLivenessCheckPort();
+        return "http://" + getHost() + ":" + getLivenessCheckPort();
     }
 
     /**

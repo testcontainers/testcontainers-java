@@ -1,6 +1,8 @@
 description = "Testcontainers :: Couchbase"
 
 dependencies {
-    compile project(':testcontainers')
-    compile 'com.couchbase.client:java-client:2.7.4'
+    api project(':testcontainers')
+
+    testImplementation 'com.couchbase.client:java-client:3.1.6'
+    testImplementation 'org.awaitility:awaitility:4.1.0'
 }

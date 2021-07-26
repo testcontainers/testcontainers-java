@@ -9,7 +9,7 @@ Here is a sample CircleCI configuration that does a checkout of a project and ru
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
 version: 2
-executorType: machine
+machine: true
 jobs:
   build:
     steps:

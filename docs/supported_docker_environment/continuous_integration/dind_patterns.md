@@ -32,7 +32,7 @@ Where:
 * `-v /var/run/docker.sock:/var/run/docker.sock` will map the Docker socket
 
 ### Docker Compose example
-The same can be achived with Docker Compose:
+The same can be achieved with Docker Compose:
 ```yaml
 tests:
   image: maven:3
@@ -47,3 +47,10 @@ tests:
     - ~/.m2:/root/.m2
   command: mvn test
 ```
+
+## Docker-in-Docker
+
+While Docker-in-Docker (DinD) is generally considered an instrument of last resort, it is necessary for some CI environments.
+
+[Drone CI](./drone.md) is one such example. Testcontainers has a Docker-in-Docker plugin (build image) for use with Drone,
+which could be used as inspiration for setting up other similar testing using DinD.

@@ -3,8 +3,6 @@ package org.testcontainers.junit.jupiter.inheritance;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 @Testcontainers
 abstract class AbstractTestBase {
 

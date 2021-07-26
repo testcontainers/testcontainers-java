@@ -66,10 +66,6 @@ public class ExecInContainerPattern {
 
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
-        dockerClient
-            .execCreateCmd(containerId)
-            .withCmd(command);
-
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
         final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
             .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
@@ -77,11 +73,12 @@ public class ExecInContainerPattern {
         final ToStringConsumer stdoutConsumer = new ToStringConsumer();
         final ToStringConsumer stderrConsumer = new ToStringConsumer();
 
-        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
-        callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
-        callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
+        try (FrameConsumerResultCallback callback = new FrameConsumerResultCallback()) {
+            callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
+            callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
 
-        dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
+            dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
+        }
         Integer exitCode = dockerClient.inspectExecCmd(execCreateCmdResponse.getId()).exec().getExitCode();
 
         final Container.ExecResult result = new Container.ExecResult(

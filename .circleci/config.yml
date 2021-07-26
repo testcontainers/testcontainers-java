@@ -1,87 +1,12 @@
 version: 2
 jobs:
-  core:
+  minimal_core:
     machine:
       enabled: true
     steps:
     - checkout
     - run:
-        command: ./gradlew testcontainers:build -x test -x check
-    - run:
-        command: ./gradlew testcontainers:check --scan
-    - run:
-        name: Save test results
-        command: |
-          mkdir -p ~/junit/
-          find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-        when: always
-    - store_test_results:
-        path: ~/junit
-    - store_artifacts:
-        path: ~/junit
-  modules-no-jdbc-test-no-selenium:
-    machine:
-      enabled: true
-    steps:
-    - checkout
-    - run:
-        command: ./gradlew check -x testcontainers:check -x selenium:check -x jdbc-test:check
-          --scan
-        environment:
-          TZ: /usr/share/zoneinfo/ETC/UTC
-    - run:
-        name: Save test results
-        command: |
-          mkdir -p ~/junit/
-          find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-        when: always
-    - store_test_results:
-        path: ~/junit
-    - store_artifacts:
-        path: ~/junit
-  modules-jdbc-test:
-    machine:
-      enabled: true
-    steps:
-    - checkout
-    - run:
-        command: ./gradlew jdbc-test:check --scan
-        environment:
-          TZ: /usr/share/zoneinfo/ETC/UTC
-    - run:
-        name: Save test results
-        command: |
-          mkdir -p ~/junit/
-          find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-        when: always
-    - store_test_results:
-        path: ~/junit
-    - store_artifacts:
-        path: ~/junit
-  selenium:
-    machine:
-      enabled: true
-    steps:
-    - checkout
-    - run:
-        command: ./gradlew selenium:check --scan
-    - run:
-        name: Save test results
-        command: |
-          mkdir -p ~/junit/
-          find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-        when: always
-    - store_test_results:
-        path: ~/junit
-    - store_artifacts:
-        path: ~/junit
-  examples:
-    machine:
-      enabled: true
-    steps:
-    - checkout
-    - run:
-        command: cd examples && ../gradlew check
+        command: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
     - run:
         name: Save test results
         command: |
@@ -96,8 +21,4 @@ workflows:
   version: 2
   test_all:
     jobs:
-    - core
-    - modules-no-jdbc-test-no-selenium
-    - modules-jdbc-test
-    - selenium
-    - examples
+    - minimal_core

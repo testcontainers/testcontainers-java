@@ -18,15 +18,15 @@ public class ExternalPortListeningCheck implements Callable<Boolean> {
 
     @Override
     public Boolean call() {
-        String address = containerState.getContainerIpAddress();
+        String address = containerState.getHost();
 
-        for (Integer externalPort : externalLivenessCheckPorts) {
+        externalLivenessCheckPorts.parallelStream().forEach(externalPort -> {
             try {
                 new Socket(address, externalPort).close();
             } catch (IOException e) {
                 throw new IllegalStateException("Socket not listening yet: " + externalPort);
             }
-        }
+        });
         return true;
     }
 }

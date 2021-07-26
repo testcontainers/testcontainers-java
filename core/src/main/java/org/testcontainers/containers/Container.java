@@ -2,24 +2,19 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Info;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +42,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
         int exitCode;
         String stdout;
         String stderr;
-
-        /**
-         * @deprecated should not be instantiated outside of the library, please migrate
-         */
-        @Deprecated
-        public ExecResult(String stdout, String stderr) {
-            this(-1, stdout, stderr);
-        }
     }
 
     /**
@@ -284,6 +271,12 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withNetworkAliases(String... aliases);
 
     /**
+     * Set the image pull policy of the container
+     * @return
+     */
+    SELF withImagePullPolicy(ImagePullPolicy policy);
+
+    /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
      * This will only work if you are running your tests outside a Docker container.
      *
@@ -406,68 +399,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
-    /**
-     *
-     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
-     */
-    @Deprecated
-    Info fetchDockerDaemonInfo() throws IOException;
-
-    /**
-     * Run a command inside a running container, as though using "docker exec", and interpreting
-     * the output as UTF8.
-     * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
-     */
-    ExecResult execInContainer(String... command)
-            throws UnsupportedOperationException, IOException, InterruptedException;
-
-    /**
-     * Run a command inside a running container, as though using "docker exec".
-     * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
-     */
-    ExecResult execInContainer(Charset outputCharset, String... command)
-                    throws UnsupportedOperationException, IOException, InterruptedException;
-
-    /**
-     *
-     * Copies a file or directory to the container.
-     *
-     * @param mountableFile file or directory which is copied into the container
-     * @param containerPath destination path inside the container
-     * @throws IOException if there's an issue communicating with Docker
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     */
-    void copyFileToContainer(MountableFile mountableFile, String containerPath) throws IOException, InterruptedException;
-
-    /**
-     *
-     * Copies a file to the container.
-     *
-     * @param transferable file which is copied into the container
-     * @param containerPath destination path inside the container
-     */
-    void copyFileToContainer(Transferable transferable, String containerPath);
-
-    /**
-     * Copies a file which resides inside the container to user defined directory
-     *
-     * @param containerPath path to file which is copied from container
-     * @param destinationPath destination path to which file is copied with file name
-     * @throws IOException if there's an issue communicating with Docker or receiving entry from TarArchiveInputStream
-     * @throws InterruptedException if the thread waiting for the response is interrupted
-     */
-    void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException;
-
-    /**
-     * Streams a file which resides inside the container
-     *
-     * @param containerPath path to file which is copied from container
-     * @param function function that takes InputStream of the copied file
-     */
-    <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function);
-
     List<String> getPortBindings();
 
     List<String> getExtraHosts();
@@ -494,13 +425,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     Map<String, LinkableContainer> getLinkedContainers();
 
     DockerClient getDockerClient();
-
-    /**
-     *
-     * @deprecated please use {@code org.testcontainers.DockerClientFactory.instance().client().infoCmd().exec()}
-     */
-    @Deprecated
-    Info getDockerDaemonInfo();
 
     void setExposedPorts(List<Integer> exposedPorts);
 

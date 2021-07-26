@@ -3,13 +3,11 @@ package org.testcontainers.vault;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.Wait;
 
 import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -18,32 +16,32 @@ import static org.junit.Assert.assertThat;
  */
 public class VaultContainerTest {
 
-    private static final int VAULT_PORT = 8201; //using non-default port to show other ports can be passed besides 8200
-
     private static final String VAULT_TOKEN = "my-root-token";
 
     @ClassRule
-    public static VaultContainer vaultContainer = new VaultContainer<>()
-            .withVaultToken(VAULT_TOKEN)
-            .withVaultPort(VAULT_PORT)
-            .withSecretInVault("secret/testing1", "top_secret=password123")
-            .withSecretInVault("secret/testing2", "secret_one=password1",
-                    "secret_two=password2", "secret_three=password3", "secret_three=password3",
-                    "secret_four=password4")
-            .waitingFor(Wait.forHttp("/v1/secret/testing1").forStatusCode(400));
+    public static VaultContainer<?> vaultContainer = new VaultContainer<>(VaultTestImages.VAULT_IMAGE)
+        .withVaultToken(VAULT_TOKEN)
+        .withSecretInVault("secret/testing1", "top_secret=password123")
+        .withSecretInVault("secret/testing2",
+            "secret_one=password1",
+            "secret_two=password2",
+            "secret_three=password3",
+            "secret_three=password3",
+            "secret_four=password4")
+        .withInitCommand("secrets enable transit", "write -f transit/keys/my-key");
 
     @Test
     public void readFirstSecretPathWithCli() throws IOException, InterruptedException {
-        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault",
-                "read", "-field=top_secret", "secret/testing1");
-        assertThat(result.getStdout(), containsString("password123"));
+        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault", "kv", "get", "-format=json", "secret/testing1");
+        final String output = result.getStdout().replaceAll("\\r?\\n", "");
+        assertThat(output, containsString("password123"));
     }
 
     @Test
     public void readSecondSecretPathWithCli() throws IOException, InterruptedException {
-        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault",
-                "read", "secret/testing2");
-        String output = result.getStdout();
+        GenericContainer.ExecResult result = vaultContainer.execInContainer("vault", "kv", "get", "-format=json", "secret/testing2");
+        final String output = result.getStdout().replaceAll("\\r?\\n", "");
+        System.out.println("output = " + output);
         assertThat(output, containsString("password1"));
         assertThat(output, containsString("password2"));
         assertThat(output, containsString("password3"));
@@ -54,26 +52,38 @@ public class VaultContainerTest {
     public void readFirstSecretPathOverHttpApi() throws InterruptedException {
         given().
             header("X-Vault-Token", VAULT_TOKEN).
-        when().
-            get("http://"+getHostAndPort()+"/v1/secret/testing1").
-        then().
-            assertThat().body("data.top_secret", equalTo("password123"));
+            when().
+            get("http://" + getHostAndPort() + "/v1/secret/data/testing1").
+            then().
+            assertThat().body("data.data.top_secret", equalTo("password123"));
     }
 
     @Test
-    public void readSecondecretPathOverHttpApi() throws InterruptedException {
+    public void readSecondSecretPathOverHttpApi() throws InterruptedException {
         given().
             header("X-Vault-Token", VAULT_TOKEN).
-        when().
-            get("http://"+getHostAndPort()+"/v1/secret/testing2").
-        then().
-            assertThat().body("data.secret_one", containsString("password1")).
-            assertThat().body("data.secret_two", containsString("password2")).
-            assertThat().body("data.secret_three", containsString("password3")).
-            assertThat().body("data.secret_four", containsString("password4"));
+            when().
+            get("http://" + getHostAndPort() + "/v1/secret/data/testing2").
+            then().
+            assertThat().body("data.data.secret_one", containsString("password1")).
+            assertThat().body("data.data.secret_two", containsString("password2")).
+            assertThat().body("data.data.secret_three", hasItem("password3")).
+            assertThat().body("data.data.secret_four", containsString("password4"));
     }
 
-    private String getHostAndPort(){
-        return vaultContainer.getContainerIpAddress()+":"+vaultContainer.getMappedPort(8200);
+    @Test
+    public void readTransitKeyOverHttpApi() throws InterruptedException {
+        given().
+            header("X-Vault-Token", VAULT_TOKEN).
+            when().
+            get("http://" + getHostAndPort() + "/v1/transit/keys/my-key").
+            then().
+            assertThat().body("data.name", equalTo("my-key"));
     }
+
+    private String getHostAndPort() {
+        return vaultContainer.getHost() + ":" + vaultContainer.getMappedPort(8200);
+    }
+
+
 }

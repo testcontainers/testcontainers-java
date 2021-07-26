@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  docs:
+    image: python:3.7
+    command: sh -c "pip install -r requirements.txt && mkdocs serve -a 0.0.0.0:8000"
+    working_dir: /docs
+    volumes:
+      - ./:/docs
+    ports:
+      - 8000:8000

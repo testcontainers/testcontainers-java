@@ -29,13 +29,21 @@ We do this as follows:
 [Starting proxying connections to a target container](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxyObject
 <!--/codeinclude-->
 
-Then, to establish a connection via Toxiproxy, we obtain **Toxiproxy's** proxy host IP and port:
+To establish a connection from the test code (on the host machine) to the target container via Toxiproxy, we obtain **Toxiproxy's** proxy host IP and port:
 
 <!--codeinclude-->
-[Obtaining proxied host and port](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPort
+[Obtaining proxied host and port for connections from the host machine](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForHostMachine
 <!--/codeinclude-->
 
-Code under test, or other containers, should connect to this proxied host IP and port.
+Code under test should connect to this proxied host IP and port.
+
+To establish a connection from a different container on the same network to the target container via Toxiproxy, we use **Toxiproxy's** network alias and original port:
+
+<!--codeinclude-->
+[Obtaining proxied host and port for connections from a different container](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForDifferentContainer
+<!--/codeinclude-->
+
+Other containers should connect to this proxied host and port.
 
 Having done this, it is possible to trigger failure conditions ('Toxics') through the `proxy.toxics()` object:
 
@@ -65,7 +73,7 @@ Additionally we can disable the proxy to simulate a complete interruption to the
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:toxiproxy:{{latest_version}}"
+testImplementation "org.testcontainers:toxiproxy:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
@@ -82,4 +90,3 @@ testCompile "org.testcontainers:toxiproxy:{{latest_version}}"
 This module was inspired by a [hotels.com blog post](https://medium.com/hotels-com-technology/i-dont-know-about-resilience-testing-and-so-can-you-b3c59d80012d).
 
 [toxiproxy-java](https://github.com/trekawek/toxiproxy-java) is used to help control failure conditions.
-

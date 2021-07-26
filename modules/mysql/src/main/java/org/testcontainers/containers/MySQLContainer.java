@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,23 +12,46 @@ import java.util.Set;
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
-    public static final String IMAGE = "mysql";
-    public static final String DEFAULT_TAG = "5.7.22";
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mysql");
+
+    @Deprecated
+    public static final String DEFAULT_TAG = "5.7.34";
+
+    @Deprecated
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
+
+    static final String DEFAULT_USER = "test";
+
+    static final String DEFAULT_PASSWORD = "test";
 
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
     public static final Integer MYSQL_PORT = 3306;
     private String databaseName = "test";
-    private String username = "test";
-    private String password = "test";
+    private String username = DEFAULT_USER;
+    private String password = DEFAULT_PASSWORD;
     private static final String MYSQL_ROOT_USER = "root";
 
+    /**
+     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MySQLContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public MySQLContainer(String dockerImageName) {
-        super(dockerImageName);
+        this(DockerImageName.parse(dockerImageName));
     }
+
+    public MySQLContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
+        addExposedPort(MYSQL_PORT);
+    }
+
 
     @NotNull
     @Override
@@ -38,11 +62,12 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     @Override
     protected void configure() {
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d",
-                "mysql-default-conf");
+            "mysql-default-conf");
 
-        addExposedPort(MYSQL_PORT);
         addEnv("MYSQL_DATABASE", databaseName);
-        addEnv("MYSQL_USER", username);
+        if (!MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
+            addEnv("MYSQL_USER", username);
+        }
         if (password != null && !password.isEmpty()) {
             addEnv("MYSQL_PASSWORD", password);
             addEnv("MYSQL_ROOT_PASSWORD", password);
@@ -56,24 +81,35 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     @Override
     public String getDriverClassName() {
-        return "com.mysql.jdbc.Driver";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return "com.mysql.cj.jdbc.Driver";
+        } catch (ClassNotFoundException e) {
+            return "com.mysql.jdbc.Driver";
+        }
     }
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(MYSQL_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(MYSQL_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override
     protected String constructUrlForConnection(String queryString) {
         String url = super.constructUrlForConnection(queryString);
 
-        if (! url.contains("useSSL=")) {
+        if (!url.contains("useSSL=")) {
             String separator = url.contains("?") ? "&" : "?";
-            return url + separator + "useSSL=false";
-        } else {
-            return url;
+            url = url + separator + "useSSL=false";
         }
+
+        if (!url.contains("allowPublicKeyRetrieval=")) {
+            url = url + "&allowPublicKeyRetrieval=true";
+        }
+
+        return url;
     }
 
     @Override

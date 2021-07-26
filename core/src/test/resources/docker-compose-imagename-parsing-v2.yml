@@ -1,0 +1,10 @@
+version: "2.1"
+services:
+    redis:
+        image: redis
+    mysql:
+        image: mysql
+    custom:
+        build: .
+networks:
+    custom_network: {}
