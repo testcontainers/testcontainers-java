@@ -58,7 +58,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(CQL_PORT);
-        setStartupAttempts(1);
         this.enableJmxReporting = false;
 
         withEnv("CASSANDRA_SNITCH", "GossipingPropertyFileSnitch");
