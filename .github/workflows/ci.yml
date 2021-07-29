@@ -63,13 +63,17 @@ jobs:
       - name: Clear existing docker image cache
         run: docker image prune -af
       - name: Thundra Gradle Test Instrumentation
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: thundra-io/thundra-gradle-test-action@v1
         with:
           apikey: ${{ secrets.THUNDRA_DEMO_ACCOUNT_APIKEY_LAB }}
           project_id: 8e79620c-98ca-4b68-be83-4025df069cbb
+          # apikey: ${{ secrets.THUNDRA_API_KEY }}
+          # project_id: ${{ secrets.THUNDRA_PROJECT_ID }}
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} --init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH
+          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} \
+            $($THUNDRA_GRADLE_INIT_SCRIPT_PATH || echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
         env:
           THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.me/v1
           THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.set_thundra_testrun_id.outputs.thundra_agent_testrun_id }}
