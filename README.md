@@ -1,5 +1,7 @@
 # Testcontainers
 
+[![Thundra Foresight](https://thundra-assets-prod.s3.us-west-2.amazonaws.com/images/badges/thundra-foresight-badge-enabled.svg)](https://foresight.thundra.io)
+
 > Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 ![Testcontainers logo](docs/logo.png)
