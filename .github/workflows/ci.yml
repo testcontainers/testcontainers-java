@@ -2,13 +2,22 @@ name: CI
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [master] }
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
+  set_thundra_testrun_id:
+    runs-on: ubuntu-latest
+    outputs:
+      thundra_agent_testrun_id: ${{ steps.thundra_testrun_id.outputs.thundra_agent_testrun_id }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: thundra_testrun_id
+        run: |
+          echo "::set-output name=thundra_agent_testrun_id::$(openssl rand -hex 12)"
   find_gradle_jobs:
     runs-on: ubuntu-18.04
     outputs:
@@ -17,7 +26,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2.1.0
         with:
-          java-version: '8.0.292+10'
+          java-version: "8.0.292+10"
           distribution: adopt-hotspot
       - name: Cache Gradle Home files
         uses: actions/cache@v2.1.6
@@ -34,7 +43,7 @@ jobs:
           echo $TASKS
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
-    needs: find_gradle_jobs
+    needs: [find_gradle_jobs, set_thundra_testrun_id]
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
@@ -43,7 +52,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2.1.0
         with:
-          java-version: '8.0.292+10'
+          java-version: "8.0.292+10"
           distribution: adopt-hotspot
       - name: Cache Gradle Home files
         uses: actions/cache@v2.1.6
@@ -53,9 +62,17 @@ jobs:
           key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
       - name: Clear existing docker image cache
         run: docker image prune -af
+      - name: Thundra Gradle Test Instrumentation
+        uses: thundra-io/thundra-gradle-test-action@v1
+        with:
+          apikey: ${{ secrets.THUNDRA_DEMO_ACCOUNT_APIKEY_LAB }}
+          project_id: 8e79620c-98ca-4b68-be83-4025df069cbb
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
+          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} --init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH
+        env:
+          THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.me/v1
+          THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.set_thundra_testrun_id.outputs.thundra_agent_testrun_id }}
   httpclient5_test:
     runs-on: ubuntu-18.04
     steps:
