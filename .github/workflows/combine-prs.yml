@@ -105,7 +105,7 @@ jobs:
           BRANCHES_TO_COMBINE: ${{ steps.fetch-branch-names.outputs.result }}
           COMBINE_BRANCH_NAME: ${{ github.event.inputs.combineBranchName }}
         run: |
-          echo "${{steps.fetch-branch-names.outputs.result}}"
+          echo "$BRANCHES_TO_COMBINE"
           sourcebranches="${BRANCHES_TO_COMBINE%\"}"
           sourcebranches="${sourcebranches#\"}"
 
@@ -123,10 +123,12 @@ jobs:
       # Creates a PR with the new combined branch
       - uses: actions/github-script@v4.0.2
         name: Create Combined Pull Request
+        env:
+          PRS_STRING: ${{ steps.fetch-branch-names.outputs.prs-string }}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const prString = `${{ steps.fetch-branch-names.outputs.prs-string }}`;
+            const prString = process.env.PRS_STRING;
             const body = 'This PR was created by the Combine PRs action by combining the following PRs:\n' + prString;
             await github.pulls.create({
               owner: context.repo.owner,
