@@ -14,7 +14,7 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
     // junitRule {
     @Rule
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-        .withCapabilities(new ChromeOptions().addArguments("--disable-gpu", "--disable-dev-shm-usage"))
+        .withCapabilities(new ChromeOptions())
     // }
         .withNetwork(NETWORK);
 

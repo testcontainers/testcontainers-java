@@ -166,6 +166,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             }
         }
 
+        // hack for new Chrome image
+        if (capabilities instanceof ChromeOptions) {
+            ChromeOptions options = (ChromeOptions) this.capabilities;
+            options.addArguments("--disable-gpu");
+        }
+
         if (recordingMode != VncRecordingMode.SKIP) {
 
             if (vncRecordingDirectory == null) {
