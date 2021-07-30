@@ -25,7 +25,6 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Test
     public void simpleExploreTest() {
-        System.out.println("force ci");
         doSimpleExplore(chrome);
     }
 }

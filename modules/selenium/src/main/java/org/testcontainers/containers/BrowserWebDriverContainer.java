@@ -166,8 +166,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             }
         }
 
-        // hack for new Chrome image
-        if (capabilities instanceof ChromeOptions) {
+        // hack for new selenium-chrome image that contains Chrome 92
+        // If not disabled, container startup will fail in most cases and consume excessive amounts of CPU
+        if (seleniumVersion.equals("3.141.59")  && capabilities instanceof ChromeOptions) {
             ChromeOptions options = (ChromeOptions) this.capabilities;
             options.addArguments("--disable-gpu");
         }
