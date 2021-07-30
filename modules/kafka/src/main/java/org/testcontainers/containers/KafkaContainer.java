@@ -4,8 +4,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Comparator;
-
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
  *
@@ -76,8 +74,16 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     @Override
-    protected void doStart() {
-        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://localhost:9092");
+    protected void configure() {
+        withEnv(
+            "KAFKA_ADVERTISED_LISTENERS",
+            String.format(
+                "BROKER://%s:9092",
+                getNetwork() != null
+                    ? getNetworkAliases().get(0)
+                    : "localhost"
+            )
+        );
 
         String command = "#!/bin/bash\n";
         if (externalZookeeperConnect != null) {
@@ -91,12 +97,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             command += "zookeeper-server-start zookeeper.properties &\n";
         }
 
-        command += ". /etc/confluent/docker/bash-config \n";
-        command += "/etc/confluent/docker/configure \n";
-        command += "/etc/confluent/docker/launch \n";
+        // Optimization: skip the checks
+        command += "echo '' > /etc/confluent/docker/ensure \n";
+        // Run the original command
+        command += "/etc/confluent/docker/run \n";
         withCommand("sh", "-c", command);
-
-        super.doStart();
     }
 
     @Override
@@ -118,28 +123,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected String brokerAdvertisedListener(InspectContainerResponse containerInfo) {
-        // Kafka supports only one INTER_BROKER listener, so we have to pick one.
-        // The current algorithm uses the following order of resolving the IP:
-        // 1. Custom network's IP set via `withNetwork`
-        // 2. Bridge network's IP
-        // 3. Best effort fallback to getNetworkSettings#ipAddress
-        String ipAddress = containerInfo.getNetworkSettings().getNetworks().entrySet()
-            .stream()
-            .filter(it -> it.getValue().getIpAddress() != null)
-            .max(Comparator.comparingInt(entry -> {
-                if (getNetwork() != null && getNetwork().getId().equals(entry.getValue().getNetworkID())) {
-                    return 2;
-                }
-
-                if ("bridge".equals(entry.getKey())) {
-                    return 1;
-                }
-
-                return 0;
-            }))
-            .map(it -> it.getValue().getIpAddress())
-            .orElseGet(() -> containerInfo.getNetworkSettings().getIpAddress());
-
-        return String.format("BROKER://%s:%s", ipAddress, "9092");
+        return String.format("BROKER://%s:%s", containerInfo.getConfig().getHostName(), "9092");
     }
 }

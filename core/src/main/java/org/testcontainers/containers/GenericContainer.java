@@ -135,7 +135,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private String networkMode;
 
-    @NonNull
+    @Nullable
     private Network network;
 
     @NonNull
