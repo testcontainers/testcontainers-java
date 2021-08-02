@@ -77,14 +77,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     public BrowserWebDriverContainer() {
         super();
-        final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
-                .withStartupTimeout(Duration.of(15, SECONDS));
-
-        this.waitStrategy = new WaitAllStrategy()
-                .withStrategy(logWaitStrategy)
-                .withStrategy(new HostPortWaitStrategy())
-                .withStartupTimeout(Duration.of(15, SECONDS));
+        this.waitStrategy = getDefaultWaitStrategy();
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
     }
@@ -106,14 +99,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         // we assert compatibility with the chrome/firefox image later, after capabilities are processed
 
-        final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
-                .withStartupTimeout(Duration.of(15, SECONDS));
-
-        this.waitStrategy = new WaitAllStrategy()
-                .withStrategy(logWaitStrategy)
-                .withStrategy(new HostPortWaitStrategy())
-                .withStartupTimeout(Duration.of(15, SECONDS));
+        this.waitStrategy = getDefaultWaitStrategy();
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
 
@@ -381,6 +367,17 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     public SELF withRecordingFileFactory(RecordingFileFactory recordingFileFactory) {
         this.recordingFileFactory = recordingFileFactory;
         return self();
+    }
+
+    private WaitStrategy getDefaultWaitStrategy() {
+        final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
+            .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+            .withStartupTimeout(Duration.of(60, SECONDS));
+
+        return new WaitAllStrategy()
+            .withStrategy(logWaitStrategy)
+            .withStrategy(new HostPortWaitStrategy())
+            .withStartupTimeout(Duration.of(60, SECONDS));
     }
 
     public enum VncRecordingMode {
