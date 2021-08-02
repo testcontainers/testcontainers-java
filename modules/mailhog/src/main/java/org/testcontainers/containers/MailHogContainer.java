@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class MailHogContainer extends GenericContainer<MailHogContainer> {
 
-    private static final String VERSION = "latest";
+    private static final String VERSION = "v1.0.1";
 
     public static final int SMTP_PORT = 1025;
     public static final int HTTP_PORT = 8025;
