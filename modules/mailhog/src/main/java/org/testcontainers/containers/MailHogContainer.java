@@ -59,7 +59,7 @@ public class MailHogContainer extends GenericContainer<MailHogContainer> {
 
     /**
      * Returns the external http endpoint
-     * @return endpoint
+     * @return endpoint in the form of <code>http://ipAddress:port</code>
      */
     public String getHttpEndpoint() {
         return String.format("http://%s:%d", getContainerIpAddress(), getHttpPort());
@@ -67,7 +67,7 @@ public class MailHogContainer extends GenericContainer<MailHogContainer> {
 
     /**
      * Returns the external SMTP endpoint
-     * @return endpoint
+     * @return endpoint in the form of <code>ipAddress:port</code>
      */
     public String getSmtpEndpoint() {
         return String.format("%s:%d", getContainerIpAddress(), getSmtpPort());
@@ -149,7 +149,7 @@ public class MailHogContainer extends GenericContainer<MailHogContainer> {
 
     /**
      * The mails queried with the given parameter
-     * (see <a href="https://github.com/blueimp/mailhog/blob/master/docs/APIv2/swagger-2.0.yaml">swagger documentation of mailhog</a>)
+     * (see <a href="https://github.com/mailhog/MailHog/blob/master/docs/APIv2/swagger-2.0.yaml">swagger documentation of mailhog</a>)
      * @param parameters
      * @return list of mails
      * @throws URISyntaxException

@@ -35,8 +35,10 @@ public class MailHogContainerTest {
     private static final String DEFAULT_RECIPIENT = "fooRecipient@foo.com";
     private static final String DEFAULT_SENDER = "fooSender@foo.com";
 
+    // createContainer {
     @Rule
     public MailHogContainer mailHog = new MailHogContainer();
+    // }
     private Session session;
 
     @Before
@@ -103,24 +105,29 @@ public class MailHogContainerTest {
         String subject4 = "subject4";
         sendMail(DEFAULT_SENDER, subject1, mail);
         sendMail("foo2@foo.com", subject2, mail);
-        String sender3 = "foo3@foo.com";
-        sendMail(sender3, subject31, mail);
-        sendMail(sender3, subject3, mail);
+        String senderMailAddress = "foo3@foo.com";
+        sendMail(senderMailAddress, subject31, mail);
+        sendMail(senderMailAddress, subject3, mail);
         sendMail("foo4@foo.com", subject4, mail);
 
-        Optional<Mail> mails = mailHog.getNewestMailFrom(sender3);
+        // exampleGetMail {
+        // Query MailHog API to retrieve a single mail
+        Optional<Mail> mails = mailHog.getNewestMailFrom(senderMailAddress);
         assertThat(mails.isPresent(), is(true));
         assertThat(mails.get().getSubject(), is(subject3));
+        // }
     }
 
     @Test
     public void testTo() throws MessagingException, IOException, URISyntaxException {
         String mail = "Mail text";
         String subject = "my subject";
-        String[] additionalRecipients = { "foo1@foo.com", "Foo foobar <foo3@foo.com>" };
+        String[] additionalRecipients = {"foo1@foo.com", "Foo foobar <foo3@foo.com>"};
         sendMail(DEFAULT_SENDER, subject, mail, additionalRecipients);
 
+        // exampleGetAllMails {
         List<Mail> mails = mailHog.getAllMails();
+        // }
 
         assertThat(mails.get(0).getTo(), is(Lists.asList(DEFAULT_RECIPIENT, additionalRecipients)));
     }

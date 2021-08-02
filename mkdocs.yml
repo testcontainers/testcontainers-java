@@ -66,6 +66,7 @@ nav:
           - modules/gcloud.md
           - modules/kafka.md
           - modules/localstack.md
+          - modules/mailhog.md
           - modules/mockserver.md
           - modules/nginx.md
           - modules/pulsar.md
