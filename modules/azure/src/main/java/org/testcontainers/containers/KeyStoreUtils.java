@@ -13,15 +13,19 @@ import java.security.cert.X509Certificate;
 
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.testcontainers.containers.Constants.EMULATOR_CERTIFICATE_ALIAS;
-import static org.testcontainers.containers.Constants.EMULATOR_CERTIFICATE_ENDPOINT_URI;
-import static org.testcontainers.containers.Constants.STORE_PASSWORD;
-import static org.testcontainers.containers.Constants.STORE_TYPE;
 
 /**
  * @author Onur Kagan Ozcan
  */
 final class KeyStoreUtils {
+
+    static final String STORE_TYPE = "PKCS12";
+
+    static final String STORE_PASSWORD = "changeit";
+
+    private static final String EMULATOR_CERTIFICATE_ENDPOINT_URI = "/_explorer/emulator.pem";
+
+    private static final String EMULATOR_CERTIFICATE_ALIAS = "emulator-cert";
 
     static void downloadPemFromEmulator(String endpoint, Path pemResourceOutput) {
         try {

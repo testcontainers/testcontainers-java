@@ -6,11 +6,10 @@ import java.nio.file.Path;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.testcontainers.containers.Constants.EMULATOR_CERTIFICATE_FILE_NAME;
-import static org.testcontainers.containers.Constants.KEYSTORE_FILE_NAME;
-import static org.testcontainers.containers.Constants.STORE_PASSWORD;
-import static org.testcontainers.containers.Constants.STORE_TYPE;
-import static org.testcontainers.containers.Constants.TEMP_DIRECTORY_NAME;
+import static org.testcontainers.containers.KeyStoreUtils.STORE_PASSWORD;
+import static org.testcontainers.containers.KeyStoreUtils.STORE_TYPE;
+import static org.testcontainers.containers.KeyStoreUtils.downloadPemFromEmulator;
+import static org.testcontainers.containers.KeyStoreUtils.importEmulatorCertificate;
 import static org.testcontainers.utility.DockerImageName.parse;
 
 /**
@@ -27,6 +26,12 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
         "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
+
+    private static final String TEMP_DIRECTORY_NAME = "azure-cosmosdb-emulator-temp";
+
+    private static final String EMULATOR_CERTIFICATE_FILE_NAME = "emulator.pem";
+
+    private static final String KEYSTORE_FILE_NAME = "cosmos_emulator.keystore";
 
     private static final int PORT = 8081;
 
@@ -51,21 +56,19 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         Path emulatorCertificatePath = tempDirectory.resolve(EMULATOR_CERTIFICATE_FILE_NAME);
-        KeyStoreUtils.downloadPemFromEmulator(getEmulatorEndpoint(), emulatorCertificatePath);
+        downloadPemFromEmulator(getEmulatorEndpoint(), emulatorCertificatePath);
         Path keyStorePath = tempDirectory.resolve(KEYSTORE_FILE_NAME);
-        KeyStoreUtils.importEmulatorCertificate(emulatorCertificatePath, keyStorePath);
-        setSystemTrustStoreParameters(keyStorePath.toFile().getAbsolutePath(), STORE_PASSWORD, STORE_TYPE);
+        importEmulatorCertificate(emulatorCertificatePath, keyStorePath);
+        setSystemTrustStoreParameters(keyStorePath.toFile().getAbsolutePath());
     }
 
     /**
      * @param trustStore keyStore path
-     * @param trustStorePassword keyStore file password
-     * @param trustStoreType keyStore type e.g PKCS12, JKS
      */
-    private void setSystemTrustStoreParameters(String trustStore, String trustStorePassword, String trustStoreType) {
+    private void setSystemTrustStoreParameters(String trustStore) {
         System.setProperty("javax.net.ssl.trustStore", trustStore);
-        System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
-        System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
+        System.setProperty("javax.net.ssl.trustStorePassword", STORE_PASSWORD);
+        System.setProperty("javax.net.ssl.trustStoreType", STORE_TYPE);
     }
 
     /**
