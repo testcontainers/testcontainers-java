@@ -95,7 +95,7 @@ public final class ResourceReaper {
     @SneakyThrows(InterruptedException.class)
     public static String start(DockerClient client) {
         String ryukImage = ImageNameSubstitutor.instance()
-            .apply(DockerImageName.parse("testcontainers/ryuk:0.3.1"))
+            .apply(DockerImageName.parse("testcontainers/ryuk:0.3.2"))
             .asCanonicalNameString();
         DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
 
