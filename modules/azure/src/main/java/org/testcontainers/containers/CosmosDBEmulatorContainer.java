@@ -17,8 +17,6 @@ import static org.testcontainers.utility.DockerImageName.parse;
 /**
  * An Azure CosmosDB container
  *
- * Default port is 8081.
- *
  * @author Onur Kagan Ozcan
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
