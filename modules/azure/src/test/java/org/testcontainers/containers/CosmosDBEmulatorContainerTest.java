@@ -34,7 +34,6 @@ public class CosmosDBEmulatorContainerTest {
         CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure")
                                                         .block();
         assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
-        
         CosmosContainerResponse containerResponse = client.getDatabase("Azure")
                                                           .createContainerIfNotExists("ServiceContainer", "/name")
                                                           .block();

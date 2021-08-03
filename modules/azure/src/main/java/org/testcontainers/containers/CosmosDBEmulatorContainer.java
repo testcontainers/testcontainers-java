@@ -32,8 +32,6 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
 
     private Path tempDirectory;
 
-    private Boolean autoSetSystemTrustStoreParameters = true;
-
     public CosmosDBEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
@@ -56,21 +54,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
         KeyStoreUtils.downloadPemFromEmulator(getEmulatorEndpoint(), emulatorCertificatePath);
         Path keyStorePath = tempDirectory.resolve(KEYSTORE_FILE_NAME);
         KeyStoreUtils.importEmulatorCertificate(emulatorCertificatePath, keyStorePath);
-        if (autoSetSystemTrustStoreParameters) {
-            setSystemTrustStoreParameters(keyStorePath.toFile().getAbsolutePath(), STORE_PASSWORD, STORE_TYPE);
-        }
-    }
-
-    /**
-     * Disable system property set for further customizations.
-     * You can still set with public method
-     *
-     * @see CosmosDBEmulatorContainer#setSystemTrustStoreParameters(String, String, String)
-     * @return current instance
-     */
-    public CosmosDBEmulatorContainer withDisablingAutoSetSystemTrustStoreParameters() {
-        this.autoSetSystemTrustStoreParameters = false;
-        return this;
+        setSystemTrustStoreParameters(keyStorePath.toFile().getAbsolutePath(), STORE_PASSWORD, STORE_TYPE);
     }
 
     /**
@@ -78,7 +62,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
      * @param trustStorePassword keyStore file password
      * @param trustStoreType keyStore type e.g PKCS12, JKS
      */
-    public void setSystemTrustStoreParameters(String trustStore, String trustStorePassword, String trustStoreType) {
+    private void setSystemTrustStoreParameters(String trustStore, String trustStorePassword, String trustStoreType) {
         System.setProperty("javax.net.ssl.trustStore", trustStore);
         System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
         System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
