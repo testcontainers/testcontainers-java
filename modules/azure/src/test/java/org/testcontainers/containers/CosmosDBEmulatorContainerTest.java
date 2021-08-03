@@ -29,7 +29,7 @@ public class CosmosDBEmulatorContainerTest {
             .gatewayMode()
             .endpointDiscoveryEnabled(false)
             .endpoint(emulator.getEmulatorEndpoint())
-            .key(emulator.getEmulatorLocalKey())
+            .key(CosmosDBEmulatorContainer.EMULATOR_KEY)
             .buildAsyncClient();
         CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure")
                                                         .block();

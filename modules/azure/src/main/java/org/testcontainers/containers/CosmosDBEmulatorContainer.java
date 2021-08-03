@@ -7,7 +7,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.testcontainers.containers.Constants.EMULATOR_CERTIFICATE_FILE_NAME;
-import static org.testcontainers.containers.Constants.EMULATOR_KEY;
 import static org.testcontainers.containers.Constants.KEYSTORE_FILE_NAME;
 import static org.testcontainers.containers.Constants.STORE_PASSWORD;
 import static org.testcontainers.containers.Constants.STORE_TYPE;
@@ -20,6 +19,12 @@ import static org.testcontainers.utility.DockerImageName.parse;
  * @author Onur Kagan Ozcan
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
+
+    /**
+     * @link {https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests}
+     */
+    public static final String EMULATOR_KEY =
+        "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
 
@@ -84,12 +89,5 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
      */
     public String getEmulatorEndpoint() {
         return "https://" + getHost() + ":" + getMappedPort(PORT);
-    }
-
-    /**
-     * @return default local key of emulator as defined in Azure Cosmos DB docs and examples
-     */
-    public String getEmulatorLocalKey() {
-        return EMULATOR_KEY;
     }
 }

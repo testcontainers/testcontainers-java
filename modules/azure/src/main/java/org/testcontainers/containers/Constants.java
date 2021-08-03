@@ -5,9 +5,6 @@ package org.testcontainers.containers;
  */
 final class Constants {
 
-    static final String EMULATOR_KEY =
-        "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
-
     static final String TEMP_DIRECTORY_NAME = "azure-cosmosdb-emulator-temp";
 
     static final String EMULATOR_CERTIFICATE_ENDPOINT_URI = "/_explorer/emulator.pem";
