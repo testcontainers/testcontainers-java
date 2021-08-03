@@ -74,6 +74,7 @@ jobs:
             $($THUNDRA_GRADLE_INIT_SCRIPT_PATH || echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
         env:
           THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.set_thundra_testrun_id.outputs.thundra_agent_testrun_id }}
+          THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.us/v1
   httpclient5_test:
     runs-on: ubuntu-18.04
     steps:
