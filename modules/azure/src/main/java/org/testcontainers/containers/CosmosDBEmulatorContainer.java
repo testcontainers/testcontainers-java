@@ -85,7 +85,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
     }
 
     /**
-     * @return endpoint to use in CosmosClient/CosmosAsyncClient objects
+     * @return secure https emulator endpoint to send requests
      */
     public String getEmulatorEndpoint() {
         return "https://" + getHost() + ":" + getMappedPort(PORT);
