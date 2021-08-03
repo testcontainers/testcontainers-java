@@ -21,10 +21,16 @@ Start CosmosDB Emulator during a test:
 [Starting a CosmosDB Emulator container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
+Build Azure CosmosDB client:
+
+<!--codeinclude-->
+[Build Azure CosmosDB client](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:buildClient
+<!--/codeinclude-->
+
 Test against the Emulator:
 
 <!--codeinclude-->
-[Testing with a CosmosDB Emulator container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
+[Testing with a CosmosDB Emulator container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:testWithClientAgainstEmulatorContainer
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies

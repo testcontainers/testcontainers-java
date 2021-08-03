@@ -23,14 +23,16 @@ public class CosmosDBEmulatorContainerTest {
     // }
 
     @Test
-    // testWithEmulatorContainer {
     public void testSimple() {
+    // buildClient {
         CosmosAsyncClient client = new CosmosClientBuilder()
             .gatewayMode()
             .endpointDiscoveryEnabled(false)
             .endpoint(emulator.getEmulatorEndpoint())
             .key(CosmosDBEmulatorContainer.EMULATOR_KEY)
             .buildAsyncClient();
+    // }
+    // testWithClientAgainstEmulatorContainer {
         CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure")
                                                         .block();
         assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
@@ -38,6 +40,6 @@ public class CosmosDBEmulatorContainerTest {
                                                           .createContainerIfNotExists("ServiceContainer", "/name")
                                                           .block();
         assertThat(containerResponse.getStatusCode()).isEqualTo(201);
-    }
     // }
+    }
 }
