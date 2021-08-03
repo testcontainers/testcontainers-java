@@ -3,7 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.testcontainers.containers.Constants.EMULATOR_CERTIFICATE_FILE_NAME;
@@ -33,7 +33,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(PORT);
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx("(?s).*Started\\r\\n$"));
+        waitingFor(Wait.forLogMessage("(?s).*Started\\r\\n$", 1));
     }
 
     @Override
