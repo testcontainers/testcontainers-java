@@ -18,7 +18,7 @@ public class CosmosDBEmulatorContainerTest {
     @Rule
     // emulatorContainer {
     public CosmosDBEmulatorContainer emulator = new CosmosDBEmulatorContainer(
-        DockerImageName.parse(CosmosDBEmulatorContainer.LINUX_AZURE_COSMOS_DB_EMULATOR)
+        DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
     );
     // }
 

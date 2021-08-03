@@ -21,9 +21,7 @@ import static org.testcontainers.utility.DockerImageName.parse;
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 
-    public static final String LINUX_AZURE_COSMOS_DB_EMULATOR = "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator";
-
-    private static final DockerImageName DEFAULT_IMAGE_NAME = parse(LINUX_AZURE_COSMOS_DB_EMULATOR);
+    private static final DockerImageName DEFAULT_IMAGE_NAME = parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
 
     private static final int PORT = 8081;
 
