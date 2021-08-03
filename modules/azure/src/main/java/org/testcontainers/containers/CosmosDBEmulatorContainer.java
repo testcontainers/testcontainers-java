@@ -19,9 +19,10 @@ import static org.testcontainers.utility.DockerImageName.parse;
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 
     /**
-     * EMULATOR_KEY is also used as ssl certificate password
+     * EMULATOR_KEY is a known constant and documented in Azure Cosmos DB Official Pages as well.
+     * Key value is also used as password for emulator certificate file.
      *
-     * @link {https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests}
+     * @see <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests">Azure Cosmos DB Documents</a>
      */
     public static final String EMULATOR_KEY =
         "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
@@ -32,6 +33,9 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
 
     private Path tempDirectory;
 
+    /**
+     * @param dockerImageName specified docker image name to run
+     */
     public CosmosDBEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
