@@ -1,15 +1,14 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyStore;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.testcontainers.containers.KeyStoreUtils.STORE_PASSWORD;
-import static org.testcontainers.containers.KeyStoreUtils.STORE_TYPE;
-import static org.testcontainers.containers.KeyStoreUtils.downloadPemFromEmulator;
-import static org.testcontainers.containers.KeyStoreUtils.importEmulatorCertificate;
 import static org.testcontainers.utility.DockerImageName.parse;
 
 /**
@@ -20,18 +19,14 @@ import static org.testcontainers.utility.DockerImageName.parse;
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 
     /**
+     * EMULATOR_KEY is also used as ssl certificate password
+     *
      * @link {https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests}
      */
     public static final String EMULATOR_KEY =
         "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
-
-    private static final String TEMP_DIRECTORY_NAME = "azure-cosmosdb-emulator-temp";
-
-    private static final String EMULATOR_CERTIFICATE_FILE_NAME = "emulator.pem";
-
-    private static final String KEYSTORE_FILE_NAME = "cosmos_emulator.keystore";
 
     private static final int PORT = 8081;
 
@@ -47,7 +42,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
     @Override
     protected void configure() {
         try {
-            this.tempDirectory = Files.createTempDirectory(TEMP_DIRECTORY_NAME);
+            this.tempDirectory = Files.createTempDirectory("azure-cosmosdb-emulator-temp");
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -55,11 +50,30 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        Path emulatorCertificatePath = tempDirectory.resolve(EMULATOR_CERTIFICATE_FILE_NAME);
-        downloadPemFromEmulator(getEmulatorEndpoint(), emulatorCertificatePath);
-        Path keyStorePath = tempDirectory.resolve(KEYSTORE_FILE_NAME);
-        importEmulatorCertificate(emulatorCertificatePath, keyStorePath);
+        Path keyStorePath = prepareKeyStore();
         setSystemTrustStoreParameters(keyStorePath.toFile().getAbsolutePath());
+    }
+
+    /**
+     * @return key store path
+     */
+    private Path prepareKeyStore() {
+        String certFileName = "default.sslcert.pfx";
+        Path certFilePath = tempDirectory.resolve(certFileName);
+        copyFileFromContainer("/tmp/cosmos/appdata/" + certFileName, certFilePath.toString());
+        Path keyStorePath = tempDirectory.resolve("cosmos_emulator.keystore");
+        importEmulatorCertificate(certFilePath, keyStorePath);
+        return keyStorePath;
+    }
+
+    private void importEmulatorCertificate(Path pfxLocation, Path keyStoreOutput) {
+        try {
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            keystore.load(new FileInputStream(pfxLocation.toFile()), EMULATOR_KEY.toCharArray());
+            keystore.store(new FileOutputStream(keyStoreOutput.toFile()), EMULATOR_KEY.toCharArray());
+        } catch (Exception ex) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -67,8 +81,8 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
      */
     private void setSystemTrustStoreParameters(String trustStore) {
         System.setProperty("javax.net.ssl.trustStore", trustStore);
-        System.setProperty("javax.net.ssl.trustStorePassword", STORE_PASSWORD);
-        System.setProperty("javax.net.ssl.trustStoreType", STORE_TYPE);
+        System.setProperty("javax.net.ssl.trustStorePassword", EMULATOR_KEY);
+        System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
     }
 
     /**
