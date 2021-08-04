@@ -19,7 +19,7 @@ public class CosmosDBEmulatorContainerTest {
     @Rule
     // emulatorContainer {
     public CosmosDBEmulatorContainer emulator = new CosmosDBEmulatorContainer(
-        DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
+        DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:2.11.13-c5c131e3")
     );
     // }
 
@@ -27,7 +27,7 @@ public class CosmosDBEmulatorContainerTest {
     public void testSimple() throws Exception {
     // buildAndSaveNewKeyStore {
         Path keyStoreFile = Files.createTempFile("emulator", ".keystore");
-        KeyStore keyStore = emulator.buildNewKeyStore("/tmp/cosmos/appdata/default.sslcert.pfx");
+        KeyStore keyStore = emulator.buildNewKeyStore("/tmp/cosmos/appdata/sslcert.pfx");
         keyStore.store(new FileOutputStream(keyStoreFile.toFile()), emulator.getEmulatorKey().toCharArray());
     // }
     // setSystemTrustStoreParameters {
