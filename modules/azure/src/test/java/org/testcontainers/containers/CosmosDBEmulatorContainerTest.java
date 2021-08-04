@@ -4,6 +4,7 @@ import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.models.CosmosContainerResponse;
 import com.azure.cosmos.models.CosmosDatabaseResponse;
+import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
@@ -12,8 +13,6 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class CosmosDBEmulatorContainerTest {
 
@@ -47,10 +46,10 @@ public class CosmosDBEmulatorContainerTest {
         // testWithClientAgainstEmulatorContainer {
         CosmosDatabaseResponse databaseResponse =
                 client.createDatabaseIfNotExists("Azure").block();
-        assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
+        Assertions.assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
         CosmosContainerResponse containerResponse =
                 client.getDatabase("Azure").createContainerIfNotExists("ServiceContainer", "/name").block();
-        assertThat(containerResponse.getStatusCode()).isEqualTo(201);
+        Assertions.assertThat(containerResponse.getStatusCode()).isEqualTo(201);
         // }
     }
 }
