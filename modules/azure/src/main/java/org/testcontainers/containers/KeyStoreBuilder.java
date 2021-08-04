@@ -76,8 +76,7 @@ final class KeyStoreBuilder {
         try {
             if (Objects.nonNull(client)) {
                 client.dispatcher().executorService().shutdown();
-                ConnectionPool connectionPool = client.connectionPool();
-                connectionPool.evictAll();
+                client.connectionPool().evictAll();
                 Cache cache = client.cache();
                 if (Objects.nonNull(cache)) {
                     cache.close();
