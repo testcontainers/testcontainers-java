@@ -66,7 +66,6 @@ final class KeyStoreBuilder {
         return sslContext.getSocketFactory();
     }
 
-
     private static void closeResponseSilently(Response response) {
         try {
             if (Objects.nonNull(response)) {

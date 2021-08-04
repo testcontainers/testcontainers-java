@@ -25,7 +25,7 @@ public class CosmosDBEmulatorContainerTest {
     // }
 
     @Test
-    public void testSimple() throws Exception {
+    public void testWithCosmosClient() throws Exception {
         // buildAndSaveNewKeyStore {
         Path keyStoreFile = Files.createTempFile("azure-cosmos-emulator", ".keystore");
         KeyStore keyStore = emulator.buildNewKeyStore();
