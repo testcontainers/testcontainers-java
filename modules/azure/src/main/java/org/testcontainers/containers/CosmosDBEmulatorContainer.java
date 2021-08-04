@@ -5,15 +5,13 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.security.KeyStore;
 
-import static org.testcontainers.containers.KeyStoreBuilder.buildByDownloadingCertificate;
-import static org.testcontainers.utility.DockerImageName.parse;
-
 /**
  * An Azure CosmosDB container
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
+    private static final DockerImageName DEFAULT_IMAGE_NAME =
+            DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
 
     private static final int PORT = 8081;
 
@@ -31,7 +29,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
      * @return new KeyStore built with PKCS12
      */
     public KeyStore buildNewKeyStore() {
-        return buildByDownloadingCertificate(getEmulatorEndpoint(), getEmulatorKey());
+        return KeyStoreBuilder.buildByDownloadingCertificate(getEmulatorEndpoint(), getEmulatorKey());
     }
 
     /**
