@@ -39,8 +39,8 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
     }
 
     /**
-     * EMULATOR_KEY is a known constant and specified in Azure Cosmos DB Documents as well.
-     * Key value is also used as password for emulator certificate file.
+     * Emulator key is a known constant and specified in Azure Cosmos DB Documents.
+     * This key is also used as password for emulator certificate file.
      *
      * @see <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests">Azure Cosmos DB Documents</a>
      */

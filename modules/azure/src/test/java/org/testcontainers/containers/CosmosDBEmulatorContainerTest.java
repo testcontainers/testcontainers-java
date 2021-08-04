@@ -26,7 +26,7 @@ public class CosmosDBEmulatorContainerTest {
     @Test
     public void testSimple() throws Exception {
     // buildAndSaveNewKeyStore {
-        Path keyStoreFile = Files.createTempFile("emulator", ".keystore");
+        Path keyStoreFile = Files.createTempFile("azure-cosmos-emulator", ".keystore");
         KeyStore keyStore = emulator.buildNewKeyStore("/tmp/cosmos/appdata/sslcert.pfx");
         keyStore.store(new FileOutputStream(keyStoreFile.toFile()), emulator.getEmulatorKey().toCharArray());
     // }
@@ -39,8 +39,8 @@ public class CosmosDBEmulatorContainerTest {
         CosmosAsyncClient client = new CosmosClientBuilder()
             .gatewayMode()
             .endpointDiscoveryEnabled(false)
-            .endpoint(this.emulator.getEmulatorEndpoint())
-            .key(this.emulator.getEmulatorKey())
+            .endpoint(emulator.getEmulatorEndpoint())
+            .key(emulator.getEmulatorKey())
             .buildAsyncClient();
     // }
     // testWithClientAgainstEmulatorContainer {
