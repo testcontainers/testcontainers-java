@@ -36,6 +36,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
      * Emulator key is a known constant and specified in Azure Cosmos DB Documents.
      * This key is also used as password for emulator certificate file.
      *
+     * @return predefined emulator key
      * @see <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests">Azure Cosmos DB Documents</a>
      */
     public String getEmulatorKey() {
