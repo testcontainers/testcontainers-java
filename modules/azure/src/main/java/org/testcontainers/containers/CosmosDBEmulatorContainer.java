@@ -1,10 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.KeyStore;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -20,8 +15,6 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
 
     private static final int PORT = 8081;
 
-    private Path tempDirectory;
-
     /**
      * @param dockerImageName specified docker image name to run
      */
@@ -32,50 +25,17 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
         waitingFor(Wait.forLogMessage("(?s).*Started\\r\\n$", 1));
     }
 
-    @Override
-    protected void configure() {
-        try {
-            this.tempDirectory = Files.createTempDirectory("azure-cosmosdb-emulator-temp");
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-    }
-
-    @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        Path keyStorePath = prepareKeyStore();
-        setSystemTrustStoreParameters(keyStorePath.toFile().getAbsolutePath());
-    }
-
     /**
-     * @return key store path
+     * @param certificateFilePath path of certificate file in container
+     * @return new KeyStore built with PKCS12
      */
-    private Path prepareKeyStore() {
-        String certFileName = "default.sslcert.pfx";
-        Path certFilePath = tempDirectory.resolve(certFileName);
-        copyFileFromContainer("/tmp/cosmos/appdata/" + certFileName, certFilePath.toString());
-        Path keyStorePath = tempDirectory.resolve("cosmos_emulator.keystore");
-        importEmulatorCertificate(certFilePath, keyStorePath);
-        return keyStorePath;
-    }
-
-    private void importEmulatorCertificate(Path pfxLocation, Path keyStoreOutput) {
-        try {
-            KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(new FileInputStream(pfxLocation.toFile()), getEmulatorKey().toCharArray());
-            keystore.store(new FileOutputStream(keyStoreOutput.toFile()), getEmulatorKey().toCharArray());
-        } catch (Exception ex) {
-            throw new IllegalStateException();
-        }
-    }
-
-    /**
-     * @param trustStore keyStore path
-     */
-    private void setSystemTrustStoreParameters(String trustStore) {
-        System.setProperty("javax.net.ssl.trustStore", trustStore);
-        System.setProperty("javax.net.ssl.trustStorePassword", getEmulatorKey());
-        System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
+    public KeyStore buildNewKeyStore(String certificateFilePath) {
+        return copyFileFromContainer(certificateFilePath,
+                                     inputStream -> {
+                                         KeyStore keystore = KeyStore.getInstance("PKCS12");
+                                         keystore.load(inputStream, getEmulatorKey().toCharArray());
+                                         return keystore;
+                                     });
     }
 
     /**
