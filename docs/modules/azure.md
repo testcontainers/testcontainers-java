@@ -21,8 +21,7 @@ Start Azure CosmosDB Emulator during a test:
 [Starting a Azure CosmosDB Emulator container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
-Prepare KeyStore to use for SSL. 
-**Keep in mind that, certificate path can be different across docker image versions** 
+Prepare KeyStore to use for SSL.
 
 <!--codeinclude-->
 [Building KeyStore from certificate within container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:buildAndSaveNewKeyStore

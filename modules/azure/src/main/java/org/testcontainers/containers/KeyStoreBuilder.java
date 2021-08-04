@@ -13,9 +13,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Objects;
 
-/**
- * @author onurozcan
- */
 final class KeyStoreBuilder {
 
     static KeyStore buildByDownloadingCertificate(String endpoint, String keyStorePassword) {
