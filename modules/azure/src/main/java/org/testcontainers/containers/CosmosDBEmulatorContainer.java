@@ -1,8 +1,9 @@
 package org.testcontainers.containers;
 
-import java.security.KeyStore;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+
+import java.security.KeyStore;
 
 import static org.testcontainers.utility.DockerImageName.parse;
 
@@ -30,12 +31,11 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
      * @return new KeyStore built with PKCS12
      */
     public KeyStore buildNewKeyStore(String certificateFilePath) {
-        return copyFileFromContainer(certificateFilePath,
-                                     inputStream -> {
-                                         KeyStore keystore = KeyStore.getInstance("PKCS12");
-                                         keystore.load(inputStream, getEmulatorKey().toCharArray());
-                                         return keystore;
-                                     });
+        return copyFileFromContainer(certificateFilePath, inputStream -> {
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            keystore.load(inputStream, getEmulatorKey().toCharArray());
+            return keystore;
+        });
     }
 
     /**
