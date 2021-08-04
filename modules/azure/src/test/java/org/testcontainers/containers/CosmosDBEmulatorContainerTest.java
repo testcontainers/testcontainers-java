@@ -10,9 +10,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author Onur Kagan Ozcan
- */
 public class CosmosDBEmulatorContainerTest {
 
     @Rule

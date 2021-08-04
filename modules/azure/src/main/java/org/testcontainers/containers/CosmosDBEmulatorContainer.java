@@ -13,8 +13,6 @@ import static org.testcontainers.utility.DockerImageName.parse;
 
 /**
  * An Azure CosmosDB container
- *
- * @author Onur Kagan Ozcan
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 
