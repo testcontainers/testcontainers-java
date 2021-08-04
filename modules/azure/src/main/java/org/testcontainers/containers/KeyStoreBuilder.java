@@ -1,8 +1,6 @@
 package org.testcontainers.containers;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -13,6 +11,7 @@ import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Objects;
 
 /**
  * @author onurozcan
@@ -20,7 +19,7 @@ import java.security.cert.X509Certificate;
 final class KeyStoreBuilder {
 
     static KeyStore buildByDownloadingCertificate(String endpoint, String keyStorePassword) {
-        TrustManager[] trustAllManagers = new TrustManager[]{
+        TrustManager[] trustAllManagers = new TrustManager[] {
                 new X509TrustManager() {
                     @Override
                     public void checkClientTrusted(X509Certificate[] chain, String authType) {
@@ -36,8 +35,10 @@ final class KeyStoreBuilder {
                     }
                 }
         };
+        OkHttpClient client = null;
+        Response response = null;
         try {
-            OkHttpClient client = new OkHttpClient.Builder()
+            client = new OkHttpClient.Builder()
                     .sslSocketFactory(getTrustAllSSLSocketFactory(trustAllManagers), (X509TrustManager) trustAllManagers[0])
                     .hostnameVerifier((s, sslSession) -> true)
                     .build();
@@ -45,7 +46,7 @@ final class KeyStoreBuilder {
                     .get()
                     .url(endpoint + "/_explorer/emulator.pem")
                     .build();
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
             Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(response.body().byteStream());
             KeyStore keystore = KeyStore.getInstance("PKCS12");
             keystore.load(null, keyStorePassword.toCharArray());
@@ -53,6 +54,9 @@ final class KeyStoreBuilder {
             return keystore;
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
+        } finally {
+            closeResponseSilently(response);
+            closeClientSilently(client);
         }
     }
 
@@ -60,5 +64,30 @@ final class KeyStoreBuilder {
         SSLContext sslContext = SSLContext.getInstance("SSL");
         sslContext.init(null, trustManagers, new SecureRandom());
         return sslContext.getSocketFactory();
+    }
+
+
+    private static void closeResponseSilently(Response response) {
+        try {
+            if (Objects.nonNull(response)) {
+                response.close();
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void closeClientSilently(OkHttpClient client) {
+        try {
+            if (Objects.nonNull(client)) {
+                client.dispatcher().executorService().shutdown();
+                ConnectionPool connectionPool = client.connectionPool();
+                connectionPool.evictAll();
+                Cache cache = client.cache();
+                if (Objects.nonNull(cache)) {
+                    cache.close();
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

@@ -28,18 +28,6 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
     }
 
     /**
-     * @param absoluteCertificateFilePath absolute path of certificate file in container
-     * @return new KeyStore built with PKCS12
-     */
-    public KeyStore buildNewKeyStore(String absoluteCertificateFilePath) {
-        return copyFileFromContainer(absoluteCertificateFilePath, inputStream -> {
-            KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(inputStream, getEmulatorKey().toCharArray());
-            return keystore;
-        });
-    }
-
-    /**
      * @return new KeyStore built with PKCS12
      */
     public KeyStore buildNewKeyStore() {
