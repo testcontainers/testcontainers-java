@@ -16,15 +16,6 @@ import static org.testcontainers.utility.DockerImageName.parse;
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 
-    /**
-     * EMULATOR_KEY is a known constant and documented in Azure Cosmos DB Official Pages as well.
-     * Key value is also used as password for emulator certificate file.
-     *
-     * @see <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests">Azure Cosmos DB Documents</a>
-     */
-    public static final String EMULATOR_KEY =
-        "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
-
     private static final DockerImageName DEFAULT_IMAGE_NAME = parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
 
     private static final int PORT = 8081;
@@ -71,8 +62,8 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
     private void importEmulatorCertificate(Path pfxLocation, Path keyStoreOutput) {
         try {
             KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(new FileInputStream(pfxLocation.toFile()), EMULATOR_KEY.toCharArray());
-            keystore.store(new FileOutputStream(keyStoreOutput.toFile()), EMULATOR_KEY.toCharArray());
+            keystore.load(new FileInputStream(pfxLocation.toFile()), getEmulatorKey().toCharArray());
+            keystore.store(new FileOutputStream(keyStoreOutput.toFile()), getEmulatorKey().toCharArray());
         } catch (Exception ex) {
             throw new IllegalStateException();
         }
@@ -83,8 +74,18 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
      */
     private void setSystemTrustStoreParameters(String trustStore) {
         System.setProperty("javax.net.ssl.trustStore", trustStore);
-        System.setProperty("javax.net.ssl.trustStorePassword", EMULATOR_KEY);
+        System.setProperty("javax.net.ssl.trustStorePassword", getEmulatorKey());
         System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
+    }
+
+    /**
+     * EMULATOR_KEY is a known constant and specified in Azure Cosmos DB Documents as well.
+     * Key value is also used as password for emulator certificate file.
+     *
+     * @see <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21#authenticate-requests">Azure Cosmos DB Documents</a>
+     */
+    public String getEmulatorKey() {
+        return "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
     }
 
     /**

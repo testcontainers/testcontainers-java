@@ -26,7 +26,7 @@ public class CosmosDBEmulatorContainerTest {
             .gatewayMode()
             .endpointDiscoveryEnabled(false)
             .endpoint(emulator.getEmulatorEndpoint())
-            .key(CosmosDBEmulatorContainer.EMULATOR_KEY)
+            .key(emulator.getEmulatorKey())
             .buildAsyncClient();
     // }
     // testWithClientAgainstEmulatorContainer {
