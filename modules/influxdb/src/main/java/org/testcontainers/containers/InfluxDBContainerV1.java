@@ -11,7 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * See <a href="https://store.docker.com/images/influxdb">https://store.docker.com/images/influxdb</a>
  */
-public class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends GenericContainer<SELF> {
+public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
 
     public static final Integer INFLUXDB_PORT = 8086;
 
