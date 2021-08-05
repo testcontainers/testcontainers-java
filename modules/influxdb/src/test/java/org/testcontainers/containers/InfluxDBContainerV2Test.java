@@ -23,7 +23,7 @@ public class InfluxDBContainerV2Test {
 
     @Before
     public void setUp() {
-        this.client = influxDBContainerV2.getInfluxDBClient();
+        this.client = InfluxDBV2TestHelper.getInfluxDBClient(influxDBContainerV2);
     }
 
     @After
@@ -40,7 +40,7 @@ public class InfluxDBContainerV2Test {
 
     @Test
     public void getNewInfluxDB() {
-        final InfluxDBClient actual = influxDBContainerV2.getInfluxDBClient();
+        final InfluxDBClient actual = InfluxDBV2TestHelper.getInfluxDBClient(influxDBContainerV2);
 
         assertThat(actual, notNullValue());
         assertThat(actual.health().getStatus(), is(StatusEnum.PASS));

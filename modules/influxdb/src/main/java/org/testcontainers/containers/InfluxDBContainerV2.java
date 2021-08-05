@@ -1,9 +1,7 @@
 package org.testcontainers.containers;
 
-import com.influxdb.client.InfluxDBClient;
-import com.influxdb.client.InfluxDBClientFactory;
-import com.influxdb.client.InfluxDBClientOptions;
 import java.util.Optional;
+import lombok.Getter;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
@@ -20,9 +18,13 @@ public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
     private static final int NO_CONTENT_STATUS_CODE = 204;
 
+    @Getter
     private String username = "test-user";
+    @Getter
     private String password = "test-password";
+    @Getter
     private String bucket = "test-bucket";
+    @Getter
     private String organization = "test-org";
     private Optional<String> retention = Optional.empty();
     private Optional<String> adminToken = Optional.empty();
@@ -138,24 +140,6 @@ public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
     public InfluxDBContainerV2 withAdminToken(final String adminToken) {
         this.adminToken = Optional.of(adminToken);
         return this;
-    }
-
-
-    /**
-     * This method uses the InfluxDBClientOptions builder to build a InfluxDB client
-     *
-     * @return a InfluxDB client
-     * @see InfluxDBClientOptions
-     * @see InfluxDBClient
-     */
-    public InfluxDBClient getInfluxDBClient() {
-        final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions.builder()
-            .url(this.getUrl())
-            .authenticate(this.username, this.password.toCharArray())
-            .bucket(this.bucket)
-            .org(this.organization)
-            .build();
-        return InfluxDBClientFactory.create(influxDBClientOptions);
     }
 
     /**

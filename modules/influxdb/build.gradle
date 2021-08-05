@@ -6,6 +6,5 @@ dependencies {
     implementation "org.influxdb:influxdb-java:2.21"
     testImplementation "org.influxdb:influxdb-java:2.21"
 
-    implementation "com.influxdb:influxdb-client-java:3.1.0"
     testImplementation "com.influxdb:influxdb-client-java:3.1.0"
 }

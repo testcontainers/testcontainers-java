@@ -43,7 +43,7 @@ public class InfluxDBContainerV2WithUserTest {
 
     @Before
     public void setUp() {
-        this.client = influxDBContainerV2.getInfluxDBClient();
+        this.client = InfluxDBV2TestHelper.getInfluxDBClient(influxDBContainerV2);
     }
 
     @After
