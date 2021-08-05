@@ -40,7 +40,7 @@ public class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends
     }
 
     /**
-     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
      */
     @Deprecated
     public InfluxDBContainerV1(final String version) {
