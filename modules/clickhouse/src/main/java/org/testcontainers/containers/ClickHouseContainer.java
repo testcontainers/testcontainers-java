@@ -1,9 +1,11 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.Set;
 
 public class ClickHouseContainer extends JdbcDatabaseContainer {
     public static final String NAME = "clickhouse";
@@ -54,8 +56,8 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(HTTP_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(HTTP_PORT);
     }
 
     @Override

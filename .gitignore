@@ -46,6 +46,7 @@ node_modules/
 
 .gradle/
 build/
+!buildSrc/src/main/groovy/org/testcontainers/build
 out/
 *.class
 

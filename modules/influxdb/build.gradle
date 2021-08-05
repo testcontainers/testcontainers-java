@@ -6,7 +6,7 @@ ext {
 }
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
     compileOnly group: 'org.influxdb', name: 'influxdb-java', version: "${influxdbV1ClientVersion}"
     testCompile group: 'org.influxdb', name: 'influxdb-java', version: "${influxdbV1ClientVersion}"
