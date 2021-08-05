@@ -3,8 +3,7 @@ package org.testcontainers.containers;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * @deprecated instead use {@link InfluxDBContainerV1#InfluxDBContainerV1(DockerImageName) } for InfluxDB 1.x or {@link
- * InfluxDBContainerV2#InfluxDBContainerV2(DockerImageName)} for InfluxDB 2.x instead
+ * @deprecated instead use {@link InfluxDBContainerV1} for InfluxDB 1.x or {@link InfluxDBContainerV2} for InfluxDB 2.x instead
  */
 @Deprecated
 public class InfluxDBContainer extends InfluxDBContainerV1 {
