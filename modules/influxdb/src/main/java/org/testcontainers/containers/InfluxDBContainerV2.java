@@ -33,10 +33,7 @@ public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
 
 
     public InfluxDBContainerV2(final String imageName) {
-        super(DockerImageName.parse(imageName));
-        final DockerImageName dockerImageName = DockerImageName.parse(imageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        this.setWaitStrategy();
+        this(DockerImageName.parse(imageName));
     }
 
 
