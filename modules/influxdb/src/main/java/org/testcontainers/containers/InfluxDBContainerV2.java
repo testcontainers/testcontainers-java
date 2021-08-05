@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
 
-    public static final Integer INFLUXDB_PORT = 8086;
+    private static final Integer INFLUXDB_PORT = 8086;
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
     private static final int NO_CONTENT_STATUS_CODE = 204;
