@@ -11,7 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * See <a href="https://store.docker.com/images/influxdb">https://store.docker.com/images/influxdb</a>
  */
-class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends GenericContainer<SELF> {
+public class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends GenericContainer<SELF> {
 
     public static final Integer INFLUXDB_PORT = 8086;
 
@@ -53,7 +53,8 @@ class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends Generi
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         this.waitStrategy = new WaitAllStrategy()
-            .withStrategy(Wait.forHttp("/ping").withBasicCredentials(this.username, this.password).forStatusCode(NO_CONTENT_STATUS_CODE))
+            .withStrategy(Wait.forHttp("/ping").withBasicCredentials(this.username, this.password)
+                .forStatusCode(NO_CONTENT_STATUS_CODE))
             .withStrategy(Wait.forListeningPort());
 
         this.addExposedPort(INFLUXDB_PORT);

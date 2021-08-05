@@ -1,62 +1,73 @@
 # InfluxDB Module
 
-Testcontainers module for InfluxData [InfluxDB](https://github.com/influxdata/influxdb).
+Testcontainers module for InfluxData [InfluxDB](https://www.influxdata.com/products/influxdb/).
 
 ## Important Note
-They are breaking changes in InfluxDB v2.x. For more information refer to the main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/). 
-Influx Data migrated to quay.io as their new [container registry](https://quay.io/repository/influxdb/influxdb).
+
+They are breaking changes in InfluxDB v2.x. For more information refer to the
+main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/). InfluxDB
+official [container registry](https://hub.docker.com/_/influxdb) on docker hub.
 
 ## InfluxDB V2.x Usage example
+
 Running influxDbContainer as a stand-in for InfluxDB in a test:
 
 ```java
 public class SomeTest {
 
     @ClassRule
-    public static final InfluxDBV2Container influxDbContainer = InfluxDBV2Container.createWithDefaultTag();
+    public static final InfluxDBV2Container influxDbContainer =
+        new InfluxDBContainerV2<>(DockerImageName.parse("influxdb"));
 
     @Test
     public void someTestMethod() {
-        final InfluxDBClient influxDB = influxDbContainer.getNewInfluxDB();
+        final InfluxDBClient influxDB = influxDbContainer.getInfluxDBClient();
         // Rest of the test
     }
 }
 ```
-This will create a InfluxDB container with tag v2.0.0. The influxDB will be setup with the following data:<br/>
+
+This will create a InfluxDB container with the latest tag (
+available [tags](https://hub.docker.com/_/influxdb?tab=tags&page=1&ordering=last_updated)). The influxDB will be setup
+with the following data:<br/>
 
 | Property      | Default Value | 
 | ------------- |:-------------:|
-| User          | test-user     | 
+| Username      | test-user     | 
 | Password      | test-password | 
-| Bucket        | test-bucket   |  
 | Organization  | test-org      |
+| Bucket        | test-bucket   |  
 | Retention     | 0 (infinite)  |
-| Retention Unit| ns            |
-For more details about the InfluxDB setup go to the official [docs](https://docs.influxdata.com/influxdb/v2.0/reference/cli/influx/setup/).
+| Admin Token   |       -       |
+
+For more details about the InfluxDB setup go to the
+official [docs](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/docker/#influxdb-2x-initialization-credentials)
+.
 
 It is possible to override the default values and start the container with a newer tag:
+
 ```java
 public class SomeTest {
     @ClassRule
-    public static final InfluxDBContainerV2<?> influxDBContainer = InfluxDBContainerV2
-        .createWithSpecificTag(DockerImageName.parse("quay.io/influxdb/influxdb:v2.0.3"))
-        .withBucket(BUCKET)
-        .withUsername(USER)
-        .withPassword(PASSWORD)
-        .withOrganization(ORG);
+    public static final InfluxDBContainerV2<?> influxDBContainer =
+        new InfluxDBContainerV2<>(InfluxDBV2TestImages.INFLUXDB_TEST_IMAGE)
+            .withUsername(USERNAME)
+            .withPassword(PASSWORD)
+            .withOrganization(ORG)
+            .withBucket(BUCKET)
+            .withRetention(RETENTION) // Optional
+            .withAdminToken(ADMIN_TOKEN); // Optional
 
     @Test
     public void someTestMethod() {
-        final InfluxDBClient influxDB = influxDbContainer.getNewInfluxDB();
+        final InfluxDBClient influxDB = influxDbContainer.getInfluxDBClient();
         // rest of the test
     }
 }
 ```
-**NOTE**: The `createWithSpecificTag` static factory needs a valid registry and tag name. You can find the latest tags [here](https://quay.io/repository/influxdb/influxdb?tab=tags). <br/>
-**NOTE**: You can find the latest documentation about the influxdb java client [here](https://github.com/influxdata/influxdb-client-java).
 
-**Hint:**
-    Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency.
+**NOTE**: You can find the latest documentation about the influxdb java
+client [here](https://github.com/influxdata/influxdb-client-java).
 
 ## InfluxDB V1.x Usage example (Deprecated)
 

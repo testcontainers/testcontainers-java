@@ -21,24 +21,29 @@ import org.junit.Test;
 
 public class InfluxDBContainerV2WithUserTest {
 
-    private static final String BUCKET = "new-test-bucket";
-    private static final String USER = "new-test-user";
+    private static final String USERNAME = "new-test-user";
     private static final String PASSWORD = "new-test-password";
     private static final String ORG = "new-test-org";
+    private static final String BUCKET = "new-test-bucket";
+    private static final String RETENTION = "1w";
+    private static final String ADMIN_TOKEN = "super-secret-token";
+
 
     private InfluxDBClient client = null;
 
     @ClassRule
-    public static final InfluxDBContainerV2<?> influxDBContainerV2 = InfluxDBContainerV2
-        .createWithDefaultTag()
-        .withBucket(BUCKET)
-        .withUsername(USER)
-        .withPassword(PASSWORD)
-        .withOrganization(ORG);
+    public static final InfluxDBContainerV2<?> influxDBContainerV2 =
+        new InfluxDBContainerV2<>(InfluxDBV2TestImages.INFLUXDB_TEST_IMAGE)
+            .withUsername(USERNAME)
+            .withPassword(PASSWORD)
+            .withOrganization(ORG)
+            .withBucket(BUCKET)
+            .withRetention(RETENTION)
+            .withAdminToken(ADMIN_TOKEN);
 
     @Before
     public void setUp() {
-        this.client = influxDBContainerV2.getNewInfluxDB();
+        this.client = influxDBContainerV2.getInfluxDBClient();
     }
 
     @After
@@ -58,6 +63,8 @@ public class InfluxDBContainerV2WithUserTest {
 
     @Test
     public void queryForWriteAndRead() {
+        assertThat(this.client, notNullValue());
+
         try (final WriteApi writeApi = this.client.getWriteApi()) {
 
             //
@@ -65,7 +72,7 @@ public class InfluxDBContainerV2WithUserTest {
             //
             final Point point = Point.measurement("temperature")
                 .addTag("location", "west")
-                .addField("value", 55D)
+                .addField("value", 55.0D)
                 .time(Instant.now().toEpochMilli(), WritePrecision.MS);
 
             writeApi.writePoint(point);
