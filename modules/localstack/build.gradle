@@ -5,7 +5,8 @@ dependencies {
 
     compileOnly 'com.amazonaws:aws-java-sdk-s3:1.11.930'
     testCompile 'com.amazonaws:aws-java-sdk-s3:1.11.929'
-    testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.930'
+    testCompile 'com.amazonaws:aws-java-sdk-sqs:1.11.986'
     testCompile 'com.amazonaws:aws-java-sdk-logs:1.11.807'
-    testCompile 'software.amazon.awssdk:s3:2.15.56'
+    testCompile 'software.amazon.awssdk:s3:2.16.34'
+    testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }

@@ -51,7 +51,7 @@ You will need to explicitly create a network and set it on the Kafka container a
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:kafka:{{latest_version}}"
+testImplementation "org.testcontainers:kafka:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

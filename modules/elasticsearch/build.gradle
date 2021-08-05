@@ -2,6 +2,7 @@ description = "TestContainers :: elasticsearch"
 
 dependencies {
     compile project(':testcontainers')
-    testCompile "org.elasticsearch.client:elasticsearch-rest-client:7.10.1"
+    testCompile "org.elasticsearch.client:elasticsearch-rest-client:7.12.0"
     testCompile "org.elasticsearch.client:transport:7.10.1"
+    testCompile 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }
