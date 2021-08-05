@@ -13,7 +13,7 @@ import org.testcontainers.utility.DockerImageName;
  * <a href="https://hub.docker.com/_/influxdb"> the official InfluxDB 2.x container repository</a>
  * on docker hub for detailed documentation and newest tags.
  */
-public class InfluxDBContainerV2<SELF extends InfluxDBContainerV2<SELF>> extends GenericContainer<SELF> {
+public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
 
     public static final Integer INFLUXDB_PORT = 8086;
 
