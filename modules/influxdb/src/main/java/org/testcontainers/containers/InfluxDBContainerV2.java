@@ -26,7 +26,9 @@ public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
     private String bucket = "test-bucket";
     @Getter
     private String organization = "test-org";
+    @Getter
     private Optional<String> retention = Optional.empty();
+    @Getter
     private Optional<String> adminToken = Optional.empty();
 
 
