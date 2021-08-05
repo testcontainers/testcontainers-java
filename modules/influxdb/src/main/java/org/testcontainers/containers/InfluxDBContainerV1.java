@@ -21,8 +21,7 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
 
     private static final int NO_CONTENT_STATUS_CODE = 204;
 
-    @Deprecated
-    public static final String VERSION = DEFAULT_TAG;
+    static final String VERSION = DEFAULT_TAG;
 
     private boolean authEnabled = true;
     private String admin = "admin";
