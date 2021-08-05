@@ -1,18 +1,3 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:30.1.1-jre'
-    }
-}
-
-plugins {
-    id 'me.champeau.gradle.japicmp' version '0.2.9'
-}
-
 apply plugin: 'com.github.johnrengelman.shadow'
 
 description = "Testcontainers Core"
@@ -24,7 +9,6 @@ sourceSets {
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 configurations {
-    baseline
     shaded
     [api, compileOnly, testCompile]*.extendsFrom shaded
 }
@@ -56,17 +40,7 @@ task jarFileTest(type: Test) {
 }
 project.tasks.check.dependsOn(jarFileTest)
 
-task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    dependsOn(tasks.shadowJar)
-
-    oldClasspath = configurations.baseline
-    newClasspath = shadowJar.outputs.files
-    ignoreMissingClasses = true
-
-    accessModifier = "protected"
-    failOnModification = true
-    failOnSourceIncompatibility = true
-
+tasks.japicmp {
     packageExcludes = [
         "com.github.dockerjava.*",
         "org.testcontainers.shaded.*",
@@ -77,14 +51,6 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     methodExcludes = []
 
     fieldExcludes = []
-
-    onlyBinaryIncompatibleModified = true
-    htmlOutputFile = file("$buildDir/reports/japi.html")
-}
-// do not run on Windows by default
-// TODO investigate zip issue on Windows
-if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-    project.tasks.check.dependsOn(japicmp)
 }
 
 configurations.all {
