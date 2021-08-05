@@ -32,7 +32,7 @@ public class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends
     private String password = "any";
 
     /**
-     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
      */
     @Deprecated
     public InfluxDBContainerV1() {
