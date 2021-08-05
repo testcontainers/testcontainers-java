@@ -8,7 +8,9 @@ ext {
 dependencies {
     api project(':testcontainers')
 
+    implementation group: 'org.influxdb', name: 'influxdb-java', version: "${influxdbV1ClientVersion}"
     testImplementation group: 'org.influxdb', name: 'influxdb-java', version: "${influxdbV1ClientVersion}"
 
+    implementation group:'com.influxdb', name:'influxdb-client-java', version:"${influxdbV2ClientVersion}"
     testImplementation group:'com.influxdb', name:'influxdb-client-java', version:"${influxdbV2ClientVersion}"
 }
