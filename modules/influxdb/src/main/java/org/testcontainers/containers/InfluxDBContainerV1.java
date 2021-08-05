@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
 
-    public static final Integer INFLUXDB_PORT = 8086;
+    private static final Integer INFLUXDB_PORT = 8086;
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
     private static final String DEFAULT_TAG = "1.4.3";
