@@ -1,12 +1,13 @@
 package org.testcontainers.containers;
 
-import java.util.Collections;
-import java.util.Set;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * See <a href="https://store.docker.com/images/influxdb">https://store.docker.com/images/influxdb</a>
@@ -30,22 +31,6 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
     private String database;
     private String username = "any";
     private String password = "any";
-
-    /**
-     * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
-     */
-    @Deprecated
-    public InfluxDBContainerV1() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
-    /**
-     * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
-     */
-    @Deprecated
-    public InfluxDBContainerV1(final String version) {
-        this(DEFAULT_IMAGE_NAME.withTag(version));
-    }
 
     public InfluxDBContainerV1(final DockerImageName dockerImageName) {
         super(dockerImageName);

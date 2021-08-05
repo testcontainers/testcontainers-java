@@ -1,10 +1,11 @@
 package org.testcontainers.containers;
 
-import java.util.Optional;
 import lombok.Getter;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Optional;
 
 /**
  * Refer to
@@ -40,7 +41,15 @@ public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
     public InfluxDBContainerV2(final DockerImageName imageName) {
         super(imageName);
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        this.setWaitStrategy();
+        this.waitStrategy = new WaitAllStrategy()
+            .withStrategy(
+                Wait
+                    .forHttp("/ping")
+                    .withBasicCredentials(this.username, this.password)
+                    .forStatusCode(NO_CONTENT_STATUS_CODE)
+            )
+            .withStrategy(Wait.forListeningPort());
+        this.addExposedPort(INFLUXDB_PORT);
     }
 
     /**
@@ -146,17 +155,5 @@ public class InfluxDBContainerV2 extends GenericContainer<InfluxDBContainerV2> {
      */
     public String getUrl() {
         return "http://" + this.getHost() + ":" + this.getMappedPort(INFLUXDB_PORT);
-    }
-
-    private void setWaitStrategy() {
-        this.waitStrategy = new WaitAllStrategy()
-            .withStrategy(
-                Wait
-                    .forHttp("/ping")
-                    .withBasicCredentials(this.username, this.password)
-                    .forStatusCode(NO_CONTENT_STATUS_CODE)
-            )
-            .withStrategy(Wait.forListeningPort());
-        this.addExposedPort(INFLUXDB_PORT);
     }
 }
