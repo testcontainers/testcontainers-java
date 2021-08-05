@@ -33,7 +33,7 @@ public class InfluxDBContainerV2WithUserTest {
 
     @ClassRule
     public static final InfluxDBContainerV2<?> influxDBContainerV2 =
-        new InfluxDBContainerV2<>(InfluxDBV2TestImages.INFLUXDB_TEST_IMAGE)
+        new InfluxDBContainerV2<>(InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE)
             .withUsername(USERNAME)
             .withPassword(PASSWORD)
             .withOrganization(ORG)

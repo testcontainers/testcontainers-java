@@ -16,13 +16,13 @@ import org.junit.Test;
 
 public class InfluxDBContainerV1WithUserTest {
 
-    private static final String TEST_VERSION = InfluxDBV1TestImages.INFLUXDB_TEST_IMAGE.getVersionPart();
+    private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE.getVersionPart();
     private static final String DATABASE = "test";
     private static final String USER = "test-user";
     private static final String PASSWORD = "test-password";
 
     @Rule
-    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBV1TestImages.INFLUXDB_TEST_IMAGE)
+    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE)
         .withDatabase(DATABASE)
         .withUsername(USER)
         .withPassword(PASSWORD);

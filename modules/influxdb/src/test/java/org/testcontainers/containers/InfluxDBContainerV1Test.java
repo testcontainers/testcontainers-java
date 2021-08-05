@@ -12,7 +12,7 @@ public class InfluxDBContainerV1Test {
 
     @ClassRule
     public static InfluxDBContainer<?> influxDBContainer =
-        new InfluxDBContainer<>(InfluxDBV1TestImages.INFLUXDB_TEST_IMAGE);
+        new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE);
 
     @Test
     public void getUrl() {
