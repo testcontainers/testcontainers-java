@@ -35,14 +35,6 @@ public class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends
      * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
      */
     @Deprecated
-    public InfluxDBContainerV1() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
-    /**
-     * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
-     */
-    @Deprecated
     public InfluxDBContainerV1(final String version) {
         this(DEFAULT_IMAGE_NAME.withTag(version));
     }
