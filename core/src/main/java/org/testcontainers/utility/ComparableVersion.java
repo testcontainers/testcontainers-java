@@ -32,6 +32,10 @@ public final class ComparableVersion implements Comparable<ComparableVersion> {
         return 0;
     }
 
+    public boolean isSemanticVersion() {
+        return parts.length > 0;
+    }
+
     public boolean isLessThan(String other) {
         return this.compareTo(new ComparableVersion(other)) < 0;
     }

@@ -1,5 +1,10 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
+import org.testcontainers.utility.DockerImageName;
+
+import java.util.Set;
+
 /**
  * Container implementation for the MariaDB project.
  *
@@ -7,9 +12,15 @@ package org.testcontainers.containers;
  */
 public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
-    public static final String NAME = "mariadb";
-    public static final String IMAGE = "mariadb";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mariadb");
+
+    @Deprecated
     public static final String DEFAULT_TAG = "10.3.6";
+
+    public static final String NAME = "mariadb";
+
+    @Deprecated
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     static final String DEFAULT_USER = "test";
 
@@ -22,18 +33,29 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     private static final String MARIADB_ROOT_USER = "root";
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
 
+    /**
+     * @deprecated use {@link MariaDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MariaDBContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public MariaDBContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public MariaDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         addExposedPort(MARIADB_PORT);
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MARIADB_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(MARIADB_PORT);
     }
 
     @Override
@@ -60,7 +82,9 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mariadb://" + getHost() + ":" + getMappedPort(MARIADB_PORT) + "/" + databaseName;
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return "jdbc:mariadb://" + getHost() + ":" + getMappedPort(MARIADB_PORT) +
+            "/" + databaseName + additionalUrlParams;
     }
 
     @Override

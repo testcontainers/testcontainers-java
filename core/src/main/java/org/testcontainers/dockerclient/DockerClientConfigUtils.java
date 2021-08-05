@@ -1,6 +1,5 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.core.DockerClientConfig;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -17,10 +16,6 @@ public class DockerClientConfigUtils {
 
     // See https://github.com/docker/docker/blob/a9fa38b1edf30b23cae3eade0be48b3d4b1de14b/daemon/initlayer/setup_unix.go#L25
     public static final boolean IN_A_CONTAINER = new File("/.dockerenv").exists();
-
-    @Deprecated
-    @Getter(lazy = true)
-    private static final Optional<String> detectedDockerHostIp = IN_A_CONTAINER ? getDefaultGateway() : Optional.empty();
 
     @Getter(lazy = true)
     private static final Optional<String> defaultGateway = Optional
@@ -45,13 +40,9 @@ public class DockerClientConfigUtils {
             .filter(StringUtils::isNotBlank);
 
     /**
-     * Use {@link DockerClientFactory#dockerHostIpAddress()}
+     * @deprecated use {@link DockerClientProviderStrategy#getDockerHostIpAddress()}
      */
     @Deprecated
-    public static String getDockerHostIpAddress(DockerClientConfig config) {
-        return getDockerHostIpAddress(config.getDockerHost());
-    }
-
     public static String getDockerHostIpAddress(URI dockerHost) {
         switch (dockerHost.getScheme()) {
             case "http":

@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.jdbc.ConnectionUrl;
-
-import java.util.Objects;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Factory for PostGIS containers, which are a special flavour of PostgreSQL.
@@ -10,8 +9,8 @@ import java.util.Objects;
 public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
     private static final String NAME = "postgis";
-    private static final String DEFAULT_TAG = "10";
-    private static final String DEFAULT_IMAGE = "mdillon/postgis";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgis/postgis").asCompatibleSubstituteFor("postgres");
+    private static final String DEFAULT_TAG = "12-3.0";
     public static final String USER_PARAM = "user";
     public static final String PASSWORD_PARAM = "password";
 
@@ -28,7 +27,7 @@ public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PostgreSQLContainer(DEFAULT_IMAGE + ":" + tag);
+        return new PostgreSQLContainer<>(DEFAULT_IMAGE_NAME.withTag(tag));
     }
 
     @Override

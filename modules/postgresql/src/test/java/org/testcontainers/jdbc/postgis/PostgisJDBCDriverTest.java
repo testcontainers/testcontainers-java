@@ -16,7 +16,7 @@ public class PostgisJDBCDriverTest extends AbstractJDBCDriverTest {
         return asList(
             new Object[][]{
                 {"jdbc:tc:postgis://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
-                {"jdbc:tc:postgis:9.6://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
+                {"jdbc:tc:postgis:9.6-2.5://hostname/databasename?user=someuser&password=somepwd", EnumSet.of(Options.JDBCParams)},
             });
     }
 }

@@ -5,12 +5,12 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:29.0-jre'
+        classpath 'com.google.guava:guava:30.1.1-jre'
     }
 }
 
 plugins {
-    id 'me.champeau.gradle.japicmp' version '0.2.8'
+    id 'me.champeau.gradle.japicmp' version '0.2.9'
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -26,7 +26,7 @@ idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 configurations {
     baseline
     shaded
-    [runtime, compileOnly, testCompile]*.extendsFrom shaded
+    [api, compileOnly, testCompile]*.extendsFrom shaded
 }
 
 shadowJar {
@@ -34,39 +34,23 @@ shadowJar {
 
     mergeServiceFiles()
 
-    exclude 'org/newsclub/**'
-
     [
         'META-INF/NOTICE',
         'META-INF/NOTICE.txt',
         'META-INF/LICENSE',
         'META-INF/LICENSE.txt',
-        'META-INF/DEPENDENCIES',
         'META-INF/maven/',
         'META-INF/proguard/',
         'META-INF/versions/*/module-info.class',
-        'META-INF/services/README.md',
-        'META-INF/services/com.fasterxml.jackson.core.*',
-        'META-INF/services/com.github.dockerjava.api.command.*',
-        'META-INF/services/javax.ws.rs.ext.*',
         'META-INF/services/java.security.Provider',
-        'mozilla/public-suffix-list.txt',
-        'module-info.class',
     ].each { exclude(it) }
-
-    project.afterEvaluate {
-        dependencies {
-            for (id in project.configurations.compile.resolvedConfiguration.resolvedArtifacts*.moduleVersion*.id) {
-                exclude(dependency("${id.group}:${id.name}"))
-            }
-        }
-    }
 }
 
 task jarFileTest(type: Test) {
     testClassesDirs = sourceSets.jarFileTest.output.classesDirs
     classpath = sourceSets.jarFileTest.runtimeClasspath
 
+    file(shadowJar.outputs.files.singleFile) // input for correct caching
     systemProperty("jarFile", shadowJar.outputs.files.singleFile)
 
     dependsOn(shadowJar)
@@ -89,10 +73,11 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
         "org.testcontainers.shaded.*",
     ]
 
-    methodExcludes = [
-        // METHOD_NEW_DEFAULT
-        "org.testcontainers.containers.ContainerState#getHost()"
-    ]
+    classExcludes = []
+
+    methodExcludes = []
+
+    fieldExcludes = []
 
     onlyBinaryIncompatibleModified = true
     htmlOutputFile = file("$buildDir/reports/japi.html")
@@ -103,68 +88,81 @@ if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
     project.tasks.check.dependsOn(japicmp)
 }
 
+configurations.all {
+    resolutionStrategy {
+        // use lower Jackson version
+        force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+    }
+}
+
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.14.2', {
+    baseline 'org.testcontainers:testcontainers:1.16.0', {
         exclude group: "*", module: "*"
     }
 
-    compile 'junit:junit:4.12'
-    compile 'org.slf4j:slf4j-api:1.7.30'
-    compile 'org.jetbrains:annotations:19.0.0'
-    compile 'org.apache.commons:commons-compress:1.20'
-    compile ('org.rnorth.duct-tape:duct-tape:1.0.8') {
+    api 'junit:junit:4.12'
+    api 'org.slf4j:slf4j-api:1.7.32'
+    compileOnly 'org.jetbrains:annotations:21.0.1'
+    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
+    api 'org.apache.commons:commons-compress:1.20'
+    api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    compile ('org.rnorth.visible-assertions:visible-assertions:2.1.2') {
-        // Excluded in favor of jna-platform below
-        exclude(group: "net.java.dev.jna", module: "jna")
-    }
+    shaded 'org.awaitility:awaitility:4.1.0'
 
-    compile ('org.rnorth:tcp-unix-socket-proxy:1.0.2') {
-        exclude(group: "log4j", module: "log4j")
-    }
+    api "com.github.docker-java:docker-java-api:3.2.11"
 
-    compile "net.java.dev.jna:jna-platform:5.5.0"
-
-    shaded ('org.scala-sbt.ipcsocket:ipcsocket:1.0.1') {
-        exclude(group: "net.java.dev.jna")
-    }
-
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.1') {
-        exclude(group: 'net.java.dev.jna')
+    shaded ('com.github.docker-java:docker-java-core:3.2.11') {
+        exclude(group: 'com.github.docker-java', module: 'docker-java-api')
+        exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
+        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
         exclude(group: 'com.google.code.findbug')
         exclude(group: 'org.slf4j')
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded "org.yaml:snakeyaml:1.25"
-
-    shaded 'com.squareup.okhttp3:okhttp:3.14.8'
-
-    shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
-
-    shaded 'org.zeroturnaround:zt-exec:1.10', {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.11') {
+        exclude(group: 'com.github.docker-java', module: 'docker-java-core')
+        exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
 
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.9'
-    testCompile 'redis.clients:jedis:3.3.0'
-    testCompile 'com.rabbitmq:amqp-client:5.9.0'
-    testCompile 'org.mongodb:mongo-java-driver:3.12.4'
+    api 'com.github.docker-java:docker-java-transport-zerodep:3.2.11'
 
-    testCompile ('org.mockito:mockito-core:3.3.3') {
+    shaded "org.yaml:snakeyaml:1.29"
+
+    shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
+
+    shaded 'org.zeroturnaround:zt-exec:1.12', {
+        exclude(group: 'org.slf4j')
+    }
+
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
+    testImplementation 'redis.clients:jedis:3.6.3'
+    testImplementation 'com.rabbitmq:amqp-client:5.12.0'
+    testImplementation 'org.mongodb:mongo-java-driver:3.12.9'
+
+    testImplementation ('org.mockito:mockito-core:3.11.2') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
-    testCompile files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
+    testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testCompile 'org.assertj:assertj-core:3.16.1'
-    testCompile project(':test-support')
+    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    testImplementation 'org.assertj:assertj-core:3.20.2'
+    testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestCompile 'junit:junit:4.12'
-    jarFileTestCompile 'org.assertj:assertj-core:3.16.0'
-    jarFileTestCompile 'org.ow2.asm:asm-debug-all:5.2'
+    jarFileTestImplementation 'junit:junit:4.12'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.20.2'
+    jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
+
+tasks.generatePomFileForMavenJavaPublication.finalizedBy(
+    tasks.register('checkPOMdependencies', org.testcontainers.build.ComparePOMWithLatestReleasedTask) {
+        ignore = [
+        ]
+    }
+)

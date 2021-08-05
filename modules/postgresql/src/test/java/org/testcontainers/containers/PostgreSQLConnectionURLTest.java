@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.junit.Test;
+import org.testcontainers.PostgreSQLTestImages;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
@@ -15,7 +16,7 @@ public class PostgreSQLConnectionURLTest {
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
-        assertTrue("Query String contains expected params", queryString.contains("&stringtype=unspecified&stringtype=unspecified"));
+        assertTrue("Query String contains expected params", queryString.contains("?stringtype=unspecified&stringtype=unspecified"));
         assertEquals("Query String starts with '?'", 0, queryString.indexOf('?'));
         assertFalse("Query String does not contain extra '?'", queryString.substring(1).contains("?"));
     }
@@ -46,6 +47,9 @@ public class PostgreSQLConnectionURLTest {
     }
 
     static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+        public FixedJdbcUrlPostgreSQLContainer() {
+            super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
+        }
 
         @Override
         public String getHost() {
@@ -59,6 +63,9 @@ public class PostgreSQLConnectionURLTest {
     }
 
     static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+        public NoParamsUrlPostgreSQLContainer() {
+            super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
+        }
 
         @Override
         public String getJdbcUrl() {

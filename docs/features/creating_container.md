@@ -12,8 +12,22 @@ images as temporary test dependencies. For example, if you might use it to test 
 
 With a generic container, you set the container image using a parameter to the rule constructor, e.g.:
 ```java
-new GenericContainer("jboss/wildfly:9.0.1.Final")
+new GenericContainer(DockerImageName.parse("jboss/wildfly:9.0.1.Final"))
 ```
+
+### Specifying an image
+
+Many Container classes in Testcontainers have historically supported: 
+
+* a no-args constructor - for example `new GenericContainer()` and `new ElasticsearchContainer()`. With these constructors, Testcontainers has traditionally used a default image name (including a fixed image tag/version). This has caused a conflict between the need to keep the defaults sane (i.e. up to date) and the need to avoid silently upgrading these dependencies along with new versions of Testcontainers. 
+* a single string-argument constructor, which has taken either a version or an image name as a String. This has caused some ambiguity and confusion.
+
+Since v1.15.0, both of these constructor types have been deprecated, for the reasons given above.
+
+Instead, it is highly recommended that _all containers_ be constructed using a constructor that accepts a `DockerImageName` object.
+The `DockerImageName` class is an unambiguous reference to a docker image.
+
+It is suggested that developers treat `DockerImageName`s as you would any other potentially-constant value - consider defining a constant in your test codebase that matches the production version of the dependency you are using.
 
 ### Examples
 

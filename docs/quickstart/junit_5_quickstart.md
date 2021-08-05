@@ -23,11 +23,11 @@ First, add Testcontainers as a dependency as follows:
 
 ```groovy tab='Gradle'
 def junitJupiterVersion = '5.4.2'
-testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
+testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+testImplementation "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
 testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
-testCompile "org.testcontainers:testcontainers:{{latest_version}}"
-testCompile "org.testcontainers:junit-jupiter:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

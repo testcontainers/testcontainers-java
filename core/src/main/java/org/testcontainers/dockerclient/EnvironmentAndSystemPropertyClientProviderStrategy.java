@@ -1,29 +1,56 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.SystemUtils;
+import com.github.dockerjava.core.DockerClientConfig;
+import org.testcontainers.utility.TestcontainersConfiguration;
+
+import java.util.Optional;
 
 /**
  * Use environment variables and system properties (as supported by the underlying DockerClient DefaultConfigBuilder)
  * to try and locate a docker environment.
+ * <p>
+ * Resolution order is:
+ * <ol>
+ *     <li>DOCKER_HOST env var</li>
+ *     <li>docker.host in ~/.testcontainers.properties</li>
+ * </ol>
+ *
+ * @deprecated this class is used by the SPI and should not be used directly
  */
-@Slf4j
-public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerClientProviderStrategy {
+@Deprecated
+public final class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerClientProviderStrategy {
 
     public static final int PRIORITY = 100;
 
-    private static final String PING_TIMEOUT_DEFAULT = "10";
-    private static final String PING_TIMEOUT_PROPERTY_NAME = "testcontainers.environmentprovider.timeout";
+    private final DockerClientConfig dockerClientConfig;
 
     public EnvironmentAndSystemPropertyClientProviderStrategy() {
-        // Try using environment variables
-        config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+        // use docker-java defaults if present, overridden if our own configuration is set
+        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+
+        getSetting("docker.host").ifPresent(configBuilder::withDockerHost);
+        getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+        getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+
+        dockerClientConfig = configBuilder.build();
+    }
+
+    private Optional<String> getSetting(final String name) {
+        return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(name, null));
     }
 
     @Override
     protected boolean isApplicable() {
-        return "tcp".equalsIgnoreCase(config.getDockerHost().getScheme()) || SystemUtils.IS_OS_LINUX;
+        return getSetting("docker.host").isPresent();
+    }
+
+    @Override
+    public TransportConfig getTransportConfig() {
+        return TransportConfig.builder()
+            .dockerHost(dockerClientConfig.getDockerHost())
+            .sslConfig(dockerClientConfig.getSSLConfig())
+            .build();
     }
 
     @Override
@@ -32,24 +59,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategy extends DockerCl
     }
 
     @Override
-    public void test() throws InvalidConfigurationException {
-
-        try {
-            client = getClientForConfig(config);
-
-            final int timeout = Integer.parseInt(System.getProperty(PING_TIMEOUT_PROPERTY_NAME, PING_TIMEOUT_DEFAULT));
-            ping(client, timeout);
-        } catch (Exception | UnsatisfiedLinkError e) {
-            log.error("ping failed with configuration {} due to {}", getDescription(), e.toString(), e);
-            throw new InvalidConfigurationException("ping failed");
-        }
-
-        log.info("Found docker client settings from environment");
-    }
-
-    @Override
     public String getDescription() {
-        return "Environment variables, system properties and defaults. Resolved dockerHost=" +
-            (config != null ? config.getDockerHost() : "");
+        return "Environment variables, system properties and defaults. Resolved dockerHost=" + dockerClientConfig.getDockerHost();
     }
 }

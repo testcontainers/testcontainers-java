@@ -10,7 +10,8 @@ Running MS SQL Server as a stand-in for in a test:
 public class SomeTest {
 
     @Rule
-    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer();
+    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
+        .acceptLicense();
     
     @Test
     public void someTestMethod() {
@@ -20,7 +21,7 @@ public class SomeTest {
 ```
 
 !!! warning "EULA Acceptance"
-    Due to licencing restrictions you are required to accept an EULA for this container image. To indicate that you accept the MS SQL Server image EULA, Please place a file at the root of the classpath named `container-license-acceptance.txt`, e.g. at `src/test/resources/container-license-acceptance.txt`. This file should contain the line: `mcr.microsoft.com/mssql/server:2017-CU12` (or, if you are overriding the docker image name/tag, update accordingly).
+    Due to licencing restrictions you are required to accept an EULA for this container image. To indicate that you accept the MS SQL Server image EULA, call the `acceptLicense()` method, or place a file at the root of the classpath named `container-license-acceptance.txt`, e.g. at `src/test/resources/container-license-acceptance.txt`. This file should contain the line: `mcr.microsoft.com/mssql/server:2017-CU12` (or, if you are overriding the docker image name/tag, update accordingly).
     
     Please see the [`microsoft-mssql-server` image documentation](https://hub.docker.com/_/microsoft-mssql-server#environment-variables) for a link to the EULA document.
 
@@ -29,7 +30,7 @@ public class SomeTest {
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:mssqlserver:{{latest_version}}"
+testImplementation "org.testcontainers:mssqlserver:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

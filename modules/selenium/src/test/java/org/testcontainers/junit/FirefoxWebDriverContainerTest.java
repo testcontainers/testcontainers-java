@@ -11,18 +11,16 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
  */
 public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
 
+    // junitRule {
     @Rule
-    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer()
-            .withCapabilities(new FirefoxOptions());
+    public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>()
+            .withCapabilities(new FirefoxOptions())
+    // }
+        .withNetwork(NETWORK);
 
     @Before
     public void checkBrowserIsIndeedFirefox() {
         assertBrowserNameIs(firefox, "firefox");
-    }
-
-    @Test
-    public void simpleTest() {
-        doSimpleWebdriverTest(firefox);
     }
 
     @Test

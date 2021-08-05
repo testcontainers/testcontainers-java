@@ -1,7 +1,10 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -21,8 +24,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     private String password = "oracle";
 
     private static String resolveImageName() {
-        String image = TestcontainersConfiguration.getInstance()
-            .getProperties().getProperty("oracle.container.image");
+        String image = TestcontainersConfiguration.getInstance().getOracleImage();
 
         if (image == null) {
             throw new IllegalStateException("An image to use for Oracle containers must be configured. " +
@@ -32,11 +34,19 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return image;
     }
 
+    /**
+     * @deprecated use {@link OracleContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public OracleContainer() {
         this(resolveImageName());
     }
 
     public OracleContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         preconfigure();
     }
@@ -53,8 +63,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(ORACLE_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(ORACLE_PORT);
     }
 
     @Override
@@ -87,6 +97,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     public OracleContainer withPassword(String password) {
         this.password = password;
         return self();
+    }
+
+    @Override
+    public OracleContainer withUrlParam(String paramName, String paramValue) {
+        throw new UnsupportedOperationException("The OracleDb does not support this");
     }
 
     @SuppressWarnings("SameReturnValue")

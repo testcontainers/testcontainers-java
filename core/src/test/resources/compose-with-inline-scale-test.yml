@@ -1,0 +1,5 @@
+version: '2.4'
+services:
+  redis:
+    image: redis
+    scale: 3      # legacy mechanism to specify scale

@@ -9,8 +9,11 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
+import static org.testcontainers.PostgreSQLTestImages.POSTGRES_TEST_IMAGE;
 
 public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
@@ -21,7 +24,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>()) {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE)) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT 1");
@@ -32,7 +35,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testCommandOverride() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42")) {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE).withCommand("postgres -c max_connections=42")) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
@@ -43,7 +46,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testUnsetCommand() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>().withCommand("postgres -c max_connections=42").withCommand()) {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE).withCommand("postgres -c max_connections=42").withCommand()) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
@@ -54,13 +57,26 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>().withInitScript("somepath/init_postgresql.sql")) {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE).withInitScript("somepath/init_postgresql.sql")) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
+    @Test
+    public void testWithAdditionalUrlParamInJdbcUrl() {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE)
+            .withUrlParam("charSet", "UNICODE")) {
+
+            postgres.start();
+            String jdbcUrl = postgres.getJdbcUrl();
+            assertThat(jdbcUrl, containsString("?"));
+            assertThat(jdbcUrl, containsString("&"));
+            assertThat(jdbcUrl, containsString("charSet=UNICODE"));
         }
     }
 }

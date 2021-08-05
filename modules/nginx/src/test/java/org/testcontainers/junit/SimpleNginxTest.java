@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.*;
 import java.net.URL;
@@ -19,11 +20,13 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
  */
 public class SimpleNginxTest {
 
+    private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.9.4");
+
     private static String tmpDirectory = System.getProperty("user.home") + "/.tmp-test-container";
 
     // creatingContainer {
     @Rule
-    public NginxContainer nginx = new NginxContainer<>()
+    public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
         .withCustomContent(tmpDirectory)
         .waitingFor(new HttpWaitStrategy());
     // }

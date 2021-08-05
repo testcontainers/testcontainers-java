@@ -1,8 +1,5 @@
 package org.testcontainers.junit;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -15,6 +12,10 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.testcontainers.TestImages.TINY_IMAGE;
+
 /**
  * Test of {@link FixedHostPortGenericContainer}. Note that this is not an example of typical use (usually, a container
  * should be a field on the test class annotated with @Rule or @TestRule). Instead, here, the lifecycle of the container
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class FixedHostPortContainerTest {
 
-    private static final String TEST_IMAGE = "alpine:3.2";
+    private static final String TEST_IMAGE = "alpine:3.14";
 
     /**
      * Default http server port (just something different from default)
@@ -46,7 +47,7 @@ public class FixedHostPortContainerTest {
         // first find a free port on the docker host that will work for testing
         final Integer unusedHostPort;
         try (
-            final GenericContainer echoServer = new GenericContainer<>(TEST_IMAGE)
+            final GenericContainer echoServer = new GenericContainer(TINY_IMAGE)
                 .withExposedPorts(TEST_PORT)
                 .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
         ) {

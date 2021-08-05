@@ -8,15 +8,6 @@ jobs:
     - run:
         command: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
     - run:
-        name: aggregate test reports with ciMate
-        when: always
-        environment:
-          CIMATE_PROJECT_ID: 2348n4vl
-        command: |
-          wget -q https://get.cimate.io/release/linux/cimate
-          chmod +x cimate
-          ./cimate "**/TEST-*.xml"
-    - run:
         name: Save test results
         command: |
           mkdir -p ~/junit/
