@@ -66,5 +66,5 @@ testImplementation "org.testcontainers:influxdb:{{latest_version}}"
 </dependency>
 ```
 
-**Hint:** Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You
-should ensure that your project also has a suitable database driver as a dependency.
+!!! hint
+    Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency.
