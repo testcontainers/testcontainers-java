@@ -8,8 +8,7 @@ ext {
 dependencies {
     compile project(':testcontainers')
 
-    compileOnly group: 'org.influxdb', name: 'influxdb-java', version: "${influxdbV1ClientVersion}"
-    testCompile group: 'org.influxdb', name: 'influxdb-java', version: "${influxdbV1ClientVersion}"
+    implementation group: 'org.influxdb', name: 'influxdb-java', version: "${influxdbV1ClientVersion}"
 
     compileOnly group:'com.influxdb', name:'influxdb-client-java', version:"${influxdbV2ClientVersion}"
     testCompile group:'com.influxdb', name:'influxdb-client-java', version:"${influxdbV2ClientVersion}"
