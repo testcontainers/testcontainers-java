@@ -35,6 +35,14 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
      */
     @Deprecated
+    public InfluxDBContainerV1() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
+
+    /**
+     * @deprecated use {@link InfluxDBContainerV1(DockerImageName)} instead
+     */
+    @Deprecated
     public InfluxDBContainerV1(final String version) {
         this(DEFAULT_IMAGE_NAME.withTag(version));
     }
@@ -75,9 +83,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * @param authEnabled Enables authentication.
      * @return a reference to this container instance
      */
-    public SELF withAuthEnabled(final boolean authEnabled) {
+    public InfluxDBContainerV1 withAuthEnabled(final boolean authEnabled) {
         this.authEnabled = authEnabled;
-        return this.self();
+        return this;
     }
 
     /**
@@ -86,9 +94,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * @param admin The name of the admin user to be created. If this is unset, no admin user is created.
      * @return a reference to this container instance
      */
-    public SELF withAdmin(final String admin) {
+    public InfluxDBContainerV1 withAdmin(final String admin) {
         this.admin = admin;
-        return this.self();
+        return this;
     }
 
     /**
@@ -98,9 +106,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * random password is generated and printed to standard out.
      * @return a reference to this container instance
      */
-    public SELF withAdminPassword(final String adminPassword) {
+    public InfluxDBContainerV1 withAdminPassword(final String adminPassword) {
         this.adminPassword = adminPassword;
-        return this.self();
+        return this;
     }
 
     /**
@@ -109,9 +117,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * @param database Automatically initializes a database with the name of this environment variable.
      * @return a reference to this container instance
      */
-    public SELF withDatabase(final String database) {
+    public InfluxDBContainerV1 withDatabase(final String database) {
         this.database = database;
-        return this.self();
+        return this;
     }
 
     /**
@@ -121,9 +129,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * granted read and write permissions for that database.
      * @return a reference to this container instance
      */
-    public SELF withUsername(final String username) {
+    public InfluxDBContainerV1 withUsername(final String username) {
         this.username = username;
-        return this.self();
+        return this;
     }
 
     /**
@@ -133,9 +141,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * generated and printed to standard out.
      * @return a reference to this container instance
      */
-    public SELF withPassword(final String password) {
+    public InfluxDBContainerV1 withPassword(final String password) {
         this.password = password;
-        return this.self();
+        return this;
     }
 
 

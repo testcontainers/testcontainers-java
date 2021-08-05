@@ -1,9 +1,5 @@
 package org.testcontainers.containers;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.domain.HealthCheck.StatusEnum;
 import org.junit.After;
@@ -11,13 +7,17 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
 public class InfluxDBContainerV2Test {
 
     private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE.getVersionPart();
 
     @ClassRule
-    public static final InfluxDBContainerV2<?> influxDBContainerV2 =
-        new InfluxDBContainerV2<>(InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE);
+    public static final InfluxDBContainerV2 influxDBContainerV2 =
+        new InfluxDBContainerV2(InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE);
 
     private InfluxDBClient client = null;
 

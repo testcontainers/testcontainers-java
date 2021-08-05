@@ -7,7 +7,7 @@ import org.testcontainers.utility.DockerImageName;
  * InfluxDBContainerV2#InfluxDBContainerV2(DockerImageName)} for InfluxDB 2.x instead
  */
 @Deprecated
-public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends InfluxDBContainerV1<SELF> {
+public class InfluxDBContainer extends InfluxDBContainerV1 {
     public InfluxDBContainer() {
         super();
     }

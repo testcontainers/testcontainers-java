@@ -1,11 +1,5 @@
 package org.testcontainers.containers;
 
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-
 import java.util.concurrent.TimeUnit;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
@@ -13,6 +7,12 @@ import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class InfluxDBContainerV1WithUserTest {
 
@@ -22,7 +22,7 @@ public class InfluxDBContainerV1WithUserTest {
     private static final String PASSWORD = "test-password";
 
     @Rule
-    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE)
+    public InfluxDBContainerV1 influxDBContainer = new InfluxDBContainer(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE)
         .withDatabase(DATABASE)
         .withUsername(USER)
         .withPassword(PASSWORD);
