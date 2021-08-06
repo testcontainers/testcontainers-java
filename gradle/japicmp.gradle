@@ -1,0 +1,29 @@
+configurations {
+    baseline
+}
+
+dependencies {
+    baseline "org.testcontainers:${project.name}:1.16.0", {
+        exclude group: "*", module: "*"
+    }
+}
+
+tasks.japicmp {
+    dependsOn(tasks.shadowJar)
+
+    oldClasspath = configurations.baseline
+    newClasspath = shadowJar.outputs.files
+    ignoreMissingClasses = true
+
+    accessModifier = "protected"
+    failOnModification = true
+    failOnSourceIncompatibility = true
+
+    onlyBinaryIncompatibleModified = true
+    htmlOutputFile = file("$buildDir/reports/japi.html")
+}
+// do not run on Windows by default
+// TODO investigate zip issue on Windows
+if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+    project.tasks.check.dependsOn(japicmp)
+}
