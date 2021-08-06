@@ -38,8 +38,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Inf
      */
     @Override
     public SELF withAuthEnabled(final boolean authEnabled) {
-        this.authEnabled = authEnabled;
-        return this.self();
+        return (SELF) this;
     }
 
     /**
@@ -50,8 +49,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Inf
      */
     @Override
     public SELF withAdmin(final String admin) {
-        this.admin = admin;
-        return this.self();
+        return (SELF) this;
     }
 
     /**
@@ -63,8 +61,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Inf
      */
     @Override
     public SELF withAdminPassword(final String adminPassword) {
-        this.adminPassword = adminPassword;
-        return this.self();
+        return (SELF) this;
     }
 
     /**
@@ -75,8 +72,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Inf
      */
     @Override
     public SELF withDatabase(final String database) {
-        this.database = database;
-        return this.self();
+        return (SELF) this;
     }
 
     /**
@@ -88,8 +84,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Inf
      */
     @Override
     public SELF withUsername(final String username) {
-        this.username = username;
-        return this.self();
+        return (SELF) this;
     }
 
     /**
@@ -101,7 +96,6 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Inf
      */
     @Override
     public SELF withPassword(final String password) {
-        this.password = password;
-        return this.self();
+        return (SELF) this;
     }
 }

@@ -24,13 +24,13 @@ class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends Generi
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
 
-    protected boolean authEnabled = true;
-    protected String admin = "admin";
-    protected String adminPassword = "password";
+    private boolean authEnabled = true;
+    private String admin = "admin";
+    private String adminPassword = "password";
 
-    protected String database;
-    protected String username = "any";
-    protected String password = "any";
+    private String database;
+    private String username = "any";
+    private String password = "any";
 
     InfluxDBContainerV1(final DockerImageName dockerImageName) {
         super(dockerImageName);
