@@ -12,26 +12,27 @@ import java.util.Set;
 /**
  * See <a href="https://store.docker.com/images/influxdb">https://store.docker.com/images/influxdb</a>
  */
-public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
+class InfluxDBContainerV1<SELF extends InfluxDBContainerV1<SELF>> extends GenericContainer<SELF> {
 
-    private static final Integer INFLUXDB_PORT = 8086;
+    public static final Integer INFLUXDB_PORT = 8086;
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
     private static final String DEFAULT_TAG = "1.4.3";
 
     private static final int NO_CONTENT_STATUS_CODE = 204;
 
-    static final String VERSION = DEFAULT_TAG;
+    @Deprecated
+    public static final String VERSION = DEFAULT_TAG;
 
-    private boolean authEnabled = true;
-    private String admin = "admin";
-    private String adminPassword = "password";
+    protected boolean authEnabled = true;
+    protected String admin = "admin";
+    protected String adminPassword = "password";
 
-    private String database;
-    private String username = "any";
-    private String password = "any";
+    protected String database;
+    protected String username = "any";
+    protected String password = "any";
 
-    public InfluxDBContainerV1(final DockerImageName dockerImageName) {
+    InfluxDBContainerV1(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
@@ -61,15 +62,16 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
         return Collections.singleton(this.getMappedPort(INFLUXDB_PORT));
     }
 
+
     /**
      * Set env variable `INFLUXDB_HTTP_AUTH_ENABLED`.
      *
      * @param authEnabled Enables authentication.
      * @return a reference to this container instance
      */
-    public InfluxDBContainerV1 withAuthEnabled(final boolean authEnabled) {
+    public SELF withAuthEnabled(final boolean authEnabled) {
         this.authEnabled = authEnabled;
-        return this;
+        return this.self();
     }
 
     /**
@@ -78,9 +80,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * @param admin The name of the admin user to be created. If this is unset, no admin user is created.
      * @return a reference to this container instance
      */
-    public InfluxDBContainerV1 withAdmin(final String admin) {
+    public SELF withAdmin(final String admin) {
         this.admin = admin;
-        return this;
+        return this.self();
     }
 
     /**
@@ -90,9 +92,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * random password is generated and printed to standard out.
      * @return a reference to this container instance
      */
-    public InfluxDBContainerV1 withAdminPassword(final String adminPassword) {
+    public SELF withAdminPassword(final String adminPassword) {
         this.adminPassword = adminPassword;
-        return this;
+        return this.self();
     }
 
     /**
@@ -101,9 +103,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * @param database Automatically initializes a database with the name of this environment variable.
      * @return a reference to this container instance
      */
-    public InfluxDBContainerV1 withDatabase(final String database) {
+    public SELF withDatabase(final String database) {
         this.database = database;
-        return this;
+        return this.self();
     }
 
     /**
@@ -113,9 +115,9 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * granted read and write permissions for that database.
      * @return a reference to this container instance
      */
-    public InfluxDBContainerV1 withUsername(final String username) {
+    public SELF withUsername(final String username) {
         this.username = username;
-        return this;
+        return this.self();
     }
 
     /**
@@ -125,11 +127,10 @@ public class InfluxDBContainerV1 extends GenericContainer<InfluxDBContainerV1> {
      * generated and printed to standard out.
      * @return a reference to this container instance
      */
-    public InfluxDBContainerV1 withPassword(final String password) {
+    public SELF withPassword(final String password) {
         this.password = password;
-        return this;
+        return this.self();
     }
-
 
     /**
      * @return a url to influxDb

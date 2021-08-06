@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
  * @deprecated instead use {@link InfluxDBContainerV1} for InfluxDB 1.x or {@link InfluxDBContainerV2} for InfluxDB 2.x instead
  */
 @Deprecated
-public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends InfluxDBContainerV1 {
+public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends InfluxDBContainerV1<SELF> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
     private static final String DEFAULT_TAG = "1.4.3";
 
@@ -28,5 +28,80 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Inf
 
     public InfluxDBContainer(final DockerImageName influxdbTestImage) {
         super(influxdbTestImage);
+    }
+
+    /**
+     * Set env variable `INFLUXDB_HTTP_AUTH_ENABLED`.
+     *
+     * @param authEnabled Enables authentication.
+     * @return a reference to this container instance
+     */
+    @Override
+    public SELF withAuthEnabled(final boolean authEnabled) {
+        this.authEnabled = authEnabled;
+        return this.self();
+    }
+
+    /**
+     * Set env variable `INFLUXDB_ADMIN_USER`.
+     *
+     * @param admin The name of the admin user to be created. If this is unset, no admin user is created.
+     * @return a reference to this container instance
+     */
+    @Override
+    public SELF withAdmin(final String admin) {
+        this.admin = admin;
+        return this.self();
+    }
+
+    /**
+     * Set env variable `INFLUXDB_ADMIN_PASSWORD`.
+     *
+     * @param adminPassword TThe password for the admin user configured with `INFLUXDB_ADMIN_USER`. If this is unset, a
+     * random password is generated and printed to standard out.
+     * @return a reference to this container instance
+     */
+    @Override
+    public SELF withAdminPassword(final String adminPassword) {
+        this.adminPassword = adminPassword;
+        return this.self();
+    }
+
+    /**
+     * Set env variable `INFLUXDB_DB`.
+     *
+     * @param database Automatically initializes a database with the name of this environment variable.
+     * @return a reference to this container instance
+     */
+    @Override
+    public SELF withDatabase(final String database) {
+        this.database = database;
+        return this.self();
+    }
+
+    /**
+     * Set env variable `INFLUXDB_USER`.
+     *
+     * @param username The name of a user to be created with no privileges. If `INFLUXDB_DB` is set, this user will be
+     * granted read and write permissions for that database.
+     * @return a reference to this container instance
+     */
+    @Override
+    public SELF withUsername(final String username) {
+        this.username = username;
+        return this.self();
+    }
+
+    /**
+     * Set env variable `INFLUXDB_USER_PASSWORD`.
+     *
+     * @param password The password for the user configured with `INFLUXDB_USER`. If this is unset, a random password is
+     * generated and printed to standard out.
+     * @return a reference to this container instance
+     */
+    @Override
+    public SELF withPassword(final String password) {
+        this.password = password;
+        return this.self();
     }
 }
