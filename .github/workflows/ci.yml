@@ -9,15 +9,14 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
-  set_thundra_testrun_id:
+  thundra_test_initializer:
     runs-on: ubuntu-latest
     outputs:
-      thundra_agent_testrun_id: ${{ steps.thundra_testrun_id.outputs.thundra_agent_testrun_id }}
+      thundra_agent_testrun_id: ${{ steps.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
     steps:
       - uses: actions/checkout@v2
-      - id: thundra_testrun_id
-        run: |
-          echo "::set-output name=thundra_agent_testrun_id::$(openssl rand -hex 12)"
+      - id: thundra_test_initializer
+        uses: thundra-io/thundra-test-init-action@v1
   find_gradle_jobs:
     runs-on: ubuntu-18.04
     outputs:
@@ -43,7 +42,7 @@ jobs:
           echo $TASKS
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
-    needs: [find_gradle_jobs, set_thundra_testrun_id]
+    needs: [find_gradle_jobs, thundra_test_initializer]
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
@@ -73,7 +72,7 @@ jobs:
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} \
             $($THUNDRA_GRADLE_INIT_SCRIPT_PATH || echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
         env:
-          THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.set_thundra_testrun_id.outputs.thundra_agent_testrun_id }}
+          THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
           THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.us/v1
   httpclient5_test:
     runs-on: ubuntu-18.04
