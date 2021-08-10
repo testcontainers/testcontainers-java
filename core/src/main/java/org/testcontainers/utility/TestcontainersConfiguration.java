@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,6 +60,7 @@ public class TestcontainersConfiguration {
     private static final String PULSAR_IMAGE = "apachepulsar/pulsar";
     private static final String LOCALSTACK_IMAGE = "localstack/localstack";
     private static final String SSHD_IMAGE = "testcontainers/sshd";
+    private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
 
     private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap.<DockerImageName, String>builder()
         .put(DockerImageName.parse(AMBASSADOR_IMAGE), "ambassador.container.image")
@@ -73,6 +73,7 @@ public class TestcontainersConfiguration {
         .put(DockerImageName.parse(PULSAR_IMAGE), "pulsar.container.image")
         .put(DockerImageName.parse(LOCALSTACK_IMAGE), "localstack.container.image")
         .put(DockerImageName.parse(SSHD_IMAGE), "sshd.container.image")
+        .put(DockerImageName.parse(ORACLE_IMAGE), "oracle.container.image")
         .build();
 
     @Getter(lazy = true)
@@ -146,7 +147,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getOracleImage() {
-        return getEnvVarOrProperty("oracle.container.image", null);
+        return getImage(ORACLE_IMAGE).asCanonicalNameString();
     }
 
     @Deprecated

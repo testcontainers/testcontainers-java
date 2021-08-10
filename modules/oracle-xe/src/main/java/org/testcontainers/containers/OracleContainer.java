@@ -1,45 +1,40 @@
 package org.testcontainers.containers;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-/**
- * @author gusohal
- */
-public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
+public class OracleContainer<SELF extends OracleContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "oracle";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
+
+    @Deprecated
+    public static final String DEFAULT_TAG = "18.4.0";
+    @Deprecated
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
+    private static final List<String> ORACLE_SYSTEM_USERS = Arrays.asList("system", "sys");
 
-    private String username = "system";
-    private String password = "oracle";
-
-    private static String resolveImageName() {
-        String image = TestcontainersConfiguration.getInstance().getOracleImage();
-
-        if (image == null) {
-            throw new IllegalStateException("An image to use for Oracle containers must be configured. " +
-                "To do this, please place a file on the classpath named `testcontainers.properties`, " +
-                "containing `oracle.container.image=IMAGE`, where IMAGE is a suitable image name and tag.");
-        }
-        return image;
-    }
+    private String username = "test";
+    private String password = "test";
 
     /**
      * @deprecated use {@link OracleContainer(DockerImageName)} instead
      */
     @Deprecated
     public OracleContainer() {
-        this(resolveImageName());
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public OracleContainer(String dockerImageName) {
@@ -74,7 +69,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + ":" + getSid();
+        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + "/xepdb1";
     }
 
     @Override
@@ -88,19 +83,28 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
-    public OracleContainer withUsername(String username) {
+    public SELF withUsername(String username) {
+        if (StringUtils.isEmpty(username)) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
+        }
+        if (ORACLE_SYSTEM_USERS.contains(username.toLowerCase())) {
+            throw new IllegalArgumentException("Username cannot be one of " + ORACLE_SYSTEM_USERS);
+        }
         this.username = username;
         return self();
     }
 
     @Override
-    public OracleContainer withPassword(String password) {
+    public SELF withPassword(String password) {
+        if (StringUtils.isEmpty(password)) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
         this.password = password;
         return self();
     }
 
     @Override
-    public OracleContainer withUrlParam(String paramName, String paramValue) {
+    public SELF withUrlParam(String paramName, String paramValue) {
         throw new UnsupportedOperationException("The OracleDb does not support this");
     }
 
@@ -121,5 +125,12 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @Override
     public String getTestQueryString() {
         return "SELECT 1 FROM DUAL";
+    }
+
+    @Override
+    protected void configure() {
+        addEnv("ORACLE_PASSWORD", password);
+        addEnv("APP_USER", username);
+        addEnv("APP_USER_PASSWORD", password);
     }
 }
