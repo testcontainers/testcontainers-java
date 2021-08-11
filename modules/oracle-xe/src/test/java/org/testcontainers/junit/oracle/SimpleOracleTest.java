@@ -12,7 +12,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
-    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe:18.4.0");
+    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe:18.4.0-slim");
 
     @Test
     public void testSimple() throws SQLException {

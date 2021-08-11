@@ -15,7 +15,7 @@ public class OracleContainer<SELF extends OracleContainer<SELF>> extends JdbcDat
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
 
     @Deprecated
-    public static final String DEFAULT_TAG = "18.4.0";
+    public static final String DEFAULT_TAG = "18.4.0-slim";
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
