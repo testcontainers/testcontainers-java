@@ -69,6 +69,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -110,7 +111,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         extends FailureDetectingExternalResource
         implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
-    private static final Charset UTF8 = Charset.forName("UTF-8");
+    private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
@@ -139,8 +140,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Network network;
 
     @NonNull
-    private List<String> networkAliases = new ArrayList<>(Arrays.asList(
-            "tc-" + Base58.randomString(8)
+    private List<String> networkAliases = new ArrayList<>(Collections.singletonList(
+        "tc-" + Base58.randomString(8)
     ));
 
     @NonNull
@@ -213,7 +214,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     protected org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
 
-    private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
+    private Set<Consumer<OutputFrame>> logConsumers = new LinkedHashSet<>();
 
     private final Set<Consumer<CreateContainerCmd>> createContainerCmdModifiers = new LinkedHashSet<>();
 
@@ -545,9 +546,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         checksum.update(MountableFile.getUnixFileMode(path));
         if (file.isDirectory()) {
             try (Stream<Path> stream = Files.walk(path)) {
-                stream.filter(it -> it != path).forEach(it -> {
-                    checksumFile(it.toFile(), checksum);
-                });
+                stream.filter(it -> it != path).forEach(it -> checksumFile(it.toFile(), checksum));
             }
         } else {
             FileUtils.checksum(file, checksum);
@@ -575,11 +574,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return dockerClient.listContainersCmd()
             .withLabelFilter(ImmutableMap.of(HASH_LABEL, hash))
             .withLimit(1)
-            .withStatusFilter(Arrays.asList("running"))
+            .withStatusFilter(Collections.singletonList("running"))
             .exec()
             .stream()
             .findAny()
-            .map(it -> it.getId());
+            .map(com.github.dockerjava.api.model.Container::getId);
     }
 
     /**
@@ -651,9 +650,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
         PathUtils.mkdirp(directory);
 
-        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-            PathUtils.recursiveDeleteDir(directory);
-        }));
+        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> PathUtils.recursiveDeleteDir(directory)));
 
         return directory;
     }
@@ -789,12 +786,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         }
 
-        Bind[] bindsArray = binds.stream()
-                .toArray(Bind[]::new);
+        Bind[] bindsArray = binds.toArray(new Bind[0]);
         createCommand.withBinds(bindsArray);
 
-        VolumesFrom[] volumesFromsArray = volumesFroms.stream()
-                .toArray(VolumesFrom[]::new);
+        VolumesFrom[] volumesFromsArray = volumesFroms.toArray(new VolumesFrom[0]);
         createCommand.withVolumesFrom(volumesFromsArray);
 
         Set<Link> allLinks = new HashSet<>();
@@ -817,7 +812,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             allLinkedContainerNetworks.addAll(linkedContainerNetworks);
         }
 
-        createCommand.withLinks(allLinks.toArray(new Link[allLinks.size()]));
+        createCommand.withLinks(allLinks.toArray(new Link[0]));
 
         allLinkedContainerNetworks.remove("bridge");
         if (allLinkedContainerNetworks.size() > 1) {
@@ -832,12 +827,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withNetworkMode(networkForLinks.get());
         }
 
-        PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
-            withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
-        });
+        PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress()));
 
-        String[] extraHostsArray = extraHosts.stream()
-                .toArray(String[]::new);
+        String[] extraHostsArray = extraHosts.toArray(new String[0]);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (network != null) {
@@ -857,8 +849,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
-        Map<String, String> combinedLabels = new HashMap<>();
-        combinedLabels.putAll(labels);
+        Map<String, String> combinedLabels = new HashMap<>(labels);
         if (createCommand.getLabels() != null) {
             combinedLabels.putAll(createCommand.getLabels());
         }
@@ -868,7 +859,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
         return dockerClient.listContainersCmd()
-                .withStatusFilter(Arrays.asList("running"))
+                .withStatusFilter(Collections.singletonList("running"))
                 .exec().stream()
                 .flatMap(container -> Stream.of(container.getNames()))
                 .filter(name -> name.endsWith(linkableContainer.getContainerName()))
@@ -882,7 +873,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .filter(container -> container.getNetworkSettings() != null &&
                         container.getNetworkSettings().getNetworks() != null)
                 .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
-                .distinct()
                 .collect(Collectors.toSet());
     }
 
@@ -901,12 +891,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @return the {@link WaitStrategy} to use
      */
+    @NonNull
     protected org.testcontainers.containers.wait.strategy.WaitStrategy getWaitStrategy() {
         return waitStrategy;
     }
 
     @Override
-    public void setWaitStrategy(org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
+    public void setWaitStrategy(@NotNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
         this.waitStrategy = waitStrategy;
     }
 
@@ -1001,12 +992,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public SELF withVolumesFrom(Container container, BindMode mode) {
+    public SELF withVolumesFrom(Container<?> container, BindMode mode) {
         addVolumesFrom(container, mode);
         return self();
     }
 
-    private void addVolumesFrom(Container container, BindMode mode) {
+    private void addVolumesFrom(Container<?> container, BindMode mode) {
         volumesFroms.add(new VolumesFrom(container.getContainerName(), mode.accessMode));
     }
 
@@ -1098,9 +1089,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Note that this method is protected scope to discourage use, as clashes or instability are more likely when
      * using fixed port mappings. If you need to use this method from a test, please use {@link FixedHostPortGenericContainer}
      * instead of GenericContainer.
-     *
-     * @param hostPort
-     * @param containerPort
      */
     protected void addFixedExposedPort(int hostPort, int containerPort) {
         addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
@@ -1112,10 +1100,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Note that this method is protected scope to discourage use, as clashes or instability are more likely when
      * using fixed port mappings. If you need to use this method from a test, please use {@link FixedHostPortGenericContainer}
      * instead of GenericContainer.
-     *
-     * @param hostPort
-     * @param containerPort
-     * @param protocol
      */
     protected void addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
         portBindings.add(String.format("%d:%d/%s", hostPort, containerPort, protocol.toDockerNotation()));
@@ -1354,8 +1338,26 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    public boolean hasLogConsumers() {
+        return !this.logConsumers.isEmpty();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public SELF withLogConsumer(Consumer<OutputFrame> consumer) {
         this.logConsumers.add(consumer);
+
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF clearLogConsumers() {
+        this.logConsumers.clear();
 
         return self();
     }

@@ -3,24 +3,24 @@ package org.testcontainers.containers.output;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 /**
- * A consumer for container output that logs output to an SLF4J logger.
+ * A consumer for container output that logs with SLF4J.
  */
-public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
-    private final Logger logger;
+public class Slf4jLogConsumer extends LogConsumer<Slf4jLogConsumer, Logger> {
     private final Map<String, String> mdc = new HashMap<>();
     private boolean separateOutputStreams;
     private String prefix = "";
 
-    public Slf4jLogConsumer(Logger logger) {
+    public Slf4jLogConsumer(@NonNull Logger logger) {
         this(logger, false);
     }
 
-    public Slf4jLogConsumer(Logger logger, boolean separateOutputStreams) {
-        this.logger = logger;
+    public Slf4jLogConsumer(@NonNull Logger logger, boolean separateOutputStreams, OutputFrame.OutputType... types) {
+        super(logger, types);
         this.separateOutputStreams = separateOutputStreams;
     }
 
@@ -45,7 +45,7 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
     }
 
     @Override
-    public void accept(OutputFrame outputFrame) {
+    public void log(OutputFrame outputFrame) {
         OutputFrame.OutputType outputType = outputFrame.getType();
 
         String utf8String = outputFrame.getUtf8String();

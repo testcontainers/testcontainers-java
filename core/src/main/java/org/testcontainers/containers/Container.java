@@ -7,11 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.images.ImagePullPolicy;
+import org.testcontainers.containers.output.BaseConsumer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -155,7 +156,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param mode the bind mode
      * @return this
      */
-    SELF withVolumesFrom(Container container, BindMode mode);
+    SELF withVolumesFrom(Container<?> container, BindMode mode);
 
     /**
      * Set the ports that this container listens on
@@ -272,7 +273,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Set the image pull policy of the container
-     * @return
+     * @return this
      */
     SELF withImagePullPolicy(ImagePullPolicy policy);
 
@@ -369,12 +370,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     String getTestHostIpAddress();
 
     /**
-     * Follow container output, sending each frame (usually, line) to a consumer. Stdout and stderr will be followed.
+     * Follow container output, sending each frame (usually, line) to a consumer. stdout and stderr will be followed by
+     * default, or if configured in BaseConsumer.
      *
      * @param consumer consumer that the frames should be sent to
      */
     default void followOutput(Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+        if (consumer instanceof BaseConsumer) {
+            LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer, ((BaseConsumer<?>) consumer).getTypes());
+        } else {
+            LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+        }
     }
 
     /**
@@ -390,14 +396,30 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
 
     /**
+     * @return have any log consumers been configured already?
+     */
+    default boolean hasLogConsumers() {
+        return false;
+    }
+
+    /**
      * Attach an output consumer at container startup, enabling stdout and stderr to be followed, waited on, etc.
      * <p>
-     * More than one consumer may be registered.
+     * More than one consumer may be registered, but the same consumer can only be added once.
      *
      * @param consumer consumer that output frames should be sent to
      * @return this
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
+
+    /**
+     * Remove all configured output consumers before startup.
+     * <p>
+     * Please note that this does not unregister all previous consumers after container startup.
+     *
+     * @return this
+     */
+    SELF clearLogConsumers();
 
     List<String> getPortBindings();
 
