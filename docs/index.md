@@ -173,6 +173,8 @@ A huge thank you to our sponsors:
 * [CloudBees](https://www.cloudbees.com/) - Integration testing of products, including but not limited to database and AWS/Localstack integration testing.
 * [Jenkins](https://www.jenkins.io/) - Integration testing of multiple plugins and the Trilead SSH2 fork maintained by the Jenkins community
   ([query](https://github.com/search?l=Maven+POM&q=org%3Ajenkinsci+testcontainers&type=Code)).
+* [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
+
 
 
 ## License
