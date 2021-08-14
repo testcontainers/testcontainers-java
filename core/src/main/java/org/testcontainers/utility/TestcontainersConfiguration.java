@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,6 +24,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -172,11 +174,31 @@ public class TestcontainersConfiguration {
         // Because of this overlap, and the desire to not change this specific TESTCONTAINERS_DOCKER_CLIENT_STRATEGY setting,
         // we special-case the logic here so that docker.client.strategy is used when reading properties files and
         // TESTCONTAINERS_DOCKER_CLIENT_STRATEGY is used when searching environment variables.
-        return getEnvVarOrUserProperty("docker.client.strategy", environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY"));
+
+        // looks for TESTCONTAINERS_ prefixed env var only
+        String prefixedEnvVarStrategy = environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY");
+        if (prefixedEnvVarStrategy != null) {
+            return prefixedEnvVarStrategy;
+        }
+
+        // looks for unprefixed env var or unprefixed property
+        String unprefixedEnvVarOrProperty = getEnvVarOrUserProperty("docker.client.strategy", null);
+        if (unprefixedEnvVarOrProperty != null) {
+            return unprefixedEnvVarOrProperty;
+        }
+
+        // If docker.host is set then EnvironmentAndSystemPropertyClientProviderStrategy is likely to work
+        String dockerHostProperty = getEnvVarOrUserProperty("docker.host", null);
+        if (dockerHostProperty != null) {
+            return EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName();
+        }
+
+        // No value set, and no implicit value to use either
+        return null;
     }
 
     public String getTransportType() {
-        return getEnvVarOrProperty("transport.type", "okhttp");
+        return getEnvVarOrProperty("transport.type", "httpclient5");
     }
 
     public Integer getImagePullPauseTimeout() {
@@ -283,8 +305,6 @@ public class TestcontainersConfiguration {
             if (value.equals(userProperties.get(prop))) {
                 return false;
             }
-
-            userProperties.setProperty(prop, value);
 
             USER_CONFIG_FILE.createNewFile();
             try (OutputStream outputStream = new FileOutputStream(USER_CONFIG_FILE)) {

@@ -4,6 +4,6 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.7.2'
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.18.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.20.2'
     testImplementation group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '2.7.2'
 }

@@ -20,7 +20,7 @@ public class ContainerCreationTest {
                 .withExposedPorts(6379);
     // }
 
-    public static final DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.2");
+    public static final DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.14");
 
     // withOptions {
     // Set up a plain OS container and customize environment,

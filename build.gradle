@@ -1,7 +1,18 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        // https://github.com/melix/japicmp-gradle-plugin/issues/36
+        classpath 'com.google.guava:guava:30.1.1-jre'
+    }
+}
+
 plugins {
     id 'io.franzbecker.gradle-lombok' version '4.0.0'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id "com.jfrog.bintray" version "1.8.4" apply false
+    id 'me.champeau.gradle.japicmp' version '0.2.9' apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -20,7 +31,6 @@ subprojects {
     compileTestJava.options.encoding = 'UTF-8'
 
     repositories {
-        jcenter()
         mavenCentral()
     }
 
@@ -48,20 +58,12 @@ subprojects {
     // specific modules should be excluded from publication
     if ( ! ["test-support", "jdbc-test"].contains(it.name) && !it.path.startsWith(":docs:") && it != project(":docs") ) {
         apply from: "$rootDir/gradle/publishing.gradle"
-        apply from: "$rootDir/gradle/bintray.gradle"
 
-        jar.archiveClassifier.set("original")
-
-        publishing {
-            publications {
-                mavenJava(MavenPublication) { publication ->
-                    artifacts.removeAll { it.classifier == jar.archiveClassifier.get() }
-                    artifact project.tasks.shadowJar
-                }
-            }
+        if (it.name != "bom") {
+            apply plugin: "me.champeau.gradle.japicmp"
+            tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask)
+            apply from: "$rootDir/gradle/japicmp.gradle"
         }
-
-        task release(dependsOn: bintrayUpload)
     }
 
     test {

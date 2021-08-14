@@ -24,6 +24,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 public class KafkaContainerTest {
@@ -108,6 +109,24 @@ public class KafkaContainerTest {
         try (
             KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.0.0"))
         ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testWithHostExposedPort() throws Exception {
+        Testcontainers.exposeHostPorts(12345);
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testWithHostExposedPortAndExternalNetwork() throws Exception {
+        Testcontainers.exposeHostPorts(12345);
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE).withNetwork(Network.newNetwork())) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
