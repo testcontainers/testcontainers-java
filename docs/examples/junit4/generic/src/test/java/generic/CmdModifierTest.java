@@ -39,7 +39,11 @@ public class CmdModifierTest {
 
     @Test
     public void testMemoryLimitModified() throws IOException, InterruptedException {
-        final Container.ExecResult execResult = memoryLimitedRedis.execInContainer("cat", "/sys/fs/cgroup/memory/memory.limit_in_bytes");
+        final Container.ExecResult execResult = memoryLimitedRedis.execInContainer(
+            "cat",
+            "/sys/fs/cgroup/memory/memory.limit_in_bytes",
+            "/sys/fs/cgroup/memory.max"
+        );
         assertEquals(String.valueOf(memoryInBytes), execResult.getStdout().trim());
     }
 }
