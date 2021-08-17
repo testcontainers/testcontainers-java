@@ -1,6 +1,8 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
+import java.util.Set;
 
 public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends GenericContainer<SELF> {
 
@@ -17,6 +19,11 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
         dockerImageName.assertCompatibleWith(ClickHouseInit.DEFAULT_IMAGE_NAME);
 
         ClickHouseInit.Init(this);
+    }
+
+    @Override
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(ClickHouseInit.HTTP_PORT);
     }
 
     public String getDatabaseName() {

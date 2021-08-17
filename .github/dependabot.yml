@@ -3,146 +3,146 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/core"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
     directory: "/modules/cassandra"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/couchbase"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/database-commons"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/dynalite"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/elasticsearch"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/influxdb"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc-test"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/junit-jupiter"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/localstack"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mariadb"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mockserver"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mssqlserver"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mysql"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/neo4j"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/nginx"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/oracle-xe"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/postgresql"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/pulsar"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/selenium"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/spock"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/toxiproxy"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/vault"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
 
 # Examples
   - package-ecosystem: "gradle"
     directory: "/examples"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10
 
 # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 10

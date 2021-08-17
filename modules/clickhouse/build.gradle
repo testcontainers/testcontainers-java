@@ -1,11 +1,11 @@
 description = "Testcontainers :: JDBC :: ClickHouse"
 
 dependencies {
-    compile project(':testcontainers')
-    compile project(':jdbc')
+    api project(':testcontainers')
+    api project(':jdbc')
 
-    testCompile project(':jdbc-test')
-    testCompile 'ru.yandex.clickhouse:clickhouse-jdbc:0.2.4'
-    testCompile 'mysql:mysql-connector-java:8.0.24'
-    testCompile 'io.vertx:vertx-mysql-client:4.0.2'
+    testImplementation project(':jdbc-test')
+    testImplementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.1-patch'
+    testImplementation 'mysql:mysql-connector-java:8.0.24'
+    testImplementation 'io.vertx:vertx-mysql-client:4.0.2'
 }

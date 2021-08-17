@@ -2,10 +2,19 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
+import org.testcontainers.utility.TestcontainersConfiguration;
+
+import java.util.Optional;
 
 /**
  * Use environment variables and system properties (as supported by the underlying DockerClient DefaultConfigBuilder)
  * to try and locate a docker environment.
+ * <p>
+ * Resolution order is:
+ * <ol>
+ *     <li>DOCKER_HOST env var</li>
+ *     <li>docker.host in ~/.testcontainers.properties</li>
+ * </ol>
  *
  * @deprecated this class is used by the SPI and should not be used directly
  */
@@ -14,12 +23,26 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     public static final int PRIORITY = 100;
 
-    // Try using environment variables
-    private final DockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+    private final DockerClientConfig dockerClientConfig;
+
+    public EnvironmentAndSystemPropertyClientProviderStrategy() {
+        // use docker-java defaults if present, overridden if our own configuration is set
+        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+
+        getSetting("docker.host").ifPresent(configBuilder::withDockerHost);
+        getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+        getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+
+        dockerClientConfig = configBuilder.build();
+    }
+
+    private Optional<String> getSetting(final String name) {
+        return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(name, null));
+    }
 
     @Override
     protected boolean isApplicable() {
-        return System.getenv("DOCKER_HOST") != null;
+        return getSetting("docker.host").isPresent();
     }
 
     @Override

@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -61,8 +63,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(ORACLE_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(ORACLE_PORT);
     }
 
     @Override

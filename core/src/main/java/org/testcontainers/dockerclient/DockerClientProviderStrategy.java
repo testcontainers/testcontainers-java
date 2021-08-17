@@ -240,7 +240,7 @@ public abstract class DockerClientProviderStrategy {
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
         if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
-            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_30);
+            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
         }
         return DockerClientImpl.getInstance(
             new AuthDelegatingDockerClientConfig(

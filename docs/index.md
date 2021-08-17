@@ -32,7 +32,7 @@ Testcontainers is distributed as separate JARs with a common version number:
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:testcontainers:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
@@ -93,10 +93,6 @@ testImplementation('org.testcontainers:mysql') //no version specified
 
 ## Sponsors
 
-Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain the project and help us improve it further.
-
-<iframe src="https://github.com/sponsors/testcontainers/button" title="Sponsor Testcontainers" height="35" width="107" style="border: 0;"></iframe>
-
 A huge thank you to our sponsors:
 
 ### Bronze sponsors
@@ -123,6 +119,13 @@ A huge thank you to our sponsors:
     </a>
 </div>
 
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.backbase.com/">
+        <img src="sponsor_logos/backbase.png" style="width: 100%"/>
+        <p>Backbase</p>
+    </a>
+</div>
+
 ### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
@@ -132,6 +135,7 @@ A huge thank you to our sponsors:
 * [Pascal Zwick (@pas2al)](https://github.com/pas2al)
 * [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
 * [Bas Stoker (@bastoker)](https://github.com/bastoker)
+* [Oleg Nenashev (@oleg-nenashev)](https://github.com/oleg-nenashev)
 
 ## Who is using Testcontainers?
 
@@ -166,6 +170,12 @@ A huge thank you to our sponsors:
 * [Trino (formerly Presto SQL)](https://trino.io) - Integration testing all Trino core & connectors, including tests of multi-node deployments and security configurations.
 * Google - Various open source projects: [OpenTelemetry](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java), [Universal Application Tool](https://github.com/seattle-uat/universal-application-tool), [CloudBowl](https://github.com/GoogleCloudPlatform/cloudbowl-microservice-game)
 * [Backbase](https://www.backbase.com/) - Unit, Integration and Acceptance testing for different the databases supported (Oracle, SQL Server, MySQL), the different messaging systems supported (Kafka, Rabbit, AMQ) and other microservices and HTTP mocks.
+* [CloudBees](https://www.cloudbees.com/) - Integration testing of products, including but not limited to database and AWS/Localstack integration testing.
+* [Jenkins](https://www.jenkins.io/) - Integration testing of multiple plugins and the Trilead SSH2 fork maintained by the Jenkins community
+  ([query](https://github.com/search?l=Maven+POM&q=org%3Ajenkinsci+testcontainers&type=Code)).
+* [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
+* [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
+
 
 
 ## License

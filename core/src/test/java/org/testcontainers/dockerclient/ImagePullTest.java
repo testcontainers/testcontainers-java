@@ -16,12 +16,9 @@ public class ImagePullTest {
     public static String[] parameters() {
         return new String[] {
             "alpine:latest",
-            "alpine:3.6",
+            "alpine:3.14",
             "alpine", // omitting the tag should work and default to latest
-            "alpine@sha256:8fd4b76819e1e5baac82bd0a3d03abfe3906e034cc5ee32100d12aaaf3956dc7",
-            "gliderlabs/alpine:latest",
-            "gliderlabs/alpine:3.5",
-            "gliderlabs/alpine@sha256:a19aa4a17a525c97e5a90a0c53a9f3329d2dc61b0a14df5447757a865671c085",
+            "alpine@sha256:1775bebec23e1f3ce486989bfc9ff3c4e951690df84aa9f926497d82f2ffca9d",
             "quay.io/testcontainers/ryuk:latest",
             "quay.io/testcontainers/ryuk:0.2.3",
             "quay.io/testcontainers/ryuk@sha256:bb5a635cac4bd96c93cc476969ce11dc56436238ec7cd028d0524462f4739dd9",

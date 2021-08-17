@@ -21,7 +21,7 @@ And how to set a simple expectation using the Java MockServerClient.
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:mockserver:{{latest_version}}"
+testImplementation "org.testcontainers:mockserver:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

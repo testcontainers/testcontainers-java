@@ -12,7 +12,7 @@ public class TestSpecificImageNameSubstitutor extends ImageNameSubstitutor {
 
     @Override
     public DockerImageName apply(final DockerImageName original) {
-        if (original.equals(DockerImageName.parse("registry.mycompany.com/mirror/mysql:8.0.22"))) {
+        if (original.equals(DockerImageName.parse("registry.mycompany.com/mirror/mysql:8.0.24"))) {
             return DockerImageName.parse("mysql");
         } else {
             return original;

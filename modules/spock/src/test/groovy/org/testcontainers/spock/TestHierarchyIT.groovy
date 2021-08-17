@@ -4,9 +4,9 @@ import org.testcontainers.containers.PostgreSQLContainer
 import spock.lang.Shared
 
 /**
- * This test verifies that integration tests can subclass each other
+ * This test verifies that integration tests can subclass each other.
+ * Also verifies that the @Testcontainers annotation is inherited.
  */
-@Testcontainers
 class TestHierarchyIT extends MySqlContainerIT {
 
     @Shared
