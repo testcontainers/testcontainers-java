@@ -4,36 +4,37 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static org.junit.Assert.fail;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
-/**
- * @author gusohal
- */
-@Ignore
 public class OracleJDBCDriverTest {
 
     @Test
-    public void testOracleWithNoSpecifiedVersion() throws SQLException {
-        performSimpleTest("jdbc:tc:oracle://hostname/databasename");
+    public void testOracleWithCommonDatabaseServiceName() throws SQLException {
+        performSimpleTest("jdbc:tc:oracle:thin://hostname/xepdb1");
     }
 
+    @Test
+    public void testOracleWithCommonDatabaseSid() throws SQLException {
+        performSimpleTest("jdbc:tc:oracle:thin:system/mypassword@hostname:xe");
+    }
+
+    @Test
+    public void testOracleWithPluggableDatabaseServiceName() throws SQLException {
+        performSimpleTest("jdbc:tc:oracle:thin://username/password@hostname/xepdb1");
+    }
 
     private void performSimpleTest(String jdbcUrl) throws SQLException {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
-        new QueryRunner(dataSource).query("SELECT 1 FROM dual", new ResultSetHandler<Object>() {
-            @Override
-            public Object handle(ResultSet rs) throws SQLException {
-                rs.next();
-                int resultSetInt = rs.getInt(1);
-                assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-                return true;
-            }
+        new QueryRunner(dataSource).query("SELECT 1 FROM dual", (ResultSetHandler<Object>) rs -> {
+            rs.next();
+            int resultSetInt = rs.getInt(1);
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            return true;
         });
         dataSource.close();
     }

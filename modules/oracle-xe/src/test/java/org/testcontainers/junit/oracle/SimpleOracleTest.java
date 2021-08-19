@@ -24,9 +24,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
         ) {
             oracle.start();
             ResultSet resultSet = performQuery(oracle, "SELECT 1 FROM dual");
-
             int resultSetInt = resultSet.getInt(1);
-
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         }
     }

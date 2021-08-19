@@ -17,6 +17,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     static final String DEFAULT_TAG = "18.4.0-slim";
     static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
+    static final String DEFAULT_DATABASE_NAME = "xepdb1";
 
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
@@ -27,6 +28,9 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private String username = "test";
     private String password = "test";
+    private String databaseName = DEFAULT_DATABASE_NAME;
+    private String sidOrServiceName = "/";
+
 
     /**
      * @deprecated use {@link OracleContainer(DockerImageName)} instead
@@ -68,7 +72,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + "/xepdb1";
+        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + sidOrServiceName + getDatabaseName();
     }
 
     @Override
@@ -86,9 +90,6 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         if (StringUtils.isEmpty(username)) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        if (ORACLE_SYSTEM_USERS.contains(username.toLowerCase())) {
-            throw new IllegalArgumentException("Username cannot be one of " + ORACLE_SYSTEM_USERS);
-        }
         this.username = username;
         return self();
     }
@@ -103,13 +104,22 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
+    public OracleContainer withDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+        return self();
+    }
+
+    public void withSidOrServiceName(String sidOrServiceName) {
+        this.sidOrServiceName = sidOrServiceName;
+    }
+
+    @Override
     public OracleContainer withUrlParam(String paramName, String paramValue) {
         throw new UnsupportedOperationException("The OracleDb does not support this");
     }
 
-    @SuppressWarnings("SameReturnValue")
-    public String getSid() {
-        return "xe";
+    public String getDatabaseName() {
+        return databaseName;
     }
 
     public Integer getOraclePort() {
@@ -129,7 +139,9 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @Override
     protected void configure() {
         withEnv("ORACLE_PASSWORD", password);
-        withEnv("APP_USER", username);
-        withEnv("APP_USER_PASSWORD", password);
+        if (!ORACLE_SYSTEM_USERS.contains(username.toLowerCase())) {
+            withEnv("APP_USER", username);
+            withEnv("APP_USER_PASSWORD", password);
+        }
     }
 }
