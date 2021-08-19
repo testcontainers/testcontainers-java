@@ -14,10 +14,9 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     public static final String NAME = "oracle";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
 
-    @Deprecated
-    public static final String DEFAULT_TAG = "18.4.0-slim";
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
+
+    static final String DEFAULT_TAG = "18.4.0-slim";
+    static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     private static final int ORACLE_PORT = 1521;
     private static final int APEX_HTTP_PORT = 8080;
@@ -83,7 +82,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
-    public SELF withUsername(String username) {
+    public OracleContainer withUsername(String username) {
         if (StringUtils.isEmpty(username)) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
@@ -95,7 +94,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
-    public SELF withPassword(String password) {
+    public OracleContainer withPassword(String password) {
         if (StringUtils.isEmpty(password)) {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
@@ -104,7 +103,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
-    public SELF withUrlParam(String paramName, String paramValue) {
+    public OracleContainer withUrlParam(String paramName, String paramValue) {
         throw new UnsupportedOperationException("The OracleDb does not support this");
     }
 
