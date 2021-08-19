@@ -42,7 +42,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     @Override
     protected boolean isApplicable() {
-        return getSetting("docker.host").isPresent();
+
+        boolean useImplicitStrategy = Boolean.parseBoolean(
+            TestcontainersConfiguration.getInstance().getClasspathFileProperties().getProperty("strategy.implicit", "true"));
+        return getSetting("docker.host").isPresent() && useImplicitStrategy;
     }
 
     @Override
@@ -61,5 +64,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     @Override
     public String getDescription() {
         return "Environment variables, system properties and defaults. Resolved dockerHost=" + dockerClientConfig.getDockerHost();
+    }
+
+    @Override
+    protected boolean isPersistable() {
+        return false;
     }
 }

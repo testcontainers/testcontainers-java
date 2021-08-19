@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -87,11 +86,13 @@ public class TestcontainersConfiguration {
 
     private final Properties userProperties;
     private final Properties classpathProperties;
+    private final Properties classpathFileProperties;
     private final Map<String, String> environment;
 
-    TestcontainersConfiguration(Properties userProperties, Properties classpathProperties, final Map<String, String> environment) {
+    TestcontainersConfiguration(Properties userProperties, Properties classpathProperties, Properties classpathFileProperties, final Map<String, String> environment) {
         this.userProperties = userProperties;
         this.classpathProperties = classpathProperties;
+        this.classpathFileProperties = classpathFileProperties;
         this.environment = environment;
     }
 
@@ -189,7 +190,8 @@ public class TestcontainersConfiguration {
 
         // If docker.host is set then EnvironmentAndSystemPropertyClientProviderStrategy is likely to work
         String dockerHostProperty = getEnvVarOrUserProperty("docker.host", null);
-        if (dockerHostProperty != null) {
+        boolean useImplicitStrategy = Boolean.parseBoolean(getClasspathFileProperties().getProperty("strategy.implicit", "true"));
+        if (dockerHostProperty != null && useImplicitStrategy) {
             return EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName();
         }
 
@@ -325,6 +327,15 @@ public class TestcontainersConfiguration {
         return new TestcontainersConfiguration(
             readProperties(USER_CONFIG_FILE.toURI().toURL()),
             ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
+                .map(TestcontainersConfiguration::readProperties)
+                .reduce(new Properties(), (a, b) -> {
+                    // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
+                    // Note that this means that file: URLs will always take priority over jar: URLs.
+                    b.putAll(a);
+                    return b;
+                }),
+            ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
+                .filter(url -> url.getProtocol().equals("file"))
                 .map(TestcontainersConfiguration::readProperties)
                 .reduce(new Properties(), (a, b) -> {
                     // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
