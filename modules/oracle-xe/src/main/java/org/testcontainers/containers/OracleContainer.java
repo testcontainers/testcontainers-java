@@ -129,8 +129,8 @@ public class OracleContainer<SELF extends OracleContainer<SELF>> extends JdbcDat
 
     @Override
     protected void configure() {
-        addEnv("ORACLE_PASSWORD", password);
-        addEnv("APP_USER", username);
-        addEnv("APP_USER_PASSWORD", password);
+        withEnv("ORACLE_PASSWORD", password);
+        withEnv("APP_USER", username);
+        withEnv("APP_USER_PASSWORD", password);
     }
 }
