@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-public class OracleContainer<SELF extends OracleContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public static final String NAME = "oracle";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
