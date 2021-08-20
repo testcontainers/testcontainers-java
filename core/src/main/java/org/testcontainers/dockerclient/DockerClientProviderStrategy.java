@@ -146,7 +146,7 @@ public abstract class DockerClientProviderStrategy {
 
                         Info info;
                         try {
-                            info = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
+                            info = Unreliables.retryUntilSuccess(5, TimeUnit.SECONDS, () -> {
                                 return strategy.PING_RATE_LIMITER.getWhenReady(() -> {
                                     log.debug("Pinging docker daemon...");
                                     return dockerClient.infoCmd().exec();
