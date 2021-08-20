@@ -17,7 +17,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
         try (
             // constructor {
-            OracleContainer oracle = new OracleContainer(DockerImageName.parse("gvenzl/oracle-xe:18.4.0-slim"))
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:18.4.0-slim")
                 .withUsername("baz")
                 .withPassword("bar")
             // }
