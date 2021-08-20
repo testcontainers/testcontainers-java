@@ -136,6 +136,7 @@ public abstract class DockerClientProviderStrategy {
                                 .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName())),
                         strategies
                                 .stream()
+                                .filter(c -> !c.getClass().getCanonicalName().equals(TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName()))
                                 .filter(DockerClientProviderStrategy::isApplicable)
                                 .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
                 )
