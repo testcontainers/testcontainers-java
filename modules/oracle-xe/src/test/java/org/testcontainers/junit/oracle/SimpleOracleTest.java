@@ -18,7 +18,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     public void testSimple() throws SQLException {
 
         try (
-            OracleContainer<?> oracle = new OracleContainer<>(ORACLE_DOCKER_IMAGE_NAME)
+            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .withUsername("baz")
                 .withPassword("bar")
         ) {
