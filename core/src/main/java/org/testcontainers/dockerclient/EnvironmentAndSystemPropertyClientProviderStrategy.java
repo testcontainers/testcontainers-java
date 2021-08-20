@@ -33,10 +33,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
         // use docker-java defaults if present, overridden if our own configuration is set
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
-        String readFromUserProperties = TestcontainersConfiguration.getInstance()
+        String dockerConfigSource = TestcontainersConfiguration.getInstance()
             .getEnvVarOrProperty("dockerconfig.source", "testcontainers");
 
-        switch (readFromUserProperties) {
+        switch (dockerConfigSource) {
             case "testcontainers":
                 Optional<String> dockerHost = getSetting("docker.host");
                 dockerHost.ifPresent(configBuilder::withDockerHost);
@@ -48,7 +48,7 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
                 applicable = System.getenv(DefaultDockerClientConfig.DOCKER_HOST) != null;
                 break;
             default:
-                throw new InvalidConfigurationException("Invalid value for docker.config.source: " + readFromUserProperties);
+                throw new InvalidConfigurationException("Invalid value for docker.config.source: " + dockerConfigSource);
         }
 
         dockerClientConfig = configBuilder.build();
