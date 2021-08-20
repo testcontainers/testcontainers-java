@@ -16,14 +16,12 @@ public class TestcontainersConfigurationTest {
 
     private Properties userProperties;
     private Properties classpathProperties;
-    private Properties classpathOverrideProperties;
     private Map<String, String> environment;
 
     @Before
     public void setUp() {
         userProperties = new Properties();
         classpathProperties = new Properties();
-        classpathOverrideProperties = new Properties();
         environment = new HashMap<>();
     }
 
