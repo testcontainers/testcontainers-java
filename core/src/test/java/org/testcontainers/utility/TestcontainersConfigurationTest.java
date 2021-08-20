@@ -2,7 +2,6 @@ package org.testcontainers.utility;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -159,13 +158,6 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldUseImplicitDockerClientStrategyWhenDockerHostPropertyIsSet() {
-        userProperties.remove("docker.client.strategy");
-        userProperties.put("docker.host", "tcp://1.2.3.4:5678");
-        assertEquals("Docker client strategy is implicitly set when docker host property is set", EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName(), newConfig().getDockerClientStrategyClassName());
-    }
-
-    @Test
     public void shouldNotUseImplicitDockerClientStrategyWhenDockerHostAndStrategyAreBothSet() {
         userProperties.put("docker.client.strategy", "foo");
         userProperties.put("docker.host", "tcp://1.2.3.4:5678");
@@ -217,6 +209,6 @@ public class TestcontainersConfigurationTest {
     }
 
     private TestcontainersConfiguration newConfig() {
-        return new TestcontainersConfiguration(userProperties, classpathProperties, classpathOverrideProperties, environment);
+        return new TestcontainersConfiguration(userProperties, classpathProperties, environment);
     }
 }

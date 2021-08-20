@@ -2,6 +2,7 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
+import lombok.Getter;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.Optional;
@@ -25,27 +26,36 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     private final DockerClientConfig dockerClientConfig;
 
+    @Getter
+    private final boolean applicable;
+
     public EnvironmentAndSystemPropertyClientProviderStrategy() {
         // use docker-java defaults if present, overridden if our own configuration is set
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
-        getSetting("docker.host").ifPresent(configBuilder::withDockerHost);
-        getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
-        getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+        String readFromUserProperties = TestcontainersConfiguration.getInstance()
+            .getEnvVarOrProperty("dockerconfig.source", "testcontainers");
+
+        switch (readFromUserProperties) {
+            case "testcontainers":
+                Optional<String> dockerHost = getSetting("docker.host");
+                dockerHost.ifPresent(configBuilder::withDockerHost);
+                applicable = dockerHost.isPresent();
+                getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+                getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+                break;
+            case "docker":
+                applicable = System.getenv(DefaultDockerClientConfig.DOCKER_HOST) != null;
+                break;
+            default:
+                throw new InvalidConfigurationException("Invalid value for docker.config.source: " + readFromUserProperties);
+        }
 
         dockerClientConfig = configBuilder.build();
     }
 
     private Optional<String> getSetting(final String name) {
         return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(name, null));
-    }
-
-    @Override
-    protected boolean isApplicable() {
-
-        boolean useImplicitStrategy = Boolean.parseBoolean(
-            TestcontainersConfiguration.getInstance().getClasspathFileProperties().getProperty("strategy.implicit", "true"));
-        return getSetting("docker.host").isPresent() && useImplicitStrategy;
     }
 
     @Override

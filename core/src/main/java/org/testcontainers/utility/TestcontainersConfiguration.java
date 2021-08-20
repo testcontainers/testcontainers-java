@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -86,13 +85,11 @@ public class TestcontainersConfiguration {
 
     private final Properties userProperties;
     private final Properties classpathProperties;
-    private final Properties classpathFileProperties;
     private final Map<String, String> environment;
 
-    TestcontainersConfiguration(Properties userProperties, Properties classpathProperties, Properties classpathFileProperties, final Map<String, String> environment) {
+    TestcontainersConfiguration(Properties userProperties, Properties classpathProperties, final Map<String, String> environment) {
         this.userProperties = userProperties;
         this.classpathProperties = classpathProperties;
-        this.classpathFileProperties = classpathFileProperties;
         this.environment = environment;
     }
 
@@ -186,13 +183,6 @@ public class TestcontainersConfiguration {
         String unprefixedEnvVarOrProperty = getEnvVarOrUserProperty("docker.client.strategy", null);
         if (unprefixedEnvVarOrProperty != null) {
             return unprefixedEnvVarOrProperty;
-        }
-
-        // If docker.host is set then EnvironmentAndSystemPropertyClientProviderStrategy is likely to work
-        String dockerHostProperty = getEnvVarOrUserProperty("docker.host", null);
-        boolean useImplicitStrategy = Boolean.parseBoolean(getClasspathFileProperties().getProperty("strategy.implicit", "true"));
-        if (dockerHostProperty != null && useImplicitStrategy) {
-            return EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName();
         }
 
         // No value set, and no implicit value to use either
@@ -327,15 +317,6 @@ public class TestcontainersConfiguration {
         return new TestcontainersConfiguration(
             readProperties(USER_CONFIG_FILE.toURI().toURL()),
             ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
-                .map(TestcontainersConfiguration::readProperties)
-                .reduce(new Properties(), (a, b) -> {
-                    // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
-                    // Note that this means that file: URLs will always take priority over jar: URLs.
-                    b.putAll(a);
-                    return b;
-                }),
-            ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
-                .filter(url -> url.getProtocol().equals("file"))
                 .map(TestcontainersConfiguration::readProperties)
                 .reduce(new Properties(), (a, b) -> {
                     // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
