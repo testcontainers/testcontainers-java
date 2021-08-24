@@ -16,10 +16,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 
@@ -87,5 +93,29 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         assertNotNull(sslConfig);
         assertTrue(sslConfig instanceof LocalDirectorySSLConfig);
         assertEquals(tempDirPath, ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+    }
+
+    @Test
+    public void applicableWhenDockerConfigSourceAndConfigured() {
+        Mockito.doReturn("docker").when(TestcontainersConfiguration.getInstance()).getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+
+        Map<String, String> stubEnv = Collections.singletonMap(DefaultDockerClientConfig.DOCKER_HOST, "tcp://1.2.3.4:2375");
+        Mockito.doReturn(stubEnv).when(TestcontainersConfiguration.getInstance()).getEnvironment();
+
+        EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
+
+        assertTrue(strategy.isApplicable());
+    }
+
+    @Test
+    public void notApplicableWhenDockerConfigSourceAndNotConfigured() {
+        Mockito.doReturn("docker").when(TestcontainersConfiguration.getInstance()).getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+
+        Map<String, String> stubEnv = Collections.emptyMap();
+        Mockito.doReturn(stubEnv).when(TestcontainersConfiguration.getInstance()).getEnvironment();
+
+        EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
+
+        assertFalse(strategy.isApplicable());
     }
 }
