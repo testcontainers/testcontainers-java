@@ -107,7 +107,7 @@ public final class ResourceReaper {
                 .withHostConfig(
                     new HostConfig()
                         .withAutoRemove(true)
-                        .withPortBindings(new PortBinding(Ports.Binding.empty(), ryukExposedPort))
+                        .withPortBindings(new PortBinding(Ports.Binding.bindPort(0), ryukExposedPort))
                 )
                 .withExposedPorts(ryukExposedPort)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)

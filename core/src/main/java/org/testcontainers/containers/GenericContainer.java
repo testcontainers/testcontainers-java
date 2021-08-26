@@ -753,7 +753,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         // First collect all the randomized host ports from our 'exposedPorts' field
         for (final Integer tcpPort : exposedPorts) {
             ExposedPort exposedPort = ExposedPort.tcp(tcpPort);
-            allPortBindings.put(exposedPort, new PortBinding(Ports.Binding.empty(), exposedPort));
+            allPortBindings.put(exposedPort, new PortBinding(Ports.Binding.bindPort(0), exposedPort));
         }
         // Next collect all the fixed host ports from our 'portBindings' field, overwriting any randomized ports so that
         // we don't create two bindings for the same container port.
