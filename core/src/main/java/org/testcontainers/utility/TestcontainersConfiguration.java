@@ -179,14 +179,8 @@ public class TestcontainersConfiguration {
             return prefixedEnvVarStrategy;
         }
 
-        // looks for unprefixed env var or unprefixed property
-        String unprefixedEnvVarOrProperty = getEnvVarOrUserProperty("docker.client.strategy", null);
-        if (unprefixedEnvVarOrProperty != null) {
-            return unprefixedEnvVarOrProperty;
-        }
-
-        // No value set, and no implicit value to use either
-        return null;
+        // looks for unprefixed env var or unprefixed property, or null if the strategy is not set at all
+        return getEnvVarOrUserProperty("docker.client.strategy", null);
     }
 
     public String getTransportType() {

@@ -97,7 +97,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
     @Test
     public void applicableWhenDockerConfigSourceAndConfigured() {
-        Mockito.doReturn("docker").when(TestcontainersConfiguration.getInstance()).getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+        Mockito.doReturn("autoIgnoringUserProperties").when(TestcontainersConfiguration.getInstance()).getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
 
         Map<String, String> stubEnv = Collections.singletonMap(DefaultDockerClientConfig.DOCKER_HOST, "tcp://1.2.3.4:2375");
         Mockito.doReturn(stubEnv).when(TestcontainersConfiguration.getInstance()).getEnvironment();
@@ -109,7 +109,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
     @Test
     public void notApplicableWhenDockerConfigSourceAndNotConfigured() {
-        Mockito.doReturn("docker").when(TestcontainersConfiguration.getInstance()).getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+        Mockito.doReturn("autoIgnoringUserProperties").when(TestcontainersConfiguration.getInstance()).getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
 
         Map<String, String> stubEnv = Collections.emptyMap();
         Mockito.doReturn(stubEnv).when(TestcontainersConfiguration.getInstance()).getEnvironment();

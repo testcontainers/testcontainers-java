@@ -34,23 +34,23 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
         String dockerConfigSource = TestcontainersConfiguration.getInstance()
-            .getEnvVarOrProperty("dockerconfig.source", "testcontainers");
+            .getEnvVarOrProperty("dockerconfig.source", "auto");
 
         switch (dockerConfigSource) {
-            case "testcontainers":
+            case "auto":
                 Optional<String> dockerHost = getSetting("docker.host");
                 dockerHost.ifPresent(configBuilder::withDockerHost);
                 applicable = dockerHost.isPresent();
                 getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
                 getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
                 break;
-            case "docker":
+            case "autoIgnoringUserProperties":
                 // TODO: replace with configBuilder.isDockerHostSetExplicitly() once released
                 applicable = TestcontainersConfiguration.getInstance()
                     .getEnvironment().get(DefaultDockerClientConfig.DOCKER_HOST) != null;
                 break;
             default:
-                throw new InvalidConfigurationException("Invalid value for docker.config.source: " + dockerConfigSource);
+                throw new InvalidConfigurationException("Invalid value for dockerconfig.source: " + dockerConfigSource);
         }
 
         dockerClientConfig = configBuilder.build();
