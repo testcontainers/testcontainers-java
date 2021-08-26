@@ -1,20 +1,12 @@
 package org.testcontainers.containers;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.TrinoTestImages;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-import static java.lang.Integer.parseInt;
-import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

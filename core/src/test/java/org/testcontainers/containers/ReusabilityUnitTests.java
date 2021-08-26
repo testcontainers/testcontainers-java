@@ -140,7 +140,7 @@ public class ReusabilityUnitTests {
             Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
 
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
@@ -157,7 +157,7 @@ public class ReusabilityUnitTests {
         public void shouldCallHookIfReused() {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
             when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
             when(client.inspectContainerCmd(existingContainerId)).then(inspectContainerAnswer());
@@ -172,7 +172,7 @@ public class ReusabilityUnitTests {
         @Test
         public void shouldNotCallHookIfNotReused() {
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
@@ -200,7 +200,7 @@ public class ReusabilityUnitTests {
         @Test
         public void shouldStartIfListReturnsEmpty() {
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
@@ -214,7 +214,7 @@ public class ReusabilityUnitTests {
         public void shouldReuseIfListReturnsID() {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
             when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
             when(client.inspectContainerCmd(existingContainerId)).then(inspectContainerAnswer());
@@ -230,7 +230,7 @@ public class ReusabilityUnitTests {
             Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
 
@@ -249,7 +249,7 @@ public class ReusabilityUnitTests {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
@@ -266,7 +266,7 @@ public class ReusabilityUnitTests {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
-            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
+            when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerCmd(containerId)).then(startContainerAnswer());
             when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());

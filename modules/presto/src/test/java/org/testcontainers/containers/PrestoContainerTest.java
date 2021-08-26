@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.PrestoTestImages;
-import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

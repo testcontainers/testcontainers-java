@@ -1,7 +1,5 @@
 package org.testcontainers.containers.wait.strategy;
 
-import java.net.HttpURLConnection;
-
 /**
  * Convenience class with logic for building common {@link WaitStrategy} instances.
  *

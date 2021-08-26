@@ -1,7 +1,6 @@
 package org.testcontainers.junit.mssqlserver;
 
 import org.junit.Test;
-import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 

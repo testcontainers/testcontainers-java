@@ -37,6 +37,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.CreateContainerIntent;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
@@ -216,7 +217,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
-    private final Set<Consumer<CreateContainerCmd>> createContainerCmdModifiers = new LinkedHashSet<>();
+    private final Set<Consumer<CreateContainerIntent>> createContainerCmdModifiers = new LinkedHashSet<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -360,7 +361,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
-            CreateContainerCmd createCommand = containerController.createContainerCmd(dockerImageName);
+            CreateContainerIntent createCommand = containerController.createContainerIntent(dockerImageName);
             applyConfiguration(createCommand);
 
             createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
@@ -409,7 +410,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             if (!reused) {
-                containerId = createCommand.exec().getId();
+                containerId = createCommand.perform().getId();
 
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
@@ -557,14 +558,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @UnstableAPI
     @SneakyThrows(JsonProcessingException.class)
-    final String hash(CreateContainerCmd createCommand) {
+    final String hash(CreateContainerIntent createIntent) { // TODO: Hash of interface?
         DefaultDockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
 
         byte[] commandJson = dockerClientConfig.getObjectMapper()
             .copy()
             .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
-            .writeValueAsBytes(createCommand);
+            .writeValueAsBytes(createIntent);
 
         // TODO add Testcontainers' version to the hash
         return Hashing.sha1().hashBytes(commandJson).toString();
@@ -744,7 +745,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return this.getLivenessCheckPorts();
     }
 
-    private void applyConfiguration(CreateContainerCmd createCommand) {
+    private void applyConfiguration(CreateContainerIntent createIntent) {
         HostConfig hostConfig = buildHostConfig();
 
         // PortBindings must contain:
@@ -765,19 +766,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         hostConfig.withPortBindings(new ArrayList<>(allPortBindings.values()));
 
         // Next, ExposedPorts must be set up to publish all of the above ports, both randomized and fixed.
-        createCommand.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
+        createIntent.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
 
-        createCommand.withHostConfig(hostConfig);
+        createIntent.withHostConfig(hostConfig);
 
         if (commandParts != null) {
-            createCommand.withCmd(commandParts);
+            createIntent.withCmd(commandParts);
         }
 
         String[] envArray = env.entrySet().stream()
                 .filter(it -> it.getValue() != null)
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new);
-        createCommand.withEnv(envArray);
+        createIntent.withEnv(envArray);
 
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
@@ -792,11 +793,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         Bind[] bindsArray = binds.stream()
                 .toArray(Bind[]::new);
-        createCommand.withBinds(bindsArray);
+        createIntent.withBinds(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream()
                 .toArray(VolumesFrom[]::new);
-        createCommand.withVolumesFrom(volumesFromsArray);
+        createIntent.withVolumesFrom(volumesFromsArray);
 
         Set<Link> allLinks = new HashSet<>();
         Set<String> allLinkedContainerNetworks = new HashSet<>();
@@ -818,7 +819,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             allLinkedContainerNetworks.addAll(linkedContainerNetworks);
         }
 
-        createCommand.withLinks(allLinks.toArray(new Link[allLinks.size()]));
+        createIntent.withLinks(allLinks.toArray(new Link[allLinks.size()]));
 
         allLinkedContainerNetworks.remove("bridge");
         if (allLinkedContainerNetworks.size() > 1) {
@@ -830,7 +831,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Optional<String> networkForLinks = allLinkedContainerNetworks.stream().findFirst();
         if (networkForLinks.isPresent()) {
             logger().debug("Associating container with network: {}", networkForLinks.get());
-            createCommand.withNetworkMode(networkForLinks.get());
+            createIntent.withNetworkMode(networkForLinks.get());
         }
 
         PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
@@ -839,32 +840,32 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
         String[] extraHostsArray = extraHosts.stream()
                 .toArray(String[]::new);
-        createCommand.withExtraHosts(extraHostsArray);
+        createIntent.withExtraHosts(extraHostsArray);
 
         if (network != null) {
-            createCommand.withNetworkMode(network.getId());
-            createCommand.withAliases(this.networkAliases);
+            createIntent.withNetworkMode(network.getId());
+            createIntent.withAliases(this.networkAliases);
         } else if (networkMode != null) {
-            createCommand.withNetworkMode(networkMode);
+            createIntent.withNetworkMode(networkMode);
         }
 
         if (workingDirectory != null) {
-            createCommand.withWorkingDir(workingDirectory);
+            createIntent.withWorkingDir(workingDirectory);
         }
 
         if (privilegedMode) {
-            createCommand.withPrivileged(privilegedMode);
+            createIntent.withPrivileged(privilegedMode);
         }
 
-        createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
+        createContainerCmdModifiers.forEach(hook -> hook.accept(createIntent));
 
         Map<String, String> combinedLabels = new HashMap<>();
         combinedLabels.putAll(labels);
-        if (createCommand.getLabels() != null) {
-            combinedLabels.putAll(createCommand.getLabels());
+        if (createIntent.getLabels() != null) {
+            combinedLabels.putAll(createIntent.getLabels());
         }
 
-        createCommand.withLabels(combinedLabels);
+        createIntent.withLabels(combinedLabels);
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
@@ -1389,7 +1390,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param modifier {@link Consumer} of {@link CreateContainerCmd}.
      * @return this
      */
-    public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
+    public SELF withCreateContainerCmdModifier(Consumer<CreateContainerIntent> modifier) {
         createContainerCmdModifiers.add(modifier);
         return self();
     }

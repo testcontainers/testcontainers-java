@@ -1,6 +1,5 @@
 package org.testcontainers.containers.startupcheck;
 
-import com.github.dockerjava.api.DockerClient;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.testcontainers.controller.ContainerController;
 
