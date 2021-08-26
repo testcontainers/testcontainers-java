@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Singular;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.util.Collections;

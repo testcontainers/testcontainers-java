@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -37,7 +36,8 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
@@ -47,6 +47,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.controller.ContainerController;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.lifecycle.Startable;
@@ -194,7 +195,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * We use {@link DockerClientFactory#lazyClient()} here to avoid eager client creation
      */
     @Setter(AccessLevel.NONE)
-    protected DockerClient dockerClient = DockerClientFactory.lazyClient();
+    protected ContainerController containerController = ContainerControllerFactory.lazyController();
 
     /**
      * Set during container startup
@@ -211,7 +212,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * The approach to determine if the container is ready.
      */
     @NonNull
-    protected org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
+    protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
@@ -240,7 +241,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     * @deprecated use {@link GenericContainer (DockerImageName)} instead
      */
     @Deprecated
     public GenericContainer() {
@@ -311,7 +312,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
         Startables.deepStart(dependencies).get();
         // trigger LazyDockerClient's resolve so that we fail fast here and not in getDockerImageName()
-        dockerClient.authConfig();
+        containerController.authConfig();
         doStart();
     }
 
@@ -359,7 +360,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().debug("Starting container: {}", dockerImageName);
 
             logger().info("Creating container for image: {}", dockerImageName);
-            CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
+            CreateContainerCmd createCommand = containerController.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
             createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
@@ -420,7 +421,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 containerIsCreated(containerId);
 
                 logger().info("Starting container with ID: {}", containerId);
-                dockerClient.startContainerCmd(containerId).exec();
+                containerController.startContainerCmd(containerId).exec();
             }
 
             logger().info("Container {} is starting: {}", dockerImageName, containerId);
@@ -434,7 +435,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .pollInterval(DynamicPollInterval.ofMillis(50))
                 .pollInSameThread()
                 .until(
-                    () -> dockerClient.inspectContainerCmd(containerId).exec(),
+                    () -> containerController.inspectContainerCmd(containerId).exec(),
                     inspectContainerResponse -> {
                         Set<Integer> exposedAndMappedPorts = inspectContainerResponse
                             .getNetworkSettings()
@@ -455,7 +456,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
-            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
+            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(containerController, containerId)) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
@@ -468,7 +469,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 logger().debug("Wait strategy threw an exception", e);
                 InspectContainerResponse inspectContainerResponse = null;
                 try {
-                    inspectContainerResponse = dockerClient.inspectContainerCmd(containerId).exec();
+                    inspectContainerResponse = containerController.inspectContainerCmd(containerId).exec();
                 } catch (NotFoundException notFoundException) {
                     logger().debug("Container {} not found", containerId, notFoundException);
                 }
@@ -572,7 +573,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Optional<String> findContainerForReuse(String hash) {
         // TODO locking
-        return dockerClient.listContainersCmd()
+        return containerController.listContainersCmd()
             .withLabelFilter(ImmutableMap.of(HASH_LABEL, hash))
             .withLimit(1)
             .withStatusFilter(Arrays.asList("running"))
@@ -599,7 +600,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void connectToPortForwardingNetwork(String networkMode) {
         PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
             if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
-                dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+                containerController.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
             }
         });
     }
@@ -867,7 +868,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
-        return dockerClient.listContainersCmd()
+        return containerController.listContainersCmd()
                 .withStatusFilter(Arrays.asList("running"))
                 .exec().stream()
                 .flatMap(container -> Stream.of(container.getNames()))
@@ -877,7 +878,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private Set<String> findAllNetworksForLinkedContainers(LinkableContainer linkableContainer) {
-        return dockerClient.listContainersCmd().exec().stream()
+        return containerController.listContainersCmd().exec().stream()
                 .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
                 .filter(container -> container.getNetworkSettings() != null &&
                         container.getNetworkSettings().getNetworks() != null)
@@ -890,7 +891,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public SELF waitingFor(@NonNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
+    public SELF waitingFor(@NonNull WaitStrategy waitStrategy) {
         this.waitStrategy = waitStrategy;
         return self();
     }
@@ -901,24 +902,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @return the {@link WaitStrategy} to use
      */
-    protected org.testcontainers.containers.wait.strategy.WaitStrategy getWaitStrategy() {
+    protected WaitStrategy getWaitStrategy() {
         return waitStrategy;
     }
 
     @Override
-    public void setWaitStrategy(org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
+    public void setWaitStrategy(WaitStrategy waitStrategy) {
         this.waitStrategy = waitStrategy;
     }
 
     /**
      * Wait until the container has started. The default implementation simply
      * waits for a port to start listening; other implementations are available
-     * as implementations of {@link org.testcontainers.containers.wait.strategy.WaitStrategy}
+     * as implementations of {@link WaitStrategy}
      *
-     * @see #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)
+     * @see #waitingFor(WaitStrategy)
      */
     protected void waitUntilContainerStarted() {
-        org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = getWaitStrategy();
+        WaitStrategy waitStrategy = getWaitStrategy();
         if (waitStrategy != null) {
             waitStrategy.waitUntilReady(this);
         }

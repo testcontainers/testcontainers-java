@@ -2,7 +2,7 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.github.dockerjava.api.command.LogContainerCmd;
 import lombok.SneakyThrows;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;

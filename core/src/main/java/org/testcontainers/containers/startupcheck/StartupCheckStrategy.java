@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.controller.ContainerController;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -30,12 +31,12 @@ public abstract class StartupCheckStrategy {
         return (SELF) this;
     }
 
-    public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
+    public boolean waitUntilStartupSuccessful(ContainerController containerController, String containerId) {
         final Boolean[] startedOK = {null};
         Unreliables.retryUntilTrue((int) timeout.toMillis(), TimeUnit.MILLISECONDS, () -> {
             //noinspection CodeBlock2Expr
             return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
-                StartupStatus state = checkStartupState(dockerClient, containerId);
+                StartupStatus state = checkStartupState(containerController, containerId);
                 switch (state) {
                     case SUCCESSFUL:    startedOK[0] = true;
                                         return true;
@@ -48,10 +49,10 @@ public abstract class StartupCheckStrategy {
         return startedOK[0];
     }
 
-    public abstract StartupStatus checkStartupState(DockerClient dockerClient, String containerId);
+    public abstract StartupStatus checkStartupState(ContainerController containerController, String containerId);
 
-    protected InspectContainerResponse.ContainerState getCurrentState(DockerClient dockerClient, String containerId) {
-        return dockerClient.inspectContainerCmd(containerId).exec().getState();
+    protected InspectContainerResponse.ContainerState getCurrentState(ContainerController containerController, String containerId) {
+        return containerController.inspectContainerCmd(containerId).exec().getState();
     }
 
     public enum StartupStatus {

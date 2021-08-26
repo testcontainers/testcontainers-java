@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 
 /**

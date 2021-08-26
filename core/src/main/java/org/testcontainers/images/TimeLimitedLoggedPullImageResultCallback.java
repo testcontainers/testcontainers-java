@@ -16,7 +16,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.testcontainers.DockerClientFactory.TESTCONTAINERS_THREAD_GROUP;
+import static org.testcontainers.docker.DockerClientFactory.TESTCONTAINERS_THREAD_GROUP;
 
 /**
  * {@link PullImageResultCallback} with improved logging of pull progress and a 'watchdog' which will abort the pull

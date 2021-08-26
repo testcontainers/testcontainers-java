@@ -2,6 +2,7 @@ package org.testcontainers.containers.startupcheck;
 
 import com.github.dockerjava.api.DockerClient;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.testcontainers.controller.ContainerController;
 
 import java.util.concurrent.TimeUnit;
 
@@ -13,11 +14,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class IndefiniteWaitOneShotStartupCheckStrategy extends OneShotStartupCheckStrategy {
     @Override
-    public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
-        while (checkStartupState(dockerClient, containerId) == StartupStatus.NOT_YET_KNOWN) {
+    public boolean waitUntilStartupSuccessful(ContainerController containerController, String containerId) {
+        while (checkStartupState(containerController, containerId) == StartupStatus.NOT_YET_KNOWN) {
             Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
 
-        return checkStartupState(dockerClient, containerId) == StartupStatus.SUCCESSFUL;
+        return checkStartupState(containerController, containerId) == StartupStatus.SUCCESSFUL;
     }
 }

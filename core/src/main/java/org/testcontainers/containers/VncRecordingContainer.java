@@ -105,7 +105,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         String newRecordingFileName = videoFormat.reencodeRecording(this, ORIGINAL_RECORDING_FILE_NAME);
 
         TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(
-            dockerClient.copyArchiveFromContainerCmd(getContainerId(), newRecordingFileName).exec()
+            containerController.copyArchiveFromContainerCmd(getContainerId(), newRecordingFileName).exec()
         );
         archiveInputStream.getNextEntry();
         return archiveInputStream;

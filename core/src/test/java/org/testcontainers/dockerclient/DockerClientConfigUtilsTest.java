@@ -3,7 +3,7 @@ package org.testcontainers.dockerclient;
 import com.github.dockerjava.api.DockerClient;
 import org.assertj.core.api.Assumptions;
 import org.junit.Test;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 
 import java.net.URI;
 

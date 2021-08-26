@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import lombok.RequiredArgsConstructor;

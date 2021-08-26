@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -15,11 +14,11 @@ import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assumptions;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.TestImages;
-import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.controller.ContainerController;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.util.Arrays;
@@ -30,11 +29,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class GenericContainerTest {
 
@@ -149,7 +146,7 @@ public class GenericContainerTest {
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
-        public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
+        public StartupStatus checkStartupState(ContainerController containerController, String containerId) {
             return StartupStatus.SUCCESSFUL;
         }
     }

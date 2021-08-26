@@ -5,7 +5,7 @@ import com.github.dockerjava.api.model.Container;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.util.ArrayList;

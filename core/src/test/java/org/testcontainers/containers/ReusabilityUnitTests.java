@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerCmd;
@@ -10,7 +9,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.NetworkSettings;
 import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
 import com.github.dockerjava.core.command.ListContainersCmdImpl;
@@ -24,13 +22,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized;
 import org.mockito.Answers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.rnorth.visibleassertions.VisibleAssertions;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.controller.ContainerController;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -449,21 +447,21 @@ public class ReusabilityUnitTests {
         @Rule
         public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
 
-        protected DockerClient client = Mockito.mock(DockerClient.class);
+        protected ContainerController client = Mockito.mock(ContainerController.class);
 
         protected <T extends GenericContainer<?>> T makeReusable(T container) {
-            container.dockerClient = client;
+            container.containerController = client;
             container.withNetworkMode("none"); // to disable the port forwarding
             container.withStartupCheckStrategy(new StartupCheckStrategy() {
 
                 @Override
-                public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
+                public boolean waitUntilStartupSuccessful(ContainerController containerController, String containerId) {
                     // Skip DockerClient rate limiter
                     return true;
                 }
 
                 @Override
-                public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
+                public StartupStatus checkStartupState(ContainerController containerController, String containerId) {
                     return StartupStatus.SUCCESSFUL;
                 }
             });

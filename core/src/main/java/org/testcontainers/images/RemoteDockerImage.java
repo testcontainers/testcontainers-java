@@ -12,7 +12,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.experimental.Wither;
 import org.slf4j.Logger;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;

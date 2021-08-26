@@ -166,7 +166,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     /**
      * Run initialization commands using the vault cli.
-     * 
+     *
      * Useful for enableing more secret engines like:
      * <pre>
      *     .withInitCommand("secrets enable pki")

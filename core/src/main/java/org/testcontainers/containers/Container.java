@@ -1,12 +1,12 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
+import org.testcontainers.controller.ContainerController;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -424,7 +424,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     @Deprecated
     Map<String, LinkableContainer> getLinkedContainers();
 
-    DockerClient getDockerClient();
+    ContainerController getContainerController();
 
     void setExposedPorts(List<Integer> exposedPorts);
 

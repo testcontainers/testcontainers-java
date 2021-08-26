@@ -3,7 +3,7 @@ package org.testcontainers.images.builder;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectImageResponse;
 import org.junit.Test;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.docker.DockerClientFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
