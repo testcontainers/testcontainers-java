@@ -23,7 +23,7 @@ public interface ContainerController {
 
     ListContainersCmd listContainersCmd();
 
-    ConnectToNetworkCmd connectToNetworkCmd();
+    ConnectToNetworkIntent connectToNetworkIntent();
 
     CreateContainerCmd createContainerCmd(String dockerImageName);
 

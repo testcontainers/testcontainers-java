@@ -600,7 +600,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void connectToPortForwardingNetwork(String networkMode) {
         PortForwardingContainer.INSTANCE.getNetwork().map(ContainerNetwork::getNetworkID).ifPresent(networkId -> {
             if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
-                containerController.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+                containerController.connectToNetworkIntent().withContainerId(containerId).withNetworkId(networkId).perform();
             }
         });
     }

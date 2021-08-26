@@ -9,6 +9,7 @@ import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.command.WaitContainerCmd;
 import com.github.dockerjava.api.model.AuthConfig;
+import org.testcontainers.controller.ConnectToNetworkIntent;
 import org.testcontainers.controller.ContainerController;
 
 public class DockerContainerController implements ContainerController {
@@ -42,8 +43,8 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public ConnectToNetworkCmd connectToNetworkCmd() {
-        return dockerClient.connectToNetworkCmd();
+    public ConnectToNetworkIntent connectToNetworkIntent() {
+        return new ConnectToNetworkDockerIntent(dockerClient.connectToNetworkCmd());
     }
 
     @Override
