@@ -21,8 +21,9 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public AuthConfig authConfig() {
-        return dockerClient.authConfig();
+    public void warmup() {
+        // trigger LazyDockerClient's resolve so that we fail fast here and not in getDockerImageName()
+        dockerClient.authConfig();
     }
 
     @Override

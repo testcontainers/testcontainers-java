@@ -311,8 +311,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             return;
         }
         Startables.deepStart(dependencies).get();
-        // trigger LazyDockerClient's resolve so that we fail fast here and not in getDockerImageName()
-        containerController.authConfig();
+        // warmup the container controller so that we fail fast here
+        containerController.warmup();
         doStart();
     }
 

@@ -15,8 +15,7 @@ import org.testcontainers.lifecycle.Startable;
 
 public interface ContainerController {
 
-
-    AuthConfig authConfig();
+    void warmup();
 
     StartContainerCmd startContainerCmd(String containerId);
 
