@@ -123,5 +123,5 @@ docker.cert.path=/some/path                 # Equivalent to the DOCKER_CERT_PATH
 ```
 In addition, you can deactivate this behaviour by specifying:
 ```properties
-dockerconfig.source=docker # 'testcontainers' by default
+dockerconfig.source=autoIgnoringUserProperties # 'auto' by default
 ```
