@@ -75,12 +75,12 @@ public class LegacyModeTest {
             containerController.checkAndPullImage(LOCALSTACK_0_12_IMAGE.asCanonicalNameString());
 
             containerController
-                .tagImageCmd(
+                .tagImageIntent(
                     LOCALSTACK_0_12_IMAGE.asCanonicalNameString(),
                     LOCALSTACK_CUSTOM_TAG.getRepository(),
                     LOCALSTACK_CUSTOM_TAG.getVersionPart()
                 )
-                .exec();
+                .perform();
         }
 
         @Parameterized.Parameters(name = "{0}")

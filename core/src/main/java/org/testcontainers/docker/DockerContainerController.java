@@ -3,7 +3,6 @@ package org.testcontainers.docker;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.command.PullImageCmd;
-import com.github.dockerjava.api.command.TagImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.SneakyThrows;
@@ -15,6 +14,7 @@ import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.InspectContainerIntent;
 import org.testcontainers.controller.intents.ListContainersIntent;
 import org.testcontainers.controller.intents.StartContainerIntent;
+import org.testcontainers.controller.intents.TagImageIntent;
 import org.testcontainers.controller.intents.WaitContainerIntent;
 import org.testcontainers.docker.intents.ConnectToNetworkDockerIntent;
 import org.testcontainers.docker.intents.CreateContainerDockerIntent;
@@ -93,8 +93,8 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public TagImageCmd tagImageCmd(String sourceImage, String repositoryWithImage, String tag) {
-        return dockerClient.tagImageCmd(sourceImage, repositoryWithImage, tag);
+    public TagImageIntent tagImageIntent(String sourceImage, String repositoryWithImage, String tag) {
+        return new TagImageDockerIntent(dockerClient.tagImageCmd(sourceImage, repositoryWithImage, tag));
     }
 
     @Override
