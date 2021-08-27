@@ -1,7 +1,6 @@
 package org.testcontainers.docker;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.TagImageCmd;
@@ -12,6 +11,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.InspectContainerIntent;
 import org.testcontainers.controller.intents.ListContainersIntent;
@@ -64,8 +64,8 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public CopyArchiveFromContainerCmd copyArchiveFromContainerCmd(String containerId, String newRecordingFileName) {
-        return dockerClient.copyArchiveFromContainerCmd(containerId, newRecordingFileName);
+    public CopyArchiveFromContainerIntent copyArchiveFromContainerIntent(String containerId, String newRecordingFileName) {
+        return new CopyArchiveFromContainerDockerIntent(dockerClient.copyArchiveFromContainerCmd(containerId, newRecordingFileName));
     }
 
     @Override
