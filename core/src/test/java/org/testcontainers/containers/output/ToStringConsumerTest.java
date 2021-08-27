@@ -61,7 +61,7 @@ public class ToStringConsumerTest {
             container.setStartupCheckStrategy(new OneShotStartupCheckStrategy());
             container.start();
 
-            container.getContainerController().waitContainerCmd(container.getContainerId()).start().awaitStatusCode();
+            container.getContainerController().waitContainerIntent(container.getContainerId()).start().awaitStatusCode();
 
             assertThat(container.getLogs())
                 .isEqualTo(LARGE_PAYLOAD)
@@ -79,7 +79,7 @@ public class ToStringConsumerTest {
             container.setStartupCheckStrategy(new OneShotStartupCheckStrategy());
             container.start();
 
-            container.getContainerController().waitContainerCmd(container.getContainerId()).start().awaitStatusCode();
+            container.getContainerController().waitContainerIntent(container.getContainerId()).start().awaitStatusCode();
 
             assertThat(container.getLogs())
                 .isEqualTo(LARGE_PAYLOAD)

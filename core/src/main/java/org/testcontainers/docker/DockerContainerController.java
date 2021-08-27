@@ -4,7 +4,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.TagImageCmd;
-import com.github.dockerjava.api.command.WaitContainerCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.SneakyThrows;
@@ -16,6 +15,7 @@ import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.InspectContainerIntent;
 import org.testcontainers.controller.intents.ListContainersIntent;
 import org.testcontainers.controller.intents.StartContainerIntent;
+import org.testcontainers.controller.intents.WaitContainerIntent;
 import org.testcontainers.docker.intents.ConnectToNetworkDockerIntent;
 import org.testcontainers.docker.intents.CreateContainerDockerIntent;
 import org.testcontainers.docker.intents.InspectContainerDockerIntent;
@@ -69,8 +69,8 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public WaitContainerCmd waitContainerCmd(String containerId) {
-        return dockerClient.waitContainerCmd(containerId);
+    public WaitContainerIntent waitContainerIntent(String containerId) {
+        return new WaitContainerDockerIntent(dockerClient.waitContainerCmd(containerId));
     }
 
     @Override

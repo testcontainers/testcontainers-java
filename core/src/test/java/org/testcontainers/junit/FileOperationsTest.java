@@ -139,7 +139,7 @@ public class FileOperationsTest {
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             container.start();
-            assertThat(container.getContainerController().waitContainerCmd(container.getContainerId()).start().awaitStatusCode())
+            assertThat(container.getContainerController().waitContainerIntent(container.getContainerId()).start().awaitStatusCode())
                 .isEqualTo(0);
 
             container.copyFileFromContainer(
