@@ -317,9 +317,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     @VisibleForTesting
     List<Container> listChildContainers() {
-        return dockerClient.listContainersCmd()
+        return dockerClient.listContainersIntent()
             .withShowAll(true)
-            .exec().stream()
+            .perform().stream()
             .filter(container -> Arrays.stream(container.getNames()).anyMatch(name ->
                 name.startsWith("/" + project)))
             .collect(toList());

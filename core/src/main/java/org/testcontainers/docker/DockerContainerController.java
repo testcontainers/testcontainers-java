@@ -2,7 +2,6 @@ package org.testcontainers.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
-import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.TagImageCmd;
@@ -15,6 +14,7 @@ import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.InspectContainerIntent;
+import org.testcontainers.controller.intents.ListContainersIntent;
 import org.testcontainers.controller.intents.StartContainerIntent;
 import org.testcontainers.docker.intents.ConnectToNetworkDockerIntent;
 import org.testcontainers.docker.intents.CreateContainerDockerIntent;
@@ -49,8 +49,8 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public ListContainersCmd listContainersCmd() {
-        return dockerClient.listContainersCmd();
+    public ListContainersIntent listContainersIntent() {
+        return new ListContainersDockerIntent(dockerClient.listContainersCmd());
     }
 
     @Override

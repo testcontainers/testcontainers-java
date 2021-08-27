@@ -575,11 +575,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Optional<String> findContainerForReuse(String hash) {
         // TODO locking
-        return containerController.listContainersCmd()
+        return containerController.listContainersIntent()
             .withLabelFilter(ImmutableMap.of(HASH_LABEL, hash))
             .withLimit(1)
             .withStatusFilter(Arrays.asList("running"))
-            .exec()
+            .perform()
             .stream()
             .findAny()
             .map(it -> it.getId());
@@ -870,9 +870,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
-        return containerController.listContainersCmd()
+        return containerController.listContainersIntent()
                 .withStatusFilter(Arrays.asList("running"))
-                .exec().stream()
+                .perform().stream()
                 .flatMap(container -> Stream.of(container.getNames()))
                 .filter(name -> name.endsWith(linkableContainer.getContainerName()))
                 .map(name -> new Link(name, alias))
@@ -880,7 +880,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private Set<String> findAllNetworksForLinkedContainers(LinkableContainer linkableContainer) {
-        return containerController.listContainersCmd().exec().stream()
+        return containerController.listContainersIntent().perform().stream()
                 .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
                 .filter(container -> container.getNetworkSettings() != null &&
                         container.getNetworkSettings().getNetworks() != null)

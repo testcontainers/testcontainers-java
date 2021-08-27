@@ -142,7 +142,7 @@ public class ReusabilityUnitTests {
 
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
-            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.listContainersIntent()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
             when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
@@ -160,7 +160,7 @@ public class ReusabilityUnitTests {
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
-            when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
+            when(client.listContainersIntent()).then(listContainersAnswer(existingContainerId));
             when(client.inspectContainerIntent(existingContainerId)).then(inspectContainerAnswer());
 
             container.start();
@@ -174,7 +174,7 @@ public class ReusabilityUnitTests {
         public void shouldNotCallHookIfNotReused() {
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
-            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.listContainersIntent()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
             when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
@@ -202,7 +202,7 @@ public class ReusabilityUnitTests {
         public void shouldStartIfListReturnsEmpty() {
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
-            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.listContainersIntent()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
             when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
@@ -217,7 +217,7 @@ public class ReusabilityUnitTests {
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
-            when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
+            when(client.listContainersIntent()).then(listContainersAnswer(existingContainerId));
             when(client.inspectContainerIntent(existingContainerId)).then(inspectContainerAnswer());
 
             container.start();
@@ -251,7 +251,7 @@ public class ReusabilityUnitTests {
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
-            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.listContainersIntent()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
             when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
@@ -268,7 +268,7 @@ public class ReusabilityUnitTests {
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
-            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.listContainersIntent()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
             when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
