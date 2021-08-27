@@ -422,7 +422,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 containerIsCreated(containerId);
 
                 logger().info("Starting container with ID: {}", containerId);
-                containerController.startContainerCmd(containerId).exec();
+                containerController.startContainerIntent(containerId).perform();
             }
 
             logger().info("Container {} is starting: {}", dockerImageName, containerId);

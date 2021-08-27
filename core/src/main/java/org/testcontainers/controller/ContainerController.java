@@ -10,15 +10,15 @@ public interface ContainerController {
 
     void warmup();
 
-    StartContainerCmd startContainerCmd(String containerId);
+    CreateContainerIntent createContainerIntent(String containerImageName);
+
+    StartContainerIntent startContainerIntent(String containerId);
 
     InspectContainerCmd inspectContainerCmd(String containerId);
 
     ListContainersCmd listContainersCmd();
 
     ConnectToNetworkIntent connectToNetworkIntent();
-
-    CreateContainerIntent createContainerIntent(String containerImageName);
 
     CopyArchiveFromContainerCmd copyArchiveFromContainerCmd(String containerId, String newRecordingFileName);
 

@@ -9,6 +9,7 @@ import com.github.dockerjava.api.command.WaitContainerCmd;
 import org.testcontainers.controller.ConnectToNetworkIntent;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.CreateContainerIntent;
+import org.testcontainers.controller.StartContainerIntent;
 
 public class DockerContainerController implements ContainerController {
 
@@ -26,8 +27,8 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public StartContainerCmd startContainerCmd(String containerId) {
-        return dockerClient.startContainerCmd(containerId);
+    public StartContainerIntent startContainerIntent(String containerId) {
+        return new StartContainerDockerIntent(dockerClient.startContainerCmd(containerId));
     }
 
     @Override
