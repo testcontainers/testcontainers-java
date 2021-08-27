@@ -25,6 +25,7 @@ import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
@@ -125,12 +126,12 @@ public class ReusabilityUnitTests {
             }
 
             @Override
-            protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+            protected void containerIsStarting(InspectContainerResult containerInfo, boolean reused) {
                 script.add("containerIsStarting(reused=" + reused + ")");
             }
 
             @Override
-            protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+            protected void containerIsStarted(InspectContainerResult containerInfo, boolean reused) {
                 script.add("containerIsStarted(reused=" + reused + ")");
             }
         });
@@ -143,7 +144,7 @@ public class ReusabilityUnitTests {
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
-            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
             container.start();
             assertThat(script).containsExactly(
@@ -160,7 +161,7 @@ public class ReusabilityUnitTests {
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
             when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
-            when(client.inspectContainerCmd(existingContainerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(existingContainerId)).then(inspectContainerAnswer());
 
             container.start();
             assertThat(script).containsExactly(
@@ -175,7 +176,7 @@ public class ReusabilityUnitTests {
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
-            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
             container.start();
             assertThat(script).containsExactly(
@@ -203,7 +204,7 @@ public class ReusabilityUnitTests {
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
-            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
             container.start();
 
@@ -217,7 +218,7 @@ public class ReusabilityUnitTests {
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId));
             String existingContainerId = randomContainerId();
             when(client.listContainersCmd()).then(listContainersAnswer(existingContainerId));
-            when(client.inspectContainerCmd(existingContainerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(existingContainerId)).then(inspectContainerAnswer());
 
             container.start();
 
@@ -232,7 +233,7 @@ public class ReusabilityUnitTests {
             String containerId = randomContainerId();
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
-            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
             container.start();
 
@@ -252,7 +253,7 @@ public class ReusabilityUnitTests {
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
-            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
             container.start();
 
@@ -269,7 +270,7 @@ public class ReusabilityUnitTests {
             when(client.createContainerIntent(any())).then(createContainerAnswer(containerId, commandRef::set));
             when(client.listContainersCmd()).then(listContainersAnswer());
             when(client.startContainerIntent(containerId)).then(startContainerAnswer());
-            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+            when(client.inspectContainerIntent(containerId)).then(inspectContainerAnswer());
 
             container.start();
 

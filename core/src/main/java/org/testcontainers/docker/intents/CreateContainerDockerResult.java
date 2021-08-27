@@ -1,7 +1,7 @@
-package org.testcontainers.docker;
+package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.command.CreateContainerResponse;
-import org.testcontainers.controller.CreateContainerResult;
+import org.testcontainers.controller.intents.CreateContainerResult;
 
 public class CreateContainerDockerResult implements CreateContainerResult {
 

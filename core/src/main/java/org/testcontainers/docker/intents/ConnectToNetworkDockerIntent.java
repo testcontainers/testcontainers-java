@@ -1,7 +1,7 @@
-package org.testcontainers.docker;
+package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.command.ConnectToNetworkCmd;
-import org.testcontainers.controller.ConnectToNetworkIntent;
+import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 
 public class ConnectToNetworkDockerIntent implements ConnectToNetworkIntent {
 

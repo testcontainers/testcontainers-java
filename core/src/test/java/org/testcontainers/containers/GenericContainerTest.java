@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
@@ -14,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assumptions;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -84,7 +84,7 @@ public class GenericContainerTest {
         try (GenericContainer<?> container = new GenericContainer<>(image).withExposedPorts(8080)) {
             container.start();
 
-            InspectContainerResponse inspectedContainer = container.getContainerInfo();
+            InspectContainerResult inspectedContainer = container.getContainerInfo();
 
             List<Integer> exposedPorts = Arrays.stream(inspectedContainer.getConfig().getExposedPorts())
                 .map(ExposedPort::getPort)

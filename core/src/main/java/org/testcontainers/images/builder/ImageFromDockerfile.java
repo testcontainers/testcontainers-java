@@ -11,6 +11,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.ContainerController;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.images.ParsedDockerfile;
 import org.testcontainers.images.builder.traits.BuildContextBuilderTrait;
@@ -164,12 +166,12 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
-        final DockerClient dockerClient = DockerClientFactory.instance().client();
+        final ContainerController dockerClient = ContainerControllerFactory.instance().controller();
 
         imagesToPull.forEach(imageName -> {
             try {
                 log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
-                DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                dockerClient.checkAndPullImage(imageName);
             } catch (Exception e) {
                 log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
             }

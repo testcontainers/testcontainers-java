@@ -1,4 +1,4 @@
-package org.testcontainers.controller;
+package org.testcontainers.controller.intents;
 
 public interface StartContainerIntent {
     void perform();

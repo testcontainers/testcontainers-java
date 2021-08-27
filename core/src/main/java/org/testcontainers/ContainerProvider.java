@@ -5,4 +5,6 @@ import org.testcontainers.controller.ContainerController;
 public interface ContainerProvider {
 
     ContainerController lazyController();
+    ContainerController controller();
+
 }

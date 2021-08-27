@@ -2,15 +2,27 @@ package org.testcontainers.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
-import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.command.ListContainersCmd;
-import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.api.command.LogContainerCmd;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.command.TagImageCmd;
 import com.github.dockerjava.api.command.WaitContainerCmd;
-import org.testcontainers.controller.ConnectToNetworkIntent;
+import com.github.dockerjava.api.exception.DockerClientException;
+import com.github.dockerjava.api.exception.NotFoundException;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.ContainerController;
-import org.testcontainers.controller.CreateContainerIntent;
-import org.testcontainers.controller.StartContainerIntent;
+import org.testcontainers.controller.intents.CreateContainerIntent;
+import org.testcontainers.controller.intents.InspectContainerIntent;
+import org.testcontainers.controller.intents.StartContainerIntent;
+import org.testcontainers.docker.intents.ConnectToNetworkDockerIntent;
+import org.testcontainers.docker.intents.CreateContainerDockerIntent;
+import org.testcontainers.docker.intents.InspectContainerDockerIntent;
+import org.testcontainers.docker.intents.StartContainerDockerIntent;
+import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 
+@Slf4j
 public class DockerContainerController implements ContainerController {
 
 
@@ -32,8 +44,8 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public InspectContainerCmd inspectContainerCmd(String containerId) {
-        return dockerClient.inspectContainerCmd(containerId);
+    public InspectContainerIntent inspectContainerIntent(String containerId) {
+        return new InspectContainerDockerIntent(dockerClient.inspectContainerCmd(containerId));
     }
 
     @Override
@@ -59,5 +71,34 @@ public class DockerContainerController implements ContainerController {
     @Override
     public WaitContainerCmd waitContainerCmd(String containerId) {
         return dockerClient.waitContainerCmd(containerId);
+    }
+
+    @Override
+    @SneakyThrows
+    public void checkAndPullImage(String imageName) {
+        try {
+            dockerClient.inspectImageCmd(imageName).exec();
+        } catch (NotFoundException notFoundException) {
+            PullImageCmd pullImageCmd = dockerClient.pullImageCmd(imageName);
+            try {
+                pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
+            } catch (DockerClientException | InterruptedException e) {
+                // Try to fallback to x86
+                pullImageCmd
+                    .withPlatform("linux/amd64")
+                    .exec(new TimeLimitedLoggedPullImageResultCallback(log))
+                    .awaitCompletion();
+            }
+        }
+    }
+
+    @Override
+    public TagImageCmd tagImageCmd(String sourceImage, String repositoryWithImage, String tag) {
+        return dockerClient.tagImageCmd(sourceImage, repositoryWithImage, tag);
+    }
+
+    @Override
+    public LogContainerCmd logContainerCmd(String containerId) {
+        return dockerClient.logContainerCmd(containerId);
     }
 }

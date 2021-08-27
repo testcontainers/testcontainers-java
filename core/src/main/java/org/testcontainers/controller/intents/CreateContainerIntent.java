@@ -1,4 +1,4 @@
-package org.testcontainers.controller;
+package org.testcontainers.controller.intents;
 
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Capability;
@@ -28,6 +28,8 @@ public interface CreateContainerIntent {
 
     // TODO: Replace Bind
     CreateContainerIntent withBinds(Bind[] bindsArray);
+
+    CreateContainerIntent withBinds(List<Bind> binds);
 
     // TODO: Replace VolumesFrom
     CreateContainerIntent withVolumesFrom(VolumesFrom[] volumesFromsArray);

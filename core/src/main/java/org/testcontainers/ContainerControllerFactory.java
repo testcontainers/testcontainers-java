@@ -5,14 +5,17 @@ import org.testcontainers.docker.DockerContainerProvider;
 
 public class ContainerControllerFactory {
 
-    private static final ContainerProvider provider = new DockerContainerProvider();
-
-    private static ContainerProvider getProvider() {
-        return provider;
-    }
+    private static ContainerProvider instance;
 
     public static ContainerController lazyController() {
-        return getProvider().lazyController();
+        return instance().lazyController();
+    }
+
+    public synchronized static ContainerProvider instance() {
+        if (instance == null) {
+            instance = new DockerContainerProvider();
+        }
+        return instance;
     }
 
 }

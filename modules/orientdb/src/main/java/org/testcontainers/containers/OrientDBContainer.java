@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.ODatabaseType;
 import com.orientechnologies.orient.core.db.OrientDB;
@@ -13,6 +12,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -109,7 +109,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
         orientDB = new OrientDB(getServerUrl(), "root", serverPassword, OrientDBConfig.defaultConfig());
     }
 

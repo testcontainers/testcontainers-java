@@ -1,9 +1,9 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URL;
@@ -125,7 +125,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     @Override
     @SneakyThrows
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
         if (!configuration.isZookeeper()) {
             ExecResult result = execInContainer("solr", "create_core", "-c", configuration.getCollectionName());
             if (result.getExitCode() != 0) {

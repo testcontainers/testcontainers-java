@@ -1,7 +1,7 @@
-package org.testcontainers.docker;
+package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.command.StartContainerCmd;
-import org.testcontainers.controller.StartContainerIntent;
+import org.testcontainers.controller.intents.StartContainerIntent;
 
 public class StartContainerDockerIntent implements StartContainerIntent {
 

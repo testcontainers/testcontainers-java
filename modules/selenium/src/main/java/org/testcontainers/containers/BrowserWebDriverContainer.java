@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
@@ -33,6 +32,7 @@ import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.DockerImageName;
@@ -279,7 +279,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
                 Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
                         () ->

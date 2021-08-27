@@ -6,6 +6,7 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
@@ -17,6 +18,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
     @Test
     public void testSimple() throws SQLException {
         try (Db2Container db2 = new Db2Container(DB2_IMAGE)
+            .withStartupTimeout(Duration.ofMinutes(8))
             .acceptLicense()) {
 
             db2.start();
@@ -32,6 +34,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
     public void testWithAdditionalUrlParamInJdbcUrl() {
         try (Db2Container db2 = new Db2Container(DB2_IMAGE)
             .withUrlParam("sslConnection", "false")
+            .withStartupTimeout(Duration.ofMinutes(8))
             .acceptLicense()) {
 
             db2.start();

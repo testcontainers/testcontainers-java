@@ -1,8 +1,8 @@
 package org.testcontainers.vault;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
         addSecrets();
         runInitCommands();
     }
@@ -144,7 +144,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * that is specified. Thus this can be called more than once for multiple paths to be added to Vault.
      * <p>
      * The secrets are added to vault directly after the container is up via the
-     * {@link #addSecrets() addSecrets}, called from {@link #containerIsStarted(InspectContainerResponse) containerIsStarted}
+     * {@link #addSecrets() addSecrets}, called from {@link #containerIsStarted(InspectContainerResult) containerIsStarted}
      *
      * @param path             specific Vault path to store specified secrets
      * @param firstSecret      first secret to add to specifed path

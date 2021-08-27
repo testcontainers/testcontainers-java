@@ -37,7 +37,8 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.ContainerControllerFactory;
-import org.testcontainers.controller.CreateContainerIntent;
+import org.testcontainers.controller.intents.CreateContainerIntent;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
@@ -207,7 +208,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     String containerId;
 
     @Setter(AccessLevel.NONE)
-    private InspectContainerResponse containerInfo;
+    private InspectContainerResult containerInfo;
 
     /**
      * The approach to determine if the container is ready.
@@ -436,7 +437,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .pollInterval(DynamicPollInterval.ofMillis(50))
                 .pollInSameThread()
                 .until(
-                    () -> containerController.inspectContainerCmd(containerId).exec(),
+                    () -> containerController.inspectContainerIntent(containerId).perform(),
                     inspectContainerResponse -> {
                         Set<Integer> exposedAndMappedPorts = inspectContainerResponse
                             .getNetworkSettings()
@@ -468,9 +469,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 waitUntilContainerStarted();
             } catch (Exception e) {
                 logger().debug("Wait strategy threw an exception", e);
-                InspectContainerResponse inspectContainerResponse = null;
+                InspectContainerResult inspectContainerResponse = null;
                 try {
-                    inspectContainerResponse = containerController.inspectContainerCmd(containerId).exec();
+                    inspectContainerResponse = containerController.inspectContainerIntent(containerId).perform();
                 } catch (NotFoundException notFoundException) {
                     logger().debug("Container {} not found", containerId, notFoundException);
                 }
@@ -668,22 +669,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+    protected void containerIsStarting(InspectContainerResult containerInfo) {
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     @UnstableAPI
-    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+    protected void containerIsStarting(InspectContainerResult containerInfo, boolean reused) {
         containerIsStarting(containerInfo);
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
     }
 
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
     @UnstableAPI
-    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+    protected void containerIsStarted(InspectContainerResult containerInfo, boolean reused) {
         containerIsStarted(containerInfo);
     }
 
@@ -693,7 +694,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * the JVM's shutdown hook or by Ryuk.
      */
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
-    protected void containerIsStopping(InspectContainerResponse containerInfo) {
+    protected void containerIsStopping(InspectContainerResult containerInfo) {
     }
 
     /**
@@ -702,7 +703,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * the JVM's shutdown hook or by Ryuk.
      */
     @SuppressWarnings({"EmptyMethod", "UnusedParameters"})
-    protected void containerIsStopped(InspectContainerResponse containerInfo) {
+    protected void containerIsStopped(InspectContainerResult containerInfo) {
     }
 
     /**

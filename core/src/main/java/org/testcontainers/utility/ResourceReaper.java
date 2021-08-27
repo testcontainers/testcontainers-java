@@ -21,6 +21,8 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.ContainerState;
 
@@ -82,7 +84,7 @@ public final class ResourceReaper {
      * @deprecated internal API
      */
     @Deprecated
-    public static String start(String hostIpAddress, DockerClient client) {
+    public static String start(String hostIpAddress, ContainerController client) {
         return start(client);
     }
 
@@ -92,17 +94,17 @@ public final class ResourceReaper {
      */
     @Deprecated
     @SneakyThrows(InterruptedException.class)
-    public static String start(DockerClient client) {
+    public static String start(ContainerController client) {
         String ryukImage = ImageNameSubstitutor.instance()
             .apply(DockerImageName.parse("testcontainers/ryuk:0.3.2"))
             .asCanonicalNameString();
-        DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
+        client.checkAndPullImage(ryukImage);
 
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
-        String ryukContainerId = client.createContainerCmd(ryukImage)
+        String ryukContainerId = client.createContainerIntent(ryukImage)
                 .withHostConfig(
                     new HostConfig()
                         .withAutoRemove(true)
@@ -113,10 +115,10 @@ public final class ResourceReaper {
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
                 .withBinds(binds)
                 .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
-                .exec()
+                .perform()
                 .getId();
 
-        client.startContainerCmd(ryukContainerId).exec();
+        client.startContainerIntent(ryukContainerId).perform();
 
         StringBuilder ryukLog = new StringBuilder();
 
@@ -135,12 +137,12 @@ public final class ResourceReaper {
         ContainerState containerState = new ContainerState() {
 
             // inspect container response might initially not contain the mapped port
-            final InspectContainerResponse inspectedContainer = await()
+            final InspectContainerResult inspectedContainer = await()
                 .atMost(5, TimeUnit.SECONDS)
                 .pollInterval(DynamicPollInterval.ofMillis(50))
                 .pollInSameThread()
                 .until(
-                    () -> client.inspectContainerCmd(ryukContainerId).exec(),
+                    () -> client.inspectContainerIntent(ryukContainerId).perform(),
                     inspectContainerResponse -> {
                         return inspectContainerResponse
                         .getNetworkSettings()
@@ -160,7 +162,7 @@ public final class ResourceReaper {
             }
 
             @Override
-            public InspectContainerResponse getContainerInfo() {
+            public InspectContainerResult getContainerInfo() {
                 return inspectedContainer;
             }
         };

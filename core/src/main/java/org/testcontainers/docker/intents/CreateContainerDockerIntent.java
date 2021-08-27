@@ -1,4 +1,4 @@
-package org.testcontainers.docker;
+package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
@@ -8,8 +8,8 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.VolumesFrom;
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.controller.CreateContainerIntent;
-import org.testcontainers.controller.CreateContainerResult;
+import org.testcontainers.controller.intents.CreateContainerIntent;
+import org.testcontainers.controller.intents.CreateContainerResult;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +64,12 @@ public class CreateContainerDockerIntent implements CreateContainerIntent {
     @Override
     public CreateContainerIntent withBinds(Bind[] bindsArray) {
         createContainerCmd.withBinds(bindsArray);
+        return this;
+    }
+
+    @Override
+    public CreateContainerIntent withBinds(List<Bind> binds) {
+        createContainerCmd.withBinds(binds);
         return this;
     }
 

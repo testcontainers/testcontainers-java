@@ -1,11 +1,11 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.testcontainers.docker.DockerClientFactory;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
     @NonNull
     private Map<Integer, Integer> mappedPorts;
     @Getter(lazy=true)
-    private final InspectContainerResponse containerInfo = DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
+    private final InspectContainerResult containerInfo = ContainerControllerFactory.instance().controller().inspectContainerIntent(getContainerId()).perform();
 
     ComposeServiceWaitStrategyTarget(Container container, GenericContainer proxyContainer,
                                      @NonNull Map<Integer, Integer> mappedPorts) {

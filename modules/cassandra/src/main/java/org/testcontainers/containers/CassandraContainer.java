@@ -1,9 +1,9 @@
 package org.testcontainers.containers;
 
 import com.datastax.driver.core.Cluster;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
@@ -68,7 +68,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
         runInitScriptIfRequired();
     }
 

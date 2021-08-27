@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -106,7 +106,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     @SneakyThrows
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
         String brokerAdvertisedListener = brokerAdvertisedListener(containerInfo);
         ExecResult result = execInContainer(
             "kafka-configs",
@@ -122,7 +122,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
     }
 
-    protected String brokerAdvertisedListener(InspectContainerResponse containerInfo) {
+    protected String brokerAdvertisedListener(InspectContainerResult containerInfo) {
         return String.format("BROKER://%s:%s", containerInfo.getConfig().getHostName(), "9092");
     }
 }

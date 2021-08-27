@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
@@ -9,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -59,7 +59,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
         client = new ToxiproxyClient(getHost(), getMappedPort(TOXIPROXY_CONTROL_PORT));
     }
 

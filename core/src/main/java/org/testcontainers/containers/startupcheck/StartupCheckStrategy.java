@@ -51,7 +51,7 @@ public abstract class StartupCheckStrategy {
     public abstract StartupStatus checkStartupState(ContainerController containerController, String containerId);
 
     protected InspectContainerResponse.ContainerState getCurrentState(ContainerController containerController, String containerId) {
-        return containerController.inspectContainerCmd(containerId).exec().getState();
+        return containerController.inspectContainerIntent(containerId).perform().getState();
     }
 
     public enum StartupStatus {

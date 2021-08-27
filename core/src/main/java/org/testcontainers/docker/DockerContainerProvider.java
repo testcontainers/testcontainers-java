@@ -9,4 +9,9 @@ public class DockerContainerProvider implements ContainerProvider {
     public ContainerController lazyController() {
         return new DockerContainerController(DockerClientFactory.lazyClient());
     }
+
+    @Override
+    public ContainerController controller() {
+        return new DockerContainerController(DockerClientFactory.instance().client());
+    }
 }

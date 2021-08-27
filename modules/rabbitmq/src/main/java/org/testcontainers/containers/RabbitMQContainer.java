@@ -2,9 +2,9 @@ package org.testcontainers.containers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -78,7 +78,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResult containerInfo) {
 
         values.forEach(command -> {
             try {

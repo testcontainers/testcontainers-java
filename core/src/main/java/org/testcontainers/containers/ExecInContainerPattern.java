@@ -6,6 +6,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
@@ -30,7 +31,7 @@ public class ExecInContainerPattern {
      * @param command the command to execute
      * @see #execInContainer(InspectContainerResponse, Charset, String...)
      */
-    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, String... command)
+    public Container.ExecResult execInContainer(InspectContainerResult containerInfo, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
         return execInContainer(containerInfo, Charset.forName("UTF-8"), command);
     }
@@ -48,7 +49,7 @@ public class ExecInContainerPattern {
      * @throws InterruptedException if the thread waiting for the response is interrupted
      * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
      */
-    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, Charset outputCharset, String... command)
+    public Container.ExecResult execInContainer(InspectContainerResult containerInfo, Charset outputCharset, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
         if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
             // at time of writing, this is the expected result in CircleCI.
@@ -91,7 +92,7 @@ public class ExecInContainerPattern {
         return result;
     }
 
-    private boolean isRunning(InspectContainerResponse containerInfo) {
+    private boolean isRunning(InspectContainerResult containerInfo) {
         try {
             return containerInfo != null && containerInfo.getState().getRunning();
         } catch (DockerException e) {

@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.HealthState;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
@@ -15,6 +14,8 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.images.builder.Transferable;
@@ -100,7 +101,7 @@ public interface ContainerState {
         }
 
         try {
-            InspectContainerResponse inspectContainerResponse = getCurrentContainerInfo();
+            InspectContainerResult inspectContainerResponse = getCurrentContainerInfo();
             HealthState health = inspectContainerResponse.getState().getHealth();
             if (health == null) {
                 throw new RuntimeException("This container's image does not have a healthcheck declared, so health cannot be determined. Either amend the image or use another approach to determine whether containers are healthy.");
@@ -112,8 +113,8 @@ public interface ContainerState {
         }
     }
 
-    default InspectContainerResponse getCurrentContainerInfo() {
-        return DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
+    default InspectContainerResult getCurrentContainerInfo() {
+        return ContainerControllerFactory.instance().controller().inspectContainerIntent(getContainerId()).perform();
     }
 
     /**
@@ -142,7 +143,7 @@ public interface ContainerState {
         Preconditions.checkState(this.getContainerId() != null, "Mapped port can only be obtained after the container is started");
 
         Ports.Binding[] binding = new Ports.Binding[0];
-        final InspectContainerResponse containerInfo = this.getContainerInfo();
+        final InspectContainerResult containerInfo = this.getContainerInfo();
         if (containerInfo != null) {
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
         }
@@ -214,13 +215,13 @@ public interface ContainerState {
     /**
      * @return the container info
      */
-    InspectContainerResponse getContainerInfo();
+    InspectContainerResult getContainerInfo();
 
     /**
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
+     * @see ExecInContainerPattern#execInContainer(InspectContainerResult, String...)
      */
     default Container.ExecResult execInContainer(String... command) throws UnsupportedOperationException, IOException, InterruptedException {
         return execInContainer(StandardCharsets.UTF_8, command);
@@ -229,7 +230,7 @@ public interface ContainerState {
     /**
      * Run a command inside a running container, as though using "docker exec".
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
+     * @see ExecInContainerPattern#execInContainer(InspectContainerResult, Charset, String...)
      */
     default Container.ExecResult execInContainer(Charset outputCharset, String... command) throws UnsupportedOperationException, IOException, InterruptedException {
         return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, command);

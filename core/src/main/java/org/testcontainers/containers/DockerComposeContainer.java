@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.LocalDirectorySSLConfig;
 import com.github.dockerjava.transport.SSLConfig;
@@ -17,6 +16,8 @@ import org.apache.commons.lang.SystemUtils;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.ContainerController;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -78,7 +79,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final List<File> composeFiles;
     private DockerComposeFiles dockerComposeFiles;
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
-    private DockerClient dockerClient;
+    private ContainerController dockerClient;
     private boolean localCompose;
     private boolean pull = true;
     private boolean build = false;
@@ -131,7 +132,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.identifier = identifier;
         this.project = randomProjectId();
 
-        this.dockerClient = DockerClientFactory.instance().client();
+        this.dockerClient = ContainerControllerFactory.instance().controller();
     }
 
     @Override
@@ -187,7 +188,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .forEach(imageName -> {
                 try {
                     log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
-                    DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                    dockerClient.checkAndPullImage(imageName);
                 } catch (Exception e) {
                     log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
@@ -656,8 +657,8 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
-        final Integer exitCode = this.containerController.inspectContainerCmd(getContainerId())
-            .exec()
+        final Integer exitCode = this.containerController.inspectContainerIntent(getContainerId())
+            .perform()
             .getState()
             .getExitCode();
 
