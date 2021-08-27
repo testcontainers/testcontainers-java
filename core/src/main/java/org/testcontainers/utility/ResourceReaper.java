@@ -122,12 +122,12 @@ public final class ResourceReaper {
 
         StringBuilder ryukLog = new StringBuilder();
 
-        ResultCallback.Adapter<Frame> logCallback = client.logContainerCmd(ryukContainerId)
+        ResultCallback.Adapter<Frame> logCallback = client.logContainerIntent(ryukContainerId)
             .withSince(0)
             .withFollowStream(true)
             .withStdOut(true)
             .withStdErr(true)
-            .exec(new ResultCallback.Adapter<Frame>() {
+            .perform(new ResultCallback.Adapter<Frame>() {
                 @Override
                 public void onNext(Frame frame) {
                     ryukLog.append(new String(frame.getPayload(), StandardCharsets.UTF_8));

@@ -1,4 +1,4 @@
-package org.testcontainers.docker;
+package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;

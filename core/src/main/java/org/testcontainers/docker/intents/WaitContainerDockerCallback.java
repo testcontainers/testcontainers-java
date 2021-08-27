@@ -1,4 +1,4 @@
-package org.testcontainers.docker;
+package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
 import org.testcontainers.controller.intents.WaitContainerCallback;
