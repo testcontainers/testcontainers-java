@@ -1,0 +1,6 @@
+
+
+dependencies {
+    compileOnly 'org.jetbrains:annotations:21.0.1'
+    api "com.github.docker-java:docker-java-api:3.2.11"
+}

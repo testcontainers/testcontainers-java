@@ -2,10 +2,10 @@ package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.model.Container;
-import com.google.common.collect.ImmutableMap;
 import org.testcontainers.controller.intents.ListContainersIntent;
 
 import java.util.List;
+import java.util.Map;
 
 public class ListContainersDockerIntent implements ListContainersIntent {
 
@@ -22,7 +22,7 @@ public class ListContainersDockerIntent implements ListContainersIntent {
     }
 
     @Override
-    public ListContainersIntent withLabelFilter(ImmutableMap<String, String> labelFilter) {
+    public ListContainersIntent withLabelFilter(Map<String, String> labelFilter) {
         listContainersCmd.withLabelFilter(labelFilter);
         return this;
     }

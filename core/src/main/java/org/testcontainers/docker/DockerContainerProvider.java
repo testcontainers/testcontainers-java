@@ -1,7 +1,7 @@
 package org.testcontainers.docker;
 
 import org.testcontainers.controller.ContainerController;
-import org.testcontainers.ContainerProvider;
+import org.testcontainers.controller.ContainerProvider;
 
 public class DockerContainerProvider implements ContainerProvider {
 

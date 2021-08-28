@@ -1,0 +1,4 @@
+dependencies {
+    compileOnly 'org.jetbrains:annotations:21.0.1'
+    api project(":providers-api")
+}

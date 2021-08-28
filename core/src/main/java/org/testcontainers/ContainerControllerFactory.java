@@ -1,6 +1,7 @@
 package org.testcontainers;
 
 import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.ContainerProvider;
 import org.testcontainers.docker.DockerContainerProvider;
 
 public class ContainerControllerFactory {

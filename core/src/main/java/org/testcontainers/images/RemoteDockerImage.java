@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import lombok.With;
 import lombok.experimental.Wither;
 import org.slf4j.Logger;
 import org.testcontainers.docker.DockerClientFactory;
@@ -34,7 +35,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
-    @Wither
+    @With
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
     @ToString.Exclude

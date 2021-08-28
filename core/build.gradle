@@ -78,7 +78,8 @@ dependencies {
     shaded 'org.awaitility:awaitility:4.1.0'
 
     api "com.github.docker-java:docker-java-api:3.2.11"
-    api project(":controllers-api")
+    api project(":providers-api")
+    api project(":providers-docker")
 
     shaded ('com.github.docker-java:docker-java-core:3.2.11') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')

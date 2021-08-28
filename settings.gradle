@@ -25,9 +25,9 @@ file('modules').eachDir { dir ->
     project(":${dir.name}").projectDir = dir
 }
 
-file('controllers').eachDir {dir ->
-    include "controllers-${dir.name}"
-    project(":controllers-${dir.name}").projectDir = dir
+file('providers').eachDir {dir ->
+    include "providers-${dir.name}"
+    project(":providers-${dir.name}").projectDir = dir
 }
 
 include ':docs:examples:junit4:generic'

@@ -1,15 +1,15 @@
 package org.testcontainers.controller.intents;
 
 import com.github.dockerjava.api.model.Container;
-import com.google.common.collect.ImmutableMap;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ListContainersIntent {
 
     ListContainersIntent withShowAll(boolean showAll);
 
-    ListContainersIntent withLabelFilter(ImmutableMap<String, String> labelFilter);
+    ListContainersIntent withLabelFilter(Map<String, String> labelFilter);
 
     ListContainersIntent withLimit(int limit);
 

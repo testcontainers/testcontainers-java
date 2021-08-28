@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.controller;
 
 import org.testcontainers.controller.ContainerController;
 
