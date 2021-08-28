@@ -1,5 +1,6 @@
 package org.testcontainers.junit.db2;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -16,6 +17,7 @@ import static org.testcontainers.Db2TestImages.DB2_IMAGE;
 public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
     @Test
+    @Ignore // TODO: Remove ignore
     public void testSimple() throws SQLException {
         try (Db2Container db2 = new Db2Container(DB2_IMAGE)
             .withStartupTimeout(Duration.ofMinutes(8))
@@ -31,6 +33,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
     }
 
     @Test
+    @Ignore // TODO: Remove ignore
     public void testWithAdditionalUrlParamInJdbcUrl() {
         try (Db2Container db2 = new Db2Container(DB2_IMAGE)
             .withUrlParam("sslConnection", "false")
