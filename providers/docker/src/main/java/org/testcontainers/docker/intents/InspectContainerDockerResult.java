@@ -3,8 +3,11 @@ package org.testcontainers.docker.intents;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ContainerConfig;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.NetworkSettings;
 import org.testcontainers.controller.intents.InspectContainerResult;
+import org.testcontainers.controller.model.ContainerState;
+import org.testcontainers.controller.model.NetworkSettings;
+import org.testcontainers.docker.model.DockerContainerState;
+import org.testcontainers.docker.model.DockerNetworkSettings;
 
 import java.util.List;
 
@@ -18,13 +21,13 @@ public class InspectContainerDockerResult implements InspectContainerResult {
 
 
     @Override
-    public InspectContainerResponse.ContainerState getState() {
-        return exec.getState();
+    public ContainerState getState() {
+        return new DockerContainerState(exec.getState());
     }
 
     @Override
     public NetworkSettings getNetworkSettings() {
-        return exec.getNetworkSettings();
+        return new DockerNetworkSettings(exec.getNetworkSettings());
     }
 
     @Override

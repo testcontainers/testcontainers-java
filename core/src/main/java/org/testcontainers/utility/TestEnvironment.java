@@ -1,5 +1,7 @@
 package org.testcontainers.utility;
 
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.ContainerProvider;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 
@@ -18,11 +20,13 @@ public class TestEnvironment {
         return current.compareTo(min) >= 0;
     }
 
+    /**
+     *
+     * @deprecated Use {@link ContainerProvider#supportsExecution()}
+     */
+    @Deprecated // TODO: Remove
     public static boolean dockerExecutionDriverSupportsExec() {
-        String executionDriver = DockerClientFactory.instance().getActiveExecutionDriver();
-
-        // Could be null starting from Docker 1.13
-        return executionDriver == null || !executionDriver.startsWith("lxc");
+        return ContainerControllerFactory.instance().supportsExecution();
     }
 
     public static boolean dockerIsDockerMachine() {

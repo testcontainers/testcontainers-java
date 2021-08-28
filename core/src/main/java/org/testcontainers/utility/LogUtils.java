@@ -8,6 +8,8 @@ import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.intents.LogContainerIntent;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,7 +33,7 @@ public class LogUtils {
      * @param consumer     a consumer of {@link OutputFrame}s
      * @param types        types of {@link OutputFrame} to receive
      */
-    public void followOutput(DockerClient dockerClient,
+    public void followOutput(ContainerController dockerClient,
                              String containerId,
                              Consumer<OutputFrame> consumer,
                              OutputFrame.OutputType... types) {
@@ -47,7 +49,7 @@ public class LogUtils {
      * @param containerId  container ID to attach to
      * @param consumer     a consumer of {@link OutputFrame}s
      */
-    public void followOutput(DockerClient dockerClient,
+    public void followOutput(ContainerController dockerClient,
                              String containerId,
                              Consumer<OutputFrame> consumer) {
 
@@ -63,7 +65,7 @@ public class LogUtils {
      * @return all previous output frames (stdout/stderr being separated by newline characters)
      */
     @SneakyThrows(IOException.class)
-    public String getOutput(DockerClient dockerClient,
+    public String getOutput(ContainerController dockerClient,
                             String containerId,
                             OutputFrame.OutputType... types) {
 
@@ -84,14 +86,14 @@ public class LogUtils {
     }
 
     private static Closeable attachConsumer(
-        DockerClient dockerClient,
+        ContainerController dockerClient,
         String containerId,
         Consumer<OutputFrame> consumer,
         boolean followStream,
         OutputFrame.OutputType... types
     ) {
 
-        final LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
+        final LogContainerIntent cmd = dockerClient.logContainerIntent(containerId)
             .withFollowStream(followStream)
             .withSince(0);
 
@@ -102,6 +104,6 @@ public class LogUtils {
             if (type == STDERR) cmd.withStdErr(true);
         }
 
-        return cmd.exec(callback);
+        return cmd.perform(callback);
     }
 }

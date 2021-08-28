@@ -7,7 +7,6 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
@@ -39,6 +38,8 @@ import org.slf4j.Logger;
 import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.InspectContainerResult;
+import org.testcontainers.controller.model.ContainerNetwork;
+import org.testcontainers.controller.model.ContainerState;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
@@ -447,7 +448,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                             .stream()
                             .filter(it -> Objects.nonNull(it.getValue())) // filter out exposed but not yet mapped
                             .map(Entry::getKey)
-                            .map(ExposedPort::getPort)
+                            .map(org.testcontainers.controller.model.ExposedPort::getPort)
                             .collect(Collectors.toSet());
 
                          return exposedAndMappedPorts.containsAll(exposedPorts);
@@ -480,7 +481,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     throw new IllegalStateException("Container is removed");
                 }
 
-                InspectContainerResponse.ContainerState state = inspectContainerResponse.getState();
+                ContainerState state = inspectContainerResponse.getState();
                 if (Boolean.TRUE.equals(state.getDead())) {
                     throw new IllegalStateException("Container is dead");
                 }

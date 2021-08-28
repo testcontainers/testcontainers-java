@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Ports;
@@ -14,6 +13,7 @@ import org.assertj.core.api.Assumptions;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.controller.intents.InspectContainerResult;
+import org.testcontainers.controller.model.ContainerState;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -156,13 +156,13 @@ public class GenericContainerTest {
     @Slf4j
     static class WaitForExitedState extends AbstractWaitStrategy {
 
-        Predicate<ContainerState> predicate;
+        Predicate<org.testcontainers.controller.model.ContainerState> predicate;
 
         @Override
         @SneakyThrows
         protected void waitUntilReady() {
             Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, () -> {
-                ContainerState state = waitStrategyTarget.getCurrentContainerInfo().getState();
+                org.testcontainers.controller.model.ContainerState state = waitStrategyTarget.getCurrentContainerInfo().getState();
 
                 log.debug("Current state: {}", state);
                 if (!"exited".equalsIgnoreCase(state.getStatus())) {

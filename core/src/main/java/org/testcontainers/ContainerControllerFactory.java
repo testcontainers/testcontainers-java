@@ -3,6 +3,7 @@ package org.testcontainers;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
 import org.testcontainers.docker.DockerContainerProvider;
+import org.testcontainers.providers.kubernetes.KubernetesContainerProvider;
 
 public class ContainerControllerFactory {
 
@@ -14,7 +15,8 @@ public class ContainerControllerFactory {
 
     public synchronized static ContainerProvider instance() {
         if (instance == null) {
-            instance = new DockerContainerProvider();
+            // instance = new DockerContainerProvider();
+            instance = new KubernetesContainerProvider();
         }
         return instance;
     }

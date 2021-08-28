@@ -5,6 +5,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.model.ContainerState;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +51,7 @@ public abstract class StartupCheckStrategy {
 
     public abstract StartupStatus checkStartupState(ContainerController containerController, String containerId);
 
-    protected InspectContainerResponse.ContainerState getCurrentState(ContainerController containerController, String containerId) {
+    protected ContainerState getCurrentState(ContainerController containerController, String containerId) {
         return containerController.inspectContainerIntent(containerId).perform().getState();
     }
 

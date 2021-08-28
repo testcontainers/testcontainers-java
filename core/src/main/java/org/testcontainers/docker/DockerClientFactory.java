@@ -325,6 +325,7 @@ public class DockerClientFactory {
     /**
      * @return the IP address of the host running Docker
      */
+    @Deprecated // TODO: Remove
     public String dockerHostIpAddress() {
         return getOrInitializeStrategy().getDockerHostIpAddress();
     }

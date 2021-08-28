@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.HealthState;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.NetworkSettings;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.google.common.base.Preconditions;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.intents.InspectContainerResult;
+import org.testcontainers.controller.model.Binding;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.images.builder.Transferable;
@@ -57,7 +59,7 @@ public interface ContainerState {
      * @return a host
      */
     default String getHost() {
-        return DockerClientFactory.instance().dockerHostIpAddress();
+        return ContainerControllerFactory.instance().exposedPortsIpAddress();
     }
 
     /**
@@ -139,17 +141,18 @@ public interface ContainerState {
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
      */
-    default Integer getMappedPort(int originalPort) {
+    default Integer getMappedPort(int originalPort) { // TODO: Move functionality to Interface
         Preconditions.checkState(this.getContainerId() != null, "Mapped port can only be obtained after the container is started");
 
-        Ports.Binding[] binding = new Ports.Binding[0];
+        Binding[] binding = new Binding[0];
         final InspectContainerResult containerInfo = this.getContainerInfo();
         if (containerInfo != null) {
-            binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
+            binding = containerInfo.getNetworkSettings().getPorts().getBindings(originalPort);
         }
 
+        Ports.Binding pb;
         if (binding != null && binding.length > 0 && binding[0] != null) {
-            return Integer.valueOf(binding[0].getHostPortSpec());
+            return binding[0].getHostPort();
         } else {
             throw new IllegalArgumentException("Requested port (" + originalPort + ") is not mapped");
         }
@@ -194,7 +197,7 @@ public interface ContainerState {
      * @return all log output from the container from start until the current instant (both stdout and stderr)
      */
     default String getLogs() {
-        return LogUtils.getOutput(DockerClientFactory.instance().client(), getContainerId());
+        return LogUtils.getOutput(ContainerControllerFactory.instance().controller(), getContainerId());
     }
 
     /**
@@ -202,7 +205,7 @@ public interface ContainerState {
      * @return all log output from the container from start until the current instant
      */
     default String getLogs(OutputFrame.OutputType... types) {
-        return LogUtils.getOutput(DockerClientFactory.instance().client(), getContainerId(), types);
+        return LogUtils.getOutput(ContainerControllerFactory.instance().controller(), getContainerId(), types);
     }
 
     /**
@@ -277,11 +280,12 @@ public interface ContainerState {
             transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
 
-            DockerClientFactory.instance().client()
-                .copyArchiveToContainerCmd(getContainerId())
+            ContainerControllerFactory.instance().controller()
+                .copyArchiveToContainerIntent(getContainerId())
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
                 .withRemotePath("/")
-                .exec();
+                .perform();
+
         }
     }
 

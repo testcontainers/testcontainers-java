@@ -1,8 +1,6 @@
 package org.testcontainers.utility;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -21,6 +19,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
@@ -68,14 +67,14 @@ public final class ResourceReaper {
         .build();
 
     private static ResourceReaper instance;
-    private final DockerClient dockerClient;
+    private final ContainerController dockerClient;
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
     private Set<String> registeredImages = Sets.newConcurrentHashSet();
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
 
     private ResourceReaper() {
-        dockerClient = DockerClientFactory.instance().client();
+        dockerClient = ContainerControllerFactory.instance().controller(); // TODO: Rename to containerController
     }
 
 
@@ -303,7 +302,7 @@ public final class ResourceReaper {
     private void stopContainer(String containerId, String imageName) {
         boolean running;
         try {
-            InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+            InspectContainerResult containerInfo = dockerClient.inspectContainerIntent(containerId).perform();
             running = containerInfo.getState() != null && Boolean.TRUE.equals(containerInfo.getState().getRunning());
         } catch (NotFoundException e) {
             LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
@@ -318,7 +317,7 @@ public final class ResourceReaper {
         if (running) {
             try {
                 LOGGER.trace("Stopping container: {}", containerId);
-                dockerClient.killContainerCmd(containerId).exec();
+                dockerClient.killContainerIntent(containerId).perform();
                 LOGGER.trace("Stopped container: {}", imageName);
             } catch (Exception e) {
                 LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
@@ -328,7 +327,7 @@ public final class ResourceReaper {
         }
 
         try {
-            dockerClient.inspectContainerCmd(containerId).exec();
+            dockerClient.inspectContainerIntent(containerId).perform();
         } catch (Exception e) {
             LOGGER.trace("Was going to remove container but it apparently no longer exists: {}", containerId);
             return;
@@ -336,7 +335,7 @@ public final class ResourceReaper {
 
         try {
             LOGGER.trace("Removing container: {}", containerId);
-            dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
+            dockerClient.removeContainerIntent(containerId).withRemoveVolumes(true).withForce(true).perform();
             LOGGER.debug("Removed container and associated volume(s): {}", imageName);
         } catch (Exception e) {
             LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
@@ -363,9 +362,9 @@ public final class ResourceReaper {
     public void registerNetworkForCleanup(String networkName) {
         try {
             // Try to find the network by name, so that we can register its ID for later deletion
-            dockerClient.listNetworksCmd()
+            dockerClient.listNetworksIntent()
                     .withNameFilter(networkName)
-                    .exec()
+                    .perform()
             .forEach(network -> registerNetworkIdForCleanup(network.getId()));
         } catch (Exception e) {
             LOGGER.trace("Error encountered when looking up network (name: {})", networkName);
@@ -396,7 +395,7 @@ public final class ResourceReaper {
             try {
                 // Try to find the network if it still exists
                 // Listing by ID first prevents docker-java logging an error if we just go blindly into removeNetworkCmd
-                networks = dockerClient.listNetworksCmd().withIdFilter(id).exec();
+                networks = dockerClient.listNetworksIntent().withIdFilter(id).perform();
             } catch (Exception e) {
                 LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", id);
                 return;
@@ -406,7 +405,7 @@ public final class ResourceReaper {
             // using a for loop we essentially treat the network like an optional, only applying the removal if it exists
             for (Network network : networks) {
                 try {
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
+                    dockerClient.removeNetworkIntent(network.getId()).perform();
                     registeredNetworks.remove(network.getId());
                     LOGGER.debug("Removed network: {}", id);
                 } catch (Exception e) {
@@ -434,7 +433,7 @@ public final class ResourceReaper {
     private void removeImage(String dockerImageName) {
         LOGGER.trace("Removing image tagged {}", dockerImageName);
         try {
-            dockerClient.removeImageCmd(dockerImageName).withForce(true).exec();
+            dockerClient.removeImageIntent(dockerImageName).withForce(true).perform();
         } catch (Throwable e) {
             LOGGER.warn("Unable to delete image " + dockerImageName, e);
         }

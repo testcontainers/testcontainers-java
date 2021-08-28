@@ -1,12 +1,13 @@
 package org.testcontainers.images;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Image;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.docker.DockerClientFactory;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.UnsupportedProviderOperationException;
+import org.testcontainers.controller.intents.InspectImageResult;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
@@ -26,7 +27,7 @@ enum LocalImagesCache {
     @VisibleForTesting
     final Map<DockerImageName, ImageData> cache = new ConcurrentHashMap<>();
 
-    DockerClient dockerClient = DockerClientFactory.lazyClient();
+    ContainerController dockerClient = ContainerControllerFactory.lazyController(); // TODO: Rename to containerController
 
     public ImageData get(DockerImageName imageName) {
         maybeInitCache();
@@ -37,11 +38,13 @@ enum LocalImagesCache {
         if (!maybeInitCache()) {
             // Cache may be stale, trying inspectImageCmd...
 
-            InspectImageResponse response = null;
+            InspectImageResult response = null;
             try {
-                response = dockerClient.inspectImageCmd(imageName.asCanonicalNameString()).exec();
-            } catch (NotFoundException e) {
+                response = dockerClient.inspectImageIntent(imageName.asCanonicalNameString()).perform();
+            } catch (NotFoundException e) { // TODO: Replace exception
                 log.trace("Image {} not found", imageName, e);
+            } catch (UnsupportedProviderOperationException e) {
+                log.trace("Provider does not support image inspection", e);
             }
             if (response != null) {
                 ImageData imageData = ImageData.from(response);
@@ -65,7 +68,12 @@ enum LocalImagesCache {
             return false;
         }
 
-        populateFromList(dockerClient.listImagesCmd().exec());
+        try {
+            populateFromList(dockerClient.listImagesIntent().perform());
+        } catch (UnsupportedProviderOperationException e) {
+            log.trace("Provider does not support image listing", e);
+        }
+
 
         return true;
     }

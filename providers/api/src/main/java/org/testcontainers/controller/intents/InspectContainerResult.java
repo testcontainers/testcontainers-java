@@ -3,13 +3,14 @@ package org.testcontainers.controller.intents;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ContainerConfig;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.NetworkSettings;
+import org.testcontainers.controller.model.ContainerState;
+import org.testcontainers.controller.model.NetworkSettings;
 
 import java.util.List;
 
 public interface InspectContainerResult {
 
-    InspectContainerResponse.ContainerState getState();
+    ContainerState getState();
 
     NetworkSettings getNetworkSettings();
 

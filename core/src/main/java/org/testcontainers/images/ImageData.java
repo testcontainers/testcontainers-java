@@ -5,6 +5,7 @@ import com.github.dockerjava.api.model.Image;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.testcontainers.controller.intents.InspectImageResult;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -16,9 +17,17 @@ public class ImageData {
     @NonNull
     Instant createdAt;
 
+    // TODO: Remove
+    @Deprecated
     static ImageData from(InspectImageResponse inspectImageResponse) {
         return ImageData.builder()
             .createdAt(ZonedDateTime.parse(inspectImageResponse.getCreated()).toInstant())
+            .build();
+    }
+
+    static ImageData from(InspectImageResult inspectImageResult) {
+        return ImageData.builder()
+            .createdAt(inspectImageResult.getCreated())
             .build();
     }
 

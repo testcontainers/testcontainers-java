@@ -557,7 +557,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), containerId, consumer);
+        LogUtils.followOutput(ContainerControllerFactory.instance().controller(), containerId, consumer);
     }
 
     private SELF self() {

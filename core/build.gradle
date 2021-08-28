@@ -80,6 +80,7 @@ dependencies {
     api "com.github.docker-java:docker-java-api:3.2.11"
     api project(":providers-api")
     api project(":providers-docker")
+    api project(":providers-kubernetes")
 
     shaded ('com.github.docker-java:docker-java-core:3.2.11') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')

@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.testcontainers.controller.model.ContainerState;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -33,7 +34,7 @@ public class DockerStatus {
      * @param now                    the time to consider as the current time
      * @return true if we can conclude that the container is running, false otherwise
      */
-    public static boolean isContainerRunning(InspectContainerResponse.ContainerState state,
+    public static boolean isContainerRunning(ContainerState state,
                                              Duration minimumRunningDuration,
                                              Instant now) {
         if (state.getRunning()) {
@@ -56,7 +57,7 @@ public class DockerStatus {
      * @param state the state provided by InspectContainer
      * @return true if we can conclude that the container has started but is now stopped, false otherwise.
      */
-    public static boolean isContainerStopped(InspectContainerResponse.ContainerState state) {
+    public static boolean isContainerStopped(ContainerState state) {
 
         // get some preconditions out of the way
         if (state.getRunning() || state.getPaused()) {
@@ -78,8 +79,8 @@ public class DockerStatus {
                 && DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dockerTimestamp, Instant::from).getEpochSecond() >= 0L;
     }
 
-    public static boolean isContainerExitCodeSuccess(InspectContainerResponse.ContainerState state) {
-        int exitCode = state.getExitCode();
+    public static boolean isContainerExitCodeSuccess(ContainerState state) {
+        int exitCode = state.getExitCode(); // TODO: Handle null
         // 0 is the only exit code we can consider as success
         return exitCode == 0;
     }

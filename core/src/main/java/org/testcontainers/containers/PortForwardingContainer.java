@@ -1,10 +1,10 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.model.ContainerNetwork;
 import com.trilead.ssh2.Connection;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.testcontainers.controller.model.ContainerNetwork;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;

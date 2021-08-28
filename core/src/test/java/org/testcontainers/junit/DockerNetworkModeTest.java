@@ -1,10 +1,10 @@
 package org.testcontainers.junit;
 
-import com.github.dockerjava.api.model.NetworkSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.controller.model.NetworkSettings;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -27,7 +27,7 @@ public class DockerNetworkModeTest {
         ) {
             container.start();
             NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
-
+            com.github.dockerjava.api.model.NetworkSettings networkSettings1;
             assertEquals("only one network is set", 1, networkSettings.getNetworks().size());
             assertTrue("network is 'none'", networkSettings.getNetworks().containsKey("none"));
         }

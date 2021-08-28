@@ -2,10 +2,15 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
+import com.github.dockerjava.api.command.ExecStartCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.InspectExecCmd;
 import com.github.dockerjava.api.exception.DockerException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.intents.ExecCreateResult;
 import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
@@ -29,7 +34,7 @@ public class ExecInContainerPattern {
      * <p></p>
      * @param containerInfo the container info
      * @param command the command to execute
-     * @see #execInContainer(InspectContainerResponse, Charset, String...)
+     * @see #execInContainer(InspectContainerResult, Charset, String...)
      */
     public Container.ExecResult execInContainer(InspectContainerResult containerInfo, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
@@ -65,10 +70,10 @@ public class ExecInContainerPattern {
         String containerId = containerInfo.getId();
         String containerName = containerInfo.getName();
 
-        DockerClient dockerClient = DockerClientFactory.instance().client();
+        ContainerController dockerClient = ContainerControllerFactory.instance().controller(); // TODO: Rename
 
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
-        final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
+        final ExecCreateResult execCreateCmdResponse = dockerClient.execCreateCmd(containerId) // TODO: Rename
             .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
 
         final ToStringConsumer stdoutConsumer = new ToStringConsumer();

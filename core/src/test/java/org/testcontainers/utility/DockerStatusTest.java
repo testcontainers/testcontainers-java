@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
+import org.testcontainers.controller.model.ContainerState;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,20 +25,20 @@ public class DockerStatusTest {
 
     private static final Instant now = Instant.now();
 
-    private final InspectContainerResponse.ContainerState running;
+    private final ContainerState running;
 
-    private final InspectContainerResponse.ContainerState runningVariant;
+    private final ContainerState runningVariant;
 
-    private final InspectContainerResponse.ContainerState shortRunning;
+    private final ContainerState shortRunning;
 
-    private final InspectContainerResponse.ContainerState created;
+    private final ContainerState created;
 
     // a container in the "created" state is not running, and has both startedAt and finishedAt empty.
-    private final InspectContainerResponse.ContainerState createdVariant;
+    private final ContainerState createdVariant;
 
-    private final InspectContainerResponse.ContainerState exited;
+    private final ContainerState exited;
 
-    private final InspectContainerResponse.ContainerState paused;
+    private final ContainerState paused;
 
     private static final Duration minimumDuration = Duration.ofMillis(20);
 
@@ -88,10 +89,10 @@ public class DockerStatusTest {
 
     // ContainerState is a non-static inner class, with private member variables, in a different package.
     // It's simpler to mock it that to try to create one.
-    private static InspectContainerResponse.ContainerState buildState(boolean running, boolean paused,
+    private static ContainerState buildState(boolean running, boolean paused,
                                                                       String startedAt, String finishedAt) {
 
-        InspectContainerResponse.ContainerState state = Mockito.mock(InspectContainerResponse.ContainerState.class);
+        ContainerState state = Mockito.mock(ContainerState.class);
         when(state.getRunning()).thenReturn(running);
         when(state.getPaused()).thenReturn(paused);
         when(state.getStartedAt()).thenReturn(startedAt);

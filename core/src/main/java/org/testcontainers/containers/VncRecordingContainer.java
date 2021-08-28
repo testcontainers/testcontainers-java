@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.DockerClient;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

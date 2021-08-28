@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
+import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.images.ImagePullPolicy;
@@ -374,7 +375,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param consumer consumer that the frames should be sent to
      */
     default void followOutput(Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+        LogUtils.followOutput(ContainerControllerFactory.instance().controller(), getContainerId(), consumer);
     }
 
     /**
@@ -385,7 +386,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param types    types that should be followed (one or both of STDOUT, STDERR)
      */
     default void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer, types);
+        LogUtils.followOutput(ContainerControllerFactory.instance().controller(), getContainerId(), consumer, types);
     }
 
 

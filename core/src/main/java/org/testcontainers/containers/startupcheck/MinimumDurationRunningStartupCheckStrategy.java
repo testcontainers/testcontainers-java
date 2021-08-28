@@ -3,6 +3,7 @@ package org.testcontainers.containers.startupcheck;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.model.ContainerState;
 import org.testcontainers.utility.DockerStatus;
 
 import java.time.Duration;
@@ -26,7 +27,7 @@ public class MinimumDurationRunningStartupCheckStrategy extends StartupCheckStra
         // record "now" before fetching status; otherwise the time to fetch the status
         // will contribute to how long the container has been running.
         Instant now = Instant.now();
-        InspectContainerResponse.ContainerState state = getCurrentState(containerController, containerId);
+        ContainerState state = getCurrentState(containerController, containerId);
 
         if (DockerStatus.isContainerRunning(state, minimumRunningDuration, now)) {
             return StartupStatus.SUCCESSFUL;

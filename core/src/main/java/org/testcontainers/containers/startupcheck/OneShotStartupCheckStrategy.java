@@ -2,6 +2,7 @@ package org.testcontainers.containers.startupcheck;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.model.ContainerState;
 import org.testcontainers.utility.DockerStatus;
 
 /**
@@ -12,7 +13,7 @@ public class OneShotStartupCheckStrategy extends StartupCheckStrategy {
 
     @Override
     public StartupStatus checkStartupState(ContainerController containerController, String containerId) {
-        InspectContainerResponse.ContainerState state = getCurrentState(containerController, containerId);
+        ContainerState state = getCurrentState(containerController, containerId);
 
         if (!DockerStatus.isContainerStopped(state)) {
             return StartupStatus.NOT_YET_KNOWN;
