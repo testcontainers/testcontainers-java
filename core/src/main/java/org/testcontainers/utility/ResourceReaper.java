@@ -55,7 +55,7 @@ import static org.awaitility.Awaitility.await;
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
  */
 @Slf4j
-public final class ResourceReaper {
+public final class ResourceReaper { // TODO: Move functionality to provider
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 
@@ -36,7 +37,7 @@ public class DockerfileTest {
     public void customizableImage() {
         ImageFromDockerfile image = new ImageFromDockerfile() {
             @Override
-            protected void configure(BuildImageCmd buildImageCmd) {
+            protected void configure(BuildImageIntent buildImageCmd) {
                 super.configure(buildImageCmd);
 
                 List<String> dockerfile = Arrays.asList(
@@ -46,7 +47,7 @@ public class DockerfileTest {
                 );
                 withFileFromString("Dockerfile", String.join("\n", dockerfile));
 
-                buildImageCmd.withNoCache(true);
+                buildImageCmd.withDisabledCache(true);
             }
         };
 

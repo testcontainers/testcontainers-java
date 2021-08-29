@@ -52,7 +52,6 @@ public class CopyArchiveToContainerK8sIntent implements CopyArchiveToContainerIn
             while((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
                 Path relativePath = Paths.get(entry.getName());
                 Path localAbsolutePath = localRootPath.resolve(relativePath);
-                Path remoteAbsolutePath = remoteRootPath.resolve(relativePath);
 
                 if(entry.isFile()) {
                     try(FileOutputStream fos = new FileOutputStream(localAbsolutePath.toFile())) {
@@ -74,6 +73,8 @@ public class CopyArchiveToContainerK8sIntent implements CopyArchiveToContainerIn
             .withName(pod.getMetadata().getName())
             .dir(remotePath)
             .upload(localRootPath);
+
+        // TODO: Remove temp dir
 
         return;
     }

@@ -6,6 +6,7 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
@@ -28,6 +29,7 @@ import org.testcontainers.controller.intents.RemoveNetworkIntent;
 import org.testcontainers.controller.intents.StartContainerIntent;
 import org.testcontainers.controller.intents.TagImageIntent;
 import org.testcontainers.controller.intents.WaitContainerIntent;
+import org.testcontainers.docker.intents.BuildImageDockerIntent;
 import org.testcontainers.docker.intents.ConnectToNetworkDockerIntent;
 import org.testcontainers.docker.intents.CopyArchiveFromContainerDockerIntent;
 import org.testcontainers.docker.intents.CopyArchiveToContainerDockerIntent;
@@ -49,6 +51,8 @@ import org.testcontainers.docker.intents.StartContainerDockerIntent;
 import org.testcontainers.docker.intents.TagImageDockerIntent;
 import org.testcontainers.docker.intents.WaitContainerDockerIntent;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
+
+import java.io.InputStream;
 
 @Slf4j
 public class DockerContainerController implements ContainerController {
@@ -178,6 +182,11 @@ public class DockerContainerController implements ContainerController {
     @Override
     public CopyArchiveToContainerIntent copyArchiveToContainerIntent(String containerId) {
         return new CopyArchiveToContainerDockerIntent(dockerClient.copyArchiveToContainerCmd(containerId));
+    }
+
+    @Override
+    public BuildImageIntent buildImageIntent(InputStream in) {
+        return new BuildImageDockerIntent(dockerClient.buildImageCmd(in));
     }
 
     @Override

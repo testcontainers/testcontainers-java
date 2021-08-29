@@ -1,5 +1,7 @@
 package org.testcontainers.controller;
 
+import com.github.dockerjava.api.command.BuildImageCmd;
+import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
@@ -21,6 +23,9 @@ import org.testcontainers.controller.intents.RemoveNetworkIntent;
 import org.testcontainers.controller.intents.StartContainerIntent;
 import org.testcontainers.controller.intents.TagImageIntent;
 import org.testcontainers.controller.intents.WaitContainerIntent;
+
+import java.io.InputStream;
+import java.io.PipedInputStream;
 
 public interface ContainerController {
 
@@ -69,4 +74,6 @@ public interface ContainerController {
     InspectExecIntent inspectExecIntent(String commandId);
 
     CopyArchiveToContainerIntent copyArchiveToContainerIntent(String containerId);
+
+    BuildImageIntent buildImageIntent(InputStream in);
 }

@@ -3,6 +3,7 @@ package org.testcontainers.providers.kubernetes;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.UnsupportedProviderOperationException;
+import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
@@ -24,6 +25,7 @@ import org.testcontainers.controller.intents.RemoveNetworkIntent;
 import org.testcontainers.controller.intents.StartContainerIntent;
 import org.testcontainers.controller.intents.TagImageIntent;
 import org.testcontainers.controller.intents.WaitContainerIntent;
+import org.testcontainers.providers.kubernetes.intents.BuildImageK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.CopyArchiveToContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.CreateContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.ExecCreateK8sIntent;
@@ -33,6 +35,8 @@ import org.testcontainers.providers.kubernetes.intents.InspectExecK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.KillContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.LogContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.StartContainerK8sIntent;
+
+import java.io.InputStream;
 
 public class KubernetesContainerController implements ContainerController {
 
@@ -165,6 +169,11 @@ public class KubernetesContainerController implements ContainerController {
     @Override
     public CopyArchiveToContainerIntent copyArchiveToContainerIntent(String containerId) {
         return new CopyArchiveToContainerK8sIntent(ctx, ctx.findPodForContainerId(containerId));
+    }
+
+    @Override
+    public BuildImageIntent buildImageIntent(InputStream in) {
+        return new BuildImageK8sIntent(ctx, in);
     }
 
     /**

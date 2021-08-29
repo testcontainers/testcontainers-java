@@ -1,7 +1,7 @@
 dependencies {
     compileOnly 'org.jetbrains:annotations:21.0.1'
     api project(":providers-api")
-    implementation 'io.fabric8:kubernetes-client:5.7.0'
+    api 'io.fabric8:kubernetes-client:5.7.0'
     api 'org.apache.commons:commons-compress:1.21' // TODO: Check dependency
     api 'commons-codec:commons-codec:1.15' // TODO: Check dependency
 }

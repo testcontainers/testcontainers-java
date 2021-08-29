@@ -12,6 +12,7 @@ public class ImageFromDockerfileTest {
     @Test
     public void shouldAddDefaultLabels() {
         ImageFromDockerfile image = new ImageFromDockerfile()
+            .withDisabledPush(true)
             .withDockerfileFromBuilder(it -> it.from("scratch"));
 
         String imageId = image.resolve();
