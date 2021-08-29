@@ -1,6 +1,5 @@
 package org.testcontainers.containers.startupcheck;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;

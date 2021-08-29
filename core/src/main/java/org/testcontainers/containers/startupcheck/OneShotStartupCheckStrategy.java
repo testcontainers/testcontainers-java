@@ -1,6 +1,5 @@
 package org.testcontainers.containers.startupcheck;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.model.ContainerState;
 import org.testcontainers.utility.DockerStatus;

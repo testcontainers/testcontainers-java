@@ -1,7 +1,6 @@
 package org.testcontainers.providers.kubernetes;
 
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
-import io.fabric8.kubernetes.api.model.apps.ReplicaSetList;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.UnsupportedProviderOperationException;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
@@ -141,12 +140,12 @@ public class KubernetesContainerController implements ContainerController {
     }
 
     @Override
-    public ExecCreateIntent execCreateCmd(String containerId) {
+    public ExecCreateIntent execCreateIntent(String containerId) {
         return new ExecCreateK8sIntent(ctx, containerId);
     }
 
     @Override
-    public ExecStartIntent execStartCmd(String commandId) {
+    public ExecStartIntent execStartIntent(String commandId) {
         return new ExecStartK8sIntent(
             ctx,
             commandId,
@@ -155,7 +154,7 @@ public class KubernetesContainerController implements ContainerController {
     }
 
     @Override
-    public InspectExecIntent inspectExecCmd(String commandId) {
+    public InspectExecIntent inspectExecIntent(String commandId) {
         return new InspectExecK8sIntent(
             ctx,
             ctx.getCommand(commandId),

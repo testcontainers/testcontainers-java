@@ -1,10 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.ExecCreateCmdResponse;
-import com.github.dockerjava.api.command.ExecStartCmd;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.InspectExecCmd;
 import com.github.dockerjava.api.exception.DockerException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +7,6 @@ import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.intents.ExecCreateResult;
 import org.testcontainers.controller.intents.InspectContainerResult;
-import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.ToStringConsumer;
@@ -73,8 +67,8 @@ public class ExecInContainerPattern {
         ContainerController dockerClient = ContainerControllerFactory.instance().controller(); // TODO: Rename
 
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
-        final ExecCreateResult execCreateCmdResponse = dockerClient.execCreateCmd(containerId) // TODO: Rename
-            .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
+        final ExecCreateResult execCreateCmdResponse = dockerClient.execCreateIntent(containerId) // TODO: Rename
+            .withAttachStdout(true).withAttachStderr(true).withCmd(command).perform();
 
         final ToStringConsumer stdoutConsumer = new ToStringConsumer();
         final ToStringConsumer stderrConsumer = new ToStringConsumer();
@@ -83,9 +77,9 @@ public class ExecInContainerPattern {
             callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
             callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
 
-            dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
+            dockerClient.execStartIntent(execCreateCmdResponse.getId()).perform(callback).awaitCompletion();
         }
-        Integer exitCode = dockerClient.inspectExecCmd(execCreateCmdResponse.getId()).exec().getExitCode();
+        Integer exitCode = dockerClient.inspectExecIntent(execCreateCmdResponse.getId()).perform().getExitCode();
 
         final Container.ExecResult result = new Container.ExecResult(
             exitCode,

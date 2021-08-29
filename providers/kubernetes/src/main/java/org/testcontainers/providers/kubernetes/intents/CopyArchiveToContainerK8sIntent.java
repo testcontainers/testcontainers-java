@@ -5,11 +5,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
-import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionListener;
 
 import java.io.File;
 import java.io.FileOutputStream;

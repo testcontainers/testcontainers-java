@@ -17,7 +17,7 @@ public class InspectExecK8sIntent implements InspectExecIntent {
     }
 
     @Override
-    public InspectExecResult exec() {
+    public InspectExecResult perform() {
         return new InspectExecK8sResult(kubernetesExecution);
     }
 }

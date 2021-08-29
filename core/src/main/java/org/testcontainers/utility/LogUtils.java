@@ -1,7 +1,5 @@
 package org.testcontainers.utility;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.LogContainerCmd;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;

@@ -17,7 +17,6 @@ package org.testcontainers.couchbase;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.model.NetworkSettings;
 import lombok.Cleanup;
 import okhttp3.Credentials;
 import okhttp3.FormBody;
@@ -30,7 +29,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.controller.intents.InspectContainerResult;
-import org.testcontainers.controller.model.ContainerNetwork;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;

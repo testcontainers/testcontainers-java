@@ -1,6 +1,5 @@
 package org.testcontainers.providers.kubernetes.model;
 
-import io.fabric8.kubernetes.api.model.Service;
 import org.testcontainers.controller.model.ContainerNetwork;
 
 public class KubernetesNodePortNetwork implements ContainerNetwork {

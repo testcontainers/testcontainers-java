@@ -1,8 +1,8 @@
 package org.testcontainers.containers.wait.strategy;
 
-import com.github.dockerjava.api.command.LogContainerCmd;
 import lombok.SneakyThrows;
-import org.testcontainers.docker.DockerClientFactory;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.intents.LogContainerIntent;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
@@ -27,7 +27,7 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
 
-        LogContainerCmd cmd = DockerClientFactory.instance().client().logContainerCmd(waitStrategyTarget.getContainerId())
+        LogContainerIntent cmd = ContainerControllerFactory.instance().controller().logContainerIntent(waitStrategyTarget.getContainerId())
             .withFollowStream(true)
             .withSince(0)
             .withStdOut(true)
@@ -37,7 +37,7 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
             callback.addConsumer(STDOUT, waitingConsumer);
             callback.addConsumer(STDERR, waitingConsumer);
 
-            cmd.exec(callback);
+            cmd.perform(callback);
 
             Predicate<OutputFrame> waitPredicate = outputFrame ->
                 // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)

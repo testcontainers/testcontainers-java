@@ -13,7 +13,7 @@ public class ExecStartDockerIntent implements ExecStartIntent {
     }
 
     @Override
-    public <T extends ResultCallback<Frame>> T exec(T resultCallback) {
+    public <T extends ResultCallback<Frame>> T perform(T resultCallback) {
         return execStartCmd.exec(resultCallback);
     }
 }

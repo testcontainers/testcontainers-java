@@ -161,17 +161,17 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public ExecCreateIntent execCreateCmd(String containerId) {
+    public ExecCreateIntent execCreateIntent(String containerId) {
         return new ExecCreateDockerIntent(dockerClient.execCreateCmd(containerId));
     }
 
     @Override
-    public ExecStartIntent execStartCmd(String commandId) {
+    public ExecStartIntent execStartIntent(String commandId) {
         return new ExecStartDockerIntent(dockerClient.execStartCmd(commandId));
     }
 
     @Override
-    public InspectExecIntent inspectExecCmd(String commandId) {
+    public InspectExecIntent inspectExecIntent(String commandId) {
         return new InspectExecDockerIntent(dockerClient.inspectExecCmd(commandId));
     }
 

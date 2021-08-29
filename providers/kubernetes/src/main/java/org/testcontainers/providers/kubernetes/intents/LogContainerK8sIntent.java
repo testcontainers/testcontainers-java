@@ -62,6 +62,7 @@ public class LogContainerK8sIntent implements LogContainerIntent {
         if(followStream) {
             KubernetesExecutionLogAdapter<T> logAdapter = new KubernetesExecutionLogAdapter<T>(StreamType.STDOUT, resultCallback);
             podResource.watchLog(logAdapter);
+
         } else {
             String log = podResource.getLog();
             try(KubernetesExecutionLogAdapter<T> logAdapter = new KubernetesExecutionLogAdapter<>(StreamType.STDOUT, resultCallback)) {

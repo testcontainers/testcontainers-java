@@ -1,6 +1,5 @@
 package org.testcontainers.utility;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

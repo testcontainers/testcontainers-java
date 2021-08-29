@@ -1,7 +1,6 @@
 package org.testcontainers.providers.kubernetes.intents;
 
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
-import io.fabric8.kubernetes.api.model.apps.ReplicaSetList;
 import org.testcontainers.controller.intents.StartContainerIntent;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
 

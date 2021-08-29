@@ -1,6 +1,5 @@
 package org.testcontainers.utility;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.controller.model.ContainerState;
 
 import java.time.Duration;

@@ -13,9 +13,6 @@ import org.testcontainers.providers.kubernetes.execution.KubernetesExecution;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionListener;
 import org.testcontainers.providers.kubernetes.execution.NullInputStream;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 public class ExecStartK8sIntent implements ExecStartIntent {
     private final KubernetesContext ctx;
     private final String commandId;
@@ -32,7 +29,7 @@ public class ExecStartK8sIntent implements ExecStartIntent {
     }
 
     @Override
-    public <T extends ResultCallback<Frame>> T exec(T resultCallback) {
+    public <T extends ResultCallback<Frame>> T perform(T resultCallback) {
         Pod pod = ctx.findPodForContainerId(command.getContainerId());
 
         KubernetesExecutionListener listener = new KubernetesExecutionListener();

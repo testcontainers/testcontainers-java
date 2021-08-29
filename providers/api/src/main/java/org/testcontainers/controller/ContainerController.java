@@ -1,10 +1,5 @@
 package org.testcontainers.controller;
 
-import com.github.dockerjava.api.command.AsyncDockerCmd;
-import com.github.dockerjava.api.command.CommitCmd;
-import com.github.dockerjava.api.command.ListContainersCmd;
-import com.github.dockerjava.api.command.LogContainerCmd;
-import com.github.dockerjava.api.command.RemoveContainerCmd;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
@@ -67,11 +62,11 @@ public interface ContainerController {
 
     RemoveImageIntent removeImageIntent(String imageReference);
 
-    ExecCreateIntent execCreateCmd(String containerId); // TODO: Rename
+    ExecCreateIntent execCreateIntent(String containerId);
 
-    ExecStartIntent execStartCmd(String commandId); // TODO: Rename
+    ExecStartIntent execStartIntent(String commandId);
 
-    InspectExecIntent inspectExecCmd(String commandId); // TODO: Rename
+    InspectExecIntent inspectExecIntent(String commandId);
 
     CopyArchiveToContainerIntent copyArchiveToContainerIntent(String containerId);
 }

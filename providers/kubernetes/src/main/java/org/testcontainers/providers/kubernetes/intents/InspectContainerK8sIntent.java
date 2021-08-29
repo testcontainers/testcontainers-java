@@ -1,6 +1,5 @@
 package org.testcontainers.providers.kubernetes.intents;
 
-import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import org.testcontainers.controller.intents.InspectContainerIntent;

@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.ContainerControllerFactory;
-import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;

@@ -4,7 +4,6 @@ import com.github.dockerjava.api.command.HealthState;
 import io.fabric8.kubernetes.api.model.ContainerStateTerminated;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import org.testcontainers.providers.kubernetes.KubernetesContext;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 // TODO: Check properties

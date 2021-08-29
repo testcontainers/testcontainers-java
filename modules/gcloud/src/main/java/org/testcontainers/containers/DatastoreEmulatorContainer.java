@@ -33,6 +33,6 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
      * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getContainerIpAddress() + ":" + getMappedPort(8081);
+        return "http://" + getContainerIpAddress() + ":" + getMappedPort(8081);
     }
 }

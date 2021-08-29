@@ -12,7 +12,7 @@ public class InspectExecDockerIntent implements InspectExecIntent {
     }
 
     @Override
-    public InspectExecResult exec() {
+    public InspectExecResult perform() {
         return new InspectExecDockerResult(inspectExecCmd.exec());
     }
 }

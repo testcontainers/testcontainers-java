@@ -1,6 +1,5 @@
 package org.testcontainers.providers.kubernetes.intents;
 
-import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import org.testcontainers.controller.intents.ExecCreateIntent;
 import org.testcontainers.controller.intents.ExecCreateResult;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
@@ -53,7 +52,7 @@ public class ExecCreateK8sIntent implements ExecCreateIntent {
     }
 
     @Override
-    public ExecCreateResult exec() {
+    public ExecCreateResult perform() {
         return ctx.registerCommand(this);
     }
 }
