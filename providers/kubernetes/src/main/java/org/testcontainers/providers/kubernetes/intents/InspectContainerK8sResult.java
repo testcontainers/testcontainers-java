@@ -42,7 +42,7 @@ public class InspectContainerK8sResult implements InspectContainerResult {
 
     @Override
     public NetworkSettings getNetworkSettings() {
-        return new KubernetesNetworkSettings(ctx, service);
+        return new KubernetesNetworkSettings(ctx, containerId, service);
     }
 
     @Override

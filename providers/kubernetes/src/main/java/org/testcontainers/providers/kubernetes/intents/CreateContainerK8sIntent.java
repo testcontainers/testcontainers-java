@@ -10,14 +10,20 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSetBuilder;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerResult;
+import org.testcontainers.controller.model.EnvironmentVariable;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
 
 import java.util.Arrays;
@@ -26,7 +32,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CreateContainerK8sIntent implements CreateContainerIntent {
 
@@ -42,7 +50,8 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
 
     @Override
     public CreateContainerIntent withCmd(String... args) {
-        return null;
+        containerBuilder.withArgs(args); // Args is the correct property to be set // TODO: Consider renaming interface method
+        return this;
     }
 
     @Override
@@ -75,8 +84,13 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
     }
 
     @Override
-    public CreateContainerIntent withEnv(String[] envArray) {
-        return null;
+    public CreateContainerIntent withEnv(EnvironmentVariable... environmentVariables) {
+        containerBuilder.withEnv(
+            Stream.of(environmentVariables)
+                .map(e -> new EnvVar(e.getName(), e.getValue(), null))
+                .collect(Collectors.toList())
+        );
+        return this;
     }
 
     @Override
@@ -255,8 +269,50 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
                 .endSpec();
                 // @formatter:on
             }
-            Service service = ctx.getClient().services().create(serviceBuilder.build());
+            ctx.getClient().services().create(serviceBuilder.build());
         }
+
+        Pod pod = ctx.findPodForReplicaSet(replicaSet);
+
+        ctx.getClient().pods()
+            .inNamespace(pod.getMetadata().getNamespace())
+            .withName(pod.getMetadata().getName())
+            .waitUntilReady(3, TimeUnit.MINUTES); // TODO: Maybe just wait for container status. See below
+            // TODO: Configurable timeout?
+        /*
+        Pulling:
+        =========================
+  containerStatuses:
+  - image: couchbase/server:enterprise-6.6.2
+    imageID: ""
+    lastState: {}
+    name: testcontainer
+    ready: false
+    restartCount: 0
+    started: false
+    state:
+      waiting:
+        reason: ContainerCreating
+
+        Pulled:
+        =================
+  containerStatuses:
+  - containerID: docker://b657ad66dd4fabfa285d037030ca4369eb0da301911c870651425d766415b92e
+    image: couchbase/server:community-6.6.0
+    imageID: docker-pullable://couchbase/server@sha256:8d4d340ee73060bdecbe8bc5ca9dba390c5336d9d7c4e5c0319957fb5960f61d
+    lastState: {}
+    name: testcontainer
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2021-08-29T08:48:43Z"
+
+         */
+
+
+
 
         return new CreateContainerK8sResult(ctx, createdReplicaSet);
     }

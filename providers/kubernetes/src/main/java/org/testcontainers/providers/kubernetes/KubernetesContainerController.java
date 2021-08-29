@@ -32,6 +32,7 @@ import org.testcontainers.providers.kubernetes.intents.ExecStartK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.InspectContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.InspectExecK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.KillContainerK8sIntent;
+import org.testcontainers.providers.kubernetes.intents.LogContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.StartContainerK8sIntent;
 
 public class KubernetesContainerController implements ContainerController {
@@ -91,7 +92,7 @@ public class KubernetesContainerController implements ContainerController {
 
     @Override
     public LogContainerIntent logContainerIntent(String containerId) {
-        return null;
+        return new LogContainerK8sIntent(ctx, containerId);
     }
 
     @Override

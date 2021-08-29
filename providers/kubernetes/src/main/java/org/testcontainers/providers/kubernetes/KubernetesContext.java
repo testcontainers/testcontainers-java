@@ -98,6 +98,10 @@ public class KubernetesContext {
 
     public Pod findPodForContainerId(String containerId) {
         ReplicaSet replicaSet = findReplicaSet(containerId);
+        return findPodForReplicaSet(replicaSet);
+    }
+
+    public Pod findPodForReplicaSet(ReplicaSet replicaSet) {
         return client
             .pods()
             .inNamespace(replicaSet.getMetadata().getNamespace())

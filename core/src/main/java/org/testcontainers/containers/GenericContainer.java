@@ -40,6 +40,7 @@ import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.controller.model.ContainerNetwork;
 import org.testcontainers.controller.model.ContainerState;
+import org.testcontainers.controller.model.EnvironmentVariable;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
@@ -111,8 +112,8 @@ import static org.testcontainers.utility.CommandLine.runShellCommand;
  */
 @Data
 public class GenericContainer<SELF extends GenericContainer<SELF>>
-        extends FailureDetectingExternalResource
-        implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
+    extends FailureDetectingExternalResource
+    implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -144,7 +145,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @NonNull
     private List<String> networkAliases = new ArrayList<>(Arrays.asList(
-            "tc-" + Base58.randomString(8)
+        "tc-" + Base58.randomString(8)
     ));
 
     @NonNull
@@ -202,7 +203,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Set during container startup
-     *
      */
     @Setter(AccessLevel.NONE)
     @VisibleForTesting
@@ -451,7 +451,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                             .map(org.testcontainers.controller.model.ExposedPort::getPort)
                             .collect(Collectors.toSet());
 
-                         return exposedAndMappedPorts.containsAll(exposedPorts);
+                        return exposedAndMappedPorts.containsAll(exposedPorts);
                     }
                 );
 
@@ -655,9 +655,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
         PathUtils.mkdirp(directory);
 
-        if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
-            PathUtils.recursiveDeleteDir(directory);
-        }));
+        if (temporary)
+            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
+                PathUtils.recursiveDeleteDir(directory);
+            }));
 
         return directory;
     }
@@ -776,11 +777,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createIntent.withCmd(commandParts);
         }
 
-        String[] envArray = env.entrySet().stream()
+        createIntent.withEnv(
+            env.entrySet().stream()
                 .filter(it -> it.getValue() != null)
-                .map(it -> it.getKey() + "=" + it.getValue())
-                .toArray(String[]::new);
-        createIntent.withEnv(envArray);
+                .map(it -> new EnvironmentVariable(it.getKey(), it.getValue()))
+                .toArray(EnvironmentVariable[]::new)
+        );
 
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
@@ -794,11 +796,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         Bind[] bindsArray = binds.stream()
-                .toArray(Bind[]::new);
+            .toArray(Bind[]::new);
         createIntent.withBinds(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream()
-                .toArray(VolumesFrom[]::new);
+            .toArray(VolumesFrom[]::new);
         createIntent.withVolumesFrom(volumesFromsArray);
 
         Set<Link> allLinks = new HashSet<>();
@@ -813,8 +815,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (allLinks.size() == 0) {
                 throw new ContainerLaunchException("Aborting attempt to link to container " +
-                        linkableContainer.getContainerName() +
-                        " as it is not running");
+                    linkableContainer.getContainerName() +
+                    " as it is not running");
             }
 
             Set<String> linkedContainerNetworks = findAllNetworksForLinkedContainers(linkableContainer);
@@ -826,8 +828,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         allLinkedContainerNetworks.remove("bridge");
         if (allLinkedContainerNetworks.size() > 1) {
             logger().warn("Container needs to be on more than one custom network to link to other " +
-                            "containers - this is not currently supported. Required networks are: {}",
-                    allLinkedContainerNetworks);
+                    "containers - this is not currently supported. Required networks are: {}",
+                allLinkedContainerNetworks);
         }
 
         Optional<String> networkForLinks = allLinkedContainerNetworks.stream().findFirst();
@@ -841,7 +843,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         });
 
         String[] extraHostsArray = extraHosts.stream()
-                .toArray(String[]::new);
+            .toArray(String[]::new);
         createIntent.withExtraHosts(extraHostsArray);
 
         if (network != null) {
@@ -872,22 +874,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
         return containerController.listContainersIntent()
-                .withStatusFilter(Arrays.asList("running"))
-                .perform().stream()
-                .flatMap(container -> Stream.of(container.getNames()))
-                .filter(name -> name.endsWith(linkableContainer.getContainerName()))
-                .map(name -> new Link(name, alias))
-                .collect(Collectors.toSet());
+            .withStatusFilter(Arrays.asList("running"))
+            .perform().stream()
+            .flatMap(container -> Stream.of(container.getNames()))
+            .filter(name -> name.endsWith(linkableContainer.getContainerName()))
+            .map(name -> new Link(name, alias))
+            .collect(Collectors.toSet());
     }
 
     private Set<String> findAllNetworksForLinkedContainers(LinkableContainer linkableContainer) {
         return containerController.listContainersIntent().perform().stream()
-                .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-                .filter(container -> container.getNetworkSettings() != null &&
-                        container.getNetworkSettings().getNetworks() != null)
-                .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
-                .distinct()
-                .collect(Collectors.toSet());
+            .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
+            .filter(container -> container.getNetworkSettings() != null &&
+                container.getNetworkSettings().getNetworks() != null)
+            .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
+            .distinct()
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -955,18 +957,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public List<String> getEnv() {
         return env.entrySet().stream()
-                .map(it -> it.getKey() + "=" + it.getValue())
-                .collect(Collectors.toList());
+            .map(it -> it.getKey() + "=" + it.getValue())
+            .collect(Collectors.toList());
     }
 
     @Override
     public void setEnv(List<String> env) {
         this.env = env.stream()
-                .map(it -> it.split("="))
-                .collect(Collectors.toMap(
-                        it -> it[0],
-                        it -> it[1]
-                ));
+            .map(it -> it.split("="))
+            .collect(Collectors.toMap(
+                it -> it[0],
+                it -> it[1]
+            ));
     }
 
     /**
@@ -1399,6 +1401,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Size of /dev/shm
+     *
      * @param bytes The number of bytes to assign the shared memory. If null, it will apply the Docker default which is 64 MB.
      * @return this
      */
@@ -1409,6 +1412,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * First class support for configuring tmpfs
+     *
      * @param mapping path and params of tmpfs/mount flag for container
      * @return this
      */

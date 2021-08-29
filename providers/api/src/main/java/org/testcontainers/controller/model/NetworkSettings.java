@@ -7,4 +7,6 @@ public interface NetworkSettings {
     Ports getPorts();
 
     Map<String, ContainerNetwork> getNetworks();
+
+    String getInternalContainerIp();
 }

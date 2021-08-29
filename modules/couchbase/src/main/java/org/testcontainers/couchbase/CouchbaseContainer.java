@@ -434,10 +434,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Helper method to extract the internal IP address based on the network configuration.
      */
     private String getInternalIpAddress() {
-        return getContainerInfo().getNetworkSettings().getNetworks().values().stream()
-            .findFirst()
-            .map(ContainerNetwork::getIpAddress)
-            .orElseThrow(() -> new IllegalStateException("No network available to extract the internal IP from!"));
+        return getContainerInfo().getNetworkSettings().getInternalContainerIp();
     }
 
     /**

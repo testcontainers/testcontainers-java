@@ -30,4 +30,12 @@ public class DockerNetworkSettings implements NetworkSettings {
                 e -> new DockerContainerNetwork(e.getValue())
             ));
     }
+
+    @Override
+    public String getInternalContainerIp() {
+        return getNetworks().values().stream()
+            .findFirst()
+            .map(ContainerNetwork::getIpAddress)
+            .orElseThrow(() -> new IllegalStateException("No network available to extract the internal IP from!"));
+    }
 }

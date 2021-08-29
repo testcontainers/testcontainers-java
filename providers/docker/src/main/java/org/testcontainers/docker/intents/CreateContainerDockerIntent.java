@@ -10,7 +10,9 @@ import com.github.dockerjava.api.model.VolumesFrom;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerResult;
+import org.testcontainers.controller.model.EnvironmentVariable;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +58,11 @@ public class CreateContainerDockerIntent implements CreateContainerIntent {
     }
 
     @Override
-    public CreateContainerIntent withEnv(String[] envArray) {
+    public CreateContainerIntent withEnv(EnvironmentVariable... environmentVariables) {
+        String[] envArray = Arrays.stream(environmentVariables)
+            .filter(it -> it.getValue() != null)
+            .map(it -> it.getName() + "=" + it.getValue())
+            .toArray(String[]::new);
         createContainerCmd.withEnv(envArray);
         return this;
     }

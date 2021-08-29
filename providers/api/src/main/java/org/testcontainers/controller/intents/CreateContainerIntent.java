@@ -7,6 +7,7 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.VolumesFrom;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.controller.model.EnvironmentVariable;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public interface CreateContainerIntent {
     CreateContainerIntent withHostConfig(HostConfig hostConfig);
 
     HostConfig getHostConfig();
-    CreateContainerIntent withEnv(String[] envArray);
+    CreateContainerIntent withEnv(EnvironmentVariable... environmentVariables);
 
     // TODO: Replace Bind
     CreateContainerIntent withBinds(Bind[] bindsArray);
