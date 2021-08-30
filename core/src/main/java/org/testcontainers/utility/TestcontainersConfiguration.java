@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -207,6 +206,10 @@ public class TestcontainersConfiguration {
 
     public String getImageSubstitutorClassName() {
         return getEnvVarOrProperty("image.substitutor", null);
+    }
+
+    public Integer getClientPingTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "5"));
     }
 
     @Nullable
