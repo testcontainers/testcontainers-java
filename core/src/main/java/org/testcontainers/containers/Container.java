@@ -156,7 +156,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param mode the bind mode
      * @return this
      */
-    SELF withVolumesFrom(Container<?> container, BindMode mode);
+    SELF withVolumesFrom(Container container, BindMode mode);
 
     /**
      * Set the ports that this container listens on
@@ -273,7 +273,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     /**
      * Set the image pull policy of the container
-     * @return this
+     * @return
      */
     SELF withImagePullPolicy(ImagePullPolicy policy);
 
@@ -396,30 +396,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
 
     /**
-     * @return have any log consumers been configured already?
-     */
-    default boolean hasLogConsumers() {
-        return false;
-    }
-
-    /**
      * Attach an output consumer at container startup, enabling stdout and stderr to be followed, waited on, etc.
      * <p>
-     * More than one consumer may be registered, but the same consumer can only be added once.
+     * More than one consumer may be registered.
      *
      * @param consumer consumer that output frames should be sent to
      * @return this
      */
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
-
-    /**
-     * Remove all configured output consumers before startup.
-     * <p>
-     * Please note that this does not unregister all previous consumers after container startup.
-     *
-     * @return this
-     */
-    SELF clearLogConsumers();
 
     List<String> getPortBindings();
 
