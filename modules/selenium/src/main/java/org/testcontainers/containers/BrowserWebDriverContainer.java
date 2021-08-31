@@ -2,9 +2,6 @@ package org.testcontainers.containers;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-import com.github.dockerjava.api.model.AccessMode;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +30,9 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.controller.intents.InspectContainerResult;
+import org.testcontainers.controller.model.BindMode;
+import org.testcontainers.controller.model.HostMount;
+import org.testcontainers.controller.model.MountPoint;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.DockerImageName;
@@ -219,7 +219,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setCommand("/opt/bin/entry_point.sh");
 
         if (getShmSize() == null) {
-            this.getBinds().add(new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw));
+            this.getBinds().add(new HostMount("/dev/shm", new MountPoint("/dev/shm",  BindMode.READ_WRITE)));
         }
 
         /*

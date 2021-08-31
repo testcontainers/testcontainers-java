@@ -1,6 +1,5 @@
 package org.testcontainers.controller.intents;
 
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
@@ -8,6 +7,7 @@ import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.VolumesFrom;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.model.EnvironmentVariable;
+import org.testcontainers.controller.model.HostMount;
 
 import java.util.List;
 import java.util.Map;
@@ -28,9 +28,9 @@ public interface CreateContainerIntent {
     CreateContainerIntent withEnv(EnvironmentVariable... environmentVariables);
 
     // TODO: Replace Bind
-    CreateContainerIntent withBinds(Bind[] bindsArray);
+    CreateContainerIntent withBinds(HostMount... hostMounts); // TODO: Rename
 
-    CreateContainerIntent withBinds(List<Bind> binds);
+    CreateContainerIntent withBinds(List<HostMount> hostMounts); // TODO: Rename
 
     // TODO: Replace VolumesFrom
     CreateContainerIntent withVolumesFrom(VolumesFrom[] volumesFromsArray);

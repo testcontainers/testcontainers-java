@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
 import org.junit.Test;
-import org.testcontainers.containers.BindMode;
+import org.testcontainers.controller.model.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.utility.MountableFile;

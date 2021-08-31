@@ -1,6 +1,5 @@
 package org.testcontainers.providers.kubernetes.intents;
 
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
@@ -20,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerResult;
 import org.testcontainers.controller.model.EnvironmentVariable;
+import org.testcontainers.controller.model.HostMount;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
 
 import java.util.Arrays;
@@ -89,12 +89,12 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
     }
 
     @Override
-    public CreateContainerIntent withBinds(Bind[] bindsArray) {
+    public CreateContainerIntent withBinds(HostMount... hostMounts) {
         return null;
     }
 
     @Override
-    public CreateContainerIntent withBinds(List<Bind> binds) {
+    public CreateContainerIntent withBinds(List<HostMount> hostMounts) {
         return null;
     }
 

@@ -1,12 +1,13 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.model.Bind;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.model.BindMode;
+import org.testcontainers.controller.model.HostMount;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -416,7 +417,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     String[] getCommandParts();
 
-    List<Bind> getBinds();
+    List<HostMount> getBinds();
 
     /**
      * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
@@ -438,7 +439,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setCommandParts(String[] commandParts);
 
-    void setBinds(List<Bind> binds);
+    void setBinds(List<HostMount> binds);
 
     /**
      * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.

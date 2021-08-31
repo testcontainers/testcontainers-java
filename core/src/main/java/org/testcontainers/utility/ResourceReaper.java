@@ -2,14 +2,12 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
-import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -22,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.intents.InspectContainerResult;
+import org.testcontainers.controller.model.HostMount;
+import org.testcontainers.controller.model.MountPoint;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.containers.ContainerState;
 
@@ -99,8 +99,8 @@ public final class ResourceReaper { // TODO: Move functionality to provider
             .asCanonicalNameString();
         client.checkAndPullImage(ryukImage);
 
-        List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
+        List<HostMount> binds = new ArrayList<>();
+        binds.add(new HostMount(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new MountPoint("/var/run/docker.sock")));
 
         ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
         String ryukContainerId = client.createContainerIntent(ryukImage)

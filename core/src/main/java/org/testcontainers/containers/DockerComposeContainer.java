@@ -64,7 +64,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static org.testcontainers.containers.BindMode.READ_WRITE;
+import static org.testcontainers.controller.model.BindMode.READ_WRITE;
 
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.

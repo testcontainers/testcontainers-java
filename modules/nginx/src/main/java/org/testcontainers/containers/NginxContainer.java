@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.controller.model.BindMode;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.MalformedURLException;

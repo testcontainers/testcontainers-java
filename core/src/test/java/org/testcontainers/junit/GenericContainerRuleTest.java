@@ -55,8 +55,8 @@ import static org.testcontainers.TestImages.MONGODB_IMAGE;
 import static org.testcontainers.TestImages.RABBITMQ_IMAGE;
 import static org.testcontainers.TestImages.REDIS_IMAGE;
 import static org.testcontainers.TestImages.TINY_IMAGE;
-import static org.testcontainers.containers.BindMode.READ_ONLY;
-import static org.testcontainers.containers.BindMode.READ_WRITE;
+import static org.testcontainers.controller.model.BindMode.READ_ONLY;
+import static org.testcontainers.controller.model.BindMode.READ_WRITE;
 import static org.testcontainers.containers.SelinuxContext.SHARED;
 
 /**

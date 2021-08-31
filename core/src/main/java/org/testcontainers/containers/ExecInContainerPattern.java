@@ -64,10 +64,10 @@ public class ExecInContainerPattern {
         String containerId = containerInfo.getId();
         String containerName = containerInfo.getName();
 
-        ContainerController dockerClient = ContainerControllerFactory.instance().controller(); // TODO: Rename
+        ContainerController containerController = ContainerControllerFactory.instance().controller(); // TODO: Rename every dockerClient
 
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
-        final ExecCreateResult execCreateCmdResponse = dockerClient.execCreateIntent(containerId) // TODO: Rename
+        final ExecCreateResult execCreateCmdResponse = containerController.execCreateIntent(containerId) // TODO: Rename
             .withAttachStdout(true).withAttachStderr(true).withCmd(command).perform();
 
         final ToStringConsumer stdoutConsumer = new ToStringConsumer();
@@ -77,9 +77,9 @@ public class ExecInContainerPattern {
             callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
             callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
 
-            dockerClient.execStartIntent(execCreateCmdResponse.getId()).perform(callback).awaitCompletion();
+            containerController.execStartIntent(execCreateCmdResponse.getId()).perform(callback).awaitCompletion();
         }
-        Integer exitCode = dockerClient.inspectExecIntent(execCreateCmdResponse.getId()).perform().getExitCode();
+        Integer exitCode = containerController.inspectExecIntent(execCreateCmdResponse.getId()).perform().getExitCode();
 
         final Container.ExecResult result = new Container.ExecResult(
             exitCode,

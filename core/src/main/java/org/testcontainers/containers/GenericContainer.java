@@ -5,13 +5,11 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
-import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.google.common.annotations.VisibleForTesting;
@@ -37,9 +35,12 @@ import org.slf4j.Logger;
 import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.InspectContainerResult;
+import org.testcontainers.controller.model.BindMode;
 import org.testcontainers.controller.model.ContainerNetwork;
 import org.testcontainers.controller.model.ContainerState;
 import org.testcontainers.controller.model.EnvironmentVariable;
+import org.testcontainers.controller.model.HostMount;
+import org.testcontainers.controller.model.MountPoint;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
@@ -160,7 +161,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private String[] commandParts = new String[0];
 
     @NonNull
-    private List<Bind> binds = new ArrayList<>();
+    private List<HostMount> binds = new ArrayList<>(); // TODO: Rename
 
     private boolean privilegedMode;
 
@@ -794,8 +795,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         }
 
-        Bind[] bindsArray = binds.stream()
-            .toArray(Bind[]::new);
+        HostMount[] bindsArray = binds.stream()
+            .toArray(HostMount[]::new);
         createIntent.withBinds(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream()
@@ -985,11 +986,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
             // e.g. Docker socket mount
-            binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
-
+            binds.add(new HostMount(hostPath, new MountPoint(containerPath, mode), selinuxContext.selContext));
         } else {
             final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+            binds.add(new HostMount(mountableFile.getResolvedPath(), new MountPoint(containerPath, mode), selinuxContext.selContext));
         }
     }
 

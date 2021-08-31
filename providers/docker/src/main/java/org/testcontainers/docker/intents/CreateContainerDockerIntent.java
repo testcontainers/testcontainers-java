@@ -6,16 +6,19 @@ import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerResult;
 import org.testcontainers.controller.model.EnvironmentVariable;
+import org.testcontainers.controller.model.HostMount;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CreateContainerDockerIntent implements CreateContainerIntent {
 
@@ -68,14 +71,20 @@ public class CreateContainerDockerIntent implements CreateContainerIntent {
     }
 
     @Override
-    public CreateContainerIntent withBinds(Bind[] bindsArray) {
-        createContainerCmd.withBinds(bindsArray);
-        return this;
+    public CreateContainerIntent withBinds(HostMount... hostMounts) {
+        return this.withBinds(Arrays.asList(hostMounts));
     }
 
     @Override
-    public CreateContainerIntent withBinds(List<Bind> binds) {
-        createContainerCmd.withBinds(binds);
+    public CreateContainerIntent withBinds(List<HostMount> hostMounts) {
+
+        createContainerCmd.withBinds(hostMounts.stream().map(m -> new Bind(
+                m.getHostPath(),
+                new Volume(m.getHostPath()),
+                m.getMountPoint().getBindMode().accessMode,
+                m.getSelContext()
+            )).collect(Collectors.toList())
+        );
         return this;
     }
 
@@ -134,8 +143,8 @@ public class CreateContainerDockerIntent implements CreateContainerIntent {
 
     @Override
     public @NotNull Map<String, String> getLabels() {
-        Map<String,String> labels = createContainerCmd.getLabels();
-        if(labels != null) {
+        Map<String, String> labels = createContainerCmd.getLabels();
+        if (labels != null) {
             return labels;
         }
         return new HashMap<>();

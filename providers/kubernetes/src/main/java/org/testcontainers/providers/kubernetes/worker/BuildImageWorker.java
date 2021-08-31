@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-@Slf4j
+@Slf4j // TODO: Complete or remove
 public class BuildImageWorker implements Closeable {
 
     private final Thread workerThread;
