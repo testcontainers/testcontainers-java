@@ -11,12 +11,17 @@ import org.slf4j.MDC;
  * A consumer for container output that logs with SLF4J.
  */
 public class Slf4jLogConsumer extends LogConsumer<Slf4jLogConsumer, Logger> {
+    private static final OutputFrame.OutputType[] NO_OUTPUT_TYPES = new OutputFrame.OutputType[] {};
     private final Map<String, String> mdc = new HashMap<>();
     private boolean separateOutputStreams;
     private String prefix = "";
 
     public Slf4jLogConsumer(@NonNull Logger logger) {
         this(logger, false);
+    }
+
+    public Slf4jLogConsumer(@NonNull Logger logger, boolean separateOutputStreams) {
+        this(logger, separateOutputStreams, NO_OUTPUT_TYPES);
     }
 
     public Slf4jLogConsumer(@NonNull Logger logger, boolean separateOutputStreams, OutputFrame.OutputType... types) {
