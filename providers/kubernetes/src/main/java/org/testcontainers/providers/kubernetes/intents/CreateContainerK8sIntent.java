@@ -65,7 +65,7 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
 
     @Override
     public CreateContainerIntent withExposedPorts(ExposedPort... exposedPorts) {
-        return withExposedPorts(Arrays.stream(exposedPorts).collect(Collectors.toList())); // TODO: Refactor
+        return withExposedPorts(Arrays.asList(exposedPorts));
     }
 
     @Override
@@ -89,12 +89,12 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
     }
 
     @Override
-    public CreateContainerIntent withBinds(HostMount... hostMounts) {
+    public CreateContainerIntent withHostMounts(HostMount... hostMounts) {
         return null;
     }
 
     @Override
-    public CreateContainerIntent withBinds(List<HostMount> hostMounts) {
+    public CreateContainerIntent withHostMounts(List<HostMount> hostMounts) {
         return null;
     }
 

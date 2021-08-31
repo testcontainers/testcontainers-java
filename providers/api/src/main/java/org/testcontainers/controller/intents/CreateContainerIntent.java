@@ -28,9 +28,9 @@ public interface CreateContainerIntent {
     CreateContainerIntent withEnv(EnvironmentVariable... environmentVariables);
 
     // TODO: Replace Bind
-    CreateContainerIntent withBinds(HostMount... hostMounts); // TODO: Rename
+    CreateContainerIntent withHostMounts(HostMount... hostMounts);
 
-    CreateContainerIntent withBinds(List<HostMount> hostMounts); // TODO: Rename
+    CreateContainerIntent withHostMounts(List<HostMount> hostMounts);
 
     // TODO: Replace VolumesFrom
     CreateContainerIntent withVolumesFrom(VolumesFrom[] volumesFromsArray);

@@ -219,7 +219,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setCommand("/opt/bin/entry_point.sh");
 
         if (getShmSize() == null) {
-            this.getBinds().add(new HostMount("/dev/shm", new MountPoint("/dev/shm",  BindMode.READ_WRITE)));
+            this.getHostMounts().add(new HostMount("/dev/shm", new MountPoint("/dev/shm",  BindMode.READ_WRITE)));
         }
 
         /*

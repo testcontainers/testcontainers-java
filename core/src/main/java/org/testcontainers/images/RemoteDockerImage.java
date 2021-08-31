@@ -39,7 +39,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
     @ToString.Exclude
-    private ContainerController dockerClient = ContainerControllerFactory.lazyController(); // TODO: Rename
+    private ContainerController containerController = ContainerControllerFactory.lazyController();
 
     public RemoteDockerImage(DockerImageName dockerImageName) {
         this.imageNameFuture = CompletableFuture.completedFuture(dockerImageName);
@@ -77,7 +77,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
-                    PullImageIntent pullImageCmd = dockerClient
+                    PullImageIntent pullImageCmd = containerController
                         .pullImageIntent(imageName.getUnversionedPart())
                         .withTag(imageName.getVersionPart());
 

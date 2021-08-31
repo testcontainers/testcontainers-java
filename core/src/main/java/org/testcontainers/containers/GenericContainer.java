@@ -161,7 +161,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private String[] commandParts = new String[0];
 
     @NonNull
-    private List<HostMount> binds = new ArrayList<>(); // TODO: Rename
+    private List<HostMount> hostMounts = new ArrayList<>(); // TODO: Rename
 
     private boolean privilegedMode;
 
@@ -784,7 +784,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(EnvironmentVariable[]::new)
         );
 
-        boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
+        boolean shouldCheckFileMountingSupport = hostMounts.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
                 logger().warn(
@@ -795,9 +795,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         }
 
-        HostMount[] bindsArray = binds.stream()
+        HostMount[] bindsArray = hostMounts.stream()
             .toArray(HostMount[]::new);
-        createIntent.withBinds(bindsArray);
+        createIntent.withHostMounts(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream()
             .toArray(VolumesFrom[]::new);
@@ -986,10 +986,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
             // e.g. Docker socket mount
-            binds.add(new HostMount(hostPath, new MountPoint(containerPath, mode), selinuxContext.selContext));
+            hostMounts.add(new HostMount(hostPath, new MountPoint(containerPath, mode), selinuxContext.selContext));
         } else {
             final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-            binds.add(new HostMount(mountableFile.getResolvedPath(), new MountPoint(containerPath, mode), selinuxContext.selContext));
+            hostMounts.add(new HostMount(mountableFile.getResolvedPath(), new MountPoint(containerPath, mode), selinuxContext.selContext));
         }
     }
 

@@ -417,7 +417,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     String[] getCommandParts();
 
-    List<HostMount> getBinds();
+    List<HostMount> getHostMounts();
 
     /**
      * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
@@ -439,7 +439,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setCommandParts(String[] commandParts);
 
-    void setBinds(List<HostMount> binds);
+    void setHostMounts(List<HostMount> hostMounts);
 
     /**
      * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.

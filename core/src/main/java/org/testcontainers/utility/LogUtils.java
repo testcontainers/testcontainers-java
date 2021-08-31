@@ -26,44 +26,44 @@ public class LogUtils {
      * Attach a log consumer to a container's log outputs in follow mode. The consumer will receive all previous
      * and all future log frames of the specified type(s).
      *
-     * @param dockerClient a Docker client
+     * @param containerController a Docker client
      * @param containerId  container ID to attach to
      * @param consumer     a consumer of {@link OutputFrame}s
      * @param types        types of {@link OutputFrame} to receive
      */
-    public void followOutput(ContainerController dockerClient,
+    public void followOutput(ContainerController containerController,
                              String containerId,
                              Consumer<OutputFrame> consumer,
                              OutputFrame.OutputType... types) {
 
-        attachConsumer(dockerClient, containerId, consumer, true, types);
+        attachConsumer(containerController, containerId, consumer, true, types);
     }
 
     /**
      * Attach a log consumer to a container's log outputs in follow mode. The consumer will receive all previous
      * and all future log frames (both stdout and stderr).
      *
-     * @param dockerClient a Docker client
+     * @param containerController a Docker client
      * @param containerId  container ID to attach to
      * @param consumer     a consumer of {@link OutputFrame}s
      */
-    public void followOutput(ContainerController dockerClient,
+    public void followOutput(ContainerController containerController,
                              String containerId,
                              Consumer<OutputFrame> consumer) {
 
-        followOutput(dockerClient, containerId, consumer, STDOUT, STDERR);
+        followOutput(containerController, containerId, consumer, STDOUT, STDERR);
     }
 
     /**
      * Retrieve all previous log outputs for a container of the specified type(s).
      *
-     * @param dockerClient a Docker client
+     * @param containerController a Docker client
      * @param containerId  container ID to attach to
      * @param types        types of {@link OutputFrame} to receive
      * @return all previous output frames (stdout/stderr being separated by newline characters)
      */
     @SneakyThrows(IOException.class)
-    public String getOutput(ContainerController dockerClient,
+    public String getOutput(ContainerController containerController,
                             String containerId,
                             OutputFrame.OutputType... types) {
 
@@ -77,21 +77,21 @@ public class LogUtils {
 
         final ToStringConsumer consumer = new ToStringConsumer();
         final WaitingConsumer wait = new WaitingConsumer();
-        try (Closeable closeable = attachConsumer(dockerClient, containerId, consumer.andThen(wait), false, types)) {
+        try (Closeable closeable = attachConsumer(containerController, containerId, consumer.andThen(wait), false, types)) {
             wait.waitUntilEnd();
             return consumer.toUtf8String();
         }
     }
 
     private static Closeable attachConsumer(
-        ContainerController dockerClient,
+        ContainerController containerController,
         String containerId,
         Consumer<OutputFrame> consumer,
         boolean followStream,
         OutputFrame.OutputType... types
     ) {
 
-        final LogContainerIntent cmd = dockerClient.logContainerIntent(containerId)
+        final LogContainerIntent cmd = containerController.logContainerIntent(containerId)
             .withFollowStream(followStream)
             .withSince(0);
 

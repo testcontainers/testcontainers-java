@@ -79,7 +79,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private final List<File> composeFiles;
     private DockerComposeFiles dockerComposeFiles;
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
-    private ContainerController dockerClient;
+    private ContainerController containerController;
     private boolean localCompose;
     private boolean pull = true;
     private boolean build = false;
@@ -132,7 +132,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.identifier = identifier;
         this.project = randomProjectId();
 
-        this.dockerClient = ContainerControllerFactory.instance().controller();
+        this.containerController = ContainerControllerFactory.instance().controller();
     }
 
     @Override
@@ -188,7 +188,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .forEach(imageName -> {
                 try {
                     log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
-                    dockerClient.checkAndPullImage(imageName);
+                    containerController.checkAndPullImage(imageName);
                 } catch (Exception e) {
                     log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
@@ -317,7 +317,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     @VisibleForTesting
     List<Container> listChildContainers() {
-        return dockerClient.listContainersIntent()
+        return containerController.listContainersIntent()
             .withShowAll(true)
             .perform().stream()
             .filter(container -> Arrays.stream(container.getNames()).anyMatch(name ->

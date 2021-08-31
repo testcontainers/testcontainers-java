@@ -317,7 +317,7 @@ public interface ContainerState {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
-        DockerClient dockerClient = DockerClientFactory.instance().client();
+        DockerClient dockerClient = DockerClientFactory.instance().client(); // TODO: ContainerController!
         try (
             InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
             TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)

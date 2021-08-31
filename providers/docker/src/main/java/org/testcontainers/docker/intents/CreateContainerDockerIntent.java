@@ -71,12 +71,12 @@ public class CreateContainerDockerIntent implements CreateContainerIntent {
     }
 
     @Override
-    public CreateContainerIntent withBinds(HostMount... hostMounts) {
-        return this.withBinds(Arrays.asList(hostMounts));
+    public CreateContainerIntent withHostMounts(HostMount... hostMounts) {
+        return this.withHostMounts(Arrays.asList(hostMounts));
     }
 
     @Override
-    public CreateContainerIntent withBinds(List<HostMount> hostMounts) {
+    public CreateContainerIntent withHostMounts(List<HostMount> hostMounts) {
 
         createContainerCmd.withBinds(hostMounts.stream().map(m -> new Bind(
                 m.getHostPath(),

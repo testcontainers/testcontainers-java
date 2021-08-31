@@ -27,7 +27,7 @@ enum LocalImagesCache {
     @VisibleForTesting
     final Map<DockerImageName, ImageData> cache = new ConcurrentHashMap<>();
 
-    ContainerController dockerClient = ContainerControllerFactory.lazyController(); // TODO: Rename to containerController
+    ContainerController containerController = ContainerControllerFactory.lazyController(); // TODO: Rename to containerController
 
     public ImageData get(DockerImageName imageName) {
         maybeInitCache();
@@ -40,7 +40,7 @@ enum LocalImagesCache {
 
             InspectImageResult response = null;
             try {
-                response = dockerClient.inspectImageIntent(imageName.asCanonicalNameString()).perform();
+                response = containerController.inspectImageIntent(imageName.asCanonicalNameString()).perform();
             } catch (NotFoundException e) { // TODO: Replace exception
                 log.trace("Image {} not found", imageName, e);
             } catch (UnsupportedProviderOperationException e) {
@@ -69,7 +69,7 @@ enum LocalImagesCache {
         }
 
         try {
-            populateFromList(dockerClient.listImagesIntent().perform());
+            populateFromList(containerController.listImagesIntent().perform());
         } catch (UnsupportedProviderOperationException e) {
             log.trace("Provider does not support image listing", e);
         }

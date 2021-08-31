@@ -67,14 +67,14 @@ public final class ResourceReaper { // TODO: Move functionality to provider
         .build();
 
     private static ResourceReaper instance;
-    private final ContainerController dockerClient;
+    private final ContainerController containerController;
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
     private Set<String> registeredImages = Sets.newConcurrentHashSet();
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
 
     private ResourceReaper() {
-        dockerClient = ContainerControllerFactory.instance().controller(); // TODO: Rename to containerController
+        containerController = ContainerControllerFactory.instance().controller();
     }
 
 
@@ -112,7 +112,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
                 .withExposedPorts(ryukExposedPort)
                 .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
                 .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-                .withBinds(binds)
+                .withHostMounts(binds)
                 .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
                 .perform()
                 .getId();
@@ -302,7 +302,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
     private void stopContainer(String containerId, String imageName) {
         boolean running;
         try {
-            InspectContainerResult containerInfo = dockerClient.inspectContainerIntent(containerId).perform();
+            InspectContainerResult containerInfo = containerController.inspectContainerIntent(containerId).perform();
             running = containerInfo.getState() != null && Boolean.TRUE.equals(containerInfo.getState().getRunning());
         } catch (NotFoundException e) {
             LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
@@ -317,7 +317,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
         if (running) {
             try {
                 LOGGER.trace("Stopping container: {}", containerId);
-                dockerClient.killContainerIntent(containerId).perform();
+                containerController.killContainerIntent(containerId).perform();
                 LOGGER.trace("Stopped container: {}", imageName);
             } catch (Exception e) {
                 LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
@@ -327,7 +327,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
         }
 
         try {
-            dockerClient.inspectContainerIntent(containerId).perform();
+            containerController.inspectContainerIntent(containerId).perform();
         } catch (Exception e) {
             LOGGER.trace("Was going to remove container but it apparently no longer exists: {}", containerId);
             return;
@@ -335,7 +335,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
 
         try {
             LOGGER.trace("Removing container: {}", containerId);
-            dockerClient.removeContainerIntent(containerId).withRemoveVolumes(true).withForce(true).perform();
+            containerController.removeContainerIntent(containerId).withRemoveVolumes(true).withForce(true).perform();
             LOGGER.debug("Removed container and associated volume(s): {}", imageName);
         } catch (Exception e) {
             LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
@@ -362,7 +362,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
     public void registerNetworkForCleanup(String networkName) {
         try {
             // Try to find the network by name, so that we can register its ID for later deletion
-            dockerClient.listNetworksIntent()
+            containerController.listNetworksIntent()
                     .withNameFilter(networkName)
                     .perform()
             .forEach(network -> registerNetworkIdForCleanup(network.getId()));
@@ -395,7 +395,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
             try {
                 // Try to find the network if it still exists
                 // Listing by ID first prevents docker-java logging an error if we just go blindly into removeNetworkCmd
-                networks = dockerClient.listNetworksIntent().withIdFilter(id).perform();
+                networks = containerController.listNetworksIntent().withIdFilter(id).perform();
             } catch (Exception e) {
                 LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", id);
                 return;
@@ -405,7 +405,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
             // using a for loop we essentially treat the network like an optional, only applying the removal if it exists
             for (Network network : networks) {
                 try {
-                    dockerClient.removeNetworkIntent(network.getId()).perform();
+                    containerController.removeNetworkIntent(network.getId()).perform();
                     registeredNetworks.remove(network.getId());
                     LOGGER.debug("Removed network: {}", id);
                 } catch (Exception e) {
@@ -433,7 +433,7 @@ public final class ResourceReaper { // TODO: Move functionality to provider
     private void removeImage(String dockerImageName) {
         LOGGER.trace("Removing image tagged {}", dockerImageName);
         try {
-            dockerClient.removeImageIntent(dockerImageName).withForce(true).perform();
+            containerController.removeImageIntent(dockerImageName).withForce(true).perform();
         } catch (Throwable e) {
             LOGGER.warn("Unable to delete image " + dockerImageName, e);
         }

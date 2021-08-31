@@ -83,7 +83,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     protected final String resolve() {
         Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
 
-        ContainerController dockerClient = ContainerControllerFactory.instance().controller(); // TODO: Rename
+        ContainerController containerController = ContainerControllerFactory.instance().controller();
 
         try {
             if (deleteOnExit) {
@@ -106,7 +106,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             @Cleanup PipedInputStream in = new PipedInputStream();
             @Cleanup PipedOutputStream out = new PipedOutputStream(in);
 
-            BuildImageIntent buildImageCmd = dockerClient.buildImageIntent(in);
+            BuildImageIntent buildImageCmd = containerController.buildImageIntent(in);
             configure(buildImageCmd);
             Map<String, String> labels = new HashMap<>();
             if (buildImageCmd.getLabels() != null) {
@@ -165,12 +165,12 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
-        final ContainerController dockerClient = ContainerControllerFactory.instance().controller();
+        final ContainerController containerController = ContainerControllerFactory.instance().controller();
 
         imagesToPull.forEach(imageName -> {
             try {
                 log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
-                dockerClient.checkAndPullImage(imageName);
+                containerController.checkAndPullImage(imageName);
             } catch (Exception e) {
                 log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
             }
