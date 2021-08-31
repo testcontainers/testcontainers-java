@@ -1,5 +1,6 @@
 package generic;
 
+import com.github.dockerjava.api.model.Info;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.Container;
@@ -7,6 +8,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 
@@ -39,11 +41,17 @@ public class CmdModifierTest {
 
     @Test
     public void testMemoryLimitModified() throws IOException, InterruptedException {
-        final Container.ExecResult execResult = memoryLimitedRedis.execInContainer(
-            "cat",
-            "/sys/fs/cgroup/memory/memory.limit_in_bytes",
-            "/sys/fs/cgroup/memory.max"
-        );
+        final Container.ExecResult execResult = memoryLimitedRedis.execInContainer("cat", getMemoryLimitFilePath());
         assertEquals(String.valueOf(memoryInBytes), execResult.getStdout().trim());
+    }
+
+    private String getMemoryLimitFilePath() {
+        Info info = memoryLimitedRedis.getDockerClient().infoCmd().exec();
+        Object cgroupVersion = info.getRawValues().get("CgroupVersion");
+        boolean cgroup2 = Objects.equals("2", cgroupVersion);
+        if (cgroup2) {
+            return "/sys/fs/cgroup/memory.max";
+        }
+        return "/sys/fs/cgroup/memory/memory.limit_in_bytes";
     }
 }
