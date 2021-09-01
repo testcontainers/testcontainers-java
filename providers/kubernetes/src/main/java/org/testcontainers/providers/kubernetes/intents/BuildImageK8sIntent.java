@@ -5,32 +5,23 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
-import lombok.Lombok;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.BuildResultItem;
-import org.testcontainers.providers.kubernetes.KubernetesContainerController;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
 import org.testcontainers.providers.kubernetes.model.KanikoBuildParams;
 import org.testcontainers.providers.kubernetes.worker.BuildImageWorker;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.GZIPOutputStream;
 
 @Slf4j
 public class BuildImageK8sIntent implements BuildImageIntent {

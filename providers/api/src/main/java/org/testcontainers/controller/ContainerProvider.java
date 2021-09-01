@@ -9,4 +9,6 @@ public interface ContainerProvider {
     String exposedPortsIpAddress();
 
     boolean supportsExecution();
+
+    boolean isFileMountingSupported();
 }

@@ -8,6 +8,7 @@ import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.PodResource;
 import org.testcontainers.controller.intents.ExecStartIntent;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
+import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionErrorListener;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionLogAdapter;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecution;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionListener;
@@ -33,6 +34,7 @@ public class ExecStartK8sIntent implements ExecStartIntent {
         Pod pod = ctx.findPodForContainerId(command.getContainerId());
 
         KubernetesExecutionListener listener = new KubernetesExecutionListener();
+        KubernetesExecutionErrorListener errorListener = listener.getErrorListener();
 
         PodResource<Pod> podPodResource = ctx.getClient()
             .pods()
@@ -49,6 +51,7 @@ public class ExecStartK8sIntent implements ExecStartIntent {
                 .readingInput(nullInputStream)
                 .writingOutput(out)
                 .writingError(err)
+                .writingErrorChannel(errorListener)
                 .usingListener(listener.withLogAdapters(out, err))
                 .exec(command.getCommand());
         } else if(command.isAttachStdout()) {
@@ -56,17 +59,20 @@ public class ExecStartK8sIntent implements ExecStartIntent {
             execWatch = podPodResource
                 .readingInput(nullInputStream)
                 .writingOutput(out)
+                .writingErrorChannel(errorListener)
                 .usingListener(listener.withLogAdapters(out))
                 .exec(command.getCommand());
         } else if(command.isAttachStderr()) {
             KubernetesExecutionLogAdapter<T> err = new KubernetesExecutionLogAdapter<>(StreamType.STDERR, resultCallback);
             execWatch = podPodResource
                 .readingInput(nullInputStream)
-                .writingOutput(err)
+                .writingError(err)
+                .writingErrorChannel(errorListener)
                 .usingListener(listener.withLogAdapters(err))
                 .exec(command.getCommand());
         } else {
             execWatch = podPodResource
+                .writingErrorChannel(System.err)
                 .usingListener(listener)
                 .exec(command.getCommand());
         }

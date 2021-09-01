@@ -37,4 +37,9 @@ public class KubernetesContainerProvider implements ContainerProvider {
     public boolean supportsExecution() {
         return true;
     }
+
+    @Override
+    public boolean isFileMountingSupported() {
+        return true;
+    }
 }

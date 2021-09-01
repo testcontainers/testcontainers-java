@@ -27,4 +27,9 @@ public class DockerContainerProvider implements ContainerProvider {
         // Could be null starting from Docker 1.13
         return executionDriver == null || !executionDriver.startsWith("lxc");
     }
+
+    @Override
+    public boolean isFileMountingSupported() {
+        return DockerClientFactory.instance().isFileMountingSupported();
+    }
 }

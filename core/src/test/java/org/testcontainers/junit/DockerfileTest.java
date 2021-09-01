@@ -1,6 +1,5 @@
 package org.testcontainers.junit;
 
-import com.github.dockerjava.api.command.BuildImageCmd;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -7,6 +7,7 @@ import okhttp3.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 public class KubernetesExecutionListener implements ExecListener {
@@ -15,8 +16,7 @@ public class KubernetesExecutionListener implements ExecListener {
 
     private final List<KubernetesExecutionLogAdapter<?>> logAdapters = new ArrayList<>();
 
-    private Integer exitCode;
-    private String reason;
+    private final KubernetesExecutionErrorListener errorListener = new KubernetesExecutionErrorListener();
 
 
     public KubernetesExecutionListener withLogAdapters(KubernetesExecutionLogAdapter<?>... adapters) {
@@ -26,13 +26,14 @@ public class KubernetesExecutionListener implements ExecListener {
 
     @SneakyThrows
     private void closeAdapters() {
-        for(KubernetesExecutionLogAdapter<?> adapter : logAdapters) {
+        for (KubernetesExecutionLogAdapter<?> adapter : logAdapters) {
             adapter.close();
         }
     }
 
     @Override
     public void onOpen(Response response) {
+        return;
     }
 
     @Override
@@ -43,8 +44,7 @@ public class KubernetesExecutionListener implements ExecListener {
 
     @Override
     public void onClose(int code, String reason) {
-        this.exitCode = (code - 1000); // TODO Get real exit code
-        this.reason = reason;
+
         execLatch.countDown();
         closeAdapters();
     }
@@ -54,11 +54,21 @@ public class KubernetesExecutionListener implements ExecListener {
         execLatch.await();
     }
 
+    @SneakyThrows
     public Integer getExitCode() {
-        return exitCode;
+        return Optional.ofNullable(errorListener.getExitInformation())
+            .map(ProcessExitInformation::getExitCode)
+            .orElse(null);
     }
 
+    @SneakyThrows
     public String getReason() {
-        return reason;
+        return Optional.ofNullable(errorListener.getExitInformation())
+            .map(ProcessExitInformation::getMessage)
+            .orElse(null);
+    }
+
+    public KubernetesExecutionErrorListener getErrorListener() {
+        return errorListener;
     }
 }

@@ -2,7 +2,6 @@ package org.testcontainers.docker.intents;
 
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.BuildImageCmd;
-import com.github.dockerjava.api.model.BuildResponseItem;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.BuildResultItem;

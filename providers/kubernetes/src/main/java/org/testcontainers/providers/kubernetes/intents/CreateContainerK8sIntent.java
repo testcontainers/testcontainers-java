@@ -21,6 +21,8 @@ import org.testcontainers.controller.intents.CreateContainerResult;
 import org.testcontainers.controller.model.EnvironmentVariable;
 import org.testcontainers.controller.model.HostMount;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
+import org.testcontainers.providers.kubernetes.mounts.CopyContentsHostMountStrategy;
+import org.testcontainers.providers.kubernetes.mounts.KubernetesHostMountStrategy;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
     private final KubernetesContext ctx;
     private final ContainerBuilder containerBuilder = new ContainerBuilder();
     private final ReplicaSetBuilder replicaSetBuilder = new ReplicaSetBuilder();
+    private final KubernetesHostMountStrategy hostMountStrategy = new CopyContentsHostMountStrategy();
 
     public CreateContainerK8sIntent(KubernetesContext ctx, String imageName) {
         this.ctx = ctx;
@@ -90,11 +93,12 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
 
     @Override
     public CreateContainerIntent withHostMounts(HostMount... hostMounts) {
-        return null;
+        return withHostMounts(Arrays.asList(hostMounts));
     }
 
     @Override
     public CreateContainerIntent withHostMounts(List<HostMount> hostMounts) {
+        hostMountStrategy.withHostMounts(hostMounts);
         return null;
     }
 
@@ -234,6 +238,11 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
             replicaSetBuilder.editOrNewMetadata().withGenerateName("testcontainers-").endMetadata();
         }
 
+        hostMountStrategy
+            .configure(replicaSetBuilder.editOrNewSpec().editOrNewTemplate().editOrNewSpec())
+            .endSpec()
+            .endTemplate()
+            .endSpec();
 
         ReplicaSet replicaSet = replicaSetBuilder.build();
 
@@ -268,6 +277,8 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
         }
 
         Pod pod = ctx.findPodForReplicaSet(replicaSet);
+
+        hostMountStrategy.apply(ctx, pod);
 
         ctx.getClient().pods()
             .inNamespace(pod.getMetadata().getNamespace())
