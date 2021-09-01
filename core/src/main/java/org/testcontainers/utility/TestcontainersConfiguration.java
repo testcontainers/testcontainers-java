@@ -210,6 +210,10 @@ public class TestcontainersConfiguration {
         return getEnvVarOrProperty("image.substitutor", null);
     }
 
+    public Integer getClientPingTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "5"));
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {
