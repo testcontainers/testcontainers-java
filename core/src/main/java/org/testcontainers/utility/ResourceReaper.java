@@ -412,7 +412,7 @@ public final class ResourceReaper implements ResourceCleaner { // TODO: Move fun
 
     @Override
     public void registerContainerForCleanup(String containerId) {
-        throw new RuntimeException("Not implemented!"); // TODO: Implement!
+        LOGGER.debug("Currently not implemented as Ruyk seems to operate differently."); // TODO: Implement after ruyk is extracted from DockerClientFactory
     }
 
     private void removeImage(String dockerImageName) {

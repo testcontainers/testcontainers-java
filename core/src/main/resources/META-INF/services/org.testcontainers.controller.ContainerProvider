@@ -1,0 +1,2 @@
+org.testcontainers.docker.DockerContainerProvider
+org.testcontainers.providers.kubernetes.KubernetesContainerProvider

@@ -1,10 +1,14 @@
 package org.testcontainers.docker;
 
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
 import org.testcontainers.utility.Base58;
 
+@Slf4j
 public class DockerContainerProvider implements ContainerProvider {
+
+    private static final String PROVIDER_IDENTIFIER = "docker";
 
     @Override
     public ContainerController lazyController() {
@@ -37,5 +41,15 @@ public class DockerContainerProvider implements ContainerProvider {
     @Override
     public String getRandomImageName() {
         return "localhost/testcontainers/" + Base58.randomString(16).toLowerCase();
+    }
+
+    @Override
+    public String getIdentifier() {
+        return PROVIDER_IDENTIFIER;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return DockerClientFactory.instance().isDockerAvailable();
     }
 }

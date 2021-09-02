@@ -164,6 +164,10 @@ public class TestcontainersConfiguration {
         return Boolean.parseBoolean(getEnvVarOrUserProperty("checks.disable", "false"));
     }
 
+    public Optional<String> getProviderIdentifier() {
+        return Optional.ofNullable(getEnvVarOrUserProperty("provider.identifier", null));
+    }
+
     @UnstableAPI
     public boolean environmentSupportsReuse() {
         // specifically not supported as an environment variable or classpath property

@@ -115,9 +115,10 @@ public class DockerClientFactory {
      */
     public synchronized boolean isDockerAvailable() {
         try {
-            client();
-            return true;
-        } catch (IllegalStateException ex) {
+            // We must not close the client, as it would also close the underlying connection pool
+            DockerClient newDockerClient = createNewDockerClient();
+            return newDockerClient.authConfig() != null;
+        } catch (Throwable ex) {
             return false;
         }
     }
@@ -156,16 +157,7 @@ public class DockerClientFactory {
             : path;
     }
 
-    /**
-     * @return a new initialized Docker client
-     */
-    @Synchronized
-    public DockerClient client() {
-
-        if (dockerClient != null) {
-            return dockerClient;
-        }
-
+    private DockerClient createNewDockerClient() {
         // fail-fast if checks have failed previously
         if (cachedClientFailure != null) {
             log.debug("There is a cached checks failure - throwing", cachedClientFailure);
@@ -175,7 +167,19 @@ public class DockerClientFactory {
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
-        final DockerClient client = new DelegatingDockerClient(strategy.getDockerClient()) {
+        return strategy.getDockerClient();
+    }
+
+    /**
+     * @return a new initialized Docker client
+     */
+    @Synchronized
+    public DockerClient client() {
+        if (dockerClient != null) {
+            return dockerClient;
+        }
+
+        final DockerClient client = new DelegatingDockerClient(createNewDockerClient()) {
             @Override
             public void close() {
                 throw new IllegalStateException("You should never close the global DockerClient!");
@@ -196,7 +200,7 @@ public class DockerClientFactory {
         final String ryukContainerId;
 
         boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
-        if (useRyuk) {
+        if (useRyuk) { // TODO: Relocate the ruyk startup
             log.debug("Ryuk is enabled");
             try {
                 ryukContainerId =  containerController.getResourceReaper().start();

@@ -80,7 +80,7 @@ public class CreateContainerDockerIntent implements CreateContainerIntent {
 
         createContainerCmd.withBinds(hostMounts.stream().map(m -> new Bind(
                 m.getHostPath(),
-                new Volume(m.getHostPath()),
+                new Volume(m.getMountPoint().getPath()),
                 m.getMountPoint().getBindMode().accessMode,
                 m.getSelContext()
             )).collect(Collectors.toList())
