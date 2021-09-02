@@ -23,6 +23,7 @@ public class KubernetesContext {
     private final NamespaceProvider namespaceProvider;
     private final Map<String, ExecCreateK8sIntent> execCreateK8sIntents = new HashMap<>();
     private final Map<String, KubernetesExecution> execWatches = new HashMap<String, KubernetesExecution>();
+    private final ExecutionLimiter executionLimiter = FixedExecutionLimiter.defaultLimiter();
 
     public KubernetesContext(KubernetesClient client, NamespaceProvider namespaceProvider) {
         this.client = client;
@@ -119,5 +120,9 @@ public class KubernetesContext {
 
     public KubernetesExecution getCommandWatch(String commandId) {
         return this.execWatches.get(commandId);
+    }
+
+    public ExecutionLimiter getExecutionLimiter() {
+        return executionLimiter;
     }
 }

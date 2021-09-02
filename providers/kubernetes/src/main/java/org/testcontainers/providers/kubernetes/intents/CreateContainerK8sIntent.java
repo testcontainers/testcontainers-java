@@ -7,24 +7,26 @@ import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.VolumesFrom;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
-import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSetBuilder;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.controller.intents.CreateContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerResult;
 import org.testcontainers.controller.model.EnvironmentVariable;
 import org.testcontainers.controller.model.HostMount;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
+import org.testcontainers.providers.kubernetes.KubernetesExecutionLimitException;
 import org.testcontainers.providers.kubernetes.mounts.CopyContentsHostMountStrategy;
 import org.testcontainers.providers.kubernetes.mounts.KubernetesHostMountStrategy;
+import org.testcontainers.providers.kubernetes.networking.NetworkStrategy;
+import org.testcontainers.providers.kubernetes.networking.NetworkingInitParameters;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +41,12 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
     private final ContainerBuilder containerBuilder = new ContainerBuilder();
     private final ReplicaSetBuilder replicaSetBuilder = new ReplicaSetBuilder();
     private final KubernetesHostMountStrategy hostMountStrategy = new CopyContentsHostMountStrategy();
+    private final NetworkStrategy networkStrategy;
+    private List<String> networkAliases;
 
-    public CreateContainerK8sIntent(KubernetesContext ctx, String imageName) {
+    public CreateContainerK8sIntent(KubernetesContext ctx, NetworkStrategy networkStrategy, String imageName) {
         this.ctx = ctx;
+        this.networkStrategy = networkStrategy;
         containerBuilder.withImage(imageName);
     }
 
@@ -129,6 +134,7 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
 
     @Override
     public CreateContainerIntent withAliases(List<String> networkAliases) {
+        this.networkAliases = networkAliases;
         return null;
     }
 
@@ -202,9 +208,11 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
     }
 
     @Override
+    @SneakyThrows({KubernetesExecutionLimitException.class})
     public CreateContainerResult perform() {
         Map<String, String> identifierLabels = new HashMap<>();
-        identifierLabels.put("testcontainers-uuid", UUID.randomUUID().toString());
+        String uuid = UUID.randomUUID().toString();
+        identifierLabels.put("testcontainers-uuid", uuid);
 
 
         Container container = buildContainer();
@@ -246,35 +254,20 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
 
         ReplicaSet replicaSet = replicaSetBuilder.build();
 
+        ctx.getExecutionLimiter().checkLimits(ctx, replicaSet);
+
+
         ReplicaSet createdReplicaSet = ctx.getClient().apps().replicaSets().create(replicaSet);
 
-        if(container.getPorts() != null && !container.getPorts().isEmpty()) {
-            ServiceBuilder serviceBuilder = new ServiceBuilder();
-            // @formatter:off
-            serviceBuilder
-                .editOrNewMetadata()
-                    .withName(createdReplicaSet.getMetadata().getName())
-                    .withNamespace(createdReplicaSet.getMetadata().getNamespace())
-                .endMetadata()
-                .editOrNewSpec()
-                    .withType("NodePort")
-                    .withSelector(identifierLabels)
-                .endSpec();
-            // @formatter:on
-            for (ContainerPort containerPort : container.getPorts()) {
-                // @formatter:off
-                serviceBuilder.editOrNewSpec()
-                    .addNewPort()
-                        .withName(String.format("%s-%d", containerPort.getProtocol().toLowerCase(), containerPort.getContainerPort()))
-                        .withProtocol(containerPort.getProtocol())
-                        .withTargetPort(new IntOrString(containerPort.getContainerPort()))
-                        .withPort(containerPort.getContainerPort())
-                    .endPort()
-                .endSpec();
-                // @formatter:on
-            }
-            ctx.getClient().services().create(serviceBuilder.build());
-        }
+        networkStrategy.apply(ctx, new NetworkingInitParameters(
+            createdReplicaSet.getMetadata().getNamespace(),
+            createdReplicaSet.getMetadata().getName(),
+            identifierLabels,
+            container,
+            networkAliases == null ? Collections.emptySet() : networkAliases.stream().distinct().collect(Collectors.toSet())
+        ));
+
+        // TODO: Handle errors after replicaset creation
 
         Pod pod = ctx.findPodForReplicaSet(replicaSet);
 

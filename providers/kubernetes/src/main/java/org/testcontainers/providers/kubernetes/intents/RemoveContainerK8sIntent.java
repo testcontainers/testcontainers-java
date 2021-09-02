@@ -1,22 +1,30 @@
-package org.testcontainers.providers.kubernetes;
+package org.testcontainers.providers.kubernetes.intents;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
 import org.testcontainers.controller.intents.RemoveContainerIntent;
+import org.testcontainers.providers.kubernetes.KubernetesContext;
+import org.testcontainers.providers.kubernetes.networking.NetworkStrategy;
 
 import java.util.Optional;
 
 public class RemoveContainerK8sIntent implements RemoveContainerIntent {
 
     private final KubernetesContext ctx;
+    private final NetworkStrategy networkStrategy;
     private final ReplicaSet replicaSet;
 
     private boolean withForce = false;
     private boolean withRemoveVolumes = false;
 
-    public RemoveContainerK8sIntent(KubernetesContext ctx, ReplicaSet replicaSet) {
+    public RemoveContainerK8sIntent(
+        KubernetesContext ctx,
+        NetworkStrategy networkStrategy,
+        ReplicaSet replicaSet
+    ) {
         this.ctx = ctx;
+        this.networkStrategy = networkStrategy;
         this.replicaSet = replicaSet;
     }
 
@@ -38,6 +46,8 @@ public class RemoveContainerK8sIntent implements RemoveContainerIntent {
         service.ifPresent(value -> ctx.getClient()
             .services()
             .delete(value));
+
+        networkStrategy.teardown(ctx, replicaSet.getMetadata().getNamespace(), replicaSet.getMetadata().getName()); // TODO: Use identifier
 
         RollableScalableResource<ReplicaSet> deleteSelector = ctx.getClient()
             .apps()

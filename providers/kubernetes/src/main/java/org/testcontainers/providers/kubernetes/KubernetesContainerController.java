@@ -36,13 +36,17 @@ import org.testcontainers.providers.kubernetes.intents.InspectContainerK8sIntent
 import org.testcontainers.providers.kubernetes.intents.InspectExecK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.KillContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.LogContainerK8sIntent;
+import org.testcontainers.providers.kubernetes.intents.RemoveContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.StartContainerK8sIntent;
+import org.testcontainers.providers.kubernetes.networking.NetworkStrategy;
+import org.testcontainers.providers.kubernetes.networking.NodePortStrategy;
 
 import java.io.InputStream;
 
 public class KubernetesContainerController implements ContainerController {
 
     private final KubernetesContext ctx;
+    private final NetworkStrategy networkStrategy = new NodePortStrategy();
 
     public KubernetesContainerController(
         KubernetesContext ctx
@@ -57,7 +61,7 @@ public class KubernetesContainerController implements ContainerController {
 
     @Override
     public CreateContainerIntent createContainerIntent(String containerImageName) {
-        return new CreateContainerK8sIntent(ctx, containerImageName);
+        return new CreateContainerK8sIntent(ctx, networkStrategy, containerImageName);
     }
 
     @Override
@@ -67,7 +71,7 @@ public class KubernetesContainerController implements ContainerController {
 
     @Override
     public InspectContainerIntent inspectContainerIntent(String containerId) {
-        return new InspectContainerK8sIntent(ctx, containerId, findReplicaSet(containerId));
+        return new InspectContainerK8sIntent(ctx, networkStrategy, containerId, findReplicaSet(containerId));
     }
 
     @Override
@@ -127,7 +131,7 @@ public class KubernetesContainerController implements ContainerController {
 
     @Override
     public RemoveContainerIntent removeContainerIntent(String containerId) {
-        return new RemoveContainerK8sIntent(ctx, findReplicaSet(containerId));
+        return new RemoveContainerK8sIntent(ctx, networkStrategy, findReplicaSet(containerId));
     }
 
     @Override
