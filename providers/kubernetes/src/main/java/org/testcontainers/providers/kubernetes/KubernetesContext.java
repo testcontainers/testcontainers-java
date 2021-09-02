@@ -25,6 +25,8 @@ public class KubernetesContext {
     private final Map<String, KubernetesExecution> execWatches = new HashMap<String, KubernetesExecution>();
     private final ExecutionLimiter executionLimiter = FixedExecutionLimiter.defaultLimiter();
 
+    private final String sessionId = UUID.randomUUID().toString();
+
     public KubernetesContext(KubernetesClient client, NamespaceProvider namespaceProvider) {
         this.client = client;
         this.namespaceProvider = namespaceProvider;
@@ -124,5 +126,9 @@ public class KubernetesContext {
 
     public ExecutionLimiter getExecutionLimiter() {
         return executionLimiter;
+    }
+
+    public String getSessionId() {
+        return sessionId;
     }
 }

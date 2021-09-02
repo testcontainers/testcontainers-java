@@ -1,6 +1,5 @@
 package org.testcontainers.providers.kubernetes.intents;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.controller.model.BindMode;

@@ -2,6 +2,7 @@ package org.testcontainers.providers.kubernetes;
 
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.ResourceCleaner;
 import org.testcontainers.controller.UnsupportedProviderOperationException;
 import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
@@ -47,11 +48,13 @@ public class KubernetesContainerController implements ContainerController {
 
     private final KubernetesContext ctx;
     private final NetworkStrategy networkStrategy = new NodePortStrategy();
+    private final KubernetesResourceReaper resourceReaper;
 
     public KubernetesContainerController(
         KubernetesContext ctx
     ) {
         this.ctx = ctx;
+        resourceReaper = new KubernetesResourceReaper(ctx, this);
     }
 
     @Override
@@ -195,6 +198,11 @@ public class KubernetesContainerController implements ContainerController {
     @Deprecated // TODO: Remove
     private ReplicaSet findReplicaSet(String containerId) {
         return ctx.findReplicaSet(containerId);
+    }
+
+    @Override
+    public ResourceCleaner getResourceReaper() {
+        return resourceReaper;
     }
 
 }

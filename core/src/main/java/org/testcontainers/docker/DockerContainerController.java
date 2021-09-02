@@ -6,6 +6,7 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.controller.ResourceCleaner;
 import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.ContainerController;
@@ -37,6 +38,7 @@ import org.testcontainers.docker.intents.CopyArchiveToContainerDockerIntent;
 import org.testcontainers.docker.intents.CreateContainerDockerIntent;
 import org.testcontainers.docker.intents.CreateNetworkDockerIntent;
 import org.testcontainers.docker.intents.ExecCreateDockerIntent;
+import org.testcontainers.docker.intents.ExecStartDockerIntent;
 import org.testcontainers.docker.intents.InspectContainerDockerIntent;
 import org.testcontainers.docker.intents.InspectExecDockerIntent;
 import org.testcontainers.docker.intents.InspectImageDockerIntent;
@@ -53,6 +55,7 @@ import org.testcontainers.docker.intents.StartContainerDockerIntent;
 import org.testcontainers.docker.intents.TagImageDockerIntent;
 import org.testcontainers.docker.intents.WaitContainerDockerIntent;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.io.InputStream;
 
@@ -61,8 +64,11 @@ public class DockerContainerController implements ContainerController {
 
 
     private final DockerClient dockerClient;
+    private final ResourceReaper resourceReaper = new ResourceReaper(this);
 
-    public DockerContainerController(DockerClient dockerClient) {
+    public DockerContainerController(
+        DockerClient dockerClient
+    ) {
         this.dockerClient = dockerClient;
     }
 
@@ -204,5 +210,10 @@ public class DockerContainerController implements ContainerController {
     @Override
     public LogContainerIntent logContainerIntent(String containerId) {
         return new LogContainerDockerIntent(dockerClient.logContainerCmd(containerId));
+    }
+
+    @Override
+    public ResourceCleaner getResourceReaper() {
+        return resourceReaper;
     }
 }

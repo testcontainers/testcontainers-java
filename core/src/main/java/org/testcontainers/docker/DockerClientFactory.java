@@ -199,8 +199,7 @@ public class DockerClientFactory {
         if (useRyuk) {
             log.debug("Ryuk is enabled");
             try {
-                //noinspection deprecation
-                ryukContainerId = ResourceReaper.start(containerController);
+                ryukContainerId =  containerController.getResourceReaper().start();
             } catch (RuntimeException e) {
                 cachedClientFailure = e;
                 throw e;

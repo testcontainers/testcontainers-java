@@ -3,7 +3,6 @@ package org.testcontainers.providers.kubernetes.io;
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 public class LoggingOutputStream extends OutputStream {

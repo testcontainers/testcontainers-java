@@ -3,8 +3,6 @@ package org.testcontainers.providers.kubernetes.intents;
 import io.fabric8.kubernetes.api.model.Pod;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
@@ -13,9 +11,6 @@ import org.testcontainers.providers.kubernetes.execution.NullInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
 public class CopyArchiveToContainerK8sIntent implements CopyArchiveToContainerIntent {

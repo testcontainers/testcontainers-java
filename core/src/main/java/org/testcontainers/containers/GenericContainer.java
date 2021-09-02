@@ -65,7 +65,6 @@ import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.DynamicPollInterval;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
-import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
@@ -413,7 +412,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (!reused) {
                 containerId = createCommand.perform().getId();
-
+                containerController.getResourceReaper().registerContainerForCleanup(containerId);
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
             }
@@ -628,7 +627,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             containerIsStopping(containerInfo);
-            ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+            containerController.getResourceReaper().stopAndRemoveContainer(containerId, imageName);
             containerIsStopped(containerInfo);
         } finally {
             containerId = null;

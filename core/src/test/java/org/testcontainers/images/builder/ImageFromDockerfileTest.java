@@ -1,7 +1,5 @@
 package org.testcontainers.images.builder;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.InspectImageResponse;
 import org.junit.Test;
 import org.testcontainers.ContainerControllerFactory;
 import org.testcontainers.controller.ContainerController;

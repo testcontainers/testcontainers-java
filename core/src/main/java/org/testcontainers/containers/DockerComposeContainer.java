@@ -35,7 +35,6 @@ import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
-import org.testcontainers.utility.ResourceReaper;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
@@ -310,7 +309,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void registerContainersForShutdown() {
-        ResourceReaper.instance().registerFilterForCleanup(Arrays.asList(
+        containerController.getResourceReaper().registerFilterForCleanup(Arrays.asList(
             new SimpleEntry<>("label", "com.docker.compose.project=" + project)
         ));
     }

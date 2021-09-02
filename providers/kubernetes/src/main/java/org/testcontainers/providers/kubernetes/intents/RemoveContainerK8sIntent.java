@@ -42,11 +42,6 @@ public class RemoveContainerK8sIntent implements RemoveContainerIntent {
 
     @Override
     public void perform() {
-        Optional<Service> service = ctx.findServiceForReplicaSet(replicaSet);
-        service.ifPresent(value -> ctx.getClient()
-            .services()
-            .delete(value));
-
         networkStrategy.teardown(ctx, replicaSet.getMetadata().getNamespace(), replicaSet.getMetadata().getName()); // TODO: Use identifier
 
         RollableScalableResource<ReplicaSet> deleteSelector = ctx.getClient()

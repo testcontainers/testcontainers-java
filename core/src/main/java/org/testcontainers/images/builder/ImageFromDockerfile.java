@@ -19,10 +19,8 @@ import org.testcontainers.images.builder.traits.ClasspathTrait;
 import org.testcontainers.images.builder.traits.DockerfileTrait;
 import org.testcontainers.images.builder.traits.FilesTrait;
 import org.testcontainers.images.builder.traits.StringsTrait;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.LazyFuture;
-import org.testcontainers.utility.ResourceReaper;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -87,7 +85,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
         try {
             if (deleteOnExit) {
-                ResourceReaper.instance().registerImageForCleanup(dockerImageName);
+                containerController.getResourceReaper().registerImageForCleanup(dockerImageName);
             }
 
             BuildImageResultCallback resultCallback = new BuildImageResultCallback() {

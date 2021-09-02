@@ -1,6 +1,5 @@
 package org.testcontainers.controller;
 
-import com.github.dockerjava.api.command.CreateNetworkCmd;
 import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
@@ -30,6 +29,8 @@ import java.io.InputStream;
 public interface ContainerController {
 
     void warmup();
+
+    ResourceCleaner getResourceReaper();
 
     CreateContainerIntent createContainerIntent(String containerImageName);
 
@@ -78,4 +79,6 @@ public interface ContainerController {
     BuildImageIntent buildImageIntent(InputStream in);
 
     CreateNetworkIntent createNetworkCmd(); // TODO: Rename
+
+
 }
