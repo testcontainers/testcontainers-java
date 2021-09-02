@@ -9,11 +9,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-public class KubernetesExecutionLogAdapter<T extends ResultCallback<Frame>> extends OutputStream {
+public class KubernetesExecutionLogCallbackAdapter<T extends ResultCallback<Frame>> extends OutputStream {
     private final StreamType streamType;
     private final T resultCallback;
 
-    public KubernetesExecutionLogAdapter(StreamType streamType, T resultCallback) {
+    public KubernetesExecutionLogCallbackAdapter(StreamType streamType, T resultCallback) {
         this.streamType = streamType;
         this.resultCallback = resultCallback;
     }

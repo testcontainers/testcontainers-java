@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.providers.kubernetes.execution.model.ExecutionStatusMessage;
 
@@ -55,12 +54,12 @@ public class KubernetesExecutionErrorListener extends OutputStream {
     }
 
     @Override
-    public void write(@NotNull byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         out.write(b, off, len);
     }
 
     @Override
-    public void write(@NotNull byte[] b) throws IOException {
+    public void write(byte[] b) throws IOException {
         out.write(b);
     }
 

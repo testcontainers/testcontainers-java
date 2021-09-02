@@ -14,26 +14,26 @@ public class KubernetesExecutionListener implements ExecListener {
 
     private final CountDownLatch execLatch = new CountDownLatch(1);
 
-    private final List<KubernetesExecutionLogAdapter<?>> logAdapters = new ArrayList<>();
+    private final List<KubernetesExecutionLogCallbackAdapter<?>> logAdapters = new ArrayList<>();
 
     private final KubernetesExecutionErrorListener errorListener = new KubernetesExecutionErrorListener();
 
 
-    public KubernetesExecutionListener withLogAdapters(KubernetesExecutionLogAdapter<?>... adapters) {
+    public KubernetesExecutionListener withLogAdapters(KubernetesExecutionLogCallbackAdapter<?>... adapters) {
         logAdapters.addAll(Arrays.asList(adapters));
         return this;
     }
 
     @SneakyThrows
     private void closeAdapters() {
-        for (KubernetesExecutionLogAdapter<?> adapter : logAdapters) {
+        for (KubernetesExecutionLogCallbackAdapter<?> adapter : logAdapters) {
             adapter.close();
         }
     }
 
     @Override
     public void onOpen(Response response) {
-        return;
+        // We don't care about the start event here
     }
 
     @Override

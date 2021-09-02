@@ -39,6 +39,10 @@ public class KanikoBuildParams {
             cmd.add("--no-push");
         }
 
+        if(!disabledCache) {
+            cmd.add("--cache=true");
+        }
+
         if(tag != null && !tag.isEmpty()) {
             cmd.add("--destination");
             cmd.add(tag);

@@ -303,6 +303,32 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
+
+    // TODO: Explain difference to resource mapping
+    /**
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
+     *
+     * @param resourcePath   path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
+     * @param containerPath  path this should be mapped to inside the container
+     * @param mode           access mode for the file
+     * @param selinuxContext selinux context argument to use for this file
+     * @return this
+     */
+    SELF withClasspathResourceBind(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
+
+    // TODO: Explain difference to resource mapping
+    /**
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
+     *
+     * @param resourcePath   path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
+     * @param containerPath  path this should be mapped to inside the container
+     * @param mode           access mode for the file
+     * @return this
+     */
+    SELF withClasspathResourceBind(String resourcePath, String containerPath, BindMode mode);
+
     /**
      * Set the duration of waiting time until container treated as started.
      * @see WaitStrategy#waitUntilReady(org.testcontainers.containers.wait.strategy.WaitStrategyTarget)

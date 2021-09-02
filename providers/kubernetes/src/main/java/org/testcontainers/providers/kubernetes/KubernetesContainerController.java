@@ -8,6 +8,7 @@ import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerIntent;
+import org.testcontainers.controller.intents.CreateNetworkIntent;
 import org.testcontainers.controller.intents.ExecCreateIntent;
 import org.testcontainers.controller.intents.ExecStartIntent;
 import org.testcontainers.controller.intents.InspectContainerIntent;
@@ -28,6 +29,7 @@ import org.testcontainers.controller.intents.WaitContainerIntent;
 import org.testcontainers.providers.kubernetes.intents.BuildImageK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.CopyArchiveToContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.CreateContainerK8sIntent;
+import org.testcontainers.providers.kubernetes.intents.CreateNetworkK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.ExecCreateK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.ExecStartK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.InspectContainerK8sIntent;
@@ -174,6 +176,11 @@ public class KubernetesContainerController implements ContainerController {
     @Override
     public BuildImageIntent buildImageIntent(InputStream in) {
         return new BuildImageK8sIntent(ctx, in);
+    }
+
+    @Override
+    public CreateNetworkIntent createNetworkCmd() {
+        return new CreateNetworkK8sIntent();
     }
 
     /**

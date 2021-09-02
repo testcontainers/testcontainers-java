@@ -12,6 +12,7 @@ import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerIntent;
+import org.testcontainers.controller.intents.CreateNetworkIntent;
 import org.testcontainers.controller.intents.ExecCreateIntent;
 import org.testcontainers.controller.intents.ExecStartIntent;
 import org.testcontainers.controller.intents.InspectContainerIntent;
@@ -34,6 +35,7 @@ import org.testcontainers.docker.intents.ConnectToNetworkDockerIntent;
 import org.testcontainers.docker.intents.CopyArchiveFromContainerDockerIntent;
 import org.testcontainers.docker.intents.CopyArchiveToContainerDockerIntent;
 import org.testcontainers.docker.intents.CreateContainerDockerIntent;
+import org.testcontainers.docker.intents.CreateNetworkDockerIntent;
 import org.testcontainers.docker.intents.ExecCreateDockerIntent;
 import org.testcontainers.docker.intents.InspectContainerDockerIntent;
 import org.testcontainers.docker.intents.InspectExecDockerIntent;
@@ -187,6 +189,11 @@ public class DockerContainerController implements ContainerController {
     @Override
     public BuildImageIntent buildImageIntent(InputStream in) {
         return new BuildImageDockerIntent(dockerClient.buildImageCmd(in));
+    }
+
+    @Override
+    public CreateNetworkIntent createNetworkCmd() {
+        return new CreateNetworkDockerIntent(dockerClient.createNetworkCmd());
     }
 
     @Override

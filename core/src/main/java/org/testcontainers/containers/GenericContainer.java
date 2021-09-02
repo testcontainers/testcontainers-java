@@ -1240,6 +1240,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @Override
+    public SELF withClasspathResourceBind(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext) {
+        final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
+        addFileSystemBind(mountableFile.getFilesystemPath(), containerPath, mode, selinuxContext);
+
+        return self();
+    }
+
+    @Override
+    public SELF withClasspathResourceBind(String resourcePath, String containerPath, BindMode mode) {
+        return withClasspathResourceBind(resourcePath, containerPath, mode, SelinuxContext.NONE);
+    }
+
     /**
      * {@inheritDoc}
      */

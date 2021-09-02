@@ -1,10 +1,12 @@
 package org.testcontainers.controller;
 
+import com.github.dockerjava.api.command.CreateNetworkCmd;
 import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
 import org.testcontainers.controller.intents.CopyArchiveFromContainerIntent;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
 import org.testcontainers.controller.intents.CreateContainerIntent;
+import org.testcontainers.controller.intents.CreateNetworkIntent;
 import org.testcontainers.controller.intents.ExecCreateIntent;
 import org.testcontainers.controller.intents.ExecStartIntent;
 import org.testcontainers.controller.intents.InspectContainerIntent;
@@ -74,4 +76,6 @@ public interface ContainerController {
     CopyArchiveToContainerIntent copyArchiveToContainerIntent(String containerId);
 
     BuildImageIntent buildImageIntent(InputStream in);
+
+    CreateNetworkIntent createNetworkCmd(); // TODO: Rename
 }

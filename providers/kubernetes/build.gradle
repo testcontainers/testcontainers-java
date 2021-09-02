@@ -1,11 +1,40 @@
+apply plugin: 'com.github.johnrengelman.shadow'
+
+configurations {
+    shaded
+    [api, compileOnly, testCompile]*.extendsFrom shaded
+}
+
 dependencies {
     compileOnly 'org.jetbrains:annotations:21.0.1'
     api project(":providers-api")
-    api 'io.fabric8:kubernetes-client:5.7.0'
+    shaded ('io.fabric8:kubernetes-client:5.7.0') {
+      //  exclude(group: 'com.fasterxml.jackson.core')
+    }
+    // api 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
     api 'org.apache.commons:commons-compress:1.21' // TODO: Check dependency
     api 'commons-codec:commons-codec:1.15' // TODO: Check dependency
 
 
     testImplementation project(':jdbc-test')
     testImplementation 'org.assertj:assertj-core:3.20.2'
+}
+
+
+shadowJar {
+    configurations = [project.configurations.shaded]
+
+    relocate('com.fasterxml', 'shadow.fasterxml')
+
+    mergeServiceFiles()
+    [
+        'META-INF/NOTICE',
+        'META-INF/NOTICE.txt',
+        'META-INF/LICENSE',
+        'META-INF/LICENSE.txt',
+        'META-INF/maven/',
+        'META-INF/proguard/',
+        'META-INF/versions/*/module-info.class',
+        'META-INF/services/java.security.Provider',
+    ].each { exclude(it) }
 }

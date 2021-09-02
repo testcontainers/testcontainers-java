@@ -6,6 +6,8 @@ import lombok.SneakyThrows;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
 
+import java.util.UUID;
+
 public class KubernetesContainerProvider implements ContainerProvider {
 
     @Override
@@ -41,5 +43,10 @@ public class KubernetesContainerProvider implements ContainerProvider {
     @Override
     public boolean isFileMountingSupported() {
         return true;
+    }
+
+    @Override
+    public String getRandomImageName() {
+        return "docker.cluster.lise.de/testcontainers/" + UUID.randomUUID().toString().toLowerCase(); // TODO: Implement temp registry
     }
 }

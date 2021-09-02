@@ -9,7 +9,7 @@ import io.fabric8.kubernetes.client.dsl.PodResource;
 import org.testcontainers.controller.intents.ExecStartIntent;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionErrorListener;
-import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionLogAdapter;
+import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionLogCallbackAdapter;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecution;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionListener;
 import org.testcontainers.providers.kubernetes.execution.NullInputStream;
@@ -45,8 +45,8 @@ public class ExecStartK8sIntent implements ExecStartIntent {
         ExecWatch execWatch;
         NullInputStream nullInputStream = new NullInputStream();
         if(command.isAttachStderr() && command.isAttachStdout()) {
-            KubernetesExecutionLogAdapter<T> err = new KubernetesExecutionLogAdapter<>(StreamType.STDERR, resultCallback);
-            KubernetesExecutionLogAdapter<T> out = new KubernetesExecutionLogAdapter<>(StreamType.STDOUT, resultCallback);
+            KubernetesExecutionLogCallbackAdapter<T> err = new KubernetesExecutionLogCallbackAdapter<>(StreamType.STDERR, resultCallback);
+            KubernetesExecutionLogCallbackAdapter<T> out = new KubernetesExecutionLogCallbackAdapter<>(StreamType.STDOUT, resultCallback);
             execWatch = podPodResource
                 .readingInput(nullInputStream)
                 .writingOutput(out)
@@ -55,7 +55,7 @@ public class ExecStartK8sIntent implements ExecStartIntent {
                 .usingListener(listener.withLogAdapters(out, err))
                 .exec(command.getCommand());
         } else if(command.isAttachStdout()) {
-            KubernetesExecutionLogAdapter<T> out = new KubernetesExecutionLogAdapter<>(StreamType.STDOUT, resultCallback);
+            KubernetesExecutionLogCallbackAdapter<T> out = new KubernetesExecutionLogCallbackAdapter<>(StreamType.STDOUT, resultCallback);
             execWatch = podPodResource
                 .readingInput(nullInputStream)
                 .writingOutput(out)
@@ -63,7 +63,7 @@ public class ExecStartK8sIntent implements ExecStartIntent {
                 .usingListener(listener.withLogAdapters(out))
                 .exec(command.getCommand());
         } else if(command.isAttachStderr()) {
-            KubernetesExecutionLogAdapter<T> err = new KubernetesExecutionLogAdapter<>(StreamType.STDERR, resultCallback);
+            KubernetesExecutionLogCallbackAdapter<T> err = new KubernetesExecutionLogCallbackAdapter<>(StreamType.STDERR, resultCallback);
             execWatch = podPodResource
                 .readingInput(nullInputStream)
                 .writingError(err)

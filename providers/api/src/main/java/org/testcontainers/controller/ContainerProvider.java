@@ -11,4 +11,6 @@ public interface ContainerProvider {
     boolean supportsExecution();
 
     boolean isFileMountingSupported();
+
+    String getRandomImageName();
 }

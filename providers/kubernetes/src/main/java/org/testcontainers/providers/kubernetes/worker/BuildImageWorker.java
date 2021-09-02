@@ -8,9 +8,11 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.commons.compress.utils.IOUtils;
+import org.slf4j.event.Level;
 import org.testcontainers.controller.intents.BuildResultItem;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
 import org.testcontainers.providers.kubernetes.execution.NullInputStream;
+import org.testcontainers.providers.kubernetes.io.LoggingOutputStream;
 import org.testcontainers.providers.kubernetes.model.KanikoBuildParams;
 
 import java.io.Closeable;
@@ -68,17 +70,23 @@ public class BuildImageWorker implements Closeable {
             String[] cmd = buildParams.createBuildCommand();
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
+
+            LoggingOutputStream outAdapter = new LoggingOutputStream(log, Level.INFO);
+            LoggingOutputStream errAdapter = new LoggingOutputStream(log, Level.ERROR);
+
+
             ExecWatch exec = ctx.getClient().pods()
                 .inNamespace(createdPod.getMetadata().getNamespace())
                 .withName(createdPod.getMetadata().getName())
                 .readingInput(new NullInputStream())
-                .writingOutput(System.out)
-                .writingError(System.err)
+                .writingOutput(outAdapter) // TODO: What stream?
+                .writingError(errAdapter)
                 .usingListener(new ExecListener() {
                     @Override
                     public void onOpen(Response response) {
 
                     }
+
 
                     @Override
                     public void onFailure(Throwable t, Response response) {
@@ -87,7 +95,8 @@ public class BuildImageWorker implements Closeable {
 
                     @Override
                     public void onClose(int code, String reason) {
-                            countDownLatch.countDown();
+                        callback.onNext(KubernetesBuildResultItem.success(buildParams.getTag()));
+                        countDownLatch.countDown();
                     }
                 })
                 .exec(cmd);

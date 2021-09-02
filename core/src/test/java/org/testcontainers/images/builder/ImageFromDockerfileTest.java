@@ -3,6 +3,10 @@ package org.testcontainers.images.builder;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectImageResponse;
 import org.junit.Test;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.ContainerController;
+import org.testcontainers.controller.UnsupportedProviderOperationException;
+import org.testcontainers.controller.intents.InspectImageResult;
 import org.testcontainers.docker.DockerClientFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,19 +14,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ImageFromDockerfileTest {
 
     @Test
-    public void shouldAddDefaultLabels() {
+    public void shouldAddDefaultLabels() throws UnsupportedProviderOperationException {
         ImageFromDockerfile image = new ImageFromDockerfile()
-            .withDisabledPush(true)
             .withDockerfileFromBuilder(it -> it.from("scratch"));
 
         String imageId = image.resolve();
 
-        DockerClient dockerClient = DockerClientFactory.instance().client();
+        ContainerController dockerClient = ContainerControllerFactory.instance().controller();
 
-        InspectImageResponse inspectImageResponse = dockerClient.inspectImageCmd(imageId).exec();
+        InspectImageResult inspectImageResponse = dockerClient.inspectImageIntent(imageId).perform();
 
         assertThat(inspectImageResponse.getConfig().getLabels())
-            .containsAllEntriesOf(DockerClientFactory.DEFAULT_LABELS);
+            .containsAllEntriesOf(DockerClientFactory.DEFAULT_LABELS); // TODO: Implement!
     }
 
 }

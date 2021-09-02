@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Singular;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
+import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.intents.CreateNetworkIntent;
 import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
@@ -50,7 +52,7 @@ public interface Network extends AutoCloseable, TestRule {
         private String driver;
 
         @Singular
-        private Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers;
+        private Set<Consumer<CreateNetworkIntent>> createNetworkCmdModifiers;
 
         @Deprecated
         private String id;
@@ -67,7 +69,7 @@ public interface Network extends AutoCloseable, TestRule {
         }
 
         private String create() {
-            CreateNetworkCmd createNetworkCmd = DockerClientFactory.instance().client().createNetworkCmd();
+            CreateNetworkIntent createNetworkCmd = ContainerControllerFactory.instance().controller().createNetworkCmd(); // TODO: Rename
 
             createNetworkCmd.withName(name);
             createNetworkCmd.withCheckDuplicate(true);
@@ -80,7 +82,7 @@ public interface Network extends AutoCloseable, TestRule {
                 createNetworkCmd.withDriver(driver);
             }
 
-            for (Consumer<CreateNetworkCmd> consumer : createNetworkCmdModifiers) {
+            for (Consumer<CreateNetworkIntent> consumer : createNetworkCmdModifiers) {
                 consumer.accept(createNetworkCmd);
             }
 

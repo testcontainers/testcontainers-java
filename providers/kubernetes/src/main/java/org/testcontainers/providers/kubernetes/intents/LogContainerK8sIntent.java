@@ -9,7 +9,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.controller.intents.LogContainerIntent;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
-import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionLogAdapter;
+import org.testcontainers.providers.kubernetes.execution.KubernetesExecutionLogCallbackAdapter;
 
 import java.io.OutputStreamWriter;
 
@@ -60,12 +60,12 @@ public class LogContainerK8sIntent implements LogContainerIntent {
             .withName(pod.getMetadata().getName());
 
         if(followStream) {
-            KubernetesExecutionLogAdapter<T> logAdapter = new KubernetesExecutionLogAdapter<T>(StreamType.STDOUT, resultCallback);
+            KubernetesExecutionLogCallbackAdapter<T> logAdapter = new KubernetesExecutionLogCallbackAdapter<T>(StreamType.STDOUT, resultCallback);
             podResource.watchLog(logAdapter);
 
         } else {
             String log = podResource.getLog();
-            try(KubernetesExecutionLogAdapter<T> logAdapter = new KubernetesExecutionLogAdapter<>(StreamType.STDOUT, resultCallback)) {
+            try(KubernetesExecutionLogCallbackAdapter<T> logAdapter = new KubernetesExecutionLogCallbackAdapter<>(StreamType.STDOUT, resultCallback)) {
                 try(OutputStreamWriter writer = new OutputStreamWriter(logAdapter)){
                     writer.write(log);
                 }

@@ -8,6 +8,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.testcontainers.controller.intents.CopyArchiveToContainerIntent;
 import org.testcontainers.providers.kubernetes.KubernetesContext;
+import org.testcontainers.providers.kubernetes.execution.NullInputStream;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,37 +45,24 @@ public class CopyArchiveToContainerK8sIntent implements CopyArchiveToContainerIn
     @Override
     @SneakyThrows
     public void perform() {
-        File tempDir = Files.createTempDirectory("testcontainers-tmp").toFile().getCanonicalFile();
-        Path localRootPath = tempDir.toPath();
-        Path remoteRootPath = Paths.get(remotePath);
-        try(TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(tarInputStream)) {
-            TarArchiveEntry entry;
-            while((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
-                Path relativePath = Paths.get(entry.getName());
-                Path localAbsolutePath = localRootPath.resolve(relativePath);
-
-                if(entry.isFile()) {
-                    try(FileOutputStream fos = new FileOutputStream(localAbsolutePath.toFile())) {
-                        IOUtils.copy(tarArchiveInputStream, fos);
-                    }
-                } else if(entry.isDirectory()) {
-                    Files.createDirectories(localAbsolutePath);
-                }
-
-                log.debug("Copying tar entry '{}'", entry.getName());
-            }
+        File tempFile = File.createTempFile("testcontainers", null); // TODO: Remove temp file
+        try(FileOutputStream fos = new FileOutputStream(tempFile)) {
+            IOUtils.copy(tarInputStream, fos);
         }
 
-
-
-
-        ctx.getClient().pods()
+        ctx.getClient()
+            .pods()
             .inNamespace(pod.getMetadata().getNamespace())
             .withName(pod.getMetadata().getName())
-            .dir(remotePath)
-            .upload(localRootPath);
+            .file("/tmp/testcontainers.tar")
+            .upload(tempFile.toPath());
 
-        // TODO: Remove temp dir
+        ctx.getClient()
+            .pods()
+            .inNamespace(pod.getMetadata().getNamespace())
+            .withName(pod.getMetadata().getName())
+            .readingInput(new NullInputStream())
+            .exec("tar", "-xvf", "/tmp/testcontainers.tar", "-C", remotePath);
 
         return;
     }

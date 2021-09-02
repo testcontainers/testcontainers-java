@@ -2,6 +2,7 @@ package org.testcontainers.docker;
 
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
+import org.testcontainers.utility.Base58;
 
 public class DockerContainerProvider implements ContainerProvider {
 
@@ -31,5 +32,10 @@ public class DockerContainerProvider implements ContainerProvider {
     @Override
     public boolean isFileMountingSupported() {
         return DockerClientFactory.instance().isFileMountingSupported();
+    }
+
+    @Override
+    public String getRandomImageName() {
+        return "localhost/testcontainers/" + Base58.randomString(16).toLowerCase();
     }
 }
