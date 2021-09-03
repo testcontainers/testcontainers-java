@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.controller.configuration.ConfigurationSource;
 import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.io.File;
@@ -44,7 +45,7 @@ import java.util.stream.Stream;
  */
 @Data
 @Slf4j
-public class TestcontainersConfiguration {
+public class TestcontainersConfiguration implements ConfigurationSource {
 
     private static String PROPERTIES_FILE_NAME = "testcontainers.properties";
 
@@ -165,7 +166,7 @@ public class TestcontainersConfiguration {
     }
 
     public Optional<String> getProviderIdentifier() {
-        return Optional.ofNullable(getEnvVarOrUserProperty("provider.identifier", null));
+        return Optional.ofNullable(getEnvVarOrProperty("provider.identifier", null));
     }
 
     @UnstableAPI
@@ -237,23 +238,6 @@ public class TestcontainersConfiguration {
 
     /**
      * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory or
-     * a <code>testcontainers.properties</code> found on the classpath.
-     * <p>
-     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
-     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
-     * if the property name begins `docker.`.
-     *
-     * @param propertyName name of configuration file property (dot-separated lower case)
-     * @return the found value, or null if not set
-     */
-    @Contract("_, !null -> !null")
-    public String getEnvVarOrProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue, userProperties, classpathProperties);
-    }
-
-    /**
-     * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
      * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
      * <p>
      * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
@@ -266,6 +250,24 @@ public class TestcontainersConfiguration {
     @Contract("_, !null -> !null")
     public String getEnvVarOrUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
         return getConfigurable(propertyName, defaultValue, userProperties);
+    }
+
+    /**
+     * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
+     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory or
+     * a <code>testcontainers.properties</code> found on the classpath.
+     * <p>
+     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
+     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
+     * if the property name begins `docker.`.
+     *
+     * @param propertyName name of configuration file property (dot-separated lower case)
+     * @return the found value, or null if not set
+     */
+    @Contract("_, !null -> !null")
+    @Override
+    public String getEnvVarOrProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
+        return getConfigurable(propertyName, defaultValue, userProperties, classpathProperties);
     }
 
     /**

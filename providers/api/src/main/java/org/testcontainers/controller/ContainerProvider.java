@@ -1,8 +1,8 @@
 package org.testcontainers.controller;
 
-import org.testcontainers.controller.ContainerController;
-
 public interface ContainerProvider {
+
+    ContainerProvider init(ContainerProviderInitParams params);
 
     ContainerController lazyController();
     ContainerController controller();

@@ -31,7 +31,7 @@ public class ContainerProviderElector {
 
         if (providerIdentifier.isPresent()) {
             String identifier = providerIdentifier.get();
-            providers.stream()
+            return providers.stream()
                 .filter(p -> identifier.equalsIgnoreCase(p.getIdentifier()))
                 .findFirst()
                 .orElseThrow(

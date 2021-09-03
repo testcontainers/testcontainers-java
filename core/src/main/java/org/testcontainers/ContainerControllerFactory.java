@@ -3,6 +3,7 @@ package org.testcontainers;
 import lombok.SneakyThrows;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
+import org.testcontainers.controller.ContainerProviderInitParams;
 import org.testcontainers.controller.NoSuchProviderException;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -26,7 +27,11 @@ public class ContainerControllerFactory { // TODO: Rename to ContainerProviderFa
     @SneakyThrows({NoSuchProviderException.class})
     public synchronized static ContainerProvider instance() {
         if (instance == null) {
-            instance = elector.elect();
+            instance = elector.elect().init(
+                new ContainerProviderInitParams(
+                    TestcontainersConfiguration.getInstance()
+                )
+            );
         }
         return instance;
     }

@@ -220,6 +220,7 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
         // @formatter:off
         replicaSetBuilder
             .editOrNewMetadata()
+                .withNamespace(ctx.getNamespaceProvider().getNamespace())
                 .addToLabels(identifierLabels)
             .endMetadata()
             .editOrNewSpec()
@@ -238,9 +239,6 @@ public class CreateContainerK8sIntent implements CreateContainerIntent {
             .endSpec();
         // @formatter:on
 
-        if (replicaSetBuilder.editOrNewMetadata().getNamespace() == null) {
-            replicaSetBuilder.editOrNewMetadata().withNamespace(ctx.getNamespaceProvider().getNamespace()).endMetadata();
-        }
 
         if (replicaSetBuilder.editOrNewMetadata().getName() == null) {
             replicaSetBuilder.editOrNewMetadata().withGenerateName("testcontainers-").endMetadata();

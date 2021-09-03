@@ -1,5 +1,7 @@
 package org.testcontainers.providers.kubernetes;
 
+import io.fabric8.kubernetes.api.model.Namespace;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ResourceCleaner;
 import org.testcontainers.controller.intents.RemoveContainerIntent;
@@ -18,6 +20,8 @@ public class KubernetesResourceReaper implements ResourceCleaner {
 
 
     private final Set<String> containerIds = new HashSet<>();
+    @Nullable
+    private Namespace createdNamespace = null;
 
     public KubernetesResourceReaper(
         KubernetesContext ctx,
@@ -60,6 +64,11 @@ public class KubernetesResourceReaper implements ResourceCleaner {
 
     private void performCleanup() {
         containerIds.stream().map(containerController::removeContainerIntent).forEach(RemoveContainerIntent::perform);
+        if(this.createdNamespace != null) {
+            ctx.getClient()
+                .namespaces()
+                .delete(createdNamespace);
+        }
     }
 
     private void setHook() {
@@ -67,5 +76,10 @@ public class KubernetesResourceReaper implements ResourceCleaner {
             // If the JVM stops without containers being stopped, try and stop the container.
             Runtime.getRuntime().addShutdownHook(new Thread(this::performCleanup));
         }
+    }
+
+    public void registerNamespaceForCleanup(Namespace createdNamespace) {
+        setHook();
+        this.createdNamespace = createdNamespace;
     }
 }

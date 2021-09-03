@@ -3,12 +3,18 @@ package org.testcontainers.docker;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
+import org.testcontainers.controller.ContainerProviderInitParams;
 import org.testcontainers.utility.Base58;
 
 @Slf4j
 public class DockerContainerProvider implements ContainerProvider {
 
     private static final String PROVIDER_IDENTIFIER = "docker";
+
+    @Override
+    public ContainerProvider init(ContainerProviderInitParams params) {
+        return this;
+    }
 
     @Override
     public ContainerController lazyController() {

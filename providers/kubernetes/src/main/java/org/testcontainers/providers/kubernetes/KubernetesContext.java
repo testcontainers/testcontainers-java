@@ -14,6 +14,7 @@ import org.testcontainers.providers.kubernetes.intents.ExecCreateK8sResult;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -105,15 +106,26 @@ public class KubernetesContext {
     }
 
     public Pod findPodForReplicaSet(ReplicaSet replicaSet) {
-        return client
-            .pods()
-            .inNamespace(replicaSet.getMetadata().getNamespace())
-            .withLabelSelector(replicaSet.getSpec().getSelector())
-            .list()
-            .getItems()
-            .stream()
-            .findAny()
-            .get();
+        Optional<Pod> foundPod;
+        try {
+            for (int i = 0; i < 5; i++) {
+                foundPod = client
+                    .pods()
+                    .inNamespace(replicaSet.getMetadata().getNamespace())
+                    .withLabelSelector(replicaSet.getSpec().getSelector())
+                    .list()
+                    .getItems()
+                    .stream()
+                    .findAny();
+                if (foundPod.isPresent()) {
+                    return foundPod.get();
+                }
+                Thread.sleep(1000);
+            }
+        } catch (InterruptedException e) {
+
+        }
+        throw new NoSuchElementException("Pod could not be found.");
     }
 
     public void registerCommandWatch(String commandId, KubernetesExecution kubernetesExecution) {

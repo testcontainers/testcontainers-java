@@ -201,7 +201,7 @@ public class KubernetesContainerController implements ContainerController {
     }
 
     @Override
-    public ResourceCleaner getResourceReaper() {
+    public KubernetesResourceReaper getResourceReaper() {
         return resourceReaper;
     }
 
