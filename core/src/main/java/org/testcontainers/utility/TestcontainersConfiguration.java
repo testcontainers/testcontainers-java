@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -59,6 +60,7 @@ public class TestcontainersConfiguration {
     private static final String PULSAR_IMAGE = "apachepulsar/pulsar";
     private static final String LOCALSTACK_IMAGE = "localstack/localstack";
     private static final String SSHD_IMAGE = "testcontainers/sshd";
+    private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
 
     private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap.<DockerImageName, String>builder()
         .put(DockerImageName.parse(AMBASSADOR_IMAGE), "ambassador.container.image")
@@ -71,6 +73,7 @@ public class TestcontainersConfiguration {
         .put(DockerImageName.parse(PULSAR_IMAGE), "pulsar.container.image")
         .put(DockerImageName.parse(LOCALSTACK_IMAGE), "localstack.container.image")
         .put(DockerImageName.parse(SSHD_IMAGE), "sshd.container.image")
+        .put(DockerImageName.parse(ORACLE_IMAGE), "oracle.container.image")
         .build();
 
     @Getter(lazy = true)
@@ -144,7 +147,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getOracleImage() {
-        return getEnvVarOrProperty("oracle.container.image", null);
+        return getImage(ORACLE_IMAGE).asCanonicalNameString();
     }
 
     @Deprecated
@@ -172,11 +175,31 @@ public class TestcontainersConfiguration {
         // Because of this overlap, and the desire to not change this specific TESTCONTAINERS_DOCKER_CLIENT_STRATEGY setting,
         // we special-case the logic here so that docker.client.strategy is used when reading properties files and
         // TESTCONTAINERS_DOCKER_CLIENT_STRATEGY is used when searching environment variables.
-        return getEnvVarOrUserProperty("docker.client.strategy", environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY"));
+
+        // looks for TESTCONTAINERS_ prefixed env var only
+        String prefixedEnvVarStrategy = environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY");
+        if (prefixedEnvVarStrategy != null) {
+            return prefixedEnvVarStrategy;
+        }
+
+        // looks for unprefixed env var or unprefixed property
+        String unprefixedEnvVarOrProperty = getEnvVarOrUserProperty("docker.client.strategy", null);
+        if (unprefixedEnvVarOrProperty != null) {
+            return unprefixedEnvVarOrProperty;
+        }
+
+        // If docker.host is set then EnvironmentAndSystemPropertyClientProviderStrategy is likely to work
+        String dockerHostProperty = getEnvVarOrUserProperty("docker.host", null);
+        if (dockerHostProperty != null) {
+            return EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName();
+        }
+
+        // No value set, and no implicit value to use either
+        return null;
     }
 
     public String getTransportType() {
-        return getEnvVarOrProperty("transport.type", "okhttp");
+        return getEnvVarOrProperty("transport.type", "httpclient5");
     }
 
     public Integer getImagePullPauseTimeout() {
@@ -185,6 +208,10 @@ public class TestcontainersConfiguration {
 
     public String getImageSubstitutorClassName() {
         return getEnvVarOrProperty("image.substitutor", null);
+    }
+
+    public Integer getClientPingTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "5"));
     }
 
     @Nullable
@@ -283,8 +310,6 @@ public class TestcontainersConfiguration {
             if (value.equals(userProperties.get(prop))) {
                 return false;
             }
-
-            userProperties.setProperty(prop, value);
 
             USER_CONFIG_FILE.createNewFile();
             try (OutputStream outputStream = new FileOutputStream(USER_CONFIG_FILE)) {

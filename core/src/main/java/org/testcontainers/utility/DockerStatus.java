@@ -40,7 +40,7 @@ public class DockerStatus {
             if (minimumRunningDuration == null) {
                 return true;
             }
-            Instant startedAt = DateTimeFormatter.ISO_INSTANT.parse(
+            Instant startedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(
                 state.getStartedAt(), Instant::from);
 
             if (startedAt.isBefore(now.minus(minimumRunningDuration))) {
@@ -75,7 +75,7 @@ public class DockerStatus {
         return dockerTimestamp != null
                 && !dockerTimestamp.isEmpty()
                 && !dockerTimestamp.equals(DOCKER_TIMESTAMP_ZERO)
-                && DateTimeFormatter.ISO_INSTANT.parse(dockerTimestamp, Instant::from).getEpochSecond() >= 0L;
+                && DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dockerTimestamp, Instant::from).getEpochSecond() >= 0L;
     }
 
     public static boolean isContainerExitCodeSuccess(InspectContainerResponse.ContainerState state) {

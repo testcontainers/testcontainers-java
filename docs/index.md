@@ -93,10 +93,6 @@ testImplementation('org.testcontainers:mysql') //no version specified
 
 ## Sponsors
 
-Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain the project and help us improve it further.
-
-<iframe src="https://github.com/sponsors/testcontainers/button" title="Sponsor Testcontainers" height="35" width="107" style="border: 0;"></iframe>
-
 A huge thank you to our sponsors:
 
 ### Bronze sponsors
@@ -177,6 +173,9 @@ A huge thank you to our sponsors:
 * [CloudBees](https://www.cloudbees.com/) - Integration testing of products, including but not limited to database and AWS/Localstack integration testing.
 * [Jenkins](https://www.jenkins.io/) - Integration testing of multiple plugins and the Trilead SSH2 fork maintained by the Jenkins community
   ([query](https://github.com/search?l=Maven+POM&q=org%3Ajenkinsci+testcontainers&type=Code)).
+* [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
+* [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
+
 
 
 ## License

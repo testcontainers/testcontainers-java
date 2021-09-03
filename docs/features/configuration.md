@@ -47,10 +47,10 @@ It takes a couple of seconds, but if you want to speed up your tests, you can di
 Testcontainers uses public Docker images to perform different actions like startup checks, VNC recording and others. 
 Some companies disallow the usage of Docker Hub, but you can override `*.image` properties with your own images from your private registry to workaround that.
 
-> **ryuk.container.image = testcontainers/ryuk:0.3.1**
+> **ryuk.container.image = testcontainers/ryuk:0.3.2**
 > Performs fail-safe cleanup of containers, and always required (unless [Ryuk is disabled](#disabling-ryuk))
 
-> **tinyimage.container.image = alpine:3.5**  
+> **tinyimage.container.image = alpine:3.14**  
 > Used to check whether images can be pulled at startup, and always required (unless [startup checks are disabled](#disabling-the-startup-checks))
 
 > **sshd.container.image = testcontainers/sshd:1.0.0**  
@@ -74,7 +74,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 
 ## Customizing Ryuk resource reaper
 
-> **ryuk.container.image = testcontainers/ryuk:0.3.1**
+> **ryuk.container.image = testcontainers/ryuk:0.3.2**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
 
 > **ryuk.container.privileged = false**
@@ -93,6 +93,11 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 
 > **pull.pause.timeout = 30**
 > By default Testcontainers will abort the pull of an image if the pull appears stalled (no data transferred) for longer than this duration (in seconds).
+
+## Customizing client ping behaviour
+
+> **client.ping.timeout = 5**
+> Specifies for how long Testcontainers will try to connect to the Docker client to obtain valid info about the client before giving up and trying next strategy, if applicable (in seconds).
 
 ## Customizing Docker host detection
 

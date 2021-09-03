@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -156,6 +157,34 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
+    public void shouldUseImplicitDockerClientStrategyWhenDockerHostPropertyIsSet() {
+        userProperties.remove("docker.client.strategy");
+        userProperties.put("docker.host", "tcp://1.2.3.4:5678");
+        assertEquals("Docker client strategy is implicitly set when docker host property is set", EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName(), newConfig().getDockerClientStrategyClassName());
+    }
+
+    @Test
+    public void shouldNotUseImplicitDockerClientStrategyWhenDockerHostAndStrategyAreBothSet() {
+        userProperties.put("docker.client.strategy", "foo");
+        userProperties.put("docker.host", "tcp://1.2.3.4:5678");
+        assertEquals("Docker client strategy is can be explicitly set", "foo", newConfig().getDockerClientStrategyClassName());
+
+        userProperties.remove("docker.client.strategy");
+
+        environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "bar");
+        userProperties.put("docker.client.strategy", "foo");
+        assertEquals("Docker client strategy is can be explicitly set", "bar", newConfig().getDockerClientStrategyClassName());
+
+        environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "bar");
+        userProperties.remove("docker.client.strategy");
+        assertEquals("Docker client strategy is can be explicitly set", "bar", newConfig().getDockerClientStrategyClassName());
+
+        environment.remove("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY");
+        userProperties.put("docker.client.strategy", "foo");
+        assertEquals("Docker client strategy is can be explicitly set", "foo", newConfig().getDockerClientStrategyClassName());
+    }
+
+    @Test
     public void shouldNotReadReuseFromClasspathProperties() {
         assertFalse("no reuse by default", newConfig().environmentSupportsReuse());
 
@@ -181,8 +210,8 @@ public class TestcontainersConfigurationTest {
 
     @Test
     public void shouldTrimImageNames() {
-        userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.1 ");
-        assertEquals("trailing whitespace was not removed from image name property", "testcontainers/ryuk:0.3.1",newConfig().getRyukImage());
+        userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.2 ");
+        assertEquals("trailing whitespace was not removed from image name property", "testcontainers/ryuk:0.3.2",newConfig().getRyukImage());
     }
 
     private TestcontainersConfiguration newConfig() {
