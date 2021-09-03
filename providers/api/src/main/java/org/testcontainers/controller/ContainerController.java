@@ -30,6 +30,8 @@ public interface ContainerController {
 
     void warmup();
 
+    String getExposedPortsAddress();
+
     ResourceCleaner getResourceReaper();
 
     CreateContainerIntent createContainerIntent(String containerImageName);

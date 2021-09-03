@@ -12,6 +12,7 @@ import org.testcontainers.controller.ContainerProviderInitParams;
 import org.testcontainers.controller.configuration.DefaultConfigurationSource;
 import org.testcontainers.providers.kubernetes.configuration.KubernetesConfiguration;
 
+import javax.swing.text.html.Option;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +50,9 @@ public class KubernetesContainerProvider implements ContainerProvider {
 
     private KubernetesContainerController createController() {
         KubernetesContext ctx = buildKubernetesContext();
+
+        Optional<String> nodePortAddress = configuration.getNodePortAddress();
+        nodePortAddress.ifPresent(ctx::withNodePortAddress);
 
         String requiredNamespace = ctx.getNamespaceProvider().getNamespace();
 
@@ -94,11 +98,6 @@ public class KubernetesContainerProvider implements ContainerProvider {
         NamespaceProvider namespaceProvider = new StaticNamespaceProvider(namespacePattern);
 
         return new KubernetesContext(client, namespaceProvider);
-    }
-
-    @Override
-    public String exposedPortsIpAddress() {
-        return buildKubernetesContext().getNodePortAddress().get();
     }
 
     @Override

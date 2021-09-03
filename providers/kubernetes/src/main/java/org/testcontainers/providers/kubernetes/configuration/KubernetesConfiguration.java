@@ -13,6 +13,8 @@ public class KubernetesConfiguration {
 
     private static final String PROVIDER_KUBERNETES_NAMESPACE = "PROVIDER_KUBERNETES_NAMESPACE";
     private static final String PROVIDER_KUBERNETES_NAMESPACE_LABELS = "PROVIDER_KUBERNETES_NAMESPACE_LABELS";
+    private static final String PROVIDER_KUBERNETES_NODEPORT_ADDRESS = "PROVIDER_KUBERNETES_NODEPORT_ADDRESS";
+    private static final String PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS = "PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS";
 
     private final ConfigurationSource configurationSource;
 
@@ -32,10 +34,14 @@ public class KubernetesConfiguration {
     }
 
     public Optional<Map<String, String>> getNamespaceAnnotations() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty("PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS", null))
+        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS, null))
             .map(this::parseMap);
     }
 
+
+    public Optional<String> getNodePortAddress() {
+        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(PROVIDER_KUBERNETES_NODEPORT_ADDRESS, null));
+    }
 
 
     private Map<String, String> parseMap(String v) {

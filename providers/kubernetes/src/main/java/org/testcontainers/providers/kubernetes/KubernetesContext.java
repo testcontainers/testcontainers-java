@@ -7,6 +7,7 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSetList;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.controller.intents.ExecCreateResult;
 import org.testcontainers.providers.kubernetes.execution.KubernetesExecution;
 import org.testcontainers.providers.kubernetes.intents.ExecCreateK8sIntent;
@@ -28,7 +29,12 @@ public class KubernetesContext {
 
     private final String sessionId = UUID.randomUUID().toString();
 
-    public KubernetesContext(KubernetesClient client, NamespaceProvider namespaceProvider) {
+    private Optional<String> fixedNodePortAddress = Optional.empty();
+
+    public KubernetesContext(
+        KubernetesClient client,
+        NamespaceProvider namespaceProvider
+    ) {
         this.client = client;
         this.namespaceProvider = namespaceProvider;
     }
@@ -41,29 +47,40 @@ public class KubernetesContext {
         return namespaceProvider;
     }
 
-
-    private Optional<String> getNodeAddress(Node node) {
-        return node.getStatus().getAddresses().stream()
-            .filter(ip ->
-                "InternalIP".equals(ip.getType()) || // TODO: Introduce strategy
-                    "ExternalIP".equals(ip.getType())
-            )
-            .map(NodeAddress::getAddress)
-            .findAny();
-    }
-
     private boolean isReady(Node node) {
         return node.getStatus().getConditions().stream().anyMatch(c ->
             "Ready".equals(c.getType()) && "True".equals(c.getStatus())
         );
     }
 
+    public KubernetesContext withNodePortAddress(@Nullable String nodePortAddress) {
+        this.fixedNodePortAddress = Optional.ofNullable(nodePortAddress);
+        return this;
+    }
+
     public Optional<String> getNodePortAddress() {
+        if(fixedNodePortAddress.isPresent()) {
+            return fixedNodePortAddress;
+        }
+        return detectNodePortAddress();
+    }
+
+    private Optional<String> detectNodePortAddress() {
         return client.nodes().list().getItems().stream()
             .filter(this::isReady)
-            .map(this::getNodeAddress)
+            .map(this::getAddressOfNode)
             .filter(Optional::isPresent)
             .map(Optional::get)
+            .findAny();
+    }
+
+    private Optional<String> getAddressOfNode(Node node) {
+        return node.getStatus().getAddresses().stream()
+            .filter(ip ->
+                "InternalIP".equals(ip.getType()) || // TODO: Introduce strategy
+                    "ExternalIP".equals(ip.getType())
+            )
+            .map(NodeAddress::getAddress)
             .findAny();
     }
 

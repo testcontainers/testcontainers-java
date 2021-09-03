@@ -63,18 +63,24 @@ public class KubernetesContainerController implements ContainerController {
     }
 
     @Override
+    public String getExposedPortsAddress() {
+        return ctx.getNodePortAddress().get();
+    }
+
+
+    @Override
     public CreateContainerIntent createContainerIntent(String containerImageName) {
         return new CreateContainerK8sIntent(ctx, networkStrategy, containerImageName);
     }
 
     @Override
     public StartContainerIntent startContainerIntent(String containerId) {
-        return new StartContainerK8sIntent(ctx, findReplicaSet(containerId));
+        return new StartContainerK8sIntent(ctx, ctx.findReplicaSet(containerId));
     }
 
     @Override
     public InspectContainerIntent inspectContainerIntent(String containerId) {
-        return new InspectContainerK8sIntent(ctx, networkStrategy, containerId, findReplicaSet(containerId));
+        return new InspectContainerK8sIntent(ctx, networkStrategy, containerId, ctx.findReplicaSet(containerId));
     }
 
     @Override
@@ -129,12 +135,12 @@ public class KubernetesContainerController implements ContainerController {
 
     @Override
     public KillContainerIntent killContainerIntent(String containerId) {
-        return new KillContainerK8sIntent(ctx, findReplicaSet(containerId));
+        return new KillContainerK8sIntent(ctx, ctx.findReplicaSet(containerId));
     }
 
     @Override
     public RemoveContainerIntent removeContainerIntent(String containerId) {
-        return new RemoveContainerK8sIntent(ctx, networkStrategy, findReplicaSet(containerId));
+        return new RemoveContainerK8sIntent(ctx, networkStrategy, ctx.findReplicaSet(containerId));
     }
 
     @Override
@@ -188,16 +194,6 @@ public class KubernetesContainerController implements ContainerController {
     @Override
     public CreateNetworkIntent createNetworkCmd() {
         return new CreateNetworkK8sIntent();
-    }
-
-    /**
-     * @deprecated Use {@link KubernetesContext#findReplicaSet(String)}
-     * @param containerId
-     * @return
-     */
-    @Deprecated // TODO: Remove
-    private ReplicaSet findReplicaSet(String containerId) {
-        return ctx.findReplicaSet(containerId);
     }
 
     @Override

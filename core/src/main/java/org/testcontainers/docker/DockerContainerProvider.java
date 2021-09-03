@@ -27,11 +27,6 @@ public class DockerContainerProvider implements ContainerProvider {
     }
 
     @Override
-    public String exposedPortsIpAddress() {
-        return DockerClientFactory.instance().dockerHostIpAddress();
-    }
-
-    @Override
     public boolean supportsExecution() {
         String executionDriver = DockerClientFactory.instance().getActiveExecutionDriver();
 

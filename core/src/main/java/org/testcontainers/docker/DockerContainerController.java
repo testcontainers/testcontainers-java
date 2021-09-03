@@ -79,6 +79,11 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
+    public String getExposedPortsAddress() {
+        return DockerClientFactory.instance().dockerHostIpAddress();
+    }
+
+    @Override
     public StartContainerIntent startContainerIntent(String containerId) {
         return new StartContainerDockerIntent(dockerClient.startContainerCmd(containerId));
     }

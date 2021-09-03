@@ -58,7 +58,7 @@ public interface ContainerState {
      * @return a host
      */
     default String getHost() {
-        return ContainerControllerFactory.instance().exposedPortsIpAddress();
+        return ContainerControllerFactory.instance().controller().getExposedPortsAddress();
     }
 
     /**

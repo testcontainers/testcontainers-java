@@ -7,8 +7,6 @@ public interface ContainerProvider {
     ContainerController lazyController();
     ContainerController controller();
 
-    String exposedPortsIpAddress();
-
     boolean supportsExecution();
 
     boolean isFileMountingSupported();
