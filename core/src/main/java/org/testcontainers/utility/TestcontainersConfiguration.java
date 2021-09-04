@@ -311,6 +311,8 @@ public class TestcontainersConfiguration {
                 return false;
             }
 
+            userProperties.setProperty(prop, value);
+
             USER_CONFIG_FILE.createNewFile();
             try (OutputStream outputStream = new FileOutputStream(USER_CONFIG_FILE)) {
                 userProperties.store(outputStream, "Modified by Testcontainers");
