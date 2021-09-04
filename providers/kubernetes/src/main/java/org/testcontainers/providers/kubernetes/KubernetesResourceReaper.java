@@ -1,11 +1,16 @@
 package org.testcontainers.providers.kubernetes;
 
+import com.github.dockerjava.api.model.Ports;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.extensions.Ingress;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ResourceCleaner;
 import org.testcontainers.controller.intents.RemoveContainerIntent;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +27,15 @@ public class KubernetesResourceReaper implements ResourceCleaner {
     private final Set<String> containerIds = new HashSet<>();
     @Nullable
     private Namespace createdNamespace = null;
+    private List<Deployment> deployments = new ArrayList<>();
+    private List<Service> services = new ArrayList<>();
+    private List<Ingress> ingresses = new ArrayList<>();
 
     public KubernetesResourceReaper(
         KubernetesContext ctx,
         ContainerController containerController
     ) {
-        this.ctx = ctx;
+        this.ctx = ctx.withResourceReaper(this);
         this.containerController = containerController;
     }
 
@@ -64,6 +72,9 @@ public class KubernetesResourceReaper implements ResourceCleaner {
 
     private void performCleanup() {
         containerIds.stream().map(containerController::removeContainerIntent).forEach(RemoveContainerIntent::perform);
+        ctx.getClient().apps().deployments().delete(deployments);
+        ctx.getClient().services().delete(services);
+        ctx.getClient().extensions().ingresses().delete(ingresses);
         if(this.createdNamespace != null) {
             ctx.getClient()
                 .namespaces()
@@ -81,5 +92,20 @@ public class KubernetesResourceReaper implements ResourceCleaner {
     public void registerNamespaceForCleanup(Namespace createdNamespace) {
         setHook();
         this.createdNamespace = createdNamespace;
+    }
+
+    public void registerDeploymentForCleanup(Deployment createdDeployment) {
+        setHook();
+        this.deployments.add(createdDeployment);
+    }
+
+    public void registerServiceForCleanup(Service createdService) {
+        setHook();
+        this.services.add(createdService);
+    }
+
+    public void registerIngressForCleanup(Ingress createdIngress) {
+        setHook();
+        this.ingresses.add(createdIngress);
     }
 }

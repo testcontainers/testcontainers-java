@@ -11,10 +11,15 @@ import java.util.stream.Collectors;
 
 public class KubernetesConfiguration {
 
-    private static final String PROVIDER_KUBERNETES_NAMESPACE = "PROVIDER_KUBERNETES_NAMESPACE";
-    private static final String PROVIDER_KUBERNETES_NAMESPACE_LABELS = "PROVIDER_KUBERNETES_NAMESPACE_LABELS";
-    private static final String PROVIDER_KUBERNETES_NODEPORT_ADDRESS = "PROVIDER_KUBERNETES_NODEPORT_ADDRESS";
-    private static final String PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS = "PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS";
+    private static final String NAMESPACE = "PROVIDER_KUBERNETES_NAMESPACE";
+    private static final String NAMESPACE_LABELS = "PROVIDER_KUBERNETES_NAMESPACE_LABELS";
+    private static final String NAMESPACE_ANNOTATIONS = "PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS";
+
+    private static final String NODEPORT_ADDRESS = "PROVIDER_KUBERNETES_NODEPORT_ADDRESS";
+
+    private static final String TEMP_REGISTRY_INGRESS_HOST = "PROVIDER_KUBERNETES_TEMP_REGISTRY_INGRESS_HOST";
+    private static final String TEMP_REGISTRY_INGRESS_ANNOTATIONS = "PROVIDER_KUBERNETES_TEMP_REGISTRY_INGRESS_ANNOTATIONS";
+    private static final String TEMP_REGISTRY_INGRESS_CERT = "PROVIDER_KUBERNETES_TEMP_REGISTRY_INGRESS_CERT";
 
     private final ConfigurationSource configurationSource;
 
@@ -25,27 +30,47 @@ public class KubernetesConfiguration {
     }
 
     public Optional<String> getNamespacePattern() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(PROVIDER_KUBERNETES_NAMESPACE, null));
+        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NAMESPACE, null));
     }
 
     public Optional<Map<String, String>> getNamespaceLabels() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(PROVIDER_KUBERNETES_NAMESPACE_LABELS, null))
+        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NAMESPACE_LABELS, null))
             .map(this::parseMap);
     }
 
     public Optional<Map<String, String>> getNamespaceAnnotations() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(PROVIDER_KUBERNETES_NAMESPACE_ANNOTATIONS, null))
+        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NAMESPACE_ANNOTATIONS, null))
             .map(this::parseMap);
     }
 
 
     public Optional<String> getNodePortAddress() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(PROVIDER_KUBERNETES_NODEPORT_ADDRESS, null));
+        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NODEPORT_ADDRESS, null));
     }
 
+    public Optional<String> getTemporaryRegistryIngressHost() {
+        return Optional.ofNullable(
+            configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_HOST, null)
+        );
+    }
+
+    public Optional<Map<String, String>> getTemporaryRegistryIngressAnnotations() {
+        return Optional.ofNullable(
+                configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_ANNOTATIONS, null)
+            )
+            .map(this::parseMap);
+    }
+
+    public Optional<String> getTemporaryIngressCert() {
+        return Optional.ofNullable(
+            configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_CERT, null)
+        );
+    }
 
     private Map<String, String> parseMap(String v) {
         return Arrays.stream(v.split(","))
+            .flatMap(l -> Arrays.stream(l.split("\n")))
+            .map(String::trim)
             .map(this::parseKeyValuePair)
             .collect(
                 Collectors.toMap(
@@ -65,19 +90,19 @@ public class KubernetesConfiguration {
         StringBuilder sb = new StringBuilder();
         char c;
         Optional<Character> quoteChar = Optional.empty();
-        for(int i=0; i<v.length(); i++) {
+        for (int i = 0; i < v.length(); i++) {
             c = v.charAt(i);
-            if(i == 0 && (c == '\'' || c == '"')) {
+            if (i == 0 && (c == '\'' || c == '"')) {
                 quoteChar = Optional.of(c);
                 continue;
             }
-            if(quoteChar.isPresent() && quoteChar.get() == c) {
+            if (quoteChar.isPresent() && quoteChar.get() == c) {
                 quoteChar = Optional.empty();
                 continue;
             }
-            if(!quoteChar.isPresent() && (c == ':' || c == '=')) {
+            if (!quoteChar.isPresent() && (c == ':' || c == '=')) {
                 result.add(sb.toString());
-                parseKeyValuePair(result, v.substring(i+1));
+                parseKeyValuePair(result, v.substring(i + 1));
                 return;
             }
             sb.append(c);

@@ -1,8 +1,6 @@
 package org.testcontainers.providers.kubernetes;
 
-import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import org.testcontainers.controller.ContainerController;
-import org.testcontainers.controller.ResourceCleaner;
 import org.testcontainers.controller.UnsupportedProviderOperationException;
 import org.testcontainers.controller.intents.BuildImageIntent;
 import org.testcontainers.controller.intents.ConnectToNetworkIntent;
@@ -41,6 +39,7 @@ import org.testcontainers.providers.kubernetes.intents.RemoveContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.intents.StartContainerK8sIntent;
 import org.testcontainers.providers.kubernetes.networking.NetworkStrategy;
 import org.testcontainers.providers.kubernetes.networking.NodePortStrategy;
+import org.testcontainers.providers.kubernetes.repository.RepositoryStrategy;
 
 import java.io.InputStream;
 
@@ -48,13 +47,14 @@ public class KubernetesContainerController implements ContainerController {
 
     private final KubernetesContext ctx;
     private final NetworkStrategy networkStrategy = new NodePortStrategy();
-    private final KubernetesResourceReaper resourceReaper;
+    private final RepositoryStrategy repositoryStrategy;
 
     public KubernetesContainerController(
-        KubernetesContext ctx
+        KubernetesContext ctx,
+        RepositoryStrategy repositoryStrategy
     ) {
         this.ctx = ctx;
-        resourceReaper = new KubernetesResourceReaper(ctx, this);
+        this.repositoryStrategy = repositoryStrategy;
     }
 
     @Override
@@ -67,6 +67,10 @@ public class KubernetesContainerController implements ContainerController {
         return ctx.getNodePortAddress().get();
     }
 
+    @Override
+    public String getRandomImageName() {
+        return this.repositoryStrategy.getRandomImageName();
+    }
 
     @Override
     public CreateContainerIntent createContainerIntent(String containerImageName) {
@@ -192,13 +196,13 @@ public class KubernetesContainerController implements ContainerController {
     }
 
     @Override
-    public CreateNetworkIntent createNetworkCmd() {
+    public CreateNetworkIntent createNetworkIntent() {
         return new CreateNetworkK8sIntent();
     }
 
     @Override
     public KubernetesResourceReaper getResourceReaper() {
-        return resourceReaper;
+        return ctx.getResourceReaper();
     }
 
 }

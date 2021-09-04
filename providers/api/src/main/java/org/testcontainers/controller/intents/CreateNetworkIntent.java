@@ -18,5 +18,5 @@ public interface CreateNetworkIntent {
 
     CreateNetworkIntent withLabels(Map<String, String> labels);
 
-    CreateNetworkResult exec(); // TODO: Rename
+    CreateNetworkResult perform();
 }

@@ -40,11 +40,6 @@ public class DockerContainerProvider implements ContainerProvider {
     }
 
     @Override
-    public String getRandomImageName() {
-        return "localhost/testcontainers/" + Base58.randomString(16).toLowerCase();
-    }
-
-    @Override
     public String getIdentifier() {
         return PROVIDER_IDENTIFIER;
     }

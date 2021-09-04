@@ -11,7 +11,6 @@ dependencies {
     shaded ('io.fabric8:kubernetes-client:5.7.0') {
       //  exclude(group: 'com.fasterxml.jackson.core')
     }
-    // api 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
     api 'org.apache.commons:commons-compress:1.21' // TODO: Check dependency
     api 'commons-codec:commons-codec:1.15' // TODO: Check dependency
 

@@ -46,7 +46,7 @@ public class CreateNetworkK8sIntent implements CreateNetworkIntent {
     }
 
     @Override
-    public CreateNetworkResult exec() {
+    public CreateNetworkResult perform() {
        return new CreateNetworkK8sResult();
     }
 }

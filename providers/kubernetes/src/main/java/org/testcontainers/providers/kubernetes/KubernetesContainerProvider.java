@@ -11,12 +11,14 @@ import org.testcontainers.controller.ContainerProvider;
 import org.testcontainers.controller.ContainerProviderInitParams;
 import org.testcontainers.controller.configuration.DefaultConfigurationSource;
 import org.testcontainers.providers.kubernetes.configuration.KubernetesConfiguration;
+import org.testcontainers.providers.kubernetes.repository.NoRepositoryStrategy;
+import org.testcontainers.providers.kubernetes.repository.RepositoryStrategy;
+import org.testcontainers.providers.kubernetes.repository.TemporaryImageRepositoryStrategy;
 
-import javax.swing.text.html.Option;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 public class KubernetesContainerProvider implements ContainerProvider {
@@ -24,7 +26,7 @@ public class KubernetesContainerProvider implements ContainerProvider {
     private static final String PROVIDER_IDENTIFIER = "kubernetes";
 
     private KubernetesConfiguration configuration = new KubernetesConfiguration(new DefaultConfigurationSource());
-    private final NamespaceTemplateRenderer namespaceTemplateRenderer = new NamespaceTemplateRenderer();
+    private final TemplateRenderer templateRenderer = new TemplateRenderer();
 
     private KubernetesContainerController instance = null;
 
@@ -42,7 +44,7 @@ public class KubernetesContainerProvider implements ContainerProvider {
     @Override
     @SneakyThrows
     public synchronized ContainerController controller() {
-        if(instance == null) {
+        if (instance == null) {
             instance = createController();
         }
         return instance;
@@ -63,11 +65,30 @@ public class KubernetesContainerProvider implements ContainerProvider {
 
         ctx.getClient().getConfiguration().setNamespace(requiredNamespace);
 
+
+        RepositoryStrategy repositoryStrategy = configuration.getTemporaryRegistryIngressHost()
+            .map(templateRenderer::render)
+            .map(host -> (RepositoryStrategy) new TemporaryImageRepositoryStrategy(
+                ctx,
+                host,
+                templateRenderer.render(
+                    configuration.getTemporaryIngressCert().orElse("registry-cert-${random}")
+                ),
+                configuration.getTemporaryRegistryIngressAnnotations().orElseGet(Collections::emptyMap)
+            ))
+            .orElseGet(NoRepositoryStrategy::new);
+
+
         KubernetesContainerController controller = new KubernetesContainerController(
-            ctx
+            ctx,
+            repositoryStrategy
         );
 
-        if(existingNamespace == null) {
+        KubernetesResourceReaper kubernetesResourceReaper = new KubernetesResourceReaper(ctx, controller);
+        ctx.withResourceReaper(kubernetesResourceReaper);
+
+
+        if (existingNamespace == null) {
             Optional<Map<String, String>> configuredLabels = configuration.getNamespaceLabels();
             Optional<Map<String, String>> configuredAnnotations = configuration.getNamespaceAnnotations();
             Namespace createdNamespace = ctx.getClient()
@@ -90,7 +111,7 @@ public class KubernetesContainerProvider implements ContainerProvider {
     private KubernetesContext buildKubernetesContext() {
         KubernetesClient client = new DefaultKubernetesClient();
 
-        String namespacePattern = namespaceTemplateRenderer.render(
+        String namespacePattern = templateRenderer.render(
             configuration.getNamespacePattern()
                 .orElse(client.getNamespace())
         );
@@ -108,11 +129,6 @@ public class KubernetesContainerProvider implements ContainerProvider {
     @Override
     public boolean isFileMountingSupported() {
         return true;
-    }
-
-    @Override
-    public String getRandomImageName() {
-        return "docker.cluster.lise.de/testcontainers/" + UUID.randomUUID().toString().toLowerCase(); // TODO: Implement temp registry
     }
 
     @Override

@@ -55,6 +55,7 @@ import org.testcontainers.docker.intents.StartContainerDockerIntent;
 import org.testcontainers.docker.intents.TagImageDockerIntent;
 import org.testcontainers.docker.intents.WaitContainerDockerIntent;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ResourceReaper;
 
 import java.io.InputStream;
@@ -81,6 +82,11 @@ public class DockerContainerController implements ContainerController {
     @Override
     public String getExposedPortsAddress() {
         return DockerClientFactory.instance().dockerHostIpAddress();
+    }
+
+    @Override
+    public String getRandomImageName() {
+        return "localhost/testcontainers/" + Base58.randomString(16).toLowerCase();
     }
 
     @Override
@@ -203,7 +209,7 @@ public class DockerContainerController implements ContainerController {
     }
 
     @Override
-    public CreateNetworkIntent createNetworkCmd() {
+    public CreateNetworkIntent createNetworkIntent() {
         return new CreateNetworkDockerIntent(dockerClient.createNetworkCmd());
     }
 

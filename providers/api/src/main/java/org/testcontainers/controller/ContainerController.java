@@ -32,6 +32,8 @@ public interface ContainerController {
 
     String getExposedPortsAddress();
 
+    String getRandomImageName();
+
     ResourceCleaner getResourceReaper();
 
     CreateContainerIntent createContainerIntent(String containerImageName);
@@ -80,7 +82,7 @@ public interface ContainerController {
 
     BuildImageIntent buildImageIntent(InputStream in);
 
-    CreateNetworkIntent createNetworkCmd(); // TODO: Rename
+    CreateNetworkIntent createNetworkIntent();
 
 
 }

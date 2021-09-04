@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NamespaceTemplateRenderer {
+public class TemplateRenderer {
 
     private static final Pattern EXPR = Pattern.compile("\\$\\{([A-Za-z0-9_]+)\\}");
     private static final char[] ALPHANUMERIC_CHARS = "0123456789abcdefghijklmnopqrstuvwxyz".toCharArray();
@@ -14,7 +14,7 @@ public class NamespaceTemplateRenderer {
     private final Map<String, String> environmentMap = new HashMap<>();
     private final Random random = new Random();
 
-    public NamespaceTemplateRenderer() {
+    public TemplateRenderer() {
         init();
     }
 
@@ -35,11 +35,11 @@ public class NamespaceTemplateRenderer {
         return sb.toString();
     }
 
-    public String render(String namespaceTemplate) {
+    public String render(String template) {
         System.getenv();
 
 
-        Matcher matcher = EXPR.matcher(namespaceTemplate);
+        Matcher matcher = EXPR.matcher(template);
         while (matcher.find()) {
             String envValue = environmentMap.get(matcher.group(1).toUpperCase());
             if (envValue == null) {
@@ -48,10 +48,10 @@ public class NamespaceTemplateRenderer {
                 envValue = envValue.replace("\\", "\\\\");
             }
             Pattern subExpression = Pattern.compile(Pattern.quote(matcher.group(0)));
-            namespaceTemplate = subExpression.matcher(namespaceTemplate).replaceAll(envValue);
+            template = subExpression.matcher(template).replaceAll(envValue);
         }
 
-        return namespaceTemplate;
+        return template;
     }
 
 }

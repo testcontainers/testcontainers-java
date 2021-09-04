@@ -11,8 +11,6 @@ public interface ContainerProvider {
 
     boolean isFileMountingSupported();
 
-    String getRandomImageName();
-
     String getIdentifier();
 
     boolean isAvailable();

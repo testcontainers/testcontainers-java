@@ -51,7 +51,7 @@ public class CreateNetworkDockerIntent implements CreateNetworkIntent {
     }
 
     @Override
-    public CreateNetworkResult exec() {
+    public CreateNetworkResult perform() {
         return new CreateNetworkDockerResult(networkCmd.exec());
     }
 }

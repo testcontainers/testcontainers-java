@@ -30,6 +30,7 @@ public class KubernetesContext {
     private final String sessionId = UUID.randomUUID().toString();
 
     private Optional<String> fixedNodePortAddress = Optional.empty();
+    private KubernetesResourceReaper resourceReaper;
 
     public KubernetesContext(
         KubernetesClient client,
@@ -160,4 +161,14 @@ public class KubernetesContext {
     public String getSessionId() {
         return sessionId;
     }
+
+    public KubernetesContext withResourceReaper(KubernetesResourceReaper resourceReaper) {
+        this.resourceReaper = resourceReaper;
+        return this;
+    }
+
+    public KubernetesResourceReaper getResourceReaper() {
+        return resourceReaper;
+    }
+
 }

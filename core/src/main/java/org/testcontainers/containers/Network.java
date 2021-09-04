@@ -67,7 +67,7 @@ public interface Network extends AutoCloseable, TestRule {
         }
 
         private String create() {
-            CreateNetworkIntent createNetworkCmd = ContainerControllerFactory.instance().controller().createNetworkCmd(); // TODO: Rename
+            CreateNetworkIntent createNetworkCmd = ContainerControllerFactory.instance().controller().createNetworkIntent(); // TODO: Rename
 
             createNetworkCmd.withName(name);
             createNetworkCmd.withCheckDuplicate(true);
@@ -89,7 +89,7 @@ public interface Network extends AutoCloseable, TestRule {
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
             createNetworkCmd.withLabels(labels);
 
-            return createNetworkCmd.exec().getId();
+            return createNetworkCmd.perform().getId();
         }
 
         @Override
