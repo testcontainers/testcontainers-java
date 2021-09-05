@@ -270,6 +270,11 @@ public class TestcontainersConfiguration implements ConfigurationSource {
         return getConfigurable(propertyName, defaultValue, userProperties, classpathProperties);
     }
 
+    @Override
+    public Optional<String> getEnvVarOrProperty(@NotNull String propertyName) {
+        return Optional.ofNullable(getEnvVarOrProperty(propertyName, null));
+    }
+
     /**
      * Gets a configured setting from an environment variable.
      * <p>

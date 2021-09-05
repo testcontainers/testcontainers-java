@@ -1,5 +1,6 @@
 package org.testcontainers.providers.kubernetes.configuration;
 
+import org.testcontainers.controller.configuration.CombinedConfigurationSource;
 import org.testcontainers.controller.configuration.ConfigurationSource;
 
 import java.util.ArrayList;
@@ -21,50 +22,48 @@ public class KubernetesConfiguration {
     private static final String TEMP_REGISTRY_INGRESS_ANNOTATIONS = "PROVIDER_KUBERNETES_TEMP_REGISTRY_INGRESS_ANNOTATIONS";
     private static final String TEMP_REGISTRY_INGRESS_CERT = "PROVIDER_KUBERNETES_TEMP_REGISTRY_INGRESS_CERT";
 
-    private final ConfigurationSource configurationSource;
+    private final CombinedConfigurationSource configurationSource;
 
     public KubernetesConfiguration(
         ConfigurationSource configurationSource
     ) {
-        this.configurationSource = configurationSource;
+        this.configurationSource = new CombinedConfigurationSource().addSource(configurationSource);
     }
 
     public Optional<String> getNamespacePattern() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NAMESPACE, null));
+        return configurationSource.getEnvVarOrProperty(NAMESPACE);
     }
 
     public Optional<Map<String, String>> getNamespaceLabels() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NAMESPACE_LABELS, null))
+        return configurationSource.getEnvVarOrProperty(NAMESPACE_LABELS)
             .map(this::parseMap);
     }
 
     public Optional<Map<String, String>> getNamespaceAnnotations() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NAMESPACE_ANNOTATIONS, null))
+        return configurationSource.getEnvVarOrProperty(NAMESPACE_ANNOTATIONS)
             .map(this::parseMap);
     }
 
 
     public Optional<String> getNodePortAddress() {
-        return Optional.ofNullable(configurationSource.getEnvVarOrProperty(NODEPORT_ADDRESS, null));
+        return configurationSource.getEnvVarOrProperty(NODEPORT_ADDRESS);
     }
 
     public Optional<String> getTemporaryRegistryIngressHost() {
-        return Optional.ofNullable(
-            configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_HOST, null)
-        );
+        return configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_HOST);
     }
 
     public Optional<Map<String, String>> getTemporaryRegistryIngressAnnotations() {
-        return Optional.ofNullable(
-                configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_ANNOTATIONS, null)
-            )
+        return configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_ANNOTATIONS)
             .map(this::parseMap);
     }
 
     public Optional<String> getTemporaryIngressCert() {
-        return Optional.ofNullable(
-            configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_CERT, null)
-        );
+        return configurationSource.getEnvVarOrProperty(TEMP_REGISTRY_INGRESS_CERT);
+    }
+
+    public CombinedConfigurationSource getConfigurationSource() {
+        return configurationSource;
     }
 
     private Map<String, String> parseMap(String v) {

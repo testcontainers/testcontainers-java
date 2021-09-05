@@ -9,4 +9,6 @@ public interface ConfigurationSource {
 
     String getEnvVarOrProperty(@NotNull final String propertyName, @Nullable final String defaultValue);
 
+    Optional<String> getEnvVarOrProperty(@NotNull final String propertyName);
+
 }

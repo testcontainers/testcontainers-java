@@ -1,5 +1,6 @@
 package org.testcontainers.providers.kubernetes;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -10,6 +11,7 @@ import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
 import org.testcontainers.controller.ContainerProviderInitParams;
 import org.testcontainers.controller.configuration.DefaultConfigurationSource;
+import org.testcontainers.providers.kubernetes.configuration.ConfigMapConfigurationSource;
 import org.testcontainers.providers.kubernetes.configuration.KubernetesConfiguration;
 import org.testcontainers.providers.kubernetes.repository.NoRepositoryStrategy;
 import org.testcontainers.providers.kubernetes.repository.RepositoryStrategy;
@@ -52,6 +54,17 @@ public class KubernetesContainerProvider implements ContainerProvider {
 
     private KubernetesContainerController createController() {
         KubernetesContext ctx = buildKubernetesContext();
+
+        Optional<ConfigMap> autoConfig = Optional.ofNullable(
+            ctx.getClient()
+                .configMaps()
+                .inNamespace("testcontainers")
+                .withName("config")
+                .get()
+        );
+        if(autoConfig.isPresent()){
+            configuration.getConfigurationSource().addSource(new ConfigMapConfigurationSource(autoConfig.get()));
+        }
 
         Optional<String> nodePortAddress = configuration.getNodePortAddress();
         nodePortAddress.ifPresent(ctx::withNodePortAddress);
