@@ -7,15 +7,15 @@ dependencies {
     testImplementation project(':mysql')
     testImplementation project(':postgresql')
     testImplementation 'com.zaxxer:HikariCP:4.0.3'
-    testImplementation 'redis.clients:jedis:3.6.3'
+    testImplementation 'redis.clients:jedis:3.7.0'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
-    testImplementation ('org.mockito:mockito-core:3.11.2') {
+    testImplementation ('org.mockito:mockito-core:3.12.4') {
         exclude(module: 'hamcrest-core')
     }
     testImplementation 'org.assertj:assertj-core:3.20.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.2.22'
+    testRuntimeOnly 'org.postgresql:postgresql:42.2.23'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.26'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
