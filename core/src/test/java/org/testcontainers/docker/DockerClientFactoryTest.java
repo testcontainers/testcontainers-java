@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.rnorth.visibleassertions.VisibleAssertions;
-import org.testcontainers.docker.DockerClientFactory;
 import org.testcontainers.docker.DockerClientFactory.DiskSpaceUsage;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;

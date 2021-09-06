@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.controller.ContainerController;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
@@ -109,7 +108,7 @@ public class DockerClientFactory {
     }
 
     /**
-     * Checks whether Docker is accessible and {@link #client()} is able to produce a client.
+     * Checks whether Docker is accessible and {@link #createNewDockerClient()} is able to produce a client.
      *
      * @return true if Docker is available, false if not.
      */
@@ -170,9 +169,6 @@ public class DockerClientFactory {
         return strategy.getDockerClient();
     }
 
-    /**
-     * @return a new initialized Docker client
-     */
     @Synchronized
     public DockerClient client() {
         if (dockerClient != null) {
@@ -185,7 +181,6 @@ public class DockerClientFactory {
                 throw new IllegalStateException("You should never close the global DockerClient!");
             }
         };
-        final ContainerController containerController = new DockerContainerController(client); // TODO: Let strategy return controller
 
         Info dockerInfo = client.infoCmd().exec();
         Version version = client.versionCmd().exec();
@@ -197,13 +192,26 @@ public class DockerClientFactory {
             "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
             "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
+        dockerClient = client;
+        return dockerClient;
+    }
+
+    /**
+     * a new initialized Docker client
+     */
+    @Synchronized
+    public void startup(DockerContainerController controller) { // TODO: Move logic to provider
+
         final String ryukContainerId;
+        final DockerClient client = controller.getClient();
+
+        Version version = client.versionCmd().exec();
 
         boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
         if (useRyuk) { // TODO: Relocate the ruyk startup
             log.debug("Ryuk is enabled");
             try {
-                ryukContainerId =  containerController.getResourceReaper().start();
+                ryukContainerId =  controller.getResourceReaper().start();
             } catch (RuntimeException e) {
                 cachedClientFailure = e;
                 throw e;
@@ -245,8 +253,6 @@ public class DockerClientFactory {
             log.debug("Checks are disabled");
         }
 
-        dockerClient = client;
-        return dockerClient;
     }
 
     private void checkDockerVersion(String dockerVersion) {

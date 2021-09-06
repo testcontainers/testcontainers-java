@@ -227,4 +227,8 @@ public class DockerContainerController implements ContainerController {
     public ResourceCleaner getResourceReaper() {
         return resourceReaper;
     }
+
+    public DockerClient getClient() {
+        return dockerClient;
+    }
 }

@@ -15,6 +15,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.ContainerControllerFactory;
+import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.intents.InspectContainerResult;
 import org.testcontainers.controller.model.Binding;
 import org.testcontainers.docker.DockerClientFactory;
@@ -317,9 +318,9 @@ public interface ContainerState {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
-        DockerClient dockerClient = DockerClientFactory.instance().client(); // TODO: ContainerController!
+        ContainerController containerController = ContainerControllerFactory.instance().controller();
         try (
-            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
+            InputStream inputStream = containerController.copyArchiveFromContainerIntent(getContainerId(), containerPath).perform();
             TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
         ) {
             tarInputStream.getNextTarEntry();

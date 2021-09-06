@@ -211,7 +211,6 @@ public class TemporaryImageRepositoryStrategy implements RepositoryStrategy {
 
             try(InputStream in = sslsocket.getInputStream()) {
                 try(OutputStream out = sslsocket.getOutputStream()) {
-                    // Write a test byte to get a reaction :)
                     out.write(1);
 
                     while (in.available() > 0) {

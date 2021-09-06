@@ -4,12 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.controller.ContainerController;
 import org.testcontainers.controller.ContainerProvider;
 import org.testcontainers.controller.ContainerProviderInitParams;
-import org.testcontainers.utility.Base58;
 
 @Slf4j
 public class DockerContainerProvider implements ContainerProvider {
 
     private static final String PROVIDER_IDENTIFIER = "docker";
+
+    private DockerContainerController instance = null;
 
     @Override
     public ContainerProvider init(ContainerProviderInitParams params) {
@@ -18,12 +19,17 @@ public class DockerContainerProvider implements ContainerProvider {
 
     @Override
     public ContainerController lazyController() {
-        return new DockerContainerController(DockerClientFactory.lazyClient());
+        return controller(); // TODO: Lazy
     }
 
     @Override
     public ContainerController controller() {
-        return new DockerContainerController(DockerClientFactory.instance().client());
+        if(instance == null) {
+            DockerClientFactory factory = DockerClientFactory.instance();
+            instance = new DockerContainerController(factory.client());
+            factory.startup(instance);
+        }
+        return instance;
     }
 
     @Override

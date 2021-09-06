@@ -147,7 +147,7 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
 
     boolean isDockerAvailable() {
         try {
-            DockerClientFactory.instance().client();
+            DockerClientFactory.instance().client(); // TODO: Use fresh instance maybe?
             return true;
         } catch (Throwable ex) {
             return false;
