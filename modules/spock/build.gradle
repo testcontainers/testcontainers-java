@@ -18,7 +18,7 @@ dependencies {
     testRuntimeOnly 'org.postgresql:postgresql:42.2.23'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.25'
 
-    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
+    testCompileClasspath 'org.jetbrains:annotations:22.0.0'
 }
 
 sourceJar {
