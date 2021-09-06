@@ -12,6 +12,8 @@ public class ConfigMapConfigurationSource implements ConfigurationSource {
 
     private final ConfigMap configMap;
 
+    private static final String PREFIX = "TESTCONTAINERS_";
+
     public ConfigMapConfigurationSource(
         ConfigMap configMap
     ) {
@@ -26,9 +28,10 @@ public class ConfigMapConfigurationSource implements ConfigurationSource {
 
     @Override
     public Optional<String> getEnvVarOrProperty(@NotNull String propertyName) {
+        String fullKey = PREFIX + propertyName;
         Map<String, String> data = configMap.getData();
-        if(data.containsKey(propertyName)) {
-            return Optional.of(data.get(propertyName));
+        if(data.containsKey(fullKey)) {
+            return Optional.of(data.get(fullKey));
         }
         return Optional.empty();
     }

@@ -55,15 +55,17 @@ public class KubernetesContainerProvider implements ContainerProvider {
     private KubernetesContainerController createController() {
         KubernetesContext ctx = buildKubernetesContext();
 
-        Optional<ConfigMap> autoConfig = Optional.ofNullable(
-            ctx.getClient()
-                .configMaps()
-                .inNamespace("testcontainers")
-                .withName("config")
-                .get()
-        );
-        if(autoConfig.isPresent()){
-            configuration.getConfigurationSource().addSource(new ConfigMapConfigurationSource(autoConfig.get()));
+        try {
+            Optional.ofNullable(
+                    ctx.getClient()
+                        .configMaps()
+                        .inNamespace("testcontainers")
+                        .withName("config")
+                        .get()
+                )
+                .ifPresent(configMap -> configuration.getConfigurationSource().addSource(new ConfigMapConfigurationSource(configMap)));
+        } catch (Exception e) {
+            log.debug("Autoconfiguration could not be fetched.", e);
         }
 
         Optional<String> nodePortAddress = configuration.getNodePortAddress();
