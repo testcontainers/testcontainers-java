@@ -94,6 +94,11 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 > **pull.pause.timeout = 30**
 > By default Testcontainers will abort the pull of an image if the pull appears stalled (no data transferred) for longer than this duration (in seconds).
 
+## Customizing client ping behaviour
+
+> **client.ping.timeout = 5**
+> Specifies for how long Testcontainers will try to connect to the Docker client to obtain valid info about the client before giving up and trying next strategy, if applicable (in seconds).
+
 ## Customizing Docker host detection
 
 Testcontainers will attempt to detect the Docker environment and configure everything to work automatically.
