@@ -210,6 +210,10 @@ public class TestcontainersConfiguration {
         return getEnvVarOrProperty("image.substitutor", null);
     }
 
+    public Integer getClientPingTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "5"));
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {
@@ -306,6 +310,8 @@ public class TestcontainersConfiguration {
             if (value.equals(userProperties.get(prop))) {
                 return false;
             }
+
+            userProperties.setProperty(prop, value);
 
             USER_CONFIG_FILE.createNewFile();
             try (OutputStream outputStream = new FileOutputStream(USER_CONFIG_FILE)) {
