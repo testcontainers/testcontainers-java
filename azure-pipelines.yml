@@ -6,6 +6,8 @@ jobs:
   # Run a minimal set of tests in normal Linux pipeline builds
   - task: Gradle@2
     condition: eq(variables['Agent.OS'], 'Linux')
+    pool:
+      vmImage: 'ubuntu-18.04'
     displayName: Build & test (Linux - minimal core)
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
