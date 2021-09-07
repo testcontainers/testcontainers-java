@@ -1,8 +1,10 @@
 package generic;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Info;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -46,7 +48,8 @@ public class CmdModifierTest {
     }
 
     private String getMemoryLimitFilePath() {
-        Info info = memoryLimitedRedis.getDockerClient().infoCmd().exec();
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        Info info = dockerClient.infoCmd().exec();
         Object cgroupVersion = info.getRawValues().get("CgroupVersion");
         boolean cgroup2 = Objects.equals("2", cgroupVersion);
         if (cgroup2) {
