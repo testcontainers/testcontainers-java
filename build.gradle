@@ -32,9 +32,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven {
-            url 'https://oss.sonatype.org/service/local/repositories/comgithubdocker-java-1149/content/'
-        }
     }
 
     configurations {
