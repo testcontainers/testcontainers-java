@@ -45,9 +45,7 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
                 getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
                 break;
             case "autoIgnoringUserProperties":
-                // TODO: replace with configBuilder.isDockerHostSetExplicitly() once released
-                applicable = TestcontainersConfiguration.getInstance()
-                    .getEnvironment().get(DefaultDockerClientConfig.DOCKER_HOST) != null;
+                applicable = configBuilder.isDockerHostSetExplicitly();
                 break;
             default:
                 throw new InvalidConfigurationException("Invalid value for dockerconfig.source: " + dockerConfigSource);
