@@ -24,7 +24,7 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
     @Override
     public Boolean call() {
          String command = internalPorts.stream()
-             .map(it -> String.format("(cat /proc/net/tcp* | awk '{print $2}' | grep -i ':0*%x')", it))
+             .map(it -> String.format("grep -i ':0*%x' /proc/net/tcp*", it))
              .collect(Collectors.joining(
              " && ",
              "while true; do ( ",
