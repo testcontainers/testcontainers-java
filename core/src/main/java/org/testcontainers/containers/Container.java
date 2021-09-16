@@ -25,6 +25,32 @@ import java.util.function.Function;
 
 public interface Container<SELF extends Container<SELF>> extends LinkableContainer, ContainerState {
 
+    /*
+    @SneakyThrows
+    static <S extends StartedContainer> S started(BaseContainerDef<S> containerDef) {
+        ContainerFuture<S> future = start(containerDef);
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            future.close();
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw e;
+        }
+    }
+
+    static <S extends StartedContainer> ContainerFuture<S> start(BaseContainerDef<S> containerDef) {
+        GenericContainer<?> container = new GenericContainer<>(containerDef);
+
+        return new ContainerFutureImpl<>(
+            Startables.deepStart(container).thenApply(__ -> (S) container.getStarted()),
+            container
+        );
+    }
+     */
+
     /**
      * @return a reference to this container instance, cast to the expected generic type.
      */
