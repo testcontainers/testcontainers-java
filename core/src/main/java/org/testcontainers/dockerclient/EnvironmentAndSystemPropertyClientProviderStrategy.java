@@ -31,8 +31,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     public EnvironmentAndSystemPropertyClientProviderStrategy() {
         // use docker-java defaults if present, overridden if our own configuration is set
-        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+        this(DefaultDockerClientConfig.createDefaultConfigBuilder());
+    }
 
+    EnvironmentAndSystemPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
         String dockerConfigSource = TestcontainersConfiguration.getInstance()
             .getEnvVarOrProperty("dockerconfig.source", "auto");
 
