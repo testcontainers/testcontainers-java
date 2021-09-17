@@ -2,8 +2,7 @@ package org.testcontainers.containers.wait.strategy;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.awaitility.Awaitility;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.containers.wait.internal.InternalCommandPortListeningCheck;
@@ -65,29 +64,20 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                 // Polling
                 () -> {
                     Instant now = Instant.now();
-                    RateLimiter rateLimiter = RateLimiterBuilder
-                        .newBuilder()
-                        .withRate(100, TimeUnit.MILLISECONDS)
-                        .withConstantThroughput()
-                        .build();
-                    while (!Thread.interrupted()) {
-                        if (rateLimiter.getWhenReady(externalCheck)) {
-                            log.debug(
-                                "External port check passed for {} mapped as {} in {}",
-                                internalPorts,
-                                externalLivenessCheckPorts,
-                                Duration.between(now, Instant.now())
-                            );
-                            return true;
-                        }
-                    }
+                    Awaitility.await()
+                        .pollInSameThread()
+                        .pollInterval(Duration.ofMillis(100))
+                        .pollDelay(Duration.ZERO)
+                        .forever()
+                        .until(externalCheck);
+
                     log.debug(
-                        "External port check failed for {} mapped as {} in {}",
+                        "External port check passed for {} mapped as {} in {}",
                         internalPorts,
                         externalLivenessCheckPorts,
                         Duration.between(now, Instant.now())
                     );
-                    return false;
+                    return true;
                 }
             ), startupTimeout.getSeconds(), TimeUnit.SECONDS);
 
