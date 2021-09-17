@@ -106,6 +106,9 @@ dependencies {
         exclude(group: 'org.slf4j')
     }
 
+    shaded 'org.eclipse.collections:eclipse-collections-api:10.4.0'
+    shaded 'org.eclipse.collections:eclipse-collections:10.4.0'
+
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:3.7.0'
     testImplementation 'com.rabbitmq:amqp-client:5.13.1'

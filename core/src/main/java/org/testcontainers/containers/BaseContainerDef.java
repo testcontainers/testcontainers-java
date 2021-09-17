@@ -7,9 +7,6 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +16,12 @@ import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SystemUtils;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
@@ -45,13 +48,13 @@ import java.util.Set;
 @Slf4j
 abstract class BaseContainerDef<S extends StartedContainer> {
 
-    RemoteDockerImage image;
+    private RemoteDockerImage image;
 
-    private Map<String, String> env = ImmutableMap.of();
+    private ImmutableMap<String, String> env = Maps.immutable.empty();
 
-    private Set<ExposedPort> exposedPorts = ImmutableSet.of();
+    private ImmutableSet<ExposedPort> exposedPorts = Sets.immutable.empty();
 
-    private Set<PortBinding> portBindings = ImmutableSet.of();
+    private ImmutableSet<PortBinding> portBindings = Sets.immutable.empty();
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
@@ -64,14 +67,14 @@ abstract class BaseContainerDef<S extends StartedContainer> {
     private String networkMode = null;
 
     @NonNull
-    private List<Bind> binds = ImmutableList.of();
+    private ImmutableList<Bind> binds = Lists.immutable.empty();
 
     @NonNull
-    private Set<String> networkAliases = ImmutableSet.of(
+    private ImmutableSet<String> networkAliases = Sets.immutable.of(
         "tc-" + Base58.randomString(8)
     );
 
-    private Map<MountableFile, String> copyToFileContainerPaths = ImmutableMap.of();
+    private ImmutableMap<MountableFile, String> copyToFileContainerPaths = Maps.immutable.empty();
 
     public BaseContainerDef(RemoteDockerImage image) {
         this.image = image;
@@ -82,31 +85,52 @@ abstract class BaseContainerDef<S extends StartedContainer> {
 
     }
 
+    public Map<String, String> getEnv() {
+        return env.castToMap();
+    }
+
+    public Set<ExposedPort> getExposedPorts() {
+        return exposedPorts.castToSet();
+    }
+
+    public Set<PortBinding> getPortBindings() {
+        return portBindings.castToSet();
+    }
+
+    public List<Bind> getBinds() {
+        return binds.castToList();
+    }
+
+    public Set<String> getNetworkAliases() {
+        return networkAliases.castToSet();
+    }
+
+    public Map<MountableFile, String> getCopyToFileContainerPaths() {
+        return copyToFileContainerPaths.castToMap();
+    }
+
     protected void setCommand(String... command) {
         this.command = command;
     }
 
     protected void setEnv(@NonNull String key, String value) {
-        env = ImmutableMap.<String, String>builder()
-            .putAll(env)
-            .put(key, value)
-            .build();
+        env = env.newWithKeyValue(key, value);
     }
 
     protected void setEnv(Map<String, String> env) {
-        this.env = ImmutableMap.copyOf(env);
+        this.env = Maps.immutable.ofMap(env);
     }
 
     protected void setExposedPorts(Set<ExposedPort> exposedPorts) {
-        this.exposedPorts = ImmutableSet.copyOf(exposedPorts);
+        this.exposedPorts = Sets.immutable.ofAll(exposedPorts);
     }
 
     protected void setPortBindings(Set<PortBinding> portBindings) {
-        this.portBindings = ImmutableSet.copyOf(portBindings);
+        this.portBindings = Sets.immutable.ofAll(portBindings);
     }
 
     protected void setBinds(List<Bind> binds) {
-        this.binds = ImmutableList.copyOf(binds);
+        this.binds = Lists.immutable.ofAll(binds);
     }
 
     protected void addExposedPort(int port) {
@@ -114,10 +138,7 @@ abstract class BaseContainerDef<S extends StartedContainer> {
     }
 
     protected void addExposedPort(int port, @NonNull InternetProtocol protocol) {
-        exposedPorts = ImmutableSet.<ExposedPort>builder()
-            .addAll(exposedPorts)
-            .add(toExposedPort(port, protocol))
-            .build();
+        exposedPorts = exposedPorts.newWith(toExposedPort(port, protocol));
     }
 
     private ExposedPort toExposedPort(int port, InternetProtocol protocol) {
@@ -128,7 +149,7 @@ abstract class BaseContainerDef<S extends StartedContainer> {
     }
 
     protected void addPortBinding(int hostPort, int containerPort, InternetProtocol protocol) {
-        portBindings.add(
+        portBindings = portBindings.newWith(
             new PortBinding(
                 Ports.Binding.bindPort(hostPort),
                 toExposedPort(containerPort, protocol)
@@ -137,10 +158,7 @@ abstract class BaseContainerDef<S extends StartedContainer> {
     }
 
     protected void addNetworkAlias(String alias) {
-        networkAliases = ImmutableSet.<String>builder()
-            .addAll(networkAliases)
-            .add(alias)
-            .build();
+        networkAliases = networkAliases.newWith(alias);
     }
 
     protected void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode) {
@@ -148,14 +166,16 @@ abstract class BaseContainerDef<S extends StartedContainer> {
     }
 
     protected void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext) {
+        Bind bind;
         if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
             // e.g. Docker socket mount
-            binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+            bind = new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext);
 
         } else {
             final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+            bind = new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext);
         }
+        binds = binds.newWith(bind);
     }
 
     protected void addClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode) {
@@ -173,10 +193,7 @@ abstract class BaseContainerDef<S extends StartedContainer> {
     }
 
     protected void withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
-        copyToFileContainerPaths = ImmutableMap.<MountableFile, String>builder()
-            .putAll(copyToFileContainerPaths)
-            .put(mountableFile, containerPath)
-            .build();
+        copyToFileContainerPaths = copyToFileContainerPaths.newWithKeyValue(mountableFile, containerPath);
     }
 
     protected void applyTo(CreateContainerCmd createCommand) {
@@ -205,10 +222,12 @@ abstract class BaseContainerDef<S extends StartedContainer> {
         createCommand.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
 
         createCommand.withEnv(
-            env.entrySet().stream()
-                .filter(it -> it.getValue() != null)
-                .map(it -> it.getKey() + "=" + it.getValue())
-                .toArray(String[]::new)
+            env.keyValuesView()
+                .collectIf(
+                    it -> it.getTwo() != null,
+                    it -> it.getOne() + "=" + it.getTwo()
+                )
+                .toArray(new String[0])
         );
 
         if (this.command != null) {
