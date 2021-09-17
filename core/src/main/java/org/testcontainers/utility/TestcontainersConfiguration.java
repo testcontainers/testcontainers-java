@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -182,20 +181,8 @@ public class TestcontainersConfiguration {
             return prefixedEnvVarStrategy;
         }
 
-        // looks for unprefixed env var or unprefixed property
-        String unprefixedEnvVarOrProperty = getEnvVarOrUserProperty("docker.client.strategy", null);
-        if (unprefixedEnvVarOrProperty != null) {
-            return unprefixedEnvVarOrProperty;
-        }
-
-        // If docker.host is set then EnvironmentAndSystemPropertyClientProviderStrategy is likely to work
-        String dockerHostProperty = getEnvVarOrUserProperty("docker.host", null);
-        if (dockerHostProperty != null) {
-            return EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName();
-        }
-
-        // No value set, and no implicit value to use either
-        return null;
+        // looks for unprefixed env var or unprefixed property, or null if the strategy is not set at all
+        return getEnvVarOrUserProperty("docker.client.strategy", null);
     }
 
     public String getTransportType() {

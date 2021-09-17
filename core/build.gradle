@@ -77,9 +77,11 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.1.0'
 
-    api "com.github.docker-java:docker-java-api:3.2.11"
+    shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
 
-    shaded ('com.github.docker-java:docker-java-core:3.2.11') {
+    api "com.github.docker-java:docker-java-api"
+
+    shaded ('com.github.docker-java:docker-java-core') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-api')
         exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
         exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
@@ -88,13 +90,13 @@ dependencies {
         exclude(group: 'org.apache.commons', module: 'commons-compress')
     }
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp:3.2.11') {
+    shaded ('com.github.docker-java:docker-java-transport-okhttp') {
         exclude(group: 'com.github.docker-java', module: 'docker-java-core')
         exclude(group: 'net.java.dev.jna')
         exclude(group: 'org.slf4j')
     }
 
-    api 'com.github.docker-java:docker-java-transport-zerodep:3.2.11'
+    api 'com.github.docker-java:docker-java-transport-zerodep'
 
     shaded "org.yaml:snakeyaml:1.29"
 
