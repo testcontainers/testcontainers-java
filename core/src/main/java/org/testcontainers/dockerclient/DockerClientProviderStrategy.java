@@ -101,11 +101,6 @@ public abstract class DockerClientProviderStrategy {
         return dockerClient;
     }
 
-    @Override
-    public final boolean equals(Object obj) {
-        return obj != null && this.getClass().equals(obj.getClass());
-    }
-
     /**
      * Determine the right DockerClientConfig to use for building clients by trial-and-error.
      *
