@@ -48,6 +48,7 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
@@ -210,7 +211,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     BaseContainerDef<?> createContainerDef(RemoteDockerImage image) {
-        return new ContainerDef(image);
+        ContainerDef containerDef = new ContainerDef(image);
+        containerDef.addNetworkAlias("tc-" + Base58.randomString(8));
+        return containerDef;
     }
 
     @Override

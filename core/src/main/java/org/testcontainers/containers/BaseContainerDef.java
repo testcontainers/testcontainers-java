@@ -22,15 +22,14 @@ import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,9 +68,7 @@ abstract class BaseContainerDef<S extends StartedContainer> {
     final List<Bind> binds = new ArrayList<>();
 
     @NonNull
-    final Set<String> networkAliases = new HashSet<>(Arrays.asList(
-        "tc-" + Base58.randomString(8)
-    ));
+    final Set<String> networkAliases = new LinkedHashSet<>();
 
     final Map<MountableFile, String> copyToFileContainerPaths = new HashMap<>();
 
