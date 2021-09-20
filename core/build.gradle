@@ -10,8 +10,6 @@ idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 configurations {
     baseline
-    shaded
-    [api, compileOnly, testCompile]*.extendsFrom shaded
 }
 
 shadowJar {
@@ -48,13 +46,11 @@ tasks.japicmp {
         "org.testcontainers.shaded.*",
     ]
 
-    onlyBinaryIncompatibleModified = true
-    htmlOutputFile = file("$buildDir/reports/japi.html")
-}
-// do not run on Windows by default
-// TODO investigate zip issue on Windows
-if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-    project.tasks.check.dependsOn(japicmp)
+    classExcludes = []
+
+    methodExcludes = []
+
+    fieldExcludes = []
 }
 
 configurations.all {
@@ -80,6 +76,7 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.1.0'
 
+    api platform('com.github.docker-java:docker-java-bom:3.2.12')
     shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
 
     api "com.github.docker-java:docker-java-api"

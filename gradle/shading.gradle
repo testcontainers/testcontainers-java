@@ -16,8 +16,7 @@ shadowJar {
 }
 
 project.afterEvaluate {
-    def apiDependencies = project.configurations.api.resolvedConfiguration.resolvedArtifacts*.moduleVersion*.id
-    def apiFiles = project.configurations.api.resolvedConfiguration.files
+    Set<ModuleIdentifier> apiDependencies = project.configurations.api.resolvedConfiguration.resolvedArtifacts*.moduleVersion*.id*.module
 
     // Exclude `api` dependencies, to prevent them being included into the final JAR
     shadowJar.dependencies {
@@ -33,21 +32,19 @@ project.afterEvaluate {
 
     // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
     Set<String> packages = []
-    // Always read from core's configurations
-    for (configuration in tasks.shadowJar.configurations) {
-        for (jar in configuration.resolvedConfiguration.files) {
-            if (apiFiles.contains(jar)) {
-                continue
-            }
 
-            try (def jf = new JarFile(jar)) {
-                for (entry in jf.entries()) {
-                    def name = entry.name
-                    if (name.endsWith(".class")) {
-                        def index = name.lastIndexOf('/')
-                        if (index != -1) {
-                            packages.add(name.substring(0, index))
-                        }
+    for (artifact in project.configurations.shaded.resolvedConfiguration.resolvedArtifacts) {
+        if (apiDependencies.contains(artifact.moduleVersion.id.module)) {
+            continue
+        }
+
+        try (def jf = new JarFile(artifact.file)) {
+            for (entry in jf.entries()) {
+                def name = entry.name
+                if (name.endsWith(".class")) {
+                    def index = name.lastIndexOf('/')
+                    if (index != -1) {
+                        packages.add(name.substring(0, index))
                     }
                 }
             }
