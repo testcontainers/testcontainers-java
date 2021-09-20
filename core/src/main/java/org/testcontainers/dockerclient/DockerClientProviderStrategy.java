@@ -25,10 +25,13 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -111,10 +114,11 @@ public abstract class DockerClientProviderStrategy {
 
         List<String> configurationFailures = new ArrayList<>();
 
+        String dockerClientStrategyClassName = TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName();
         return Stream
                 .concat(
                         Stream
-                                .of(TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName())
+                                .of(dockerClientStrategyClassName)
                                 .filter(Objects::nonNull)
                                 .flatMap(it -> {
                                     try {
@@ -136,16 +140,25 @@ public abstract class DockerClientProviderStrategy {
                                 .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName())),
                         strategies
                                 .stream()
-                                .filter(DockerClientProviderStrategy::isApplicable)
                                 .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
                 )
+                .filter(new Predicate<DockerClientProviderStrategy>() {
+
+                    final Set<Class<? extends DockerClientProviderStrategy>> classes = new HashSet<>();
+
+                    @Override
+                    public boolean test(DockerClientProviderStrategy dockerClientProviderStrategy) {
+                        return classes.add(dockerClientProviderStrategy.getClass());
+                    }
+                })
+                .filter(DockerClientProviderStrategy::isApplicable)
                 .flatMap(strategy -> {
                     try {
                         DockerClient dockerClient = strategy.getDockerClient();
 
                         Info info;
                         try {
-                            info = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
+                            info = Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS, () -> {
                                 return strategy.PING_RATE_LIMITER.getWhenReady(() -> {
                                     log.debug("Pinging docker daemon...");
                                     return dockerClient.infoCmd().exec();
@@ -240,7 +253,7 @@ public abstract class DockerClientProviderStrategy {
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
         if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
-            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_30);
+            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
         }
         return DockerClientImpl.getInstance(
             new AuthDelegatingDockerClientConfig(

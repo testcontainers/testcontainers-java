@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -29,9 +30,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class GenericContainerTest {
 
@@ -116,6 +119,30 @@ public class GenericContainerTest {
                     container.getMappedPort(8081);
                 }
             );
+        }
+    }
+
+    @Test
+    public void shouldWaitUntilExposedPortIsMapped() {
+
+        ImageFromDockerfile image = new ImageFromDockerfile("publish-multiple")
+            .withDockerfileFromBuilder(builder ->
+                builder
+                    .from("testcontainers/helloworld:1.1.0")
+                    .expose(8080, 8081) // one additional port exposed in image
+                    .build()
+            );
+
+        try (
+            GenericContainer container = new GenericContainer<>(image)
+                .withExposedPorts(8080)
+                .withCreateContainerCmdModifier(it -> it.withExposedPorts(ExposedPort.tcp(8082))) // another port exposed by modifier
+        ) {
+
+            container.start();
+
+            assertEquals("Only withExposedPort should be exposed", 1, container.getExposedPorts().size());
+            assertTrue("withExposedPort should be exposed", container.getExposedPorts().contains(8080));
         }
     }
 
