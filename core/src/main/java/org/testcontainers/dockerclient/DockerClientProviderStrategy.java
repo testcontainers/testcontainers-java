@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -114,108 +115,33 @@ public abstract class DockerClientProviderStrategy {
 
         List<String> configurationFailures = new ArrayList<>();
 
-        String dockerClientStrategyClassName = TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName();
-        return Stream
-                .concat(
-                        Stream
-                                .of(dockerClientStrategyClassName)
-                                .filter(Objects::nonNull)
-                                .flatMap(it -> {
-                                    try {
-                                        Class<? extends DockerClientProviderStrategy> strategyClass = (Class) Thread.currentThread().getContextClassLoader().loadClass(it);
-                                        return Stream.of(strategyClass.newInstance());
-                                    } catch (ClassNotFoundException e) {
-                                        log.warn("Can't instantiate a strategy from {} (ClassNotFoundException). " +
-                                                "This probably means that cached configuration refers to a client provider " +
-                                                "class that is not available in this version of Testcontainers. Other " +
-                                                "strategies will be tried instead.", it);
-                                        return Stream.empty();
-                                    } catch (InstantiationException | IllegalAccessException e) {
-                                        log.warn("Can't instantiate a strategy from {}", it, e);
-                                        return Stream.empty();
-                                    }
-                                })
-                                // Ignore persisted strategy if it's not persistable anymore
-                                .filter(DockerClientProviderStrategy::isPersistable)
-                                .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName())),
-                        strategies
-                                .stream()
-                                .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
-                )
-                .filter(new Predicate<DockerClientProviderStrategy>() {
+        Stream<? extends DockerClientProviderStrategy> configuredDockerClientStrategy = loadConfiguredStrategy();
 
-                    final Set<Class<? extends DockerClientProviderStrategy>> classes = new HashSet<>();
+        Stream<DockerClientProviderStrategy> orderedProvidedStrategies = strategies
+            .stream()
+            .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed());
 
-                    @Override
-                    public boolean test(DockerClientProviderStrategy dockerClientProviderStrategy) {
-                        return classes.add(dockerClientProviderStrategy.getClass());
-                    }
-                })
+        Stream<DockerClientProviderStrategy> orderedStrategiesToTryOut = Stream
+            .concat(
+                Stream.of(new EnvironmentAndSystemPropertyClientProviderStrategy()),
+                Stream.concat(
+                    configuredDockerClientStrategy,
+                    orderedProvidedStrategies
+                ));
+
+        Predicate<DockerClientProviderStrategy> distinctStrategyClassPredicate = new Predicate<DockerClientProviderStrategy>() {
+            final Set<Class<? extends DockerClientProviderStrategy>> classes = new HashSet<>();
+
+            @Override
+            public boolean test(DockerClientProviderStrategy dockerClientProviderStrategy) {
+                return classes.add(dockerClientProviderStrategy.getClass());
+            }
+        };
+
+        return orderedStrategiesToTryOut
+                .filter(distinctStrategyClassPredicate)
                 .filter(DockerClientProviderStrategy::isApplicable)
-                .flatMap(strategy -> {
-                    try {
-                        DockerClient dockerClient = strategy.getDockerClient();
-
-                        Info info;
-                        try {
-                            info = Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS, () -> {
-                                return strategy.PING_RATE_LIMITER.getWhenReady(() -> {
-                                    log.debug("Pinging docker daemon...");
-                                    return dockerClient.infoCmd().exec();
-                                });
-                            });
-                        } catch (TimeoutException e) {
-                            IOUtils.closeQuietly(dockerClient);
-                            throw e;
-                        }
-                        log.info("Found Docker environment with {}", strategy.getDescription());
-                        log.debug(
-                            "Transport type: '{}', Docker host: '{}'",
-                            TestcontainersConfiguration.getInstance().getTransportType(),
-                            strategy.getTransportConfig().getDockerHost()
-                        );
-
-                        log.debug("Checking Docker OS type for {}", strategy.getDescription());
-                        String osType = info.getOsType();
-                        if (StringUtils.isBlank(osType)) {
-                            log.warn("Could not determine Docker OS type");
-                        } else if (!osType.equals("linux")) {
-                            log.warn("{} is currently not supported", osType);
-                            throw new InvalidConfigurationException(osType + " containers are currently not supported");
-                        }
-
-                        if (strategy.isPersistable()) {
-                            TestcontainersConfiguration.getInstance().updateUserConfig("docker.client.strategy", strategy.getClass().getName());
-                        }
-
-                        return Stream.of(strategy);
-                    } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
-                        @Nullable String throwableMessage = e.getMessage();
-                        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-                        Throwable rootCause = Throwables.getRootCause(e);
-                        @Nullable String rootCauseMessage = rootCause.getMessage();
-
-                        String failureDescription;
-                        if (throwableMessage != null && throwableMessage.equals(rootCauseMessage)) {
-                            failureDescription = String.format("%s: failed with exception %s (%s)",
-                                    strategy.getClass().getSimpleName(),
-                                    e.getClass().getSimpleName(),
-                                    throwableMessage);
-                        } else {
-                            failureDescription = String.format("%s: failed with exception %s (%s). Root cause %s (%s)",
-                                    strategy.getClass().getSimpleName(),
-                                    e.getClass().getSimpleName(),
-                                    throwableMessage,
-                                    rootCause.getClass().getSimpleName(),
-                                    rootCauseMessage
-                            );
-                        }
-                        configurationFailures.add(failureDescription);
-
-                        log.debug(failureDescription);
-                        return Stream.empty();
-                    }
-                })
+                .flatMap(strategy -> tryOutStrategy(configurationFailures, strategy))
                 .findAny()
                 .orElseThrow(() -> {
                     log.error("Could not find a valid Docker environment. Please check configuration. Attempted configurations were:");
@@ -227,6 +153,99 @@ public abstract class DockerClientProviderStrategy {
                     FAIL_FAST_ALWAYS.set(true);
                     return new IllegalStateException("Could not find a valid Docker environment. Please see logs and check configuration");
                 });
+    }
+
+    @NotNull
+    private static Stream<DockerClientProviderStrategy> tryOutStrategy(List<String> configurationFailures, DockerClientProviderStrategy strategy) {
+        try {
+            log.debug("Trying out strategy: {}", strategy.getClass().getSimpleName());
+            DockerClient dockerClient = strategy.getDockerClient();
+
+            Info info;
+            try {
+                info = Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS, () -> {
+                    return strategy.PING_RATE_LIMITER.getWhenReady(() -> {
+                        log.debug("Pinging docker daemon...");
+                        return dockerClient.infoCmd().exec();
+                    });
+                });
+            } catch (TimeoutException e) {
+                IOUtils.closeQuietly(dockerClient);
+                throw e;
+            }
+            log.info("Found Docker environment with {}", strategy.getDescription());
+            log.debug(
+                "Transport type: '{}', Docker host: '{}'",
+                TestcontainersConfiguration.getInstance().getTransportType(),
+                strategy.getTransportConfig().getDockerHost()
+            );
+
+            log.debug("Checking Docker OS type for {}", strategy.getDescription());
+            String osType = info.getOsType();
+            if (StringUtils.isBlank(osType)) {
+                log.warn("Could not determine Docker OS type");
+            } else if (!osType.equals("linux")) {
+                log.warn("{} is currently not supported", osType);
+                throw new InvalidConfigurationException(osType + " containers are currently not supported");
+            }
+
+            if (strategy.isPersistable()) {
+                TestcontainersConfiguration.getInstance().updateUserConfig("docker.client.strategy", strategy.getClass().getName());
+            }
+
+            return Stream.of(strategy);
+        } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
+            @Nullable String throwableMessage = e.getMessage();
+            @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+            Throwable rootCause = Throwables.getRootCause(e);
+            @Nullable String rootCauseMessage = rootCause.getMessage();
+
+            String failureDescription;
+            if (throwableMessage != null && throwableMessage.equals(rootCauseMessage)) {
+                failureDescription = String.format("%s: failed with exception %s (%s)",
+                        strategy.getClass().getSimpleName(),
+                        e.getClass().getSimpleName(),
+                        throwableMessage);
+            } else {
+                failureDescription = String.format("%s: failed with exception %s (%s). Root cause %s (%s)",
+                        strategy.getClass().getSimpleName(),
+                        e.getClass().getSimpleName(),
+                        throwableMessage,
+                        rootCause.getClass().getSimpleName(),
+                        rootCauseMessage
+                );
+            }
+            configurationFailures.add(failureDescription);
+
+            log.debug(failureDescription);
+            return Stream.empty();
+        }
+    }
+
+    private static Stream<? extends DockerClientProviderStrategy> loadConfiguredStrategy() {
+        String configuredDockerClientStrategyClassName = TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName();
+
+        return Stream
+            .of(configuredDockerClientStrategyClassName)
+            .filter(Objects::nonNull)
+            .flatMap(it -> {
+                try {
+                    Class<? extends DockerClientProviderStrategy> strategyClass = (Class) Thread.currentThread().getContextClassLoader().loadClass(it);
+                    return Stream.of(strategyClass.newInstance());
+                } catch (ClassNotFoundException e) {
+                    log.warn("Can't instantiate a strategy from {} (ClassNotFoundException). " +
+                        "This probably means that cached configuration refers to a client provider " +
+                        "class that is not available in this version of Testcontainers. Other " +
+                        "strategies will be tried instead.", it);
+                    return Stream.empty();
+                } catch (InstantiationException | IllegalAccessException e) {
+                    log.warn("Can't instantiate a strategy from {}", it, e);
+                    return Stream.empty();
+                }
+            })
+            // Ignore persisted strategy if it's not persistable anymore
+            .filter(DockerClientProviderStrategy::isPersistable)
+            .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName()));
     }
 
     public static DockerClient getClientForConfig(TransportConfig transportConfig) {
