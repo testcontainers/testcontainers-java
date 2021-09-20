@@ -8,15 +8,7 @@ sourceSets {
 
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
-configurations {
-    baseline
-}
-
 shadowJar {
-    configurations = [project.configurations.shaded]
-
-    mergeServiceFiles()
-
     [
         'META-INF/NOTICE',
         'META-INF/NOTICE.txt',
