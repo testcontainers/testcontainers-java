@@ -1,6 +1,7 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.DockerClientDelegate;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.PullImageCmd;
@@ -94,7 +95,17 @@ public class DockerClientFactory {
     }
 
     public static DockerClient lazyClient() {
-        return LazyDockerClient.INSTANCE;
+        return new DockerClientDelegate() {
+            @Override
+            protected DockerClient getDockerClient() {
+                return instance().client();
+            }
+
+            @Override
+            public String toString() {
+                return "LazyDockerClient";
+            }
+        };
     }
 
     /**
@@ -177,7 +188,11 @@ public class DockerClientFactory {
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
-        final DockerClient client = new DelegatingDockerClient(strategy.getDockerClient()) {
+        final DockerClient client = new DockerClientDelegate() {
+
+            @Getter
+            final DockerClient dockerClient = strategy.getDockerClient();
+
             @Override
             public void close() {
                 throw new IllegalStateException("You should never close the global DockerClient!");

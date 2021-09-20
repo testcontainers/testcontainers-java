@@ -126,3 +126,7 @@ docker.host=tcp\://my.docker.host\:1234     # Equivalent to the DOCKER_HOST envi
 docker.tls.verify=1                         # Equivalent to the DOCKER_TLS_VERIFY environment variable
 docker.cert.path=/some/path                 # Equivalent to the DOCKER_CERT_PATH environment variable
 ```
+In addition, you can deactivate this behaviour by specifying:
+```properties
+dockerconfig.source=autoIgnoringUserProperties # 'auto' by default
+```
