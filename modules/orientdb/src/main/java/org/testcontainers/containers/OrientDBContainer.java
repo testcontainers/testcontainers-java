@@ -10,6 +10,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -73,7 +74,10 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
             .forStatusCodeMatching(response -> response == HTTP_OK);
 
         waitStrategy = new WaitAllStrategy()
-            .withStrategy(Wait.forListeningPort())
+            .withStrategy(
+                new LogMessageWaitStrategy()
+                    .withRegEx(".*(Gremlin started correctly).*")
+            )
             .withStrategy(waitForHttp)
             .withStartupTimeout(Duration.ofMinutes(2));
 
