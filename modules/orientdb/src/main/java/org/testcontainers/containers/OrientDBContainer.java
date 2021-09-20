@@ -69,17 +69,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
-        LogMessageWaitStrategy waitForLogs = new LogMessageWaitStrategy()
-            .withRegEx(".*Gremlin started correctly.*");
-
-        WaitStrategy waitForHttp = new HttpWaitStrategy()
-            .forPort(DEFAULT_HTTP_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK);
-
-        waitStrategy = new WaitAllStrategy()
-            .withStrategy(waitForLogs)
-            .withStrategy(waitForHttp)
-            .withStartupTimeout(Duration.ofMinutes(2));
+        waitStrategy =  new LogMessageWaitStrategy().withRegEx(".*Gremlin started correctly.*");
 
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }
