@@ -1,8 +1,8 @@
 # Testcontainers
 
-> Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+[![Thundra Foresight](https://thundra-assets-prod.s3.us-west-2.amazonaws.com/images/badges/thundra-foresight-badge-enabled.svg)](https://foresight.thundra.live/testRuns/5a49cc30-f063-11eb-9a03-0242ac130003)
 
-[![Build Status](https://travis-ci.org/testcontainers/testcontainers-java.svg?branch=master)](https://travis-ci.org/testcontainers/testcontainers-java)[ ![Download](https://api.bintray.com/packages/testcontainers/releases/testcontainers/images/download.svg) ](https://bintray.com/testcontainers/releases/testcontainers/_latestVersion)
+> Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 ![Testcontainers logo](docs/logo.png)
 
