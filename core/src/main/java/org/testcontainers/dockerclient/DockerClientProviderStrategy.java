@@ -25,10 +25,13 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -137,10 +140,18 @@ public abstract class DockerClientProviderStrategy {
                                 .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName())),
                         strategies
                                 .stream()
-                                .filter(it -> !it.getClass().getCanonicalName().equals(dockerClientStrategyClassName))
-                                .filter(DockerClientProviderStrategy::isApplicable)
                                 .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
                 )
+                .filter(new Predicate<DockerClientProviderStrategy>() {
+
+                    final Set<Class<? extends DockerClientProviderStrategy>> classes = new HashSet<>();
+
+                    @Override
+                    public boolean test(DockerClientProviderStrategy dockerClientProviderStrategy) {
+                        return classes.add(dockerClientProviderStrategy.getClass());
+                    }
+                })
+                .filter(DockerClientProviderStrategy::isApplicable)
                 .flatMap(strategy -> {
                     try {
                         DockerClient dockerClient = strategy.getDockerClient();
