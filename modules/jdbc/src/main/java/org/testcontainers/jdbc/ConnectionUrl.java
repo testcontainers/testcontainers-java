@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -149,7 +150,7 @@ public class ConnectionUrl {
     }
 
     private Map<String, String> parseTmpfsOptions(Map<String, String> containerParameters) {
-        if(!containerParameters.containsKey("TC_TMPFS")){
+        if (!containerParameters.containsKey("TC_TMPFS")) {
             return Collections.emptyMap();
         }
 
@@ -209,24 +210,37 @@ public class ConnectionUrl {
      * @author manikmagar
      */
     public interface Patterns {
-        Pattern URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:" +
-            "(?<databaseType>[a-z0-9]+)" +
-            "(:(?<imageTag>[^:]+))?" +
-            "://" +
-            "(?<dbHostString>[^\\?]+)" +
-            "(?<queryParameters>\\?.*)?");
+        Pattern URL_MATCHING_PATTERN = Pattern.compile(
+            "jdbc:tc:" +
+                "(?<databaseType>[a-z0-9]+)" +
+                "(:(?<imageTag>[^:]+))?" +
+                "://" +
+                "(?<dbHostString>[^\\?]+)" +
+                "(?<queryParameters>\\?.*)?"
+        );
 
-        Pattern ORACLE_URL_MATCHING_PATTERN = Pattern.compile("jdbc:tc:" +
-            "(?<databaseType>[a-z]+)" +
-            "(:(?<imageTag>[^(:thin:)]+))?:" +
-            "thin:(//)?" +
-            "((?<username>[^\\?^/]+)/(?<password>[^\\?^/]+))?" +
-            "@" +
-            "(?<dbHostString>[^\\?]+)" +
-            "(?<queryParameters>\\?.*)?");
+        Pattern ORACLE_URL_MATCHING_PATTERN = Pattern.compile(
+            "jdbc:tc:" +
+                "(?<databaseType>[a-z]+)" +
+                "(:(?<imageTag>[^(:thin:)]+))?:" +
+                "thin:(//)?" +
+                "((?<username>[^\\?^/]+)/(?<password>[^\\?^/]+))?" +
+                "@" +
+                "(?<dbHostString>[^\\?]+)" +
+                "(?<queryParameters>\\?.*)?"
+        );
 
         //Matches to part of string - hostname:port/databasename
-        Pattern DB_INSTANCE_MATCHING_PATTERN = Pattern.compile("(?<databaseHost>[^:]+)(:(?<databasePort>[0-9]+))?((?<sidOrServiceName>[:/])|;databaseName=)(?<databaseName>[^\\\\?]+)");
+        Pattern DB_INSTANCE_MATCHING_PATTERN = Pattern.compile(
+            "(?<databaseHost>[^:]+)" +
+                "(:(?<databasePort>[0-9]+))?" +
+                "(" +
+                "(?<sidOrServiceName>[:/])" +
+                "|" +
+                ";databaseName=" +
+                ")" +
+                "(?<databaseName>[^\\\\?]+)"
+        );
 
         Pattern DAEMON_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_DAEMON=([^\\?&]+).*");
         Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITSCRIPT=([^\\?&]+).*");
