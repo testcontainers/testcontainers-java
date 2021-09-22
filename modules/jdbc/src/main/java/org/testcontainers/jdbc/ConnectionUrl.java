@@ -221,9 +221,11 @@ public class ConnectionUrl {
         Pattern ORACLE_URL_MATCHING_PATTERN = Pattern.compile(
             "jdbc:tc:" +
                 "(?<databaseType>[a-z]+)" +
-                "(:(?<imageTag>[^(:thin:)]+))?:" +
-                "thin:(//)?" +
-                "((?<username>[^?^/]+)/(?<password>[^?^/]+))?" +
+                "(:(?<imageTag>(?!thin).+))?:thin:(//)?" +
+                "(" +
+                "(?<username>[^:" +
+                "?^/]+)/(?<password>[^?^/]+)" +
+                ")?" +
                 "@" +
                 "(?<dbHostString>[^?]+)" +
                 "(?<queryParameters>\\?.*)?"

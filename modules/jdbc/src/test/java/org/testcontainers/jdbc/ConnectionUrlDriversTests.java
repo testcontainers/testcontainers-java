@@ -46,6 +46,7 @@ public class ConnectionUrlDriversTests {
                 {"jdbc:tc:oracle:thin:@localhost:1521/test", "oracle", Optional.empty(), "localhost:1521/test", "test"},
                 {"jdbc:tc:oracle:1.2.3:thin:@localhost:1521:test", "oracle", Optional.of("1.2.3"), "localhost:1521:test", "test"},
                 {"jdbc:tc:oracle:1.2.3:thin://@localhost:1521:test", "oracle", Optional.of("1.2.3"), "localhost:1521:test", "test"},
+                {"jdbc:tc:oracle:1.2.3-anything:thin://@localhost:1521:test", "oracle", Optional.of("1.2.3-anything"), "localhost:1521:test", "test"},
                 {"jdbc:tc:oracle:thin:@localhost:1521:test", "oracle", Optional.empty(), "localhost:1521:test", "test"}
             });
     }
