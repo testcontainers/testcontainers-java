@@ -244,6 +244,13 @@ public class ConnectionUrl {
         );
 
         Pattern DAEMON_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_DAEMON=([^?&]+).*");
+
+        /**
+         * @deprecated for removal
+         */
+        @Deprecated
+        Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_INITSCRIPT=([^?&]+).*");
+
         Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_INITFUNCTION=" +
             "((\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             "::" +
