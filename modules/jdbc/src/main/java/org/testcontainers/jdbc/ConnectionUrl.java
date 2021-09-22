@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -110,7 +109,7 @@ public class ConnectionUrl {
         Matcher dbInstanceMatcher = Patterns.DB_INSTANCE_MATCHING_PATTERN.matcher(dbHostString);
         if (dbInstanceMatcher.matches()) {
             databaseHost = Optional.of(dbInstanceMatcher.group("databaseHost"));
-            databasePort = Optional.ofNullable(dbInstanceMatcher.group("databasePort")).map(value -> Integer.valueOf(value));
+            databasePort = Optional.ofNullable(dbInstanceMatcher.group("databasePort")).map(Integer::valueOf);
             databaseName = Optional.of(dbInstanceMatcher.group("databaseName"));
         }
 
@@ -124,7 +123,7 @@ public class ConnectionUrl {
             .map(e -> e.getKey() + "=" + e.getValue())
             .collect(Collectors.joining("&"));
 
-        if (query == null || query.trim().length() == 0) {
+        if (query.trim().length() == 0) {
             queryString = Optional.empty();
         } else {
             queryString = Optional.of("?" + query);
@@ -215,7 +214,7 @@ public class ConnectionUrl {
                 "(?<databaseType>[a-z0-9]+)" +
                 "(:(?<imageTag>[^:]+))?" +
                 "://" +
-                "(?<dbHostString>[^\\?]+)" +
+                "(?<dbHostString>[^?]+)" +
                 "(?<queryParameters>\\?.*)?"
         );
 
@@ -224,9 +223,9 @@ public class ConnectionUrl {
                 "(?<databaseType>[a-z]+)" +
                 "(:(?<imageTag>[^(:thin:)]+))?:" +
                 "thin:(//)?" +
-                "((?<username>[^\\?^/]+)/(?<password>[^\\?^/]+))?" +
+                "((?<username>[^?^/]+)/(?<password>[^?^/]+))?" +
                 "@" +
-                "(?<dbHostString>[^\\?]+)" +
+                "(?<dbHostString>[^?]+)" +
                 "(?<queryParameters>\\?.*)?"
         );
 
@@ -242,9 +241,8 @@ public class ConnectionUrl {
                 "(?<databaseName>[^\\\\?]+)"
         );
 
-        Pattern DAEMON_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_DAEMON=([^\\?&]+).*");
-        Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITSCRIPT=([^\\?&]+).*");
-        Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([\\?&]?)TC_INITFUNCTION=" +
+        Pattern DAEMON_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_DAEMON=([^?&]+).*");
+        Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_INITFUNCTION=" +
             "((\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             "::" +
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
@@ -252,9 +250,9 @@ public class ConnectionUrl {
 
         String TC_PARAM_NAME_PATTERN = "(TC_[A-Z_]+)";
 
-        Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile(TC_PARAM_NAME_PATTERN + "=([^\\?&]+)");
+        Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile(TC_PARAM_NAME_PATTERN + "=([^?&]+)");
 
-        Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^\\?&=]+)=([^\\?&]*)");
+        Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^?&=]+)=([^?&]*)");
 
     }
 
