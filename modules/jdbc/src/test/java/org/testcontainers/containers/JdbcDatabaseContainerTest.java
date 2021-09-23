@@ -19,7 +19,7 @@ public class JdbcDatabaseContainerTest {
         assertThatExceptionOfType(IllegalStateException.class).isThrownBy(jdbcContainer::waitUntilContainerStarted);
     }
 
-    static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {
+    static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer<JdbcDatabaseContainerStub> {
 
         public JdbcDatabaseContainerStub(@NonNull String dockerImageName) {
             super(dockerImageName);

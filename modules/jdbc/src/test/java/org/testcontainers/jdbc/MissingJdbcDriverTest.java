@@ -36,7 +36,7 @@ public class MissingJdbcDriverTest {
     /**
      * Container class for the purposes of testing, with a known non-existent driver
      */
-    static class MissingDriverContainer extends JdbcDatabaseContainer {
+    static class MissingDriverContainer extends JdbcDatabaseContainer<MissingDriverContainer> {
         private final AtomicInteger connectionAttempts = new AtomicInteger();
 
         MissingDriverContainer() {

@@ -7,7 +7,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.Set;
 
-public class ClickHouseContainer extends JdbcDatabaseContainer {
+public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
     public static final String NAME = "clickhouse";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yandex/clickhouse-server");
