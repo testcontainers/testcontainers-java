@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Factory for PostGIS containers, which are a special flavour of PostgreSQL.
  */
-public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
+public class PostgisContainerProvider extends JdbcDatabaseContainerProvider<PostgreSQLContainer> {
 
     private static final String NAME = "postgis";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgis/postgis").asCompatibleSubstituteFor("postgres");
@@ -21,17 +21,17 @@ public class PostgisContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance() {
+    public PostgreSQLContainer newInstance() {
         return newInstance(DEFAULT_TAG);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
-        return new PostgreSQLContainer<>(DEFAULT_IMAGE_NAME.withTag(tag));
+    public PostgreSQLContainer newInstance(String tag) {
+        return new PostgreSQLContainer(DEFAULT_IMAGE_NAME.withTag(tag));
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
+    public PostgreSQLContainer newInstance(ConnectionUrl connectionUrl) {
         return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
 }

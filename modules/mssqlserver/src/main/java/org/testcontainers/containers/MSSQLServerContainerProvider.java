@@ -5,19 +5,19 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Factory for MS SQL Server containers.
  */
-public class MSSQLServerContainerProvider extends JdbcDatabaseContainerProvider {
+public class MSSQLServerContainerProvider extends JdbcDatabaseContainerProvider<MSSQLServerContainer> {
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(MSSQLServerContainer.NAME);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance() {
+    public MSSQLServerContainer newInstance() {
         return newInstance(MSSQLServerContainer.DEFAULT_TAG);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
+    public MSSQLServerContainer newInstance(String tag) {
         return new MSSQLServerContainer(DockerImageName.parse(MSSQLServerContainer.IMAGE).withTag(tag));
     }
 }

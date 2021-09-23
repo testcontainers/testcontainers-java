@@ -29,20 +29,20 @@ public class MySQLRootAccountTest {
 
     @Test
     public void testRootAccountUsageWithDefaultPassword() throws SQLException {
-        testWithDB(new MySQLContainer<>(image).withUsername("root"));
+        testWithDB(new MySQLContainer(image).withUsername("root"));
     }
 
     @Test
     public void testRootAccountUsageWithEmptyPassword() throws SQLException {
-        testWithDB(new MySQLContainer<>(image).withUsername("root").withPassword(""));
+        testWithDB(new MySQLContainer(image).withUsername("root").withPassword(""));
     }
 
     @Test
     public void testRootAccountUsageWithCustomPassword() throws SQLException {
-        testWithDB(new MySQLContainer<>(image).withUsername("root").withPassword("not-default"));
+        testWithDB(new MySQLContainer(image).withUsername("root").withPassword("not-default"));
     }
 
-    private void testWithDB(MySQLContainer<?> db) throws SQLException {
+    private void testWithDB(MySQLContainer db) throws SQLException {
         try {
             db.withLogConsumer(new Slf4jLogConsumer(log)).start();
             Connection connection = DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());

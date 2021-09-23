@@ -12,7 +12,7 @@ public class PostgreSQLConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryString() {
-        PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
+        PostgreSQLContainer postgres = new FixedJdbcUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
@@ -23,7 +23,7 @@ public class PostgreSQLConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
-        PostgreSQLContainer<?> postgres = new NoParamsUrlPostgreSQLContainer();
+        PostgreSQLContainer postgres = new NoParamsUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
@@ -34,7 +34,7 @@ public class PostgreSQLConnectionURLTest {
 
     @Test
     public void shouldReturnOriginalURLWhenEmptyQueryString() {
-        PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
+        PostgreSQLContainer postgres = new FixedJdbcUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("");
 
         assertTrue("Query String remains unchanged", postgres.getJdbcUrl().equals(connectionUrl));
@@ -46,7 +46,7 @@ public class PostgreSQLConnectionURLTest {
             () -> new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified"));
     }
 
-    static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+    static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer {
         public FixedJdbcUrlPostgreSQLContainer() {
             super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
         }
@@ -62,7 +62,7 @@ public class PostgreSQLConnectionURLTest {
         }
     }
 
-    static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+    static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer {
         public NoParamsUrlPostgreSQLContainer() {
             super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
         }

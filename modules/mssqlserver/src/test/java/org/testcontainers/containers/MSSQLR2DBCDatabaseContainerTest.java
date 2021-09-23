@@ -4,10 +4,10 @@ import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
-public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MSSQLServerContainer<?>> {
+public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MSSQLServerContainer> {
 
     @Override
-    protected ConnectionFactoryOptions getOptions(MSSQLServerContainer<?> container) {
+    protected ConnectionFactoryOptions getOptions(MSSQLServerContainer container) {
         return MSSQLR2DBCDatabaseContainer.getOptions(container);
     }
 
@@ -17,7 +17,7 @@ public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
     }
 
     @Override
-    protected MSSQLServerContainer<?> createContainer() {
-        return new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE);
+    protected MSSQLServerContainer createContainer() {
+        return new MSSQLServerContainer(MSSQLServerTestImages.MSSQL_SERVER_IMAGE);
     }
 }

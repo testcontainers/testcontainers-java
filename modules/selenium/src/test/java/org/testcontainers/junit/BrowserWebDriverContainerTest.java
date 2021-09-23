@@ -67,7 +67,7 @@ public class BrowserWebDriverContainerTest {
     @Test
     public void createContainerWithoutShmVolume() {
         try (
-            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer<>()
+            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
                 .withSharedMemorySize(512 * FileUtils.ONE_MB)
                 .withCapabilities(new FirefoxOptions())
         ) {

@@ -18,7 +18,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * @deprecated Use {@code TrinoContainer} instead.
  */
 @Deprecated
-public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class PrestoContainer extends JdbcDatabaseContainer<PrestoContainer> {
     public static final String NAME = "presto";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/trinodb/presto");
     public static final String IMAGE = "ghcr.io/trinodb/presto";
@@ -90,7 +90,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public PrestoContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
@@ -100,14 +100,14 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
      */
     @Override
     @Deprecated
-    public SELF withPassword(final String password) {
+    public PrestoContainer withPassword(final String password) {
         // ignored, Presto does not support password authentication without TLS
         // TODO: make JDBCDriverTest not pass a password unconditionally and remove this method
         return self();
     }
 
     @Override
-    public SELF withDatabaseName(String dbName) {
+    public PrestoContainer withDatabaseName(String dbName) {
         this.catalog = dbName;
         return self();
     }

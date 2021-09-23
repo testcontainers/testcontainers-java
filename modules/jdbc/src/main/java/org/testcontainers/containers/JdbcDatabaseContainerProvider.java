@@ -10,7 +10,7 @@ import java.util.Objects;
  * Base class for classes that can provide a JDBC container.
  */
 @Slf4j
-public abstract class JdbcDatabaseContainerProvider {
+public abstract class JdbcDatabaseContainerProvider<T extends JdbcDatabaseContainer<T>> {
 
     /**
      * Tests if the specified database type is supported by this Container Provider. It should match to the base image name.
@@ -25,7 +25,7 @@ public abstract class JdbcDatabaseContainerProvider {
      *
      * @return Instance of {@link JdbcDatabaseContainer}
      */
-    public JdbcDatabaseContainer newInstance() {
+    public T newInstance() {
         log.warn("No explicit version tag was provided in JDBC URL and this class ({}) does not " +
             "override newInstance() to set a default tag. `latest` will be used but results may " +
             "be unreliable!", this.getClass().getCanonicalName());
@@ -37,15 +37,15 @@ public abstract class JdbcDatabaseContainerProvider {
      * @param tag
      * @return Instance of {@link JdbcDatabaseContainer}
      */
-    public abstract JdbcDatabaseContainer newInstance(String tag);
+    public abstract T newInstance(String tag);
 
     /**
      * Instantiate a new {@link JdbcDatabaseContainer} using information provided with {@link ConnectionUrl}.
      * @param url {@link ConnectionUrl}
      * @return Instance of {@link JdbcDatabaseContainer}
      */
-    public JdbcDatabaseContainer newInstance(ConnectionUrl url) {
-        final JdbcDatabaseContainer result;
+    public T newInstance(ConnectionUrl url) {
+        final T result;
         if (url.getImageTag().isPresent()) {
             result = newInstance(url.getImageTag().get());
         } else {
@@ -55,14 +55,14 @@ public abstract class JdbcDatabaseContainerProvider {
         return result;
     }
 
-    protected JdbcDatabaseContainer newInstanceFromConnectionUrl(ConnectionUrl connectionUrl, final String userParamName, final String pwdParamName) {
+    protected T newInstanceFromConnectionUrl(ConnectionUrl connectionUrl, final String userParamName, final String pwdParamName) {
         Objects.requireNonNull(connectionUrl, "Connection URL cannot be null");
 
         final String databaseName = connectionUrl.getDatabaseName().orElse("test");
         final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
         final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
 
-        final JdbcDatabaseContainer<?> instance;
+        final JdbcDatabaseContainer<T> instance;
         if (connectionUrl.getImageTag().isPresent()) {
             instance = newInstance(connectionUrl.getImageTag().get());
         } else {

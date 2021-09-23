@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 /**
  * @author Stefan Hufschmidt
  */
-public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class MSSQLServerContainer extends JdbcDatabaseContainer<MSSQLServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
     @Deprecated
@@ -81,7 +81,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
      * Accepts the license for the SQLServer container by setting the ACCEPT_EULA=Y
      * variable as described at <a href="https://hub.docker.com/_/microsoft-mssql-server">https://hub.docker.com/_/microsoft-mssql-server</a>
      */
-    public SELF acceptLicense() {
+    public MSSQLServerContainer acceptLicense() {
         addEnv("ACCEPT_EULA", "Y");
         return self();
     }
@@ -113,7 +113,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public MSSQLServerContainer withPassword(final String password) {
         checkPasswordStrength(password);
         this.password = password;
         return self();

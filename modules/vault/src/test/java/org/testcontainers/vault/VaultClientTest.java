@@ -19,7 +19,7 @@ public class VaultClientTest {
     @Test
     public void writeAndReadMultipleValues() throws VaultException {
         try (
-            VaultContainer<?> vaultContainer = new VaultContainer<>(VAULT_IMAGE)
+            VaultContainer vaultContainer = new VaultContainer(VAULT_IMAGE)
                     .withVaultToken(VAULT_TOKEN)
         ) {
 

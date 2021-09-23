@@ -27,7 +27,7 @@ public class PrestoContainerTest {
 
     @Test
     public void testSimple() throws Exception {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
+        try (PrestoContainer prestoSql = new PrestoContainer(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement();
@@ -40,7 +40,7 @@ public class PrestoContainerTest {
 
     @Test
     public void testSpecificVersion() throws Exception {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE)) {
+        try (PrestoContainer prestoSql = new PrestoContainer(PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE)) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement();
@@ -53,7 +53,7 @@ public class PrestoContainerTest {
 
     @Test
     public void testQueryMemoryAndTpch() throws SQLException {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
+        try (PrestoContainer prestoSql = new PrestoContainer(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();
                  Statement statement = connection.createStatement()) {
@@ -79,7 +79,7 @@ public class PrestoContainerTest {
 
     @Test
     public void testInitScript() throws Exception {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
+        try (PrestoContainer prestoSql = new PrestoContainer(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.withInitScript("initial.sql");
             prestoSql.start();
             try (Connection connection = prestoSql.createConnection();

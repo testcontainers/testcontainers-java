@@ -10,9 +10,9 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 public class MariaDBR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
     @Delegate(types = Startable.class)
-    private final MariaDBContainer<?> container;
+    private final MariaDBContainer container;
 
-    public static ConnectionFactoryOptions getOptions(MariaDBContainer<?> container) {
+    public static ConnectionFactoryOptions getOptions(MariaDBContainer container) {
         ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
             .option(ConnectionFactoryOptions.DRIVER, MariaDBR2DBCDatabaseContainerProvider.DRIVER)
             .build();

@@ -20,7 +20,7 @@ public class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withDatabaseName(DB_NAME)
                 .withUsername(USER)
                 .withPassword(PWD)) {

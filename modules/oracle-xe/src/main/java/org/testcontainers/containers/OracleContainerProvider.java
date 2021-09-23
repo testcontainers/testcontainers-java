@@ -5,19 +5,19 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Factory for Oracle containers.
  */
-public class OracleContainerProvider extends JdbcDatabaseContainerProvider {
+public class OracleContainerProvider extends JdbcDatabaseContainerProvider<OracleContainer> {
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(OracleContainer.NAME);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance() {
+    public OracleContainer newInstance() {
         return newInstance(OracleContainer.DEFAULT_TAG);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
+    public OracleContainer newInstance(String tag) {
         if (tag != null) {
             return new OracleContainer(DockerImageName.parse(OracleContainer.IMAGE).withTag(tag));
         }

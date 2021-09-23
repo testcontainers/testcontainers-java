@@ -13,7 +13,7 @@ import static java.util.Collections.singleton;
 /**
  * @author richardnorth
  */
-public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class PostgreSQLContainer extends JdbcDatabaseContainer<PostgreSQLContainer> {
     public static final String NAME = "postgresql";
     public static final String IMAGE = "postgres";
 
@@ -108,19 +108,19 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     }
 
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public PostgreSQLContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public PostgreSQLContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public PostgreSQLContainer withPassword(final String password) {
         this.password = password;
         return self();
     }

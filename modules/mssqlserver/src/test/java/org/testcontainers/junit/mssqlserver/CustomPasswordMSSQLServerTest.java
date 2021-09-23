@@ -67,7 +67,7 @@ public class CustomPasswordMSSQLServerTest {
     @Test
     public void runPasswordTests() {
         try {
-            new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(this.password);
+            new MSSQLServerContainer(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(this.password);
             if (!valid)
                 fail("Password " + this.password + " is not valid. Expected exception");
         } catch (IllegalArgumentException e) {

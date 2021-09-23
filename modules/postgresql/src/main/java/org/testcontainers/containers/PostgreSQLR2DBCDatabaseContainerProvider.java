@@ -22,7 +22,7 @@ public final class PostgreSQLR2DBCDatabaseContainerProvider implements R2DBCData
     @Override
     public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
         String image = PostgreSQLContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
-        PostgreSQLContainer<?> container = new PostgreSQLContainer<>(image)
+        PostgreSQLContainer container = new PostgreSQLContainer(image)
             .withDatabaseName(options.getRequiredValue(ConnectionFactoryOptions.DATABASE));
 
         if (Boolean.TRUE.equals(options.getValue(REUSABLE_OPTION))) {

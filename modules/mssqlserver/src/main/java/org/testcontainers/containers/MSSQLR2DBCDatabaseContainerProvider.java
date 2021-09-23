@@ -23,7 +23,7 @@ public class MSSQLR2DBCDatabaseContainerProvider implements R2DBCDatabaseContain
     public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
         // TODO work out how best to do this if these constants become private
         String image = MSSQLServerContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
-        MSSQLServerContainer<?> container = new MSSQLServerContainer<>(image);
+        MSSQLServerContainer container = new MSSQLServerContainer(image);
 
         if (Boolean.TRUE.equals(options.getValue(REUSABLE_OPTION))) {
             container.withReuse(true);

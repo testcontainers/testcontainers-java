@@ -22,7 +22,7 @@ public class MySQLR2DBCDatabaseContainerProvider implements R2DBCDatabaseContain
     @Override
     public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
         String image = MySQLContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
-        MySQLContainer<?> container = new MySQLContainer<>(image)
+        MySQLContainer container = new MySQLContainer(image)
             .withDatabaseName(options.getRequiredValue(ConnectionFactoryOptions.DATABASE));
 
         if (Boolean.TRUE.equals(options.getValue(REUSABLE_OPTION))) {

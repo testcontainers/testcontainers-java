@@ -2,19 +2,19 @@ package org.testcontainers.containers;
 
 import org.testcontainers.utility.DockerImageName;
 
-public class CockroachContainerProvider extends JdbcDatabaseContainerProvider {
+public class CockroachContainerProvider extends JdbcDatabaseContainerProvider<CockroachContainer> {
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(CockroachContainer.NAME);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance() {
+    public CockroachContainer newInstance() {
         return newInstance(CockroachContainer.IMAGE_TAG);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
+    public CockroachContainer newInstance(String tag) {
         return new CockroachContainer(DockerImageName.parse(CockroachContainer.IMAGE).withTag(tag));
     }
 }

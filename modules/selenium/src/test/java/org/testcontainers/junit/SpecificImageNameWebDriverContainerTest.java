@@ -12,7 +12,7 @@ public class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContai
         .parse("selenium/standalone-firefox:2.53.1-beryllium");
 
     @Rule
-    public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>(FIREFOX_IMAGE)
+    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer(FIREFOX_IMAGE)
         .withCapabilities(new FirefoxOptions())
         .withNetwork(NETWORK);
 

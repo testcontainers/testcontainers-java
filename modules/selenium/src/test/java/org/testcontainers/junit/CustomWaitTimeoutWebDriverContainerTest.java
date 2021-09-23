@@ -15,7 +15,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class CustomWaitTimeoutWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Rule
-    public BrowserWebDriverContainer<?> chromeWithCustomTimeout = new BrowserWebDriverContainer<>()
+    public BrowserWebDriverContainer chromeWithCustomTimeout = new BrowserWebDriverContainer()
         .withCapabilities(new ChromeOptions())
         .withStartupTimeout(Duration.of(30, SECONDS))
         .withNetwork(NETWORK);

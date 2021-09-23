@@ -10,9 +10,9 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 public final class PostgreSQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
     @Delegate(types = Startable.class)
-    private final PostgreSQLContainer<?> container;
+    private final PostgreSQLContainer container;
 
-    public static ConnectionFactoryOptions getOptions(PostgreSQLContainer<?> container) {
+    public static ConnectionFactoryOptions getOptions(PostgreSQLContainer container) {
         ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
             .option(ConnectionFactoryOptions.DRIVER, PostgreSQLR2DBCDatabaseContainerProvider.DRIVER)
             .build();

@@ -10,9 +10,9 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 public class MSSQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
     @Delegate(types = Startable.class)
-    private final MSSQLServerContainer<?> container;
+    private final MSSQLServerContainer container;
 
-    public static ConnectionFactoryOptions getOptions(MSSQLServerContainer<?> container) {
+    public static ConnectionFactoryOptions getOptions(MSSQLServerContainer container) {
         ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
             .option(ConnectionFactoryOptions.DRIVER, MSSQLR2DBCDatabaseContainerProvider.DRIVER)
             .build();

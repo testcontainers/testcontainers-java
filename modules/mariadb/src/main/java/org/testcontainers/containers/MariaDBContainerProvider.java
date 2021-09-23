@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Factory for MariaDB org.testcontainers.containers.
  */
-public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider {
+public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider<MariaDBContainer> {
 
     private static final String USER_PARAM = "user";
 
@@ -18,17 +18,17 @@ public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance() {
+    public MariaDBContainer newInstance() {
         return newInstance(MariaDBContainer.DEFAULT_TAG);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
+    public MariaDBContainer newInstance(String tag) {
         return new MariaDBContainer(DockerImageName.parse(MariaDBContainer.IMAGE).withTag(tag));
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
+    public MariaDBContainer newInstance(ConnectionUrl connectionUrl) {
        return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
 

@@ -22,7 +22,7 @@ public class MariaDBR2DBCDatabaseContainerProvider implements R2DBCDatabaseConta
     @Override
     public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
         String image = MariaDBContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
-        MariaDBContainer<?> container = new MariaDBContainer<>(image)
+        MariaDBContainer container = new MariaDBContainer(image)
             .withDatabaseName(options.getRequiredValue(ConnectionFactoryOptions.DATABASE));
 
         if (Boolean.TRUE.equals(options.getValue(REUSABLE_OPTION))) {

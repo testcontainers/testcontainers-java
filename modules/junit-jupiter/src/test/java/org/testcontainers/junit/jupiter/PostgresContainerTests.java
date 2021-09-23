@@ -15,7 +15,7 @@ import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.POSTGRES_I
 class PostgresContainerTests {
 
     @Container
-    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(POSTGRES_IMAGE)
+    private static final PostgreSQLContainer POSTGRE_SQL_CONTAINER = new PostgreSQLContainer(POSTGRES_IMAGE)
             .withDatabaseName("foo")
             .withUsername("foo")
             .withPassword("secret");

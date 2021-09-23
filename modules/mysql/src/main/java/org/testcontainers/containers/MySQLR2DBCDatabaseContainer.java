@@ -10,9 +10,9 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 public class MySQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
     @Delegate(types = Startable.class)
-    private final MySQLContainer<?> container;
+    private final MySQLContainer container;
 
-    public static ConnectionFactoryOptions getOptions(MySQLContainer<?> container) {
+    public static ConnectionFactoryOptions getOptions(MySQLContainer container) {
         ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
             .option(ConnectionFactoryOptions.DRIVER, MySQLR2DBCDatabaseContainerProvider.DRIVER)
             .build();

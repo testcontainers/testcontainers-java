@@ -4,10 +4,10 @@ import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
-public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MySQLContainer<?>> {
+public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MySQLContainer> {
 
     @Override
-    protected ConnectionFactoryOptions getOptions(MySQLContainer<?> container) {
+    protected ConnectionFactoryOptions getOptions(MySQLContainer container) {
         return MySQLR2DBCDatabaseContainer.getOptions(container);
     }
 
@@ -17,8 +17,8 @@ public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
     }
 
     @Override
-    protected MySQLContainer<?> createContainer() {
-        return new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE);
+    protected MySQLContainer createContainer() {
+        return new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE);
     }
 
 }

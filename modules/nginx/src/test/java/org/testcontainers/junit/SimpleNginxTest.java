@@ -26,7 +26,7 @@ public class SimpleNginxTest {
 
     // creatingContainer {
     @Rule
-    public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
+    public NginxContainer nginx = new NginxContainer(NGINX_IMAGE)
         .withCustomContent(tmpDirectory)
         .waitingFor(new HttpWaitStrategy());
     // }

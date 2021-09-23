@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Factory for MySQL containers.
  */
-public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
+public class MySQLContainerProvider extends JdbcDatabaseContainerProvider<MySQLContainer> {
 
     private static final String USER_PARAM = "user";
 
@@ -18,12 +18,12 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance() {
+    public MySQLContainer newInstance() {
         return newInstance(MySQLContainer.DEFAULT_TAG);
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(String tag) {
+    public MySQLContainer newInstance(String tag) {
         if (tag != null) {
             return new MySQLContainer(DockerImageName.parse(MySQLContainer.IMAGE).withTag(tag));
         } else {
@@ -32,7 +32,7 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     }
 
     @Override
-    public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
+    public MySQLContainer newInstance(ConnectionUrl connectionUrl) {
         return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
 

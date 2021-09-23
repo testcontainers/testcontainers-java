@@ -19,7 +19,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
+        try (MSSQLServerContainer mssqlServer = new MSSQLServerContainer(MSSQL_SERVER_IMAGE)) {
             mssqlServer.start();
             ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
 
@@ -30,7 +30,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)
+        try (MSSQLServerContainer mssqlServer = new MSSQLServerContainer(MSSQL_SERVER_IMAGE)
             .withUrlParam("integratedSecurity", "false")
             .withUrlParam("applicationName", "MyApp")) {
 
@@ -44,7 +44,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSetupDatabase() throws SQLException {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
+        try (MSSQLServerContainer mssqlServer = new MSSQLServerContainer(MSSQL_SERVER_IMAGE)) {
             mssqlServer.start();
             DataSource ds = getDataSource(mssqlServer);
             Statement statement = ds.getConnection().createStatement();
