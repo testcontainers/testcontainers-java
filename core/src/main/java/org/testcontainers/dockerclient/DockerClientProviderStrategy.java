@@ -141,8 +141,8 @@ public abstract class DockerClientProviderStrategy {
         return orderedStrategiesToTryOut
                 .filter(distinctStrategyClassPredicate)
                 .filter(DockerClientProviderStrategy::isApplicable)
-                .flatMap(strategy -> tryOutStrategy(configurationFailures, strategy))
-                .findAny()
+                .filter(strategy -> tryOutStrategy(configurationFailures, strategy))
+                .findFirst()
                 .orElseThrow(() -> {
                     log.error("Could not find a valid Docker environment. Please check configuration. Attempted configurations were:");
                     for (String failureMessage : configurationFailures) {
@@ -155,8 +155,7 @@ public abstract class DockerClientProviderStrategy {
                 });
     }
 
-    @NotNull
-    private static Stream<DockerClientProviderStrategy> tryOutStrategy(List<String> configurationFailures, DockerClientProviderStrategy strategy) {
+    private static boolean tryOutStrategy(List<String> configurationFailures, DockerClientProviderStrategy strategy) {
         try {
             log.debug("Trying out strategy: {}", strategy.getClass().getSimpleName());
             DockerClient dockerClient = strategy.getDockerClient();
@@ -193,7 +192,7 @@ public abstract class DockerClientProviderStrategy {
                 TestcontainersConfiguration.getInstance().updateUserConfig("docker.client.strategy", strategy.getClass().getName());
             }
 
-            return Stream.of(strategy);
+            return true;
         } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
             @Nullable String throwableMessage = e.getMessage();
             @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
@@ -218,7 +217,7 @@ public abstract class DockerClientProviderStrategy {
             configurationFailures.add(failureDescription);
 
             log.debug(failureDescription);
-            return Stream.empty();
+            return false;
         }
     }
 
