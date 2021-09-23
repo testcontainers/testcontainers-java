@@ -1284,6 +1284,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
+        if (copyToFileContainerPathMap.containsKey(mountableFile)) {
+            throw new IllegalStateException("Path already configured for copy: " + mountableFile);
+        }
         copyToFileContainerPathMap.put(mountableFile, containerPath);
         return self();
     }
