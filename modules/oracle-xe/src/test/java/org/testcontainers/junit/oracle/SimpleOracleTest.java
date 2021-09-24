@@ -1,8 +1,7 @@
 package org.testcontainers.junit.oracle;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.testcontainers.containers.OracleContainer;
@@ -18,9 +17,9 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     private void runTest(OracleContainer container, String databaseName, String username, String password) throws SQLException {
         //Test config was honored
-        assertEquals(container.getDatabaseName(), databaseName);
-        assertEquals(container.getUsername(), username);
-        assertEquals(container.getPassword(), password);
+        assertEquals(databaseName, container.getDatabaseName());
+        assertEquals(username, container.getUsername());
+        assertEquals(password, container.getPassword());
         
         //Test we can get a connection
         container.start();
@@ -34,8 +33,11 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
         try (
             OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME);
         ) {
-            assertFalse(oracle.isUsingSid());
             runTest(oracle, "xepdb1", "test", "test");
+
+            // Match against the last '/'
+            String urlSuffix = oracle.getJdbcUrl().split("(\\/)(?!.*\\/)", 2)[1];
+            assertEquals("xepdb1", urlSuffix);
         }
     }
 
@@ -78,8 +80,11 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
             OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .usingSid();
         ) {
-            assertTrue(oracle.isUsingSid());
             runTest(oracle, "xepdb1", "system", "test");
+
+            // Match against the last ':'
+            String urlSuffix = oracle.getJdbcUrl().split("(\\:)(?!.*\\:)", 2)[1];
+            assertEquals("xe", urlSuffix);
         }
     }
 
@@ -90,8 +95,54 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
                 .usingSid()
                 .withPassword("testPassword");
         ) {
-            assertTrue(oracle.isUsingSid());
             runTest(oracle, "xepdb1", "system", "testPassword");
+        }
+    }
+
+    @Test
+    public void testErrorPaths() throws SQLException {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)) {
+            try {
+                oracle.withDatabaseName("XEPDB1");
+                fail("Should not have been able to set database name to xepdb1.");
+            } catch (IllegalArgumentException e) {
+                //expected
+            }
+
+            try {
+                oracle.withDatabaseName("");
+                fail("Should not have been able to set database name to nothing.");
+            } catch (IllegalArgumentException e) {
+                //expected
+            }
+
+            try {
+                oracle.withUsername("SYSTEM");
+                fail("Should not have been able to set username to system.");
+            } catch (IllegalArgumentException e) {
+                //expected
+            }
+
+            try {
+                oracle.withUsername("SYS");
+                fail("Should not have been able to set username to sys.");
+            } catch (IllegalArgumentException e) {
+                //expected
+            }
+
+            try {
+                oracle.withUsername("");
+                fail("Should not have been able to set username to nothing.");
+            } catch (IllegalArgumentException e) {
+                //expected
+            }
+
+            try {
+                oracle.withPassword("");
+                fail("Should not have been able to set password to nothing.");
+            } catch (IllegalArgumentException e) {
+                //expected
+            }
         }
     }
 }

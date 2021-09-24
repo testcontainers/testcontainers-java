@@ -41,7 +41,6 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     // Restricted user and database names
     private static final List<String> ORACLE_SYSTEM_USERS = Arrays.asList(DEFAULT_SYSTEM_USER, DEFAULT_SYS_USER);
-    private static final List<String> ORACLE_DEFAULT_DBS = Arrays.asList(DEFAULT_DATABASE_NAME);
 
     private String databaseName = DEFAULT_DATABASE_NAME;
     private String username = APP_USER;
@@ -106,7 +105,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getUsername() {
-        //An application user is tied to the database, and therefore not authenticated to connect to SID.
+        // An application user is tied to the database, and therefore not authenticated to connect to SID.
         return isUsingSid() ? DEFAULT_SYSTEM_USER : username;
     }
 
@@ -120,7 +119,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         return databaseName;
     }
 
-    public boolean isUsingSid() {
+    protected boolean isUsingSid() {
         return usingSid;
     }
 
@@ -151,8 +150,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
             throw new IllegalArgumentException("Database name cannot be null or empty");
         }
 
-        if (ORACLE_DEFAULT_DBS.contains(databaseName.toLowerCase())) {
-            throw new IllegalArgumentException("Database name cannot be one of " + ORACLE_DEFAULT_DBS);
+        if (DEFAULT_DATABASE_NAME.equals(databaseName.toLowerCase())) {
+            throw new IllegalArgumentException("Database name cannot be set to " + DEFAULT_DATABASE_NAME);
         }
 
         this.databaseName = databaseName;
@@ -192,7 +191,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     protected void configure() {
         withEnv("ORACLE_PASSWORD", password);
 
-        //Only set ORACLE_DATABASE if different than the default
+        // Only set ORACLE_DATABASE if different than the default.
         if(databaseName != DEFAULT_DATABASE_NAME) {
             withEnv("ORACLE_DATABASE", databaseName);
         }
