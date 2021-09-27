@@ -2,18 +2,23 @@ package org.testcontainers.containers;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singleton;
+
 public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public static final String NAME = "oracle";
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
-
 
     static final String DEFAULT_TAG = "18.4.0-slim";
     static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
@@ -23,10 +28,24 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
-    private static final List<String> ORACLE_SYSTEM_USERS = Arrays.asList("system", "sys");
 
-    private String username = "test";
-    private String password = "test";
+    // Container defaults
+    static final String DEFAULT_DATABASE_NAME = "xepdb1";
+    static final String DEFAULT_SID = "xe";
+    static final String DEFAULT_SYSTEM_USER = "system";
+    static final String DEFAULT_SYS_USER = "sys";
+    
+    // Test container defaults
+    static final String APP_USER = "test";
+    static final String APP_USER_PASSWORD = "test";
+
+    // Restricted user and database names
+    private static final List<String> ORACLE_SYSTEM_USERS = Arrays.asList(DEFAULT_SYSTEM_USER, DEFAULT_SYS_USER);
+
+    private String databaseName = DEFAULT_DATABASE_NAME;
+    private String username = APP_USER;
+    private String password = APP_USER_PASSWORD;
+    private boolean usingSid = false;
 
     /**
      * @deprecated use {@link OracleContainer(DockerImageName)} instead
@@ -42,6 +61,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         preconfigure();
     }
 
@@ -51,14 +71,24 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     private void preconfigure() {
-        withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
+        this.waitStrategy = new LogMessageWaitStrategy()
+            .withRegEx(".*DATABASE IS READY TO USE!.*\\s")
+            .withTimes(1)
+            .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, SECONDS));
+        
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
     }
 
     @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
+    }
+
+    @NotNull
+    @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(ORACLE_PORT);
+        return singleton(getMappedPort(ORACLE_PORT));
     }
 
     @Override
@@ -68,17 +98,29 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:oracle:thin:" + getUsername() + "/" + getPassword() + "@" + getHost() + ":" + getOraclePort() + "/xepdb1";
+        return isUsingSid() ? 
+            "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + ":" + getSid() :
+            "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + "/" + getDatabaseName();
     }
 
     @Override
     public String getUsername() {
-        return username;
+        // An application user is tied to the database, and therefore not authenticated to connect to SID.
+        return isUsingSid() ? DEFAULT_SYSTEM_USER : username;
     }
 
     @Override
     public String getPassword() {
         return password;
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    protected boolean isUsingSid() {
+        return usingSid;
     }
 
     @Override
@@ -103,13 +145,32 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
+    public OracleContainer withDatabaseName(String databaseName) {
+        if (StringUtils.isEmpty(databaseName)) {
+            throw new IllegalArgumentException("Database name cannot be null or empty");
+        }
+
+        if (DEFAULT_DATABASE_NAME.equals(databaseName.toLowerCase())) {
+            throw new IllegalArgumentException("Database name cannot be set to " + DEFAULT_DATABASE_NAME);
+        }
+
+        this.databaseName = databaseName;
+        return self();
+    }
+
+    public OracleContainer usingSid() {
+        this.usingSid = true;
+        return self();
+    }
+
+    @Override
     public OracleContainer withUrlParam(String paramName, String paramValue) {
-        throw new UnsupportedOperationException("The OracleDb does not support this");
+        throw new UnsupportedOperationException("The Oracle Database driver does not support this");
     }
 
     @SuppressWarnings("SameReturnValue")
     public String getSid() {
-        return "xe";
+        return DEFAULT_SID;
     }
 
     public Integer getOraclePort() {
@@ -129,6 +190,12 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @Override
     protected void configure() {
         withEnv("ORACLE_PASSWORD", password);
+
+        // Only set ORACLE_DATABASE if different than the default.
+        if(databaseName != DEFAULT_DATABASE_NAME) {
+            withEnv("ORACLE_DATABASE", databaseName);
+        }
+        
         withEnv("APP_USER", username);
         withEnv("APP_USER_PASSWORD", password);
     }
