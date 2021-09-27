@@ -5,6 +5,8 @@ import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.models.CosmosContainerResponse;
 import com.azure.cosmos.models.CosmosDatabaseResponse;
 import org.assertj.core.api.Assertions;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
@@ -13,8 +15,21 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
+import java.util.Properties;
 
 public class CosmosDBEmulatorContainerTest {
+
+    private static Properties originalSystemProperties;
+
+    @BeforeClass
+    public static void captureOriginalSystemProperties() {
+        originalSystemProperties = (Properties) System.getProperties().clone();
+    }
+
+    @AfterClass
+    public static void restoreOriginalSystemProperties() {
+        System.setProperties(originalSystemProperties);
+    }
 
     @Rule
     // emulatorContainer {
