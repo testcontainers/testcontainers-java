@@ -175,7 +175,7 @@ A huge thank you to our sponsors:
   ([query](https://github.com/search?l=Maven+POM&q=org%3Ajenkinsci+testcontainers&type=Code)).
 * [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
 * [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
-
+* [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
 
 
 ## License
