@@ -22,17 +22,17 @@ public abstract class AbstractClickHouseContainerJdbc extends JdbcDatabaseContai
 
     @Override
     public String getDatabaseName() {
-        return ClickHouseInit.databaseName;
+        return ClickHouseInit.DATABASE_NAME;
     }
 
     @Override
     public String getUsername() {
-        return ClickHouseInit.username;
+        return ClickHouseInit.USERNAME;
     }
 
     @Override
     public String getPassword() {
-        return ClickHouseInit.password;
+        return ClickHouseInit.PASSWORD;
     }
 
     @Override

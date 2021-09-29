@@ -27,15 +27,15 @@ public class ClickHouseContainer extends GenericContainer<ClickHouseContainer> {
     }
 
     public String getDatabaseName() {
-        return ClickHouseInit.databaseName;
+        return ClickHouseInit.DATABASE_NAME;
     }
 
     public String getUsername() {
-        return ClickHouseInit.username;
+        return ClickHouseInit.USERNAME;
     }
 
     public String getPassword() {
-        return ClickHouseInit.password;
+        return ClickHouseInit.PASSWORD;
     }
 
 }

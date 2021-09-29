@@ -18,9 +18,9 @@ public class ClickHouseInit {
     public static final Integer NATIVE_PORT = 9000;
     public static final Integer MYSQL_PORT = 9004;
 
-    public static final String databaseName = "default";
-    public static final String username = "default";
-    public static final String password = "";
+    public static final String DATABASE_NAME = "default";
+    public static final String USERNAME = "default";
+    public static final String PASSWORD = "";
 
     static final String TEST_QUERY = "SELECT 1";
 
