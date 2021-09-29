@@ -2,7 +2,7 @@ package org.testcontainers.containers;
 
 import org.testcontainers.utility.DockerImageName;
 
-public abstract class AbstractClickHouseContainerJdbc extends JdbcDatabaseContainer {
+abstract class AbstractClickHouseContainerJdbc extends JdbcDatabaseContainer {
 
     public AbstractClickHouseContainerJdbc(final DockerImageName dockerImageName) {
         super(dockerImageName);
