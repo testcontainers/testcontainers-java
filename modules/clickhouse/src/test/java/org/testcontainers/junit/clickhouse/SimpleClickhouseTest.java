@@ -18,27 +18,28 @@ public class SimpleClickhouseTest {
 
     @Test
     public void testRawMysql() throws Throwable {
-        ClickHouseContainer clickHouseContainer = new ClickHouseContainer();
-        clickHouseContainer.start();
+        try(ClickHouseContainer clickHouseContainer = new ClickHouseContainer()) {
+            clickHouseContainer.start();
 
-        MySQLConnectOptions connectOptions = new MySQLConnectOptions()
-            .setPort(clickHouseContainer.getMappedPort(ClickHouseInit.MYSQL_PORT))
-            .setHost(clickHouseContainer.getHost())
-            .setDatabase(clickHouseContainer.getDatabaseName())
-            .setUser(clickHouseContainer.getUsername())
-            .setPassword(clickHouseContainer.getPassword());
+            MySQLConnectOptions connectOptions = new MySQLConnectOptions()
+                .setPort(clickHouseContainer.getMappedPort(ClickHouseInit.MYSQL_PORT))
+                .setHost(clickHouseContainer.getHost())
+                .setDatabase(clickHouseContainer.getDatabaseName())
+                .setUser(clickHouseContainer.getUsername())
+                .setPassword(clickHouseContainer.getPassword());
 
-        CountDownLatch lock = new CountDownLatch(1);
+            CountDownLatch lock = new CountDownLatch(1);
 
-        Vertx vertx = Vertx.vertx();
-        Future<RowSet<Row>> result = MySQLConnection
-            .connect(vertx, connectOptions)
-            .flatMap(conn -> conn.query("SELECT 1;").execute())
-            .onComplete(r -> lock.countDown());
+            Vertx vertx = Vertx.vertx();
+            Future<RowSet<Row>> result = MySQLConnection
+                .connect(vertx, connectOptions)
+                .flatMap(conn -> conn.query("SELECT 1;").execute())
+                .onComplete(r -> lock.countDown());
 
-        lock.await();
+            lock.await();
 
-        assertFalse(result.failed());
+            assertFalse(result.failed());
+        }
     }
 
 }
