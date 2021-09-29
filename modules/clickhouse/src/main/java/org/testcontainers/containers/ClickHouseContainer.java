@@ -38,8 +38,4 @@ public class ClickHouseContainer extends GenericContainer<ClickHouseContainer> {
         return ClickHouseInit.password;
     }
 
-    public String getTestQueryString() {
-        return ClickHouseInit.TEST_QUERY;
-    }
-
 }
