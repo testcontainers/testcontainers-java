@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
 import java.util.Set;
 
-public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends GenericContainer<SELF> {
+public class ClickHouseContainer extends GenericContainer<ClickHouseContainer> {
 
     public ClickHouseContainer() {
         this(ClickHouseInit.DEFAULT_TAG);
