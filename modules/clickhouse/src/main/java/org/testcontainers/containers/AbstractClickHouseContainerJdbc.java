@@ -7,7 +7,7 @@ public abstract class AbstractClickHouseContainerJdbc extends JdbcDatabaseContai
     public AbstractClickHouseContainerJdbc(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(ClickHouseInit.DEFAULT_IMAGE_NAME);
-        ClickHouseInit.Init(this);
+        ClickHouseInit.init(this);
     }
 
     @Override

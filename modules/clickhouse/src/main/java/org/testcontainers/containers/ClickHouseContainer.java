@@ -18,7 +18,7 @@ public class ClickHouseContainer extends GenericContainer<ClickHouseContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(ClickHouseInit.DEFAULT_IMAGE_NAME);
 
-        ClickHouseInit.Init(this);
+        ClickHouseInit.init(this);
     }
 
     @Override

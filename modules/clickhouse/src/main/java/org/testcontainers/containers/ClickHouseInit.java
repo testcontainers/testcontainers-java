@@ -26,7 +26,7 @@ public class ClickHouseInit {
 
     public static final String DEFAULT_TAG = "21.3.8.76";
 
-    public static void Init(GenericContainer<?> container) {
+    public static void init(GenericContainer<?> container) {
         container.withExposedPorts(HTTP_PORT, NATIVE_PORT, MYSQL_PORT);
 
         container.waitingFor(
