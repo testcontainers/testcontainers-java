@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -29,10 +28,12 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -114,20 +115,20 @@ public abstract class DockerClientProviderStrategy {
         }
 
         List<String> configurationFailures = new ArrayList<>();
+        List<DockerClientProviderStrategy> allStrategies = new ArrayList<>();
 
-        Stream<? extends DockerClientProviderStrategy> configuredDockerClientStrategy = loadConfiguredStrategy();
+        // The environment has the highest priority
+        allStrategies.add(new EnvironmentAndSystemPropertyClientProviderStrategy());
 
-        Stream<DockerClientProviderStrategy> orderedProvidedStrategies = strategies
+        // Next strategy to try out is the one configured using the Testcontainers configuration mechanism
+        loadConfiguredStrategy().ifPresent(allStrategies::add);
+
+        // Finally, add all other strategies ordered by their internal priority
+        strategies
             .stream()
-            .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed());
+            .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
+            .collect(Collectors.toCollection(() -> allStrategies));
 
-        Stream<DockerClientProviderStrategy> orderedStrategiesToTryOut = Stream
-            .concat(
-                Stream.of(new EnvironmentAndSystemPropertyClientProviderStrategy()),
-                Stream.concat(
-                    configuredDockerClientStrategy,
-                    orderedProvidedStrategies
-                ));
 
         Predicate<DockerClientProviderStrategy> distinctStrategyClassPredicate = new Predicate<DockerClientProviderStrategy>() {
             final Set<Class<? extends DockerClientProviderStrategy>> classes = new HashSet<>();
@@ -138,21 +139,22 @@ public abstract class DockerClientProviderStrategy {
             }
         };
 
-        return orderedStrategiesToTryOut
-                .filter(distinctStrategyClassPredicate)
-                .filter(DockerClientProviderStrategy::isApplicable)
-                .filter(strategy -> tryOutStrategy(configurationFailures, strategy))
-                .findFirst()
-                .orElseThrow(() -> {
-                    log.error("Could not find a valid Docker environment. Please check configuration. Attempted configurations were:");
-                    for (String failureMessage : configurationFailures) {
-                        log.error("    " + failureMessage);
-                    }
-                    log.error("As no valid configuration was found, execution cannot continue");
+        return allStrategies
+            .stream()
+            .filter(distinctStrategyClassPredicate)
+            .filter(DockerClientProviderStrategy::isApplicable)
+            .filter(strategy -> tryOutStrategy(configurationFailures, strategy))
+            .findFirst()
+            .orElseThrow(() -> {
+                log.error("Could not find a valid Docker environment. Please check configuration. Attempted configurations were:");
+                for (String failureMessage : configurationFailures) {
+                    log.error("    " + failureMessage);
+                }
+                log.error("As no valid configuration was found, execution cannot continue");
 
-                    FAIL_FAST_ALWAYS.set(true);
-                    return new IllegalStateException("Could not find a valid Docker environment. Please see logs and check configuration");
-                });
+                FAIL_FAST_ALWAYS.set(true);
+                return new IllegalStateException("Could not find a valid Docker environment. Please see logs and check configuration");
+            });
     }
 
     private static boolean tryOutStrategy(List<String> configurationFailures, DockerClientProviderStrategy strategy) {
@@ -221,7 +223,7 @@ public abstract class DockerClientProviderStrategy {
         }
     }
 
-    private static Stream<? extends DockerClientProviderStrategy> loadConfiguredStrategy() {
+    private static Optional<? extends DockerClientProviderStrategy> loadConfiguredStrategy() {
         String configuredDockerClientStrategyClassName = TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName();
 
         return Stream
@@ -244,7 +246,8 @@ public abstract class DockerClientProviderStrategy {
             })
             // Ignore persisted strategy if it's not persistable anymore
             .filter(DockerClientProviderStrategy::isPersistable)
-            .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName()));
+            .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName()))
+            .findFirst();
     }
 
     public static DockerClient getClientForConfig(TransportConfig transportConfig) {
