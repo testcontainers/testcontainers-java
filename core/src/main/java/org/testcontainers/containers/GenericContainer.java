@@ -174,6 +174,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
     private int startupAttempts = 1;
+    private int pullAttempts = 3;
 
     @Nullable
     private String workingDirectory = null;
@@ -1317,7 +1318,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     public String getDockerImageName() {
         try {
-            return image.get();
+            return Unreliables.retryUntilSuccess(pullAttempts, () -> image.get());
         } catch (Exception e) {
             throw new ContainerFetchException("Can't get Docker image: " + image, e);
         }
@@ -1382,6 +1383,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withStartupAttempts(int attempts) {
         this.startupAttempts = attempts;
+        return self();
+    }
+
+    /**
+     * Allow image pull to be attempted more than once if an error occurs. To be used if pulling images are
+     * 'flaky' but this flakiness is not something that should affect test outcomes.
+     *
+     * @param attempts number of attempts
+     */
+    public SELF withPullAttempts(int attempts) {
+        this.pullAttempts = attempts;
         return self();
     }
 
