@@ -25,8 +25,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2.3.0
         with:
-          java-version: '8.0.292+10'
-          distribution: adopt-hotspot
+          java-version: '8'
+          distribution: temurin
+          check-latest: true
       - name: Cache Gradle Home files
         uses: actions/cache@v2.1.6
         with:
@@ -51,8 +52,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2.3.0
         with:
-          java-version: '8.0.292+10'
-          distribution: adopt-hotspot
+          java-version: '8'
+          distribution: temurin
+          check-latest: true
       - name: Cache Gradle Home files
         uses: actions/cache@v2.1.6
         continue-on-error: true
