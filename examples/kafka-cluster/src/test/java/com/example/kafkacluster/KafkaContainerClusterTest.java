@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerClusterTest {
 
-    /* TODO: Remove me+ */
+    /* TODO: Remove me++ */
 
     @Test
     public void testKafkaContainerCluster() throws Exception {
