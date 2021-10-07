@@ -10,7 +10,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'org.json:json:20210307'
     testImplementation 'org.postgresql:postgresql:42.2.23'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.5'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.6'
     testImplementation 'org.testcontainers:postgresql'
 }
 
