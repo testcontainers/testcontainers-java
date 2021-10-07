@@ -103,3 +103,4 @@ The whole process is as follow:
 2. Run the extension from an up-to-date local `master` branch: ``gh combine-prs --query "author:app/dependabot"
 3. Merge conflicts might appear. Just ignore them, we will get those PRs in a future run.
 4. Once the build of the combined PR did succeed, temporarily enable merge commits and merge the PR using a merge commit through the GitHub UI.
+5. After the merge, disable merge commits again.
