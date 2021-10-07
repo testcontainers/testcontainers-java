@@ -2,7 +2,7 @@ dependencies {
     api project(':jdbc')
     api project(':test-support')
 
-    api 'com.google.guava:guava:30.1.1-jre'
+    api 'com.google.guava:guava:31.0.1-jre'
     api 'org.apache.commons:commons-lang3:3.12.0'
     api 'com.zaxxer:HikariCP-java6:2.3.13'
     api 'commons-dbutils:commons-dbutils:1.7'
@@ -14,7 +14,7 @@ dependencies {
         exclude(group: "net.java.dev.jna", module: "jna")
     }
 
-    api 'org.apache.tomcat:tomcat-jdbc:10.0.10'
+    api 'org.apache.tomcat:tomcat-jdbc:10.0.12'
     api 'org.vibur:vibur-dbcp:25.0'
     api 'mysql:mysql-connector-java:8.0.26'
 }
