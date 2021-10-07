@@ -30,12 +30,12 @@ public class KafkaContainerClusterTest {
     @Test
     public void testKafkaContainerCluster() throws Exception {
         try (
-            KafkaContainerCluster cluster = new KafkaContainerCluster("6.2.1", 2, 2)
+            KafkaContainerCluster cluster = new KafkaContainerCluster("6.2.1", 3, 2)
         ) {
             cluster.start();
             String bootstrapServers = cluster.getBootstrapServers();
 
-            assertThat(cluster.getBrokers()).hasSize(2);
+            assertThat(cluster.getBrokers()).hasSize(3);
 
             testKafkaFunctionality(bootstrapServers, 3, 2);
         }
