@@ -83,8 +83,7 @@ public class KafkaContainerCluster implements Startable {
     @Override
     @SneakyThrows
     public void start() {
-        Stream<Startable> startables = this.brokers.stream().map(Startable.class::cast);
-        Startables.deepStart(startables).get(60, SECONDS);
+        brokers.forEach(GenericContainer::start);
 
         Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
             Container.ExecResult result = this.zookeeper.execInContainer(
