@@ -83,6 +83,7 @@ public class KafkaContainerCluster implements Startable {
     @Override
     @SneakyThrows
     public void start() {
+        // sequential start to avoid resource contention on CI systems with weaker hardware
         brokers.forEach(GenericContainer::start);
 
         Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
