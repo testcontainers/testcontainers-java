@@ -74,12 +74,3 @@ jobs:
         env:
           THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
           THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.us/v1
-  httpclient5_test:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build with Gradle
-        run: |
-          echo "transport.type=httpclient5" > $HOME/.testcontainers.properties
-          cat $HOME/.testcontainers.properties
-          ./gradlew --no-daemon --scan testcontainers:test --tests '*EventStreamTest'
