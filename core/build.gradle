@@ -8,16 +8,7 @@ sourceSets {
 
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
-configurations {
-    shaded
-    [api, compileOnly, testCompile]*.extendsFrom shaded
-}
-
 shadowJar {
-    configurations = [project.configurations.shaded]
-
-    mergeServiceFiles()
-
     [
         'META-INF/NOTICE',
         'META-INF/NOTICE.txt',
@@ -66,7 +57,7 @@ dependencies {
         exclude group: "*", module: "*"
     }
 
-    api 'junit:junit:4.12'
+    api 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.32'
     compileOnly 'org.jetbrains:annotations:22.0.0'
     testCompileClasspath 'org.jetbrains:annotations:21.0.1'
@@ -77,23 +68,16 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.1.0'
 
+    api platform('com.github.docker-java:docker-java-bom:3.2.12')
     shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
 
     api "com.github.docker-java:docker-java-api"
 
-    shaded ('com.github.docker-java:docker-java-core') {
-        exclude(group: 'com.github.docker-java', module: 'docker-java-api')
-        exclude(group: 'com.github.docker-java', module: 'docker-java-transport')
-        exclude(group: 'com.fasterxml.jackson.core', module: 'jackson-annotations')
-        exclude(group: 'com.google.code.findbug')
-        exclude(group: 'org.slf4j')
-        exclude(group: 'org.apache.commons', module: 'commons-compress')
-    }
+    shaded 'com.github.docker-java:docker-java-core'
 
-    shaded ('com.github.docker-java:docker-java-transport-okhttp') {
-        exclude(group: 'com.github.docker-java', module: 'docker-java-core')
-        exclude(group: 'net.java.dev.jna')
-        exclude(group: 'org.slf4j')
+    shaded 'com.github.docker-java:docker-java-transport-okhttp', {
+        // TODO remove unused `net.java.dev.jna:jna-platform` from `docker-java-transport-okhttp`
+        exclude(group: 'net.java.dev.jna', module: 'jna-platform')
     }
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
@@ -102,9 +86,7 @@ dependencies {
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.zeroturnaround:zt-exec:1.12', {
-        exclude(group: 'org.slf4j')
-    }
+    shaded 'org.zeroturnaround:zt-exec:1.12'
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:3.7.0'
@@ -118,12 +100,12 @@ dependencies {
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testImplementation 'org.assertj:assertj-core:3.20.2'
+    testImplementation 'org.assertj:assertj-core:3.21.0'
     testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestImplementation 'junit:junit:4.12'
+    jarFileTestImplementation 'junit:junit:4.13.2'
     jarFileTestImplementation 'org.assertj:assertj-core:3.20.2'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }

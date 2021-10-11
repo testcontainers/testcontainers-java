@@ -57,27 +57,34 @@ publishing {
 
                 def dependenciesNode = rootNode.appendNode('dependencies')
 
-                def addDependency = { dependency, scope ->
-                    dependenciesNode.appendNode('dependency').with {
-                        appendNode('groupId', dependency.group)
-                        appendNode('artifactId', dependency.name)
-                        appendNode('version', dependency.version)
-                        appendNode('scope', scope)
+                def addDependencies = { Configuration configuration, scope ->
+                    for (dependency in configuration.resolvedConfiguration.firstLevelModuleDependencies) {
+                        if (dependency.configuration.startsWith("platform-")) {
+                            continue
+                        }
+                        dependenciesNode.appendNode('dependency').with {
+                            if (!dependency.moduleGroup || !dependency.moduleName || !dependency.moduleVersion) {
+                                throw new IllegalStateException("Wrong dependency: $dependency")
+                            }
+                            appendNode('groupId', dependency.moduleGroup)
+                            appendNode('artifactId', dependency.moduleName)
+                            appendNode('version', dependency.moduleVersion)
+                            appendNode('scope', scope)
 
-                        if (dependency instanceof ModuleDependency && !dependency.excludeRules.empty) {
-                            def excludesNode = appendNode('exclusions')
-                            for (rule in dependency.excludeRules) {
-                                excludesNode.appendNode('exclusion').with {
-                                    appendNode('groupId', rule.group)
-                                    appendNode('artifactId', rule.module)
+                            if (dependency instanceof ModuleDependency && !dependency.excludeRules.empty) {
+                                def excludesNode = appendNode('exclusions')
+                                for (rule in dependency.excludeRules) {
+                                    excludesNode.appendNode('exclusion').with {
+                                        appendNode('groupId', rule.group)
+                                        appendNode('artifactId', rule.module)
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
-                project.configurations.api.dependencies.each { addDependency(it, 'compile') }
-                project.configurations.provided.dependencies.each { addDependency(it, 'provided') }
+                addDependencies(project.configurations.api, 'compile')
+                addDependencies(project.configurations.provided, 'provided')
             }
         }
     }
