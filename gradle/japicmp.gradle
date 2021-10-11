@@ -11,6 +11,10 @@ dependencies {
 tasks.japicmp {
     dependsOn(tasks.shadowJar)
 
+    // Disable if baseline dependencies cannot be resolved - such as when developing a new module that doesn't
+    // have an existing published version.
+    enabled = ! configurations.baseline.copy().resolvedConfiguration.lenientConfiguration.getFiles().empty
+
     oldClasspath = configurations.baseline
     newClasspath = shadowJar.outputs.files
     ignoreMissingClasses = true
