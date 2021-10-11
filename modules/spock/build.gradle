@@ -26,3 +26,10 @@ sourceJar {
        allSource contains both .java and .groovy files */
     from sourceSets.main.allSource
 }
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
