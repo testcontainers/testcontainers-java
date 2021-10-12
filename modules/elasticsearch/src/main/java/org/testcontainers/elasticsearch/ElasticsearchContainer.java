@@ -32,14 +32,12 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      * Elasticsearch Docker base image
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
-    private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss");
 
     /**
      * Elasticsearch Default version
      */
     @Deprecated
-    protected static final String DEFAULT_TAG = "7.9.2";
-    private boolean isOss = false;
+    protected static final String DEFAULT_TAG = "7.15.0";
 
     /**
      * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
@@ -51,7 +49,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
      */
     public ElasticsearchContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -59,16 +57,12 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.9.2")
+     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.15.0")
      */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
-
-        if (dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME)) {
-            this.isOss = true;
-        }
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
@@ -82,16 +76,12 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Define the Elasticsearch password to set. It enables security behind the scene.
-     * It's not possible to use security with the oss image.
      * @param password  Password to set
      * @return this
      */
     public ElasticsearchContainer withPassword(String password) {
-        if (isOss) {
-            throw new IllegalArgumentException("You can not activate security on Elastic OSS Image. " +
-                "Please switch to the default distribution");
-        }
         withEnv("ELASTIC_PASSWORD", password);
+        // In version 8.0, security will be enabled by default
         withEnv("xpack.security.enabled", "true");
         return this;
     }

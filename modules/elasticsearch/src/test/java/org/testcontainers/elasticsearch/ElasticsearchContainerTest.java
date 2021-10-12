@@ -30,7 +30,7 @@ public class ElasticsearchContainerTest {
     /**
      * Elasticsearch version which should be used for the Tests
      */
-    private static final String ELASTICSEARCH_VERSION = "7.9.2";
+    private static final String ELASTICSEARCH_VERSION = "7.15.0";
     private static final DockerImageName ELASTICSEARCH_IMAGE =
         DockerImageName
             .parse("docker.elastic.co/elasticsearch/elasticsearch")
@@ -137,27 +137,6 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchOssImage() throws IOException {
-        try (ElasticsearchContainer container =
-                 // ossContainer {
-                 new ElasticsearchContainer(
-                     DockerImageName
-                         .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                         .withTag(ELASTICSEARCH_VERSION)
-                 )
-             // }
-        ) {
-            container.start();
-            Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            // The OSS image does not have any feature under Elastic License
-            assertThrows("We should not have /_xpack endpoint with an OSS License",
-                ResponseException.class,
-                () -> getClient(container).performRequest(new Request("GET", "/_xpack/")));
-        }
-    }
-
-    @Test
     public void restClientClusterHealth() throws IOException {
         // httpClientContainer {
         // Create the elasticsearch container.
@@ -234,19 +213,6 @@ public class ElasticsearchContainerTest {
             }
         }
         // }
-    }
-
-    @Test
-    public void incompatibleSettingsTest() {
-        // The OSS image can not use security feature
-        assertThrows("We should not be able to activate security with an OSS License",
-            IllegalArgumentException.class,
-            () -> new ElasticsearchContainer(
-                DockerImageName
-                    .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                    .withTag(ELASTICSEARCH_VERSION))
-            .withPassword("foo")
-        );
     }
 
     private RestClient getClient(ElasticsearchContainer container) {
