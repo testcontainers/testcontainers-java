@@ -12,7 +12,7 @@ dependencies {
     testImplementation project(':mysql')
     testImplementation project(':postgresql')
 
-    testImplementation 'com.zaxxer:HikariCP:5.0.0'
+    testImplementation 'com.zaxxer:HikariCP:4.0.3'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
 
     testRuntimeOnly 'org.postgresql:postgresql:42.2.24'
@@ -25,4 +25,11 @@ sourceJar {
     /* allJava is default (see gradle/publishing.gradle:sourceJar)
        allSource contains both .java and .groovy files */
     from sourceSets.main.allSource
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
