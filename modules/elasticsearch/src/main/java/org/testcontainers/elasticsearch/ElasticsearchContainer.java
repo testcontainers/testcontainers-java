@@ -81,7 +81,6 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     public ElasticsearchContainer withPassword(String password) {
         withEnv("ELASTIC_PASSWORD", password);
-        // In version 8.0, security will be enabled by default
         withEnv("xpack.security.enabled", "true");
         return this;
     }

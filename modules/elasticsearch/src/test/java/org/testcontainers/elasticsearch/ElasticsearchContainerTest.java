@@ -190,6 +190,32 @@ public class ElasticsearchContainerTest {
         // }
     }
 
+    @Test
+    public void restClientSecuredClusterHealthWith8_0_0() throws IOException {
+        // Create the elasticsearch container.
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.0.0-alpha2")
+            // With a password
+            .withPassword(ELASTICSEARCH_PASSWORD)) {
+            // Start the container. This step might take some time...
+            container.start();
+
+            // Create the secured client.
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
+
+            client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
+                .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
+                .build();
+
+            Response response = client.performRequest(new Request("GET", "/_cluster/health"));
+            // }}
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+        }
+        // }
+    }
+
     @SuppressWarnings("deprecation") // The TransportClient will be removed in Elasticsearch 8.
     @Test
     public void transportClientClusterHealth() {
