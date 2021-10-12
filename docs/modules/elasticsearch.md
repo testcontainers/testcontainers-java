@@ -22,7 +22,7 @@ or set `client.transport.ignore_cluster_name` to `true`.
 ## Enable / Disable features
 
 The default distribution of Elasticsearch comes with the basic Elastic license which contains a lot of features.
-You can turn on and off those features.
+You can turn those features on and off.
 
 ### Secure your Elasticsearch cluster
 
@@ -35,8 +35,9 @@ You can turn on security by providing a password:
 
 ### Machine Learning
 
-The Machine Learning feature is rarely used within integration tests. The Elasticsearch Container module disables
-by default this feature. You can activate it by calling `withMachineLearning()` when building the container:
+The Machine Learning feature is rarely used within integration tests. 
+The Elasticsearch Container module disables it by default.
+However, you can activate it if needed:
 
 <!--codeinclude-->
 [Machine Learning](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:machineLearningFeature

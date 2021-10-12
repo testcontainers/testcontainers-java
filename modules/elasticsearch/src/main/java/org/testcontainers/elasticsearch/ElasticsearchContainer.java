@@ -98,14 +98,14 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     }
 
     /**
-     * Enable the machine learning module. It's desactivated by default at it takes some
+     * Enable the machine learning module. It's deactivated by default as it takes
      * significant time to start.
      * @return this
      */
     public ElasticsearchContainer withMachineLearning() {
         if (isOss) {
-            throw new IllegalArgumentException("You can not activate machine learning on Elastic OSS Image. " +
-                "Please switch to the default distribution");
+            throw new IllegalArgumentException("Machine learning feature can't be used with the Elastic OSS Image. " +
+                "Consider switching to the default distribution.");
         }
         machineLearning = true;
         return this;
