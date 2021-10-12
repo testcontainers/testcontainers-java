@@ -70,7 +70,7 @@ jobs:
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} \
-            $($THUNDRA_GRADLE_INIT_SCRIPT_PATH || echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
+            $([ -f $THUNDRA_GRADLE_INIT_SCRIPT_PATH ] && echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
         env:
           THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
           THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.us/v1
