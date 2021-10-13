@@ -24,7 +24,7 @@ import static org.testcontainers.TestImages.TINY_IMAGE;
  */
 public class FixedHostPortContainerTest {
 
-    private static final String TEST_IMAGE = "alpine:3.2";
+    private static final String TEST_IMAGE = "alpine:3.14";
 
     /**
      * Default http server port (just something different from default)

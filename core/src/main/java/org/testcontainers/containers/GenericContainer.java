@@ -57,6 +57,7 @@ import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.DynamicPollInterval;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
@@ -84,8 +85,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -97,6 +100,7 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.awaitility.Awaitility.await;
 import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
@@ -132,7 +136,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private String networkMode;
 
-    @NonNull
+    @Nullable
     private Network network;
 
     @NonNull
@@ -216,10 +220,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
-            .newBuilder()
-            .withRate(1, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
+        .newBuilder()
+        .withRate(1, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
     @Nullable
     private Map<String, String> tmpFsMapping;
@@ -425,8 +429,30 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
 
+            // Wait until inspect container returns the mapped ports
+            containerInfo = await()
+                .atMost(5, TimeUnit.SECONDS)
+                .pollInterval(DynamicPollInterval.ofMillis(50))
+                .pollInSameThread()
+                .until(
+                    () -> dockerClient.inspectContainerCmd(containerId).exec(),
+                    inspectContainerResponse -> {
+                        Set<Integer> exposedAndMappedPorts = inspectContainerResponse
+                            .getNetworkSettings()
+                            .getPorts()
+                            .getBindings()
+                            .entrySet()
+                            .stream()
+                            .filter(it -> Objects.nonNull(it.getValue())) // filter out exposed but not yet mapped
+                            .map(Entry::getKey)
+                            .map(ExposedPort::getPort)
+                            .collect(Collectors.toSet());
+
+                         return exposedAndMappedPorts.containsAll(exposedPorts);
+                    }
+                );
+
             // Tell subclasses that we're starting
-            containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
@@ -622,8 +648,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param temporary is the volume directory temporary? If true, the directory will be deleted on JVM shutdown.
      * @return path to the volume directory
      */
+    @Deprecated
     protected Path createVolumeDirectory(boolean temporary) {
-        Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
+        Path directory = new File(".tmp-volume-" + UUID.randomUUID()).toPath();
         PathUtils.mkdirp(directory);
 
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
@@ -1257,6 +1284,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
+        if (copyToFileContainerPathMap.containsKey(mountableFile)) {
+            throw new IllegalStateException("Path already configured for copy: " + mountableFile);
+        }
         copyToFileContainerPathMap.put(mountableFile, containerPath);
         return self();
     }
