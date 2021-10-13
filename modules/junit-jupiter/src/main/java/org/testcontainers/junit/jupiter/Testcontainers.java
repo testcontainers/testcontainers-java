@@ -64,4 +64,10 @@ public @interface Testcontainers {
      * Whether tests should be disabled (rather than failing) when Docker is not available.
      */
     boolean disabledWithoutDocker() default false;
+    
+    /**
+     * Specifies the host ports that should be exposed to the containers.
+     */
+    int[] exposeHostPorts() default {};
+
 }

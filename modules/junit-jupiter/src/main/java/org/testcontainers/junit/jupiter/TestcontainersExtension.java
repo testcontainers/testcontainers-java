@@ -23,7 +23,6 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +51,8 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
     public void beforeAll(ExtensionContext context) {
         Class<?> testClass = context.getTestClass()
             .orElseThrow(() -> new ExtensionConfigurationException("TestcontainersExtension is only supported for classes."));
+
+        exposeHostPorts(context);
 
         Store store = context.getStore(NAMESPACE);
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
@@ -116,6 +117,14 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
 
     private boolean isTestLifecycleAware(StoreAdapter adapter) {
         return adapter.container instanceof TestLifecycleAware;
+    }
+
+    private void exposeHostPorts(ExtensionContext context) {
+        findTestcontainers(context).ifPresent(annotation -> {
+            if (annotation.exposeHostPorts().length > 0) {
+                org.testcontainers.Testcontainers.exposeHostPorts(annotation.exposeHostPorts());
+            }
+        });
     }
 
     @Override
