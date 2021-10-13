@@ -1,16 +1,23 @@
 package org.testcontainers.containers.wait.strategy;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.awaitility.Awaitility;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.wait.internal.ExternalPortListeningCheck;
 import org.testcontainers.containers.wait.internal.InternalCommandPortListeningCheck;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -22,6 +29,7 @@ import java.util.stream.Collectors;
 public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
     @Override
+    @SneakyThrows(InterruptedException.class)
     protected void waitUntilReady() {
         final Set<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
         if (externalLivenessCheckPorts.isEmpty()) {
@@ -31,7 +39,6 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
             return;
         }
 
-        @SuppressWarnings("unchecked")
         List<Integer> exposedPorts = waitStrategyTarget.getExposedPorts();
 
         final Set<Integer> internalPorts = getInternalPorts(externalLivenessCheckPorts, exposedPorts);
@@ -41,10 +48,43 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
         Callable<Boolean> externalCheck = new ExternalPortListeningCheck(waitStrategyTarget, externalLivenessCheckPorts);
 
         try {
-            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS,
-                () -> getRateLimiter().getWhenReady(() -> internalCheck.call() && externalCheck.call()));
+            List<Future<Boolean>> futures = EXECUTOR.invokeAll(Arrays.asList(
+                // Blocking
+                () -> {
+                    Instant now = Instant.now();
+                    Boolean result = internalCheck.call();
+                    log.debug(
+                        "Internal port check {} for {} in {}",
+                        Boolean.TRUE.equals(result) ? "passed" : "failed",
+                        internalPorts,
+                        Duration.between(now, Instant.now())
+                    );
+                    return result;
+                },
+                // Polling
+                () -> {
+                    Instant now = Instant.now();
+                    Awaitility.await()
+                        .pollInSameThread()
+                        .pollInterval(Duration.ofMillis(100))
+                        .pollDelay(Duration.ZERO)
+                        .forever()
+                        .until(externalCheck);
 
-        } catch (TimeoutException e) {
+                    log.debug(
+                        "External port check passed for {} mapped as {} in {}",
+                        internalPorts,
+                        externalLivenessCheckPorts,
+                        Duration.between(now, Instant.now())
+                    );
+                    return true;
+                }
+            ), startupTimeout.getSeconds(), TimeUnit.SECONDS);
+
+            for (Future<Boolean> future : futures) {
+                future.get(0, TimeUnit.SECONDS);
+            }
+        } catch (CancellationException | ExecutionException | TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container port to open (" +
                     waitStrategyTarget.getHost() +
                     " ports: " +
