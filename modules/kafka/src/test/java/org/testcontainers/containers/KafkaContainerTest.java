@@ -1,14 +1,6 @@
 package org.testcontainers.containers;
 
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
 import com.google.common.collect.ImmutableMap;
-import java.time.Duration;
-import java.util.Collection;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -21,21 +13,24 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
+import java.util.Collection;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+
 public class KafkaContainerTest {
 
-    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:5.4.3");
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:6.2.1");
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
-
-    // junitRule {
-    @ClassRule
-    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.3"));
-    // }
 
     @Test
     public void testUsage() throws Exception {
@@ -50,7 +45,7 @@ public class KafkaContainerTest {
     public void testUsageWithSpecificImage() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.3"))
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
             // }
         ) {
             kafka.start();
@@ -62,11 +57,10 @@ public class KafkaContainerTest {
         }
     }
 
-
     @Test
     public void testUsageWithVersion() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer("5.5.1")
+            KafkaContainer kafka = new KafkaContainer("6.2.1")
         ) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
@@ -105,9 +99,9 @@ public class KafkaContainerTest {
     }
 
     @Test
-    public void testConfluentPlatformVersion6() throws Exception {
+    public void testConfluentPlatformVersion5() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.0.0"))
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.3"))
         ) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());

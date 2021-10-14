@@ -10,9 +10,9 @@ More precisely Testcontainers uses the official Docker images for [Confluent OSS
 
 ## Example
 
-The following field in your JUnit test class will prepare a container running Kafka:
+Create a `KafkaContainer` to use it in your tests:
 <!--codeinclude-->
-[JUnit Rule](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:junitRule
+[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
 
 The correspondence between Confluent Platform versions and Kafka versions can be seen [in Confluent documentation](https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility)
