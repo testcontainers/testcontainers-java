@@ -58,6 +58,16 @@ public class KafkaContainerTest {
     }
 
     @Test
+    public void testUsageWithVersion() throws Exception {
+        try (
+            KafkaContainer kafka = new KafkaContainer("6.2.1")
+        ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
     public void testExternalZookeeperWithExternalNetwork() throws Exception {
         try (
             Network network = Network.newNetwork();
