@@ -1,0 +1,9 @@
+description = "Testcontainers :: K3S"
+
+dependencies {
+	api project(":testcontainers")
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0'
+
+    testImplementation 'io.fabric8:kubernetes-client:5.8.0'
+    testImplementation 'org.assertj:assertj-core:3.15.0'
+}
