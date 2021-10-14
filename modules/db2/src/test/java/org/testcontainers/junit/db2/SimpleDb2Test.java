@@ -1,6 +1,5 @@
 package org.testcontainers.junit.db2;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -15,7 +14,6 @@ import static org.testcontainers.Db2TestImages.DB2_IMAGE;
 
 public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
-    @Ignore
     @Test
     public void testSimple() throws SQLException {
         try (Db2Container db2 = new Db2Container(DB2_IMAGE)
