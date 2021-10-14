@@ -254,6 +254,15 @@ public class ElasticsearchContainerTest {
         // }
     }
 
+    @Test
+    public void incompatibleSettingsTest() {
+        // The OSS image can not use security feature
+        assertThrows("We should not be able to activate security with an OSS License",
+            IllegalArgumentException.class,
+            () -> new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2").withPassword("foo")
+        );
+    }
+
     private RestClient getClient(ElasticsearchContainer container) {
         if (client == null) {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
