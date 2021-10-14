@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpServer;
 import lombok.SneakyThrows;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.Testcontainers;
 
@@ -14,6 +15,7 @@ import java.net.InetSocketAddress;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.testcontainers.TestImages.TINY_IMAGE;
 
+@Ignore
 public class ExposedHostTest {
 
     private static HttpServer server;
