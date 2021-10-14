@@ -1,0 +1,44 @@
+name: podman-core
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '8.0.302'
+          distribution: temurin
+
+      - name: Enable systemd user process
+        run: |
+          loginctl enable-linger $(whoami)
+          sleep 1
+
+      - name: Set XDG_RUNTIME_DIR
+        run: echo "XDG_RUNTIME_DIR=/run/user/$UID" >> $GITHUB_ENV
+
+      - name: install podman
+        run: |
+          set -x
+          sudo apt-get remove -y podman docker-ce docker docker-engine docker.io containerd runc ||:
+          curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_$( lsb_release -rs )/Release.key | sudo apt-key add -
+          echo  "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_$( lsb_release -rs )/ /" | sudo tee /etc/apt/sources.list.d/podman.list /dev/null
+          sudo apt-get update
+          sudo apt-get install -y podman
+          sudo systemctl start podman
+          systemctl --user enable --now podman.socket
+          systemctl --user status podman.socket
+
+      - name: Set DOCKER_HOST
+        run: echo "DOCKER_HOST=unix:///$XDG_RUNTIME_DIR/podman/podman.sock" >> $GITHUB_ENV
+
+      - name: Build with Gradle
+        run: ./gradlew --no-daemon --scan testcontainers:test
