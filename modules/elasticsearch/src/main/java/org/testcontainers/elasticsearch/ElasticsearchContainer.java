@@ -33,11 +33,17 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
 
+    @Deprecated
+    private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss");
+
     /**
      * Elasticsearch Default version
      */
     @Deprecated
     protected static final String DEFAULT_TAG = "7.15.0";
+
+    @Deprecated
+    private boolean isOss = false;
 
     /**
      * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
@@ -62,7 +68,14 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
+
+        if (dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME)) {
+            this.isOss = true;
+            logger().warn("The -oss version is not supported anymore after 7.10.2. Please switch to {}:{}",
+                DEFAULT_IMAGE_NAME.getUnversionedPart(),
+                dockerImageName.getVersionPart());
+        }
 
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
@@ -76,10 +89,15 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Define the Elasticsearch password to set. It enables security behind the scene.
+     * It's not possible to use security with the oss image.
      * @param password  Password to set
      * @return this
      */
     public ElasticsearchContainer withPassword(String password) {
+        if (isOss) {
+            throw new IllegalArgumentException("You can not activate security on Elastic OSS Image. " +
+                "Please switch to the default distribution");
+        }
         withEnv("ELASTIC_PASSWORD", password);
         withEnv("xpack.security.enabled", "true");
         return this;

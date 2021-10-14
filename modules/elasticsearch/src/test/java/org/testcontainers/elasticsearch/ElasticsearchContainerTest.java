@@ -137,6 +137,19 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
+    public void elasticsearchOssImage() throws IOException {
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2")) {
+            container.start();
+            Response response = getClient(container).performRequest(new Request("GET", "/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            // The OSS image does not have any feature under Elastic License
+            assertThrows("We should not have /_xpack endpoint with an OSS License",
+                ResponseException.class,
+                () -> getClient(container).performRequest(new Request("GET", "/_xpack/")));
+        }
+    }
+
+    @Test
     public void restClientClusterHealth() throws IOException {
         // httpClientContainer {
         // Create the elasticsearch container.
