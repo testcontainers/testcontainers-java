@@ -2,7 +2,6 @@ package org.testcontainers.utility;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -154,13 +153,6 @@ public class TestcontainersConfigurationTest {
         userProperties.remove("docker.client.strategy");
         environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "foo");
         assertEquals("Docker client strategy is changed by env var", "foo", newConfig().getDockerClientStrategyClassName());
-    }
-
-    @Test
-    public void shouldUseImplicitDockerClientStrategyWhenDockerHostPropertyIsSet() {
-        userProperties.remove("docker.client.strategy");
-        userProperties.put("docker.host", "tcp://1.2.3.4:5678");
-        assertEquals("Docker client strategy is implicitly set when docker host property is set", EnvironmentAndSystemPropertyClientProviderStrategy.class.getCanonicalName(), newConfig().getDockerClientStrategyClassName());
     }
 
     @Test

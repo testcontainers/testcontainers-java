@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
+
 /**
  * Factory for Oracle containers.
  */
@@ -11,15 +13,14 @@ public class OracleContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance() {
-        return new OracleContainer();
+        return newInstance(OracleContainer.DEFAULT_TAG);
     }
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         if (tag != null) {
-            throw new UnsupportedOperationException("Oracle database tag should be set in the configured image name");
+            return new OracleContainer(DockerImageName.parse(OracleContainer.IMAGE).withTag(tag));
         }
-
-        return new OracleContainer();
+        return newInstance();
     }
 }

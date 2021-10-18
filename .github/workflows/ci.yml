@@ -15,10 +15,10 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2.1.0
+      - uses: actions/setup-java@v2.3.1
         with:
-          java-version: '8.0.292+10'
-          distribution: adopt-hotspot
+          java-version: '8.0.302'
+          distribution: temurin
       - name: Cache Gradle Home files
         uses: actions/cache@v2.1.6
         with:
@@ -34,17 +34,17 @@ jobs:
           echo $TASKS
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
-    needs: find_gradle_jobs
+    needs: [find_gradle_jobs]
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2.1.0
+      - uses: actions/setup-java@v2.3.1
         with:
-          java-version: '8.0.292+10'
-          distribution: adopt-hotspot
+          java-version: '8.0.302'
+          distribution: temurin
       - name: Cache Gradle Home files
         uses: actions/cache@v2.1.6
         continue-on-error: true
@@ -56,12 +56,3 @@ jobs:
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
-  httpclient5_test:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build with Gradle
-        run: |
-          echo "transport.type=httpclient5" > $HOME/.testcontainers.properties
-          cat $HOME/.testcontainers.properties
-          ./gradlew --no-daemon --scan testcontainers:test --tests '*EventStreamTest'

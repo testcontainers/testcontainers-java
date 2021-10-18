@@ -7,14 +7,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 @RunWith(Parameterized.class)
 public class InternalCommandPortListeningCheckTest {
@@ -45,9 +44,7 @@ public class InternalCommandPortListeningCheckTest {
 
         Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
 
-        final Boolean result = check.call();
-
-        assertTrue("InternalCommandPortListeningCheck identifies a single listening port", result);
+        VisibleAssertions.pass("InternalCommandPortListeningCheck identifies a single listening port");
     }
 
     @Test
@@ -56,13 +53,9 @@ public class InternalCommandPortListeningCheckTest {
 
         try {
             Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
+            VisibleAssertions.fail("expected to fail");
         } catch (TimeoutException e) {
-            // we expect it to timeout
         }
-
-        final Boolean result = check.call();
-
-        assertFalse("InternalCommandPortListeningCheck detects a non-listening port among many", result);
     }
 
     @Test
@@ -71,8 +64,6 @@ public class InternalCommandPortListeningCheckTest {
 
         Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
 
-        final Boolean result = check.call();
-
-        assertTrue("InternalCommandPortListeningCheck identifies a low and a high port", result);
+        VisibleAssertions.pass("InternalCommandPortListeningCheck identifies a low and a high port");
     }
 }

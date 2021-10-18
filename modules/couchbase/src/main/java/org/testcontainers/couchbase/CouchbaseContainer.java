@@ -221,20 +221,22 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     protected void containerIsStarting(final InspectContainerResponse containerInfo) {
         logger().debug("Couchbase container is starting, performing configuration.");
 
-        waitUntilNodeIsOnline();
-        initializeIsEnterprise();
-        renameNode();
-        initializeServices();
-        configureAdminUser();
-        configureExternalPorts();
+        timePhase("waitUntilNodeIsOnline", this::waitUntilNodeIsOnline);
+        timePhase("initializeIsEnterprise", this::initializeIsEnterprise);
+        timePhase("renameNode", this::renameNode);
+        timePhase("initializeServices", this::initializeServices);
+        timePhase("configureAdminUser", this::configureAdminUser);
+        timePhase("configureExternalPorts", this::configureExternalPorts);
+
         if (enabledServices.contains(CouchbaseService.INDEX)) {
-            configureIndexer();
+            timePhase("configureIndexer", this::configureIndexer);
         }
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        createBuckets();
+        timePhase("createBuckets", this::createBuckets);
+
         logger().info("Couchbase container is ready! UI available at http://{}:{}", getHost(), getMappedPort(MGMT_PORT));
     }
 
@@ -389,30 +391,34 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
             checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
 
-            new HttpWaitStrategy()
+            timePhase("createBucket:" + bucket.getName() + ":waitForAllServicesEnabled", () ->
+                new HttpWaitStrategy()
                 .forPath("/pools/default/b/" + bucket.getName())
                 .forPort(MGMT_PORT)
                 .withBasicCredentials(username, password)
                 .forStatusCode(200)
                 .forResponsePredicate(new AllServicesEnabledPredicate())
-                .waitUntilReady(this);
+                .waitUntilReady(this)
+            );
 
             if (enabledServices.contains(CouchbaseService.QUERY)) {
                 // If the query service is enabled, make sure that we only proceed if the query engine also
                 // knows about the bucket in its metadata configuration.
-                Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
-                    @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
-                        .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket.getName() + "\"")
-                        .build(), true);
+                timePhase(
+                    "createBucket:" + bucket.getName() + ":queryKeyspacePresent",
+                    () -> Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                        @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                            .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket.getName() + "\"")
+                            .build(), true);
 
-                    String body = queryResponse.body() != null ? queryResponse.body().string() : null;
-                    checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucket.getName());
+                        String body = queryResponse.body() != null ? queryResponse.body().string() : null;
+                        checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucket.getName());
 
-                    return Optional.of(MAPPER.readTree(body))
-                        .map(n -> n.at("/results/0/present"))
-                        .map(JsonNode::asBoolean)
-                        .orElse(false);
-                });
+                        return Optional.of(MAPPER.readTree(body))
+                            .map(n -> n.at("/results/0/present"))
+                            .map(JsonNode::asBoolean)
+                            .orElse(false);
+                }));
             }
 
             if (bucket.hasPrimaryIndex()) {
@@ -499,6 +505,20 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         } catch (Exception ex) {
             throw new RuntimeException("Could not perform request against couchbase HTTP endpoint ", ex);
         }
+    }
+
+    /**
+     * Helper method which times an individual phase and logs it for debugging and optimization purposes.
+     *
+     * @param name the name of the phase.
+     * @param toTime the runnable that should be timed.
+     */
+    private void timePhase(final String name, final Runnable toTime) {
+        long start = System.nanoTime();
+        toTime.run();
+        long end = System.nanoTime();
+
+        logger().debug("Phase {} took {}ms", name, TimeUnit.NANOSECONDS.toMillis(end - start));
     }
 
     /**
