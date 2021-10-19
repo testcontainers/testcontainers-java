@@ -1,13 +1,20 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.Set;
 
 public class ClickHouseContainer extends JdbcDatabaseContainer {
     public static final String NAME = "clickhouse";
-    public static final String IMAGE = "yandex/clickhouse-server";
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yandex/clickhouse-server");
+
+    @Deprecated
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
+
     @Deprecated
     public static final String DEFAULT_TAG = "18.10.3";
 
@@ -27,19 +34,17 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
      */
     @Deprecated
     public ClickHouseContainer() {
-        super(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link ClickHouseContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public ClickHouseContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(HTTP_PORT, NATIVE_PORT);
         waitingFor(
@@ -51,8 +56,8 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(HTTP_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(HTTP_PORT);
     }
 
     @Override

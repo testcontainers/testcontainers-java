@@ -16,11 +16,11 @@ public class ConnectionUrlTest {
 
     @Test
     public void testConnectionUrl1() {
-        String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d";
+        String urlString = "jdbc:tc:mysql:5.7.34://somehostname:3306/databasename?a=b&c=d";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertEquals("Database Type value is as expected", "mysql", url.getDatabaseType());
-        assertEquals("Database Image tag value is as expected", "5.6.23", url.getImageTag().get());
+        assertEquals("Database Image tag value is as expected", "5.7.34", url.getImageTag().get());
         assertEquals("Database Host String is as expected", "somehostname:3306/databasename", url.getDbHostString());
         assertEquals("Query String value is as expected", "?a=b&c=d", url.getQueryString().get());
         assertEquals("Database Host value is as expected", "somehostname", url.getDatabaseHost().get());
@@ -72,7 +72,7 @@ public class ConnectionUrlTest {
 
     @Test
     public void testInitScriptPathCapture() {
-        String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_INITSCRIPT=somepath/init_mysql.sql";
+        String urlString = "jdbc:tc:mysql:5.7.34://somehostname:3306/databasename?a=b&c=d&TC_INITSCRIPT=somepath/init_mysql.sql";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertEquals("Database Type value is as expected", "somepath/init_mysql.sql", url.getInitScriptPath().get());
@@ -88,7 +88,7 @@ public class ConnectionUrlTest {
 
     @Test
     public void testInitFunctionCapture() {
-        String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction";
+        String urlString = "jdbc:tc:mysql:5.7.34://somehostname:3306/databasename?a=b&c=d&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertTrue("Init Function parameter exists", url.getInitFunction().isPresent());
@@ -100,7 +100,7 @@ public class ConnectionUrlTest {
 
     @Test
     public void testDaemonCapture() {
-        String urlString = "jdbc:tc:mysql:5.6.23://somehostname:3306/databasename?a=b&c=d&TC_DAEMON=true";
+        String urlString = "jdbc:tc:mysql:5.7.34://somehostname:3306/databasename?a=b&c=d&TC_DAEMON=true";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertTrue("Daemon flag is set to true.", url.isInDaemonMode());

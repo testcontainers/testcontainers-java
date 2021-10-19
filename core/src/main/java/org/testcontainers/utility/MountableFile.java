@@ -105,7 +105,7 @@ public class MountableFile implements Transferable {
      * @return a {@link MountableFile} that may be used to obtain a mountable path
      */
     public static MountableFile forHostPath(@NotNull final String path, Integer mode) {
-        return new MountableFile(new File(path).toURI().toString(), mode);
+        return forHostPath(Paths.get(path), mode);
     }
 
     /**
@@ -130,6 +130,10 @@ public class MountableFile implements Transferable {
         classLoadersToSearch.add(MountableFile.class.getClassLoader());
 
         for (final ClassLoader classLoader : classLoadersToSearch) {
+            if (classLoader == null) {
+                continue;
+            }
+
             URL resource = classLoader.getResource(resourcePath);
             if (resource != null) {
                 return resource;

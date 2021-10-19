@@ -12,8 +12,14 @@ import java.util.Set;
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
-    public static final String IMAGE = "mysql";
-    public static final String DEFAULT_TAG = "5.7.22";
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mysql");
+
+    @Deprecated
+    public static final String DEFAULT_TAG = "5.7.34";
+
+    @Deprecated
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     static final String DEFAULT_USER = "test";
 
@@ -31,19 +37,18 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
      */
     @Deprecated
     public MySQLContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public MySQLContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public MySQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         addExposedPort(MYSQL_PORT);
     }
 
@@ -57,10 +62,12 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     @Override
     protected void configure() {
         optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d",
-                "mysql-default-conf");
+            "mysql-default-conf");
 
         addEnv("MYSQL_DATABASE", databaseName);
-        addEnv("MYSQL_USER", username);
+        if (!MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
+            addEnv("MYSQL_USER", username);
+        }
         if (password != null && !password.isEmpty()) {
             addEnv("MYSQL_PASSWORD", password);
             addEnv("MYSQL_ROOT_PASSWORD", password);
@@ -93,12 +100,12 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     protected String constructUrlForConnection(String queryString) {
         String url = super.constructUrlForConnection(queryString);
 
-        if (! url.contains("useSSL=")) {
+        if (!url.contains("useSSL=")) {
             String separator = url.contains("?") ? "&" : "?";
             url = url + separator + "useSSL=false";
         }
 
-        if (! url.contains("allowPublicKeyRetrieval=")) {
+        if (!url.contains("allowPublicKeyRetrieval=")) {
             url = url + "&allowPublicKeyRetrieval=true";
         }
 

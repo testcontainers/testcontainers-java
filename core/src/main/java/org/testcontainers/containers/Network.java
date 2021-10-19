@@ -52,6 +52,7 @@ public interface Network extends AutoCloseable, TestRule {
         @Singular
         private Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers;
 
+        @Deprecated
         private String id;
 
         private final AtomicBoolean initialized = new AtomicBoolean();

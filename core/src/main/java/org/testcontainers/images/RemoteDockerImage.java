@@ -1,6 +1,7 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.common.util.concurrent.Futures;
@@ -15,6 +16,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 
 import java.time.Duration;
@@ -44,12 +46,12 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     @Deprecated
     public RemoteDockerImage(String dockerImageName) {
-        this.imageNameFuture = CompletableFuture.completedFuture(DockerImageName.parse(dockerImageName));
+        this(DockerImageName.parse(dockerImageName));
     }
 
     @Deprecated
     public RemoteDockerImage(@NonNull String repository, @NonNull String tag) {
-        this.imageNameFuture = CompletableFuture.completedFuture(DockerImageName.parse(repository).withTag(tag));
+        this(DockerImageName.parse(repository).withTag(tag));
     }
 
     public RemoteDockerImage(@NonNull Future<String> imageFuture) {
@@ -74,11 +76,21 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
-                    dockerClient
+                    PullImageCmd pullImageCmd = dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())
-                        .withTag(imageName.getVersionPart())
-                        .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
-                        .awaitCompletion();
+                        .withTag(imageName.getVersionPart());
+
+                    try {
+                        pullImageCmd
+                            .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                            .awaitCompletion();
+                    } catch (DockerClientException e) {
+                        // Try to fallback to x86
+                        pullImageCmd
+                            .withPlatform("linux/amd64")
+                            .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                            .awaitCompletion();
+                    }
 
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 
@@ -100,7 +112,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     private DockerImageName getImageName() throws InterruptedException, ExecutionException {
-        return imageNameFuture.get();
+        final DockerImageName specifiedImageName = imageNameFuture.get();
+
+        // Allow the image name to be substituted
+        return ImageNameSubstitutor.instance().apply(specifiedImageName);
     }
 
     @ToString.Include(name = "imageName", rank = 1)

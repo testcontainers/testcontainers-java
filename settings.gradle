@@ -46,6 +46,7 @@ buildCache {
         region = 'fra1'
         bucket = 'testcontainers'
         path = 'cache'
+        reducedRedundancy = false
         push = isMasterBuild && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
         headers = [
             'x-amz-acl': 'public-read'

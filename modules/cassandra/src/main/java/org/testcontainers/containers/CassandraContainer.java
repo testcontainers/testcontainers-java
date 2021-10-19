@@ -25,8 +25,11 @@ import java.util.Optional;
  */
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
+    private static final String DEFAULT_TAG = "3.11.2";
+
     @Deprecated
-    public static final String IMAGE = "cassandra";
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer CQL_PORT = 9042;
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
@@ -42,22 +45,28 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      */
     @Deprecated
     public CassandraContainer() {
-        this("cassandra:3.11.2");
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public CassandraContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public CassandraContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         addExposedPort(CQL_PORT);
-        setStartupAttempts(3);
         this.enableJmxReporting = false;
+
+        withEnv("CASSANDRA_SNITCH", "GossipingPropertyFileSnitch");
+        withEnv(
+            "JVM_OPTS",
+            "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0"
+        );
+        withEnv("HEAP_NEWSIZE", "128M");
+        withEnv("MAX_HEAP_SIZE", "1024M");
     }
 
     @Override
