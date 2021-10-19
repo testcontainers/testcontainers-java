@@ -1,13 +1,10 @@
 package org.testcontainers.containers;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
+
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +34,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     static final String DEFAULT_SID = "xe";
     static final String DEFAULT_SYSTEM_USER = "system";
     static final String DEFAULT_SYS_USER = "sys";
-    
+
     // Test container defaults
     static final String APP_USER = "test";
     static final String APP_USER_PASSWORD = "test";
@@ -98,7 +95,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return isUsingSid() ? 
+        return isUsingSid() ?
             "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + ":" + getSid() :
             "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + "/" + getDatabaseName();
     }
@@ -188,11 +185,6 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     @Override
-    protected void waitUntilContainerStarted() {
-    	getWaitStrategy().waitUntilReady(this);
-    }
-
-    @Override
     protected void configure() {
         withEnv("ORACLE_PASSWORD", password);
 
@@ -200,7 +192,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         if(databaseName != DEFAULT_DATABASE_NAME) {
             withEnv("ORACLE_DATABASE", databaseName);
         }
-        
+
         withEnv("APP_USER", username);
         withEnv("APP_USER_PASSWORD", password);
     }
