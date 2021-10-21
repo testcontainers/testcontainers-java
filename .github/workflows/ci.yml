@@ -9,6 +9,14 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
+  thundra_test_initializer:
+    runs-on: ubuntu-latest
+    outputs:
+      thundra_agent_testrun_id: ${{ steps.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: thundra_test_initializer
+        uses: thundra-io/thundra-test-init-action@v1
   find_gradle_jobs:
     runs-on: ubuntu-18.04
     outputs:
@@ -34,7 +42,7 @@ jobs:
           echo $TASKS
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
-    needs: [find_gradle_jobs]
+    needs: [find_gradle_jobs, thundra_test_initializer]
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
@@ -53,6 +61,16 @@ jobs:
           key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
       - name: Clear existing docker image cache
         run: docker image prune -af
+      - name: Thundra Gradle Test Instrumentation
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        uses: thundra-io/thundra-gradle-test-action@v1
+        with:
+          apikey: ${{ secrets.THUNDRA_API_KEY }}
+          project_id: ${{ secrets.THUNDRA_PROJECT_ID }}
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
+          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} \
+            $([[ -f $THUNDRA_GRADLE_INIT_SCRIPT_PATH ]] && echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
+        env:
+          THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
+          THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.us/v1
