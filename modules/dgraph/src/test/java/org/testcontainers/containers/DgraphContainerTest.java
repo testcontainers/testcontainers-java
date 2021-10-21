@@ -41,7 +41,7 @@ public class DgraphContainerTest {
 
     private static final DockerImageName DGRAPH_TEST_IMAGE = DockerImageName.parse("dgraph/dgraph:" + DGRAPH_VERSION_TAG);
 
-    static private @NonNull DgraphClient getClient(@NonNull DgraphContainer<?> container) {
+    static private @NonNull DgraphClient getClient(@NonNull DgraphContainer container) {
         ManagedChannel channel = ManagedChannelBuilder
             .forTarget(container.getGrpcUrl())
             .usePlaintext().build();
@@ -74,7 +74,7 @@ public class DgraphContainerTest {
     @Test
     public void shouldWorkWithZeroArguments() {
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainer = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             assertThat(dgraphContainer.getZeroCommand()).isEqualTo(
                 "dgraph zero"
@@ -82,7 +82,7 @@ public class DgraphContainerTest {
         }
 
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainer = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             dgraphContainer
                 .withZeroArgument("my", "host2:5080")
@@ -103,7 +103,7 @@ public class DgraphContainerTest {
     @Test
     public void shouldWorkWithAlphaArguments() {
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainer = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             assertThat(dgraphContainer.getAlphaCommand()).isEqualTo(
                 "dgraph alpha " +
@@ -112,7 +112,7 @@ public class DgraphContainerTest {
         }
 
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainer = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             dgraphContainer
                 .withAlphaArgumentValues("security", "token=ABCDEFG");
@@ -123,7 +123,7 @@ public class DgraphContainerTest {
         }
 
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainer = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             dgraphContainer
                 .withAlphaArgument("security", "whitelist=10.0.0.0/8");
@@ -134,7 +134,7 @@ public class DgraphContainerTest {
         }
 
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainer = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             dgraphContainer
                 .withAlphaArgument("my", "host2:5080")
@@ -156,7 +156,7 @@ public class DgraphContainerTest {
     @Test
     public void shouldReportRightVersion() {
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainer = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             dgraphContainer.start();
 
@@ -178,7 +178,7 @@ public class DgraphContainerTest {
 
     private void doTestAllowDropAll(@NonNull String imageVersion) {
         try (
-            DgraphContainer<?> dgraphContainer = new DgraphContainer<>("dgraph/dgraph:" + imageVersion)
+            DgraphContainer dgraphContainer = new DgraphContainer(DockerImageName.parse("dgraph/dgraph:" + imageVersion))
         ) {
             dgraphContainer.start();
 
@@ -197,9 +197,9 @@ public class DgraphContainerTest {
     @Test
     public void shouldAllowForCluster() {
         try (
-            DgraphContainer<?> dgraphContainerOne = new DgraphContainer<>(DGRAPH_TEST_IMAGE);
-            DgraphContainer<?> dgraphContainerTwo = new DgraphContainer<>(DGRAPH_TEST_IMAGE);
-            DgraphContainer<?> dgraphContainerThree = new DgraphContainer<>(DGRAPH_TEST_IMAGE)
+            DgraphContainer dgraphContainerOne = new DgraphContainer(DGRAPH_TEST_IMAGE);
+            DgraphContainer dgraphContainerTwo = new DgraphContainer(DGRAPH_TEST_IMAGE);
+            DgraphContainer dgraphContainerThree = new DgraphContainer(DGRAPH_TEST_IMAGE)
         ) {
             Network network = Network.newNetwork();
 

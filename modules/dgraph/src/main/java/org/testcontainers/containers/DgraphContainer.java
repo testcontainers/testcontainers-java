@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
@@ -22,15 +23,19 @@ import static java.util.stream.Collectors.toSet;
 /**
  * Testcontainer for Dgraph.
  *
- * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
  * @author Enrico Minack
  */
-public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContainer<S> {
+public class DgraphContainer extends GenericContainer<DgraphContainer> {
 
     /**
      * The image defaults to the official Dgraph image: <a href="https://hub.docker.com/_/dgraph/dgraph">Dgraph</a>.
      */
     public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("dgraph/dgraph");
+
+    /**
+     * The default startup timeout of a Dgraph container. Can be changed through DgraphContainer.withStartupTimeout(…).
+     */
+    public static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofMinutes(1);
 
     private static final int HTTP_PORT = 8080;
 
@@ -55,36 +60,18 @@ public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContai
     private final Map<String, String> alphaArguments = new HashMap<>();
 
     /**
-     * Creates a DgraphContainer using a specific docker image and a startup timeout of 1 minute.
-     *
-     * @param dockerImageName The docker image to use.
-     */
-    public DgraphContainer(String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName), Duration.ofMinutes(1));
-    }
-
-    /**
-     * Creates a DgraphContainer using a specific docker image and a startup timeout of 1 minute.
-     *
-     * @param dockerImageName The docker image to use.
-     */
-    public DgraphContainer(@NonNull final DockerImageName dockerImageName) {
-        this(dockerImageName, Duration.ofMinutes(1));
-    }
-
-    /**
      * Creates a DgraphContainer using a specific docker image. Connect the container
      * to another DgraphContainer to form a cluster via `peerAlias`.
      *
      * @param dockerImageName The docker image to use.
-     * @param startupTimeout Timeout for the container startup.
      */
-    public DgraphContainer(@NonNull final DockerImageName dockerImageName,
-                           @NonNull Duration startupTimeout) {
+    public DgraphContainer(@NonNull final DockerImageName dockerImageName) {
         super(dockerImageName);
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
+        WaitStrategy waitForLeader = new LogMessageWaitStrategy()
+            .withRegEx(".* Got Zero leader: .*\n");
         WaitStrategy waitForCluster = new LogMessageWaitStrategy()
             .withRegEx(".* Server is ready\n");
         WaitStrategy waitForHttp = new HttpWaitStrategy()
@@ -92,14 +79,17 @@ public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContai
             .forStatusCodeMatching(response -> response == HTTP_OK);
 
         this.waitStrategy = new WaitAllStrategy()
+            .withStrategy(waitForLeader)
             .withStrategy(waitForCluster)
             .withStrategy(waitForHttp)
-            .withStartupTimeout(startupTimeout);
+            // default, can be changed by caller through withStartupTimeout
+            .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT);
 
-        if (dockerImageName.getVersionPart().compareTo("v21.03.0") < 0)
+        if (dockerImageName.getVersionPart().compareTo("v21.03.0") < 0) {
             withAlphaArgument("whitelist", "0.0.0.0/0");
-        else
+        } else {
             withAlphaArgumentValues("security", "whitelist=0.0.0.0/0");
+        }
 
         addExposedPorts(HTTP_PORT, GRPC_PORT);
     }
@@ -111,7 +101,7 @@ public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContai
      * @param value value, null if argument is a flag
      * @return this
      */
-    public DgraphContainer<S> withZeroArgument(@NonNull String argument, String value) {
+    public DgraphContainer withZeroArgument(@NonNull String argument, String value) {
         addArgument(zeroArguments, argument, value);
         return this;
     }
@@ -127,7 +117,7 @@ public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContai
      * @param values values to add to the argument
      * @return this
      */
-    public DgraphContainer<S> withZeroArgumentValues(@NonNull String argument, @NonNull String... values) {
+    public DgraphContainer withZeroArgumentValues(@NonNull String argument, @NonNull String... values) {
         addArgumentValues(zeroArguments, argument, values);
         return this;
     }
@@ -139,7 +129,7 @@ public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContai
      * @param value value, null if argument is a flag
      * @return this
      */
-    public DgraphContainer<S> withAlphaArgument(@NonNull String argument, String value) {
+    public DgraphContainer withAlphaArgument(@NonNull String argument, String value) {
         addArgument(alphaArguments, argument, value);
         return this;
     }
@@ -155,30 +145,33 @@ public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContai
      * @param values values to add to the argument
      * @return this
      */
-    public DgraphContainer<S> withAlphaArgumentValues(@NonNull String argument, @NonNull String... values) {
+    public DgraphContainer withAlphaArgumentValues(@NonNull String argument, @NonNull String... values) {
         addArgumentValues(alphaArguments, argument, values);
         return this;
     }
 
     private void addArgument(Map<String, String> arguments, @NonNull String argument, String value) {
-        if (started)
+        if (started) {
             throw new IllegalStateException("The container started already, cannot amend command arguments");
+        }
 
         arguments.put(argument, value);
     }
 
     private void addArgumentValues(Map<String, String> arguments, @NonNull String argument, @NonNull String... values) {
-        if (started)
+        if (started) {
             throw new IllegalStateException("The container started already, cannot amend command arguments");
+        }
 
         StringJoiner joiner = new StringJoiner("; ");
         Arrays.stream(values).forEach(joiner::add);
         String value = joiner.toString();
 
-        if (arguments.containsKey(argument))
+        if (arguments.containsKey(argument)) {
             arguments.put(argument, arguments.get(argument) + "; " + value);
-        else
+        } else {
             arguments.put(argument, value);
+        }
     }
 
     /**
@@ -205,16 +198,18 @@ public class DgraphContainer<S extends DgraphContainer<S>> extends GenericContai
         arguments.entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
             .map(argument -> {
-                if (argument.getValue() == null)
+                if (argument.getValue() == null) {
                     return argument.getKey();
-                else
+                } else {
                     return argument.getKey() + " \"" + argument.getValue() + "\"";
+                }
             }).forEach(joiner::add);
 
-        if (joiner.length() == 0)
+        if (joiner.length() == 0) {
             return command;
-        else
+        } else {
             return command + " --" + joiner;
+        }
     }
 
     @Override
