@@ -91,7 +91,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         WaitStrategy waitForBolt = new LogMessageWaitStrategy()
-            .withRegEx(String.format(".*Bolt enabled on 0\\.0\\.0\\.0:%d\\.\n", DEFAULT_BOLT_PORT));
+            .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));
         WaitStrategy waitForHttp = new HttpWaitStrategy()
             .forPort(DEFAULT_HTTP_PORT)
             .forStatusCodeMatching(response -> response == HTTP_OK);
