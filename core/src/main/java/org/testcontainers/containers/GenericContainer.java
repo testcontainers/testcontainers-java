@@ -1428,6 +1428,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    @UnstableAPI
+    public boolean isReuseable() {
+        return shouldBeReused
+            && canBeReused()
+            && TestcontainersConfiguration.getInstance().environmentSupportsReuse();
+    }
+
     /**
      * Forces access to the tests host machine.
      * Use this method if you need to call {@link org.testcontainers.Testcontainers#exposeHostPorts(int...)}

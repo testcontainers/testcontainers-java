@@ -18,6 +18,7 @@ import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
@@ -245,6 +246,9 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
 
         @Override
         public void close() {
+            if (container instanceof GenericContainer<?> && ((GenericContainer<?>) container).isReuseable()) {
+                return;
+            }
             container.stop();
         }
     }
