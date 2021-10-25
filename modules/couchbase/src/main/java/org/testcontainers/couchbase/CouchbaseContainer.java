@@ -68,6 +68,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final int SEARCH_SSL_PORT = 18094;
 
+    private static final int ANALYTICS_PORT = 8095;
+
+    private static final int ANALYTICS_SSL_PORT = 18095;
+
     private static final int KV_PORT = 11210;
 
     private static final int KV_SSL_PORT = 11207;
@@ -84,7 +88,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private String password = "password";
 
-    private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
+    /**
+     * Enabled services does not include Analytics since most users likely do not need to test
+     * with it and is also a little heavy on memory and runtime requirements. Also, it is only
+     * available with the enterprise edition (EE).
+     */
+    private Set<CouchbaseService> enabledServices = EnumSet.of(
+        CouchbaseService.KV,
+        CouchbaseService.QUERY,
+        CouchbaseService.SEARCH,
+        CouchbaseService.INDEX
+    );
 
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
@@ -144,6 +158,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return this;
     }
 
+    /**
+     * Enables the analytics service which is not enabled by default.
+     *
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withAnalyticsService() {
+        checkNotRunning();
+        this.enabledServices.add(CouchbaseService.ANALYTICS);
+        return this;
+    }
+
     public final String getUsername() {
         return username;
     }
@@ -177,6 +202,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             QUERY_SSL_PORT,
             SEARCH_PORT,
             SEARCH_SSL_PORT,
+            ANALYTICS_PORT,
+            ANALYTICS_SSL_PORT,
             KV_PORT,
             KV_SSL_PORT
         );
@@ -209,6 +236,16 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 new HttpWaitStrategy()
                     .forPath("/admin/ping")
                     .forPort(QUERY_PORT)
+                    .withBasicCredentials(username, password)
+                    .forStatusCode(200)
+            );
+        }
+
+        if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
+            waitStrategy = waitStrategy.withStrategy(
+                new HttpWaitStrategy()
+                    .forPath("/admin/ping")
+                    .forPort(ANALYTICS_PORT)
                     .withBasicCredentials(username, password)
                     .forStatusCode(200)
             );
@@ -261,6 +298,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             isEnterprise = MAPPER.readTree(response.body().string()).get("isEnterprise").asBoolean();
         } catch (IOException e) {
             throw new IllegalStateException("Couchbase /pools did not return valid JSON");
+        }
+
+        if (!isEnterprise && enabledServices.contains(CouchbaseService.ANALYTICS)) {
+            throw new IllegalStateException("The Analytics Service is only supported with the Enterprise version");
         }
     }
 
@@ -347,6 +388,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         if (enabledServices.contains(CouchbaseService.SEARCH)) {
             builder.add("fts", Integer.toString(getMappedPort(SEARCH_PORT)));
             builder.add("ftsSSL", Integer.toString(getMappedPort(SEARCH_SSL_PORT)));
+        }
+
+        if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
+            builder.add("cbas", Integer.toString(getMappedPort(ANALYTICS_PORT)));
+            builder.add("cbasSSL", Integer.toString(getMappedPort(ANALYTICS_SSL_PORT)));
         }
 
         @Cleanup Response response = doHttpRequest(

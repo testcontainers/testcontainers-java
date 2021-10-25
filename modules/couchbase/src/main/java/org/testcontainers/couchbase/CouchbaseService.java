@@ -39,7 +39,12 @@ public enum CouchbaseService {
   /**
    * Indexing service (needed if QUERY is also used!).
    */
-  INDEX("index");
+  INDEX("index"),
+
+  /**
+   * Analytics service.
+   */
+  ANALYTICS("cbas");
 
   private final String identifier;
 

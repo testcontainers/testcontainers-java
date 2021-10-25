@@ -21,7 +21,7 @@ jobs:
         run: docker image prune -af
 
       - name: Run Gradle Build
-        run: ./gradlew build --scan --no-daemon -i
+        run: ./gradlew build --scan --no-daemon -i -x test
 
       - name: Run Gradle Publish
         run: |
