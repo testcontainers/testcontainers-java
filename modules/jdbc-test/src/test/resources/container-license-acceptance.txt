@@ -1,2 +1,0 @@
-mcr.microsoft.com/mssql/server:2017-CU12
-ibmcom/db2:11.5.0.0a

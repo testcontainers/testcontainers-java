@@ -15,7 +15,7 @@ import spock.lang.Specification
 class MySqlContainerIT extends Specification {
 
     @Shared
-    MySQLContainer mySQLContainer = new MySQLContainer()
+    MySQLContainer mySQLContainer = new MySQLContainer(SpockTestImages.MYSQL_IMAGE)
 
     def "dummy test"() {
         expect:

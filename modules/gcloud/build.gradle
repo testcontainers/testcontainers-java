@@ -1,0 +1,12 @@
+description = "Testcontainers :: GCloud"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'com.google.cloud:google-cloud-datastore:1.102.4'
+    testImplementation 'com.google.cloud:google-cloud-firestore:1.33.0'
+    testImplementation 'com.google.cloud:google-cloud-pubsub:1.105.0'
+    testImplementation 'com.google.cloud:google-cloud-spanner:1.50.0'
+    testImplementation 'com.google.cloud:google-cloud-bigtable:1.17.3'
+    testImplementation 'org.assertj:assertj-core:3.15.0'
+}

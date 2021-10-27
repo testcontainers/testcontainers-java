@@ -1,7 +1,10 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -10,9 +13,13 @@ import java.util.stream.Stream;
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
-    public static final String NAME = "sqlserver";
-    public static final String IMAGE = "mcr.microsoft.com/mssql/server";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
+    @Deprecated
     public static final String DEFAULT_TAG = "2017-CU12";
+
+    public static final String NAME = "sqlserver";
+
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
 
@@ -32,27 +39,51 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE)
     };
 
+    /**
+     * @deprecated use {@link MSSQLServerContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public MSSQLServerContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public MSSQLServerContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public MSSQLServerContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPort(MS_SQL_SERVER_PORT);
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MS_SQL_SERVER_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(MS_SQL_SERVER_PORT);
     }
 
     @Override
     protected void configure() {
-        LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
-        addEnv("ACCEPT_EULA", "Y");
+        // If license was not accepted programatically, check if it was accepted via resource file
+        if (!getEnvMap().containsKey("ACCEPT_EULA")) {
+            LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
+            acceptLicense();
+        }
+
         addEnv("SA_PASSWORD", password);
+    }
+
+    /**
+     * Accepts the license for the SQLServer container by setting the ACCEPT_EULA=Y
+     * variable as described at <a href="https://hub.docker.com/_/microsoft-mssql-server">https://hub.docker.com/_/microsoft-mssql-server</a>
+     */
+    public SELF acceptLicense() {
+        addEnv("ACCEPT_EULA", "Y");
+        return self();
     }
 
     @Override
@@ -62,7 +93,8 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:sqlserver://" + getContainerIpAddress() + ":" + getMappedPort(MS_SQL_SERVER_PORT);
+        String additionalUrlParams = constructUrlParameters(";", ";");
+        return "jdbc:sqlserver://" + getHost() + ":" + getMappedPort(MS_SQL_SERVER_PORT) + additionalUrlParams;
     }
 
     @Override
@@ -115,6 +147,5 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
                     "or percent (%)."
             );
         }
-
     }
 }

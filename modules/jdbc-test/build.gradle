@@ -1,35 +1,20 @@
-repositories {
-    maven {
-        url "https://maven.atlassian.com/3rdparty/"
-    }
-}
-
 dependencies {
-    compile project(':mysql')
-    compile project(':postgresql')
-    compile project(':presto')
-    compile project(':cockroachdb')
-    compile project(':mariadb')
-    compile project(':oracle-xe')
-    compile project(':mssqlserver')
-    compile project(':clickhouse')
-    compile project(':db2')
+    api project(':jdbc')
+    api project(':test-support')
 
-    testCompile 'com.google.guava:guava:18.0'
-    testCompile 'org.postgresql:postgresql:42.0.0'
-    testCompile 'io.prestosql:presto-jdbc:329'
-    testCompile 'mysql:mysql-connector-java:8.0.14'
-    testCompile 'org.mariadb.jdbc:mariadb-java-client:1.4.6'
-    testCompile 'com.oracle:ojdbc6:12.1.0.1-atlassian-hosted'
-    testCompile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
-    testCompile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.41'
-    testCompile 'com.ibm.db2:jcc:11.1.4.4'
+    api 'com.google.guava:guava:31.0.1-jre'
+    api 'org.apache.commons:commons-lang3:3.12.0'
+    api 'com.zaxxer:HikariCP-java6:2.3.13'
+    api 'commons-dbutils:commons-dbutils:1.7'
 
-    testCompile 'com.zaxxer:HikariCP-java6:2.3.8'
-    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.4'
-    testCompile 'org.vibur:vibur-dbcp:9.0'
-    testCompile 'commons-dbutils:commons-dbutils:1.6'
+    api 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
 
-    testCompile 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
-    testCompile project(':test-support')
+    api('org.rnorth.visible-assertions:visible-assertions:2.1.2') {
+        // Excluded in favor of jna-platform
+        exclude(group: "net.java.dev.jna", module: "jna")
+    }
+
+    api 'org.apache.tomcat:tomcat-jdbc:10.0.12'
+    api 'org.vibur:vibur-dbcp:25.0'
+    api 'mysql:mysql-connector-java:8.0.26'
 }

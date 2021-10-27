@@ -1,8 +1,8 @@
 description = "Testcontainers :: InfluxDB"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
-    compileOnly 'org.influxdb:influxdb-java:2.18'
-    testCompile 'org.influxdb:influxdb-java:2.17'
+    compileOnly 'org.influxdb:influxdb-java:2.22'
+    testImplementation 'org.influxdb:influxdb-java:2.21'
 }

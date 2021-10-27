@@ -23,7 +23,7 @@ public class MSSQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     @Override
     public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
         return options.mutate()
-            .option(ConnectionFactoryOptions.HOST, container.getContainerIpAddress())
+            .option(ConnectionFactoryOptions.HOST, container.getHost())
             .option(ConnectionFactoryOptions.PORT, container.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT))
             // TODO enable if/when MSSQLServerContainer adds support for customizing the DB name
             // .option(ConnectionFactoryOptions.DATABASE, container.getDatabasseName())

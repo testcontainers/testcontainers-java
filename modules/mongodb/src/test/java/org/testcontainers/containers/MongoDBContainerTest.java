@@ -11,12 +11,16 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 
 public class MongoDBContainerTest {
+
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
      */
@@ -24,7 +28,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer()
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
             // }
         ) {
 
@@ -69,6 +73,26 @@ public class MongoDBContainerTest {
                 clientSession.close();
                 mongoSyncClient.close();
             }
+        }
+    }
+
+    @Test
+    public void supportsMongoDB_4_4() {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))
+        ) {
+            mongoDBContainer.start();
+        }
+    }
+
+    @Test
+    public void shouldTestDatabaseName() {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+        ) {
+            mongoDBContainer.start();
+            final String databaseName = "my-db";
+            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName), endsWith(databaseName));
         }
     }
 }

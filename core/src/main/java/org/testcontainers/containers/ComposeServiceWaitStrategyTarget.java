@@ -54,8 +54,8 @@ class ComposeServiceWaitStrategyTarget implements WaitStrategyTarget {
      * {@inheritDoc}
      */
     @Override
-    public String getContainerIpAddress() {
-        return proxyContainer.getContainerIpAddress();
+    public String getHost() {
+        return proxyContainer.getHost();
     }
 
     /**

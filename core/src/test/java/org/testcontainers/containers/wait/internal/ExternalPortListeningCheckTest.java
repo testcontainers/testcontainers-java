@@ -29,7 +29,7 @@ public class ExternalPortListeningCheckTest {
         nonListeningSocket.close();
 
         mockContainer = mock(WaitStrategyTarget.class);
-        when(mockContainer.getContainerIpAddress()).thenReturn("127.0.0.1");
+        when(mockContainer.getHost()).thenReturn("127.0.0.1");
     }
 
     @Test

@@ -21,7 +21,7 @@ public class SomeTest {
        
        //There are many integration clients for Vault so let's just define a general one here:
        VaultClient client = new VaultClient(
-               vaultContainer.getContainerIpAddress(),
+               vaultContainer.getHost(),
                vaultContainer.getMappedPort(8200),
                "my-root-token");
        
@@ -42,7 +42,7 @@ test how your application behaves with Vault by writing different test scenarios
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:vault:{{latest_version}}"
+testImplementation "org.testcontainers:vault:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

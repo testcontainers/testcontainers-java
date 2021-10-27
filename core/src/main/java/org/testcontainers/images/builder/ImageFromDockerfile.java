@@ -2,8 +2,8 @@ package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
+import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.model.BuildResponseItem;
-import com.github.dockerjava.core.command.BuildImageResultCallback;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +54,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private Set<String> dependencyImageNames = Collections.emptySet();
 
     public ImageFromDockerfile() {
-        this("testcontainers/" + Base58.randomString(16).toLowerCase());
+        this("localhost/testcontainers/" + Base58.randomString(16).toLowerCase());
     }
 
     public ImageFromDockerfile(String dockerImageName) {
@@ -107,6 +107,12 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
             BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(in);
             configure(buildImageCmd);
+            Map<String, String> labels = new HashMap<>();
+            if (buildImageCmd.getLabels() != null) {
+                labels.putAll(buildImageCmd.getLabels());
+            }
+            labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
 
@@ -117,6 +123,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             // To build an image, we have to send the context to Docker in TAR archive format
             try (TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(new GZIPOutputStream(out))) {
                 tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+                tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
                 for (Map.Entry<String, Transferable> entry : transferables.entrySet()) {
                     Transferable transferable = entry.getValue();

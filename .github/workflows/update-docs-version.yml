@@ -1,27 +1,27 @@
 name: Update docs version
 
 on:
-    release:
-        types: [published]
+  release:
+    types: [ published ]
 
 jobs:
-    build:
-        runs-on: ubuntu-18.04
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                  ref: master
-            -   name: Update latest_version property in mkdocs.yml
-                run: |
-                    sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml
-                    git diff
-            -   name: Commit changes
-                run: |
-                    git config user.email "nobody@testcontainers.org"
-                    git config user.name "GitHub Action - Update docs version"
-                    git add mkdocs.yml
-                    git commit -m "Update documentation version to ${GITHUB_REF##*/}" -m "skip-checks: true" || echo "not changed"
-            -   name: Push changes
-                uses: ad-m/github-push-action@68af9897f2b021035ca3952bf354bbb4675c1762 # v0.5.0
-                with:
-                    github_token: ${{ secrets.GITHUB_TOKEN }}
+  build:
+    if: github.repository == 'testcontainers/testcontainers-java'
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Update latest_version property in mkdocs.yml
+        run: |
+          sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml
+          git diff
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@3c3d696d5b8aa2eb0e70f76c251e4b149122acf1 # v3.10.1
+        with:
+          title: Update docs version to ${GITHUB_REF##*/}
+          body: |
+            Update docs version to ${GITHUB_REF##*/}
+            skip-checks: true
+          branch: update-docs-version
+          delete-branch: true

@@ -31,7 +31,7 @@ public class DockerfileContainerTest {
 
     @Test
     public void simpleDslTest() throws IOException {
-        String address = String.format("http://%s:%s", dslContainer.getContainerIpAddress(), dslContainer.getMappedPort(80));
+        String address = String.format("http://%s:%s", dslContainer.getHost(), dslContainer.getMappedPort(80));
 
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(address);

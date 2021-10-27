@@ -3,6 +3,7 @@ package org.testcontainers.utility;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.PullImageResultCallback;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
 import org.junit.AfterClass;
@@ -15,7 +16,9 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.output.FrameConsumerResultCallback;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
@@ -23,11 +26,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
+import static org.testcontainers.TestImages.TINY_IMAGE;
 
 /**
  * This test checks the integration between Testcontainers and an authenticated registry, but uses
@@ -45,31 +53,55 @@ public class AuthenticatedImagePullTest {
     @ClassRule
     public static GenericContainer<?> authenticatedRegistry = new GenericContainer<>(new ImageFromDockerfile()
         .withDockerfileFromBuilder(builder -> {
-            builder.from("registry:2")
+            builder.from(DOCKER_REGISTRY_IMAGE.asCanonicalNameString())
                 .run("htpasswd -Bbn testuser notasecret > /htpasswd")
                 .env("REGISTRY_AUTH", "htpasswd")
                 .env("REGISTRY_AUTH_HTPASSWD_PATH", "/htpasswd")
                 .env("REGISTRY_AUTH_HTPASSWD_REALM", "Test");
         }))
-        .withExposedPorts(5000)
-        .waitingFor(new HttpWaitStrategy());
+        .withEnv("REGISTRY_HTTP_ADDR", "127.0.0.1:0")
+        .withCreateContainerCmdModifier(cmd -> {
+            cmd.getHostConfig().withNetworkMode("host");
+        });
 
     private static RegistryAuthLocator originalAuthLocatorSingleton;
     private static DockerClient client;
 
     private static String testImageName;
-    private static String testImageNameWithTag;
+    private static RegistryAuthLocator mockAuthLocator;
 
     @BeforeClass
-    public static void setUp() throws InterruptedException {
+    public static void setUp() throws Exception {
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
         client = DockerClientFactory.instance().client();
 
-        String testRegistryAddress = authenticatedRegistry.getContainerIpAddress() + ":" + authenticatedRegistry.getFirstMappedPort();
-        testImageName = testRegistryAddress + "/alpine";
-        testImageNameWithTag = testImageName + ":latest";
+        AtomicInteger port = new AtomicInteger(-1);
+        try (FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback()) {
+            WaitingConsumer waitingConsumer = new WaitingConsumer();
+            resultCallback.addConsumer(OutputFrame.OutputType.STDERR, waitingConsumer);
 
-        final DockerImageName expectedName = new DockerImageName(testImageNameWithTag);
+            client.logContainerCmd(authenticatedRegistry.getContainerId())
+                .withStdErr(true)
+                .withFollowStream(true)
+                .exec(resultCallback);
+
+            Pattern pattern = Pattern.compile(".*listening on .*:(\\d+).*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+            waitingConsumer.waitUntil(it -> {
+                String s = it.getUtf8String();
+                Matcher matcher = pattern.matcher(s);
+                if (matcher.matches()) {
+                    port.set(Integer.parseInt(matcher.group(1)));
+                    return true;
+                } else {
+                    return false;
+                }
+            }, 10, TimeUnit.SECONDS);
+        }
+
+        String testRegistryAddress = authenticatedRegistry.getHost() + ":" + port.get();
+        testImageName = testRegistryAddress + "/alpine";
+
+        final DockerImageName expectedName = DockerImageName.parse(testImageName);
         final AuthConfig authConfig = new AuthConfig()
             .withUsername("testuser")
             .withPassword("notasecret")
@@ -88,7 +120,11 @@ public class AuthenticatedImagePullTest {
     @Before
     public void removeImageFromLocalDocker() {
         // remove the image tag from local docker so that it must be pulled before use
-        client.removeImageCmd(testImageNameWithTag).withForce(true).exec();
+        try {
+            client.removeImageCmd(testImageName).withForce(true).exec();
+        } catch (NotFoundException ignored) {
+
+        }
     }
 
     @AfterClass
@@ -99,7 +135,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForContainerCreation() {
         // actually start a container, which will require an authenticated pull
-        try (final GenericContainer<?> container = new GenericContainer<>(testImageNameWithTag)
+        try (final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(testImageName))
             .withCommand("/bin/sh", "-c", "sleep 10")) {
             container.start();
 
@@ -111,7 +147,7 @@ public class AuthenticatedImagePullTest {
     public void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
         // Prepare a simple temporary Dockerfile which requires our custom private image
         Path tempFile = getLocalTempFile(".Dockerfile");
-        String dockerFileContent = "FROM " + testImageNameWithTag;
+        String dockerFileContent = "FROM " + testImageName;
         Files.write(tempFile, dockerFileContent.getBytes());
 
         // Start a container built from a derived image, which will require an authenticated pull
@@ -135,7 +171,7 @@ public class AuthenticatedImagePullTest {
                 "services:\n" +
                 "  privateservice:\n" +
                 "      command: /bin/sh -c 'sleep 60'\n" +
-                "      image: " + testImageNameWithTag;
+                "      image: " + testImageName;
         Files.write(tempFile, composeFileContent.getBytes());
 
         // Start the docker compose project, which will require an authenticated pull
@@ -165,7 +201,7 @@ public class AuthenticatedImagePullTest {
 
     private static void putImageInRegistry() throws InterruptedException {
         // It doesn't matter which image we use for this test, but use one that's likely to have been pulled already
-        final String dummySourceImage = TestcontainersConfiguration.getInstance().getRyukImage();
+        final String dummySourceImage = TINY_IMAGE.asCanonicalNameString();
 
         client.pullImageCmd(dummySourceImage)
             .exec(new PullImageResultCallback())
@@ -176,9 +212,9 @@ public class AuthenticatedImagePullTest {
             .getId();
 
         // push the image to the registry
-        client.tagImageCmd(id, testImageName, "latest").exec();
+        client.tagImageCmd(id, testImageName, "").exec();
 
-        client.pushImageCmd(testImageNameWithTag)
+        client.pushImageCmd(testImageName)
             .exec(new ResultCallback.Adapter<>())
             .awaitCompletion(1, TimeUnit.MINUTES);
     }

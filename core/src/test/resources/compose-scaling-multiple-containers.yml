@@ -1,0 +1,7 @@
+version: '2.4'
+services:
+  redis:
+    image: redis
+  other:
+    image: alpine:3.14
+    command: sleep 10000

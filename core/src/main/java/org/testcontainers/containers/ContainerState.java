@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -43,8 +44,18 @@ public interface ContainerState {
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address
+     * @see #getHost()
      */
     default String getContainerIpAddress() {
+        return getHost();
+    }
+
+    /**
+     * Get the host that this container may be reached on (may not be the local machine).
+     *
+     * @return a host
+     */
+    default String getHost() {
         return DockerClientFactory.instance().dockerHostIpAddress();
     }
 
@@ -107,6 +118,7 @@ public interface ContainerState {
 
     /**
      * Get the actual mapped port for a first port exposed by the container.
+     * Should be used in conjunction with {@link #getHost()}.
      *
      * @return the port that the exposed port is mapped to
      * @throws IllegalStateException if there are no exposed ports
@@ -121,6 +133,7 @@ public interface ContainerState {
 
     /**
      * Get the actual mapped port for a given port exposed by the container.
+     * Should be used in conjunction with {@link #getHost()}.
      *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
@@ -169,7 +182,9 @@ public interface ContainerState {
             .map(PortBinding::getBinding)
             .map(Ports.Binding::getHostPortSpec)
             .filter(Objects::nonNull)
+            .filter(NumberUtils::isNumber)
             .map(Integer::valueOf)
+            .filter(port -> port > 0)
             .collect(Collectors.toList());
     }
 
@@ -248,7 +263,7 @@ public interface ContainerState {
      */
     @SneakyThrows(IOException.class)
     default void copyFileToContainer(Transferable transferable, String containerPath) {
-        if (!isCreated()) {
+        if (getContainerId() == null) {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
@@ -257,6 +272,7 @@ public interface ContainerState {
             TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+            tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
             transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
@@ -294,12 +310,12 @@ public interface ContainerState {
      */
     @SneakyThrows
     default  <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
-        if (!isCreated()) {
+        if (getContainerId() == null) {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
+        DockerClient dockerClient = DockerClientFactory.instance().client();
         try (
-            DockerClient dockerClient = DockerClientFactory.instance().client();
             InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
             TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
         ) {

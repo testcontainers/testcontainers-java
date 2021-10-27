@@ -11,7 +11,7 @@ import static org.junit.Assert.assertThat;
 public class InfluxDBContainerTest {
 
     @ClassRule
-    public static InfluxDBContainer influxDBContainer = new InfluxDBContainer();
+    public static InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_TEST_IMAGE);
 
     @Test
     public void getUrl() {

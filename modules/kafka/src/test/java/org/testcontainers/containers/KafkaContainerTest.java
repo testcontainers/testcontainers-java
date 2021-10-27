@@ -1,6 +1,9 @@
 package org.testcontainers.containers;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -12,43 +15,54 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:6.2.1");
+    private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
+
     @Test
     public void testUsage() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer()) {
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
     }
 
-    /**
-     * @deprecated the {@link Network} should be set explicitly with {@link KafkaContainer#withNetwork(Network)}.
-     */
+
     @Test
-    @Deprecated
-    public void testExternalZookeeperWithKafkaNetwork() throws Exception {
+    public void testUsageWithSpecificImage() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer()
-                .withExternalZookeeper("zookeeper:2181");
-
-            GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
-                .withNetwork(kafka.getNetwork())
-                .withNetworkAliases("zookeeper")
-                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
+            // constructorWithVersion {
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            // }
         ) {
-            zookeeper.start();
             kafka.start();
+            testKafkaFunctionality(
+              // getBootstrapServers {
+              kafka.getBootstrapServers()
+              // }
+            );
+        }
+    }
 
+    @Test
+    public void testUsageWithVersion() throws Exception {
+        try (
+            KafkaContainer kafka = new KafkaContainer("6.2.1")
+        ) {
+            kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
     }
@@ -58,24 +72,70 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
 
-            KafkaContainer kafka = new KafkaContainer()
+            // withExternalZookeeper {
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
+            // }
 
-            GenericContainer zookeeper = new GenericContainer("confluentinc/cp-zookeeper:4.0.0")
+            GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
+
+            // withKafkaNetwork {
+            GenericContainer<?> application = new GenericContainer<>(DockerImageName.parse("alpine"))
+                .withNetwork(network)
+            // }
+                .withNetworkAliases("dummy")
+                .withCommand("sleep 10000")
         ) {
             zookeeper.start();
             kafka.start();
+            application.start();
 
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
     }
 
-    protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
+    @Test
+    public void testConfluentPlatformVersion5() throws Exception {
         try (
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.3"))
+        ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testWithHostExposedPort() throws Exception {
+        Testcontainers.exposeHostPorts(12345);
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testWithHostExposedPortAndExternalNetwork() throws Exception {
+        Testcontainers.exposeHostPorts(12345);
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE).withNetwork(Network.newNetwork())) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
+        testKafkaFunctionality(bootstrapServers, 1, 1);
+    }
+
+    protected void testKafkaFunctionality(String bootstrapServers, int partitions, int rf) throws Exception {
+        try (
+            AdminClient adminClient = AdminClient.create(ImmutableMap.of(
+                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers
+            ));
+
             KafkaProducer<String, String> producer = new KafkaProducer<>(
                 ImmutableMap.of(
                     ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
@@ -95,8 +155,12 @@ public class KafkaContainerTest {
                 new StringDeserializer()
             );
         ) {
-            String topicName = "messages";
-            consumer.subscribe(Arrays.asList(topicName));
+            String topicName = "messages-" + UUID.randomUUID();
+
+            Collection<NewTopic> topics = singletonList(new NewTopic(topicName, partitions, (short) rf));
+            adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS);
+
+            consumer.subscribe(singletonList(topicName));
 
             producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
 

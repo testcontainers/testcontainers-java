@@ -7,8 +7,10 @@ Testcontainers module for the Atlassian's [LocalStack](https://github.com/locals
 Running LocalStack as a stand-in for AWS S3 during a test:
 
 ```java
+DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.11.3");
+
 @Rule
-public LocalStackContainer localstack = new LocalStackContainer()
+public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
         .withServices(S3);
 
 @Test
@@ -65,7 +67,7 @@ Testcontainers will inform Localstack of the best hostname automatically, using 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:localstack:{{latest_version}}"
+testImplementation "org.testcontainers:localstack:{{latest_version}}"
 ```
 
 ```xml tab='Maven'

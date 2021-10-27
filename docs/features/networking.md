@@ -33,22 +33,26 @@ There is also a `getFirstMappedPort` method for convenience, for the fairly comm
 [Retrieving the first mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:fetchFirstMappedPort
 <!--/codeinclude-->
 
-## Getting the container IP address
+## Getting the container host
 
 When running with a local Docker daemon, exposed ports will usually be reachable on `localhost`.
 However, in some CI environments they may instead be reachable on a different host.
 
-As such, Testcontainers provides a convenience method to obtain an IP address on which the container should be reachable from the host machine.
+As such, Testcontainers provides a convenience method to obtain an address on which the container should be reachable from the host machine.
 
 <!--codeinclude-->
-[Getting the container IP address](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getContainerIpAddressOnly
+[Getting the container host](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostOnly
 <!--/codeinclude-->
 
-It is normally advisable to use `getContainerIpAddress` and `getMappedPort` together when constructing addresses - for example:
+It is normally advisable to use `getHost` and `getMappedPort` together when constructing addresses - for example:
 
 <!--codeinclude-->
-[Getting the container IP address and mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getContainerIpAddressAndMappedPort
+[Getting the container host and mapped port](../examples/junit4/generic/src/test/java/generic/MultiplePortsExposedTest.java) inside_block:getHostAndMappedPort
 <!--/codeinclude-->
+
+!!! tip
+    `getHost()` is a replacement for `getContainerIpAddress()` and returns the same result.
+    `getContainerIpAddress()` is believed to be confusingly named, and will eventually be deprecated.
 
 ## Exposing host ports to the container
 
@@ -65,7 +69,8 @@ We need to tell Testcontainers to prepare to expose this port to containers:
 <!--/codeinclude-->
 
 !!! warning
-    Note that the above command should be invoked _before_ containers are started.
+    Note that the above command should be invoked _before_ containers are started, but _after_ the server on the host was started.  
+    Alternatively, use `container.withAccessToHost(true)` to force the host access mechanism (you still need to call `exposeHostPorts` to make the port available).
     
 Having done so, we can now access this port from any containers that are launched.
 From a container's perspective, the hostname will be `host.testcontainers.internal` and the port will be the same value as `localServerPort`.

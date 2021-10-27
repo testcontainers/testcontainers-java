@@ -18,61 +18,130 @@ package org.testcontainers.couchbase;
 
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.CouchbaseCluster;
-import com.couchbase.client.java.document.JsonDocument;
-import com.couchbase.client.java.document.json.JsonObject;
-import com.couchbase.client.java.env.CouchbaseEnvironment;
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
+import com.couchbase.client.java.Collection;
+import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
+import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import java.time.Duration;
+import java.util.function.Consumer;
+
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 
 public class CouchbaseContainerTest {
 
+    private static final DockerImageName COUCHBASE_IMAGE_ENTERPRISE =
+        DockerImageName.parse("couchbase/server:enterprise-6.6.2");
+    private static final DockerImageName COUCHBASE_IMAGE_COMMUNITY =
+        DockerImageName.parse("couchbase/server:community-6.6.0");
+
     @Test
-    public void testBasicContainerUsage() {
+    public void testBasicContainerUsageForEnterpriseContainer() {
         // bucket_definition {
         BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
         // }
 
         try (
             // container_definition {
-            CouchbaseContainer container = new CouchbaseContainer()
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_ENTERPRISE)
                 .withBucket(bucketDefinition)
             // }
         ) {
-            container.start();
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
 
-            // cluster_creation {
-            CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
-                .builder()
-                .bootstrapCarrierDirectPort(container.getBootstrapCarrierDirectPort())
-                .bootstrapHttpDirectPort(container.getBootstrapHttpDirectPort())
-                .build();
+                Collection collection = bucket.defaultCollection();
 
-            Cluster cluster = CouchbaseCluster.create(
-                environment,
-                container.getContainerIpAddress()
-            );
-            // }
+                collection.upsert("foo", JsonObject.create().put("key", "value"));
 
-            try {
-                // auth {
-                cluster.authenticate(container.getUsername(), container.getPassword());
-                // }
+                JsonObject fooObject = collection.get("foo").contentAsObject();
 
-                Bucket bucket = cluster.openBucket(bucketDefinition.getName());
-
-                bucket.upsert(JsonDocument.create("foo", JsonObject.empty()));
-
-                assertTrue(bucket.exists("foo"));
-                assertNotNull(cluster.clusterManager().getBucket(bucketDefinition.getName()));
-            } finally {
-                cluster.disconnect();
-                environment.shutdown();
-            }
+                assertEquals("value", fooObject.getString("key"));
+            });
         }
     }
 
+    @Test
+    public void testBasicContainerUsageForCommunityContainer() {
+        BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
+
+        try (
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
+                .withBucket(bucketDefinition)
+        ) {
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
+
+                Collection collection = bucket.defaultCollection();
+
+                collection.upsert("foo", JsonObject.create().put("key", "value"));
+
+                JsonObject fooObject = collection.get("foo").contentAsObject();
+
+                assertEquals("value", fooObject.getString("key"));
+            });
+        }
+    }
+
+    @Test
+    public void testBucketIsFlushableIfEnabled() {
+        BucketDefinition bucketDefinition = new BucketDefinition("mybucket")
+            .withFlushEnabled(true);
+
+        try (
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_ENTERPRISE)
+                .withBucket(bucketDefinition)
+        ) {
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
+
+                Collection collection = bucket.defaultCollection();
+
+                collection.upsert("foo", JsonObject.create().put("key", "value"));
+
+                cluster.buckets().flushBucket(bucketDefinition.getName());
+
+                await().untilAsserted(() -> assertFalse(collection.exists("foo").exists()));
+            });
+        }
+    }
+
+    /**
+     * Make sure that the code fails fast if the Analytics service is enabled on the community
+     * edition which is not supported.
+     */
+    @Test
+    public void testFailureIfCommunityUsedWithAnalytics() {
+        try (
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
+                .withEnabledServices(CouchbaseService.KV, CouchbaseService.ANALYTICS)
+        ) {
+            assertThrows(ContainerLaunchException.class, () -> setUpClient(container, cluster -> {}));
+        }
+    }
+
+    private void setUpClient(CouchbaseContainer container, Consumer<Cluster> consumer) {
+        container.start();
+
+        // cluster_creation {
+        Cluster cluster = Cluster.connect(
+            container.getConnectionString(),
+            container.getUsername(),
+            container.getPassword()
+        );
+        // }
+
+        try {
+            consumer.accept(cluster);
+        } finally {
+            cluster.disconnect();
+        }
+    }
 }

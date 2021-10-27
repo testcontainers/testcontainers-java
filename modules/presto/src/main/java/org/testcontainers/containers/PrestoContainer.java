@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -13,24 +14,40 @@ import static com.google.common.base.Strings.nullToEmpty;
 import static java.lang.String.format;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
+/**
+ * @deprecated Use {@code TrinoContainer} instead.
+ */
+@Deprecated
 public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
     public static final String NAME = "presto";
-    public static final String IMAGE = "prestosql/presto";
-    public static final String DEFAULT_TAG = "329";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/trinodb/presto");
+    public static final String IMAGE = "ghcr.io/trinodb/presto";
+    public static final String DEFAULT_TAG = "344";
 
     public static final Integer PRESTO_PORT = 8080;
 
     private String username = "test";
     private String catalog = null;
 
+    /**
+     * @deprecated use {@link PrestoContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public PrestoContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public PrestoContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public PrestoContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         this.waitStrategy = new LogMessageWaitStrategy()
-            .withRegEx(".*io.prestosql.server.PrestoServer\\s+======== SERVER STARTED ========.*")
+            .withRegEx(".*======== SERVER STARTED ========.*")
             .withStartupTimeout(Duration.of(60, SECONDS));
 
         addExposedPort(PRESTO_PORT);
@@ -49,7 +66,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
 
     @Override
     public String getJdbcUrl() {
-        return format("jdbc:presto://%s:%s/%s", getContainerIpAddress(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
+        return format("jdbc:presto://%s:%s/%s", getHost(), getMappedPort(PRESTO_PORT), nullToEmpty(catalog));
     }
 
     @Override
