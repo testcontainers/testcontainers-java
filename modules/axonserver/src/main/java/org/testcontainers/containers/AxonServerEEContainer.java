@@ -54,9 +54,9 @@ public class AxonServerEEContainer<SELF extends AxonServerEEContainer<SELF>> ext
 
     @Override
     protected void configure() {
-        optionallyMapResourceParameterAsVolume(LICENCE_DEFAULT_LOCATION, licensePath);
-        optionallyMapResourceParameterAsVolume(CONFIGURATION_DEFAULT_LOCATION, configurationPath);
-        optionallyMapResourceParameterAsVolume(CLUSTER_TEMPLATE_DEFAULT_LOCATION, clusterTemplatePath);
+        optionallyCopyResourceToContainer(LICENCE_DEFAULT_LOCATION, licensePath);
+        optionallyCopyResourceToContainer(CONFIGURATION_DEFAULT_LOCATION, configurationPath);
+        optionallyCopyResourceToContainer(CLUSTER_TEMPLATE_DEFAULT_LOCATION, clusterTemplatePath);
         withOptionalEnv(AXONIQ_AXONSERVER_NAME, axonServerName);
         withOptionalEnv(AXONIQ_AXONSERVER_HOSTNAME, axonServerHostname);
         withOptionalEnv(AXONIQ_AXONSERVER_INTERNAL_HOSTNAME, axonServerInternalHostname);
@@ -71,7 +71,7 @@ public class AxonServerEEContainer<SELF extends AxonServerEEContainer<SELF>> ext
      * @param pathNameInContainer path in docker
      * @param resourceLocation    relative classpath to resource
      */
-    protected void optionallyMapResourceParameterAsVolume(String pathNameInContainer, String resourceLocation) {
+    protected void optionallyCopyResourceToContainer(String pathNameInContainer, String resourceLocation) {
         Optional.ofNullable(resourceLocation)
                 .map(MountableFile::forClasspathResource)
                 .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
