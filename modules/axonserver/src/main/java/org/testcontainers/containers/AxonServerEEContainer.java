@@ -21,7 +21,7 @@ public class AxonServerEEContainer<SELF extends AxonServerEEContainer<SELF>> ext
     private static final String WAIT_FOR_LOG_MESSAGE = ".*Started AxonServer.*";
 
     private static final String LICENCE_DEFAULT_LOCATION = "/axonserver/config/axoniq.license";
-    private static final String AUTO_CLUSTER_DEFAULT_LOCATION = "/axonserver/config/axonserver.properties";
+    private static final String CONFIGURATION_DEFAULT_LOCATION = "/axonserver/config/axonserver.properties";
     private static final String CLUSTER_TEMPLATE_DEFAULT_LOCATION = "/axonserver/cluster-template.yml";
 
     private static final String AXONIQ_LICENSE = "AXONIQ_LICENSE";
@@ -32,7 +32,7 @@ public class AxonServerEEContainer<SELF extends AxonServerEEContainer<SELF>> ext
     private static final String AXON_SERVER_ADDRESS_TEMPLATE = "%s:%s";
 
     private String licensePath;
-    private String autoClusterPath;
+    private String configurationPath;
     private String clusterTemplatePath;
     private String axonServerName;
     private String axonServerInternalHostname;
@@ -55,7 +55,7 @@ public class AxonServerEEContainer<SELF extends AxonServerEEContainer<SELF>> ext
     @Override
     protected void configure() {
         optionallyMapResourceParameterAsVolume(LICENCE_DEFAULT_LOCATION, licensePath);
-        optionallyMapResourceParameterAsVolume(AUTO_CLUSTER_DEFAULT_LOCATION, autoClusterPath);
+        optionallyMapResourceParameterAsVolume(CONFIGURATION_DEFAULT_LOCATION, configurationPath);
         optionallyMapResourceParameterAsVolume(CLUSTER_TEMPLATE_DEFAULT_LOCATION, clusterTemplatePath);
         withOptionalEnv(AXONIQ_AXONSERVER_NAME, axonServerName);
         withOptionalEnv(AXONIQ_AXONSERVER_HOSTNAME, axonServerHostname);
@@ -99,10 +99,10 @@ public class AxonServerEEContainer<SELF extends AxonServerEEContainer<SELF>> ext
     }
 
     /**
-     * Initialize AxonServer EE with a given auto cluster configuration file.
+     * Initialize AxonServer EE with a given configuration file.
      */
-    public SELF withAutoCluster(String autoClusterPath) {
-        this.autoClusterPath = autoClusterPath;
+    public SELF withConfiguration(String configurationPath) {
+        this.configurationPath = configurationPath;
         return self();
     }
 

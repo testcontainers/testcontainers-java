@@ -18,7 +18,8 @@ final AxonServerSEContainer axonServerSEContainer =
                 new AxonServerSEContainer(DockerImageName.parse("axoniq/axonserver:4.4.12"));
 ```
 
-This version is the simplest one and also included some utils methods to get the Axon Server Address.
+This version is the simplest one and also included some utils methods to get the Axon Server Address. The only out of the box configuration provided is the `devMode` flag:
+* `withDevMode` where you can specify if you want dev-mode to be enabled or not. Default is `false`
 
 ### Axon Server Enterprise Edition (EE)
 
@@ -32,12 +33,16 @@ final AxonServerEEContainer axonServerEEContainer =
 This version is more complex and provides additional configuration listed below:
 * `withLicense` where you can provide a path to your license file
 * `withAutoCluster` where you can provide a path to your auto-cluster file
-* `withClusterTemplate` where you can provide a path to your cluster-template file
+* `withConfiguration` where you can provide a path to your `axonserver.properties` file
 * `withAxonServerName` where you can provide Axon Server's name
 * `withAxonServerHostname` where you can provide Axon Server's hostname
 * `withAxonServerInternalHostname` where you can provide Axon Server's internal hostname
 
 It also includes some utils methods to get the Axon Server Address. 
+
+### Configuration
+
+For an extensive list of environment variables you can use, please check the [official docs](https://docs.axoniq.io/reference-guide/v/master/axon-server/administration/admin-configuration/configuration#configuration-properties).
 
 ## Adding this module to your project dependencies
 
