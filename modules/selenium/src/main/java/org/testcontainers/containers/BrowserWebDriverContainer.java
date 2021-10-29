@@ -44,13 +44,15 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer, TestLifecycleAware {
 
-    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
-    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
+    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome");
+    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox");
+    private static final DockerImageName CHROME_DEBUG_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
+    private static final DockerImageName FIREFOX_DEBUG_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
     private static final DockerImageName[] COMPATIBLE_IMAGES = new DockerImageName[] {
+        CHROME_DEBUG_IMAGE,
+        FIREFOX_DEBUG_IMAGE,
         CHROME_IMAGE,
-        FIREFOX_IMAGE,
-        DockerImageName.parse("selenium/standalone-chrome"),
-        DockerImageName.parse("selenium/standalone-firefox")
+        FIREFOX_IMAGE
     };
 
     private static final String DEFAULT_PASSWORD = "secret";
@@ -75,6 +77,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserWebDriverContainer.class);
 
+    /**
+     * @deprecated please use {@link BrowserWebDriverContainer#BrowserWebDriverContainer(DockerImageName)}
+     */
+    @Deprecated
     public BrowserWebDriverContainer() {
         super();
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
@@ -92,7 +98,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     /**
      * Constructor taking a specific webdriver container name and tag
      * @param dockerImageName Name of the selenium docker image
+     *
+     * @deprecated please use {@link BrowserWebDriverContainer#BrowserWebDriverContainer(DockerImageName)}
      */
+    @Deprecated
     public BrowserWebDriverContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
@@ -103,17 +112,16 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      */
     public BrowserWebDriverContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-
         // we assert compatibility with the chrome/firefox image later, after capabilities are processed
 
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
-                .withStartupTimeout(Duration.of(15, SECONDS));
+            .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
+            .withStartupTimeout(Duration.of(15, SECONDS));
 
         this.waitStrategy = new WaitAllStrategy()
-                .withStrategy(logWaitStrategy)
-                .withStrategy(new HostPortWaitStrategy())
-                .withStartupTimeout(Duration.of(15, SECONDS));
+            .withStrategy(logWaitStrategy)
+            .withStrategy(new HostPortWaitStrategy())
+            .withStartupTimeout(Duration.of(15, SECONDS));
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
 
@@ -128,8 +136,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     /**
-     * @deprecated Use withCapabilities(Capabilities capabilities) instead:
-     * withCapabilities(new FirefoxOptions())
+     * @deprecated please use {@link BrowserWebDriverContainer#getSeleniumAddress()} to obtain the selenium server URL,
+     * and call the {@link RemoteWebDriver} constructor ({@link RemoteWebDriver#RemoteWebDriver(URL, Capabilities)}),
+     * passing in the URL and {@link Capabilities} object instead.
      *
      * @param capabilities DesiredCapabilities
      * @return SELF
@@ -153,25 +162,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void configure() {
-
         String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
-
-        if (capabilities == null) {
-            if (seleniumVersion.startsWith("2.")) {
-                logger().info("No capabilities provided, falling back to DesiredCapabilities.chrome()");
-                capabilities = DesiredCapabilities.chrome();
-            } else {
-                logger().info("No capabilities provided, falling back to ChromeOptions");
-                capabilities = new ChromeOptions();
-            }
-        }
-
-        // Hack for new selenium-chrome image that contains Chrome 92.
-        // If not disabled, container startup will fail in most cases and consume excessive amounts of CPU.
-        if (capabilities instanceof ChromeOptions) {
-            ChromeOptions options = (ChromeOptions) this.capabilities;
-            options.addArguments("--disable-gpu");
-        }
 
         if (recordingMode != VncRecordingMode.SKIP) {
 
@@ -200,6 +191,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             super.setDockerImageName(customImageName.asCanonicalNameString());
         } else {
             DockerImageName standardImageForCapabilities = getStandardImageForCapabilities(capabilities, seleniumVersion);
+            logger().warn(
+                "Image name for selenium image has not been set, and one will be inferred automatically based " +
+                    "on capabilities ({}). Inferred image: {}. This feature is deprecated and will be removed " +
+                    "in the future.",
+                standardImageForCapabilities.asCanonicalNameString(),
+                this.capabilities
+            );
             super.setDockerImageName(standardImageForCapabilities.asCanonicalNameString());
         }
 
@@ -233,10 +231,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * @param seleniumVersion the version of selenium in use
      * @return an image name for the default standalone Docker image for the appropriate browser
      *
-     * @deprecated note that this method is deprecated and may be removed in the future. The no-args
-     * {@link BrowserWebDriverContainer#BrowserWebDriverContainer()} combined with the
-     * {@link BrowserWebDriverContainer#withCapabilities(Capabilities)} method should be considered. A decision on
-     * removal of this deprecated method will be taken at a future date.
+     * @deprecated note that this method is deprecated and will be removed in the future.
      */
     @Deprecated
     public static String getDockerImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
@@ -244,23 +239,38 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     private static DockerImageName getStandardImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
-        String browserName = capabilities.getBrowserName();
-        switch (browserName) {
-            case BrowserType.CHROME:
-                return CHROME_IMAGE.withTag(seleniumVersion);
-            case BrowserType.FIREFOX:
-                return FIREFOX_IMAGE.withTag(seleniumVersion);
-            default:
-                throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
+        boolean supportsVncWithoutDebugImage = seleniumVersion.startsWith("4.");
+
+        String browserName;
+        if (capabilities == null) {
+            // opinionated default for deprecated path
+            browserName = "chrome";
+        } else {
+            browserName = capabilities.getBrowserName();
         }
+
+        if (browserName.equals("chrome")) {
+            if (supportsVncWithoutDebugImage) {
+                return CHROME_IMAGE;
+            } else {
+                return CHROME_DEBUG_IMAGE;
+            }
+        } else if (browserName.equals("firefox")) {
+            if (supportsVncWithoutDebugImage) {
+                return FIREFOX_IMAGE;
+            } else {
+                return FIREFOX_DEBUG_IMAGE;
+            }
+        }
+
+        throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
     }
 
     public URL getSeleniumAddress() {
         try {
             return new URL("http", getHost(), getMappedPort(SELENIUM_PORT), "/wd/hub");
         } catch (MalformedURLException e) {
-            e.printStackTrace();// TODO
-            return null;
+            throw new RuntimeException("Failed to construct a valid URL!", e);
         }
     }
 
@@ -280,10 +290,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
-                () -> Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
-                        () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
-
         if (vncRecordingContainer != null) {
             LOGGER.debug("Starting VNC recording");
             vncRecordingContainer.start();
@@ -296,9 +302,25 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * All containers and drivers will be automatically shut down after the test method finishes (if used as a @Rule) or the test
      * class (if used as a @ClassRule)
      *
+     * @deprecated please use {@link BrowserWebDriverContainer#getSeleniumAddress()} to obtain the selenium server URL,
+     * and call the {@link RemoteWebDriver} constructor ({@link RemoteWebDriver#RemoteWebDriver(URL, Capabilities)}),
+     * passing in the URL and {@link Capabilities} object instead.
+     *
      * @return a new Remote Web Driver instance
      */
-    public RemoteWebDriver getWebDriver() {
+    @Deprecated
+    public synchronized RemoteWebDriver getWebDriver() {
+        if (driver == null) {
+            if (capabilities == null) {
+                logger().warn("No capabilities provided - this will cause an exception in future versions. Falling back to ChromeOptions");
+                capabilities = new ChromeOptions();
+            }
+
+            driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
+                () -> Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
+                    () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
+        }
+
         return driver;
     }
 
