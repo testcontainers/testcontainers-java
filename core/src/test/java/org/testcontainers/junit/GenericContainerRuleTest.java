@@ -246,6 +246,17 @@ public class GenericContainerRuleTest {
     }
 
     @Test
+    public void customNameTest() {
+        String name = "name-test-" + Base58.randomString(16);
+        try (GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+            .withName(name)
+        ) {
+            container.start();
+            assertEquals("Name is configured", "/" + name, container.getContainerName());
+        }
+    }
+
+    @Test
     public void customLabelTest() {
         try (final GenericContainer alpineCustomLabel = new GenericContainer<>(ALPINE_IMAGE)
             .withLabel("our.custom", "label")

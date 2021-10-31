@@ -150,6 +150,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private Map<String, String> env = new HashMap<>();
 
+    private String name;
+
     @NonNull
     private Map<String, String> labels = new HashMap<>();
 
@@ -861,6 +863,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withPrivileged(privilegedMode);
         }
 
+        if (name != null) {
+            createCommand.withName(name);
+        }
+
         createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
 
         Map<String, String> combinedLabels = new HashMap<>();
@@ -1142,6 +1148,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withEnv(Map<String, String> env) {
         env.forEach(this::addEnv);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withName(String name)
+    {
+        this.name = name;
         return self();
     }
 

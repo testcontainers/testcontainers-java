@@ -204,6 +204,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withEnv(Map<String, String> env);
 
     /**
+     * Set the name of the container.
+     *
+     * @param name container name
+     * @return this
+     */
+    SELF withName(String name);
+
+    /**
      * Add a label to the container.
      *
      * @param key   label key
