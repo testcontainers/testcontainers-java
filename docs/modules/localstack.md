@@ -21,7 +21,7 @@ public void someTestMethod() {
                     .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
                     .withCredentials(localstack.getDefaultCredentialsProvider())
                     .build();
-    
+
             s3.createBucket("foo");
             s3.putObject("foo", "bar", "baz");
 
@@ -39,7 +39,7 @@ public void someTestMethod() {
             s3.putObject(b -> b.bucket("foo").key("bar"), RequestBody.fromBytes("baz".getBytes()));
 ```
 
-Environment variables listed in [Localstack's README](https://github.com/localstack/localstack#configurations) may be used to customize Localstack's configuration. 
+Environment variables listed in [Localstack's README](https://github.com/localstack/localstack#configurations) may be used to customize Localstack's configuration.
 Use the `.withEnv(key, value)` method on `LocalStackContainer` to apply configuration settings.
 
 ## `HOSTNAME_EXTERNAL` and hostname-sensitive services
@@ -61,6 +61,26 @@ Testcontainers will inform Localstack of the best hostname automatically, using 
     <!--/codeinclude-->
 
 * Other usage scenarios, such as where the Localstack container is used from both the test host and containers on a custom network are not automatically supported. If you have this use case, you should set `HOSTNAME_EXTERNAL` manually.
+
+## AWS Lambda and Networking
+
+When a test using Localstack triggers a [AWS Lambda function](https://aws.amazon.com/lambda/), Localstack [starts a new docker container](https://docs.localstack.cloud/localstack/lambda-executors/#docker) to run the Lambda code. This might cause problems if your Lambda function calls other AWS services in your Localstack rig. To fix this we have to make sure these Lambda containers are in the same network as the rest of our containers.
+
+```java
+Network shared = Network.newNetwork()
+String networkName = ((NetworkImpl)shared).getName();
+
+DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.11.3");
+
+@Rule
+public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
+        .withServices(LAMBDA)
+        .withEnv("LAMBDA_DOCKER_NETWORK", networkName)
+        .withNetwork(network)
+        .withNetworkAliases("localstack")
+```
+Your Lambda should now be able to connect to other Localstack AWS services with the `http://localstack:4566` url.
+The `LAMBDA_DOCKER_NETWORK` environment variable is [described in the Localstack docs](https://github.com/localstack/localstack#lambda-configurations).
 
 ## Adding this module to your project dependencies
 
