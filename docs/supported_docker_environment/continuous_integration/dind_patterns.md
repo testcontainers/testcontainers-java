@@ -27,6 +27,7 @@ $ docker run -it --rm -v $PWD:$PWD -w $PWD -v /var/run/docker.sock:/var/run/dock
 ```
 
 Where:
+
 * `-v $PWD:$PWD` will add your current directory as a volume inside the container
 * `-w $PWD` will set the current directory to this volume
 * `-v /var/run/docker.sock:/var/run/docker.sock` will map the Docker socket
