@@ -2,6 +2,7 @@ package org.testcontainers.junit;
 
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -18,9 +19,14 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.TestImages.TINY_IMAGE;
 
 public class CopyFileToContainerTest {
-    public static final String destinationOnHost = "/tmp/test-resource-in-host.txt";
+    public static String destinationOnHost;
     private static String directoryInContainer = "/tmp/mappable-resource/";
     private static String fileName = "test-resource.txt";
+
+    @Before
+    public void setup() throws IOException {
+        destinationOnHost = File.createTempFile("testcontainers", null).getAbsolutePath();
+    }
 
     @Test
     public void checkFileCopied() throws IOException, InterruptedException {
