@@ -44,12 +44,12 @@ public class CopyFileToContainerTest {
             String filesList = container.execInContainer("ls", directoryInContainer).getStdout();
             assertTrue("file list contains the file", filesList.contains(fileName));
 
-            // ...
-
-            // copyFileFromContainer copies a file from a running container
-            container.copyFileFromContainer(directoryInContainer + fileName, destinationOnHost);
-        }
         // }
+
+            // copyFileFromContainer {
+            container.copyFileFromContainer(directoryInContainer + fileName, destinationOnHost);
+            // }
+        }
 
         assertArrayEquals(
             Files.toByteArray(new File(destinationOnHost)),
