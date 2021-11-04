@@ -25,6 +25,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
+import org.testcontainers.images.ImagePullPolicy;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.AuditLogger;
 import org.testcontainers.utility.Base58;
@@ -56,7 +58,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -85,6 +86,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     private boolean build = false;
     private Set<String> options = new HashSet<>();
     private boolean tailChildContainers;
+    private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
     private String project;
 
@@ -187,8 +189,14 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         dockerComposeFiles.getDependencyImages()
             .forEach(imageName -> {
                 try {
-                    log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
-                    DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                    DockerImageName dockerImageName = DockerImageName.parse(imageName);
+                    if (this.imagePullPolicy.shouldPull(dockerImageName)) {
+                        log.info("Pull an image ({}) from a registry.", imageName);
+                        DockerClientFactory.instance().pullImage(dockerClient, imageName);
+                    } else {
+                        log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
+                        DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                    }
                 } catch (Exception e) {
                     log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
@@ -492,6 +500,24 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     public SELF withPull(boolean pull) {
         this.pull = pull;
+        return self();
+    }
+
+    /**
+     * Set the image pull policy.
+     * <p>
+     * This image pull policy will only be used if the value of the property
+     * {@link DockerComposeContainer#pull} is true.
+     * <p>
+     * This setting only determines the behavior of {@link DockerComposeContainer} and does not affect
+     * the image pulling process that {@code docker-compose} can execute before starting containers.
+     *
+     * @param imagePullPolicy image pull policy
+     * @return this instance, for chaining
+     * @see DockerComposeContainer#withPull(boolean) 
+     */
+    public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
+        this.imagePullPolicy = imagePullPolicy;
         return self();
     }
 
