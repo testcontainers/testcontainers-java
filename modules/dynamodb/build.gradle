@@ -1,0 +1,8 @@
+description = "Testcontainers :: AWS DynamoDB"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    testImplementation 'software.amazon.awssdk:dynamodb:2.17.71'
+}
