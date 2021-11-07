@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.testcontainers.junit.jupiter.FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf;
 
-class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
+public class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition, TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
@@ -124,20 +124,20 @@ class TestcontainersExtension implements BeforeEachCallback, BeforeAllCallback, 
             .orElseThrow(() -> new ExtensionConfigurationException("@Testcontainers not found"));
     }
 
-    private Optional<Testcontainers> findTestcontainers(ExtensionContext context) {
+    private Optional<Boolean> findTestcontainers(ExtensionContext context) {
         Optional<ExtensionContext> current = Optional.of(context);
-        while (current.isPresent()) {
-            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(current.get().getRequiredTestClass(), Testcontainers.class);
+        while (current.isPresent() && current.get().getTestClass().isPresent()) {
+            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(current.get().getTestClass(), Testcontainers.class);
             if (testcontainers.isPresent()) {
-                return testcontainers;
+                return testcontainers.map(Testcontainers::disabledWithoutDocker);
             }
             current = current.get().getParent();
         }
-        return Optional.empty();
+        return Optional.of(Testcontainers.defaultDisabledWithoutDocker);
     }
 
-    private ConditionEvaluationResult evaluate(Testcontainers testcontainers) {
-        if (testcontainers.disabledWithoutDocker()) {
+    private ConditionEvaluationResult evaluate(boolean disabledWithoutDocker) {
+        if (disabledWithoutDocker) {
             if (isDockerAvailable()) {
                 return ConditionEvaluationResult.enabled("Docker is available");
             }

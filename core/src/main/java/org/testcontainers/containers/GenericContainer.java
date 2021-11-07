@@ -159,6 +159,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private List<Bind> binds = new ArrayList<>();
 
+    @NonNull
+    private List<LazyFileSystemBind> lazyFileSystemBinds = new ArrayList<>();
+
     private boolean privilegedMode;
 
     @NonNull
@@ -781,7 +784,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 .toArray(String[]::new);
         createCommand.withEnv(envArray);
 
-        boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
+        boolean shouldCheckFileMountingSupport = (binds.size() > 0 || lazyFileSystemBinds.size() > 0)
+            && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
                 logger().warn(
@@ -792,8 +796,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         }
 
-        Bind[] bindsArray = binds.stream()
-                .toArray(Bind[]::new);
+        Bind[] bindsArray = Stream.concat(
+                binds.stream(),
+                lazyFileSystemBinds.stream()
+                    .map(it -> createBind(it.getHostPath(), it.getContainerPath(), it.getMode(), it.getSelinuxContext()))
+            )
+            .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream()
@@ -984,13 +992,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
+        binds.add(createBind(hostPath, containerPath, mode, selinuxContext));
+    }
+
+    @Override
+    public void addFileSystemBind(@NonNull final LazyFileSystemBind lazyBind) {
+        lazyFileSystemBinds.add(lazyBind);
+    }
+
+    private Bind createBind(final String hostPath, final String containerPath, final BindMode mode, final SelinuxContext selinuxContext) {
         if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
             // e.g. Docker socket mount
-            binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+            return new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext);
 
         } else {
             final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-            binds.add(new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+            return new Bind(mountableFile.getResolvedPath(), new Volume(containerPath), mode.accessMode, selinuxContext.selContext);
         }
     }
 
@@ -1000,6 +1017,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode);
+        return self();
+    }
+
+    @Override
+    public SELF withFileSystemBind(@NonNull LazyFileSystemBind lazyBind) {
+        addFileSystemBind(lazyBind);
         return self();
     }
 

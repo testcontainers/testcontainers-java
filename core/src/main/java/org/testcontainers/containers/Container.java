@@ -93,6 +93,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
+     * Adds a lazy file system binding. Consider using {@link #withFileSystemBind(LazyFileSystemBind)}
+     * for building a container in a fluent style.
+     *
+     * @param lazyBind      that will be used to construct actual bind
+     */
+    void addFileSystemBind(final LazyFileSystemBind lazyBind);
+
+    /**
      * Add a link to another container.
      *
      * @param otherContainer the other container object to link to
@@ -147,6 +155,13 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
+
+    /**
+     * Adds a lazy file system binding.
+     * @param lazyBind
+     * @return this
+     */
+    SELF withFileSystemBind(LazyFileSystemBind lazyBind);
 
     /**
      * Adds container volumes.

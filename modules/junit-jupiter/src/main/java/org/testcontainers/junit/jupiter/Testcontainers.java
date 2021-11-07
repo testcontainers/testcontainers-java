@@ -59,9 +59,10 @@ import java.lang.annotation.Target;
 @ExtendWith(TestcontainersExtension.class)
 @Inherited
 public @interface Testcontainers {
+    boolean defaultDisabledWithoutDocker = false;
 
     /**
      * Whether tests should be disabled (rather than failing) when Docker is not available.
      */
-    boolean disabledWithoutDocker() default false;
+    boolean disabledWithoutDocker() default defaultDisabledWithoutDocker;
 }

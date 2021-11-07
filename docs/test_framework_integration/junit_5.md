@@ -27,6 +27,10 @@ unsupported and may have unintended side effects.
 [Mixed Lifecycle](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) inside_block:testClass
 <!--/codeinclude-->
 
+You can use `@Testcontainers` annotation with JUnit5's `@ExtendWith` annotation to expression extensions execution order.
+If you want to use `@Testcontainers.disabledWithoutDocker` property, put `@Testcontainers` annotation on class. Configured
+property will be loaded and order of extension will also preserve. 
+
 ## Examples
 
 To use the Testcontainers extension annotate your test class with `@Testcontainers`.
