@@ -65,6 +65,7 @@ Using Maven you can add the following to `dependencyManagement` section in your 
     </dependencies>
 </dependencyManagement>
 ```
+
 and then use dependencies without specifying a version:
 
 ```xml tab='Maven'
