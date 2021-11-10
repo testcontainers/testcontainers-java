@@ -162,14 +162,18 @@ public class GenericContainerTest {
             GenericContainer container = new GenericContainer<>(image)
                 .withExposedPorts(8080, 8081)
                 .withCreateContainerCmdModifier(cmd -> {
-                    //Add previously exposed ports
-                    List<ExposedPort> ports = new ArrayList<>();
+                    //Add previously exposed ports and UDP port
+                    List<ExposedPort> exposedPorts = new ArrayList<>();
                     for (ExposedPort p : cmd.getExposedPorts()) {
-                        ports.add(p);
+                        exposedPorts.add(p);
                     }
-                    //Add and expose UDP port
-                    ports.add(ExposedPort.udp(99));
-                    cmd.withExposedPorts(ports);
+                    exposedPorts.add(ExposedPort.udp(99));
+                    cmd.withExposedPorts(exposedPorts);
+
+                    //Add previous port bindings and UDP port binding
+                    Ports ports = cmd.getPortBindings();
+                    ports.bind(ExposedPort.udp(99), Ports.Binding.empty());
+                    cmd.withPortBindings(ports);
                 }
             )
         ) {
