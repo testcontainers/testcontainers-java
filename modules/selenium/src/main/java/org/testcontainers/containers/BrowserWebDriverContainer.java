@@ -9,10 +9,13 @@ import com.github.dockerjava.api.model.Volume;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -169,8 +172,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         // Hack for new selenium-chrome image that contains Chrome 92.
         // If not disabled, container startup will fail in most cases and consume excessive amounts of CPU.
         if (capabilities instanceof ChromeOptions) {
-            ChromeOptions options = (ChromeOptions) this.capabilities;
-            options.addArguments("--disable-gpu");
+            try {
+                ChromeOptions.class.getMethod("addArguments", List.class).invoke(this.capabilities, Collections.singletonList("--disable-gpu"));
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                logger().error("Exception while trying to add --disable-gpu to chromes startup arguments", e);
+            }
         }
 
         if (recordingMode != VncRecordingMode.SKIP) {
