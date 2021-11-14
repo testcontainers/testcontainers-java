@@ -14,7 +14,7 @@ YugabyteDB supports two APIs.
 public class YugabyteDBTest {
 
     @Rule
-    public YugabyteYSQLContainer container = new YugabyteYSQLContainer("yugabytedb/yugabyte:2.7.2.0-b216");
+    public YugabyteYSQLContainer container = new YugabyteYSQLContainer("yugabytedb/yugabyte:2.9.1.0-b140");
     
     @Test
     public void method() {
@@ -33,7 +33,7 @@ public class YugabyteDBTest {
 public class YugabyteDBTest {
 
     @Rule
-    public YugabyteYCQLContainer container = new YugabyteYCQLContainer("yugabytedb/yugabyte:2.7.2.0-b216");
+    public YugabyteYCQLContainer container = new YugabyteYCQLContainer("yugabytedb/yugabyte:2.9.1.0-b140");
     
     @Test
     public void method() {
@@ -43,4 +43,23 @@ public class YugabyteDBTest {
 ```
 
 ## Adding this module to your project dependencies
-[[TODO]]
+
+Add the following dependency to your `pom.xml`/`build.gradle` file:
+
+```groovy tab='Gradle'
+testImplementation "org.testcontainers:yugabytedb:{{latest_version}}"
+```
+
+```xml tab='Maven'
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>yugabytedb</artifactId>
+    <version>{{latest_version}}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+!!! hint
+    Adding this Testcontainers library JAR will not automatically add the Yugabytedb driver JAR to your project.
+    You should ensure that your project has the Yugabytedb driver as a dependency, if you plan on using it.
+    Refer to the driver page [YSQL](https://docs.yugabyte.com/latest/integrations/jdbc-driver/) and [YCQL](https://docs.yugabyte.com/latest/reference/drivers/ycql-client-drivers/) for instructions.
