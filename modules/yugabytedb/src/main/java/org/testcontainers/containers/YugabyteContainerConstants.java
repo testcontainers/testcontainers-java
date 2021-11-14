@@ -11,7 +11,7 @@ public interface YugabyteContainerConstants {
 
 	DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yugabytedb/yugabyte");
 
-	String DEFAULT_TAG = "2.7.2.0-b216";
+	String DEFAULT_TAG = "2.9.1.0-b140";
 
 	String NAME = "yugabyte";
 
@@ -23,9 +23,9 @@ public interface YugabyteContainerConstants {
 
 	Integer TSERVER_DASHBOARD_PORT = 9000;
 
-	String JDBC_DRIVER_CLASS = "org.postgresql.Driver";
+	String JDBC_DRIVER_CLASS = "com.yugabyte.Driver";
 
-	String JDBC_CONNECT_PREFIX = "jdbc:postgresql";
+	String JDBC_CONNECT_PREFIX = "jdbc:yugabytedb";
 
 	String ENTRYPOINT = "bin/yugabyted start --daemon=false";
 
