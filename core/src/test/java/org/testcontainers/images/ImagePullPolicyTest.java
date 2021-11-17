@@ -8,6 +8,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.rnorth.visibleassertions.VisibleAssertions;
@@ -24,6 +25,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
 
+@Ignore
 public class ImagePullPolicyTest {
 
     @ClassRule

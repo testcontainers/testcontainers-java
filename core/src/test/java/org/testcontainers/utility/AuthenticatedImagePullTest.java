@@ -10,6 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
@@ -45,6 +46,7 @@ import static org.testcontainers.TestImages.TINY_IMAGE;
  * {@link RegistryAuthLocatorTest} covers actual credential scenarios at a lower level, which are
  * impractical to test end-to-end.
  */
+@Ignore
 public class AuthenticatedImagePullTest {
 
     /**
