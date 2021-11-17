@@ -22,11 +22,9 @@ public class ExternalPortListeningCheck implements Callable<Boolean> {
         String address = containerState.getHost();
 
         externalLivenessCheckPorts.parallelStream().forEach(externalPort -> {
-            try {
-                Socket socket = new Socket();
+            try (Socket socket = new Socket()) {
                 InetSocketAddress inetSocketAddress = new InetSocketAddress(address, externalPort);
-                socket.connect(inetSocketAddress, 2000);
-                socket.close();
+                socket.connect(inetSocketAddress, 1000);
             } catch (IOException e) {
                 throw new IllegalStateException("Socket not listening yet: " + externalPort);
             }
