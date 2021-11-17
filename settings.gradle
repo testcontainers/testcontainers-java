@@ -40,20 +40,21 @@ ext.isMasterBuild = false ||
 
 buildCache {
     local {
-        enabled = !isMasterBuild
+        enabled = true
     }
+    remote(HttpBuildCache) { enabled = false }
 
-    remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
-        endpoint = 'fra1.digitaloceanspaces.com'
-        region = 'fra1'
-        bucket = 'testcontainers'
-        path = 'cache'
-        reducedRedundancy = false
-        push = isMasterBuild && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
-        headers = [
-            'x-amz-acl': 'public-read'
-        ]
-    }
+    // remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
+    //     endpoint = 'fra1.digitaloceanspaces.com'
+    //     region = 'fra1'
+    //     bucket = 'testcontainers'
+    //     path = 'cache'
+    //     reducedRedundancy = false
+    //     push = isMasterBuild && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
+    //     headers = [
+    //         'x-amz-acl': 'public-read'
+    //     ]
+    // }
 }
 
 gradleEnterprise {
