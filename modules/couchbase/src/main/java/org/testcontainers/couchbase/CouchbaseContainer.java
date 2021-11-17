@@ -473,7 +473,30 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                         .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
                         .build(), true);
 
-                    checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
+                    try {
+                        checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
+                    } catch (IllegalStateException ex) {
+                        // potentially ignore the error, the index will be eventually built.
+                        if (!ex.getMessage().contains("Index creation will be retried in background")) {
+                            throw ex;
+                        }
+                    }
+
+                    timePhase(
+                        "createBucket:" + bucket.getName() + ":primaryIndexOnline",
+                        () ->  Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                            @Cleanup Response stateResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                                .add("statement", "SELECT count(*) > 0 AS online FROM system:indexes where keyspace_id = \"" + bucket.getName() + "\" and is_primary = true and state = \"online\"")
+                                .build(), true);
+
+                            String body = stateResponse.body() != null ? stateResponse.body().string() : null;
+                            checkSuccessfulResponse(stateResponse, "Could not poll primary index state for bucket: " + bucket.getName());
+
+                            return Optional.of(MAPPER.readTree(body))
+                                .map(n -> n.at("/results/0/online"))
+                                .map(JsonNode::asBoolean)
+                                .orElse(false);
+                    }));
                 } else {
                     logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucket.getName());
                 }
@@ -508,7 +531,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 }
             }
 
-            throw new IllegalStateException(message + ": " + response.toString() + ", body=" + (body == null ? "<null>" : body));
+            throw new IllegalStateException(message + ": " + response + ", body=" + (body == null ? "<null>" : body));
         }
     }
 
