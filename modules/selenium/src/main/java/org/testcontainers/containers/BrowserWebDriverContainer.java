@@ -44,13 +44,15 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer, TestLifecycleAware {
 
-    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
-    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
+    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome");
+    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox");
+    private static final DockerImageName CHROME_DEBUG_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
+    private static final DockerImageName FIREFOX_DEBUG_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
     private static final DockerImageName[] COMPATIBLE_IMAGES = new DockerImageName[] {
         CHROME_IMAGE,
         FIREFOX_IMAGE,
-        DockerImageName.parse("selenium/standalone-chrome"),
-        DockerImageName.parse("selenium/standalone-firefox")
+        CHROME_DEBUG_IMAGE,
+        FIREFOX_DEBUG_IMAGE
     };
 
     private static final String DEFAULT_PASSWORD = "secret";
@@ -247,9 +249,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         String browserName = capabilities.getBrowserName();
         switch (browserName) {
             case BrowserType.CHROME:
-                return CHROME_IMAGE.withTag(seleniumVersion);
+                return (seleniumVersion.startsWith("4.") ? CHROME_IMAGE : CHROME_DEBUG_IMAGE).withTag(seleniumVersion);
             case BrowserType.FIREFOX:
-                return FIREFOX_IMAGE.withTag(seleniumVersion);
+                return (seleniumVersion.startsWith("4.") ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(seleniumVersion);
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }
