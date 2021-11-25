@@ -48,7 +48,7 @@ subprojects {
         outputs.dir(outputDir)
         for (srcDir in project.sourceSets.main.java.srcDirs) {
             inputs.dir(srcDir)
-            args(srcDir, "-d", outputDir)
+            args(srcDir, "-d", outputDir, "-f", "generateDelombokComment:skip")
         }
     }
     delombok.onlyIf {
