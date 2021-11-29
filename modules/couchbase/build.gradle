@@ -4,5 +4,5 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'com.couchbase.client:java-client:3.2.2'
-    testImplementation 'org.awaitility:awaitility:4.1.0'
+    testImplementation 'org.awaitility:awaitility:4.1.1'
 }
