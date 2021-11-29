@@ -41,7 +41,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using TimescaleDB
 
-`jdbc:tc:timescaldb:2.1.0-pg13:///databasename`
+`jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
 
 #### Using Trino
 
