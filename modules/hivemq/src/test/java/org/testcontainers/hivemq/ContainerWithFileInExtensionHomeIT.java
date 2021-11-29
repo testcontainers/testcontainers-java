@@ -59,6 +59,7 @@ public class ContainerWithFileInExtensionHomeIT {
 
         final HiveMQContainer extension =
                 new HiveMQContainer()
+                    .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                     .withExtension(hiveMQExtension)
                     .waitForExtension(hiveMQExtension)
                     .withFileInExtensionHomeFolder(

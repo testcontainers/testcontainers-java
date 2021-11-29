@@ -40,12 +40,13 @@ public class ContainerWithGradleExtensionIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void test() throws Exception {
         final MountableFile gradleExtension = new GradleHiveMQExtensionSupplier(
-                new File(getClass().getResource("/gradle-extension").toURI()))
-                .get();
+            new File(getClass().getResource("/gradle-extension").toURI()))
+            .get();
 
         final HiveMQContainer container = new HiveMQContainer()
-                .waitForExtension("Gradle Extension")
-                .withExtension(gradleExtension);
+            .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+            .waitForExtension("Gradle Extension")
+            .withExtension(gradleExtension);
 
         container.start();
         TestPublishModifiedUtil.testPublishModified(container.getMqttPort());

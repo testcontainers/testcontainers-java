@@ -51,17 +51,18 @@ public class ContainerWithFileInHomeIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
         final HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
-                .id("extension-1")
-                .name("my-extension")
-                .version("1.0")
-                .mainClass(FileCheckerExtension.class).build();
+            .id("extension-1")
+            .name("my-extension")
+            .version("1.0")
+            .mainClass(FileCheckerExtension.class).build();
 
         final HiveMQContainer extension =
-                new HiveMQContainer()
-                        .withExtension(hiveMQExtension)
-                        .waitForExtension(hiveMQExtension)
-                        .withFileInHomeFolder(MountableFile.forClasspathResource("/additionalFile.txt"),
-                                "/additionalFiles/my-file.txt");
+            new HiveMQContainer()
+                .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                .withExtension(hiveMQExtension)
+                .waitForExtension(hiveMQExtension)
+                .withFileInHomeFolder(MountableFile.forClasspathResource("/additionalFile.txt"),
+                    "/additionalFiles/my-file.txt");
 
         extension.start();
         TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
