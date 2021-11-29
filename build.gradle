@@ -46,6 +46,9 @@ subprojects {
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
         def outputDir = file("$buildDir/delombok")
         outputs.dir(outputDir)
+        outputs.cacheIf {
+            true
+        }
         for (srcDir in project.sourceSets.main.java.srcDirs) {
             inputs.dir(srcDir)
             args(srcDir, "-d", outputDir, "-f", "generateDelombokComment:skip")
