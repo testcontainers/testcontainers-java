@@ -34,7 +34,7 @@ dependencies {
     testImplementation("com.hivemq:hivemq-extension-sdk:${property("hivemq-extension-sdk.version")}")
     testImplementation("com.hivemq:hivemq-mqtt-client:${property("hivemq-mqtt-client.version")}")
     testImplementation("org.apache.httpcomponents:httpclient:${property("httpclient.version")}")
-    testImplementation("ch.qos.logback:logback-classic:${property("logback.version")}") k
+    testImplementation("ch.qos.logback:logback-classic:${property("logback.version")}")
 
 }
 
