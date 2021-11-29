@@ -72,10 +72,10 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
                     "   <start-priority>%s</start-priority>" +  //
                     "</hivemq-extension>";
 
-    public static final @NotNull DockerImageName DEFAULT_HIVEMQ_CE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq-ce");
-    public static final @NotNull DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4");
-    public static final @NotNull String DEFAULT_HIVEMQ_CE_TAG = "2021.3";
     public static final @NotNull String DEFAULT_HIVEMQ_EE_TAG = "4.7.2";
+    public static final @NotNull String DEFAULT_HIVEMQ_CE_TAG = "2021.3";
+    public static final @NotNull DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4").withTag(DEFAULT_HIVEMQ_EE_TAG);
+    public static final @NotNull DockerImageName DEFAULT_HIVEMQ_CE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq-ce").withTag(DEFAULT_HIVEMQ_CE_TAG);
 
     public static final int DEBUGGING_PORT = 9000;
     public static final int MQTT_PORT = 1883;
