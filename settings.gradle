@@ -40,9 +40,13 @@ ext.isMasterBuild = false ||
 
 buildCache {
     local {
-        enabled = true
+        enabled = false
     }
-    remote(HttpBuildCache) { enabled = false }
+    remote(HttpBuildCache) { 
+        push = true
+        enabled = true
+        url = 'https://ge.testcontainers.org/cache/' 
+    }
 
     // remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
     //     endpoint = 'fra1.digitaloceanspaces.com'
