@@ -45,7 +45,7 @@ public class ContainerWithControlCenterIT {
     public void test() throws Exception {
 
         final HiveMQContainer extension =
-                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
+                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME.withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
                         .withControlCenter();
 
         extension.start();

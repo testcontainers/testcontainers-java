@@ -44,24 +44,24 @@ public class ContainerWithCustomConfigIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQContainer extension = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
-                .withHiveMQConfig(MountableFile.forClasspathResource("/config.xml"));
+        final HiveMQContainer extension = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME.withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
+            .withHiveMQConfig(MountableFile.forClasspathResource("/config.xml"));
 
         extension.start();
 
         final Mqtt5BlockingClient publisher = Mqtt5Client.builder()
-                .identifier("publisher")
-                .serverPort(extension.getMqttPort())
-                .buildBlocking();
+            .identifier("publisher")
+            .serverPort(extension.getMqttPort())
+            .buildBlocking();
 
         publisher.connect();
 
         assertThrows(MqttSessionExpiredException.class, () -> {
             // this should fail since only QoS 0 is allowed by the configuration
             publisher.publishWith()
-                    .topic("test/topic")
-                    .qos(MqttQos.EXACTLY_ONCE)
-                    .send();
+                .topic("test/topic")
+                .qos(MqttQos.EXACTLY_ONCE)
+                .send();
         });
 
         extension.stop();
