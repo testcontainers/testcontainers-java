@@ -34,7 +34,7 @@ dependencies {
     testImplementation("com.hivemq:hivemq-extension-sdk:${property("hivemq-extension-sdk.version")}")
     testImplementation("com.hivemq:hivemq-mqtt-client:${property("hivemq-mqtt-client.version")}")
     testImplementation("org.apache.httpcomponents:httpclient:${property("httpclient.version")}")
-    testImplementation("ch.qos.logback:logback-classic:${property("logback.version")}")
+    testImplementation("ch.qos.logback:logback-classic:${property("logback.version")}") k
 
 }
 
@@ -45,5 +45,5 @@ tasks.withType<Test> {
 license {
     header = projectDir.resolve("HEADER")
     mapping("java", "SLASHSTAR_STYLE")
-    excludes(mutableListOf("gradle-wrapper.properties", "gradlew", "gradlew.bat"))
+    excludes(mutableListOf("**/gradle-wrapper.properties", "**/gradlew", "**/gradlew.bat"))
 }
