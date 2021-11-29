@@ -46,6 +46,10 @@ buildCache {
         push = true
         enabled = true
         url = 'https://ge.testcontainers.org/cache/' 
+        credentials {
+            username = 'ci'
+            password = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY")
+        }
     }
 
     // remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
