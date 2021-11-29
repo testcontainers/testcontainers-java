@@ -1,4 +1,9 @@
-description = "Core API for testing HiveMQ Extensions and Java MQTT Applications."
+description = "Core API for testing MQTT Applications."
+
+plugins {
+    `java-library`
+    id("com.github.hierynomus.license") version "0.16.1"
+}
 
 dependencies {
     api(project(":testcontainers"))
@@ -35,4 +40,10 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+license {
+    header = projectDir.resolve("HEADER")
+    mapping("java", "SLASHSTAR_STYLE")
+    excludes(mutableListOf("gradle-wrapper.properties", "gradlew", "gradlew.bat"))
 }
