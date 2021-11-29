@@ -7,8 +7,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.18.20"
-    annotationProcessor "org.projectlombok:lombok:1.18.16"
+    compileOnly "org.projectlombok:lombok:1.18.22"
+    annotationProcessor "org.projectlombok:lombok:1.18.22"
 
     implementation 'org.apache.solr:solr-solrj:8.10.1'
 
