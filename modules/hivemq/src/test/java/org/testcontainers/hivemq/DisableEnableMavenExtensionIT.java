@@ -51,7 +51,7 @@ public class DisableEnableMavenExtensionIT {
                 .get();
 
         final HiveMQContainer extension =
-                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME.withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
+                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                         .waitForExtension("Maven Extension")
                         .withExtension(extensionDir);
 

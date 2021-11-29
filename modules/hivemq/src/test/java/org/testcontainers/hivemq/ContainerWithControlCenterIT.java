@@ -45,7 +45,7 @@ public class ContainerWithControlCenterIT {
     public void test() throws Exception {
 
         final HiveMQContainer extension =
-                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME.withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
+                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                         .withControlCenter();
 
         extension.start();

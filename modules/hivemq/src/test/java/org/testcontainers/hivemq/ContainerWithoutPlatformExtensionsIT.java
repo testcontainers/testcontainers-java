@@ -66,7 +66,7 @@ public class ContainerWithoutPlatformExtensionsIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeAllPlatformExtensions() throws InterruptedException {
 
-        final HiveMQContainer container = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME.withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
+        final HiveMQContainer container = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                 .withExtension(hiveMQExtension)
                 .waitForExtension(hiveMQExtension)
                 .withoutPrepackagedExtensions();
@@ -98,7 +98,7 @@ public class ContainerWithoutPlatformExtensionsIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeKafkaExtension() throws InterruptedException {
 
-        final HiveMQContainer container = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
+        final HiveMQContainer container = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                 .withExtension(hiveMQExtension)
                 .waitForExtension(hiveMQExtension)
                 .withoutPrepackagedExtensions("hivemq-kafka-extension");

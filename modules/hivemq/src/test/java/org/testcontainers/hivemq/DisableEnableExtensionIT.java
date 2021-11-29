@@ -52,7 +52,7 @@ public class DisableEnableExtensionIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
         final HiveMQContainer extension =
-                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME.withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
+                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                         .withExtension(hiveMQExtension)
                         .withLogLevel(Level.DEBUG);
 

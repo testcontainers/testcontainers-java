@@ -44,7 +44,7 @@ public class ContainerWithCustomConfigIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQContainer extension = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME.withTag(HiveMQContainer.DEFAULT_HIVEMQ_EE_TAG))
+        final HiveMQContainer extension = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
             .withHiveMQConfig(MountableFile.forClasspathResource("/config.xml"));
 
         extension.start();
