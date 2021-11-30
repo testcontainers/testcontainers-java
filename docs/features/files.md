@@ -19,7 +19,7 @@ Files can be copied into the container before startup, or can be copied from the
 ## File mapping
 
 !!! warning
-    This feature is not supported for all Docker environments. Consider using the `copy` APIs instead.
+    This feature is not supported for all Docker environments (e.g., when using the _Docker Wormhole Pattern_ through Docker socket mounting). Consider using the `copy` APIs instead.
 
 It is possible to map a file or directory from your FileSystem into the container as a volume using `withFileSystemBind`:
 ```java
@@ -31,7 +31,7 @@ new GenericContainer(...)
 ## Volume mapping
 
 !!! warning
-    This feature is not supported for all Docker environments. Consider using the `copy` APIs instead.
+    This feature is not supported for all Docker environments (e.g., when using the _Docker Wormhole Pattern_ through Docker socket mounting). Consider using the `copy` APIs instead.
 
 It is possible to map a file or directory **on the classpath** into the container as a volume using `withClasspathResourceMapping`:
 ```java
