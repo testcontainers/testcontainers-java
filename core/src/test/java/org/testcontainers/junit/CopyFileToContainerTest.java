@@ -30,21 +30,20 @@ public class CopyFileToContainerTest {
 
     @Test
     public void checkFileCopied() throws IOException, InterruptedException {
-        // copyToContainer {
         try (
+            // copyToContainer {
             GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
                 .withCommand("sleep", "3000")
                 // withCopyFileToContainer ensure that a file or directory will be copied to the container
                 // before starting. In this case, we map a classpath directory to a directory inside the container
                 .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), directoryInContainer)
+            // }
         ) {
             container.start();
 
             // at this point directoryInContainer should exist, and should contain copies of file(s)
             String filesList = container.execInContainer("ls", directoryInContainer).getStdout();
             assertTrue("file list contains the file", filesList.contains(fileName));
-
-        // }
 
             // copyFileFromContainer {
             container.copyFileFromContainer(directoryInContainer + fileName, destinationOnHost);
