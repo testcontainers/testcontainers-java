@@ -48,7 +48,7 @@ buildCache {
         url = 'https://ge.testcontainers.org/cache/' 
         credentials {
             username = 'ci'
-            password = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY")
+            password = System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
         }
     }
 
