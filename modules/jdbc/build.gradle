@@ -4,7 +4,7 @@ dependencies {
     api project(':database-commons')
     testImplementation project(':test-support')
 
-    compileOnly 'org.jetbrains:annotations:22.0.0'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
     testImplementation 'commons-dbutils:commons-dbutils:1.7'
     testImplementation 'org.vibur:vibur-dbcp:25.0'
     testImplementation 'org.apache.tomcat:tomcat-jdbc:10.0.12'
