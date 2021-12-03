@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.zeroturnaround.exec.InvalidResultException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -337,8 +338,9 @@ public class RegistryAuthLocator {
     private String runCredentialProgram(String hostName, String credentialHelperName)
         throws InvalidResultException, InterruptedException, TimeoutException, IOException {
 
+        String[] command = SystemUtils.IS_OS_WINDOWS ? new String[] {"cmd", "/c", credentialHelperName, "get"} : new String[]{credentialHelperName, "get"};
         return new ProcessExecutor()
-                        .command(credentialHelperName, "get")
+                        .command(command)
                         .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
                         .readOutput(true)
                         .exitValueNormal()
