@@ -25,12 +25,12 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2.3.1
+      - uses: actions/setup-java@v2.4.0
         with:
           java-version: '8.0.302'
           distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-home-testmatrix-${{ hashFiles('**/*.gradle') }}
@@ -51,12 +51,12 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2.3.1
+      - uses: actions/setup-java@v2.4.0
         with:
           java-version: '8.0.302'
           distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         continue-on-error: true
         with:
           path: ~/.gradle/caches
