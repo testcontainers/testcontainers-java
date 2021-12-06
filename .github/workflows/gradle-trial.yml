@@ -14,10 +14,6 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - { XDG_RUNTIME_DIR: "" }
-          - { XDG_RUNTIME_DIR: "/tmp/docker-testcontainers/" }
     env:
       XDG_RUNTIME_DIR: ${{ matrix.XDG_RUNTIME_DIR }}
     steps:
@@ -27,4 +23,4 @@ jobs:
           java-version: '8.0.302'
           distribution: temurin
       - name: Build with Gradle
-        run: ./gradlew --no-daemon clean testcontainers:check -Dscan.tag.exp4
+        run: ./gradlew --no-daemon clean testcontainers:check -Dscan.tag.exp5

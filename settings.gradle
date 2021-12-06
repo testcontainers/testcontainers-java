@@ -38,12 +38,14 @@ ext.isMasterBuild = false ||
     (System.getenv("GITHUB_REF") == "refs/heads/master") ||
     (System.getenv("BUILD_SOURCEBRANCHNAME") == "master")
 
+ext.isCI = System.getenv("CI") != null
+
 buildCache {
     local {
         enabled = false
     }
     remote(HttpBuildCache) { 
-        push = true
+        push = isCI
         enabled = true
         url = 'https://ge.testcontainers.org/cache/' 
         credentials {
@@ -70,7 +72,7 @@ gradleEnterprise {
         server = "https://ge.testcontainers.org/"
         publishAlways()
         publishIfAuthenticated()
-        uploadInBackground = System.getenv("CI") == null
+        uploadInBackground = !isCI
         captureTaskInputFiles = true
     }
 
