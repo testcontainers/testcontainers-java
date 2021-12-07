@@ -46,7 +46,6 @@ import static org.testcontainers.TestImages.TINY_IMAGE;
  * {@link RegistryAuthLocatorTest} covers actual credential scenarios at a lower level, which are
  * impractical to test end-to-end.
  */
-@Ignore
 public class AuthenticatedImagePullTest {
 
     /**

@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
 
-@Ignore
 public class ImagePullPolicyTest {
 
     @ClassRule
