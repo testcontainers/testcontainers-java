@@ -40,7 +40,7 @@ ext.isCI = System.getenv("CI") != null
 
 buildCache {
     local {
-        enabled = !isCi
+        enabled = !isCI
     }
     remote(HttpBuildCache) { 
         push = isCI
