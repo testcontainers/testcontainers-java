@@ -50,8 +50,10 @@ public interface Network extends AutoCloseable, TestRule {
     @Getter
     class NetworkImpl extends ExternalResource implements Network {
 
+        @Builder.Default
         private String name = UUID.randomUUID().toString();
 
+        @Builder.Default
         private Boolean withReuse = false;
 
         private Boolean enableIpv6;
