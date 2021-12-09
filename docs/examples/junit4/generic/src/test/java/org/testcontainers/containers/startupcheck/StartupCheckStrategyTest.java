@@ -45,7 +45,7 @@ public class StartupCheckStrategyTest {
 
         @SneakyThrows
         @Test
-        public void testCommandIsExecuted() {
+        public void oneShotStrategyTest() {
             waitForHello(bboxWithOneShot);
 
             assertThat(bboxWithOneShot.isRunning()).isFalse();
@@ -64,7 +64,7 @@ public class StartupCheckStrategyTest {
 
         @SneakyThrows
         @Test
-        public void testCommandIsExecuted() {
+        public void indefiniteOneShotStrategyTest() {
             waitForHello(bboxWithIndefiniteOneShot);
 
             assertThat(bboxWithIndefiniteOneShot.isRunning()).isFalse();
@@ -83,7 +83,7 @@ public class StartupCheckStrategyTest {
 
         @SneakyThrows
         @Test
-        public void testCommandIsExecuted() {
+        public void minimumDurationStrategyTest() {
             waitForHello(bboxWithMinimumDuration);
 
             assertThat(bboxWithMinimumDuration.isRunning()).isTrue();
