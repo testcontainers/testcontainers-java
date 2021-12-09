@@ -1,7 +1,7 @@
 # GitLab CI
 
 ## example with docker.sock
-If you have your own docker runner installed and you have `/var/run/docker.sock` mounted in the gitlabrunner, please apply the following steps:
+If you have your own docker runner installed, and you have `/var/run/docker.sock` mounted in the gitlabrunner.
 
 See below for example configuration for your own docker gitlab runner: 
 ```toml
@@ -10,11 +10,6 @@ See below for example configuration for your own docker gitlab runner:
   url = "https://gitlab.com/"
   token = "GENERATED_GITLAB_RUNNER_TOKEN"
   executor = "docker"
-  [runners.custom_build_dir]
-  [runners.cache]
-    [runners.cache.s3]
-    [runners.cache.gcs]
-    [runners.cache.azure]
   [runners.docker]
     tls_verify = false
     image = "docker:latest"
@@ -26,20 +21,14 @@ See below for example configuration for your own docker gitlab runner:
     shm_size = 0
 ```
 
-Here is a sample `.gitlab-ci.yml` that executes the test with maven:
+Please include the following in the test task for `.gitlab-ci.yml`:
 ```yml
-compile:api:
-  image: maven:3-eclipse-temurin
-  stage: test
-  variables:
-    TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
-  script: 
-    - mvn package -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -B
-  artifacts:
-    untracked: true
+variables:
+  TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
 ```
 
-The environment variable `TESTCONTAINERS_HOST_OVERRIDE` needs to be configured otherwise a wrong ip address would be assigned, which could lead to failing tests.
+The environment variable `TESTCONTAINERS_HOST_OVERRIDE` needs to be configured otherwise a wrong ip address would be 
+assigned to resolve the host of the runner, which could lead to failing tests.
 
 ## example with dind - docker-in-docker service
 
