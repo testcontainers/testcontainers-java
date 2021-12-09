@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.CreateNetworkCmd;
 import com.github.dockerjava.api.command.ListNetworksCmd;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Singular;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
@@ -46,7 +47,10 @@ public interface Network extends AutoCloseable, TestRule {
     }
 
     static Network newNetwork(String networkName) {
-        return builder().name(networkName).withReuse(true).build();
+        return builder()
+            .name(networkName)
+            .withReuse(true)
+            .build();
     }
 
     static NetworkImpl.NetworkImplBuilder builder() {
