@@ -22,7 +22,14 @@ import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
 
-    Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
+    Network SHARED = new NetworkImpl(
+        UUID.randomUUID().toString(),
+        false,
+        false,
+        null,
+        Collections.emptySet(),
+        null
+    ) {
         @Override
         public void close() {
             // Do not allow users to close SHARED network, only ResourceReaper is allowed to close (destroy) it
@@ -67,18 +74,6 @@ public interface Network extends AutoCloseable, TestRule {
         private String id;
 
         private final AtomicBoolean initialized = new AtomicBoolean();
-
-        public NetworkImpl(
-            Boolean enableIpv6,
-            String driver,
-            Set<Consumer<CreateNetworkCmd>> createNetworkCmdModifiers,
-            String id
-        ) {
-            this.enableIpv6 = enableIpv6;
-            this.driver = driver;
-            this.createNetworkCmdModifiers = createNetworkCmdModifiers;
-            this.id = id;
-        }
 
         @Override
         public synchronized String getId() {
