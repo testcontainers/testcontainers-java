@@ -6,6 +6,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
+import org.testcontainers.utility.ResourceReaper;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
@@ -93,6 +94,28 @@ public class NetworkTest {
                         "macvlan",
                         DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
                 );
+            }
+        }
+
+        @Test
+        public void testResuableNamedNetwork() {
+            try (Network network = Network.newNetwork("random-network-87hf8f")) {
+                String firstId = network.getId();
+                assertNotNull(
+                    "Network exists",
+                    DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(firstId).exec()
+                );
+
+                network.close();
+
+                assertEquals(
+                    "Same network reused, network close didn't work",
+                    firstId,
+                    DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(network.getId()).exec().getId()
+                );
+
+                // cleanup
+                ResourceReaper.instance().removeNetworkById(network.getId());
             }
         }
 
