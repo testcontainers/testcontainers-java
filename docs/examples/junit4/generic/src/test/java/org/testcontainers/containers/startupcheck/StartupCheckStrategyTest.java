@@ -77,7 +77,7 @@ public class StartupCheckStrategyTest {
         @Rule
         // withMinimumDurationStrategy {
         public GenericContainer<?> bboxWithMinimumDuration = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
-            .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
+            .withCommand("sh", "-c", String.format("sleep 1 && echo \"%s\" && sleep 5", HELLO_TESTCONTAINERS))
             .withStartupCheckStrategy(
                 new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(1))
             );

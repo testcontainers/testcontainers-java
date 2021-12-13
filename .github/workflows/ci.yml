@@ -44,7 +44,10 @@ jobs:
           echo $TASKS
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
-    needs: [thundra_test_initializer]
+    needs: [find_gradle_jobs, thundra_test_initializer]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -52,6 +55,12 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
+      - name: Cache Gradle Home files
+        uses: actions/cache@v2.1.7
+        continue-on-error: true
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
       - name: Clear existing docker image cache
         run: docker image prune -af
       - name: Thundra Gradle Test Instrumentation
@@ -62,7 +71,7 @@ jobs:
           project_id: ${{ secrets.THUNDRA_PROJECT_ID }}
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan :docs:examples:junit4:generic:check \
+          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} \
             $([[ -f $THUNDRA_GRADLE_INIT_SCRIPT_PATH ]] && echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
         env:
           THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
