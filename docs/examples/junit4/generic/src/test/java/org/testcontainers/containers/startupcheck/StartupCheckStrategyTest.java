@@ -46,6 +46,7 @@ public class StartupCheckStrategyTest {
         @SneakyThrows
         @Test
         public void oneShotStrategyTest() {
+            System.out.println("I don't want cache!");
             waitForHello(bboxWithOneShot);
 
             assertThat(bboxWithOneShot.isRunning()).isFalse();
@@ -65,6 +66,7 @@ public class StartupCheckStrategyTest {
         @SneakyThrows
         @Test
         public void indefiniteOneShotStrategyTest() {
+            System.out.println("I don't want cache!");
             waitForHello(bboxWithIndefiniteOneShot);
 
             assertThat(bboxWithIndefiniteOneShot.isRunning()).isFalse();
@@ -84,6 +86,7 @@ public class StartupCheckStrategyTest {
         @SneakyThrows
         @Test
         public void minimumDurationStrategyTest() {
+            System.out.println("I don't want cache!");
             waitForHello(bboxWithMinimumDuration);
 
             assertThat(bboxWithMinimumDuration.isRunning()).isTrue();
