@@ -12,7 +12,7 @@ env:
 
 jobs:
   thundra_test_initializer:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       thundra_agent_testrun_id: ${{ steps.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
     steps:
@@ -20,7 +20,7 @@ jobs:
       - id: thundra_test_initializer
         uses: thundra-io/thundra-test-init-action@v1
   find_gradle_jobs:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2.4.0
