@@ -45,7 +45,6 @@ jobs:
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
     needs: [thundra_test_initializer]
-    strategy:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
