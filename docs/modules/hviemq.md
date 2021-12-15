@@ -35,7 +35,7 @@ Add to `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>com.hivemq</groupId>
+    <groupId>org.testcontainers</groupId>
     <artifactId>hivemq</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
