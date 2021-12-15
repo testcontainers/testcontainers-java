@@ -234,6 +234,7 @@ It is possible to enable and disable HiveMQ extensions during runtime. Extension
 ---
 
 ```java
+public class MqttTest {
 private final @NotNull HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
     .id("extension-1")
     .name("my-extension")
@@ -249,6 +250,7 @@ final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
 void test_disable_enable_extension() throws ExecutionException, InterruptedException {
     hivemq.enableExtension(hiveMQExtension);
     hivemq.disableExtension(hiveMQExtension);
+}
 }
 ```
 
