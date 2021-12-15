@@ -45,7 +45,7 @@ Add to `pom.xml`:
 
 ## User defined HiveMQ image and tag
 
-The default image is the 'hivemq/hivemq-ce' using the '2021.3'.
+The default image is the 'hivemq/hivemq-ce' using the '2021.3' version.
 As always, the constructor allows to specify a custom image and tag, details on the available tags for community edition
 are available in our [Docker-repository](https://hub.docker.com/r/hivemq/hivemq-ce).
 
@@ -56,18 +56,23 @@ An example for explicitly specifiying image and version.
 ```java    
 import org.testcontainers.hivemq.HiveMQContainer
 
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq-ce:2021.3");
-```
+public class MqttTest {
+
+     @Container
+     final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq-ce:2021.3");
+     
+}
 
 ## Test your MQTT 3 and MQTT 5 client application
 
-Using an Mqtt-client (e.g. the [HiveMQ-Open-Source-Client](https://github.com/hivemq/hivemq-mqtt-client)) you can start 
+Using an Mqtt-client (e.g. the [HiveMQ-Mqtt-Client](https://github.com/hivemq/hivemq-mqtt-client)) you can start 
 testing directly. 
 
 ```java
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
+
+public class MqttTest {
 
 @Container
 final HiveMQContainer hivemq = new HiveMQContainer()
@@ -81,6 +86,7 @@ public void test_mqtt() {
 
     client.connect();
     client.disconnect();
+}
 }
 ```
 
@@ -99,7 +105,7 @@ final HiveMQContainer hivemq = new HiveMQContainer()
         .withLogLevel(Level.DEBUG);
 ```
 
-## Set Control Center Port
+## HiveMQ Control Center
 
 The HiveMQ Testcontainer can make the HiveMQ Control Center available.
 
@@ -128,7 +134,7 @@ The contents of *config.xml* are documented [here](https://github.com/hivemq/hiv
 ```java
 @RegisterExtension
 final HiveMQContainer hivemq = new HiveMQContainer()
-        .withHiveMQConfig(new File("src/test/resources/config.xml"));
+        .withHiveMQConfig(MountableFile.forHostPath("/path/to/config.xml"));
 ```
 
 ## Testing HiveMQ extensions
@@ -140,7 +146,7 @@ The HiveMQ-testcontainer also supports testing these custom extensions of yours.
 ### Wait Strategy
 
 The raw HiveMQ-testcontainer is built to wait for certain startup log messages to signal readiness.
-Since extensions are loaded dynamically they will be available a short while after the main container has started.
+Since extensions are loaded dynamically they can be available a short while after the main container has started.
 We therefore provide custom wait conditions for HiveMQ Extensions:
 
 The following will specify an extension to be loaded from **src/test/resources/modifier-extension** into the container and 
@@ -148,7 +154,7 @@ wait for an  extension named **'My Extension Name'** to be started:
 ```java
 @Container
 final HiveMQContainer hivemq = new HiveMQContainer()
-            .withExtension(new File("src/test/resources/modifier-extension"))
+            .withExtension(MountableFile.forHostPath("src/test/resources/modifier-extension"))
             .waitForExtension("My Extension Name");
 ```
 
@@ -259,7 +265,7 @@ If the extension folder contains a DISABLED file, the extension will be disabled
 ```java
 @Container
 final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
-            .withExtension(new File("src/test/resources/modifier-extension"));
+            .withExtension(new MountableFile.forHostPath("src/test/resources/modifier-extension"));
             
 @Test
 void test_disable_enable_extension() throws ExecutionException, InterruptedException {
@@ -298,7 +304,7 @@ final HiveMQContainer hivemq = new HiveMQContainer()
 @Container
 final HiveMQContainer hivemq = new HiveMQContainer()
         .withFileInHomeFolder(
-            new File("src/test/resources/additionalFile.txt"),
+            MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
             "/path/in/home/folder");
 ```
 
@@ -313,7 +319,7 @@ final HiveMQContainer hivemq = new HiveMQContainer()
             .version("1.0")
             .mainClass(MyExtension.class).build())
         .withFileInExtensionHomeFolder(
-            new File("src/test/resources/additionalFile.txt"),
+            MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
             "extension-1",
             "/path/in/extension/home");
 ```
