@@ -88,6 +88,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -230,6 +231,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
+    private boolean hostAccessible = false;
 
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
@@ -647,8 +649,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param temporary is the volume directory temporary? If true, the directory will be deleted on JVM shutdown.
      * @return path to the volume directory
      */
+    @Deprecated
     protected Path createVolumeDirectory(boolean temporary) {
-        Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
+        Path directory = new File(".tmp-volume-" + UUID.randomUUID()).toPath();
         PathUtils.mkdirp(directory);
 
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
@@ -832,6 +835,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withNetworkMode(networkForLinks.get());
         }
 
+        if (hostAccessible) {
+            PortForwardingContainer.INSTANCE.start();
+        }
         PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
             withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
         });
@@ -1282,6 +1288,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
+        if (copyToFileContainerPathMap.containsKey(mountableFile)) {
+            throw new IllegalStateException("Path already configured for copy: " + mountableFile);
+        }
         copyToFileContainerPathMap.put(mountableFile, containerPath);
         return self();
     }
@@ -1416,6 +1425,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     public SELF withReuse(boolean reusable) {
         this.shouldBeReused = reusable;
+        return self();
+    }
+
+    /**
+     * Forces access to the tests host machine.
+     * Use this method if you need to call {@link org.testcontainers.Testcontainers#exposeHostPorts(int...)}
+     * after you start this container.
+     *
+     * @return this
+     */
+    public SELF withAccessToHost(boolean value) {
+        this.hostAccessible = value;
         return self();
     }
 

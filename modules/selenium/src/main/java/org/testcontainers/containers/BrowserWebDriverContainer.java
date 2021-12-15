@@ -78,7 +78,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     public BrowserWebDriverContainer() {
         super();
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
 
         this.waitStrategy = new WaitAllStrategy()
@@ -107,7 +107,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         // we assert compatibility with the chrome/firefox image later, after capabilities are processed
 
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
 
         this.waitStrategy = new WaitAllStrategy()
@@ -281,9 +281,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
-                Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
-                        () ->
-                            () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
+                () -> Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
+                        () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
 
         if (vncRecordingContainer != null) {
             LOGGER.debug("Starting VNC recording");

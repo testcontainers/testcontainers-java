@@ -21,7 +21,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
-    apply plugin: 'com.github.johnrengelman.shadow'
+    apply from: "$rootDir/gradle/shading.gradle"
 
     group = "org.testcontainers"
 
@@ -46,9 +46,14 @@ subprojects {
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
         def outputDir = file("$buildDir/delombok")
         outputs.dir(outputDir)
+        outputs.cacheIf {
+            true
+        }
         for (srcDir in project.sourceSets.main.java.srcDirs) {
+            // TODO: named input and relative path for `srcDir` to make task more cacheable
             inputs.dir(srcDir)
-            args(srcDir, "-d", outputDir)
+            // TODO: `outputDir` as relative path to make task more cacheable 
+            args(srcDir, "-d", outputDir, "-f", "generateDelombokComment:skip")
         }
     }
     delombok.onlyIf {
@@ -99,37 +104,6 @@ subprojects {
     javadoc {
         dependsOn delombok
         source = delombok.outputs
-    }
-
-    shadowJar {
-        configurations = []
-        archiveClassifier.set(null)
-
-        doFirst {
-            // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
-            Set<String> packages = []
-            // Always read from core's configurations
-            for (configuration in tasks.getByPath(":testcontainers:shadowJar").configurations) {
-                for (jar in configuration.files) {
-                    def jf = new java.util.jar.JarFile(jar)
-                    for (entry in jf.entries()) {
-                        def name = entry.name
-                        if (name.endsWith(".class")) {
-                            def index = name.lastIndexOf('/')
-                            if (index != -1) {
-                                packages.add(name.substring(0, index))
-                            }
-                        }
-                    }
-                    jf.close()
-                }
-            }
-            for (pkg in packages) {
-                pkg = pkg.replaceAll('/', '.')
-
-                tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
-            }
-        }
     }
 
     dependencies {

@@ -118,7 +118,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             "advertised.listeners=[" + String.join(",", getBootstrapServers(), brokerAdvertisedListener) + "]"
         );
         if (result.getExitCode() != 0) {
-            throw new IllegalStateException(result.getStderr());
+            throw new IllegalStateException(result.toString());
         }
     }
 

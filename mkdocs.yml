@@ -61,6 +61,7 @@ nav:
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
                 - modules/databases/trino.md
+          - modules/azure.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
@@ -96,4 +97,4 @@ nav:
           - contributing_docs.md
           - bounty.md
 extra:
-    latest_version: 1.15.3
+    latest_version: 1.16.2

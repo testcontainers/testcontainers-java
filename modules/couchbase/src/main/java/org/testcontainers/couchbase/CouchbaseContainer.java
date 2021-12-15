@@ -68,6 +68,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final int SEARCH_SSL_PORT = 18094;
 
+    private static final int ANALYTICS_PORT = 8095;
+
+    private static final int ANALYTICS_SSL_PORT = 18095;
+
     private static final int KV_PORT = 11210;
 
     private static final int KV_SSL_PORT = 11207;
@@ -84,7 +88,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private String password = "password";
 
-    private Set<CouchbaseService> enabledServices = EnumSet.allOf(CouchbaseService.class);
+    /**
+     * Enabled services does not include Analytics since most users likely do not need to test
+     * with it and is also a little heavy on memory and runtime requirements. Also, it is only
+     * available with the enterprise edition (EE).
+     */
+    private Set<CouchbaseService> enabledServices = EnumSet.of(
+        CouchbaseService.KV,
+        CouchbaseService.QUERY,
+        CouchbaseService.SEARCH,
+        CouchbaseService.INDEX
+    );
 
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
@@ -144,6 +158,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return this;
     }
 
+    /**
+     * Enables the analytics service which is not enabled by default.
+     *
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withAnalyticsService() {
+        checkNotRunning();
+        this.enabledServices.add(CouchbaseService.ANALYTICS);
+        return this;
+    }
+
     public final String getUsername() {
         return username;
     }
@@ -177,6 +202,8 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             QUERY_SSL_PORT,
             SEARCH_PORT,
             SEARCH_SSL_PORT,
+            ANALYTICS_PORT,
+            ANALYTICS_SSL_PORT,
             KV_PORT,
             KV_SSL_PORT
         );
@@ -214,6 +241,16 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             );
         }
 
+        if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
+            waitStrategy = waitStrategy.withStrategy(
+                new HttpWaitStrategy()
+                    .forPath("/admin/ping")
+                    .forPort(ANALYTICS_PORT)
+                    .withBasicCredentials(username, password)
+                    .forStatusCode(200)
+            );
+        }
+
         waitingFor(waitStrategy);
     }
 
@@ -221,20 +258,22 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     protected void containerIsStarting(final InspectContainerResponse containerInfo) {
         logger().debug("Couchbase container is starting, performing configuration.");
 
-        waitUntilNodeIsOnline();
-        initializeIsEnterprise();
-        renameNode();
-        initializeServices();
-        configureAdminUser();
-        configureExternalPorts();
+        timePhase("waitUntilNodeIsOnline", this::waitUntilNodeIsOnline);
+        timePhase("initializeIsEnterprise", this::initializeIsEnterprise);
+        timePhase("renameNode", this::renameNode);
+        timePhase("initializeServices", this::initializeServices);
+        timePhase("configureAdminUser", this::configureAdminUser);
+        timePhase("configureExternalPorts", this::configureExternalPorts);
+
         if (enabledServices.contains(CouchbaseService.INDEX)) {
-            configureIndexer();
+            timePhase("configureIndexer", this::configureIndexer);
         }
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        createBuckets();
+        timePhase("createBuckets", this::createBuckets);
+
         logger().info("Couchbase container is ready! UI available at http://{}:{}", getHost(), getMappedPort(MGMT_PORT));
     }
 
@@ -259,6 +298,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             isEnterprise = MAPPER.readTree(response.body().string()).get("isEnterprise").asBoolean();
         } catch (IOException e) {
             throw new IllegalStateException("Couchbase /pools did not return valid JSON");
+        }
+
+        if (!isEnterprise && enabledServices.contains(CouchbaseService.ANALYTICS)) {
+            throw new IllegalStateException("The Analytics Service is only supported with the Enterprise version");
         }
     }
 
@@ -347,6 +390,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             builder.add("ftsSSL", Integer.toString(getMappedPort(SEARCH_SSL_PORT)));
         }
 
+        if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
+            builder.add("cbas", Integer.toString(getMappedPort(ANALYTICS_PORT)));
+            builder.add("cbasSSL", Integer.toString(getMappedPort(ANALYTICS_SSL_PORT)));
+        }
+
         @Cleanup Response response = doHttpRequest(
             MGMT_PORT,
             "/node/controller/setupAlternateAddresses/external",
@@ -389,30 +437,34 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
             checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
 
-            new HttpWaitStrategy()
+            timePhase("createBucket:" + bucket.getName() + ":waitForAllServicesEnabled", () ->
+                new HttpWaitStrategy()
                 .forPath("/pools/default/b/" + bucket.getName())
                 .forPort(MGMT_PORT)
                 .withBasicCredentials(username, password)
                 .forStatusCode(200)
                 .forResponsePredicate(new AllServicesEnabledPredicate())
-                .waitUntilReady(this);
+                .waitUntilReady(this)
+            );
 
             if (enabledServices.contains(CouchbaseService.QUERY)) {
                 // If the query service is enabled, make sure that we only proceed if the query engine also
                 // knows about the bucket in its metadata configuration.
-                Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
-                    @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
-                        .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket.getName() + "\"")
-                        .build(), true);
+                timePhase(
+                    "createBucket:" + bucket.getName() + ":queryKeyspacePresent",
+                    () -> Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                        @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                            .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket.getName() + "\"")
+                            .build(), true);
 
-                    String body = queryResponse.body() != null ? queryResponse.body().string() : null;
-                    checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucket.getName());
+                        String body = queryResponse.body() != null ? queryResponse.body().string() : null;
+                        checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucket.getName());
 
-                    return Optional.of(MAPPER.readTree(body))
-                        .map(n -> n.at("/results/0/present"))
-                        .map(JsonNode::asBoolean)
-                        .orElse(false);
-                });
+                        return Optional.of(MAPPER.readTree(body))
+                            .map(n -> n.at("/results/0/present"))
+                            .map(JsonNode::asBoolean)
+                            .orElse(false);
+                }));
             }
 
             if (bucket.hasPrimaryIndex()) {
@@ -421,7 +473,30 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                         .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
                         .build(), true);
 
-                    checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
+                    try {
+                        checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
+                    } catch (IllegalStateException ex) {
+                        // potentially ignore the error, the index will be eventually built.
+                        if (!ex.getMessage().contains("Index creation will be retried in background")) {
+                            throw ex;
+                        }
+                    }
+
+                    timePhase(
+                        "createBucket:" + bucket.getName() + ":primaryIndexOnline",
+                        () ->  Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                            @Cleanup Response stateResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                                .add("statement", "SELECT count(*) > 0 AS online FROM system:indexes where keyspace_id = \"" + bucket.getName() + "\" and is_primary = true and state = \"online\"")
+                                .build(), true);
+
+                            String body = stateResponse.body() != null ? stateResponse.body().string() : null;
+                            checkSuccessfulResponse(stateResponse, "Could not poll primary index state for bucket: " + bucket.getName());
+
+                            return Optional.of(MAPPER.readTree(body))
+                                .map(n -> n.at("/results/0/online"))
+                                .map(JsonNode::asBoolean)
+                                .orElse(false);
+                    }));
                 } else {
                     logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucket.getName());
                 }
@@ -456,7 +531,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 }
             }
 
-            throw new IllegalStateException(message + ": " + response.toString() + ", body=" + (body == null ? "<null>" : body));
+            throw new IllegalStateException(message + ": " + response + ", body=" + (body == null ? "<null>" : body));
         }
     }
 
@@ -499,6 +574,20 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         } catch (Exception ex) {
             throw new RuntimeException("Could not perform request against couchbase HTTP endpoint ", ex);
         }
+    }
+
+    /**
+     * Helper method which times an individual phase and logs it for debugging and optimization purposes.
+     *
+     * @param name the name of the phase.
+     * @param toTime the runnable that should be timed.
+     */
+    private void timePhase(final String name, final Runnable toTime) {
+        long start = System.nanoTime();
+        toTime.run();
+        long end = System.nanoTime();
+
+        logger().debug("Phase {} took {}ms", name, TimeUnit.NANOSECONDS.toMillis(end - start));
     }
 
     /**

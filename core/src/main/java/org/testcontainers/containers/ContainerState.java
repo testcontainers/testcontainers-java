@@ -272,6 +272,7 @@ public interface ContainerState {
             TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+            tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
             transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();

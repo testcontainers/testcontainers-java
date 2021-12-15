@@ -10,7 +10,7 @@ Testcontainers make the following kinds of tests easier:
 
 * **Data access layer integration tests**: use a containerized instance of a MySQL, PostgreSQL or Oracle database to test your data access layer code for complete compatibility, but without requiring complex setup on developers' machines and safe in the knowledge that your tests will always start with a known DB state. Any other database type that can be containerized can also be used.
 * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
-* **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
+* **UI/Acceptance tests**: use [containerized web browsers](modules/webdriver_containers.md), compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 * **Much more!** Check out the various contributed modules or create your own custom container classes using [`GenericContainer`](features/creating_container.md) as a base.
 
 ## Prerequisites
@@ -65,6 +65,7 @@ Using Maven you can add the following to `dependencyManagement` section in your 
     </dependencies>
 </dependencyManagement>
 ```
+
 and then use dependencies without specifying a version:
 
 ```xml tab='Maven'
@@ -174,7 +175,8 @@ A huge thank you to our sponsors:
 * [Jenkins](https://www.jenkins.io/) - Integration testing of multiple plugins and the Trilead SSH2 fork maintained by the Jenkins community
   ([query](https://github.com/search?l=Maven+POM&q=org%3Ajenkinsci+testcontainers&type=Code)).
 * [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
-
+* [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
+* [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
 
 
 ## License
