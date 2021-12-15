@@ -59,7 +59,7 @@ import org.testcontainers.hivemq.HiveMQContainer
 public class MqttTest {
 
      @Container
-     final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq-ce:2021.3");
+     final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce:2021.3"));
      
 }
 
