@@ -96,7 +96,9 @@ We will evaluate incubating modules periodically, and remove the label when appr
 If you are a vendor and are interested in contributing, maintaining and supporting an Official module to Testcontainers, the same contribution guidelines as outlined above apply.
 As opposed to other Testcontainers modules, Official modules can specify additional [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) in their module.
 Those code owners act as the vendor-appointed stewards for the module with regards to support and maintenance.
-As a rule-of-thumb, PRs for an Official module can be accepted when at least 1 review of a corresponding code owner (for the technology specific changes), as well as an additional review of a Testcontainers maintainer (to ensure overall alignment with the Testcontainers project) is present.
+As a rule-of-thumb, PRs for an Official module can be accepted when both of the following are present:
+* at least 1 approval by a corresponding code owner (for the vendor/technology specific changes), 
+* an additional approval by a Testcontainers core maintainer (to ensure overall alignment with Testcontainers project and idioms)
 
 Please reach out to the Testcontainers maintainers if you are interested in contributing an Official module.
 
