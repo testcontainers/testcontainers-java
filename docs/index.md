@@ -95,7 +95,7 @@ testImplementation('org.testcontainers:mysql') //no version specified
 ## Modules
 
 Testcontainers comes with many modules that extend the functionality of Testcontainers. These modules provide integration and better supoort for certain Docker images.
-Those modules are either supported and maintianed by the Testcontainers project, or directly by maintainers of the technology vendor.
+Those modules are either supported and maintained by the Testcontainers project, or directly by maintainers of the technology vendor.
 
 Modules are characterized through the following categories:
 
