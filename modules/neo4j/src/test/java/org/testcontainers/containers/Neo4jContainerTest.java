@@ -1,13 +1,13 @@
 package org.testcontainers.containers;
 
 import org.junit.Test;
-import org.neo4j.driver.v1.AuthToken;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.AuthToken;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
@@ -53,7 +53,7 @@ public class Neo4jContainerTest {
                 Driver driver = getDriver(neo4jContainer);
                 Session session = driver.session()
             ) {
-                StatementResult result = session.run("MATCH (t:Thing) RETURN t");
+                Result result = session.run("MATCH (t:Thing) RETURN t");
                 assertThat(result.list().stream().map(r -> r.get("t").get("name").asString()))
                     .containsExactlyInAnyOrder("Thing", "Thing 2", "Thing 3", "A box");
             }
@@ -93,7 +93,7 @@ public class Neo4jContainerTest {
     }
 
     private static void assertThatCustomPluginWasCopied(Session session) {
-        StatementResult result = session.run("RETURN ac.simons.helloWorld('Testcontainers') AS greeting");
+        Result result = session.run("RETURN ac.simons.helloWorld('Testcontainers') AS greeting");
         Record singleRecord = result.single();
         assertThat(singleRecord).isNotNull();
         assertThat(singleRecord.get("greeting").asString()).isEqualTo("Hello, Testcontainers");
