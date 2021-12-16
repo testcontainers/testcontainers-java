@@ -103,7 +103,7 @@ Modules are characterized through the following categories:
 | --- | --- |
 | 🚀 **Official** | Official modules are mainly **supported and maintained by the technology vendor**. The vendor is supported in their activities by the Testcontainers project. |
 | 🤖 **Standard** | Standard modules are **maintained by the Testcontainers project and its community**. They are supported on a **best-effort-basis** with regards to their integration with 3rd party technologies. |
-| 🍼 **Incubating** | Incubating modules are exclusively **maintained and supported by the Testcontainers community**. In case they prove their usefulness and stability overt time, they are eventually promoted to Offical or Standard modules. |
+| 🍼 **Incubating** | Incubating modules are exclusively **maintained and supported by the Testcontainers community**. If they prove their usefulness and stability over time, they are eventually promoted to Offical or Standard modules. |
 | 🗑️ **Deprecated** | Deprecated modules are no longer supported by the Testcontainers project and we don't accept new features or fixes for them. We will eventually stop publishing them altogether. |
 
 ## Sponsors
