@@ -92,6 +92,20 @@ testImplementation('org.testcontainers:mysql') //no version specified
     But there are also "private", implementation detail dependencies (e.g. docker-java-core, Guava, OkHttp, etc etc) that are not exposed to public API but prone to conflicts with test code/application under test code. 
     As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
 
+## Modules
+
+Testcontainers comes with many modules, that extend the functionality of Testcontainers and provide integration and better supoort for certain Docker images.
+Those modules are either supported and maintianed by the Testcontainers project, or directly by maintainers of the technology vendor.
+
+Modules are characterized through the following categories:
+
+| Module Category | Description |
+| --- | --- |
+| 🚀 **Official** | Official modules are mainly **supported and maintainted by the technology vendor**. The vendor is supported in their activities by the Testcontainers project. |
+| 🤖 **Standard** | Standard modules are **maintained by the Testcontainers project and its community**. They are supported on a **best-effort-basis** with regards to their integration with 3rd party technologies. |
+| 🍼 **Incubating** | Incubating modules are exclusively **maintained and supported by the Testcontainers community**. In case they prove their usefulness and stability overt time, they are eventually promoted to Offical or Standard modules. |
+| 🗑️ **Deprecated** | Deprecated modules are no longer supported by the Testcontainers project and we don't accept new features of fixes for them. We will eventually decide to stop publishing them altogether. |
+
 ## Sponsors
 
 A huge thank you to our sponsors:
