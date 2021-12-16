@@ -47,6 +47,7 @@ public class Neo4jContainerTest {
         try (
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
                 .withDatabase(MountableFile.forClasspathResource("/test-graph.db"))
+                .withEnv("NEO4J_dbms_allow__upgrade", "true")
         ) {
             neo4jContainer.start();
             try (
@@ -103,7 +104,7 @@ public class Neo4jContainerTest {
     public void shouldCheckEnterpriseLicense() {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNull();
 
-        String expectedImageName = "neo4j:3.5.0-enterprise";
+        String expectedImageName = "neo4j:4.4.1-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(() -> new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE).withEnterpriseEdition())
