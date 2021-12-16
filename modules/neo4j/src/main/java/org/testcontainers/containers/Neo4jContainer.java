@@ -30,7 +30,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     /**
      * The default tag (version) to use.
      */
-    private static final String DEFAULT_TAG = "4.4.1";
+    private static final String DEFAULT_TAG = "4.4";
     private static final String ENTERPRISE_TAG = DEFAULT_TAG + "-enterprise";
 
     /**
