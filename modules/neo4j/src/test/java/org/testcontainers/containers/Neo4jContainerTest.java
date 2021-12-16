@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.driver.AuthToken;
 import org.neo4j.driver.AuthTokens;
@@ -45,9 +47,8 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyDatabase() {
         try (
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:3.5.30")
                 .withDatabase(MountableFile.forClasspathResource("/test-graph.db"))
-                .withEnv("NEO4J_dbms_allow__upgrade", "true")
         ) {
             neo4jContainer.start();
             try (
@@ -59,6 +60,22 @@ public class Neo4jContainerTest {
                     .containsExactlyInAnyOrder("Thing", "Thing 2", "Thing 3", "A box");
             }
         }
+    }
+
+    @Test
+    public void shouldFailOnCopyDatabaseForDefaultNeo4j4Image() {
+        Assertions.assertThatIllegalArgumentException()
+            .isThrownBy(() -> new Neo4jContainer<>()
+                .withDatabase(MountableFile.forClasspathResource("/test-graph.db")))
+            .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
+    }
+
+    @Test
+    public void shouldFailOnCopyDatabaseForCustomNeo4j4Image() {
+        Assertions.assertThatIllegalArgumentException()
+            .isThrownBy(() -> new Neo4jContainer<>("neo4j:4.4.1")
+                .withDatabase(MountableFile.forClasspathResource("/test-graph.db")))
+            .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
 
     @Test
@@ -104,7 +121,7 @@ public class Neo4jContainerTest {
     public void shouldCheckEnterpriseLicense() {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNull();
 
-        String expectedImageName = "neo4j:4.4.1-enterprise";
+        String expectedImageName = "neo4j:4.4-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(() -> new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE).withEnterpriseEdition())

@@ -188,7 +188,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     }
 
     /**
-     * Copies an existing database folder into the container. This can either be a classpath resource or a
+     * Copies an existing {@code graph.db} folder into the container. This can either be a classpath resource or a
      * host resource. Please have a look at the factory methods in {@link MountableFile}.
      * <br>
      * If you want to map your database into the container instead of copying them, please use {@code #withClasspathResourceMapping},
@@ -198,14 +198,18 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * <pre>
      *      &#64;Container
      *      private static final Neo4jContainer databaseServer = new Neo4jContainer&lt;&gt;()
-     *          .withClasspathResourceMapping("/test-graph.db", "/data/databases/neo4j", BindMode.READ_WRITE);
+     *          .withClasspathResourceMapping("/test-graph.db", "/data/databases/graph.db", BindMode.READ_WRITE);
      * </pre>
      *
-     * @param databaseFolder The database folder to copy into the container
+     * @param graphDb The graph.db folder to copy into the container
      * @return This container.
      */
-    public S withDatabase(MountableFile databaseFolder) {
-        return withCopyFileToContainer(databaseFolder, "/data/databases/neo4j");
+    public S withDatabase(MountableFile graphDb) {
+        if (!usesVersion("3")) {
+            throw new IllegalArgumentException(
+                "Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
+        }
+        return withCopyFileToContainer(graphDb, "/data/databases/graph.db");
     }
 
     /**
@@ -249,5 +253,10 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         return String.format("%s%s", prefix, plainConfigKey
             .replaceAll("_", "__")
             .replaceAll("\\.", "_"));
+    }
+
+    private boolean usesVersion(String version) {
+        String versionPart = DockerImageName.parse(getDockerImageName()).getVersionPart();
+        return versionPart.startsWith(version);
     }
 }
