@@ -194,6 +194,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * If you want to map your database into the container instead of copying them, please use {@code #withClasspathResourceMapping},
      * but this will only work when your test does not run in a container itself.
      * <br>
+     * Note: This method only works with Neo4j 3.5.
+     * <br>
      * Mapping would work like this:
      * <pre>
      *      &#64;Container
@@ -202,10 +204,11 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * </pre>
      *
      * @param graphDb The graph.db folder to copy into the container
+     * @throws IllegalArgumentException If the database version is not 3.5.
      * @return This container.
      */
     public S withDatabase(MountableFile graphDb) {
-        if (!usesVersion("3")) {
+        if (!usesVersion("3.5")) {
             throw new IllegalArgumentException(
                 "Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
         }
