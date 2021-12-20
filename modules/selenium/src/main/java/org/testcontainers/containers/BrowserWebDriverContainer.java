@@ -98,10 +98,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     /**
      * Constructor taking a specific webdriver container name and tag
      * @param dockerImageName Name of the selenium docker image
-     *
-     * @deprecated please use {@link BrowserWebDriverContainer#BrowserWebDriverContainer(DockerImageName)}
      */
-    @Deprecated
     public BrowserWebDriverContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
