@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.seleniumhq.selenium:selenium-java:4.1.0'
+    testImplementation 'org.seleniumhq.selenium:selenium-java:4.1.1'
     testImplementation 'io.cucumber:cucumber-java:7.1.0'
     testImplementation 'io.cucumber:cucumber-junit:7.1.0'
     testImplementation 'org.testcontainers:selenium'
