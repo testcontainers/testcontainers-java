@@ -78,10 +78,6 @@ If you would like to customise the file name of the recording, or provide a diff
 
 Note the factory must implement `org.testcontainers.containers.RecordingFileFactory`.
 
-## More examples
-
-A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
-
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
