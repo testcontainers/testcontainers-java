@@ -60,8 +60,15 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(CQL_PORT);
-        setStartupAttempts(3);
         this.enableJmxReporting = false;
+
+        withEnv("CASSANDRA_SNITCH", "GossipingPropertyFileSnitch");
+        withEnv(
+            "JVM_OPTS",
+            "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0"
+        );
+        withEnv("HEAP_NEWSIZE", "128M");
+        withEnv("MAX_HEAP_SIZE", "1024M");
     }
 
     @Override

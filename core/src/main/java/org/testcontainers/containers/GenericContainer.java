@@ -1,8 +1,5 @@
 package org.testcontainers.containers;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.testcontainers.utility.CommandLine.runShellCommand;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -16,6 +13,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -23,6 +21,48 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.rnorth.ducttape.ratelimits.RateLimiter;
+import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.rnorth.ducttape.unreliables.Unreliables;
+import org.slf4j.Logger;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.UnstableAPI;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
+import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
+import org.testcontainers.containers.traits.LinkableContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.images.ImagePullPolicy;
+import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
+import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.DockerMachineClient;
+import org.testcontainers.utility.DynamicPollInterval;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.PathUtils;
+import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -45,8 +85,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -56,47 +98,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
-import org.rnorth.visibleassertions.VisibleAssertions;
-import org.slf4j.Logger;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.UnstableAPI;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
-import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
-import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
-import org.testcontainers.containers.traits.LinkableContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
-import org.testcontainers.images.ImagePullPolicy;
-import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.lifecycle.Startable;
-import org.testcontainers.lifecycle.Startables;
-import org.testcontainers.lifecycle.TestDescription;
-import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.DockerLoggerFactory;
-import org.testcontainers.utility.DockerMachineClient;
-import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.PathUtils;
-import org.testcontainers.utility.ResourceReaper;
-import org.testcontainers.utility.TestcontainersConfiguration;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static org.awaitility.Awaitility.await;
+import static org.testcontainers.utility.CommandLine.runShellCommand;
 
 /**
  * Base class for that allows a container to be launched and controlled.
@@ -131,7 +136,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private String networkMode;
 
-    @NonNull
+    @Nullable
     private Network network;
 
     @NonNull
@@ -215,10 +220,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
-            .newBuilder()
-            .withRate(1, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
+        .newBuilder()
+        .withRate(1, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
     @Nullable
     private Map<String, String> tmpFsMapping;
@@ -226,6 +231,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
+    private boolean hostAccessible = false;
 
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
@@ -424,8 +430,30 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
 
+            // Wait until inspect container returns the mapped ports
+            containerInfo = await()
+                .atMost(5, TimeUnit.SECONDS)
+                .pollInterval(DynamicPollInterval.ofMillis(50))
+                .pollInSameThread()
+                .until(
+                    () -> dockerClient.inspectContainerCmd(containerId).exec(),
+                    inspectContainerResponse -> {
+                        Set<Integer> exposedAndMappedPorts = inspectContainerResponse
+                            .getNetworkSettings()
+                            .getPorts()
+                            .getBindings()
+                            .entrySet()
+                            .stream()
+                            .filter(it -> Objects.nonNull(it.getValue())) // filter out exposed but not yet mapped
+                            .map(Entry::getKey)
+                            .map(ExposedPort::getPort)
+                            .collect(Collectors.toSet());
+
+                         return exposedAndMappedPorts.containsAll(exposedPorts);
+                    }
+                );
+
             // Tell subclasses that we're starting
-            containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
@@ -621,8 +649,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param temporary is the volume directory temporary? If true, the directory will be deleted on JVM shutdown.
      * @return path to the volume directory
      */
+    @Deprecated
     protected Path createVolumeDirectory(boolean temporary) {
-        Path directory = new File(".tmp-volume-" + System.currentTimeMillis()).toPath();
+        Path directory = new File(".tmp-volume-" + UUID.randomUUID()).toPath();
         PathUtils.mkdirp(directory);
 
         if (temporary) Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, () -> {
@@ -719,21 +748,28 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
         HostConfig hostConfig = buildHostConfig();
+
+        // PortBindings must contain:
+        //  * all exposed ports with a randomized host port (equivalent to -p CONTAINER_PORT)
+        //  * all exposed ports with a fixed host port (equivalent to -p HOST_PORT:CONTAINER_PORT)
+        Map<ExposedPort, PortBinding> allPortBindings = new HashMap<>();
+        // First collect all the randomized host ports from our 'exposedPorts' field
+        for (final Integer tcpPort : exposedPorts) {
+            ExposedPort exposedPort = ExposedPort.tcp(tcpPort);
+            allPortBindings.put(exposedPort, new PortBinding(Ports.Binding.empty(), exposedPort));
+        }
+        // Next collect all the fixed host ports from our 'portBindings' field, overwriting any randomized ports so that
+        // we don't create two bindings for the same container port.
+        for (final String portBinding : portBindings) {
+            PortBinding parsedBinding = PortBinding.parse(portBinding);
+            allPortBindings.put(parsedBinding.getExposedPort(), parsedBinding);
+        }
+        hostConfig.withPortBindings(new ArrayList<>(allPortBindings.values()));
+
+        // Next, ExposedPorts must be set up to publish all of the above ports, both randomized and fixed.
+        createCommand.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
+
         createCommand.withHostConfig(hostConfig);
-
-        // Set up exposed ports (where there are no host port bindings defined)
-        ExposedPort[] portArray = exposedPorts.stream()
-                .map(ExposedPort::new)
-                .toArray(ExposedPort[]::new);
-
-        createCommand.withExposedPorts(portArray);
-
-        // Set up exposed ports that need host port bindings
-        PortBinding[] portBindingArray = portBindings.stream()
-                .map(PortBinding::parse)
-                .toArray(PortBinding[]::new);
-
-        createCommand.withPortBindings(portBindingArray);
 
         if (commandParts != null) {
             createCommand.withCmd(commandParts);
@@ -748,7 +784,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
-                VisibleAssertions.warn(
+                logger().warn(
                     "Unable to mount a file from test host into a running container. " +
                         "This may be a misconfiguration or limitation of your Docker environment. " +
                         "Some features might not work."
@@ -799,8 +835,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withNetworkMode(networkForLinks.get());
         }
 
-        createCommand.withPublishAllPorts(true);
-
+        if (hostAccessible) {
+            PortForwardingContainer.INSTANCE.start();
+        }
         PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
             withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
         });
@@ -1251,6 +1288,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
+        if (copyToFileContainerPathMap.containsKey(mountableFile)) {
+            throw new IllegalStateException("Path already configured for copy: " + mountableFile);
+        }
         copyToFileContainerPathMap.put(mountableFile, containerPath);
         return self();
     }
@@ -1385,6 +1425,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     public SELF withReuse(boolean reusable) {
         this.shouldBeReused = reusable;
+        return self();
+    }
+
+    /**
+     * Forces access to the tests host machine.
+     * Use this method if you need to call {@link org.testcontainers.Testcontainers#exposeHostPorts(int...)}
+     * after you start this container.
+     *
+     * @return this
+     */
+    public SELF withAccessToHost(boolean value) {
+        this.hostAccessible = value;
         return self();
     }
 

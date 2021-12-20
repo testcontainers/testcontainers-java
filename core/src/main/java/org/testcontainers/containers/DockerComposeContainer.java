@@ -77,7 +77,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
      */
     private final String identifier;
     private final List<File> composeFiles;
-    private Set<ParsedDockerComposeFile> parsedComposeFiles;
+    private DockerComposeFiles dockerComposeFiles;
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
     private DockerClient dockerClient;
     private boolean localCompose;
@@ -126,7 +126,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
 
         this.composeFiles = composeFiles;
-        this.parsedComposeFiles = composeFiles.stream().map(ParsedDockerComposeFile::new).collect(Collectors.toSet());
+        this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
         // Use a unique identifier so that containers created for this compose environment can be identified
         this.identifier = identifier;
@@ -184,8 +184,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         // Pull images using our docker client rather than compose itself,
         // (a) as a workaround for https://github.com/docker/compose/issues/5854, which prevents authenticated image pulls being possible when credential helpers are in use
         // (b) so that credential helper-based auth still works when compose is running from within a container
-        parsedComposeFiles.stream()
-            .flatMap(it -> it.getDependencyImageNames().stream())
+        dockerComposeFiles.getDependencyImages()
             .forEach(imageName -> {
                 try {
                     log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
@@ -609,7 +608,7 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
     public static final char UNIX_PATH_SEPERATOR = ':';
-    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.24.1");
+    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 

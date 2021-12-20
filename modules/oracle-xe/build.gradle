@@ -1,8 +1,10 @@
 description = "Testcontainers :: JDBC :: Oracle XE"
 
 dependencies {
-    compile project(':jdbc')
+    api project(':jdbc')
 
-    testCompile project(':jdbc-test')
-    testCompile 'com.oracle.ojdbc:ojdbc8:19.3.0.0'
+    testImplementation project(':jdbc-test')
+    testImplementation 'com.oracle.ojdbc:ojdbc8:19.3.0.0'
+
+    compileOnly 'org.jetbrains:annotations:23.0.0'
 }

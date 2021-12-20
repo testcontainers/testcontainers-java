@@ -59,6 +59,7 @@ public class TestcontainersConfiguration {
     private static final String PULSAR_IMAGE = "apachepulsar/pulsar";
     private static final String LOCALSTACK_IMAGE = "localstack/localstack";
     private static final String SSHD_IMAGE = "testcontainers/sshd";
+    private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
 
     private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap.<DockerImageName, String>builder()
         .put(DockerImageName.parse(AMBASSADOR_IMAGE), "ambassador.container.image")
@@ -71,6 +72,7 @@ public class TestcontainersConfiguration {
         .put(DockerImageName.parse(PULSAR_IMAGE), "pulsar.container.image")
         .put(DockerImageName.parse(LOCALSTACK_IMAGE), "localstack.container.image")
         .put(DockerImageName.parse(SSHD_IMAGE), "sshd.container.image")
+        .put(DockerImageName.parse(ORACLE_IMAGE), "oracle.container.image")
         .build();
 
     @Getter(lazy = true)
@@ -144,7 +146,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getOracleImage() {
-        return getEnvVarOrProperty("oracle.container.image", null);
+        return getImage(ORACLE_IMAGE).asCanonicalNameString();
     }
 
     @Deprecated
@@ -168,11 +170,23 @@ public class TestcontainersConfiguration {
     }
 
     public String getDockerClientStrategyClassName() {
+        // getConfigurable won't apply the TESTCONTAINERS_ prefix when looking for env vars if DOCKER_ appears at the beginning.
+        // Because of this overlap, and the desire to not change this specific TESTCONTAINERS_DOCKER_CLIENT_STRATEGY setting,
+        // we special-case the logic here so that docker.client.strategy is used when reading properties files and
+        // TESTCONTAINERS_DOCKER_CLIENT_STRATEGY is used when searching environment variables.
+
+        // looks for TESTCONTAINERS_ prefixed env var only
+        String prefixedEnvVarStrategy = environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY");
+        if (prefixedEnvVarStrategy != null) {
+            return prefixedEnvVarStrategy;
+        }
+
+        // looks for unprefixed env var or unprefixed property, or null if the strategy is not set at all
         return getEnvVarOrUserProperty("docker.client.strategy", null);
     }
 
     public String getTransportType() {
-        return getEnvVarOrProperty("transport.type", "okhttp");
+        return getEnvVarOrProperty("transport.type", "httpclient5");
     }
 
     public Integer getImagePullPauseTimeout() {
@@ -183,11 +197,15 @@ public class TestcontainersConfiguration {
         return getEnvVarOrProperty("image.substitutor", null);
     }
 
+    public Integer getClientPingTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "5"));
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {
         String envVarName = propertyName.replaceAll("\\.", "_").toUpperCase();
-        if (!envVarName.startsWith("TESTCONTAINERS_")) {
+        if (!envVarName.startsWith("TESTCONTAINERS_") && !envVarName.startsWith("DOCKER_")) {
             envVarName = "TESTCONTAINERS_" + envVarName;
         }
 
@@ -208,6 +226,10 @@ public class TestcontainersConfiguration {
      * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
      * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory or
      * a <code>testcontainers.properties</code> found on the classpath.
+     * <p>
+     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
+     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
+     * if the property name begins `docker.`.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
@@ -220,6 +242,10 @@ public class TestcontainersConfiguration {
     /**
      * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
      * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     * <p>
+     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
+     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
+     * if the property name begins `docker.`.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
@@ -230,8 +256,11 @@ public class TestcontainersConfiguration {
     }
 
     /**
-     * Gets a configured setting from a the user's configuration file.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     * Gets a configured setting from an environment variable.
+     * <p>
+     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
+     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
+     * if the property name begins `docker.`.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set

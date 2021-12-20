@@ -69,6 +69,11 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     }
 
     @Override
+    public final String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
     public String getUsername() {
         return username;
     }

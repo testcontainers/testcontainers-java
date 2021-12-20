@@ -37,7 +37,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     static final int PORT = 4566;
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
-    private final List<Service> services = new ArrayList<>();
+    private final List<EnabledService> services = new ArrayList<>();
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
     private static final String DEFAULT_TAG = "0.11.2";
@@ -119,7 +119,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         Preconditions.check("services list must not be empty", !services.isEmpty());
 
-        withEnv("SERVICES", services.stream().map(Service::getLocalStackName).collect(Collectors.joining(",")));
+        withEnv("SERVICES", services.stream().map(EnabledService::getName).collect(Collectors.joining(",")));
 
         String hostnameExternalReason;
         if (getEnvMap().containsKey(HOSTNAME_EXTERNAL_ENV_VAR)) {
@@ -144,12 +144,17 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             .forEach(this::addExposedPort);
     }
 
+    public LocalStackContainer withServices(Service... services) {
+        this.services.addAll(Arrays.asList(services));
+        return self();
+    }
+
     /**
      * Declare a set of simulated AWS services that should be launched by this container.
      * @param services one or more service names
      * @return this container object
      */
-    public LocalStackContainer withServices(Service... services) {
+    public LocalStackContainer withServices(EnabledService... services) {
         this.services.addAll(Arrays.asList(services));
         return self();
     }
@@ -184,6 +189,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getRegion());
     }
 
+    public URI getEndpointOverride(Service service) {
+        return getEndpointOverride((EnabledService) service);
+    }
+
     /**
      * Provides an endpoint override that is preconfigured to communicate with a given simulated service.
      * The provided endpoint override should be set in the AWS Java SDK v2 when building a client, e.g.:
@@ -203,7 +212,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @param service the service that is to be accessed
      * @return an {@link URI} endpoint override
      */
-    public URI getEndpointOverride(Service service) {
+    public URI getEndpointOverride(EnabledService service) {
         try {
             final String address = getHost();
             String ipAddress = address;
@@ -218,8 +227,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
     }
 
-    private int getServicePort(Service service) {
-        return legacyMode ? service.port : PORT;
+    private int getServicePort(EnabledService service) {
+        return legacyMode ? service.getPort() : PORT;
     }
 
     /**
@@ -301,11 +310,24 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         return "us-east-1";
     }
 
+    public interface EnabledService {
+        static EnabledService named(String name) {
+            return () -> name;
+        }
+
+        String getName();
+
+        default int getPort() {
+            return PORT;
+        }
+    }
+
     @RequiredArgsConstructor
     @Getter
     @FieldDefaults(makeFinal = true)
-    public enum Service {
+    public enum Service implements EnabledService {
         API_GATEWAY("apigateway", 4567),
+        EC2("ec2", 4597),
         KINESIS("kinesis", 4568),
         DYNAMODB("dynamodb", 4569),
         DYNAMODB_STREAMS("dynamodbstreams", 4570),
@@ -333,6 +355,11 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         String localStackName;
 
         int port;
+
+        @Override
+        public String getName() {
+            return localStackName;
+        }
 
         @Deprecated
         /*

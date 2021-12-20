@@ -1,0 +1,33 @@
+configurations {
+    baseline
+}
+
+dependencies {
+    baseline "org.testcontainers:${project.name}:1.16.0", {
+        exclude group: "*", module: "*"
+    }
+}
+
+tasks.japicmp {
+    dependsOn(tasks.shadowJar)
+
+    // Disable if baseline dependencies cannot be resolved - such as when developing a new module that doesn't
+    // have an existing published version.
+    enabled = ! configurations.baseline.copy().resolvedConfiguration.lenientConfiguration.getFiles().empty
+
+    oldClasspath = configurations.baseline
+    newClasspath = shadowJar.outputs.files
+    ignoreMissingClasses = true
+
+    accessModifier = "protected"
+    failOnModification = true
+    failOnSourceIncompatibility = true
+
+    onlyBinaryIncompatibleModified = true
+    htmlOutputFile = file("$buildDir/reports/japi.html")
+}
+// do not run on Windows by default
+// TODO investigate zip issue on Windows
+if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+    project.tasks.check.dependsOn(japicmp)
+}

@@ -130,6 +130,10 @@ public class MountableFile implements Transferable {
         classLoadersToSearch.add(MountableFile.class.getClassLoader());
 
         for (final ClassLoader classLoader : classLoadersToSearch) {
+            if (classLoader == null) {
+                continue;
+            }
+
             URL resource = classLoader.getResource(resourcePath);
             if (resource != null) {
                 return resource;

@@ -10,6 +10,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.NetworkSettings;
 import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
 import com.github.dockerjava.core.command.ListContainersCmdImpl;
@@ -22,6 +23,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized;
+import org.mockito.Answers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.rnorth.visibleassertions.VisibleAssertions;
@@ -520,7 +523,9 @@ public class ReusabilityUnitTests {
         protected Answer<InspectContainerCmd> inspectContainerAnswer() {
             return invocation -> {
                 InspectContainerCmd.Exec exec = command -> {
-                    return new InspectContainerResponse();
+                    InspectContainerResponse stubResponse = Mockito.mock(InspectContainerResponse.class, Answers.RETURNS_DEEP_STUBS);
+                    when(stubResponse.getNetworkSettings().getPorts().getBindings()).thenReturn(Collections.emptyMap());
+                    return stubResponse;
                 };
                 return new InspectContainerCmdImpl(exec, invocation.getArgument(0));
             };

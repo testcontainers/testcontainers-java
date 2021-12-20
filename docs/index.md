@@ -10,7 +10,7 @@ Testcontainers make the following kinds of tests easier:
 
 * **Data access layer integration tests**: use a containerized instance of a MySQL, PostgreSQL or Oracle database to test your data access layer code for complete compatibility, but without requiring complex setup on developers' machines and safe in the knowledge that your tests will always start with a known DB state. Any other database type that can be containerized can also be used.
 * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
-* **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
+* **UI/Acceptance tests**: use [containerized web browsers](modules/webdriver_containers.md), compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 * **Much more!** Check out the various contributed modules or create your own custom container classes using [`GenericContainer`](features/creating_container.md) as a base.
 
 ## Prerequisites
@@ -32,7 +32,7 @@ Testcontainers is distributed as separate JARs with a common version number:
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
 ```groovy tab='Gradle'
-testCompile "org.testcontainers:testcontainers:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
 ```
 
 ```xml tab='Maven'
@@ -65,6 +65,7 @@ Using Maven you can add the following to `dependencyManagement` section in your 
     </dependencies>
 </dependencyManagement>
 ```
+
 and then use dependencies without specifying a version:
 
 ```xml tab='Maven'
@@ -86,15 +87,12 @@ testImplementation('org.testcontainers:mysql') //no version specified
 [JitPack](jitpack_dependencies.md) builds are available for pre-release versions.
 
 !!! warning "Shaded dependencies"
-    Testcontainers uses the docker-java client library, which in turn depends on JAX-RS, Jersey and Jackson libraries. 
-    These libraries in particular seem to be especially prone to conflicts with test code/application under test code. 
+    Testcontainers depends on other libraries (like docker-java) for it to work.  
+    Some of them (JUnit, docker-java-{api,transport} and its transitive dependencies, JNA, visible-assertions and others) are part of our public API.  
+    But there are also "private", implementation detail dependencies (e.g. docker-java-core, Guava, OkHttp, etc etc) that are not exposed to public API but prone to conflicts with test code/application under test code. 
     As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
 
 ## Sponsors
-
-Testcontainers is on Github Sponsors! Please consider sponsoring us to sustain the project and help us improve it further.
-
-<iframe src="https://github.com/sponsors/testcontainers/button" title="Sponsor Testcontainers" height="35" width="107" style="border: 0;"></iframe>
 
 A huge thank you to our sponsors:
 
@@ -122,6 +120,13 @@ A huge thank you to our sponsors:
     </a>
 </div>
 
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.backbase.com/">
+        <img src="sponsor_logos/backbase.png" style="width: 100%"/>
+        <p>Backbase</p>
+    </a>
+</div>
+
 ### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
@@ -131,6 +136,7 @@ A huge thank you to our sponsors:
 * [Pascal Zwick (@pas2al)](https://github.com/pas2al)
 * [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
 * [Bas Stoker (@bastoker)](https://github.com/bastoker)
+* [Oleg Nenashev (@oleg-nenashev)](https://github.com/oleg-nenashev)
 
 ## Who is using Testcontainers?
 
@@ -158,11 +164,19 @@ A huge thank you to our sponsors:
 * [JHipster](https://www.jhipster.tech/) - Couchbase and Cassandra integration testing
 * [wescale](https://www.wescale.com) - Integration testing against HTTP service mocks and various data stores
 * [Marquez](https://marquezproject.github.io/marquez) - PostgreSQL integration testing
-* [Transferwise](https://transferwise.com/) - Integration testing for different RDBMS, kafka and micro services
+* [Wise (formerly TransferWise)](https://wise.com) - Integration testing for different RDBMS, kafka and micro services
 * [XWiki](https://xwiki.org) - [Testing XWiki](https://dev.xwiki.org/xwiki/bin/view/Community/Testing/DockerTesting/) under all [supported configurations](https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/)
 * [Apache SkyWalking](http://github.com/apache/skywalking) - End-to-end testing of the Apache SkyWalking, and plugin tests of its subproject, [Apache SkyWalking Python](http://github.com/apache/skywalking-python), and of its eco-system built by the community, like [SkyAPM NodeJS Agent](http://github.com/SkyAPM/nodejs)
 * [jOOQ](https://www.jooq.org) - Integration testing all of jOOQ with a variety of RDBMS
 * [Trino (formerly Presto SQL)](https://trino.io) - Integration testing all Trino core & connectors, including tests of multi-node deployments and security configurations.
+* Google - Various open source projects: [OpenTelemetry](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java), [Universal Application Tool](https://github.com/seattle-uat/universal-application-tool), [CloudBowl](https://github.com/GoogleCloudPlatform/cloudbowl-microservice-game)
+* [Backbase](https://www.backbase.com/) - Unit, Integration and Acceptance testing for different the databases supported (Oracle, SQL Server, MySQL), the different messaging systems supported (Kafka, Rabbit, AMQ) and other microservices and HTTP mocks.
+* [CloudBees](https://www.cloudbees.com/) - Integration testing of products, including but not limited to database and AWS/Localstack integration testing.
+* [Jenkins](https://www.jenkins.io/) - Integration testing of multiple plugins and the Trilead SSH2 fork maintained by the Jenkins community
+  ([query](https://github.com/search?l=Maven+POM&q=org%3Ajenkinsci+testcontainers&type=Code)).
+* [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
+* [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
+* [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
 
 
 ## License
@@ -177,6 +191,6 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Copyright
 
-Copyright (c) 2015-2020 Richard North and other authors.
+Copyright (c) 2015-2021 Richard North and other authors.
 
 See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.

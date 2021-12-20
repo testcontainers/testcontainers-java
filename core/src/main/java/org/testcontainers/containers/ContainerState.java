@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -181,7 +182,9 @@ public interface ContainerState {
             .map(PortBinding::getBinding)
             .map(Ports.Binding::getHostPortSpec)
             .filter(Objects::nonNull)
+            .filter(NumberUtils::isNumber)
             .map(Integer::valueOf)
+            .filter(port -> port > 0)
             .collect(Collectors.toList());
     }
 
@@ -260,7 +263,7 @@ public interface ContainerState {
      */
     @SneakyThrows(IOException.class)
     default void copyFileToContainer(Transferable transferable, String containerPath) {
-        if (!isCreated()) {
+        if (getContainerId() == null) {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
@@ -269,6 +272,7 @@ public interface ContainerState {
             TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+            tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
             transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
@@ -306,7 +310,7 @@ public interface ContainerState {
      */
     @SneakyThrows
     default  <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
-        if (!isCreated()) {
+        if (getContainerId() == null) {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 

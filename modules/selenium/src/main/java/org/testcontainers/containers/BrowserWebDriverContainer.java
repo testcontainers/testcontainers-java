@@ -27,6 +27,7 @@ import org.rnorth.ducttape.timeouts.Timeouts;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
@@ -66,6 +67,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Nullable
     private RemoteWebDriver driver;
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
+    private VncRecordingFormat recordingFormat;
     private RecordingFileFactory recordingFileFactory;
     private File vncRecordingDirectory;
 
@@ -76,7 +78,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     public BrowserWebDriverContainer() {
         super();
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
 
         this.waitStrategy = new WaitAllStrategy()
@@ -105,7 +107,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         // we assert compatibility with the chrome/firefox image later, after capabilities are processed
 
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running).*\n")
+                .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
                 .withStartupTimeout(Duration.of(15, SECONDS));
 
         this.waitStrategy = new WaitAllStrategy()
@@ -164,6 +166,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             }
         }
 
+        // Hack for new selenium-chrome image that contains Chrome 92.
+        // If not disabled, container startup will fail in most cases and consume excessive amounts of CPU.
+        if (capabilities instanceof ChromeOptions) {
+            ChromeOptions options = (ChromeOptions) this.capabilities;
+            options.addArguments("--disable-gpu");
+        }
+
         if (recordingMode != VncRecordingMode.SKIP) {
 
             if (vncRecordingDirectory == null) {
@@ -182,7 +191,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
             vncRecordingContainer = new VncRecordingContainer(this)
                     .withVncPassword(DEFAULT_PASSWORD)
-                    .withVncPort(VNC_PORT);
+                    .withVncPort(VNC_PORT)
+                    .withVideoFormat(recordingFormat);
         }
 
         if (customImageName != null) {
@@ -271,9 +281,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
-                Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
-                        () ->
-                            () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
+                () -> Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
+                        () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
 
         if (vncRecordingContainer != null) {
             LOGGER.debug("Starting VNC recording");
@@ -334,7 +343,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         }
 
         if (shouldRecord) {
-            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, prefix, succeeded);
+            File recordingFile = recordingFileFactory.recordingFileForTest(vncRecordingDirectory, prefix, succeeded, vncRecordingContainer.getVideoFormat());
             LOGGER.info("Screen recordings for test {} will be stored at: {}", prefix, recordingFile);
 
             vncRecordingContainer.saveRecordingToFile(recordingFile);
@@ -358,8 +367,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory) {
+        return withRecordingMode(recordingMode, vncRecordingDirectory, null);
+    }
+
+    public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory, VncRecordingFormat recordingFormat) {
         this.recordingMode = recordingMode;
         this.vncRecordingDirectory = vncRecordingDirectory;
+        this.recordingFormat = recordingFormat;
         return self();
     }
 
