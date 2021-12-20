@@ -127,9 +127,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         recordingMode = VncRecordingMode.SKIP;
     }
 
-    /**
-     * @deprecated
-     */
+    @Deprecated
     public SELF withCapabilities(Capabilities capabilities) {
         this.capabilities = capabilities;
         return self();
