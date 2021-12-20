@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -21,8 +22,9 @@ public class ExternalPortListeningCheck implements Callable<Boolean> {
         String address = containerState.getHost();
 
         externalLivenessCheckPorts.parallelStream().forEach(externalPort -> {
-            try {
-                new Socket(address, externalPort).close();
+            try (Socket socket = new Socket()) {
+                InetSocketAddress inetSocketAddress = new InetSocketAddress(address, externalPort);
+                socket.connect(inetSocketAddress, 1000);
             } catch (IOException e) {
                 throw new IllegalStateException("Socket not listening yet: " + externalPort);
             }
