@@ -1,4 +1,4 @@
-# RabbitMQ Module
+# HiveMQ Module
 
 # HiveMQ Test Container
 
