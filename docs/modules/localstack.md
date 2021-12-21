@@ -7,7 +7,7 @@ Testcontainers module for the Atlassian's [LocalStack](https://github.com/locals
 Running LocalStack as a stand-in for AWS S3 during a test:
 
 ```java
-DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.11.3");
+DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.13.2");
 
 @Rule
 public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
