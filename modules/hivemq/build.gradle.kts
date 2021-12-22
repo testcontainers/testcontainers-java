@@ -2,7 +2,6 @@ description = "Core API for testing MQTT Applications."
 
 plugins {
     `java-library`
-    id("com.github.hierynomus.license") version "0.16.1"
 }
 
 dependencies {
@@ -44,10 +43,4 @@ tasks.named<JavaCompile>("compileTestJava") {
     javaCompiler.set(javaToolchains.compilerFor {
         languageVersion.set(JavaLanguageVersion.of(11))
     })
-}
-
-license {
-    header = projectDir.resolve("HEADER")
-    mapping("java", "SLASHSTAR_STYLE")
-    excludes(mutableListOf("**/gradle-wrapper.properties", "**/gradlew", "**/gradlew.bat"))
 }
