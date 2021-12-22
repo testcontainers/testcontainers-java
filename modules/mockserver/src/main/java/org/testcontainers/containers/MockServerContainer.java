@@ -38,7 +38,7 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
         waitingFor(Wait.forHttp("/mockserver/status").withMethod("PUT").forStatusCode(200));
 
-        withCommand("-logLevel INFO -serverPort " + PORT);
+        withCommand("-serverPort " + PORT);
         addExposedPorts(PORT);
     }
 
