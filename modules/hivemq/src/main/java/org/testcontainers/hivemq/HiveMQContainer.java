@@ -23,7 +23,6 @@
  */
 package org.testcontainers.hivemq;
 
-import com.hivemq.extension.sdk.api.ExtensionMain;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 import org.apache.commons.io.FileUtils;
@@ -83,6 +82,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     @SuppressWarnings("OctalInteger")
     private static final int MODE = 0777;
     private static final @NotNull Pattern EXTENSION_ID_PATTERN = Pattern.compile("<id>(.+?)</id>");
+    public static final @NotNull String EXTENSION_MAIN_CLASS_NAME = "com.hivemq.extension.sdk.api.ExtensionMain";
 
     private final @NotNull ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
     private volatile boolean silent = false;
@@ -272,7 +272,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
         final JavaArchive javaArchive =
                 ShrinkWrap.create(JavaArchive.class)
-                        .addAsServiceProviderAndClasses(ExtensionMain.class, hiveMQExtension.getMainClass());
+                    .addAsServiceProvider(EXTENSION_MAIN_CLASS_NAME, hiveMQExtension.getMainClass().getName());
 
         putSubclassesIntoJar(hiveMQExtension.getId(), hiveMQExtension.getMainClass(), javaArchive);
         for (final Class<?> additionalClass : hiveMQExtension.getAdditionalClasses()) {
