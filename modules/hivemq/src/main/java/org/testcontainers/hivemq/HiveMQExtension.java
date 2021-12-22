@@ -24,7 +24,6 @@
 package org.testcontainers.hivemq;
 
 import com.google.common.collect.ImmutableList;
-import com.hivemq.extension.sdk.api.ExtensionMain;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,18 +38,18 @@ public class HiveMQExtension {
     private final int priority;
     private final int startPriority;
     private final boolean disabledOnStartup;
-    private final @NotNull Class<? extends ExtensionMain> mainClass;
+    private final @NotNull Class<?> mainClass;
     private final @NotNull ImmutableList<Class<?>> additionalClasses;
 
     private HiveMQExtension(
-            final @NotNull String id,
-            final @NotNull String name,
-            final @NotNull String version,
-            final int priority,
-            final int startPriority,
-            final boolean disabledOnStartup,
-            final @NotNull Class<? extends ExtensionMain> mainClass,
-            final @NotNull ImmutableList<Class<?>> additionalClasses) {
+        final @NotNull String id,
+        final @NotNull String name,
+        final @NotNull String version,
+        final int priority,
+        final int startPriority,
+        final boolean disabledOnStartup,
+        final @NotNull Class<?> mainClass,
+        final @NotNull ImmutableList<Class<?>> additionalClasses) {
 
         this.id = id;
         this.name = name;
@@ -86,7 +85,7 @@ public class HiveMQExtension {
         return disabledOnStartup;
     }
 
-    public @NotNull Class<? extends ExtensionMain> getMainClass() {
+    public @NotNull Class<?> getMainClass() {
         return mainClass;
     }
 
@@ -105,10 +104,14 @@ public class HiveMQExtension {
         private int priority = 0;
         private int startPriority = 0;
         private boolean disabledOnStartup = false;
-        private @Nullable Class<? extends ExtensionMain> mainClass;
+        private @Nullable Class<?> mainClass;
         private final @NotNull ImmutableList.Builder<Class<?>> additionalClassesBuilder = ImmutableList.builder();
 
-        public HiveMQExtension build() {
+        /**
+         * Builds the {@link HiveMQExtension} with the provided values or default values.
+         * @return the HiveMQ Extension
+         */
+        public @NotNull HiveMQExtension build() {
             if (id == null || id.isEmpty()) {
                 throw new IllegalArgumentException("extension id must not be null or empty");
             }
@@ -122,52 +125,112 @@ public class HiveMQExtension {
                 throw new IllegalArgumentException("extension main class must not be null");
             }
             return new HiveMQExtension(
-                    id,
-                    name,
-                    version,
-                    priority,
-                    startPriority,
-                    disabledOnStartup,
-                    mainClass,
-                    additionalClassesBuilder.build()
+                id,
+                name,
+                version,
+                priority,
+                startPriority,
+                disabledOnStartup,
+                mainClass,
+                additionalClassesBuilder.build()
             );
         }
 
+        /**
+         * Sets the identifier of the {@link HiveMQExtension}.
+         *
+         * @param id the identifier, must not be empty
+         * @return the {@link Builder}
+         */
         public @NotNull Builder id(final @NotNull String id) {
             this.id = id;
             return this;
         }
 
+        /**
+         * Sets the name of the {@link HiveMQExtension}.
+         *
+         * @param name the identifier, must not be empty
+         * @return the {@link Builder}
+         */
         public @NotNull Builder name(final @NotNull String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Sets the version of the {@link HiveMQExtension}.
+         *
+         * @param version the version, must not be empty
+         * @return the {@link Builder}
+         */
         public @NotNull Builder version(final @NotNull String version) {
             this.version = version;
             return this;
         }
 
+        /**
+         * Sets the priority of the {@link HiveMQExtension}.
+         *
+         * @param priority the priority
+         * @return the {@link Builder}
+         */
         public @NotNull Builder priority(final int priority) {
             this.priority = priority;
             return this;
         }
 
+        /**
+         * Sets the start-priority of the {@link HiveMQExtension}.
+         *
+         * @param startPriority the start-priority
+         * @return the {@link Builder}
+         */
         public @NotNull Builder startPriority(final int startPriority) {
             this.startPriority = startPriority;
             return this;
         }
 
+        /**
+         * Flag, that indicates whether the {@link HiveMQExtension} should be disabled when HiveMQ starts.
+         * Disabling on startup is achieved by placing a DISABLED file in the {@link HiveMQExtension}'s directory before coping it to the container.
+         *
+         * @param disabledOnStartup if the {@link HiveMQExtension} should be disabled when HiveMQ starts
+         * @return the {@link Builder}
+         */
         public @NotNull Builder disabledOnStartup(final boolean disabledOnStartup) {
             this.disabledOnStartup = disabledOnStartup;
             return this;
         }
 
-        public @NotNull Builder mainClass(final @NotNull Class<? extends ExtensionMain> mainClass) {
-            this.mainClass = mainClass;
-            return this;
+        /**
+         * The main class of the {@link HiveMQExtension}.
+         * This class MUST implement {@link com.hivemq.extension.sdk.api.ExtensionMain}.
+         *
+         * @param mainClass the main class
+         * @return the {@link Builder}
+         * @throws IllegalArgumentException if the provides class does not implement {@link com.hivemq.extension.sdk.api.ExtensionMain}
+         * @throws IllegalStateException if {@link com.hivemq.extension.sdk.api.ExtensionMain} is not found in the classpath
+         */
+        public @NotNull Builder mainClass(final @NotNull Class<?> mainClass) {
+            try {
+                final Class<?> extensionMain = Class.forName(HiveMQContainer.EXTENSION_MAIN_CLASS_NAME);
+                if (!extensionMain.isAssignableFrom(mainClass)) {
+                    throw new IllegalArgumentException("The provided class does not implement '" + HiveMQContainer.EXTENSION_MAIN_CLASS_NAME + "'");
+                }
+                this.mainClass = mainClass;
+                return this;
+            } catch (final ClassNotFoundException e) {
+                throw new IllegalStateException("The class '" + HiveMQContainer.EXTENSION_MAIN_CLASS_NAME + "' was not found in the classpath.");
+            }
         }
 
+        /**
+         * Adds an additional class to the .jar file of the {@link HiveMQExtension}.
+         *
+         * @param clazz the additional class
+         * @return the {@link Builder}
+         */
         public @NotNull Builder addAdditionalClass(final @NotNull Class<?> clazz) {
             this.additionalClassesBuilder.add(clazz);
             return this;

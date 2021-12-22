@@ -28,8 +28,6 @@ dependencies {
         exclude("org.codehouse.plexus", "plexus-utils")
     }
 
-    compileOnly("com.hivemq:hivemq-extension-sdk:${property("hivemq-extension-sdk.version")}")
-
     testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit5.version")}")
     testImplementation("com.hivemq:hivemq-extension-sdk:${property("hivemq-extension-sdk.version")}")
     testImplementation("com.hivemq:hivemq-mqtt-client:${property("hivemq-mqtt-client.version")}")
@@ -40,6 +38,12 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.named<JavaCompile>("compileTestJava") {
+    javaCompiler.set(javaToolchains.compilerFor {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    })
 }
 
 license {
