@@ -21,6 +21,7 @@ import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -29,6 +30,7 @@ import java.util.function.Consumer;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 
 public class CouchbaseContainerTest {
 
@@ -108,6 +110,20 @@ public class CouchbaseContainerTest {
 
                 await().untilAsserted(() -> assertFalse(collection.exists("foo").exists()));
             });
+        }
+    }
+
+    /**
+     * Make sure that the code fails fast if the Analytics service is enabled on the community
+     * edition which is not supported.
+     */
+    @Test
+    public void testFailureIfCommunityUsedWithAnalytics() {
+        try (
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
+                .withEnabledServices(CouchbaseService.KV, CouchbaseService.ANALYTICS)
+        ) {
+            assertThrows(ContainerLaunchException.class, () -> setUpClient(container, cluster -> {}));
         }
     }
 
