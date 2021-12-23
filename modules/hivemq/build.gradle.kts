@@ -9,7 +9,6 @@ dependencies {
     api("org.jetbrains:annotations:${property("annotations.version")}")
 
     implementation("org.apache.commons:commons-lang3:${property("commons-lang.version")}")
-    implementation("com.google.guava:guava:${property("guava.version")}")
     implementation("commons-io:commons-io:${property("commons-io.version")}")
     implementation("org.javassist:javassist:${property("javassist.version")}")
     implementation("org.jboss.shrinkwrap:shrinkwrap-api:${property("shrinkwrap.version")}")

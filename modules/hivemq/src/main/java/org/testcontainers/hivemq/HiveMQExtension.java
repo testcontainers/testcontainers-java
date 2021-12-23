@@ -1,8 +1,11 @@
 package org.testcontainers.hivemq;
 
-import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Yannick Weber
@@ -16,7 +19,7 @@ public class HiveMQExtension {
     private final int startPriority;
     private final boolean disabledOnStartup;
     private final @NotNull Class<?> mainClass;
-    private final @NotNull ImmutableList<Class<?>> additionalClasses;
+    private final @NotNull List<Class<?>> additionalClasses;
 
     private HiveMQExtension(
         final @NotNull String id,
@@ -26,7 +29,7 @@ public class HiveMQExtension {
         final int startPriority,
         final boolean disabledOnStartup,
         final @NotNull Class<?> mainClass,
-        final @NotNull ImmutableList<Class<?>> additionalClasses) {
+        final @NotNull List<Class<?>> additionalClasses) {
 
         this.id = id;
         this.name = name;
@@ -66,8 +69,8 @@ public class HiveMQExtension {
         return mainClass;
     }
 
-    public @NotNull ImmutableList<Class<?>> getAdditionalClasses() {
-        return additionalClasses;
+    public @NotNull List<Class<?>> getAdditionalClasses() {
+        return Collections.unmodifiableList(additionalClasses);
     }
 
     public static @NotNull Builder builder() {
@@ -82,7 +85,7 @@ public class HiveMQExtension {
         private int startPriority = 0;
         private boolean disabledOnStartup = false;
         private @Nullable Class<?> mainClass;
-        private final @NotNull ImmutableList.Builder<Class<?>> additionalClassesBuilder = ImmutableList.builder();
+        private final @NotNull LinkedList<Class<?>> additionalClasses = new LinkedList<>();
 
         /**
          * Builds the {@link HiveMQExtension} with the provided values or default values.
@@ -109,7 +112,7 @@ public class HiveMQExtension {
                 startPriority,
                 disabledOnStartup,
                 mainClass,
-                additionalClassesBuilder.build()
+                additionalClasses
             );
         }
 
@@ -209,7 +212,7 @@ public class HiveMQExtension {
          * @return the {@link Builder}
          */
         public @NotNull Builder addAdditionalClass(final @NotNull Class<?> clazz) {
-            this.additionalClassesBuilder.add(clazz);
+            this.additionalClasses.add(clazz);
             return this;
         }
     }
