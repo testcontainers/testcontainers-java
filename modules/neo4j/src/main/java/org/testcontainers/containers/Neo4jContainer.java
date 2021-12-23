@@ -10,6 +10,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 import org.testcontainers.utility.MountableFile;
@@ -208,7 +209,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withDatabase(MountableFile graphDb) {
-        if (!usesVersion("3.5")) {
+        if (!isNeo4jDatabaseVersionSupportingDbCopy()) {
             throw new IllegalArgumentException(
                 "Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
         }
@@ -258,8 +259,22 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
             .replaceAll("\\.", "_"));
     }
 
-    private boolean usesVersion(String version) {
-        String versionPart = DockerImageName.parse(getDockerImageName()).getVersionPart();
-        return versionPart.startsWith(version);
+    private boolean isNeo4jDatabaseVersionSupportingDbCopy() {
+        String usedImageVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
+        ComparableVersion usedComparableVersion = new ComparableVersion(usedImageVersion);
+
+        boolean versionSupportingDbCopy =
+            usedComparableVersion.isLessThan("4.0") && usedComparableVersion.isGreaterThanOrEqualTo("2");
+
+        if (versionSupportingDbCopy) {
+            return true;
+        }
+        if (!usedComparableVersion.isSemanticVersion()) {
+            logger().warn("Version {} is not a semantic version. The function \"withDatabase\" will fail.", usedImageVersion);
+            logger().warn("Copying databases is only supported for Neo4j versions 3.5.x");
+
+        }
+
+        return false;
     }
 }
