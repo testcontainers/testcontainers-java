@@ -1,4 +1,4 @@
-description = "Core API for testing MQTT Applications."
+description = "TestContainers :: HiveMQ"
 
 plugins {
     `java-library`
@@ -17,7 +17,7 @@ dependencies {
 
     /*  This dependency needs to be explicitly added, because shrinkwrap-resolver-api-maven-embedded
         and shrinkwrap-resolver-impl-maven-embedded depend on different versions of it.
-        This would lead to issues when the HiveMQ Testcontainer is included in maven projects. */
+        This would lead to issues when the HiveMQ container is included in maven projects. */
     implementation("org.codehaus.plexus:plexus-utils:3.2.1")
     implementation("org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven-embedded:${property("shrinkwrap-resolver.version")}") {
         exclude("org.codehouse.plexus", "plexus-utils")
