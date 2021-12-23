@@ -182,12 +182,12 @@ public class HiveMQExtension {
 
         /**
          * The main class of the {@link HiveMQExtension}.
-         * This class MUST implement {@link com.hivemq.extension.sdk.api.ExtensionMain}.
+         * This class MUST implement com.hivemq.extension.sdk.api.ExtensionMain.
          *
          * @param mainClass the main class
          * @return the {@link Builder}
-         * @throws IllegalArgumentException if the provides class does not implement {@link com.hivemq.extension.sdk.api.ExtensionMain}
-         * @throws IllegalStateException if {@link com.hivemq.extension.sdk.api.ExtensionMain} is not found in the classpath
+         * @throws IllegalArgumentException if the provides class does not implement com.hivemq.extension.sdk.api.ExtensionMain}
+         * @throws IllegalStateException if com.hivemq.extension.sdk.api.ExtensionMain is not found in the classpath
          */
         public @NotNull Builder mainClass(final @NotNull Class<?> mainClass) {
             try {
