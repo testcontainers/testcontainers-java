@@ -9,7 +9,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashMap;
@@ -18,6 +17,8 @@ import java.util.Map;
 public class K3sContainer extends GenericContainer<K3sContainer> {
 
     private String kubeConfigYaml;
+
+    private static final String TOKEN = "deadbeef";
 
     public K3sContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -31,12 +32,10 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         tmpFsMapping.put("/var/run", "");
         setTmpFsMapping(tmpFsMapping);
 
-        final String randomToken = Base58.randomString(16);
-
         setCommand(
             "server",
             "--no-deploy=traefik",
-            "--token=" + randomToken,
+            "--token=" + TOKEN,
             "--tls-san=" + this.getHost()
         );
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Node controller sync successful.*"));

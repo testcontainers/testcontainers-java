@@ -27,6 +27,8 @@ public class Fabric8K3sContainerTest {
             // connecting_with_fabric8 {
             // obtain a kubeconfig file which allows us to connect to k3s
             String kubeConfigYaml = k3s.getKubeConfigYaml();
+
+            // requires io.fabric8:kubernetes-client:5.11.0 or higher
             Config config = Config.fromKubeconfig(kubeConfigYaml);
 
             DefaultKubernetesClient client = new DefaultKubernetesClient(config);
