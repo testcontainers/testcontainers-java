@@ -43,17 +43,17 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
-        JsonNode rawKubeConfig = copyFileFromContainer(
+        ObjectNode rawKubeConfig = copyFileFromContainer(
             "/etc/rancher/k3s/k3s.yaml",
-            is -> objectMapper.readValue(is, JsonNode.class)
+            is -> objectMapper.readValue(is, ObjectNode.class)
         );
 
-        ObjectNode clusterConfig = (ObjectNode) rawKubeConfig.get("clusters").get(0).get("cluster");
+        ObjectNode clusterConfig = rawKubeConfig.at("/clusters/0/cluster").require();
         clusterConfig.replace("server", new TextNode("https://" + this.getHost() + ":" + this.getMappedPort(6443)));
 
-        ((ObjectNode) rawKubeConfig).set("current-context", new TextNode("default"));
+        rawKubeConfig.set("current-context", new TextNode("default"));
 
-        kubeConfigYaml = objectMapper.writeValueAsString(rawKubeConfig);
+        kubeConfigYaml = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rawKubeConfig);
     }
 
     public String getKubeConfigYaml() {
