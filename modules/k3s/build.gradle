@@ -3,7 +3,6 @@ description = "Testcontainers :: K3S"
 dependencies {
     api project(":testcontainers")
 
-    shaded 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
     shaded 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.1'
 
     testImplementation 'io.fabric8:kubernetes-client:5.11.0'
