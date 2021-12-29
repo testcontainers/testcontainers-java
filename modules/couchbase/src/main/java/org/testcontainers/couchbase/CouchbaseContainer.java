@@ -489,6 +489,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             @Cleanup Response response = doHttpRequest(MGMT_PORT, "/pools/default/buckets", "POST", new FormBody.Builder()
                 .add("name", bucket.getName())
                 .add("ramQuotaMB", Integer.toString(bucket.getQuota()))
+                .add("bucketType", bucket.getBucketType().getIdentifier())
                 .add("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0")
                 .build(), true);
 

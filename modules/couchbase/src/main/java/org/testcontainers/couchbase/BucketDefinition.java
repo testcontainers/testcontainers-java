@@ -30,6 +30,7 @@ public class BucketDefinition {
     private boolean flushEnabled = false;
     private boolean queryPrimaryIndex = true;
     private int quota = 100;
+    private BucketType bucketType = BucketType.COUCHBASE;
 
     public BucketDefinition(final String name) {
         this.name = name;
@@ -82,6 +83,21 @@ public class BucketDefinition {
         return this;
     }
 
+    /**
+     * Allows to customize the bucket type.
+     * <p>
+     * IMPORTANT: if you are using the community edition AND the query service with ephemeral buckets, you need
+     * to make sure to use at least 7.0.2 community edition or later - earlier versions will NOT work. Default
+     * couchbase buckets are not affected by this version constraint.
+     *
+     * @param bucketType the type of bucket that should be created.
+     * @return this {@link BucketDefinition} for chaining purposes.
+     */
+    public BucketDefinition withBucketType(final BucketType bucketType) {
+        this.bucketType = bucketType;
+        return this;
+    }
+
     public String getName() {
         return name;
     }
@@ -100,6 +116,40 @@ public class BucketDefinition {
 
     public List<ScopeDefinition> getScopes() {
         return scopes;
+    }
+
+    public BucketType getBucketType() {
+        return bucketType;
+    }
+
+    /**
+     * Specifies the type of bucket that can be created.
+     * <p>
+     * Note that the memcached bucket type is not provided, since it is already deprecated on the server side. Please
+     * use ephemeral buckets instead.
+     */
+    public enum BucketType {
+        /**
+         * The default bucket type, that supports all features and comes with persistence.
+         */
+        COUCHBASE("couchbase"),
+        /**
+         * In-memory bucket type, with no persistence. Supports all features but Views.
+         * <p>
+         * IMPORTANT: if you are using the community edition AND the query service with ephemeral buckets, you need
+         * to make sure to use at least 7.0.2 community edition or later - earlier versions will NOT work.
+         */
+        EPHEMERAL("ephemeral");
+
+        private final String identifier;
+
+        BucketType(String identifier) {
+            this.identifier = identifier;
+        }
+
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
 }
