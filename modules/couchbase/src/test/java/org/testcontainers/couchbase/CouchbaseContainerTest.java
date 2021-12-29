@@ -35,7 +35,7 @@ import static org.junit.Assert.assertThrows;
 public class CouchbaseContainerTest {
 
     private static final DockerImageName COUCHBASE_IMAGE_ENTERPRISE =
-        DockerImageName.parse("couchbase/server:enterprise-6.6.2");
+        DockerImageName.parse("couchbase/server:enterprise-7.0.3");
     private static final DockerImageName COUCHBASE_IMAGE_COMMUNITY =
         DockerImageName.parse("couchbase/server:community-6.6.0");
 
@@ -124,6 +124,32 @@ public class CouchbaseContainerTest {
                 .withEnabledServices(CouchbaseService.KV, CouchbaseService.ANALYTICS)
         ) {
             assertThrows(ContainerLaunchException.class, () -> setUpClient(container, cluster -> {}));
+        }
+    }
+
+    @Test
+    public void testScopesAndCollections() {
+        // bucket_definition {
+        BucketDefinition bucketDefinition = new BucketDefinition("mybucket")
+            .withScope(new ScopeDefinition("myscope").withCollection("mycollection"));
+        // }
+
+        try (
+            // container_definition {
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_ENTERPRISE)
+                .withBucket(bucketDefinition)
+            // }
+        ) {
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
+
+                Collection collection = bucket.scope("myscope").collection("mycollection");
+
+                JsonObject value = JsonObject.create().put("foo", true);
+                collection.upsert("mydoc", value);
+                assertEquals(value, collection.get("mydoc").contentAsObject());
+            });
         }
     }
 
