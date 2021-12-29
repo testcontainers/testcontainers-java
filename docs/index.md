@@ -127,16 +127,34 @@ A huge thank you to our sponsors:
     </a>
 </div>
 
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.elastic.co/">
+        <img src="sponsor_logos/elastic.png" style="width: 100%"/>
+        <p>Elastic</p>
+    </a>
+</div>
+
+### Donors
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.redhat.com">
+        <img src="sponsor_logos/red_hat.png" style="width: 100%"/>
+        <p>Red Hat</p>
+    </a>
+</div>
+
 ### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
 * [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
 * [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
 * [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
-* [Pascal Zwick (@pas2al)](https://github.com/pas2al)
 * [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
 * [Bas Stoker (@bastoker)](https://github.com/bastoker)
 * [Oleg Nenashev (@oleg-nenashev)](https://github.com/oleg-nenashev)
+* [Rik Glover (@rikglover)](https://github.com/rikglover)
+* [Amitosh Swain Mahapatra (@recrsn)](https://github.com/recrsn)
+* [Paris Apostolopoulos](https://opencollective.com/paris-apostolopoulos)
 
 ## Who is using Testcontainers?
 
