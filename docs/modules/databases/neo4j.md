@@ -13,58 +13,59 @@ On the JVM you would most likely use the [Java driver](https://github.com/neo4j/
 
 The following example uses the JUnit 5 extension `@Testcontainers` and demonstrates both the usage of the Java Driver and the REST endpoint:
 
-```java tab="JUnit 5 example"
-@Testcontainers
-public class ExampleTest {
-
-    @Container
-    private static Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withAdminPassword(null); // Disable password
-
-    @Test
-    void testSomethingUsingBolt() {
-
-        // Retrieve the Bolt URL from the container
-        String boltUrl = neo4jContainer.getBoltUrl();
-        try (
-            Driver driver = GraphDatabase.driver(boltUrl, AuthTokens.none());
-            Session session = driver.session()
-        ) {
-            long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
-            assertThat(one, is(1L));
-        } catch (Exception e) {
-            fail(e.getMessage());
+=== "JUnit 5 example"
+    ```java
+    @Testcontainers
+    public class ExampleTest {
+    
+        @Container
+        private static Neo4jContainer neo4jContainer = new Neo4jContainer()
+            .withAdminPassword(null); // Disable password
+    
+        @Test
+        void testSomethingUsingBolt() {
+    
+            // Retrieve the Bolt URL from the container
+            String boltUrl = neo4jContainer.getBoltUrl();
+            try (
+                Driver driver = GraphDatabase.driver(boltUrl, AuthTokens.none());
+                Session session = driver.session()
+            ) {
+                long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
+                assertThat(one, is(1L));
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        }
+    
+        @Test
+        void testSomethingUsingHttp() throws IOException {
+    
+            // Retrieve the HTTP URL from the container
+            String httpUrl = neo4jContainer.getHttpUrl();
+    
+            URL url = new URL(httpUrl + "/db/data/transaction/commit");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setDoOutput(true);
+    
+            try (Writer out = new OutputStreamWriter(con.getOutputStream())) {
+                out.write("{\"statements\":[{\"statement\":\"RETURN 1\"}]}");
+                out.flush();
+            }
+    
+            assertThat(con.getResponseCode(), is(HttpURLConnection.HTTP_OK));
+            try (BufferedReader buffer = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String expectedResponse = 
+                    "{\"results\":[{\"columns\":[\"1\"],\"data\":[{\"row\":[1],\"meta\":[null]}]}],\"errors\":[]}";
+                String response = buffer.lines().collect(Collectors.joining("\n"));
+                assertThat(response, is(expectedResponse));
+            }
         }
     }
-
-    @Test
-    void testSomethingUsingHttp() throws IOException {
-
-        // Retrieve the HTTP URL from the container
-        String httpUrl = neo4jContainer.getHttpUrl();
-
-        URL url = new URL(httpUrl + "/db/data/transaction/commit");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setDoOutput(true);
-
-        try (Writer out = new OutputStreamWriter(con.getOutputStream())) {
-            out.write("{\"statements\":[{\"statement\":\"RETURN 1\"}]}");
-            out.flush();
-        }
-
-        assertThat(con.getResponseCode(), is(HttpURLConnection.HTTP_OK));
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-            String expectedResponse = 
-                "{\"results\":[{\"columns\":[\"1\"],\"data\":[{\"row\":[1],\"meta\":[null]}]}],\"errors\":[]}";
-            String response = buffer.lines().collect(Collectors.joining("\n"));
-            assertThat(response, is(expectedResponse));
-        }
-    }
-}
-```
+    ```
 
 You are not limited to Unit tests and can of course use an instance of the Neo4j Testcontainer in vanilla Java code as well.
 
@@ -162,33 +163,36 @@ You'll find more information about licensing Neo4j here: [About Neo4j Licenses](
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:neo4j:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>neo4j</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:neo4j:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>neo4j</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 !!! hint
     Add the Neo4j Java driver if you plan to access the Testcontainer via Bolt:
     
-    ```groovy tab='Gradle'
-    compile "org.neo4j.driver:neo4j-java-driver:1.7.1"
-    ```
+    === "Gradle"
+        ```groovy
+        compile "org.neo4j.driver:neo4j-java-driver:1.7.1"
+        ```
     
-    ```xml tab='Maven'
-    <dependency>
-        <groupId>org.neo4j.driver</groupId>
-        <artifactId>neo4j-java-driver</artifactId>
-        <version>1.7.1</version>
-    </dependency>
-    ```
+    === "Maven"
+        ```xml
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+        ```
     
 
 

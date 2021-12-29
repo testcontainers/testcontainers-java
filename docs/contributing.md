@@ -35,7 +35,7 @@ If the answers to the above are all yes, then a new module may be a good approac
 Otherwise, it is entirely possible for you to:
 
 * publish a code snippet
-* contribute an [example](../examples/README.md) to the Testcontainers repo
+* contribute an example to the Testcontainers repo
 * publish your own third party library
 
 In any case, please contact us to help validate your proposal!
