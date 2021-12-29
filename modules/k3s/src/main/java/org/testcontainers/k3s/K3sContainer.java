@@ -18,8 +18,6 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
 
     private String kubeConfigYaml;
 
-    private static final String TOKEN = "fixedtoken";
-
     public K3sContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DockerImageName.parse("rancher/k3s"));
@@ -35,7 +33,6 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         setCommand(
             "server",
             "--no-deploy=traefik",
-            "--token=" + TOKEN,
             "--tls-san=" + this.getHost()
         );
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Node controller sync successful.*"));
