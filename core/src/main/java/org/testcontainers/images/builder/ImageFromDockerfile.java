@@ -51,6 +51,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private final Map<String, String> buildArgs = new HashMap<>();
     private Optional<String> dockerFilePath = Optional.empty();
     private Optional<Path> dockerfile = Optional.empty();
+    private Optional<String> target = Optional.empty();
     private Set<String> dependencyImageNames = Collections.emptySet();
 
     public ImageFromDockerfile() {
@@ -149,6 +150,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     protected void configure(BuildImageCmd buildImageCmd) {
         buildImageCmd.withTag(this.getDockerImageName());
+        this.target.ifPresent(buildImageCmd::withTarget);
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
         this.dockerfile.ifPresent(p -> {
             buildImageCmd.withDockerfile(p.toFile());
@@ -184,6 +186,18 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     public ImageFromDockerfile withBuildArgs(final Map<String, String> args) {
         this.buildArgs.putAll(args);
+        return this;
+    }
+
+    /**
+     * Sets the target build stage as described in Docker's documentation:
+     * "When you build your image, you don’t necessarily need to build the entire Dockerfile including every stage.
+     * You can specify a target build stage."
+     *
+     * @param target the target build stage
+     */
+    public ImageFromDockerfile withTarget(String target) {
+        this.target = Optional.of(target);
         return this;
     }
 
