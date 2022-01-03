@@ -34,7 +34,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -141,7 +140,14 @@ public final class ResourceReaper {
                 .pollInterval(DynamicPollInterval.ofMillis(50))
                 .pollInSameThread()
                 .until(
-                    () -> client.inspectContainerCmd(ryukContainerId).exec(),
+                    () -> {
+	                        try {
+	                            return client.inspectContainerCmd(ryukContainerId).exec();
+	                        } catch(NotFoundException e) {
+	                            log.debug("Ryuk container cannot be found and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
+	                            throw e;
+	                        }
+                        },
                     inspectContainerResponse -> {
                         return inspectContainerResponse
                         .getNetworkSettings()
