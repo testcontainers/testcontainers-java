@@ -23,6 +23,7 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
@@ -245,7 +246,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     private static DockerImageName getStandardImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
-        boolean supportsVncWithoutDebugImage = seleniumVersion.startsWith("4.");
+        boolean supportsVncWithoutDebugImage = new ComparableVersion(seleniumVersion).isGreaterThanOrEqualTo("4");
 
         String browserName;
         if (capabilities == null) {
