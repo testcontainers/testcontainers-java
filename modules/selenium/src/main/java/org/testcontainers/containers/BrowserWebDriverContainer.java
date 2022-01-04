@@ -127,6 +127,14 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         recordingMode = VncRecordingMode.SKIP;
     }
 
+    /**
+     * @deprecated please use {@link BrowserWebDriverContainer#getSeleniumAddress()} to obtain the selenium server URL,
+     * and call the {@link RemoteWebDriver} constructor ({@link RemoteWebDriver#RemoteWebDriver(URL, Capabilities)}),
+     * passing in the URL and {@link Capabilities} object instead.
+     *
+     * @param capabilities Capabilities
+     * @return SELF
+     */
     @Deprecated
     public SELF withCapabilities(Capabilities capabilities) {
         this.capabilities = capabilities;
