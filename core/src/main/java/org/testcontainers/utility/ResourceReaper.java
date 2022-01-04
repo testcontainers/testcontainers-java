@@ -131,46 +131,45 @@ public final class ResourceReaper {
                     ryukLog.append(new String(frame.getPayload(), StandardCharsets.UTF_8));
                 }
             });
-
-        ContainerState containerState = new ContainerState() {
-
-            // inspect container response might initially not contain the mapped port
-            final InspectContainerResponse inspectedContainer = await()
-                .atMost(5, TimeUnit.SECONDS)
-                .pollInterval(DynamicPollInterval.ofMillis(50))
-                .pollInSameThread()
-                .until(
-                    () -> {
-	                        try {
-	                            return client.inspectContainerCmd(ryukContainerId).exec();
-	                        } catch (NotFoundException e) {
-	                            log.debug("Ryuk container cannot be found and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
-	                            throw e;
-	                        }
-                        },
-                    inspectContainerResponse -> {
-                        return inspectContainerResponse
-                        .getNetworkSettings()
-                        .getPorts()
-                        .getBindings()
-                        .values()
-                        .stream()
-                        .anyMatch(Objects::nonNull);
-                    }
-                );
-
-            @Override
-            public List<Integer> getExposedPorts() {
-                return Stream.of(getContainerInfo().getConfig().getExposedPorts())
-                    .map(ExposedPort::getPort)
-                    .collect(Collectors.toList());
-            }
-
-            @Override
-            public InspectContainerResponse getContainerInfo() {
-                return inspectedContainer;
-            }
-        };
+        
+        ContainerState containerState;
+        try {
+	        containerState = new ContainerState() {
+	
+	            // inspect container response might initially not contain the mapped port
+	            final InspectContainerResponse inspectedContainer = await()
+	                .atMost(5, TimeUnit.SECONDS)
+	                .pollInterval(DynamicPollInterval.ofMillis(50))
+	                .pollInSameThread()
+	                .until(
+	                    () -> client.inspectContainerCmd(ryukContainerId).exec(),
+	                    inspectContainerResponse -> {
+	                        return inspectContainerResponse
+	                        .getNetworkSettings()
+	                        .getPorts()
+	                        .getBindings()
+	                        .values()
+	                        .stream()
+	                        .anyMatch(Objects::nonNull);
+	                    }
+	                );
+	
+	            @Override
+	            public List<Integer> getExposedPorts() {
+	                return Stream.of(getContainerInfo().getConfig().getExposedPorts())
+	                    .map(ExposedPort::getPort)
+	                    .collect(Collectors.toList());
+	            }
+	
+	            @Override
+	            public InspectContainerResponse getContainerInfo() {
+	                return inspectedContainer;
+	            }
+	        };
+        } catch (NotFoundException e) {
+            log.debug("Ryuk container cannot be found and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
+            throw e;
+        }
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
