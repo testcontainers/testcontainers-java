@@ -13,6 +13,6 @@ dependencies {
     implementation 'com.google.guava:guava:23.0'
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.7'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.10'
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
 }
