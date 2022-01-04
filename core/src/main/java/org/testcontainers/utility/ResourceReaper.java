@@ -143,7 +143,7 @@ public final class ResourceReaper {
                     () -> {
 	                        try {
 	                            return client.inspectContainerCmd(ryukContainerId).exec();
-	                        } catch(NotFoundException e) {
+	                        } catch (NotFoundException e) {
 	                            log.debug("Ryuk container cannot be found and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
 	                            throw e;
 	                        }
