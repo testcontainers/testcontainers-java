@@ -131,45 +131,45 @@ public final class ResourceReaper {
                     ryukLog.append(new String(frame.getPayload(), StandardCharsets.UTF_8));
                 }
             });
-        
-        ContainerState containerState;
+
+        InspectContainerResponse inspectedContainer;
         try {
-	        containerState = new ContainerState() {
-	
-	            // inspect container response might initially not contain the mapped port
-	            final InspectContainerResponse inspectedContainer = await()
-	                .atMost(5, TimeUnit.SECONDS)
-	                .pollInterval(DynamicPollInterval.ofMillis(50))
-	                .pollInSameThread()
-	                .until(
-	                    () -> client.inspectContainerCmd(ryukContainerId).exec(),
-	                    inspectContainerResponse -> {
-	                        return inspectContainerResponse
-	                        .getNetworkSettings()
-	                        .getPorts()
-	                        .getBindings()
-	                        .values()
-	                        .stream()
-	                        .anyMatch(Objects::nonNull);
-	                    }
-	                );
-	
-	            @Override
-	            public List<Integer> getExposedPorts() {
-	                return Stream.of(getContainerInfo().getConfig().getExposedPorts())
-	                    .map(ExposedPort::getPort)
-	                    .collect(Collectors.toList());
-	            }
-	
-	            @Override
-	            public InspectContainerResponse getContainerInfo() {
-	                return inspectedContainer;
-	            }
-	        };
-        } catch (NotFoundException e) {
-            log.debug("Ryuk container cannot be found and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
-            throw e;
+            // inspect container response might initially not contain the mapped port
+            inspectedContainer = await()
+                .atMost(5, TimeUnit.SECONDS)
+                .pollInterval(DynamicPollInterval.ofMillis(50))
+                .pollInSameThread()
+                .until(
+                    () -> client.inspectContainerCmd(ryukContainerId).exec(),
+                    inspectContainerResponse -> {
+                        return inspectContainerResponse
+                            .getNetworkSettings()
+                            .getPorts()
+                            .getBindings()
+                            .values()
+                            .stream()
+                            .anyMatch(Objects::nonNull);
+                    }
+                );
+        } catch (Exception e) {
+            log.warn("Ryuk container cannot be inspected and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
+            throw new IllegalStateException("Ryuk failed to start", e);
         }
+
+        ContainerState containerState = new ContainerState() {
+
+            @Override
+            public List<Integer> getExposedPorts() {
+                return Stream.of(getContainerInfo().getConfig().getExposedPorts())
+                    .map(ExposedPort::getPort)
+                    .collect(Collectors.toList());
+            }
+
+            @Override
+            public InspectContainerResponse getContainerInfo() {
+                return inspectedContainer;
+            }
+        };
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
