@@ -5,8 +5,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.7.2"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.6.1"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.8"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.6.2"
     }
 }
 
@@ -31,10 +31,6 @@ include ':docs:examples:junit5:redis'
 include ':docs:examples:spock:redis'
 
 include 'test-support'
-
-ext.isMasterBuild = false ||
-    (System.getenv("GITHUB_REF") == "refs/heads/master") ||
-    (System.getenv("BUILD_SOURCEBRANCHNAME") == "master")
 
 ext.isCI = System.getenv("CI") != null
 
