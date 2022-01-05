@@ -49,3 +49,14 @@ buildCache {
         }
     }
 }
+
+gradleEnterprise {
+    buildScan {
+        server = "https://ge.testcontainers.org/"
+        publishAlways()
+        publishIfAuthenticated()
+        uploadInBackground = !isCI
+        captureTaskInputFiles = true
+    }
+
+}
