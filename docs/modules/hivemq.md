@@ -1,7 +1,5 @@
 # HiveMQ Module
 
-# HiveMQ Test Container
-
 ![image](https://www.hivemq.com/img/logo-hivemq-testcontainer.png)
 
 Automatic starting HiveMQ docker containers for JUnit4 and JUnit5 tests.
