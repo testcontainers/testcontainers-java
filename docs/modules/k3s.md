@@ -8,11 +8,6 @@ This module is intended to be used for testing components that interact with Kub
 
 ## Usage example
 
-!!! warning
-    K3sContainer runs as a privileged container and needs to be able to spawn its own containers. For these reasons,
-    K3sContainer will not work in certain rootless Docker, Docker-in-Docker, or other environments where privileged
-    containers are disallowed.
-
 Start a K3s server as follows:
 
 <!--codeinclude-->
@@ -30,6 +25,15 @@ This may be used with Kubernetes clients - e.g. for the [official Java client](c
 [Official Java client](../../modules/k3s/src/test/java/org/testcontainers/k3s/OfficialClientK3sContainerTest.java) inside_block:connecting_with_k8sio
 [Fabric8 Kubernetes client](../../modules/k3s/src/test/java/org/testcontainers/k3s/Fabric8K3sContainerTest.java) inside_block:connecting_with_fabric8
 <!--/codeinclude-->
+
+## Known limitations
+
+!!! warning
+    * K3sContainer runs as a privileged container and needs to be able to spawn its own containers. For these reasons,
+    K3sContainer will not work in certain rootless Docker, Docker-in-Docker, or other environments where privileged
+    containers are disallowed.
+
+    * k3s containers may be unable to run on host machines where `/var/lib/docker` is on a BTRFS filesystem. See [k3s-io/k3s#4863](https://github.com/k3s-io/k3s/issues/4863) for an example.
 
 ## Adding this module to your project dependencies
 
