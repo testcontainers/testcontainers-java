@@ -13,5 +13,5 @@ dependencies {
     testImplementation 'org.apache.kafka:kafka-clients:3.0.0'
     testImplementation 'org.assertj:assertj-core:3.21.0'
     testImplementation 'com.google.guava:guava:23.0'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.7'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.10'
 }
