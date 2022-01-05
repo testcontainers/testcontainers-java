@@ -1,6 +1,7 @@
 jobs:
 
 - job: azure_pipeline_tests
+  timeoutInMinutes: 120
   steps:
 
   # Run all core tests when running the Windows CI tests
