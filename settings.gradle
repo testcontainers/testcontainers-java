@@ -42,10 +42,10 @@ buildCache {
     local {
         enabled = !isCI
     }
-    remote(HttpBuildCache) { 
-        push = isCI
+    remote(HttpBuildCache) {
+        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
         enabled = true
-        url = 'https://ge.testcontainers.org/cache/' 
+        url = 'https://ge.testcontainers.org/cache/'
         credentials {
             username = 'ci'
             password = System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
