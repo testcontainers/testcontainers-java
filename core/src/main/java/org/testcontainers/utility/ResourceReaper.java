@@ -34,7 +34,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -133,10 +132,10 @@ public final class ResourceReaper {
                 }
             });
 
-        ContainerState containerState = new ContainerState() {
-
+        InspectContainerResponse inspectedContainer;
+        try {
             // inspect container response might initially not contain the mapped port
-            final InspectContainerResponse inspectedContainer = await()
+            inspectedContainer = await()
                 .atMost(5, TimeUnit.SECONDS)
                 .pollInterval(DynamicPollInterval.ofMillis(50))
                 .pollInSameThread()
@@ -144,14 +143,20 @@ public final class ResourceReaper {
                     () -> client.inspectContainerCmd(ryukContainerId).exec(),
                     inspectContainerResponse -> {
                         return inspectContainerResponse
-                        .getNetworkSettings()
-                        .getPorts()
-                        .getBindings()
-                        .values()
-                        .stream()
-                        .anyMatch(Objects::nonNull);
+                            .getNetworkSettings()
+                            .getPorts()
+                            .getBindings()
+                            .values()
+                            .stream()
+                            .anyMatch(Objects::nonNull);
                     }
                 );
+        } catch (Exception e) {
+            log.warn("Ryuk container cannot be inspected and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
+            throw new IllegalStateException("Ryuk failed to start", e);
+        }
+
+        ContainerState containerState = new ContainerState() {
 
             @Override
             public List<Integer> getExposedPorts() {
