@@ -423,6 +423,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                 logger().info("Container {} is starting: {}", dockerImageName, containerId);
                 dockerClient.startContainerCmd(containerId).exec();
+            } else {
+                logger().info("Reusing existing container ({}) and not creating a new one", containerId);
             }
 
             // For all registered output consumers, start following as close to container startup as possible
