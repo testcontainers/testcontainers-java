@@ -1,9 +1,5 @@
 description = "TestContainers :: HiveMQ"
 
-plugins {
-    `java-library`
-}
-
 dependencies {
     api(project(":testcontainers"))
     api("org.jetbrains:annotations:23.0.0")
@@ -20,10 +16,10 @@ dependencies {
         This would lead to issues when the HiveMQ container is included in maven projects. */
     shaded("org.codehaus.plexus:plexus-utils:3.2.1")
     shaded("org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven-embedded:3.1.4") {
-        exclude("org.codehouse.plexus", "plexus-utils")
+        exclude(group: "org.codehouse.plexus", module: "plexus-utils")
     }
     runtimeOnly("org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven-embedded:3.1.4") {
-        exclude("org.codehouse.plexus", "plexus-utils")
+        exclude(group: "org.codehouse.plexus", module: "plexus-utils")
     }
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
@@ -31,15 +27,15 @@ dependencies {
     testImplementation("com.hivemq:hivemq-mqtt-client:1.3.0")
     testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
     testImplementation("ch.qos.logback:logback-classic:1.2.3")
-
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
-tasks.withType<Test> {
+test {
     useJUnitPlatform()
 }
 
-tasks.named<JavaCompile>("compileTestJava") {
-    javaCompiler.set(javaToolchains.compilerFor {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    })
+tasks.compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
