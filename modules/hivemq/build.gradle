@@ -35,9 +35,12 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
-tasks.compileTestJava {
+compileTestJava {
     javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(11)
     }
