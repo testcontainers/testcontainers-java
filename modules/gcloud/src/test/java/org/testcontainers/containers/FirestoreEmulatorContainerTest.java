@@ -22,7 +22,7 @@ public class FirestoreEmulatorContainerTest {
     @Rule
     // emulatorContainer {
     public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators")
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators")
     );
     // }
 
