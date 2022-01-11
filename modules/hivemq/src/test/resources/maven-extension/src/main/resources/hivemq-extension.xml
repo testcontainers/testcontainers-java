@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<hivemq-extension>
-    <id>${artifactId}</id>
-    <version>${version}</version>
-    <name>${extension.name}</name>
-    <author>${extension.author}</author>
-    <priority>1000</priority>
-</hivemq-extension>
