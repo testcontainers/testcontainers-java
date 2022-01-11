@@ -15,3 +15,8 @@ hivemqExtension {
     sdkVersion = '4.4.1'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
