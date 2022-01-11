@@ -100,13 +100,13 @@ dependencies {
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testImplementation 'org.assertj:assertj-core:3.21.0'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
     testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.20.2'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.22.0'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 
