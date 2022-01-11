@@ -42,3 +42,9 @@ tasks.compileTestJava {
         languageVersion = JavaLanguageVersion.of(11)
     }
 }
+
+tasks.test {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
