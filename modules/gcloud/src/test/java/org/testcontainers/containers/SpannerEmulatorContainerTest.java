@@ -27,7 +27,7 @@ public class SpannerEmulatorContainerTest {
     @Rule
     // emulatorContainer {
     public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer(
-        DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.1.0")
+        DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.4.0")
     );
     // }
 
