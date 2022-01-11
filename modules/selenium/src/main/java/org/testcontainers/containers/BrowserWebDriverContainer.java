@@ -156,16 +156,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
 
-        if (capabilities == null) {
-            if (seleniumVersion.startsWith("2.")) {
-                logger().info("No capabilities provided, falling back to DesiredCapabilities.chrome()");
-                capabilities = DesiredCapabilities.chrome();
-            } else {
-                logger().info("No capabilities provided, falling back to ChromeOptions");
-                capabilities = new ChromeOptions();
-            }
-        }
-
         if (recordingMode != VncRecordingMode.SKIP) {
 
             if (vncRecordingDirectory == null) {
@@ -273,10 +263,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
-                () -> Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
-                        () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
-
         if (vncRecordingContainer != null) {
             LOGGER.debug("Starting VNC recording");
             vncRecordingContainer.start();
