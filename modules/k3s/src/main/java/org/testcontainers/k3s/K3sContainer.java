@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
@@ -24,6 +25,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
 
         addExposedPorts(6443, 8443);
         setPrivilegedMode(true);
+        addFileSystemBind("/sys/fs/cgroup", "/sys/fs/cgroup", BindMode.READ_WRITE);
 
         Map<String, String> tmpFsMapping = new HashMap<>();
         tmpFsMapping.put("/run", "");
