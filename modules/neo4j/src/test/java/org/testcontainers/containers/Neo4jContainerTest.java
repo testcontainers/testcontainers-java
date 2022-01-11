@@ -1,13 +1,14 @@
 package org.testcontainers.containers;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.neo4j.driver.v1.AuthToken;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.AuthToken;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
@@ -45,7 +46,7 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyDatabase() {
         try (
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:3.5.30")
                 .withDatabase(MountableFile.forClasspathResource("/test-graph.db"))
         ) {
             neo4jContainer.start();
@@ -53,11 +54,35 @@ public class Neo4jContainerTest {
                 Driver driver = getDriver(neo4jContainer);
                 Session session = driver.session()
             ) {
-                StatementResult result = session.run("MATCH (t:Thing) RETURN t");
+                Result result = session.run("MATCH (t:Thing) RETURN t");
                 assertThat(result.list().stream().map(r -> r.get("t").get("name").asString()))
                     .containsExactlyInAnyOrder("Thing", "Thing 2", "Thing 3", "A box");
             }
         }
+    }
+
+    @Test
+    public void shouldFailOnCopyDatabaseForDefaultNeo4j4Image() {
+        Assertions.assertThatIllegalArgumentException()
+            .isThrownBy(() -> new Neo4jContainer<>()
+                .withDatabase(MountableFile.forClasspathResource("/test-graph.db")))
+            .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
+    }
+
+    @Test
+    public void shouldFailOnCopyDatabaseForCustomNeo4j4Image() {
+        Assertions.assertThatIllegalArgumentException()
+            .isThrownBy(() -> new Neo4jContainer<>("neo4j:4.4.1")
+                .withDatabase(MountableFile.forClasspathResource("/test-graph.db")))
+            .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
+    }
+
+    @Test
+    public void shouldFailOnCopyDatabaseForCustomNonSemverNeo4j4Image() {
+        Assertions.assertThatIllegalArgumentException()
+            .isThrownBy(() -> new Neo4jContainer<>("neo4j:latest")
+                .withDatabase(MountableFile.forClasspathResource("/test-graph.db")))
+            .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
 
     @Test
@@ -93,7 +118,7 @@ public class Neo4jContainerTest {
     }
 
     private static void assertThatCustomPluginWasCopied(Session session) {
-        StatementResult result = session.run("RETURN ac.simons.helloWorld('Testcontainers') AS greeting");
+        Result result = session.run("RETURN ac.simons.helloWorld('Testcontainers') AS greeting");
         Record singleRecord = result.single();
         assertThat(singleRecord).isNotNull();
         assertThat(singleRecord.get("greeting").asString()).isEqualTo("Hello, Testcontainers");
@@ -103,7 +128,7 @@ public class Neo4jContainerTest {
     public void shouldCheckEnterpriseLicense() {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNull();
 
-        String expectedImageName = "neo4j:3.5.0-enterprise";
+        String expectedImageName = "neo4j:4.4-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(() -> new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE).withEnterpriseEdition())

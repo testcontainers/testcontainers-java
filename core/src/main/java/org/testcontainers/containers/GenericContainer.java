@@ -421,11 +421,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             if (!reused) {
                 containerIsCreated(containerId);
 
-                logger().info("Starting container with ID: {}", containerId);
+                logger().info("Container {} is starting: {}", dockerImageName, containerId);
                 dockerClient.startContainerCmd(containerId).exec();
+            } else {
+                logger().info("Reusing existing container ({}) and not creating a new one", containerId);
             }
-
-            logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);

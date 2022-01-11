@@ -36,8 +36,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -100,6 +102,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         CouchbaseService.INDEX
     );
 
+    /**
+     * Holds the custom service quotas if configured by the user.
+     */
+    private final Map<CouchbaseService, Integer> customServiceQuotas = new HashMap<>();
+
     private final List<BucketDefinition> buckets = new ArrayList<>();
 
     private boolean isEnterprise = false;
@@ -155,6 +162,26 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     public CouchbaseContainer withEnabledServices(final CouchbaseService... enabled) {
         checkNotRunning();
         this.enabledServices = EnumSet.copyOf(Arrays.asList(enabled));
+        return this;
+    }
+
+    /**
+     * Configures a custom memory quota for a given service.
+     *
+     * @param service the service to configure the quota for.
+     * @param quotaMb the memory quota in MB.
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withServiceQuota(final CouchbaseService service, final int quotaMb) {
+        checkNotRunning();
+        if (!service.hasQuota()) {
+            throw new IllegalArgumentException("The provided service (" + service + ") has no quota to configure");
+        }
+        if (quotaMb < service.getMinimumQuotaMb()) {
+            throw new IllegalArgumentException("The custom quota (" + quotaMb + ") must not be smaller than the " +
+                "minimum quota for the service (" + service.getMinimumQuotaMb() + ")");
+        }
+        this.customServiceQuotas.put(service, quotaMb);
         return this;
     }
 
@@ -262,6 +289,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         timePhase("initializeIsEnterprise", this::initializeIsEnterprise);
         timePhase("renameNode", this::renameNode);
         timePhase("initializeServices", this::initializeServices);
+        timePhase("setMemoryQuotas", this::setMemoryQuotas);
         timePhase("configureAdminUser", this::configureAdminUser);
         timePhase("configureExternalPorts", this::configureExternalPorts);
 
@@ -339,6 +367,35 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         );
 
         checkSuccessfulResponse(response, "Could not enable couchbase services");
+    }
+
+    /**
+     * Sets the memory quotas for each enabled service.
+     * <p>
+     * If there is no explicit custom quota defined, the default minimum quota will be used.
+     */
+    private void setMemoryQuotas() {
+        logger().debug("Custom service memory quotas: {}", customServiceQuotas);
+
+        final FormBody.Builder quotaBuilder = new FormBody.Builder();
+        for (CouchbaseService service : enabledServices) {
+            if (!service.hasQuota()) {
+                continue;
+            }
+
+            int quota = customServiceQuotas.getOrDefault(service, service.getMinimumQuotaMb());
+            if (CouchbaseService.KV.equals(service)) {
+                quotaBuilder.add("memoryQuota", Integer.toString(quota));
+            } else {
+                quotaBuilder.add(service.getIdentifier() + "MemoryQuota", Integer.toString(quota));
+            }
+        }
+
+        @Cleanup Response response = doHttpRequest(
+            MGMT_PORT, "/pools/default", "POST", quotaBuilder.build(), false
+        );
+
+        checkSuccessfulResponse(response, "Could not configure service memory quotas");
     }
 
     /**
@@ -473,7 +530,30 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                         .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
                         .build(), true);
 
-                    checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
+                    try {
+                        checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
+                    } catch (IllegalStateException ex) {
+                        // potentially ignore the error, the index will be eventually built.
+                        if (!ex.getMessage().contains("Index creation will be retried in background")) {
+                            throw ex;
+                        }
+                    }
+
+                    timePhase(
+                        "createBucket:" + bucket.getName() + ":primaryIndexOnline",
+                        () ->  Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                            @Cleanup Response stateResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                                .add("statement", "SELECT count(*) > 0 AS online FROM system:indexes where keyspace_id = \"" + bucket.getName() + "\" and is_primary = true and state = \"online\"")
+                                .build(), true);
+
+                            String body = stateResponse.body() != null ? stateResponse.body().string() : null;
+                            checkSuccessfulResponse(stateResponse, "Could not poll primary index state for bucket: " + bucket.getName());
+
+                            return Optional.of(MAPPER.readTree(body))
+                                .map(n -> n.at("/results/0/online"))
+                                .map(JsonNode::asBoolean)
+                                .orElse(false);
+                    }));
                 } else {
                     logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucket.getName());
                 }
@@ -508,7 +588,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 }
             }
 
-            throw new IllegalStateException(message + ": " + response.toString() + ", body=" + (body == null ? "<null>" : body));
+            throw new IllegalStateException(message + ": " + response + ", body=" + (body == null ? "<null>" : body));
         }
     }
 
