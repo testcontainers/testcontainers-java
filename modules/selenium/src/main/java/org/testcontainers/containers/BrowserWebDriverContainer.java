@@ -282,16 +282,18 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      *
      * @return a new Remote Web Driver instance
      */
-    public RemoteWebDriver getWebDriver() {
+    public synchronized RemoteWebDriver getWebDriver() {
         if (driver == null) {
             if (capabilities == null) {
                 logger().warn("No capabilities provided - this will cause an exception in future versions. Falling back to ChromeOptions");
                 capabilities = new ChromeOptions();
             }
 
-            driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
-                () -> Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
-                    () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
+            driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
+                return Timeouts.getWithTimeout(10, TimeUnit.SECONDS, () -> {
+                    return new RemoteWebDriver(getSeleniumAddress(), capabilities);
+                });
+            });
         }
         return driver;
     }
