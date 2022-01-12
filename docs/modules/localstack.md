@@ -1,6 +1,6 @@
-# Localstack Module
+# LocalStack Module
 
-Testcontainers module for the Atlassian's [LocalStack](https://github.com/localstack/localstack), 'a fully functional local AWS cloud stack'.
+Testcontainers module for [LocalStack](http://localstack.cloud/), 'a fully functional local AWS cloud stack', to develop and test your cloud and serverless apps without actually using the cloud.
 
 ## Usage example
 

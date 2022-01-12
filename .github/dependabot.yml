@@ -8,12 +8,22 @@ updates:
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
+    directory: "/modules/azure"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/cassandra"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/cockroachdb"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -28,12 +38,22 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/db2"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/dynalite"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/elasticsearch"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/gcloud"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -58,6 +78,11 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/k3s"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
       interval: "monthly"
@@ -74,6 +99,11 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mockserver"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/mongodb"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -103,7 +133,17 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/orientdb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/postgresql"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/presto"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -113,7 +153,22 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/r2dbc"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/rabbitmq"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/selenium"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/solr"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -124,6 +179,11 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/toxiproxy"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/trino"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10

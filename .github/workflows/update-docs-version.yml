@@ -17,7 +17,7 @@ jobs:
           sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml
           git diff
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@67df31e08a133c6a77008b89689677067fef169e # v3.10.1
+        uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a # v3.10.1
         with:
           title: Update docs version to ${GITHUB_REF##*/}
           body: |
