@@ -29,8 +29,8 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
-    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:6.2.1");
-    private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:4.0.0");
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:7.0.1");
+    private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-zookeeper:7.0.1");
 
     @Test
     public void testUsage() throws Exception {
@@ -45,7 +45,7 @@ public class KafkaContainerTest {
     public void testUsageWithSpecificImage() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1"))
             // }
         ) {
             kafka.start();
@@ -60,7 +60,7 @@ public class KafkaContainerTest {
     @Test
     public void testUsageWithVersion() throws Exception {
         try (
-            KafkaContainer kafka = new KafkaContainer("6.2.1")
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka/7.0.1"))
         ) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
@@ -72,21 +72,20 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
 
-            // withExternalZookeeper {
+	    @SuppressWarnings({"resource"})
             KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
-            // }
 
+	    @SuppressWarnings({"resource"})
             GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
 
-            // withKafkaNetwork {
+	    @SuppressWarnings({"resource"})
             GenericContainer<?> application = new GenericContainer<>(DockerImageName.parse("alpine"))
                 .withNetwork(network)
-            // }
                 .withNetworkAliases("dummy")
                 .withCommand("sleep 10000")
         ) {
@@ -95,6 +94,8 @@ public class KafkaContainerTest {
             application.start();
 
             testKafkaFunctionality(kafka.getBootstrapServers());
+	    
+	    
         }
     }
 
