@@ -32,7 +32,7 @@ public class ContainerWithFileInExtensionHomeIT {
                 .mainClass(FileCheckerExtension.class).build();
 
         final HiveMQContainer extension =
-                new HiveMQContainer()
+                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                     .withExtension(hiveMQExtension)
                     .waitForExtension(hiveMQExtension)

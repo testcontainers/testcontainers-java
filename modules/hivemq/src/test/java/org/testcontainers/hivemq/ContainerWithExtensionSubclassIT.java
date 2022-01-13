@@ -21,7 +21,7 @@ public class ContainerWithExtensionSubclassIT {
             .mainClass(MyExtensionWithSubclasses.class).build();
 
         final HiveMQContainer extension =
-            new HiveMQContainer()
+            new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
                 .waitForExtension(hiveMQExtension)
                 .withExtension(hiveMQExtension)
                 .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))

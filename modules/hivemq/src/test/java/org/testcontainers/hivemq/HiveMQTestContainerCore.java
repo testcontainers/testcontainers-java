@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HiveMQTestContainerCore {
 
-    final @NotNull HiveMQContainer container = new HiveMQContainer();
+    final @NotNull HiveMQContainer container = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME);
 
     @TempDir
     File tempDir;

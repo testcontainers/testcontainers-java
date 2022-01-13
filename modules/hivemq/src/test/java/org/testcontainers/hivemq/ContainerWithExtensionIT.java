@@ -20,7 +20,7 @@ public class ContainerWithExtensionIT {
             .mainClass(MyExtension.class).build();
 
         final HiveMQContainer extension =
-            new HiveMQContainer()
+            new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
                 .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                 .waitForExtension(hiveMQExtension)
                 .withExtension(hiveMQExtension);
