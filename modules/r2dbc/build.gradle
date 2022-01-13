@@ -11,7 +11,7 @@ dependencies {
     api project(':testcontainers')
     api 'io.r2dbc:r2dbc-spi:0.8.1.RELEASE'
 
-    testImplementation 'org.assertj:assertj-core:3.14.0'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
     testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.1.RELEASE'
     testImplementation project(':postgresql')
 
