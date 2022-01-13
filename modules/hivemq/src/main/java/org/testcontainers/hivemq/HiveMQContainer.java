@@ -200,7 +200,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         try {
             final String extensionDirName = getExtensionDirectoryName(extensionDir);
             final String containerPath = "/opt/hivemq/extensions/" + extensionDirName;
-            withCopyFileToContainer(cloneWithFileMode(mountableExtension, MODE), containerPath);
+            withCopyFileToContainer(cloneWithFileMode(mountableExtension), containerPath);
             logger.info("Putting extension '{}' into '{}'", extensionDirName, containerPath);
         } catch (final Exception e) {
             throw new ContainerLaunchException(e.getMessage() == null ? "" : e.getMessage(), e);
@@ -335,7 +335,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             throw new ContainerLaunchException("License file '" + mountableLicense.getFilesystemPath() + "' does not end wit '.lic' or '.elic'.");
         }
         final String containerPath = "/opt/hivemq/license/" + licenseFile.getName();
-        withCopyFileToContainer(cloneWithFileMode(mountableLicense, MODE), containerPath);
+        withCopyFileToContainer(cloneWithFileMode(mountableLicense), containerPath);
         logger.info("Putting license '{}' into '{}'.", licenseFile.getAbsolutePath(), containerPath);
         return self();
     }
@@ -354,7 +354,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             throw new ContainerLaunchException("HiveMQ config file '" + mountableConfig.getFilesystemPath() + "' does not exist.");
         }
         final String containerPath = "/opt/hivemq/conf/config.xml";
-        withCopyFileToContainer(cloneWithFileMode(mountableConfig, MODE), containerPath);
+        withCopyFileToContainer(cloneWithFileMode(mountableConfig), containerPath);
         logger.info("Putting '{}' into '{}'.", config.getAbsolutePath(), containerPath);
         return self();
     }
@@ -418,7 +418,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             throw new ContainerLaunchException("File '" + mountableFile.getFilesystemPath() + "‘ does not exist.");
         }
         final String containerPath = "/opt/hivemq" + PathUtil.prepareAppendPath(pathInHomeFolder);
-        withCopyFileToContainer(cloneWithFileMode(mountableFile, MODE), containerPath);
+        withCopyFileToContainer(cloneWithFileMode(mountableFile), containerPath);
         logger.info("Putting file '{}' into container path '{}'.", file.getAbsolutePath(), containerPath);
         return self();
     }
@@ -641,7 +641,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         super.stop();
     }
 
-    private @NotNull MountableFile cloneWithFileMode(final @NotNull MountableFile mountableFile, final int mode) {
-        return MountableFile.forHostPath(mountableFile.getResolvedPath(), mode);
+    private @NotNull MountableFile cloneWithFileMode(final @NotNull MountableFile mountableFile) {
+        return MountableFile.forHostPath(mountableFile.getResolvedPath(), HiveMQContainer.MODE);
     }
 }
