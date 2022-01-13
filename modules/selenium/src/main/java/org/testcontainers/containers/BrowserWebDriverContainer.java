@@ -231,13 +231,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private static DockerImageName getStandardImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
         String browserName = capabilities == null ? BrowserType.CHROME : capabilities.getBrowserName();
+        boolean supportsVncWithoutDebugImage = new ComparableVersion(seleniumVersion).isGreaterThanOrEqualTo("4");
 
-        boolean seleniumGreaterOrEqualTo4 = new ComparableVersion(seleniumVersion).isGreaterThanOrEqualTo("4");
         switch (browserName) {
             case BrowserType.CHROME:
-                return (seleniumGreaterOrEqualTo4 ? CHROME_IMAGE : CHROME_DEBUG_IMAGE).withTag(seleniumVersion);
+                return (supportsVncWithoutDebugImage ? CHROME_IMAGE : CHROME_DEBUG_IMAGE).withTag(seleniumVersion);
             case BrowserType.FIREFOX:
-                return (seleniumGreaterOrEqualTo4 ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(seleniumVersion);
+                return (supportsVncWithoutDebugImage ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(seleniumVersion);
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }
