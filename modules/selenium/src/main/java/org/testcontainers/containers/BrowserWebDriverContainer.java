@@ -35,6 +35,7 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -44,13 +45,15 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer, TestLifecycleAware {
 
-    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
-    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
+    private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome");
+    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox");
+    private static final DockerImageName CHROME_DEBUG_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
+    private static final DockerImageName FIREFOX_DEBUG_IMAGE = DockerImageName.parse("selenium/standalone-firefox-debug");
     private static final DockerImageName[] COMPATIBLE_IMAGES = new DockerImageName[] {
         CHROME_IMAGE,
         FIREFOX_IMAGE,
-        DockerImageName.parse("selenium/standalone-chrome"),
-        DockerImageName.parse("selenium/standalone-firefox")
+        CHROME_DEBUG_IMAGE,
+        FIREFOX_DEBUG_IMAGE
     };
 
     private static final String DEFAULT_PASSWORD = "secret";
@@ -156,23 +159,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         String seleniumVersion = SeleniumUtils.determineClasspathSeleniumVersion();
 
-        if (capabilities == null) {
-            if (seleniumVersion.startsWith("2.")) {
-                logger().info("No capabilities provided, falling back to DesiredCapabilities.chrome()");
-                capabilities = DesiredCapabilities.chrome();
-            } else {
-                logger().info("No capabilities provided, falling back to ChromeOptions");
-                capabilities = new ChromeOptions();
-            }
-        }
-
-        // Hack for new selenium-chrome image that contains Chrome 92.
-        // If not disabled, container startup will fail in most cases and consume excessive amounts of CPU.
-        if (capabilities instanceof ChromeOptions) {
-            ChromeOptions options = (ChromeOptions) this.capabilities;
-            options.addArguments("--disable-gpu");
-        }
-
         if (recordingMode != VncRecordingMode.SKIP) {
 
             if (vncRecordingDirectory == null) {
@@ -244,12 +230,14 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     private static DockerImageName getStandardImageForCapabilities(Capabilities capabilities, String seleniumVersion) {
-        String browserName = capabilities.getBrowserName();
+        String browserName = capabilities == null ? BrowserType.CHROME : capabilities.getBrowserName();
+        boolean supportsVncWithoutDebugImage = new ComparableVersion(seleniumVersion).isGreaterThanOrEqualTo("4");
+
         switch (browserName) {
             case BrowserType.CHROME:
-                return CHROME_IMAGE.withTag(seleniumVersion);
+                return (supportsVncWithoutDebugImage ? CHROME_IMAGE : CHROME_DEBUG_IMAGE).withTag(seleniumVersion);
             case BrowserType.FIREFOX:
-                return FIREFOX_IMAGE.withTag(seleniumVersion);
+                return (supportsVncWithoutDebugImage ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(seleniumVersion);
             default:
                 throw new UnsupportedOperationException("Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported");
         }
@@ -280,10 +268,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS,
-                () -> Timeouts.getWithTimeout(10, TimeUnit.SECONDS,
-                        () -> new RemoteWebDriver(getSeleniumAddress(), capabilities)));
-
         if (vncRecordingContainer != null) {
             LOGGER.debug("Starting VNC recording");
             vncRecordingContainer.start();
@@ -298,7 +282,19 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      *
      * @return a new Remote Web Driver instance
      */
-    public RemoteWebDriver getWebDriver() {
+    public synchronized RemoteWebDriver getWebDriver() {
+        if (driver == null) {
+            if (capabilities == null) {
+                logger().warn("No capabilities provided - this will cause an exception in future versions. Falling back to ChromeOptions");
+                capabilities = new ChromeOptions();
+            }
+
+            driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
+                return Timeouts.getWithTimeout(10, TimeUnit.SECONDS, () -> {
+                    return new RemoteWebDriver(getSeleniumAddress(), capabilities);
+                });
+            });
+        }
         return driver;
     }
 
